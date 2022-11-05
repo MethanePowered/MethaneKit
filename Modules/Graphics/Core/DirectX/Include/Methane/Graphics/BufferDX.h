@@ -27,7 +27,7 @@ DirectX 12 implementation of the buffer interface.
 #include "ResourceDX.hpp"
 #include "DescriptorHeapDX.h"
 
-#include <Methane/Graphics/BufferBase.h>
+#include <Methane/Graphics/Base/Buffer.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -41,10 +41,10 @@ namespace Methane::Graphics
 
 template<typename TNativeView, typename... ExtraViewArgs>
 class BufferDX final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceDX<BufferBase>
+    : public ResourceDX<Base::Buffer>
 {
 public:
-    BufferDX(const ContextBase& context, const Settings& settings, ExtraViewArgs... view_args)
+    BufferDX(const Base::Context& context, const Settings& settings, ExtraViewArgs... view_args)
         : ResourceDX(context, settings)
     {
         META_FUNCTION_TASK();
@@ -187,7 +187,7 @@ using IndexBufferDX    = BufferDX<D3D12_INDEX_BUFFER_VIEW, PixelFormat>;
 using ConstantBufferDX = BufferDX<D3D12_CONSTANT_BUFFER_VIEW_DESC>;
 using ReadBackBufferDX = BufferDX<ReadBackBufferViewDesc>;
 
-class BufferSetDX final : public BufferSetBase
+class BufferSetDX final : public Base::BufferSet
 {
 public:
     BufferSetDX(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs);

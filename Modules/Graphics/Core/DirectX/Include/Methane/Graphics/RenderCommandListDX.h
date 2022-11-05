@@ -25,7 +25,7 @@ DirectX 12 implementation of the render command list interface.
 
 #include "CommandListDX.hpp"
 
-#include <Methane/Graphics/RenderCommandListBase.h>
+#include <Methane/Graphics/Base/RenderCommandList.h>
 
 namespace Methane::Graphics
 {
@@ -34,12 +34,12 @@ class RenderPassDX;
 class RenderStateDX;
 
 class RenderCommandListDX final // NOSONAR - inheritance hierarchy greater than 5
-    : public CommandListDX<RenderCommandListBase>
+    : public CommandListDX<Base::RenderCommandList>
 {
 public:
-    explicit RenderCommandListDX(CommandQueueBase& cmd_queue);
-    RenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass);
-    explicit RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list);
+    explicit RenderCommandListDX(Base::CommandQueue& cmd_queue);
+    RenderCommandListDX(Base::CommandQueue& cmd_queue, Base::RenderPass& render_pass);
+    explicit RenderCommandListDX(Base::ParallelRenderCommandList& parallel_render_command_list);
 
     // ICommandList interface
     void Commit() override;

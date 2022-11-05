@@ -25,7 +25,7 @@ DirectX 12 implementation of the program bindings interface.
 
 #include "ProgramArgumentBindingDX.h"
 
-#include <Methane/Graphics/ProgramBindingsBase.h>
+#include <Methane/Graphics/Base/ProgramBindings.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>
@@ -43,7 +43,7 @@ struct ICommandListDX;
 namespace wrl = Microsoft::WRL;
 
 class ProgramBindingsDX final // NOSONAR - custom destructor is required
-    : public ProgramBindingsBase
+    : public Base::ProgramBindings
 {
 public:
     using ArgumentBindingDX = ProgramArgumentBindingDX;
@@ -56,9 +56,9 @@ public:
 
     // IProgramBindings interface
     void CompleteInitialization() override;
-    void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
+    void Apply(Base::CommandList& command_list, ApplyBehavior apply_behavior) const override;
 
-    void Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* applied_program_bindings_ptr, ApplyBehavior apply_behavior) const;
+    void Apply(ICommandListDX& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehavior apply_behavior) const;
 
 private:
     struct RootParameterBinding
@@ -76,7 +76,7 @@ private:
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBindingDX& argument_binding, const DescriptorHeapDX::Reservation* p_heap_reservation);
     void ApplyRootParameterBindings(ProgramArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
-                                    const ProgramBindingsBase* applied_program_bindings_ptr, bool apply_changes_only) const;
+                                    const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
     void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBindingDX& argument_binding,

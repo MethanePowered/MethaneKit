@@ -27,9 +27,9 @@ Metal implementation of the buffer interface.
 #include <Methane/Graphics/TypesMT.hh>
 #include <Methane/Graphics/TransferCommandListMT.hh>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/ICommandKit.h>
-#include <Methane/Graphics/BufferFactory.hpp>
+#include <Methane/Graphics/Base/BufferFactory.hpp>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -60,19 +60,19 @@ static MTLResourceOptions GetNativeResourceOptions(IBuffer::StorageMode storage_
 Ptr<IBuffer> IBuffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateVertexBuffer<BufferMT>(context, size, stride, is_volatile);
+    return Base::CreateVertexBuffer<BufferMT>(context, size, stride, is_volatile);
 }
 
 Ptr<IBuffer> IBuffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateIndexBuffer<BufferMT>(context, size, format, is_volatile);
+    return Base::CreateIndexBuffer<BufferMT>(context, size, format, is_volatile);
 }
 
 Ptr<IBuffer> IBuffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateConstantBuffer<BufferMT>(context, size, addressable, is_volatile);
+    return Base::CreateConstantBuffer<BufferMT>(context, size, addressable, is_volatile);
 }
 
 Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
@@ -81,7 +81,7 @@ Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
     return size;
 }
 
-BufferMT::BufferMT(const ContextBase& context, const Settings& settings)
+BufferMT::BufferMT(const Base::Context& context, const Settings& settings)
     : ResourceMT(context, settings)
     , m_mtl_buffer([GetContextMT().GetDeviceMT().GetNativeDevice() newBufferWithLength:settings.size
                                                                                options:GetNativeResourceOptions(settings.storage_mode)])
@@ -181,7 +181,7 @@ Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffe
 }
 
 BufferSetMT::BufferSetMT(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
-    : BufferSetBase(buffers_type, buffer_refs)
+    : Base::BufferSet(buffers_type, buffer_refs)
     , m_mtl_buffer_offsets(GetCount(), 0U)
 {
     META_FUNCTION_TASK();

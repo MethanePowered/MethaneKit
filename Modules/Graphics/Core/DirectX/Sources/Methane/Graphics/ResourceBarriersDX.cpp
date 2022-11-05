@@ -123,7 +123,7 @@ Ptr<IResourceBarriers> IResourceBarriers::Create(const Set& barriers)
 }
 
 ResourceBarriersDX::ResourceBarriersDX(const Set& barriers)
-    : ResourceBarriersBase(barriers)
+    : Base::ResourceBarriers(barriers)
 {
     META_FUNCTION_TASK();
     for(const ResourceBarrier barrier : barriers)
@@ -132,11 +132,11 @@ ResourceBarriersDX::ResourceBarriersDX(const Set& barriers)
     }
 }
 
-ResourceBarriersBase::AddResult ResourceBarriersDX::Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier)
+Base::ResourceBarriers::AddResult ResourceBarriersDX::Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier)
 {
     META_FUNCTION_TASK();
-    const auto lock_guard  = ResourceBarriersBase::Lock();
-    const AddResult result = ResourceBarriersBase::Add(id, barrier);
+    const auto lock_guard  = Base::ResourceBarriers::Lock();
+    const AddResult result = Base::ResourceBarriers::Add(id, barrier);
 
     if (id.GetType() != ResourceBarrier::Type::StateTransition)
         return result;
@@ -154,8 +154,8 @@ ResourceBarriersBase::AddResult ResourceBarriersDX::Add(const ResourceBarrier::I
 bool ResourceBarriersDX::Remove(const ResourceBarrier::Id& id)
 {
     META_FUNCTION_TASK();
-    const auto lock_guard = ResourceBarriersBase::Lock();
-    if (!ResourceBarriersBase::Remove(id))
+    const auto lock_guard = Base::ResourceBarriers::Lock();
+    if (!Base::ResourceBarriers::Remove(id))
         return false;
 
     if (id.GetType() != ResourceBarrier::Type::StateTransition)

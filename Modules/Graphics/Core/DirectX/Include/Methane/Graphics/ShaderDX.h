@@ -23,7 +23,7 @@ DirectX 12 implementation of the shader interface.
 
 #pragma once
 
-#include <Methane/Graphics/ShaderBase.h>
+#include <Methane/Graphics/Base/Shader.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>
@@ -43,12 +43,12 @@ namespace wrl = Microsoft::WRL;
 struct IContextDX;
 class ProgramDX;
 
-class ShaderDX final : public ShaderBase
+class ShaderDX final : public Base::Shader
 {
 public:
-    ShaderDX(Type type, const ContextBase& context, const Settings& settings);
+    ShaderDX(Type type, const Base::Context& context, const Settings& settings);
 
-    // ShaderBase overrides
+    // Base::Shader overrides
     ArgumentBindings GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const override;
 
     const Data::Chunk*                    GetNativeByteCode() const noexcept { return m_byte_code_chunk_ptr.get(); }

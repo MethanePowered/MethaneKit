@@ -25,7 +25,7 @@ Vulkan implementation of the buffer interface.
 
 #include "ResourceVK.hpp"
 
-#include <Methane/Graphics/BufferBase.h>
+#include <Methane/Graphics/Base/Buffer.h>
 #include <Methane/Graphics/Types.h>
 
 #include <vulkan/vulkan.hpp>
@@ -34,10 +34,10 @@ namespace Methane::Graphics
 {
 
 class BufferVK final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceVK<BufferBase, vk::Buffer, true>
+    : public ResourceVK<Base::Buffer, vk::Buffer, true>
 {
 public:
-    BufferVK(const ContextBase& context, const Settings& settings);
+    BufferVK(const Base::Context& context, const Settings& settings);
 
     // IResource interface
     void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) override;
@@ -55,7 +55,7 @@ private:
     std::vector<vk::BufferCopy> m_vk_copy_regions;
 };
 
-class BufferSetVK final : public BufferSetBase
+class BufferSetVK final : public Base::BufferSet
 {
 public:
     BufferSetVK(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs);

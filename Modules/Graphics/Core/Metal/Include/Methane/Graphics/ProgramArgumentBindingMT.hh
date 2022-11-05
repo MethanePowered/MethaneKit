@@ -23,7 +23,7 @@ Metal implementation of the program argument binding interface.
 
 #pragma once
 
-#include <Methane/Graphics/ProgramArgumentBindingBase.h>
+#include <Methane/Graphics/Base/ProgramArgumentBinding.h>
 
 #import <Metal/Metal.h>
 
@@ -37,7 +37,7 @@ struct ProgramArgumentBindingSettingsMT final
 };
 
 class ProgramArgumentBindingMT final
-    : public ProgramArgumentBindingBase
+    : public Base::ProgramArgumentBinding
 {
 public:
     using SettingsMT          = ProgramArgumentBindingSettingsMT;
@@ -46,7 +46,7 @@ public:
     using NativeSamplerStates = std::vector<__unsafe_unretained id<MTLSamplerState>>;
     using NativeOffsets       = std::vector<NSUInteger>;
 
-    ProgramArgumentBindingMT(const ContextBase& context, const SettingsMT& settings);
+    ProgramArgumentBindingMT(const Base::Context& context, const SettingsMT& settings);
 
     // IArgumentBinding interface
     bool SetResourceViews(const IResource::Views& resource_views) override;

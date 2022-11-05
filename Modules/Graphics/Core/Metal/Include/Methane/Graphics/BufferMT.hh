@@ -25,17 +25,17 @@ Metal implementation of the buffer interface.
 
 #include "ResourceMT.hh"
 
-#include <Methane/Graphics/BufferBase.h>
+#include <Methane/Graphics/Base/Buffer.h>
 
 #import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {
 
-class BufferMT final : public ResourceMT<BufferBase>
+class BufferMT final : public ResourceMT<Base::Buffer>
 {
 public:
-    BufferMT(const ContextBase& context, const Settings& settings);
+    BufferMT(const Base::Context& context, const Settings& settings);
 
     // IResource interface
     void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) override;
@@ -53,7 +53,7 @@ private:
     id<MTLBuffer> m_mtl_buffer;
 };
 
-class BufferSetMT final : public BufferSetBase
+class BufferSetMT final : public Base::BufferSet
 {
 public:
     BufferSetMT(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs);

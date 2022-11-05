@@ -39,7 +39,7 @@ class TypeConverterDX
 public:
     enum class ResourceFormatType
     {
-        ResourceBase,
+        Resource,
         ViewRead,
         ViewWrite
     };

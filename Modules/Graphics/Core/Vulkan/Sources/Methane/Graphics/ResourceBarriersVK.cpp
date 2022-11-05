@@ -72,7 +72,7 @@ Ptr<IResourceBarriers> IResourceBarriers::Create(const Set& barriers)
 }
 
 ResourceBarriersVK::ResourceBarriersVK(const Set& barriers)
-    : ResourceBarriersBase(barriers)
+    : Base::ResourceBarriers(barriers)
 {
     META_FUNCTION_TASK();
     for (const ResourceBarrier barrier: barriers)
@@ -81,11 +81,11 @@ ResourceBarriersVK::ResourceBarriersVK(const Set& barriers)
     }
 }
 
-ResourceBarriersBase::AddResult ResourceBarriersVK::Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier)
+Base::ResourceBarriers::AddResult ResourceBarriersVK::Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier)
 {
     META_FUNCTION_TASK();
-    const auto      lock_guard = ResourceBarriersBase::Lock();
-    const AddResult result     = ResourceBarriersBase::Add(id, barrier);
+    const auto      lock_guard = Base::ResourceBarriers::Lock();
+    const AddResult result     = Base::ResourceBarriers::Add(id, barrier);
 
     switch (result)
     {
@@ -101,8 +101,8 @@ ResourceBarriersBase::AddResult ResourceBarriersVK::Add(const ResourceBarrier::I
 bool ResourceBarriersVK::Remove(const ResourceBarrier::Id& id)
 {
     META_FUNCTION_TASK();
-    const auto lock_guard = ResourceBarriersBase::Lock();
-    if (!ResourceBarriersBase::Remove(id))
+    const auto lock_guard = Base::ResourceBarriers::Lock();
+    if (!Base::ResourceBarriers::Remove(id))
         return false;
 
     const IResource& resource = id.GetResource();
@@ -357,7 +357,7 @@ void ResourceBarriersVK::UpdateStageMasks()
     META_FUNCTION_TASK();
     m_vk_default_barrier.vk_src_stage_mask = {};
     m_vk_default_barrier.vk_dst_stage_mask = {};
-    for(const auto& [barrier_id, barrier] : ResourceBarriersBase::GetMap())
+    for(const auto& [barrier_id, barrier] : Base::ResourceBarriers::GetMap())
     {
         UpdateStageMasks(barrier);
     }

@@ -31,7 +31,7 @@ Vulkan implementation of the render state interface.
 #include <Methane/Graphics/TypesVK.h>
 #include <Methane/Graphics/UtilsVK.hpp>
 
-#include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Graphics/Base/RenderContext.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -226,7 +226,7 @@ Ptr<IViewState> IViewState::Create(const IViewState::Settings& state_settings)
 }
 
 ViewStateVK::ViewStateVK(const Settings& settings)
-    : ViewStateBase(settings)
+    : Base::ViewState(settings)
     , m_vk_viewports(ViewportsToVulkan(settings.viewports))
     , m_vk_scissor_rects(ScissorRectsToVulkan(settings.scissor_rects))
 {
@@ -236,7 +236,7 @@ ViewStateVK::ViewStateVK(const Settings& settings)
 bool ViewStateVK::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (!ViewStateBase::Reset(settings))
+    if (!Base::ViewState::Reset(settings))
         return false;
 
     m_vk_viewports     = ViewportsToVulkan(settings.viewports);
@@ -247,7 +247,7 @@ bool ViewStateVK::Reset(const Settings& settings)
 bool ViewStateVK::SetViewports(const Viewports& viewports)
 {
     META_FUNCTION_TASK();
-    if (!ViewStateBase::SetViewports(viewports))
+    if (!Base::ViewState::SetViewports(viewports))
         return false;
 
     m_vk_viewports = ViewportsToVulkan(GetSettings().viewports);
@@ -257,14 +257,14 @@ bool ViewStateVK::SetViewports(const Viewports& viewports)
 bool ViewStateVK::SetScissorRects(const ScissorRects& scissor_rects)
 {
     META_FUNCTION_TASK();
-    if (!ViewStateBase::SetScissorRects(scissor_rects))
+    if (!Base::ViewState::SetScissorRects(scissor_rects))
         return false;
 
     m_vk_scissor_rects = ScissorRectsToVulkan(GetSettings().scissor_rects);
     return true;
 }
 
-void ViewStateVK::Apply(RenderCommandListBase& command_list)
+void ViewStateVK::Apply(Base::RenderCommandList& command_list)
 {
     META_FUNCTION_TASK();
     const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandListVK&>(command_list).GetNativeCommandBufferDefault();
@@ -275,11 +275,11 @@ void ViewStateVK::Apply(RenderCommandListBase& command_list)
 Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderStateVK>(dynamic_cast<const RenderContextBase&>(context), state_settings);
+    return std::make_shared<RenderStateVK>(dynamic_cast<const Base::RenderContext&>(context), state_settings);
 }
 
-RenderStateVK::RenderStateVK(const RenderContextBase& context, const Settings& settings)
-    : RenderStateBase(context, settings)
+RenderStateVK::RenderStateVK(const Base::RenderContext& context, const Settings& settings)
+    : Base::RenderState(context, settings)
     , m_vk_context(dynamic_cast<const IContextVK&>(GetRenderContext()))
 {
     META_FUNCTION_TASK();
@@ -289,7 +289,7 @@ RenderStateVK::RenderStateVK(const RenderContextBase& context, const Settings& s
 void RenderStateVK::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    RenderStateBase::Reset(settings);
+    Base::RenderState::Reset(settings);
 
     vk::PipelineRasterizationStateCreateInfo rasterizer_info(
         vk::PipelineRasterizationStateCreateFlags{},
@@ -424,7 +424,7 @@ void RenderStateVK::Reset(const Settings& settings)
     m_vk_unique_pipeline = std::move(pipe.value);
 }
 
-void RenderStateVK::Apply(RenderCommandListBase& render_command_list, Groups /*state_groups*/)
+void RenderStateVK::Apply(Base::RenderCommandList& render_command_list, Groups /*state_groups*/)
 {
     META_FUNCTION_TASK();
     const auto& vulkan_render_command_list = static_cast<RenderCommandListVK&>(render_command_list);
@@ -434,7 +434,7 @@ void RenderStateVK::Apply(RenderCommandListBase& render_command_list, Groups /*s
 bool RenderStateVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!RenderStateBase::SetName(name))
+    if (!Base::RenderState::SetName(name))
         return false;
 
     SetVulkanObjectName(m_vk_context.GetDeviceVK().GetNativeDevice(), m_vk_unique_pipeline.get(), name.c_str());

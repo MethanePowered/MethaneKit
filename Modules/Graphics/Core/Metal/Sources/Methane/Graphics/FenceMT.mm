@@ -26,7 +26,7 @@ Metal fence implementation.
 #include <Methane/Graphics/DeviceMT.hh>
 #include <Methane/Graphics/ContextMT.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/ScopeTimer.h>
@@ -37,7 +37,7 @@ namespace Methane::Graphics
 Ptr<IFence> IFence::Create(ICommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<FenceMT>(static_cast<CommandQueueBase&>(command_queue));
+    return std::make_shared<FenceMT>(static_cast<Base::CommandQueue&>(command_queue));
 }
     
 const dispatch_queue_t& FenceMT::GetDispatchQueue()
@@ -46,8 +46,8 @@ const dispatch_queue_t& FenceMT::GetDispatchQueue()
     return s_fences_dispatch_queue;
 }
 
-FenceMT::FenceMT(CommandQueueBase& command_queue)
-    : FenceBase(command_queue)
+FenceMT::FenceMT(Base::CommandQueue& command_queue)
+    : Base::Fence(command_queue)
     , m_mtl_event([GetCommandQueueMT().GetContextMT().GetDeviceMT().GetNativeDevice() newSharedEvent])
     , m_mtl_event_listener([[MTLSharedEventListener alloc] initWithDispatchQueue:GetDispatchQueue()])
 {
@@ -57,7 +57,7 @@ FenceMT::FenceMT(CommandQueueBase& command_queue)
 void FenceMT::Signal()
 {
     META_FUNCTION_TASK();
-    FenceBase::Signal();
+    Base::Fence::Signal();
     
     id<MTLCommandBuffer> mtl_command_buffer = [GetCommandQueueMT().GetNativeCommandQueue() commandBuffer];
     [mtl_command_buffer encodeSignalEvent:m_mtl_event value:GetValue()];
@@ -69,7 +69,7 @@ void FenceMT::Signal()
 void FenceMT::WaitOnCpu()
 {
     META_FUNCTION_TASK();
-    FenceBase::WaitOnCpu();
+    Base::Fence::WaitOnCpu();
 
     META_CHECK_ARG_NOT_NULL(m_mtl_event);
     uint64_t signalled_value = m_mtl_event.signaledValue;
@@ -92,7 +92,7 @@ void FenceMT::WaitOnCpu()
 void FenceMT::WaitOnGpu(ICommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
-    FenceBase::WaitOnGpu(wait_on_command_queue);
+    Base::Fence::WaitOnGpu(wait_on_command_queue);
 
     CommandQueueMT& mtl_wait_on_command_queue = static_cast<CommandQueueMT&>(wait_on_command_queue);
     id<MTLCommandBuffer> mtl_command_buffer = [mtl_wait_on_command_queue.GetNativeCommandQueue() commandBuffer];
@@ -103,7 +103,7 @@ void FenceMT::WaitOnGpu(ICommandQueue& wait_on_command_queue)
 bool FenceMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!ObjectBase::SetName(name))
+    if (!Base::Object::SetName(name))
         return false;
 
     m_mtl_event.label = MacOS::ConvertToNsType<std::string, NSString*>(name);

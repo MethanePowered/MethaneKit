@@ -30,7 +30,7 @@ DirectX 12 base template implementation of the context interface.
 #include "DescriptorManagerDX.h"
 
 #include <Methane/Graphics/ICommandKit.h>
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -45,21 +45,21 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<ContextBase, ContextBaseT>>>
+template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<Base::Context, ContextBaseT>>>
 class ContextDX
     : public ContextBaseT
     , public IContextDX
 {
 public:
-    ContextDX(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
+    ContextDX(Base::Device& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, std::make_unique<DescriptorManagerDX>(*this), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
     }
 
-    // ContextBase interface
+    // Base::Context interface
 
-    void Initialize(DeviceBase& device, bool is_callback_emitted) override
+    void Initialize(Base::Device& device, bool is_callback_emitted) override
     {
         META_FUNCTION_TASK();
         ContextBaseT::Initialize(device, false);
@@ -94,9 +94,9 @@ public:
     }
 
     // IContextDX interface
-    const DeviceDX&      GetDeviceDX() const noexcept final                   { return static_cast<const DeviceDX&>(ContextBase::GetDeviceBase()); }
-    CommandQueueDX&      GetDefaultCommandQueueDX(CommandListType type) final { return static_cast<CommandQueueDX&>(ContextBase::GetDefaultCommandKit(type).GetQueue()); }
-    DescriptorManagerDX& GetDescriptorManagerDX() const noexcept final        { return static_cast<DescriptorManagerDX&>(ContextBase::GetDescriptorManager()); }
+    const DeviceDX&      GetDeviceDX() const noexcept final                   { return static_cast<const DeviceDX&>(Base::Context::GetDeviceBase()); }
+    CommandQueueDX&      GetDefaultCommandQueueDX(CommandListType type) final { return static_cast<CommandQueueDX&>(Base::Context::GetDefaultCommandKit(type).GetQueue()); }
+    DescriptorManagerDX& GetDescriptorManagerDX() const noexcept final        { return static_cast<DescriptorManagerDX&>(Base::Context::GetDescriptorManager()); }
 
     ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const final
     {

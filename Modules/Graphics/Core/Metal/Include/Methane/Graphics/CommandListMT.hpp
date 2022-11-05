@@ -26,7 +26,7 @@ Metal base template implementation of the command list interface.
 #include "CommandQueueMT.hh"
 #include "CommandListMT.hh"
 
-#include "Methane/Graphics/CommandListBase.h"
+#include "Methane/Graphics/Base::CommandList.h"
 #include "Methane/Platform/Apple/Types.hh"
 #include "Methane/Instrumentation.h"
 #include "Methane/Checks.hpp"
@@ -38,7 +38,7 @@ Metal base template implementation of the command list interface.
 namespace Methane::Graphics
 {
 
-template<typename MTLCommandEncoderId, class CommandListBaseT, typename = std::enable_if_t<std::is_base_of_v<CommandListBase, CommandListBaseT>>>
+template<typename MTLCommandEncoderId, class CommandListBaseT, typename = std::enable_if_t<std::is_base_of_v<Base::CommandList, CommandListBaseT>>>
 class CommandListMT : public CommandListBaseT
 {
 public:
@@ -98,7 +98,7 @@ public:
     {
         META_FUNCTION_TASK();
         META_UNUSED(in_cpu_nanoseconds);
-        META_CHECK_ARG_EQUAL_DESCR(CommandListBaseT::GetState(), CommandListBase::State::Pending,
+        META_CHECK_ARG_EQUAL_DESCR(CommandListBaseT::GetState(), Base::CommandList::State::Pending,
                                    "can not get GPU time range of executing or not committed command list");
 
         if (!m_mtl_cmd_buffer)
@@ -117,7 +117,7 @@ public:
         return Data::TimeRange();
     }
 
-    // CommandListBase interface
+    // Base::CommandList interface
 
     void SetResourceBarriers(const IResourceBarriers&) override { }
 

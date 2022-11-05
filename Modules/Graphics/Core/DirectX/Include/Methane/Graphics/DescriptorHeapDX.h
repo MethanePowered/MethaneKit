@@ -23,8 +23,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps.
 
 #pragma once
 
-#include "Methane/Graphics/ObjectBase.h"
-
+#include <Methane/Graphics/Base/Object.h>
 #include <Methane/Data/RangeSet.hpp>
 #include <Methane/Data/IProvider.h>
 #include <Methane/Data/Emitter.hpp>
@@ -37,6 +36,14 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps.
 
 #include <wrl.h>
 #include <directx/d3d12.h>
+
+namespace Methane::Graphics::Base
+{
+
+class Context;
+class Resource;
+
+} // namespace Methane::Graphics::Base
 
 namespace Methane::Graphics
 {
@@ -90,8 +97,6 @@ struct IDescriptorHeapCallback
     virtual ~IDescriptorHeapCallback() = default;
 };
 
-class ContextBase;
-class ResourceBase;
 struct IContextDX;
 
 class DescriptorHeapDX // NOSONAR - this class requires destructor
@@ -103,7 +108,7 @@ public:
     using Range       = DescriptorHeapReservationDX::Range;
     using Reservation = DescriptorHeapReservationDX;
 
-    DescriptorHeapDX(const ContextBase& context, const Settings& settings);
+    DescriptorHeapDX(const Base::Context& context, const Settings& settings);
     ~DescriptorHeapDX() override;
 
     [[nodiscard]] ID3D12DescriptorHeap*       GetNativeDescriptorHeap() noexcept           { return m_cp_descriptor_heap.Get();  }
@@ -111,8 +116,8 @@ public:
     [[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCpuDescriptorHandle(uint32_t descriptor_index) const;
     [[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGpuDescriptorHandle(uint32_t descriptor_index) const;
 
-    Data::Index AddResource(const ResourceBase& resource);
-    Data::Index ReplaceResource(const ResourceBase& resource, Data::Index at_index);
+    Data::Index AddResource(const Base::Resource& resource);
+    Data::Index ReplaceResource(const Base::Resource& resource, Data::Index at_index);
     void        RemoveResource(Data::Index at_index);
     void        Allocate();
 
@@ -120,20 +125,18 @@ public:
     void  ReleaseRange(const Range& range);
     void  SetDeferredAllocation(bool deferred_allocation);
 
-    [[nodiscard]] const Settings&     GetSettings() const                          { return m_settings; }
-    [[nodiscard]] Data::Size          GetDeferredSize() const                      { return m_deferred_size; }
-    [[nodiscard]] Data::Size          GetAllocatedSize() const                     { return m_allocated_size; }
-    [[nodiscard]] const ResourceBase* GetResource(uint32_t descriptor_index) const { return m_resources[descriptor_index]; }
-    [[nodiscard]] bool                IsShaderVisible() const                      { return m_settings.shader_visible && IsShaderVisibleHeapType(m_settings.type); }
-    [[nodiscard]] static bool         IsShaderVisibleHeapType(Type heap_type)      { return heap_type == Type::ShaderResources || heap_type == Type::Samplers; }
+    [[nodiscard]] const Settings&       GetSettings() const                          { return m_settings; }
+    [[nodiscard]] Data::Size            GetDeferredSize() const                      { return m_deferred_size; }
+    [[nodiscard]] Data::Size            GetAllocatedSize() const                     { return m_allocated_size; }
+    [[nodiscard]] const Base::Resource* GetResource(uint32_t descriptor_index) const { return m_resources[descriptor_index]; }
+    [[nodiscard]] bool                  IsShaderVisible() const                      { return m_settings.shader_visible && IsShaderVisibleHeapType(m_settings.type); }
+    [[nodiscard]] static bool           IsShaderVisibleHeapType(Type heap_type)      { return heap_type == Type::ShaderResources || heap_type == Type::Samplers; }
 
 private:
-    const IContextDX& GetContextDX() const noexcept;
-
-    using ResourcePtrs = std::vector<const ResourceBase*>;
+    using ResourcePtrs = std::vector<const Base::Resource*>;
     using RangeSet     = Data::RangeSet<Data::Index>;
 
-    const ContextBase&                m_context;
+    const Base::Context&              m_context;
     const IContextDX&                 m_dx_context;
     Settings                          m_settings;
     Data::Size                        m_deferred_size;

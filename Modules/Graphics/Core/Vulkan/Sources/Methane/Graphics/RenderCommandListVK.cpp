@@ -85,7 +85,7 @@ Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& p
     return std::make_shared<RenderCommandListVK>(static_cast<ParallelRenderCommandListVK&>(parallel_render_command_list), false);
 }
 
-Ptr<IRenderCommandList> RenderCommandListBase::CreateForSynchronization(ICommandQueue& cmd_queue)
+Ptr<IRenderCommandList> Base::RenderCommandList::CreateForSynchronization(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<RenderCommandListVK>(static_cast<CommandQueueVK&>(cmd_queue));
@@ -129,7 +129,7 @@ void RenderCommandListVK::ResetWithState(IRenderState& render_state, IDebugGroup
 bool RenderCommandListVK::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
-    if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))
+    if (!Base::RenderCommandList::SetVertexBuffers(vertex_buffers, set_resource_barriers))
         return false;
 
     const auto& vk_vertex_buffers = static_cast<const BufferSetVK&>(vertex_buffers);
@@ -147,7 +147,7 @@ bool RenderCommandListVK::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_
 bool RenderCommandListVK::SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
-    if (!RenderCommandListBase::SetIndexBuffer(index_buffer, set_resource_barriers))
+    if (!Base::RenderCommandList::SetIndexBuffer(index_buffer, set_resource_barriers))
         return false;
 
     auto& vk_index_buffer = static_cast<BufferVK&>(index_buffer);
@@ -172,7 +172,7 @@ void RenderCommandListVK::DrawIndexed(Primitive primitive, uint32_t index_count,
         index_count = drawing_state.index_buffer_ptr->GetFormattedItemsCount();
     }
 
-    RenderCommandListBase::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
+    Base::RenderCommandList::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
 
     UpdatePrimitiveTopology(primitive);
     GetNativeCommandBufferDefault().drawIndexed(index_count, instance_count, start_index, start_vertex, start_instance);
@@ -182,7 +182,7 @@ void RenderCommandListVK::Draw(Primitive primitive, uint32_t vertex_count, uint3
                                uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
-    RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
+    Base::RenderCommandList::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
     UpdatePrimitiveTopology(primitive);
     GetNativeCommandBufferDefault().draw(vertex_count, instance_count, start_vertex, start_instance);

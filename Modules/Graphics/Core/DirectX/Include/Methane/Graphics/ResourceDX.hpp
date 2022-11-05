@@ -29,7 +29,7 @@ DirectX 12 implementation of the resource interface.
 #include "TransferCommandListDX.h"
 #include "DeviceDX.h"
 
-#include <Methane/Graphics/TextureBase.h>
+#include <Methane/Graphics/Base/Texture.h>
 #include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
@@ -46,14 +46,14 @@ namespace wrl = Microsoft::WRL;
 struct IContextDX;
 class DescriptorHeapDX;
 
-template<typename ResourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ResourceBaseType>, void>>
+template<typename ResourceBaseType, typename = std::enable_if_t<std::is_base_of_v<Base::Resource, ResourceBaseType>, void>>
 class ResourceDX // NOSONAR - destructor in use
     : public ResourceBaseType
     , public IResourceDX
 {
 public:
     template<typename SettingsType>
-    ResourceDX(const ContextBase& context, const SettingsType& settings)
+    ResourceDX(const Base::Context& context, const SettingsType& settings)
         : ResourceBaseType(context, settings, State::Common, State::Common)
         , m_dx_context(dynamic_cast<const IContextDX&>(context))
     {
@@ -90,7 +90,7 @@ public:
     bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
-        if (!ResourceBase::SetName(name))
+        if (!Base::Resource::SetName(name))
             return false;
 
         if (m_cp_resource)
@@ -216,7 +216,7 @@ private:
         DescriptorManagerDX& descriptor_manager = GetContextDX().GetDescriptorManagerDX();
         const DescriptorHeapDX::Type heap_type = IResourceDX::GetDescriptorHeapTypeByUsage(*this, usage);
         DescriptorHeapDX& heap = descriptor_manager.GetDescriptorHeap(heap_type);
-        return IResource::Descriptor(heap, heap.AddResource(dynamic_cast<ResourceBase&>(*this)));
+        return IResource::Descriptor(heap, heap.AddResource(dynamic_cast<Base::Resource&>(*this)));
     }
 
     const IContextDX&           m_dx_context;

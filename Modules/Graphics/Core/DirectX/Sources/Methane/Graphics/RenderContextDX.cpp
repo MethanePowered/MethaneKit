@@ -54,15 +54,15 @@ Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, 
                                            tf::Executor& parallel_executor, const RenderContextSettings& settings)
 {
     META_FUNCTION_TASK();
-    auto& device_base = static_cast<DeviceBase&>(device);
+    auto& device_base = static_cast<Base::Device&>(device);
     const auto render_context_ptr = std::make_shared<RenderContextDX>(env, device_base, parallel_executor, settings);
     render_context_ptr->Initialize(device_base, true);
     return render_context_ptr;
 }
 
-RenderContextDX::RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device,
+RenderContextDX::RenderContextDX(const Platform::AppEnvironment& env, Base::Device& device,
                                  tf::Executor& parallel_executor, const RenderContextSettings& settings)
-    : ContextDX<RenderContextBase>(device, parallel_executor, settings)
+    : ContextDX<Base::RenderContext>(device, parallel_executor, settings)
     , m_platform_env(env)
 {
     META_FUNCTION_TASK();
@@ -76,7 +76,7 @@ RenderContextDX::~RenderContextDX()
 void RenderContextDX::WaitForGpu(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
-    ContextDX<RenderContextBase>::WaitForGpu(wait_for);
+    ContextDX<Base::RenderContext>::WaitForGpu(wait_for);
 
     std::optional<Data::Index> frame_buffer_index;
     CommandListType cl_type = CommandListType::Render;
@@ -106,10 +106,10 @@ void RenderContextDX::Release()
 
     m_cp_swap_chain.Reset();
 
-    ContextDX<RenderContextBase>::Release();
+    ContextDX<Base::RenderContext>::Release();
 }
 
-void RenderContextDX::Initialize(DeviceBase& device, bool is_callback_emitted)
+void RenderContextDX::Initialize(Base::Device& device, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
 
@@ -178,7 +178,7 @@ void RenderContextDX::Initialize(DeviceBase& device, bool is_callback_emitted)
 
     UpdateFrameBufferIndex();
 
-    ContextDX<RenderContextBase>::Initialize(device, is_callback_emitted);
+    ContextDX<Base::RenderContext>::Initialize(device, is_callback_emitted);
 }
 
 void RenderContextDX::Resize(const FrameSize& frame_size)
@@ -187,7 +187,7 @@ void RenderContextDX::Resize(const FrameSize& frame_size)
 
     WaitForGpu(WaitFor::RenderComplete);
 
-    ContextDX<RenderContextBase>::Resize(frame_size);
+    ContextDX<Base::RenderContext>::Resize(frame_size);
 
     // Resize the swap chain to the desired dimensions
     DXGI_SWAP_CHAIN_DESC1 desc{};
@@ -203,7 +203,7 @@ void RenderContextDX::Present()
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("RenderContextDX::Present");
 
-    ContextDX<RenderContextBase>::Present();
+    ContextDX<Base::RenderContext>::Present();
 
     // Preset frame to screen
     const uint32_t present_flags  = GetPresentFlags();
@@ -213,7 +213,7 @@ void RenderContextDX::Present()
     ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags),
                   GetDeviceDX().GetNativeDevice().Get());
 
-    ContextDX<RenderContextBase>::OnCpuPresentComplete();
+    ContextDX<Base::RenderContext>::OnCpuPresentComplete();
     UpdateFrameBufferIndex();
 }
 

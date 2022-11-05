@@ -71,8 +71,8 @@ Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& na
 }
 
 ICommandListVK::DebugGroupVK::DebugGroupVK(const std::string& name)
-    : CommandListBase::DebugGroupBase(name)
-    , m_vk_debug_label(ObjectBase::GetName().c_str())
+    : Base::CommandList::DebugGroup(name)
+    , m_vk_debug_label(Base::Object::GetName().c_str())
 {
     META_FUNCTION_TASK();
 }
@@ -84,19 +84,19 @@ Ptr<ICommandListSet> ICommandListSet::Create(const Refs<ICommandList>& command_l
 }
 
 CommandListSetVK::CommandListSetVK(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
-    : CommandListSetBase(command_list_refs, frame_index_opt)
+    : Base::CommandListSet(command_list_refs, frame_index_opt)
     , m_vk_wait_frame_buffer_rendering_on_stages(GetFrameBufferRenderingWaitStages(command_list_refs))
     , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice())
     , m_vk_unique_execution_completed_semaphore(m_vk_device.createSemaphoreUnique(vk::SemaphoreCreateInfo()))
     , m_vk_unique_execution_completed_fence(m_vk_device.createFenceUnique(vk::FenceCreateInfo()))
 {
     META_FUNCTION_TASK();
-    const Refs<CommandListBase>& base_command_list_refs = GetBaseRefs();
+    const Refs<Base::CommandList>& base_command_list_refs = GetBaseRefs();
     
     m_vk_command_buffers.reserve(command_list_refs.size());
-    for (const Ref<CommandListBase>& command_list_ref : base_command_list_refs)
+    for (const Ref<Base::CommandList>& command_list_ref : base_command_list_refs)
     {
-        const CommandListBase& command_list = command_list_ref.get();
+        const Base::CommandList& command_list = command_list_ref.get();
         const auto& vulkan_command_list = command_list.GetType() == CommandListType::ParallelRender
                                         ? static_cast<const ParallelRenderCommandListVK&>(command_list).GetPrimaryCommandListVK()
                                         : dynamic_cast<const ICommandListVK&>(command_list_ref.get());
@@ -109,7 +109,7 @@ CommandListSetVK::CommandListSetVK(const Refs<ICommandList>& command_list_refs, 
 void CommandListSetVK::Execute(const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    CommandListSetBase::Execute(completed_callback);
+    Base::CommandListSet::Execute(completed_callback);
 
     vk::SubmitInfo submit_info(
         GetWaitSemaphores(),
@@ -201,7 +201,7 @@ const std::vector<uint64_t>& CommandListSetVK::GetWaitValues()
 void CommandListSetVK::OnObjectNameChanged(IObject& object, const std::string& old_name)
 {
     META_FUNCTION_TASK();
-    CommandListSetBase::OnObjectNameChanged(object, old_name);
+    Base::CommandListSet::OnObjectNameChanged(object, old_name);
     UpdateNativeDebugName();
 }
 

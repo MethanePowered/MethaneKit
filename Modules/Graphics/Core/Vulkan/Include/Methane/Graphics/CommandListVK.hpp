@@ -31,8 +31,8 @@ Vulkan base template implementation of the command list interface.
 #include "ResourceBarriersVK.h"
 #include "UtilsVK.hpp"
 
-#include <Methane/Graphics/CommandListBase.h>
-#include <Methane/Graphics/ResourceBarriersBase.h>
+#include <Methane/Graphics/Base/CommandList.h>
+#include <Methane/Graphics/Base/ResourceBarriers.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -51,7 +51,7 @@ class ParallelRenderCommandListVK;
 
 template<class CommandListBaseT, vk::PipelineBindPoint pipeline_bind_point, uint32_t command_buffers_count = 1U,
          ICommandListVK::CommandBufferType default_command_buffer_type = ICommandListVK::CommandBufferType::Primary,
-         typename = std::enable_if_t<std::is_base_of_v<CommandListBase, CommandListBaseT> && command_buffers_count != 0U>>
+         typename = std::enable_if_t<std::is_base_of_v<Base::CommandList, CommandListBaseT> && command_buffers_count != 0U>>
 class CommandListVK
     : public CommandListBaseT
     , public ICommandListVK
@@ -136,21 +136,21 @@ public:
     void PushDebugGroup(ICommandListDebugGroup& debug_group) final
     {
         META_FUNCTION_TASK();
-        CommandListBase::PushDebugGroup(debug_group);
+        Base::CommandList::PushDebugGroup(debug_group);
         GetNativeCommandBuffer(m_debug_group_command_buffer_type).beginDebugUtilsLabelEXT(static_cast<const ICommandListVK::DebugGroupVK&>(debug_group).GetNativeDebugLabel());
     }
 
     void PopDebugGroup() final
     {
         META_FUNCTION_TASK();
-        CommandListBase::PopDebugGroup();
+        Base::CommandList::PopDebugGroup();
         GetNativeCommandBuffer(m_debug_group_command_buffer_type).endDebugUtilsLabelEXT();
     }
 
     void Commit() override
     {
         META_FUNCTION_TASK();
-        const auto state_lock = CommandListBase::LockStateMutex();
+        const auto state_lock = Base::CommandList::LockStateMutex();
 
         CommandListBaseT::Commit();
         CommandListBaseT::EndGpuZone();
@@ -173,13 +173,13 @@ public:
         META_FUNCTION_TASK();
         CommandListBaseT::VerifyEncodingState();
 
-        const auto lock_guard = static_cast<const ResourceBarriersBase&>(resource_barriers).Lock();
+        const auto lock_guard = static_cast<const Base::ResourceBarriers&>(resource_barriers).Lock();
         if (resource_barriers.IsEmpty())
             return;
 
         META_LOG("{} Command list '{}' SET RESOURCE BARRIERS:\n{}",
-            magic_enum::enum_name(CommandListBase::GetType()),
-            CommandListBase::GetName(),
+            magic_enum::enum_name(Base::CommandList::GetType()),
+            Base::CommandList::GetName(),
             static_cast<std::string>(resource_barriers));
 
         const auto& vulkan_resource_barriers = static_cast<const ResourceBarriersVK&>(resource_barriers);
@@ -200,7 +200,7 @@ public:
     void Reset(ICommandListDebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
-        const auto state_lock = CommandListBase::LockStateMutex();
+        const auto state_lock = Base::CommandList::LockStateMutex();
         if (!m_is_native_committed)
             return;
 
@@ -218,7 +218,7 @@ public:
 
         CommandListBaseT::BeginGpuZone();
 
-        CommandListBase::Reset(p_debug_group);
+        Base::CommandList::Reset(p_debug_group);
     }
 
     // IObject interface
@@ -271,11 +271,11 @@ protected:
         m_vk_command_buffer_encoding_flags[cmd_buffer_index] = false;
     }
 
-    void ApplyProgramBindings(ProgramBindingsBase& program_bindings, IProgramBindings::ApplyBehavior apply_behavior) final
+    void ApplyProgramBindings(Base::ProgramBindings& program_bindings, IProgramBindings::ApplyBehavior apply_behavior) final
     {
-        // Optimization to skip dynamic_cast required to call Apply method of the ProgramBindingBase implementation
-        static_cast<ProgramBindingsVK&>(program_bindings).Apply(*this, CommandListBase::GetCommandQueue(),
-                                                                CommandListBase::GetProgramBindingsPtr(), apply_behavior);
+        // Optimization to skip dynamic_cast required to call Apply method of the Base::ProgramBinding implementation
+        static_cast<ProgramBindingsVK&>(program_bindings).Apply(*this, Base::CommandList::GetCommandQueue(),
+                                                                Base::CommandList::GetProgramBindingsPtr(), apply_behavior);
     }
 
     void SetSecondaryRenderBufferInheritInfo(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info) noexcept

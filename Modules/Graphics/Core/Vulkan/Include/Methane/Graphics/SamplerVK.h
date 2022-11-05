@@ -25,7 +25,7 @@ Vulkan implementation of the sampler interface.
 
 #include "ResourceVK.hpp"
 
-#include <Methane/Graphics/SamplerBase.h>
+#include <Methane/Graphics/Base/Sampler.h>
 
 #include <vulkan/vulkan.hpp>
 
@@ -35,10 +35,10 @@ namespace Methane::Graphics
 struct IContextVK;
 
 class SamplerVK final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceVK<SamplerBase, vk::Sampler, false>
+    : public ResourceVK<Base::Sampler, vk::Sampler, false>
 {
 public:
-    SamplerVK(const ContextBase& context, const Settings& settings);
+    SamplerVK(const Base::Context& context, const Settings& settings);
 
     const vk::Sampler& GetNativeSampler() const noexcept { return m_vk_unique_sampler.get(); }
 

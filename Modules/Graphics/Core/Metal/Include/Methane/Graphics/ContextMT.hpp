@@ -28,7 +28,7 @@ Metal template implementation of the base context interface.
 #include "ProgramLibraryMT.hh"
 #include "DescriptorManagerMT.h"
 
-#include "Methane/Graphics/ContextBase.h"
+#include "Methane/Graphics/Base::Context.h"
 #include "Methane/Graphics/ICommandKit.h"
 #include "Methane/Platform/Apple/Types.hh"
 #include "Methane/Instrumentation.h"
@@ -42,13 +42,13 @@ namespace Methane::Graphics
 
 struct ICommandQueue;
 
-template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<ContextBase, ContextBaseT>>>
+template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<Base::Context, ContextBaseT>>>
 class ContextMT
     : public ContextBaseT
     , public IContextMT
 {
 public:
-    ContextMT(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
+    ContextMT(Base::Device& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, std::make_unique<DescriptorManagerMT>(), parallel_executor, settings)
     {
         META_FUNCTION_TASK();
@@ -59,13 +59,13 @@ public:
     const DeviceMT& GetDeviceMT() const noexcept final
     {
         META_FUNCTION_TASK();
-        return static_cast<const DeviceMT&>(ContextBase::GetDeviceBase());
+        return static_cast<const DeviceMT&>(Base::Context::GetDeviceBase());
     }
 
     CommandQueueMT& GetDefaultCommandQueueMT(CommandListType type) final
     {
         META_FUNCTION_TASK();
-        return static_cast<CommandQueueMT&>(ContextBase::GetDefaultCommandKit(type).GetQueue());
+        return static_cast<CommandQueueMT&>(Base::Context::GetDefaultCommandKit(type).GetQueue());
     }
 
     const Ptr<ProgramLibraryMT>& GetLibraryMT(const std::string& library_name) const override
@@ -83,7 +83,7 @@ public:
     bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
-        if (!ContextBase::SetName(name))
+        if (!Base::Context::SetName(name))
             return false;
 
         m_ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);

@@ -29,7 +29,7 @@ Metal implementation of the command queue interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <QuartzCore/CABase.h>
+#include <QuartzCore/Base::CA.h>
 
 namespace Methane::Graphics
 {
@@ -37,11 +37,11 @@ namespace Methane::Graphics
 Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandQueueMT>(dynamic_cast<const ContextBase&>(context), command_lists_type);
+    return std::make_shared<CommandQueueMT>(dynamic_cast<const Base::Context&>(context), command_lists_type);
 }
 
-CommandQueueMT::CommandQueueMT(const ContextBase& context, CommandListType command_lists_type)
-    : CommandQueueBase(context, command_lists_type)
+CommandQueueMT::CommandQueueMT(const Base::Context& context, CommandListType command_lists_type)
+    : Base::CommandQueue(context, command_lists_type)
     , m_mtl_command_queue([GetContextMT().GetDeviceMT().GetNativeDevice() newCommandQueue])
 {
     META_FUNCTION_TASK();
@@ -57,7 +57,7 @@ CommandQueueMT::CommandQueueMT(const ContextBase& context, CommandListType comma
 bool CommandQueueMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!CommandQueueBase::SetName(name))
+    if (!Base::CommandQueue::SetName(name))
         return false;
 
     META_CHECK_ARG_NOT_NULL(m_mtl_command_queue);
@@ -74,7 +74,7 @@ const IContextMT& CommandQueueMT::GetContextMT() const noexcept
 const RenderContextMT& CommandQueueMT::GetRenderContextMT() const
 {
     META_FUNCTION_TASK();
-    const ContextBase& context = GetContextBase();
+    const Base::Context& context = GetContextBase();
     META_CHECK_ARG_EQUAL_DESCR(context.GetType(), ContextType::Render, "incompatible context type");
     return static_cast<const RenderContextMT&>(context);
 }

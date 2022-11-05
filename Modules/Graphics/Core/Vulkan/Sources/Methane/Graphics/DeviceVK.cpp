@@ -439,7 +439,7 @@ DeviceFeatures DeviceVK::GetSupportedFeatures(const vk::PhysicalDevice& vk_physi
 }
 
 DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities)
-    : DeviceBase(vk_physical_device.getProperties().deviceName,
+    : Base::Device(vk_physical_device.getProperties().deviceName,
                  IsSoftwarePhysicalDevice(vk_physical_device),
                  capabilities)
     , m_vk_physical_device(vk_physical_device)
@@ -513,7 +513,7 @@ DeviceVK::DeviceVK(const vk::PhysicalDevice& vk_physical_device, const vk::Surfa
 bool DeviceVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!DeviceBase::SetName(name))
+    if (!Base::Device::SetName(name))
         return false;
 
     SetVulkanObjectName(m_vk_unique_device.get(), m_vk_unique_device.get(), name.c_str());

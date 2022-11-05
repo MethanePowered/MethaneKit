@@ -34,11 +34,11 @@ namespace Methane::Graphics
 Ptr<IParallelRenderCommandList> IParallelRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ParallelRenderCommandListMT>(static_cast<CommandQueueBase&>(command_queue), static_cast<RenderPassBase&>(render_pass));
+    return std::make_shared<ParallelRenderCommandListMT>(static_cast<Base::CommandQueue&>(command_queue), static_cast<Base::RenderPass&>(render_pass));
 }
 
-ParallelRenderCommandListMT::ParallelRenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass)
-    : CommandListMT<id<MTLParallelRenderCommandEncoder>, ParallelRenderCommandListBase>(true, command_queue, render_pass)
+ParallelRenderCommandListMT::ParallelRenderCommandListMT(Base::CommandQueue& command_queue, Base::RenderPass& render_pass)
+    : CommandListMT<id<MTLParallelRenderCommandEncoder>, Base::ParallelRenderCommandList>(true, command_queue, render_pass)
 {
     META_FUNCTION_TASK();
 }
@@ -47,7 +47,7 @@ void ParallelRenderCommandListMT::Reset(IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetCommandEncoder();
-    ParallelRenderCommandListBase::Reset(p_debug_group);
+    Base::ParallelRenderCommandList::Reset(p_debug_group);
 }
 
 void ParallelRenderCommandListMT::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
@@ -57,7 +57,7 @@ void ParallelRenderCommandListMT::ResetWithState(IRenderState& render_state, IDe
     {
         static_cast<RenderStateMT&>(render_state).InitializeNativeStates();
     }
-    ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
+    Base::ParallelRenderCommandList::ResetWithState(render_state, p_debug_group);
 }
 
 bool ParallelRenderCommandListMT::ResetCommandEncoder()

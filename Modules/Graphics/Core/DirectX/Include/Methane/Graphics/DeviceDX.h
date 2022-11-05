@@ -23,7 +23,7 @@ DirectX 12 implementation of the device interface.
 
 #pragma once
 
-#include <Methane/Graphics/DeviceBase.h>
+#include <Methane/Graphics/Base/Device.h>
 
 #include <wrl.h>
 #include <dxgi1_6.h>
@@ -40,7 +40,7 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class DeviceDX final : public DeviceBase
+class DeviceDX final : public Base::Device
 {
 public:
     static DeviceFeatures GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
@@ -64,7 +64,7 @@ private:
 };
 
 class SystemDX final // NOSONAR - custom destructor is required
-    : public SystemBase
+    : public Base::System
 {
 public:
     [[nodiscard]] static SystemDX& Get() { return static_cast<SystemDX&>(ISystem::Get()); }

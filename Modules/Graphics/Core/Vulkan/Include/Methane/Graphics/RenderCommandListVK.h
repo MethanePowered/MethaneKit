@@ -25,7 +25,7 @@ Vulkan implementation of the render command list interface.
 
 #include "CommandListVK.hpp"
 
-#include <Methane/Graphics/RenderCommandListBase.h>
+#include <Methane/Graphics/Base/RenderCommandList.h>
 #include <Methane/Data/Receiver.hpp>
 
 #include <vulkan/vulkan.hpp>
@@ -39,7 +39,7 @@ class RenderPassVK;
 class ParallelRenderCommandListVK;
 
 class RenderCommandListVK final // NOSONAR - inheritance hierarchy is greater than 5
-    : public CommandListVK<RenderCommandListBase, vk::PipelineBindPoint::eGraphics, 2U, ICommandListVK::CommandBufferType::SecondaryRenderPass>
+    : public CommandListVK<Base::RenderCommandList, vk::PipelineBindPoint::eGraphics, 2U, ICommandListVK::CommandBufferType::SecondaryRenderPass>
     , private Data::Receiver<IRenderPassCallback>
 {
 public:

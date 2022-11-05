@@ -34,14 +34,14 @@ using NativeTextures      = ProgramArgumentBindingMT::NativeTextures;
 using NativeSamplerStates = ProgramArgumentBindingMT::NativeSamplerStates;
 using NativeOffsets       = ProgramArgumentBindingMT::NativeOffsets;
 
-Ptr<ProgramArgumentBindingBase> ProgramArgumentBindingBase::CreateCopy(const ProgramArgumentBindingBase& other_argument_binding)
+Ptr<Base::ProgramArgumentBinding> Base::ProgramArgumentBinding::CreateCopy(const Base::ProgramArgumentBinding& other_argument_binding)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ProgramArgumentBindingMT>(static_cast<const ProgramArgumentBindingMT&>(other_argument_binding));
 }
 
-ProgramArgumentBindingMT::ProgramArgumentBindingMT(const ContextBase& context, const SettingsMT& settings)
-    : ProgramArgumentBindingBase(context, settings)
+ProgramArgumentBindingMT::ProgramArgumentBindingMT(const Base::Context& context, const SettingsMT& settings)
+    : Base::ProgramArgumentBinding(context, settings)
     , m_settings_mt(settings)
 {
     META_FUNCTION_TASK();
@@ -50,7 +50,7 @@ ProgramArgumentBindingMT::ProgramArgumentBindingMT(const ContextBase& context, c
 bool ProgramArgumentBindingMT::SetResourceViews(const IResource::Views& resource_views)
 {
     META_FUNCTION_TASK();
-    if (!ProgramArgumentBindingBase::SetResourceViews(resource_views))
+    if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
         return false;
 
     m_mtl_sampler_states.clear();

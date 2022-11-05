@@ -25,8 +25,8 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps.
 #include <Methane/Graphics/DeviceDX.h>
 #include <Methane/Graphics/ContextDX.h>
 
-#include <Methane/Graphics/ResourceBase.h>
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Resource.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Data/RangeUtils.hpp>
 #include <Methane/Instrumentation.h>
@@ -62,13 +62,13 @@ DescriptorHeapReservationDX::DescriptorHeapReservationDX(const Ref<DescriptorHea
     META_FUNCTION_TASK();
 }
 
-DescriptorHeapDX::DescriptorHeapDX(const ContextBase& context, const Settings& settings)
+DescriptorHeapDX::DescriptorHeapDX(const Base::Context& context, const Settings& settings)
     : m_context(context)
     , m_dx_context(dynamic_cast<const IContextDX&>(context))
     , m_settings(settings)
     , m_deferred_size(settings.size)
     , m_descriptor_heap_type(GetNativeHeapType(settings.type))
-    , m_descriptor_size(GetContextDX().GetDeviceDX().GetNativeDevice()->GetDescriptorHandleIncrementSize(m_descriptor_heap_type))
+    , m_descriptor_size(m_dx_context.GetDeviceDX().GetNativeDevice()->GetDescriptorHandleIncrementSize(m_descriptor_heap_type))
 {
     META_FUNCTION_TASK();
     if (m_deferred_size > 0)
@@ -92,7 +92,7 @@ DescriptorHeapDX::~DescriptorHeapDX()
            m_free_ranges == RangeSet({ { 0, m_deferred_size } }));
 }
 
-Data::Index DescriptorHeapDX::AddResource(const ResourceBase& resource)
+Data::Index DescriptorHeapDX::AddResource(const Base::Resource& resource)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_modification_mutex);
@@ -117,7 +117,7 @@ Data::Index DescriptorHeapDX::AddResource(const ResourceBase& resource)
     return static_cast<int32_t>(resource_index);
 }
 
-Data::Index DescriptorHeapDX::ReplaceResource(const ResourceBase& resource, Data::Index at_index)
+Data::Index DescriptorHeapDX::ReplaceResource(const Base::Resource& resource, Data::Index at_index)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_modification_mutex);
@@ -190,7 +190,7 @@ void DescriptorHeapDX::Allocate()
     if (allocated_size == deferred_size)
         return;
 
-    const wrl::ComPtr<ID3D12Device>&  cp_device = GetContextDX().GetDeviceDX().GetNativeDevice();
+    const wrl::ComPtr<ID3D12Device>&  cp_device = m_dx_context.GetDeviceDX().GetNativeDevice();
     META_CHECK_ARG_NOT_NULL(cp_device);
 
     const bool is_shader_visible_heap = GetSettings().shader_visible;
@@ -219,12 +219,6 @@ void DescriptorHeapDX::Allocate()
 
     m_allocated_size = m_deferred_size;
     Emit(&IDescriptorHeapCallback::OnDescriptorHeapAllocated, std::ref(*this));
-}
-
-const IContextDX& DescriptorHeapDX::GetContextDX() const noexcept
-{
-    META_FUNCTION_TASK();
-    return m_dx_context;
 }
 
 } // namespace Methane::Graphics

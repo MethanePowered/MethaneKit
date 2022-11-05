@@ -23,7 +23,7 @@ DirectX 12 implementation of the render state interface.
 
 #pragma once
 
-#include <Methane/Graphics/RenderStateBase.h>
+#include <Methane/Graphics/Base/RenderState.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>
@@ -34,11 +34,11 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class RenderCommandListBase;
+class Base::RenderCommandList;
 class RenderContextDX;
 class ProgramDX;
 
-class ViewStateDX final : public ViewStateBase
+class ViewStateDX final : public Base::ViewState
 {
 public:
     explicit ViewStateDX(const Settings& settings);
@@ -48,24 +48,24 @@ public:
     bool SetViewports(const Viewports& viewports) override;
     bool SetScissorRects(const ScissorRects& scissor_rects) override;
 
-    // ViewStateBase interface
-    void Apply(RenderCommandListBase& command_list) override;
+    // Base::ViewState interface
+    void Apply(Base::RenderCommandList& command_list) override;
 
 private:
     std::vector<CD3DX12_VIEWPORT> m_dx_viewports;
     std::vector<CD3DX12_RECT>     m_dx_scissor_rects;
 };
 
-class RenderStateDX final : public RenderStateBase
+class RenderStateDX final : public Base::RenderState
 {
 public:
-    RenderStateDX(const RenderContextBase& context, const Settings& settings);
+    RenderStateDX(const Base::RenderContext& context, const Settings& settings);
 
     // IRenderState interface
     void Reset(const Settings& settings) override;
 
-    // RenderStateBase interface
-    void Apply(RenderCommandListBase& command_list, Groups state_groups) override;
+    // Base::RenderState interface
+    void Apply(Base::RenderCommandList& command_list, Groups state_groups) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;

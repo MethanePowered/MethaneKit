@@ -23,7 +23,7 @@ Vulkan implementation of the command queue interface.
 
 #pragma once
 
-#include <Methane/Graphics/CommandQueueTrackingBase.h>
+#include <Methane/Graphics/Base/CommandQueueTracking.h>
 
 #include <Tracy.hpp>
 #include <vulkan/vulkan.hpp>
@@ -39,7 +39,7 @@ class QueueFamilyReservationVK;
 struct IContextVK;
 
 class CommandQueueVK final // NOSONAR - custom destructor is required
-    : public CommandQueueTrackingBase
+    : public Base::CommandQueueTracking
 {
 public:
     struct WaitInfo
@@ -49,7 +49,7 @@ public:
         std::vector<uint64_t>               wait_values;
     };
 
-    CommandQueueVK(const ContextBase& context, CommandListType command_lists_type);
+    CommandQueueVK(const Base::Context& context, CommandListType command_lists_type);
     ~CommandQueueVK() override;
 
     // ICommandQueue interface
@@ -78,14 +78,14 @@ public:
     vk::AccessFlags        GetNativeSupportedAccessFlags() const noexcept   { return m_vk_supported_access_flags; }
 
 protected:
-    // CommandQueueTrackingBase override
-    void CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set) override;
+    // Base::CommandQueueTracking override
+    void CompleteCommandListSetExecution(Base::CommandListSet& executing_command_list_set) override;
 
 private:
-    CommandQueueVK(const ContextBase& context, CommandListType command_lists_type, const DeviceVK& device);
-    CommandQueueVK(const ContextBase& context, CommandListType command_lists_type, const DeviceVK& device,
+    CommandQueueVK(const Base::Context& context, CommandListType command_lists_type, const DeviceVK& device);
+    CommandQueueVK(const Base::Context& context, CommandListType command_lists_type, const DeviceVK& device,
                    const QueueFamilyReservationVK& family_reservation);
-    CommandQueueVK(const ContextBase& context, CommandListType command_lists_type, const DeviceVK& device,
+    CommandQueueVK(const Base::Context& context, CommandListType command_lists_type, const DeviceVK& device,
                    const QueueFamilyReservationVK& family_reservation, const vk::QueueFamilyProperties& family_properties);
 
     void Reset();

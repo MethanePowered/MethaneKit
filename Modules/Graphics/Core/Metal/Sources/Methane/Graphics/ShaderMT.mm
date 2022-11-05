@@ -28,7 +28,7 @@ Metal implementation of the shader interface.
 #include <Methane/Graphics/ContextMT.h>
 #include <Methane/Graphics/TypesMT.hh>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -39,7 +39,7 @@ Metal implementation of the shader interface.
 namespace Methane::Graphics
 {
 
-using StepType = ProgramBase::InputBufferLayout::StepType;
+using StepType = Base::Program::InputBufferLayout::StepType;
 
 [[nodiscard]]
 static MTLVertexStepFunction GetVertexStepFunction(StepType step_type)
@@ -101,11 +101,11 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
 Ptr<IShader> IShader::Create(ShaderType shader_type, const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ShaderMT>(shader_type, dynamic_cast<const ContextBase&>(context), settings);
+    return std::make_shared<ShaderMT>(shader_type, dynamic_cast<const Base::Context&>(context), settings);
 }
 
-ShaderMT::ShaderMT(ShaderType shader_type, const ContextBase& context, const Settings& settings)
-    : ShaderBase(shader_type, context, settings)
+ShaderMT::ShaderMT(ShaderType shader_type, const Base::Context& context, const Settings& settings)
+    : Base::Shader(shader_type, context, settings)
     , m_mtl_function([dynamic_cast<const IContextMT&>(context).GetLibraryMT(settings.entry_function.file_name)->GetNativeLibrary()
                          newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
 {
@@ -113,7 +113,7 @@ ShaderMT::ShaderMT(ShaderType shader_type, const ContextBase& context, const Set
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_function, "failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName());
 }
 
-ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const
+Base::Shader::ArgumentBindings ShaderMT::GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     ArgumentBindings argument_bindings;
@@ -136,7 +136,7 @@ ShaderBase::ArgumentBindings ShaderMT::GetArgumentBindings(const ProgramArgument
             continue;
         }
         
-        const IProgram::Argument shader_argument(GetType(), ShaderBase::GetCachedArgName(argument_name));
+        const IProgram::Argument shader_argument(GetType(), Base::Shader::GetCachedArgName(argument_name));
         const auto argument_desc_it = IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
         const ProgramArgumentAccessor argument_desc = argument_desc_it == argument_accessors.end()
                                                     ? ProgramArgumentAccessor(shader_argument)
@@ -206,11 +206,11 @@ MTLVertexDescriptor* ShaderMT::GetNativeVertexDescriptor(const ProgramMT& progra
         attrib_byte_offset += attrib_size;
     }
     
-    const ProgramBase::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
+    const Base::Program::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
     META_CHECK_ARG_EQUAL(input_buffer_byte_offsets.size(), input_buffer_layouts.size());
     for(uint32_t buffer_index = 0; buffer_index < input_buffer_layouts.size(); ++buffer_index)
     {
-        const ProgramBase::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];
+        const Base::Program::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];
         MTLVertexBufferLayoutDescriptor* layout_desc = mtl_vertex_desc.layouts[buffer_index];
         layout_desc.stride       = input_buffer_byte_offsets[buffer_index];
         layout_desc.stepRate     = input_buffer_layout.step_rate;

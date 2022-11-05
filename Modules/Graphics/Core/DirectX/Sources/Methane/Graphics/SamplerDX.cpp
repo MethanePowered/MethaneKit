@@ -25,7 +25,7 @@ DirectX 12 implementation of the sampler interface.
 #include <Methane/Graphics/DeviceDX.h>
 #include <Methane/Graphics/TypesDX.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -207,10 +207,10 @@ static void ConvertBorderColorToDXColor(ISampler::BorderColor border_color, FLOA
 Ptr<ISampler> ISampler::Create(const IContext& context, const ISampler::Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<SamplerDX>(dynamic_cast<const ContextBase&>(context), settings);
+    return std::make_shared<SamplerDX>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-SamplerDX::SamplerDX(const ContextBase& context, const Settings& settings)
+SamplerDX::SamplerDX(const Base::Context& context, const Settings& settings)
     : ResourceDX(context, settings)
 {
     META_FUNCTION_TASK();

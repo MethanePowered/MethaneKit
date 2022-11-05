@@ -23,7 +23,7 @@ Metal implementation of the render pass interface.
 
 #pragma once
 
-#include <Methane/Graphics/RenderPassBase.h>
+#include <Methane/Graphics/Base/RenderPass.h>
 
 #import <Metal/Metal.h>
 
@@ -32,10 +32,10 @@ namespace Methane::Graphics
 
 struct IContextMT;
 
-class RenderPassMT final : public RenderPassBase
+class RenderPassMT final : public Base::RenderPass
 {
 public:
-    RenderPassMT(RenderPatternBase& render_pattern, const Settings& settings);
+    RenderPassMT(Base::RenderPattern& render_pattern, const Settings& settings);
 
     // IRenderPass interface
     bool Update(const Settings& settings) override;

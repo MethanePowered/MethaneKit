@@ -23,7 +23,7 @@ Metal implementation of the program interface.
 
 #pragma once
 
-#include <Methane/Graphics/ProgramBase.h>
+#include <Methane/Graphics/Base/Program.h>
 
 #import <Metal/Metal.h>
 
@@ -33,10 +33,10 @@ namespace Methane::Graphics
 struct IContextMT;
 class ShaderMT;
 
-class ProgramMT final : public ProgramBase
+class ProgramMT final : public Base::Program
 {
 public:
-    ProgramMT(const ContextBase& context, const Settings& settings);
+    ProgramMT(const Base::Context& context, const Settings& settings);
 
     ShaderMT& GetShaderMT(ShaderType shader_type) noexcept;
     

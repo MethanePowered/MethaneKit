@@ -25,7 +25,7 @@ Vulkan implementation of the sampler interface.
 #include <Methane/Graphics/ContextVK.h>
 #include <Methane/Graphics/TypesVK.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
@@ -92,10 +92,10 @@ static bool IsAnisotropicFilteringSupported(const IContext& context) noexcept
 Ptr<ISampler> ISampler::Create(const IContext& context, const ISampler::Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<SamplerVK>(dynamic_cast<const ContextBase&>(context), settings);
+    return std::make_shared<SamplerVK>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-SamplerVK::SamplerVK(const ContextBase& context, const Settings& settings)
+SamplerVK::SamplerVK(const Base::Context& context, const Settings& settings)
     : ResourceVK(context, settings, {})
     , m_vk_unique_sampler(GetNativeDevice().createSamplerUnique(
         vk::SamplerCreateInfo(

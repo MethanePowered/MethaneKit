@@ -26,7 +26,7 @@ DirectX 12 implementation of the render pass interface.
 #include "DescriptorHeapDX.h"
 #include "ResourceDX.h"
 
-#include <Methane/Graphics/RenderPassBase.h>
+#include <Methane/Graphics/Base/RenderPass.h>
 #include <Methane/Data/Receiver.hpp>
 
 #include <directx/d3d12.h>
@@ -41,19 +41,19 @@ class RenderCommandListDX;
 class RenderContextDX;
 
 class RenderPassDX final
-    : public RenderPassBase
+    : public Base::RenderPass
     , private Data::Receiver<IDescriptorHeapCallback> //NOSONAR
 {
 public:
-    RenderPassDX(RenderPatternBase& render_pattern, const Settings& settings);
+    RenderPassDX(Base::RenderPattern& render_pattern, const Settings& settings);
 
     // IRenderPass interface
     bool Update(const Settings& settings) override;
     void ReleaseAttachmentTextures() override;
 
-    // RenderPassBase interface
-    void Begin(RenderCommandListBase& command_list) override;
-    void End(RenderCommandListBase& command_list) override;
+    // Base::RenderPass interface
+    void Begin(Base::RenderCommandList& command_list) override;
+    void End(Base::RenderCommandList& command_list) override;
 
     // Allows to disable native D3D12 render-pass feature usage,
     // but enabling does not guarantee that it will be used (it depends on OS version and API availability)

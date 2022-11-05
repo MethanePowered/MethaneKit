@@ -28,7 +28,7 @@ Vulkan implementation of the shader interface.
 #include <Methane/Graphics/ProgramBindingsVK.h>
 
 #include <Methane/Data/IProvider.h>
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 
 #include <spirv_cross.hpp>
@@ -152,7 +152,7 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
                                                 const vk::DescriptorType vk_descriptor_type,
                                                 const ProgramArgumentAccessors& argument_accessors,
                                                 const ShaderVK& shader,
-                                                ShaderBase::ArgumentBindings& argument_bindings)
+                                                Base::Shader::ArgumentBindings& argument_bindings)
 {
     META_FUNCTION_TASK();
     if (spirv_resources.begin() == spirv_resources.end())
@@ -201,18 +201,18 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
 Ptr<IShader> IShader::Create(ShaderType shader_type, const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ShaderVK>(shader_type, dynamic_cast<const ContextBase&>(context), settings);
+    return std::make_shared<ShaderVK>(shader_type, dynamic_cast<const Base::Context&>(context), settings);
 }
 
-ShaderVK::ShaderVK(ShaderType shader_type, const ContextBase& context, const Settings& settings)
-    : ShaderBase(shader_type, context, settings)
+ShaderVK::ShaderVK(ShaderType shader_type, const Base::Context& context, const Settings& settings)
+    : Base::Shader(shader_type, context, settings)
     , m_vk_context(dynamic_cast<const IContextVK&>(context))
     , m_byte_code_chunk(settings.data_provider.GetData(fmt::format("{}.spirv", GetCompiledEntryFunctionName(settings))))
 {
     META_FUNCTION_TASK();
 }
 
-ShaderBase::ArgumentBindings ShaderVK::GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const
+Base::Shader::ArgumentBindings ShaderVK::GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     const IShader::Settings& shader_settings = GetSettings();
@@ -317,7 +317,7 @@ void ShaderVK::InitializeVertexInputDescriptions(const ProgramVK& program)
     META_CHECK_ARG_FALSE_DESCR(m_vertex_input_initialized, "vertex input descriptions are already initialized");
 
     const IShader::Settings              & shader_settings      = GetSettings();
-    const ProgramBase::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
+    const Base::Program::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
     m_vertex_input_binding_descriptions.reserve(input_buffer_layouts.size());
 
     uint32_t input_buffer_index = 0U;

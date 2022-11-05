@@ -40,7 +40,7 @@ Ptr<IParallelRenderCommandList> IParallelRenderCommandList::Create(ICommandQueue
 }
 
 ParallelRenderCommandListVK::ParallelRenderCommandListVK(CommandQueueVK& command_queue, RenderPassVK& render_pass)
-    : ParallelRenderCommandListBase(command_queue, render_pass)
+    : Base::ParallelRenderCommandList(command_queue, render_pass)
     , m_beginning_command_list(*this, true)
     , m_vk_ending_inheritance_info(render_pass.GetPatternVK().GetNativeRenderPass(), 0U, render_pass.GetNativeFrameBuffer())
     , m_ending_command_list(vk::CommandBufferLevel::eSecondary, // Ending command list creates Primary command buffer with Secondary level
@@ -53,7 +53,7 @@ ParallelRenderCommandListVK::ParallelRenderCommandListVK(CommandQueueVK& command
 bool ParallelRenderCommandListVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!ParallelRenderCommandListBase::SetName(name))
+    if (!Base::ParallelRenderCommandList::SetName(name))
         return false;
 
     m_beginning_command_list.SetName(name);
@@ -75,7 +75,7 @@ void ParallelRenderCommandListVK::Reset(IDebugGroup* p_debug_group)
         m_ending_command_list.PushOpenDebugGroup(*p_debug_group);
     }
 
-    ParallelRenderCommandListBase::Reset(p_debug_group);
+    Base::ParallelRenderCommandList::Reset(p_debug_group);
 }
 
 void ParallelRenderCommandListVK::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
@@ -93,7 +93,7 @@ void ParallelRenderCommandListVK::ResetWithState(IRenderState& render_state, IDe
         m_ending_command_list.PushOpenDebugGroup(*p_debug_group);
     }
 
-    ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
+    Base::ParallelRenderCommandList::ResetWithState(render_state, p_debug_group);
 }
 
 void ParallelRenderCommandListVK::SetBeginningResourceBarriers(const IResourceBarriers& resource_barriers)
@@ -113,7 +113,7 @@ void ParallelRenderCommandListVK::SetEndingResourceBarriers(const IResourceBarri
 void ParallelRenderCommandListVK::SetParallelCommandListsCount(uint32_t count)
 {
     META_FUNCTION_TASK();
-    ParallelRenderCommandListBase::SetParallelCommandListsCount(count);
+    Base::ParallelRenderCommandList::SetParallelCommandListsCount(count);
 
     m_vk_parallel_sync_cmd_buffers.clear();
     m_vk_parallel_pass_cmd_buffers.clear();
@@ -134,7 +134,7 @@ void ParallelRenderCommandListVK::Commit()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE(IsCommitted());
-    ParallelRenderCommandListBase::Commit();
+    Base::ParallelRenderCommandList::Commit();
 
     const vk::CommandBuffer& vk_beginning_primary_cmd_buffer = m_beginning_command_list.GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
     vk_beginning_primary_cmd_buffer.executeCommands(m_vk_parallel_sync_cmd_buffers);
@@ -160,7 +160,7 @@ void ParallelRenderCommandListVK::Execute(const CompletedCallback& completed_cal
 {
     META_FUNCTION_TASK();
     m_beginning_command_list.Execute();
-    ParallelRenderCommandListBase::Execute(completed_callback);
+    Base::ParallelRenderCommandList::Execute(completed_callback);
     if (m_ending_command_list.GetState() == CommandListState::Committed)
         m_ending_command_list.Execute();
 }
@@ -169,7 +169,7 @@ void ParallelRenderCommandListVK::Complete()
 {
     META_FUNCTION_TASK();
     m_beginning_command_list.Complete();
-    ParallelRenderCommandListBase::Complete();
+    Base::ParallelRenderCommandList::Complete();
     if (m_ending_command_list.GetState() == CommandListState::Executing)
         m_ending_command_list.Complete();
 }

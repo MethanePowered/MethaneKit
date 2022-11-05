@@ -25,7 +25,7 @@ DirectX 12 command list accessor interface for template class CommandListDX<Comm
 
 #include "FenceDX.h"
 
-#include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Graphics/Base/CommandList.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>
@@ -41,7 +41,7 @@ class CommandQueueDX;
 
 struct ICommandListDX
 {
-    class DebugGroupDX final : public CommandListBase::DebugGroupBase
+    class DebugGroupDX final : public Base::CommandList::DebugGroup
     {
     public:
         explicit DebugGroupDX(const std::string& name);
@@ -60,12 +60,12 @@ struct ICommandListDX
     virtual ~ICommandListDX() = default;
 };
 
-class CommandListSetDX final : public CommandListSetBase
+class CommandListSetDX final : public Base::CommandListSet
 {
 public:
     explicit CommandListSetDX(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
-    // CommandListSetBase interface
+    // Base::CommandListSet interface
     void Execute(const ICommandList::CompletedCallback& completed_callback) override;
     void WaitUntilCompleted() override;
 

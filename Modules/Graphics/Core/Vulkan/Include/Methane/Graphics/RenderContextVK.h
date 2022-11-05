@@ -25,7 +25,7 @@ Vulkan implementation of the render context interface.
 
 #include "ContextVK.hpp"
 
-#include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Graphics/Base/RenderContext.h>
 #include <Methane/Platform/AppEnvironment.h>
 #include <Methane/Data/Emitter.hpp>
 
@@ -52,7 +52,7 @@ struct IRenderContextVKCallback
 };
 
 class RenderContextVK final // NOSONAR - this class requires destructor
-    : public ContextVK<RenderContextBase>
+    : public ContextVK<Base::RenderContext>
     , public Data::Emitter<IRenderContextVKCallback>
 {
 public:
@@ -71,11 +71,11 @@ public:
     bool     SetFrameBuffersCount(uint32_t frame_buffers_count) override;
     Platform::AppView GetAppView() const override { return { }; }
 
-    // ContextBase overrides
-    void Initialize(DeviceBase& device, bool is_callback_emitted = true) override;
+    // Base::Context overrides
+    void Initialize(Base::Device& device, bool is_callback_emitted = true) override;
     void Release() override;
 
-    // ObjectBase overrides
+    // Base::Object overrides
     bool SetName(const std::string& name) override;
 
     const vk::SurfaceKHR&   GetNativeSurface() const noexcept     { return m_vk_unique_surface.get(); }
@@ -87,7 +87,7 @@ public:
     const vk::Semaphore&    GetNativeFrameImageAvailableSemaphore() const;
 
 protected:
-    // RenderContextBase overrides
+    // Base::RenderContext overrides
     uint32_t GetNextFrameBufferIndex() override;
 
 private:

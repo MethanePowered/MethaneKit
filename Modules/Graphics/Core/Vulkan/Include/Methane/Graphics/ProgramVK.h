@@ -26,7 +26,7 @@ Vulkan implementation of the program interface.
 #include "ShaderVK.h"
 #include "ProgramBindingsVK.h"
 
-#include <Methane/Graphics/ProgramBase.h>
+#include <Methane/Graphics/Base/Program.h>
 
 #include <magic_enum.hpp>
 #include <vulkan/vulkan.hpp>
@@ -39,7 +39,7 @@ namespace Methane::Graphics
 struct IContextVK;
 
 class ProgramVK final
-    : public ProgramBase
+    : public Base::Program
 {
 public:
     using ByteCodeMap = ProgramArgumentBindingSettingsVK::ByteCodeMap;
@@ -54,9 +54,9 @@ public:
         std::vector<ByteCodeMaps>                   byte_code_maps_for_arguments; // related bytecode maps for each binding/argument
     };
 
-    ProgramVK(const ContextBase& context, const Settings& settings);
+    ProgramVK(const Base::Context& context, const Settings& settings);
 
-    // ObjectBase overrides
+    // Base::Object overrides
     bool SetName(const std::string& name) override;
 
     ShaderVK& GetShaderVK(ShaderType shader_type) const;

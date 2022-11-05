@@ -26,17 +26,17 @@ DirectX 12 implementation of the render command list interface.
 #include "RenderPassDX.h"
 #include "RenderCommandListDX.h"
 
-#include <Methane/Graphics/ParallelRenderCommandListBase.h>
+#include <Methane/Graphics/Base/ParallelRenderCommandList.h>
 
 namespace Methane::Graphics
 {
 
 class CommandQueueDX;
 
-class ParallelRenderCommandListDX final : public ParallelRenderCommandListBase
+class ParallelRenderCommandListDX final : public Base::ParallelRenderCommandList
 {
 public:
-    ParallelRenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass);
+    ParallelRenderCommandListDX(Base::CommandQueue& cmd_queue, Base::RenderPass& render_pass);
 
     // IParallelRenderCommandList interface
     void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
@@ -46,7 +46,7 @@ public:
     // ICommandList interface
     void Commit() override;
 
-    // CommandListBase interface
+    // Base::CommandList interface
     void Execute(const CompletedCallback& completed_callback = {}) override;
     void Complete() override;
 

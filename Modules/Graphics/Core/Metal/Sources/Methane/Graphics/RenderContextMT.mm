@@ -45,16 +45,16 @@ namespace Methane::Graphics
 Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
 {
     META_FUNCTION_TASK();
-    DeviceBase& device_base = static_cast<DeviceBase&>(device);
+    Base::Device& device_base = static_cast<Base::Device&>(device);
     Ptr<RenderContextMT> render_context_ptr = std::make_shared<RenderContextMT>(env, device_base, parallel_executor, settings);
     render_context_ptr->Initialize(device_base, true);
     return render_context_ptr;
 }
 
-RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
-    : ContextMT<RenderContextBase>(device, parallel_executor, settings)
+RenderContextMT::RenderContextMT(const Platform::AppEnvironment& env, Base::Device& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
+    : ContextMT<Base::RenderContext>(device, parallel_executor, settings)
     , m_app_view(CreateRenderContextAppView(env, settings))
-    , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:ContextMT<RenderContextBase>::GetDeviceMT().GetNativeDevice()])
+    , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:ContextMT<Base::RenderContext>::GetDeviceMT().GetNativeDevice()])
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     , m_dispatch_semaphore(dispatch_semaphore_create(settings.frame_buffers_count))
 #endif
@@ -94,14 +94,14 @@ void RenderContextMT::Release()
     dispatch_release(m_dispatch_semaphore);
 #endif
 
-    ContextMT<RenderContextBase>::Release();
+    ContextMT<Base::RenderContext>::Release();
 }
 
-void RenderContextMT::Initialize(DeviceBase& device, bool is_callback_emitted)
+void RenderContextMT::Initialize(Base::Device& device, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
 
-    ContextMT<RenderContextBase>::Initialize(device, is_callback_emitted);
+    ContextMT<Base::RenderContext>::Initialize(device, is_callback_emitted);
     
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     m_dispatch_semaphore = dispatch_semaphore_create(GetSettings().frame_buffers_count);
@@ -122,9 +122,9 @@ void RenderContextMT::WaitForGpu(WaitFor wait_for)
     
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     if (wait_for != WaitFor::FramePresented)
-        ContextMT<RenderContextBase>::WaitForGpu(wait_for);
+        ContextMT<Base::RenderContext>::WaitForGpu(wait_for);
 #else
-    ContextMT<RenderContextBase>::WaitForGpu(wait_for);
+    ContextMT<Base::RenderContext>::WaitForGpu(wait_for);
 #endif
     
     if (wait_for == WaitFor::FramePresented)
@@ -141,13 +141,13 @@ void RenderContextMT::WaitForGpu(WaitFor wait_for)
 void RenderContextMT::Resize(const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    ContextMT<RenderContextBase>::Resize(frame_size);
+    ContextMT<Base::RenderContext>::Resize(frame_size);
 }
 
 void RenderContextMT::Present()
 {
     META_FUNCTION_TASK();
-    ContextMT<RenderContextBase>::Present();
+    ContextMT<Base::RenderContext>::Present();
 
     id<MTLCommandBuffer> mtl_cmd_buffer = [GetDefaultCommandQueueMT(CommandListType::Render).GetNativeCommandQueue() commandBuffer];
     mtl_cmd_buffer.label = [NSString stringWithFormat:@"%@ Present Command", GetNsName()];
@@ -162,9 +162,9 @@ void RenderContextMT::Present()
     EndFrameCaptureScope();
 
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
-    ContextMT<RenderContextBase>::OnCpuPresentComplete(false);
+    ContextMT<Base::RenderContext>::OnCpuPresentComplete(false);
 #else
-    ContextMT<RenderContextBase>::OnCpuPresentComplete(true);
+    ContextMT<Base::RenderContext>::OnCpuPresentComplete(true);
 #endif
     
     UpdateFrameBufferIndex();
@@ -173,7 +173,7 @@ void RenderContextMT::Present()
 bool RenderContextMT::SetVSyncEnabled(bool vsync_enabled)
 {
     META_FUNCTION_TASK();
-    if (ContextMT<RenderContextBase>::SetVSyncEnabled(vsync_enabled))
+    if (ContextMT<Base::RenderContext>::SetVSyncEnabled(vsync_enabled))
     {
         m_app_view.vsyncEnabled = vsync_enabled;
         return true;
@@ -185,7 +185,7 @@ bool RenderContextMT::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
     META_FUNCTION_TASK();
     frame_buffers_count = std::min(std::max(2U, frame_buffers_count), 3U); // Metal supports only 2 or 3 drawable buffers
-    if (ContextMT<RenderContextBase>::SetFrameBuffersCount(frame_buffers_count))
+    if (ContextMT<Base::RenderContext>::SetFrameBuffersCount(frame_buffers_count))
     {
         m_app_view.drawableCount = frame_buffers_count;
         return true;

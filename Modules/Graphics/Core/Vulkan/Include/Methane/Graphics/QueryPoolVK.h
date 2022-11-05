@@ -23,7 +23,7 @@ Vulkan GPU query pool implementation.
 
 #pragma once
 
-#include <Methane/Graphics/QueryPoolBase.h>
+#include <Methane/Graphics/Base/QueryPool.h>
 #include <Methane/Memory.hpp>
 
 #include <vulkan/vulkan.hpp>
@@ -37,10 +37,10 @@ class  CommandQueueVK;
 class  QueryPoolVK;
 class  TimestampQueryPoolVK;
 
-class QueryVK : public QueryBase
+class QueryVK : public Base::Query
 {
 public:
-    QueryVK(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range);
+    QueryVK(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range);
 
     // Query overrides
     void Begin() final;
@@ -60,7 +60,7 @@ private:
     size_t                  m_query_results_byte_size;
 };
 
-class QueryPoolVK : public QueryPoolBase
+class QueryPoolVK : public Base::QueryPool
 {
 public:
     QueryPoolVK(CommandQueueVK& command_queue, Type type,
@@ -81,7 +81,7 @@ class TimestampQueryVK final
     , public ITimestampQuery
 {
 public:
-    TimestampQueryVK(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range);
+    TimestampQueryVK(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range);
 
     // TimestampQuery overrides
     void InsertTimestamp() override;
@@ -95,7 +95,7 @@ private:
 
 class TimestampQueryPoolVK final
     : public QueryPoolVK
-    , public TimestampQueryPoolBase
+    , public Base::TimestampQueryPool
 {
 public:
     TimestampQueryPoolVK(CommandQueueVK& command_queue, uint32_t max_timestamps_per_frame);

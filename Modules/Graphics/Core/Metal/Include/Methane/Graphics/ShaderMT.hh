@@ -23,7 +23,7 @@ Metal implementation of the shader interface.
 
 #pragma once
 
-#include <Methane/Graphics/ShaderBase.h>
+#include <Methane/Graphics/Base/Shader.h>
 
 #import <Metal/Metal.h>
 
@@ -33,12 +33,12 @@ namespace Methane::Graphics
 struct IContextMT;
 class ProgramMT;
 
-class ShaderMT final : public ShaderBase
+class ShaderMT final : public Base::Shader
 {
 public:
-    ShaderMT(ShaderType shader_type, const ContextBase& context, const Settings& settings);
+    ShaderMT(ShaderType shader_type, const Base::Context& context, const Settings& settings);
 
-    // ShaderBase interface
+    // Base::Shader interface
     ArgumentBindings GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const final;
     
     id<MTLFunction> GetNativeFunction() noexcept                            { return m_mtl_function; }

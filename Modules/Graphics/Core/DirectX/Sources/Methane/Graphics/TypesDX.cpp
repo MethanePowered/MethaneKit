@@ -83,10 +83,10 @@ DXGI_FORMAT TypeConverterDX::PixelFormatToDxgi(const PixelFormat& pixel_format, 
     {
         switch (format_type)
         {
-        case ResourceFormatType::ResourceBase:  return DXGI_FORMAT_R32_TYPELESS;
-        case ResourceFormatType::ViewRead:      return DXGI_FORMAT_R32_FLOAT;
-        case ResourceFormatType::ViewWrite:     return DXGI_FORMAT_D32_FLOAT;
-        default:                                META_UNEXPECTED_ARG_RETURN(format_type, DXGI_FORMAT_R32_TYPELESS);
+        case ResourceFormatType::Resource:  return DXGI_FORMAT_R32_TYPELESS;
+        case ResourceFormatType::ViewRead:  return DXGI_FORMAT_R32_FLOAT;
+        case ResourceFormatType::ViewWrite: return DXGI_FORMAT_D32_FLOAT;
+        default:                            META_UNEXPECTED_ARG_RETURN(format_type, DXGI_FORMAT_R32_TYPELESS);
         }
     }
 

@@ -28,7 +28,7 @@ DirectX 12 implementation of the command queue interface.
 #include <Methane/Graphics/RenderCommandListDX.h>
 #include <Methane/Graphics/ParallelRenderCommandListDX.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -44,9 +44,9 @@ namespace Methane::Graphics
 Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
 {
     META_FUNCTION_TASK();
-    auto command_queue_ptr =  std::make_shared<CommandQueueDX>(dynamic_cast<const ContextBase&>(context), command_lists_type);
+    auto command_queue_ptr =  std::make_shared<CommandQueueDX>(dynamic_cast<const Base::Context&>(context), command_lists_type);
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    // TimestampQueryPoolBase construction uses command queue and requires it to be fully constructed
+    // Base::TimestampQueryPool construction uses command queue and requires it to be fully constructed
     command_queue_ptr->InitializeTimestampQueryPool();
 #endif
     return command_queue_ptr;
@@ -88,8 +88,8 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const DeviceDX& 
     return cp_command_queue;
 }
 
-CommandQueueDX::CommandQueueDX(const ContextBase& context, CommandListType command_lists_type)
-    : CommandQueueTrackingBase(context, command_lists_type)
+CommandQueueDX::CommandQueueDX(const Base::Context& context, CommandListType command_lists_type)
+    : Base::CommandQueueTracking(context, command_lists_type)
     , m_dx_context(dynamic_cast<const IContextDX&>(context))
     , m_cp_command_queue(CreateNativeCommandQueue(m_dx_context.GetDeviceDX(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
 {
@@ -114,7 +114,7 @@ bool CommandQueueDX::SetName(const std::string& name)
     if (name == GetName())
         return false;
 
-    CommandQueueTrackingBase::SetName(name);
+    Base::CommandQueueTracking::SetName(name);
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
 
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
@@ -128,7 +128,7 @@ bool CommandQueueDX::SetName(const std::string& name)
 void CommandQueueDX::CompleteExecution(const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    CommandQueueTrackingBase::CompleteExecution(frame_index);
+    Base::CommandQueueTracking::CompleteExecution(frame_index);
 
     TracyD3D12Collect(m_tracy_context);
     if (frame_index)

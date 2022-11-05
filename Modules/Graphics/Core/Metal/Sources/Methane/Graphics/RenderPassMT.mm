@@ -56,7 +56,7 @@ static MTLLoadAction GetMTLLoadAction(IRenderPass::Attachment::LoadAction load_a
     }
 }
 
-static void ConvertRenderPassAttachmentToMetal(const RenderPassBase& render_pass, const IRenderPattern::Attachment& attachment, MTLRenderPassAttachmentDescriptor* mtl_attachment_desc)
+static void ConvertRenderPassAttachmentToMetal(const Base::RenderPass& render_pass, const IRenderPattern::Attachment& attachment, MTLRenderPassAttachmentDescriptor* mtl_attachment_desc)
 {
     META_FUNCTION_TASK();
     const ITexture::View& texture_location = render_pass.GetAttachmentTextureView(attachment);
@@ -88,17 +88,17 @@ static void ConvertRenderPassAttachmentToMetal(const RenderPassBase& render_pass
 Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderPatternBase>(dynamic_cast<RenderContextBase&>(render_context), settings);
+    return std::make_shared<Base::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
 }
 
 Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderPassMT>(dynamic_cast<RenderPatternBase&>(render_pattern), settings);
+    return std::make_shared<RenderPassMT>(dynamic_cast<Base::RenderPattern&>(render_pattern), settings);
 }
 
-RenderPassMT::RenderPassMT(RenderPatternBase& render_pattern, const Settings& settings)
-    : RenderPassBase(render_pattern, settings)
+RenderPassMT::RenderPassMT(Base::RenderPattern& render_pattern, const Settings& settings)
+    : Base::RenderPass(render_pattern, settings)
 {
     META_FUNCTION_TASK();
     Reset();
@@ -107,7 +107,7 @@ RenderPassMT::RenderPassMT(RenderPatternBase& render_pattern, const Settings& se
 bool RenderPassMT::Update(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    const bool settings_changed = RenderPassBase::Update(settings);
+    const bool settings_changed = Base::RenderPass::Update(settings);
     Reset();
     Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
     return settings_changed;

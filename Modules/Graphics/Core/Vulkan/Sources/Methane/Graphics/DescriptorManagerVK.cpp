@@ -25,8 +25,8 @@ Vulkan descriptor manager with descriptor sets allocator.
 #include <Methane/Graphics/ContextVK.h>
 #include <Methane/Graphics/DeviceVK.h>
 
-#include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/ProgramBindingsBase.h>
+#include <Methane/Graphics/Base/Context.h>
+#include <Methane/Graphics/Base/ProgramBindings.h>
 #include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Graphics/ICommandList.h>
 #include <Methane/Instrumentation.h>
@@ -34,8 +34,8 @@ Vulkan descriptor manager with descriptor sets allocator.
 namespace Methane::Graphics
 {
 
-DescriptorManagerVK::DescriptorManagerVK(ContextBase& context, uint32_t pool_sets_count, const PoolSizeRatioByDescType& pool_size_ratio_by_desc_type)
-    : DescriptorManagerBase(context, false)
+DescriptorManagerVK::DescriptorManagerVK(Base::Context& context, uint32_t pool_sets_count, const PoolSizeRatioByDescType& pool_size_ratio_by_desc_type)
+    : Base::DescriptorManager(context, false)
     , m_pool_sets_count(pool_sets_count)
     , m_pool_size_ratio_by_desc_type(pool_size_ratio_by_desc_type)
 {
@@ -45,7 +45,7 @@ DescriptorManagerVK::DescriptorManagerVK(ContextBase& context, uint32_t pool_set
 void DescriptorManagerVK::Release()
 {
     META_FUNCTION_TASK();
-    DescriptorManagerBase::Release();
+    Base::DescriptorManager::Release();
 
     std::scoped_lock lock_guard(m_descriptor_pool_mutex);
     const vk::Device& vk_device = GetContextVk().GetDeviceVK().GetNativeDevice();

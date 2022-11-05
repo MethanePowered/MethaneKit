@@ -25,19 +25,19 @@ DirectX 12 implementation of the program argument binding interface.
 #include <Methane/Graphics/DeviceDX.h>
 
 #include <Methane/Graphics/IContext.h>
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 
 namespace Methane::Graphics
 {
 
-Ptr<ProgramArgumentBindingBase> ProgramArgumentBindingBase::CreateCopy(const ProgramArgumentBindingBase& other_argument_binding)
+Ptr<Base::ProgramArgumentBinding> Base::ProgramArgumentBinding::CreateCopy(const Base::ProgramArgumentBinding& other_argument_binding)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ProgramArgumentBindingDX>(static_cast<const ProgramArgumentBindingDX&>(other_argument_binding));
 }
 
-ProgramArgumentBindingDX::ProgramArgumentBindingDX(const ContextBase& context, const SettingsDX& settings)
-    : ProgramArgumentBindingBase(context, settings)
+ProgramArgumentBindingDX::ProgramArgumentBindingDX(const Base::Context& context, const SettingsDX& settings)
+    : Base::ProgramArgumentBinding(context, settings)
     , m_settings_dx(settings)
     , m_cp_native_device(dynamic_cast<const IContextDX&>(context).GetDeviceDX().GetNativeDevice())
 {
@@ -47,7 +47,7 @@ ProgramArgumentBindingDX::ProgramArgumentBindingDX(const ContextBase& context, c
 }
 
 ProgramArgumentBindingDX::ProgramArgumentBindingDX(const ProgramArgumentBindingDX& other)
-    : ProgramArgumentBindingBase(other)
+    : Base::ProgramArgumentBinding(other)
     , m_settings_dx(other.m_settings_dx)
     , m_root_parameter_index(other.m_root_parameter_index)
     , m_descriptor_range(other.m_descriptor_range)
@@ -75,7 +75,7 @@ DescriptorHeapTypeDX ProgramArgumentBindingDX::GetDescriptorHeapType() const
 bool ProgramArgumentBindingDX::SetResourceViews(const IResource::Views& resource_views)
 {
     META_FUNCTION_TASK();
-    if (!ProgramArgumentBindingBase::SetResourceViews(resource_views))
+    if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
         return false;
 
     if (m_settings_dx.type == Type::DescriptorTable)

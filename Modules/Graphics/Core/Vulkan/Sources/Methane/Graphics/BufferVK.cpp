@@ -25,8 +25,8 @@ Vulkan implementation of the buffer interface.
 #include <Methane/Graphics/ContextVK.h>
 
 #include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/BufferFactory.hpp>
+#include <Methane/Graphics/Base/Context.h>
+#include <Methane/Graphics/Base/BufferFactory.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
@@ -86,19 +86,19 @@ static IResource::State GetTargetResourceStateByBufferType(IBuffer::Type buffer_
 Ptr<IBuffer> IBuffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateVertexBuffer<BufferVK>(context, size, stride, is_volatile);
+    return Base::CreateVertexBuffer<BufferVK>(context, size, stride, is_volatile);
 }
 
 Ptr<IBuffer> IBuffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateIndexBuffer<BufferVK>(context, size, format, is_volatile);
+    return Base::CreateIndexBuffer<BufferVK>(context, size, format, is_volatile);
 }
 
 Ptr<IBuffer> IBuffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateConstantBuffer<BufferVK>(context, size, addressable, is_volatile);
+    return Base::CreateConstantBuffer<BufferVK>(context, size, addressable, is_volatile);
 }
 
 Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
@@ -107,7 +107,7 @@ Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
     return size;
 }
 
-BufferVK::BufferVK(const ContextBase& context, const Settings& settings)
+BufferVK::BufferVK(const Base::Context& context, const Settings& settings)
     : ResourceVK(context, settings,
                  dynamic_cast<const IContextVK&>(context).GetDeviceVK().GetNativeDevice().createBufferUnique(
                      vk::BufferCreateInfo(
@@ -219,7 +219,7 @@ Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffe
 }
 
 BufferSetVK::BufferSetVK(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
-    : BufferSetBase(buffers_type, buffer_refs)
+    : Base::BufferSet(buffers_type, buffer_refs)
     , m_vk_buffers(GetVulkanBuffers(buffer_refs))
     , m_vk_offsets(m_vk_buffers.size(), 0U)
 {

@@ -23,7 +23,7 @@ Metal fence implementation.
 
 #pragma once
 
-#include <Methane/Graphics/FenceBase.h>
+#include <Methane/Graphics/Base/Fence.h>
 #include <Methane/Instrumentation.h>
 
 #include <mutex>
@@ -36,10 +36,10 @@ namespace Methane::Graphics
 
 class CommandQueueMT;
 
-class FenceMT final : public FenceBase
+class FenceMT final : public Base::Fence
 {
 public:
-    explicit FenceMT(CommandQueueBase& command_queue);
+    explicit FenceMT(Base::CommandQueue& command_queue);
 
     // IFence overrides
     void Signal() override;

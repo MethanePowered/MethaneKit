@@ -26,7 +26,7 @@ Metal implementation of the transfer command list interface.
 #include "CommandListMT.hpp"
 
 #include <Methane/Graphics/ITransferCommandList.h>
-#include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Graphics/Base/CommandList.h>
 
 #import <Metal/Metal.h>
 
@@ -36,11 +36,11 @@ namespace Methane::Graphics
 class CommandQueueMT;
 
 class TransferCommandListMT final
-    : public CommandListMT<id<MTLBlitCommandEncoder>, CommandListBase>
+    : public CommandListMT<id<MTLBlitCommandEncoder>, Base::CommandList>
     , public ITransferCommandList
 {
 public:
-    TransferCommandListMT(CommandQueueBase& command_queue);
+    TransferCommandListMT(Base::CommandQueue& command_queue);
 
     // ICommandList interface
     void Reset(ICommandListDebugGroup* p_debug_group = nullptr) override;

@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Metal/QueryPoolMT.mm
-Metal stub implementation of the TimestampQueryPoolBase factory function
+Metal stub implementation of the Base::TimestampQueryPool factory function
 
 ******************************************************************************/
 

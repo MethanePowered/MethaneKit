@@ -25,7 +25,7 @@ Metal implementation of the texture interface.
 
 #include "ResourceMT.hh"
 
-#include <Methane/Graphics/TextureBase.h>
+#include <Methane/Graphics/Base/Texture.h>
 #include <Methane/Graphics/Types.h>
 
 #import <Metal/Metal.h>
@@ -36,10 +36,10 @@ namespace Methane::Graphics
 class RenderContextMT;
 class TransferCommandListMT;
 
-class TextureMT final : public ResourceMT<TextureBase>
+class TextureMT final : public ResourceMT<Base::Texture>
 {
 public:
-    TextureMT(const ContextBase& context, const Settings& settings);
+    TextureMT(const Base::Context& context, const Settings& settings);
 
     // IResource interface
     void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) override;

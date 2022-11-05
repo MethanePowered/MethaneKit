@@ -25,7 +25,7 @@ Vulkan implementation of the program argument binding interface.
 
 #include "ResourceVK.h"
 
-#include <Methane/Graphics/ProgramBindingsBase.h>
+#include <Methane/Graphics/Base/ProgramBindings.h>
 
 #include <vulkan/vulkan.hpp>
 
@@ -49,13 +49,13 @@ struct ProgramArgumentBindingSettingsVK
 };
 
 class ProgramArgumentBindingVK final
-    : public ProgramArgumentBindingBase
+    : public Base::ProgramArgumentBinding
 {
 public:
     using SettingsVK = ProgramArgumentBindingSettingsVK;
     using ByteCodeMap = ProgramArgumentBindingSettingsVK::ByteCodeMap;
 
-    ProgramArgumentBindingVK(const ContextBase& context, const SettingsVK& settings);
+    ProgramArgumentBindingVK(const Base::Context& context, const SettingsVK& settings);
     ProgramArgumentBindingVK(const ProgramArgumentBindingVK& other) = default;
 
     const SettingsVK& GetSettingsVK() const noexcept { return m_settings_vk; }
@@ -63,8 +63,8 @@ public:
     void SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index) noexcept;
     void SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept;
 
-    // ArgumentBindingBase interface
-    void MergeSettings(const ProgramArgumentBindingBase& other) override;
+    // Base::ArgumentBinding interface
+    void MergeSettings(const Base::ProgramArgumentBinding& other) override;
 
     // IArgumentBinding interface
     const Settings& GetSettings() const noexcept override { return m_settings_vk; }

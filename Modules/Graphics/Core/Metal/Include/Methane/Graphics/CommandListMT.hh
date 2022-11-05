@@ -23,14 +23,15 @@ Metal command lists sequence implementation.
 
 #pragma once
 
-#include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Graphics/Base/CommandList.h>
 
 #import <Foundation/NSString.h>
 
 namespace Methane::Graphics
 {
 
-class CommandListDebugGroupMT final : public CommandListBase::DebugGroupBase
+class CommandListDebugGroupMT final
+    : public Base::CommandList::DebugGroup
 {
 public:
     explicit CommandListDebugGroupMT(const std::string& name);
@@ -41,7 +42,8 @@ private:
     NSString* _Nonnull m_ns_name;
 };
 
-class CommandListSetMT final : public CommandListSetBase
+class CommandListSetMT final
+    : public Base::CommandListSet
 {
 public:
     explicit CommandListSetMT(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);

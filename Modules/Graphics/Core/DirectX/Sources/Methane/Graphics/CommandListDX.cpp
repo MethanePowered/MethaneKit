@@ -39,8 +39,8 @@ Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& na
 }
 
 ICommandListDX::DebugGroupDX::DebugGroupDX(const std::string& name)
-    : CommandListBase::DebugGroupBase(name)
-    , m_wide_name(nowide::widen(ObjectBase::GetName()))
+    : Base::CommandList::DebugGroup(name)
+    , m_wide_name(nowide::widen(Base::Object::GetName()))
 {
     META_FUNCTION_TASK();
 }
@@ -52,20 +52,20 @@ Ptr<ICommandListSet> ICommandListSet::Create(const Refs<ICommandList>& command_l
 }
 
 CommandListSetDX::CommandListSetDX(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
-    : CommandListSetBase(command_list_refs, frame_index_opt)
+    : Base::CommandListSet(command_list_refs, frame_index_opt)
     , m_execution_completed_fence(GetCommandQueueBase())
 {
     META_FUNCTION_TASK();
 
-    const Refs<CommandListBase>& base_command_list_refs = GetBaseRefs();
+    const Refs<Base::CommandList>& base_command_list_refs = GetBaseRefs();
 
     std::stringstream fence_name_ss;
     fence_name_ss << "Execution completed for command list set: ";
 
     m_native_command_lists.reserve(base_command_list_refs.size());
-    for(const Ref<CommandListBase>& command_list_ref : base_command_list_refs)
+    for(const Ref<Base::CommandList>& command_list_ref : base_command_list_refs)
     {
-        const CommandListBase& command_list = command_list_ref.get();
+        const Base::CommandList& command_list = command_list_ref.get();
         if (command_list.GetType() == CommandListType::ParallelRender)
         {
             const CommandListSetDX::NativeCommandLists parallel_native_cmd_lists = static_cast<const ParallelRenderCommandListDX&>(command_list).GetNativeCommandLists();
@@ -84,7 +84,7 @@ CommandListSetDX::CommandListSetDX(const Refs<ICommandList>& command_list_refs, 
 void CommandListSetDX::Execute(const ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
-    CommandListSetBase::Execute(completed_callback);
+    Base::CommandListSet::Execute(completed_callback);
     GetCommandQueueDX().GetNativeCommandQueue().ExecuteCommandLists(static_cast<UINT>(m_native_command_lists.size()), m_native_command_lists.data());
     m_execution_completed_fence.Signal();
 }

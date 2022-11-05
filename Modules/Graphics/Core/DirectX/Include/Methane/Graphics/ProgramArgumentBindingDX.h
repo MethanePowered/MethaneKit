@@ -25,7 +25,7 @@ DirectX 12 implementation of the program argument binding interface.
 
 #include "ResourceDX.h"
 
-#include <Methane/Graphics/ProgramArgumentBindingBase.h>
+#include <Methane/Graphics/Base/ProgramArgumentBinding.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>
@@ -49,10 +49,10 @@ struct ProgramArgumentBindingSettingsDX
     uint32_t                     space;
 };
 
-class ContextBase;
+class Base::Context;
 
 class ProgramArgumentBindingDX final  // NOSONAR - custom destructor is required
-    : public ProgramArgumentBindingBase
+    : public Base::ProgramArgumentBinding
 {
 public:
     using Type = ProgramArgumentBindingTypeDX;
@@ -65,7 +65,7 @@ public:
         uint32_t             count     = 0;
     };
 
-    ProgramArgumentBindingDX(const ContextBase& context, const SettingsDX& settings);
+    ProgramArgumentBindingDX(const Base::Context& context, const SettingsDX& settings);
     ProgramArgumentBindingDX(const ProgramArgumentBindingDX& other);
     ProgramArgumentBindingDX(ProgramArgumentBindingDX&&) noexcept = default;
     ~ProgramArgumentBindingDX() override = default;

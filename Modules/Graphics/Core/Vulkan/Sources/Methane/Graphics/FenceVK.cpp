@@ -27,7 +27,7 @@ Vulkan fence implementation.
 #include <Methane/Graphics/DeviceVK.h>
 #include <Methane/Graphics/UtilsVK.hpp>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 
 #include <nowide/convert.hpp>
@@ -49,7 +49,7 @@ Ptr<IFence> IFence::Create(ICommandQueue& command_queue)
 }
 
 FenceVK::FenceVK(CommandQueueVK& command_queue)
-    : FenceBase(command_queue)
+    : Base::Fence(command_queue)
     , m_vk_device(GetCommandQueueVK().GetContextVK().GetDeviceVK().GetNativeDevice())
     , m_vk_unique_semaphore(CreateTimelineSemaphore(m_vk_device, GetValue()))
 {
@@ -61,7 +61,7 @@ void FenceVK::Signal()
     META_FUNCTION_TASK();
     const uint64_t wait_value = GetValue();
 
-    FenceBase::Signal();
+    Base::Fence::Signal();
 
     const uint64_t signal_value = GetValue();
     const vk::TimelineSemaphoreSubmitInfo vk_semaphore_submit_info(wait_value, signal_value);
@@ -74,7 +74,7 @@ void FenceVK::Signal()
 void FenceVK::WaitOnCpu()
 {
     META_FUNCTION_TASK();
-    FenceBase::WaitOnCpu();
+    Base::Fence::WaitOnCpu();
 
     const uint64_t wait_value = GetValue();
     const uint64_t curr_value = m_vk_device.getSemaphoreCounterValueKHR(GetNativeSemaphore());
@@ -93,7 +93,7 @@ void FenceVK::WaitOnCpu()
 void FenceVK::WaitOnGpu(ICommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
-    FenceBase::WaitOnGpu(wait_on_command_queue);
+    Base::Fence::WaitOnGpu(wait_on_command_queue);
 
     const uint64_t wait_value = GetValue();
     static_cast<CommandQueueVK&>(wait_on_command_queue).WaitForSemaphore(GetNativeSemaphore(), vk::PipelineStageFlagBits::eBottomOfPipe, &wait_value);
@@ -102,7 +102,7 @@ void FenceVK::WaitOnGpu(ICommandQueue& wait_on_command_queue)
 bool FenceVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!FenceBase::SetName(name))
+    if (!Base::Fence::SetName(name))
         return false;
 
     SetVulkanObjectName(m_vk_device, m_vk_unique_semaphore.get(), name.c_str());

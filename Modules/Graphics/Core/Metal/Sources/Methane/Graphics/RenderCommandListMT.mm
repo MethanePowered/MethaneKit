@@ -61,7 +61,7 @@ static bool GetDeviceSupportOfGpuFamilyApple3(CommandQueueMT& command_queue)
 Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderCommandListMT>(dynamic_cast<CommandQueueMT&>(command_queue), static_cast<RenderPassBase&>(render_pass));
+    return std::make_shared<RenderCommandListMT>(dynamic_cast<CommandQueueMT&>(command_queue), static_cast<Base::RenderPass&>(render_pass));
 }
 
 Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& parallel_render_command_list)
@@ -70,21 +70,21 @@ Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& p
     return std::make_shared<RenderCommandListMT>(dynamic_cast<ParallelRenderCommandListMT&>(parallel_render_command_list));
 }
 
-Ptr<IRenderCommandList> RenderCommandListBase::CreateForSynchronization(ICommandQueue&)
+Ptr<IRenderCommandList> Base::RenderCommandList::CreateForSynchronization(ICommandQueue&)
 {
     META_FUNCTION_TASK();
     return nullptr;
 }
 
-RenderCommandListMT::RenderCommandListMT(CommandQueueMT& command_queue, RenderPassBase& render_pass)
-    : CommandListMT<id<MTLRenderCommandEncoder>, RenderCommandListBase>(true, command_queue, render_pass)
+RenderCommandListMT::RenderCommandListMT(CommandQueueMT& command_queue, Base::RenderPass& render_pass)
+    : CommandListMT<id<MTLRenderCommandEncoder>, Base::RenderCommandList>(true, command_queue, render_pass)
     , m_device_supports_gpu_family_apple_3(GetDeviceSupportOfGpuFamilyApple3(command_queue))
 {
     META_FUNCTION_TASK();
 }
 
 RenderCommandListMT::RenderCommandListMT(ParallelRenderCommandListMT& parallel_render_command_list)
-    : CommandListMT<id<MTLRenderCommandEncoder>, RenderCommandListBase>(false, parallel_render_command_list)
+    : CommandListMT<id<MTLRenderCommandEncoder>, Base::RenderCommandList>(false, parallel_render_command_list)
     , m_parallel_render_command_list_ptr(&parallel_render_command_list)
     , m_device_supports_gpu_family_apple_3(GetDeviceSupportOfGpuFamilyApple3(parallel_render_command_list.GetCommandQueueMT()))
 {
@@ -95,14 +95,14 @@ void RenderCommandListMT::Reset(IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetCommandEncoder();
-    RenderCommandListBase::Reset(p_debug_group);
+    Base::RenderCommandList::Reset(p_debug_group);
 }
 
 void RenderCommandListMT::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetCommandEncoder();
-    RenderCommandListBase::ResetWithState(render_state, p_debug_group);
+    Base::RenderCommandList::ResetWithState(render_state, p_debug_group);
 }
 
 void RenderCommandListMT::ResetCommandEncoder()
@@ -131,7 +131,7 @@ void RenderCommandListMT::ResetCommandEncoder()
 bool RenderCommandListMT::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
-    if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))
+    if (!Base::RenderCommandList::SetVertexBuffers(vertex_buffers, set_resource_barriers))
         return false;
 
     const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
@@ -157,7 +157,7 @@ void RenderCommandListMT::DrawIndexed(Primitive primitive, uint32_t index_count,
         index_count = drawing_state.index_buffer_ptr->GetFormattedItemsCount();
     }
 
-    RenderCommandListBase::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
+    Base::RenderCommandList::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
 
     const BufferMT& metal_index_buffer = static_cast<const BufferMT&>(*drawing_state.index_buffer_ptr);
     const MTLPrimitiveType mtl_primitive_type = PrimitiveTypeToMetal(primitive);
@@ -199,7 +199,7 @@ void RenderCommandListMT::Draw(Primitive primitive, uint32_t vertex_count, uint3
                                uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
-    RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
+    Base::RenderCommandList::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
     const MTLPrimitiveType mtl_primitive_type = PrimitiveTypeToMetal(primitive);
 

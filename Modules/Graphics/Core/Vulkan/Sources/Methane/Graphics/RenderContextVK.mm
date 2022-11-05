@@ -30,7 +30,7 @@ namespace Methane::Graphics
 {
 
 RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
-    : ContextVK<RenderContextBase>(device, parallel_executor, settings)
+    : ContextVK<Base::RenderContext>(device, parallel_executor, settings)
     , m_vk_device(device.GetNativeDevice())
     , m_metal_view(CreateRenderContextAppView(app_env, settings))
     , m_vk_unique_surface(PlatformVK::CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(ISystem::Get()).GetNativeInstance(), app_env))

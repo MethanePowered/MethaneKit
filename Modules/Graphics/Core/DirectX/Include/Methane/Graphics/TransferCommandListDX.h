@@ -31,11 +31,11 @@ namespace Methane::Graphics
 {
 
 class TransferCommandListDX final
-    : public CommandListDX<CommandListBase>
+    : public CommandListDX<Base::CommandList>
     , public ITransferCommandList
 {
 public:
-    explicit TransferCommandListDX(CommandQueueBase& cmd_buffer);
+    explicit TransferCommandListDX(Base::CommandQueue& cmd_buffer);
 };
 
 } // namespace Methane::Graphics

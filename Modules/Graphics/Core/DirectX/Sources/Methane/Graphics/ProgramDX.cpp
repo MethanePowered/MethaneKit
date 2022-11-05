@@ -27,7 +27,7 @@ DirectX 12 implementation of the program interface.
 #include <Methane/Graphics/ShaderDX.h>
 #include <Methane/Graphics/RenderCommandListDX.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 
@@ -122,11 +122,11 @@ static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>
 Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramDX>(dynamic_cast<const ContextBase&>(context), settings);
+    return std::make_shared<ProgramDX>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-ProgramDX::ProgramDX(const ContextBase& context, const Settings& settings)
-    : ProgramBase(context, settings)
+ProgramDX::ProgramDX(const Base::Context& context, const Settings& settings)
+    : Base::Program(context, settings)
     , m_dx_context(dynamic_cast<const IContextDX&>(context))
 {
     META_FUNCTION_TASK();
@@ -150,7 +150,7 @@ ProgramDX::~ProgramDX()
 bool ProgramDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!ProgramBase::SetName(name))
+    if (!Base::Program::SetName(name))
         return false;
 
     META_CHECK_ARG_NOT_NULL(m_cp_root_signature);
@@ -166,7 +166,7 @@ void ProgramDX::InitRootSignature()
     std::vector<CD3DX12_DESCRIPTOR_RANGE1> descriptor_ranges;
     std::vector<CD3DX12_ROOT_PARAMETER1>   root_parameters;
 
-    const ProgramBindingsBase::ArgumentBindings& binding_by_argument = GetArgumentBindings();
+    const Base::ProgramBindings::ArgumentBindings& binding_by_argument = GetArgumentBindings();
     descriptor_ranges.reserve(binding_by_argument.size());
     root_parameters.reserve(binding_by_argument.size());
 

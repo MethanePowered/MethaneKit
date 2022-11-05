@@ -28,8 +28,8 @@ DirectX 12 implementation of the render pass interface.
 #include <Methane/Graphics/DeviceDX.h>
 #include <Methane/Graphics/TypesDX.h>
 
-#include <Methane/Graphics/RenderContextBase.h>
-#include <Methane/Graphics/TextureBase.h>
+#include <Methane/Graphics/Base/RenderContext.h>
+#include <Methane/Graphics/Base/Texture.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -186,17 +186,17 @@ static DescriptorHeapDX::Type GetDescriptorHeapTypeByAccess(IRenderPass::Access 
 Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderPatternBase>(dynamic_cast<RenderContextBase&>(render_context), settings);
+    return std::make_shared<Base::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
 }
 
 Ptr<IRenderPass> IRenderPass::Create(Pattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderPassDX>(dynamic_cast<RenderPatternBase&>(render_pattern), settings);
+    return std::make_shared<RenderPassDX>(dynamic_cast<Base::RenderPattern&>(render_pattern), settings);
 }
 
-RenderPassDX::RenderPassDX(RenderPatternBase& render_pattern, const Settings& settings)
-    : RenderPassBase(render_pattern, settings, false)
+RenderPassDX::RenderPassDX(Base::RenderPattern& render_pattern, const Settings& settings)
+    : Base::RenderPass(render_pattern, settings, false)
     , m_dx_context(static_cast<const RenderContextDX&>(render_pattern.GetRenderContextBase()))
 {
     META_FUNCTION_TASK();
@@ -220,7 +220,7 @@ RenderPassDX::RenderPassDX(RenderPatternBase& render_pattern, const Settings& se
 bool RenderPassDX::Update(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    const bool settings_changed = RenderPassBase::Update(settings);
+    const bool settings_changed = Base::RenderPass::Update(settings);
 
     if (settings_changed)
     {
@@ -257,7 +257,7 @@ bool RenderPassDX::Update(const Settings& settings)
 void RenderPassDX::ReleaseAttachmentTextures()
 {
     META_FUNCTION_TASK();
-    RenderPassBase::ReleaseAttachmentTextures();
+    Base::RenderPass::ReleaseAttachmentTextures();
     m_dx_attachments.clear();
 }
 
@@ -285,7 +285,7 @@ void RenderPassDX::UpdateNativeRenderPassDesc(bool settings_changed)
     const Pattern::Settings& pattern_settings = GetPatternBase().GetSettings();
 
     uint32_t color_attachment_index = 0;
-    for (const RenderPassBase::ColorAttachment& color_attachment : pattern_settings.color_attachments)
+    for (const Base::RenderPass::ColorAttachment& color_attachment : pattern_settings.color_attachments)
     {
         if (update_descriptors_only)
         {
@@ -327,9 +327,9 @@ void RenderPassDX::UpdateNativeClearDesc()
 
     m_rt_clear_infos.clear();
     const Pattern::Settings& settings = GetPatternBase().GetSettings();
-    for (const RenderPassBase::ColorAttachment& color_attach : settings.color_attachments)
+    for (const Base::RenderPass::ColorAttachment& color_attach : settings.color_attachments)
     {
-        if (color_attach.load_action != RenderPassBase::Attachment::LoadAction::Clear)
+        if (color_attach.load_action != Base::RenderPass::Attachment::LoadAction::Clear)
             continue;
 
         m_rt_clear_infos.emplace_back(color_attach, *this);
@@ -364,7 +364,7 @@ void RenderPassDX::OnDescriptorHeapAllocated(DescriptorHeapDX&)
     m_native_descriptor_heaps.clear();
 }
 
-void RenderPassDX::Begin(RenderCommandListBase& command_list)
+void RenderPassDX::Begin(Base::RenderCommandList& command_list)
 {
     META_FUNCTION_TASK();
 
@@ -374,7 +374,7 @@ void RenderPassDX::Begin(RenderCommandListBase& command_list)
         m_is_updated = true;
     }
 
-    RenderPassBase::Begin(command_list);
+    Base::RenderPass::Begin(command_list);
     SetAttachmentStates(IResource::State::RenderTarget, IResource::State::DepthWrite, m_begin_transition_barriers_ptr, command_list);
 
     const auto& command_list_dx = static_cast<const RenderCommandListDX&>(command_list);
@@ -416,7 +416,7 @@ void RenderPassDX::Begin(RenderCommandListBase& command_list)
     }
 }
 
-void RenderPassDX::End(RenderCommandListBase& command_list)
+void RenderPassDX::End(Base::RenderCommandList& command_list)
 {
     META_FUNCTION_TASK();
 
@@ -431,7 +431,7 @@ void RenderPassDX::End(RenderCommandListBase& command_list)
     {
         SetAttachmentStates(IResource::State::Present, {}, m_end_transition_barriers_ptr, command_list);
     }
-    RenderPassBase::End(command_list);
+    Base::RenderPass::End(command_list);
 }
 
 void RenderPassDX::SetNativeRenderPassUsage(bool use_native_render_pass)

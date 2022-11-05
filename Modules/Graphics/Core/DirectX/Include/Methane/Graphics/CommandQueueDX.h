@@ -23,7 +23,7 @@ DirectX 12 implementation of the command queue interface.
 
 #pragma once
 
-#include <Methane/Graphics/CommandQueueTrackingBase.h>
+#include <Methane/Graphics/Base/CommandQueueTracking.h>
 
 #pragma warning(push)
 #pragma warning(disable: 4189)
@@ -42,10 +42,10 @@ struct IContextDX;
 class CommandListSetDX;
 
 class CommandQueueDX final // NOSONAR - destructor is needed
-    : public CommandQueueTrackingBase
+    : public Base::CommandQueueTracking
 {
 public:
-    CommandQueueDX(const ContextBase& context, CommandListType command_lists_type);
+    CommandQueueDX(const Base::Context& context, CommandListType command_lists_type);
     ~CommandQueueDX() override;
 
     // ICommandQueue interface
@@ -55,7 +55,7 @@ public:
     bool SetName(const std::string& name) override;
 
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
-    // CommandQueueTrackingBase override
+    // Base::CommandQueueTracking override
     void CompleteExecution(const Opt<Data::Index>& frame_index = { }) override;
 #endif
 

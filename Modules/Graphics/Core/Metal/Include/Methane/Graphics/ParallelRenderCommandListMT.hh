@@ -25,7 +25,7 @@ Metal implementation of the parallel render command list interface.
 
 #include "CommandListMT.hpp"
 
-#include <Methane/Graphics/ParallelRenderCommandListBase.h>
+#include <Methane/Graphics/Base/ParallelRenderCommandList.h>
 
 #import <Metal/Metal.h>
 
@@ -37,10 +37,10 @@ class BufferMT;
 class RenderPassMT;
 
 class ParallelRenderCommandListMT final
-    : public CommandListMT<id<MTLParallelRenderCommandEncoder>, ParallelRenderCommandListBase>
+    : public CommandListMT<id<MTLParallelRenderCommandEncoder>, Base::ParallelRenderCommandList>
 {
 public:
-    ParallelRenderCommandListMT(CommandQueueBase& command_queue, RenderPassBase& render_pass);
+    ParallelRenderCommandListMT(Base::CommandQueue& command_queue, Base::RenderPass& render_pass);
 
     // IParallelRenderCommandList interface
     void Reset(IDebugGroup* p_debug_group = nullptr) override;

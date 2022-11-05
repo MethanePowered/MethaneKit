@@ -23,7 +23,7 @@ Vulkan implementation of the device interface.
 
 #pragma once
 
-#include <Methane/Graphics/DeviceBase.h>
+#include <Methane/Graphics/Base/Device.h>
 #include <Methane/Graphics/ICommandQueue.h>
 #include <Methane/Data/RangeSet.hpp>
 #include <Methane/Memory.hpp>
@@ -62,7 +62,7 @@ private:
     mutable Data::RangeSet<uint32_t> m_free_indices;
 };
 
-class DeviceVK final : public DeviceBase
+class DeviceVK final : public Base::Device
 {
 public:
     class IncompatibleException: public std::runtime_error
@@ -109,7 +109,7 @@ private:
     QueueFamilyReservationByType           m_queue_family_reservation_by_type;
 };
 
-class SystemVK final : public SystemBase // NOSONAR - destructor is required in this class
+class SystemVK final : public Base::System // NOSONAR - destructor is required in this class
 {
 public:
     SystemVK();

@@ -29,8 +29,8 @@ Vulkan implementation of the program interface.
 #include <Methane/Graphics/ProgramBindingsVK.h>
 #include <Methane/Graphics/DescriptorManagerVK.h>
 
-#include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
+#include <Methane/Graphics/Base/RenderContext.h>
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
@@ -42,11 +42,11 @@ namespace Methane::Graphics
 Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramVK>(dynamic_cast<const ContextBase&>(context), settings);
+    return std::make_shared<ProgramVK>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
-    : ProgramBase(context, settings)
+ProgramVK::ProgramVK(const Base::Context& context, const Settings& settings)
+    : Base::Program(context, settings)
     , m_vk_context(dynamic_cast<const IContextVK&>(context))
 {
     META_FUNCTION_TASK();
@@ -57,7 +57,7 @@ ProgramVK::ProgramVK(const ContextBase& context, const Settings& settings)
 bool ProgramVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!ProgramBase::SetName(name))
+    if (!Base::Program::SetName(name))
         return false;
 
     UpdatePipelineName();
@@ -152,7 +152,7 @@ const vk::DescriptorSet& ProgramVK::GetFrameConstantDescriptorSet(Data::Index fr
     }
 
     const Data::Size frames_count = GetContext().GetType() == IContext::Type::Render
-                                  ? dynamic_cast<const RenderContextBase&>(GetContext()).GetSettings().frame_buffers_count
+                                  ? dynamic_cast<const Base::RenderContext&>(GetContext()).GetSettings().frame_buffers_count
                                   : 1U;
     m_vk_frame_constant_descriptor_sets.resize(frames_count);
     META_CHECK_ARG_LESS(frame_index, frames_count);

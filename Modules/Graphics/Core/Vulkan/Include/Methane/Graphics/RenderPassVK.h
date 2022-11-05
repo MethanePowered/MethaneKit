@@ -26,7 +26,7 @@ Vulkan implementation of the render pass interface.
 #include "RenderContextVK.h"
 #include "ResourceVK.h"
 
-#include <Methane/Graphics/RenderPassBase.h>
+#include <Methane/Graphics/Base/RenderPass.h>
 
 #include <vulkan/vulkan.hpp>
 
@@ -37,12 +37,12 @@ struct IContextVK;
 class RenderContextVK;
 
 class RenderPatternVK
-    : public RenderPatternBase
+    : public Base::RenderPattern
 {
 public:
     RenderPatternVK(RenderContextVK& render_context, const Settings& settings);
 
-    // ObjectBase overrides
+    // Base::Object overrides
     bool SetName(const std::string& name) override;
 
     [[nodiscard]] const RenderContextVK& GetRenderContextVK() const noexcept;
@@ -57,7 +57,7 @@ private:
 };
 
 class RenderPassVK final
-    : public RenderPassBase
+    : public Base::RenderPass
     , protected Data::Receiver<IRenderContextVKCallback>
 {
 public:
@@ -67,11 +67,11 @@ public:
     bool Update(const Settings& settings) override;
     void ReleaseAttachmentTextures() override;
 
-    // RenderPassBase overrides
-    void Begin(RenderCommandListBase& command_list) override;
-    void End(RenderCommandListBase& command_list) override;
+    // Base::RenderPass overrides
+    void Begin(Base::RenderCommandList& command_list) override;
+    void End(Base::RenderCommandList& command_list) override;
 
-    // ObjectBase overrides
+    // Base::Object overrides
     bool SetName(const std::string& name) override;
     
     void Reset();

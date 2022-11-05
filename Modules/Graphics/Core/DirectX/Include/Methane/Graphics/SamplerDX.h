@@ -25,7 +25,7 @@ DirectX 12 implementation of the sampler interface.
 
 #include "ResourceDX.hpp"
 
-#include <Methane/Graphics/SamplerBase.h>
+#include <Methane/Graphics/Base/Sampler.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>
@@ -35,13 +35,13 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-class ContextBase;
+class Base::Context;
 
 class SamplerDX final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceDX<SamplerBase>
+    : public ResourceDX<Base::Sampler>
 {
 public:
-    SamplerDX(const ContextBase& context, const Settings& settings);
+    SamplerDX(const Base::Context& context, const Settings& settings);
 
     // IResourceDX override
     Opt<Descriptor> InitializeNativeViewDescriptor(const ViewDX::Id& view_id) override;

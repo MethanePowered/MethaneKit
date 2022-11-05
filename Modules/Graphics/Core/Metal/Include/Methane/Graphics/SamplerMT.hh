@@ -25,7 +25,7 @@ Metal implementation of the sampler interface.
 
 #include "ResourceMT.hh"
 
-#include <Methane/Graphics/SamplerBase.h>
+#include <Methane/Graphics/Base/Sampler.h>
 
 #import <Metal/Metal.h>
 
@@ -34,10 +34,10 @@ namespace Methane::Graphics
 
 struct IContextMT;
 
-class SamplerMT final : public ResourceMT<SamplerBase>
+class SamplerMT final : public ResourceMT<Base::Sampler>
 {
 public:
-    SamplerMT(const ContextBase& context, const Settings& settings);
+    SamplerMT(const Base::Context& context, const Settings& settings);
 
     // IObject interface
     bool SetName(const std::string& name) override;

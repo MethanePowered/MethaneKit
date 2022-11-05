@@ -217,7 +217,7 @@ Ptr<IViewState> IViewState::Create(const ViewSettings& state_settings)
 }
 
 ViewStateMT::ViewStateMT(const Settings& settings)
-    : ViewStateBase(settings)
+    : Base::ViewState(settings)
     , m_mtl_viewports(ConvertViewportsToMetal(settings.viewports))
     , m_mtl_scissor_rects(ConvertScissorRectsToMetal(settings.scissor_rects))
 {
@@ -227,7 +227,7 @@ ViewStateMT::ViewStateMT(const Settings& settings)
 bool ViewStateMT::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (!ViewStateBase::Reset(settings))
+    if (!Base::ViewState::Reset(settings))
         return false;
 
     m_mtl_viewports     = ConvertViewportsToMetal(settings.viewports);
@@ -238,7 +238,7 @@ bool ViewStateMT::Reset(const Settings& settings)
 bool ViewStateMT::SetViewports(const Viewports& viewports)
 {
     META_FUNCTION_TASK();
-    if (!ViewStateBase::SetViewports(viewports))
+    if (!Base::ViewState::SetViewports(viewports))
         return false;
 
     m_mtl_viewports = ConvertViewportsToMetal(viewports);
@@ -248,14 +248,14 @@ bool ViewStateMT::SetViewports(const Viewports& viewports)
 bool ViewStateMT::SetScissorRects(const ScissorRects& scissor_rects)
 {
     META_FUNCTION_TASK();
-    if (!ViewStateBase::SetScissorRects(scissor_rects))
+    if (!Base::ViewState::SetScissorRects(scissor_rects))
         return false;
 
     m_mtl_scissor_rects = ConvertScissorRectsToMetal(scissor_rects);
     return true;
 }
 
-void ViewStateMT::Apply(RenderCommandListBase& command_list)
+void ViewStateMT::Apply(Base::RenderCommandList& command_list)
 {
     META_FUNCTION_TASK();
 
@@ -269,11 +269,11 @@ void ViewStateMT::Apply(RenderCommandListBase& command_list)
 Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderStateMT>(dynamic_cast<const RenderContextBase&>(context), state_settings);
+    return std::make_shared<RenderStateMT>(dynamic_cast<const Base::RenderContext&>(context), state_settings);
 }
 
-RenderStateMT::RenderStateMT(const RenderContextBase& context, const Settings& settings)
-    : RenderStateBase(context, settings)
+RenderStateMT::RenderStateMT(const Base::RenderContext& context, const Settings& settings)
+    : Base::RenderState(context, settings)
 {
     META_FUNCTION_TASK();
     Reset(settings);
@@ -282,7 +282,7 @@ RenderStateMT::RenderStateMT(const RenderContextBase& context, const Settings& s
 void RenderStateMT::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    RenderStateBase::Reset(settings);
+    Base::RenderState::Reset(settings);
 
     ProgramMT& metal_program = static_cast<ProgramMT&>(*settings.program_ptr);
 
@@ -341,7 +341,7 @@ void RenderStateMT::Reset(const Settings& settings)
     ResetNativeState();
 }
 
-void RenderStateMT::Apply(RenderCommandListBase& command_list, Groups state_groups)
+void RenderStateMT::Apply(Base::RenderCommandList& command_list, Groups state_groups)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -378,7 +378,7 @@ void RenderStateMT::Apply(RenderCommandListBase& command_list, Groups state_grou
 bool RenderStateMT::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!RenderStateBase::SetName(name))
+    if (!Base::RenderState::SetName(name))
         return false;
     
     NSString* ns_name = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);

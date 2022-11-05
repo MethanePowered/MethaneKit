@@ -24,8 +24,8 @@ Metal implementation of the resource interface.
 
 #include "DeviceMT.hh"
 
-#include <Methane/Graphics/ResourceBase.h>
-#include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Graphics/Base/Resource.h>
+#include <Methane/Graphics/Base/RenderContext.h>
 #include <Methane/Instrumentation.h>
 
 #include <vector>
@@ -35,12 +35,12 @@ namespace Methane::Graphics
 
 struct IContextMT;
 
-template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ReourceBaseType>, void>>
+template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<Base::Resource, ReourceBaseType>, void>>
 class ResourceMT : public ReourceBaseType
 {
 public:
     template<typename SettingsType>
-    ResourceMT(const ContextBase& context, const SettingsType& settings)
+    ResourceMT(const Base::Context& context, const SettingsType& settings)
         : ReourceBaseType(context, settings)
     {
         META_FUNCTION_TASK();
@@ -65,13 +65,13 @@ protected:
     const IContextMT& GetContextMT() const noexcept
     {
         META_FUNCTION_TASK();
-        return dynamic_cast<const IContextMT&>(ResourceBase::GetContextBase());
+        return dynamic_cast<const IContextMT&>(Base::Resource::GetContextBase());
     }
 
     id<MTLBuffer> GetUploadSubresourceBuffer(const IResource::SubResource& sub_resource)
     {
         META_FUNCTION_TASK();
-        const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(ResourceBase::GetSubresourceCount());
+        const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(Base::Resource::GetSubresourceCount());
         m_upload_subresource_buffers.resize(sub_resource_raw_index + 1);
 
         id<MTLBuffer> mtl_upload_subresource_buffer = m_upload_subresource_buffers[sub_resource_raw_index];

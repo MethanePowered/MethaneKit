@@ -23,7 +23,7 @@ DirectX 12 fence implementation.
 
 #pragma once
 
-#include <Methane/Graphics/FenceBase.h>
+#include <Methane/Graphics/Base/Fence.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>
@@ -36,10 +36,10 @@ namespace wrl = Microsoft::WRL;
 class CommandQueueDX;
 
 class FenceDX final // NOSONAR - custom destructor is required
-    : public FenceBase
+    : public Base::Fence
 {
 public:
-    explicit FenceDX(CommandQueueBase& command_queue);
+    explicit FenceDX(Base::CommandQueue& command_queue);
     FenceDX(const FenceDX&) = delete;
     FenceDX(FenceDX&&) noexcept = default;
     ~FenceDX() override;

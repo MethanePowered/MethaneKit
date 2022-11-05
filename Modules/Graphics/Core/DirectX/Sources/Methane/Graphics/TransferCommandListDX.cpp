@@ -23,8 +23,8 @@ DirectX 12 implementation of the transfer command list interface.
 
 #include <Methane/Graphics/TransferCommandListDX.h>
 
-#include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Graphics/Base/Context.h>
+#include <Methane/Graphics/Base/CommandQueue.h>
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
@@ -44,11 +44,11 @@ static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(IContext::Option
 Ptr<ITransferCommandList> ITransferCommandList::Create(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<TransferCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue));
+    return std::make_shared<TransferCommandListDX>(static_cast<Base::CommandQueue&>(cmd_queue));
 }
 
-TransferCommandListDX::TransferCommandListDX(CommandQueueBase& cmd_queue)
-    : CommandListDX<CommandListBase>(GetTransferCommandListNativeType(cmd_queue.GetContext().GetOptions()), cmd_queue, Type::Transfer)
+TransferCommandListDX::TransferCommandListDX(Base::CommandQueue& cmd_queue)
+    : CommandListDX<Base::CommandList>(GetTransferCommandListNativeType(cmd_queue.GetContext().GetOptions()), cmd_queue, Type::Transfer)
 {
     META_FUNCTION_TASK();
 }

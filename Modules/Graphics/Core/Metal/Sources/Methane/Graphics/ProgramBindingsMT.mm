@@ -177,18 +177,18 @@ Ptr<IProgramBindings> IProgramBindings::CreateCopy(const IProgramBindings& other
 }
 
 ProgramBindingsMT::ProgramBindingsMT(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
-    : ProgramBindingsBase(program_ptr, resource_views_by_argument, frame_index)
+    : Base::ProgramBindings(program_ptr, resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
 }
 
 ProgramBindingsMT::ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
-    : ProgramBindingsBase(other_program_bindings, replace_resource_views_by_argument, frame_index)
+    : Base::ProgramBindings(other_program_bindings, replace_resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
 }
 
-void ProgramBindingsMT::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
+void ProgramBindingsMT::Apply(Base::CommandList& command_list, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;

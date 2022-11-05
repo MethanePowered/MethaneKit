@@ -27,7 +27,7 @@ Vulkan implementation of the command queue interface.
 #include <Methane/Graphics/DeviceVK.h>
 #include <Methane/Graphics/UtilsVK.hpp>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
@@ -97,28 +97,28 @@ static vk::AccessFlags GetAccessFlagsByQueueFlags(vk::QueueFlags vk_queue_flags)
 Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
 {
     META_FUNCTION_TASK();
-    auto command_queue_ptr = std::make_shared<CommandQueueVK>(dynamic_cast<const ContextBase&>(context), command_lists_type);
+    auto command_queue_ptr = std::make_shared<CommandQueueVK>(dynamic_cast<const Base::Context&>(context), command_lists_type);
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    // TimestampQueryPoolBase construction uses command queue and requires it to be fully constructed
+    // Base::TimestampQueryPool construction uses command queue and requires it to be fully constructed
     command_queue_ptr->InitializeTimestampQueryPool();
 #endif
     return command_queue_ptr;
 }
 
-CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandListType command_lists_type)
+CommandQueueVK::CommandQueueVK(const Base::Context& context, CommandListType command_lists_type)
     : CommandQueueVK(context, command_lists_type, dynamic_cast<const IContextVK&>(context).GetDeviceVK())
 {
     META_FUNCTION_TASK();
 }
 
-CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandListType command_lists_type, const DeviceVK& device)
+CommandQueueVK::CommandQueueVK(const Base::Context& context, CommandListType command_lists_type, const DeviceVK& device)
     : CommandQueueVK(context, command_lists_type, device,
                      device.GetQueueFamilyReservation(command_lists_type))
 {
     META_FUNCTION_TASK();
 }
 
-CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandListType command_lists_type, const DeviceVK& device,
+CommandQueueVK::CommandQueueVK(const Base::Context& context, CommandListType command_lists_type, const DeviceVK& device,
                                const QueueFamilyReservationVK& family_reservation)
     : CommandQueueVK(context, command_lists_type, device, family_reservation,
                      device.GetNativeQueueFamilyProperties(family_reservation.GetFamilyIndex()))
@@ -126,9 +126,9 @@ CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandListType comma
     META_FUNCTION_TASK();
 }
 
-CommandQueueVK::CommandQueueVK(const ContextBase& context, CommandListType command_lists_type, const DeviceVK& device,
+CommandQueueVK::CommandQueueVK(const Base::Context& context, CommandListType command_lists_type, const DeviceVK& device,
                                const QueueFamilyReservationVK& family_reservation, const vk::QueueFamilyProperties& family_properties)
-    : CommandQueueTrackingBase(context, command_lists_type)
+    : Base::CommandQueueTracking(context, command_lists_type)
     , m_vk_context(dynamic_cast<const IContextVK&>(context))
     , m_queue_family_index(family_reservation.GetFamilyIndex())
     , m_queue_index(family_reservation.ClaimQueueIndex())
@@ -143,7 +143,7 @@ CommandQueueVK::~CommandQueueVK()
 {
     META_FUNCTION_TASK();
     ShutdownQueueExecution();
-    GetDeviceVK().GetQueueFamilyReservation(CommandQueueBase::GetCommandListType()).ReleaseQueueIndex(m_queue_index);
+    GetDeviceVK().GetQueueFamilyReservation(Base::CommandQueue::GetCommandListType()).ReleaseQueueIndex(m_queue_index);
 }
 
 void CommandQueueVK::Execute(ICommandListSet& command_list_set, const ICommandList::CompletedCallback& completed_callback)
@@ -151,7 +151,7 @@ void CommandQueueVK::Execute(ICommandListSet& command_list_set, const ICommandLi
     META_FUNCTION_TASK();
 
     AddWaitForFrameExecution(command_list_set);
-    CommandQueueTrackingBase::Execute(command_list_set, completed_callback);
+    Base::CommandQueueTracking::Execute(command_list_set, completed_callback);
 
     m_wait_before_executing.semaphores.clear();
     m_wait_before_executing.stages.clear();
@@ -236,17 +236,17 @@ void CommandQueueVK::AddWaitForFrameExecution(const ICommandListSet& command_lis
     frame_wait_info.stages.emplace_back(vk::PipelineStageFlagBits::eBottomOfPipe);
 }
 
-void CommandQueueVK::CompleteCommandListSetExecution(CommandListSetBase& executing_command_list_set)
+void CommandQueueVK::CompleteCommandListSetExecution(Base::CommandListSet& executing_command_list_set)
 {
     META_FUNCTION_TASK();
     ResetWaitForFrameExecution(executing_command_list_set.GetFrameIndex().value_or(0U));
-    CommandQueueTrackingBase::CompleteCommandListSetExecution(executing_command_list_set);
+    Base::CommandQueueTracking::CompleteCommandListSetExecution(executing_command_list_set);
 }
 
 bool CommandQueueVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!CommandQueueTrackingBase::SetName(name))
+    if (!Base::CommandQueueTracking::SetName(name))
         return false;
 
     const vk::Device& vk_device = GetDeviceVK().GetNativeDevice();

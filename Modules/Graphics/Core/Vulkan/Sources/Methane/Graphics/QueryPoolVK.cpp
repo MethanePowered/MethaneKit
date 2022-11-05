@@ -27,8 +27,8 @@ Vulkan GPU query pool implementation.
 #include <Methane/Graphics/ContextVK.h>
 #include <Methane/Graphics/DeviceVK.h>
 
-#include <Methane/Graphics/QueryPoolBase.h>
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/QueryPool.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -70,8 +70,8 @@ static Data::Size GetMaxTimestampsCount(const IContext& context, uint32_t max_ti
     return frames_count * max_timestamps_per_frame;
 }
 
-QueryVK::QueryVK(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range)
-    : QueryBase(buffer, command_list, index, data_range)
+QueryVK::QueryVK(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range)
+    : Base::Query(buffer, command_list, index, data_range)
     , m_vk_device(GetQueryPoolVK().GetContextVK().GetDeviceVK().GetNativeDevice())
     , m_vk_command_buffer(dynamic_cast<ICommandListVK&>(command_list).GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary))
     , m_query_results(buffer.GetSlotsCountPerQuery(), 0U)
@@ -83,7 +83,7 @@ QueryVK::QueryVK(QueryPoolBase& buffer, CommandListBase& command_list, Index ind
 void QueryVK::Begin()
 {
     META_FUNCTION_TASK();
-    QueryBase::Begin();
+    Base::Query::Begin();
     const vk::QueryPool& vk_query_pool = GetQueryPoolVK().GetNativeQueryPool();
     m_vk_command_buffer.resetQueryPool(vk_query_pool, GetIndex(), GetQueryPool().GetSlotsCountPerQuery());
     m_vk_command_buffer.writeTimestamp(vk::PipelineStageFlagBits::eTopOfPipe, vk_query_pool, GetIndex());
@@ -92,7 +92,7 @@ void QueryVK::Begin()
 void QueryVK::End()
 {
     META_FUNCTION_TASK();
-    QueryBase::End();
+    Base::Query::End();
     m_vk_command_buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, GetQueryPoolVK().GetNativeQueryPool(), GetIndex());
 }
 
@@ -100,7 +100,7 @@ SubResource QueryVK::GetData() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetState(), IQuery::State::Resolved, "query data can be retrieved only from resolved query");
-    META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), CommandListBase::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
+    META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), Base::CommandList::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
 
     vk::Result vk_query_result = m_vk_device.getQueryPoolResults(
         GetQueryPoolVK().GetNativeQueryPool(), GetIndex(), GetQueryPool().GetSlotsCountPerQuery(),
@@ -125,9 +125,9 @@ Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queu
 }
 
 QueryPoolVK::QueryPoolVK(CommandQueueVK& command_queue, Type type,
-                         Data::Size max_query_count, QueryBase::Count slots_count_per_query,
+                         Data::Size max_query_count, Base::Query::Count slots_count_per_query,
                          Data::Size buffer_size, Data::Size query_size)
-    : QueryPoolBase(command_queue, type, max_query_count, slots_count_per_query, buffer_size, query_size)
+    : Base::QueryPool(command_queue, type, max_query_count, slots_count_per_query, buffer_size, query_size)
     , m_context_vk(dynamic_cast<const IContextVK&>(GetContext()))
     , m_vk_query_pool(command_queue.GetDeviceVK().GetNativeDevice().createQueryPool(vk::QueryPoolCreateInfo({}, GetQueryTypeVk(type), max_query_count)))
 {
@@ -181,7 +181,7 @@ TimestampQueryPoolVK::TimestampQueryPoolVK(CommandQueueVK& command_queue, uint32
 Ptr<ITimestampQuery> TimestampQueryPoolVK::CreateTimestampQuery(ICommandList& command_list)
 {
     META_FUNCTION_TASK();
-    return QueryPoolBase::CreateQuery<TimestampQueryVK>(dynamic_cast<CommandListBase&>(command_list));
+    return Base::QueryPool::CreateQuery<TimestampQueryVK>(dynamic_cast<Base::CommandList&>(command_list));
 }
 
 ITimestampQueryPool::CalibratedTimestamps TimestampQueryPoolVK::Calibrate()
@@ -207,7 +207,7 @@ ITimestampQueryPool::CalibratedTimestamps TimestampQueryPoolVK::Calibrate()
     return calibrated_timestamps;
 }
 
-TimestampQueryVK::TimestampQueryVK(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range)
+TimestampQueryVK::TimestampQueryVK(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range)
     : QueryVK(buffer, command_list, index, data_range)
 {
     META_FUNCTION_TASK();

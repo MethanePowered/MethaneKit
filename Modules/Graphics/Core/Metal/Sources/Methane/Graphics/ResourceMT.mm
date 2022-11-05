@@ -23,16 +23,16 @@ Metal implementation of the resource interface.
 
 #include <Methane/Graphics/ResourceMT.hh>
 
-#include <Methane/Graphics/ResourceBarriersBase.h>
+#include <Methane/Graphics/Base/ResourceBarriers.h>
 
 namespace Methane::Graphics
 {
 
-class ResourceBarriersMT final : public ResourceBarriersBase
+class ResourceBarriersMT final : public Base::ResourceBarriers
 {
 public:
     explicit ResourceBarriersMT(const Set& barriers)
-        : ResourceBarriersBase(barriers)
+        : Base::ResourceBarriers(barriers)
     { }
 };
 

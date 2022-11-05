@@ -25,14 +25,14 @@ Metal implementation of the program bindings interface.
 
 #include "ProgramArgumentBindingMT.hh"
 
-#include <Methane/Graphics/ProgramBindingsBase.h>
+#include <Methane/Graphics/Base/ProgramBindings.h>
 
 #import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {
 
-class ProgramBindingsMT final : public ProgramBindingsBase
+class ProgramBindingsMT final : public Base::ProgramBindings
 {
 public:
     using ArgumentBindingMT   = ProgramArgumentBindingMT;
@@ -41,9 +41,9 @@ public:
     ProgramBindingsMT(const ProgramBindingsMT& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
 
     // IProgramBindings interface
-    void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
+    void Apply(Base::CommandList& command_list, ApplyBehavior apply_behavior) const override;
 
-    // ProgramBindingsBase interface
+    // Base::ProgramBindings interface
     void CompleteInitialization() override { }
 };
 

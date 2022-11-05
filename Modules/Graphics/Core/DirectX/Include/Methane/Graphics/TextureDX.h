@@ -25,8 +25,8 @@ DirectX 12 implementation of the texture interface.
 
 #include "ResourceDX.hpp"
 
-#include <Methane/Graphics/TextureBase.h>
-#include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Graphics/Base/Texture.h>
+#include <Methane/Graphics/Base/CommandList.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
@@ -43,15 +43,15 @@ class ScratchImage;
 namespace Methane::Graphics
 {
 
-class ContextBase;
+class Base::Context;
 
 template<typename... ExtraArgs>
 class TextureDX final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceDX<TextureBase>
+    : public ResourceDX<Base::Texture>
 {
 public:
-    TextureDX(const ContextBase& context, const Settings& settings, ExtraArgs... extra_args)
-        : ResourceDX<TextureBase>(context, settings)
+    TextureDX(const Base::Context& context, const Settings& settings, ExtraArgs... extra_args)
+        : ResourceDX<Base::Texture>(context, settings)
     {
         META_FUNCTION_TASK();
         Initialize(extra_args...);
@@ -74,10 +74,10 @@ using FrameBufferTextureDX  = TextureDX<ITexture::FrameBufferIndex>;
 
 using RenderTargetTextureDX = TextureDX<>;
 template<> class TextureDX<> final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceDX<TextureBase>
+    : public ResourceDX<Base::Texture>
 {
 public:
-    TextureDX(const ContextBase& context, const Settings& settings);
+    TextureDX(const Base::Context& context, const Settings& settings);
 
     // IResourceDX override
     Opt<Descriptor> InitializeNativeViewDescriptor(const ViewDX::Id& view_id) override;
@@ -89,10 +89,10 @@ private:
 
 using DepthStencilTextureDX = TextureDX<const Opt<DepthStencil>&>;
 template<> class TextureDX<const Opt<DepthStencil>&> final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceDX<TextureBase>
+    : public ResourceDX<Base::Texture>
 {
 public:
-    TextureDX(const ContextBase& context, const Settings& settings, const Opt<DepthStencil>& clear_depth_stencil);
+    TextureDX(const Base::Context& context, const Settings& settings, const Opt<DepthStencil>& clear_depth_stencil);
 
     // IResourceDX override
     Opt<Descriptor> InitializeNativeViewDescriptor(const ViewDX::Id& view_id) override;
@@ -105,10 +105,10 @@ private:
 struct ImageTokenDX { };
 using ImageTextureDX = TextureDX<ImageTokenDX>;
 template<> class TextureDX<ImageTokenDX> final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceDX<TextureBase>
+    : public ResourceDX<Base::Texture>
 {
 public:
-    TextureDX(const ContextBase& context, const Settings& settings, ImageTokenDX);
+    TextureDX(const Base::Context& context, const Settings& settings, ImageTokenDX);
 
     // IObject overrides
     bool SetName(const std::string& name) override;

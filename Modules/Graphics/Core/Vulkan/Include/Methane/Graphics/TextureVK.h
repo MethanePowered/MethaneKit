@@ -25,7 +25,7 @@ Vulkan implementation of the texture interface.
 
 #include "ResourceVK.hpp"
 
-#include <Methane/Graphics/TextureBase.h>
+#include <Methane/Graphics/Base/Texture.h>
 
 #include <vulkan/vulkan.hpp>
 
@@ -49,7 +49,7 @@ struct ITextureVK
 };
 
 class FrameBufferTextureVK final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceVK<TextureBase, vk::Image, false>
+    : public ResourceVK<Base::Texture, vk::Image, false>
     , public ITextureVK
 {
 public:
@@ -75,7 +75,7 @@ private:
 };
 
 class DepthStencilTextureVK final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceVK<TextureBase, vk::Image, true>
+    : public ResourceVK<Base::Texture, vk::Image, true>
     , public ITextureVK
 {
 public:
@@ -97,7 +97,7 @@ private:
 };
 
 class RenderTargetTextureVK final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceVK<TextureBase, vk::Image, true>
+    : public ResourceVK<Base::Texture, vk::Image, true>
     , public ITextureVK
 {
 public:
@@ -116,11 +116,11 @@ private:
 };
 
 class ImageTextureVK final // NOSONAR - inheritance hierarchy is greater than 5
-    : public ResourceVK<TextureBase, vk::Image, true>
+    : public ResourceVK<Base::Texture, vk::Image, true>
     , public ITextureVK
 {
 public:
-    ImageTextureVK(const ContextBase& context, const Settings& settings);
+    ImageTextureVK(const Base::Context& context, const Settings& settings);
 
     // IResource interface
     void SetData(const SubResources& sub_resources, ICommandQueue&) override;

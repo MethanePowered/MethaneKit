@@ -23,7 +23,7 @@ Vulkan command lists sequence implementation.
 
 #pragma once
 
-#include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Graphics/Base/CommandList.h>
 #include <Methane/Data/Receiver.hpp>
 
 #include <Tracy.hpp>
@@ -37,7 +37,7 @@ class CommandQueueVK;
 
 struct ICommandListVK
 {
-    class DebugGroupVK final : public CommandListBase::DebugGroupBase
+    class DebugGroupVK final : public Base::CommandList::DebugGroup
     {
     public:
         explicit DebugGroupVK(const std::string& name);
@@ -65,12 +65,12 @@ struct ICommandListVK
 };
 
 class CommandListSetVK final
-    : public CommandListSetBase
+    : public Base::CommandListSet
 {
 public:
     explicit CommandListSetVK(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
-    // CommandListSetBase interface
+    // Base::CommandListSet interface
     void Execute(const ICommandList::CompletedCallback& completed_callback) override;
     void WaitUntilCompleted() override;
 

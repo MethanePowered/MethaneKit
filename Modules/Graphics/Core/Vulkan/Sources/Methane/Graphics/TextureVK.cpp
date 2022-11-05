@@ -120,7 +120,7 @@ static vk::UniqueImage CreateNativeImage(const IContextVK& context, const ITextu
                 ? TypeConverterVK::DimensionsToExtent3D(settings.dimensions)
                 : TypeConverterVK::FrameSizeToExtent3D(settings.dimensions.AsRectSize()),
             settings.mipmapped
-                ? TextureBase::GetRequiredMipLevelsCount(settings.dimensions)
+                ? Base::Texture::GetRequiredMipLevelsCount(settings.dimensions)
                 : 1U,
             settings.array_length * settings.dimensions.GetDepth(),
             vk::SampleCountFlagBits::e1,
@@ -377,7 +377,7 @@ Ptr<ResourceViewVK::ViewDescriptorVariant> RenderTargetTextureVK::CreateNativeVi
     return CreateNativeImageViewDescriptor(view_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
 }
 
-ImageTextureVK::ImageTextureVK(const ContextBase& context, const Settings& settings)
+ImageTextureVK::ImageTextureVK(const Base::Context& context, const Settings& settings)
     : ResourceVK(context, settings, CreateNativeImage(dynamic_cast<const IContextVK&>(context), settings, vk::ImageUsageFlagBits::eTransferDst))
 {
     META_FUNCTION_TASK();

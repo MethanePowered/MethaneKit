@@ -23,7 +23,7 @@ Vulkan descriptor manager with descriptor sets allocator.
 
 #pragma once
 
-#include <Methane/Graphics/DescriptorManagerBase.h>
+#include <Methane/Graphics/Base/DescriptorManager.h>
 
 #include <Tracy.hpp>
 #include <magic_enum.hpp>
@@ -39,17 +39,17 @@ Vulkan descriptor manager with descriptor sets allocator.
 namespace Methane::Graphics
 {
 
-class ContextBase;
+class Base::Context;
 struct IProgramBindings;
 struct IContextVK;
 
 class DescriptorManagerVK final
-    : public DescriptorManagerBase
+    : public Base::DescriptorManager
 {
 public:
     using PoolSizeRatioByDescType = std::map<vk::DescriptorType, float>;
 
-    DescriptorManagerVK(ContextBase& context, uint32_t pool_sets_count = 1000U,
+    DescriptorManagerVK(Base::Context& context, uint32_t pool_sets_count = 1000U,
                         const PoolSizeRatioByDescType& pool_size_ratio_by_desc_type = {
         { vk::DescriptorType::eSampler,              0.5f },
         { vk::DescriptorType::eCombinedImageSampler, 4.f  },
@@ -64,7 +64,7 @@ public:
         { vk::DescriptorType::eInputAttachment,      0.5f }
     });
 
-    // DescriptorManager overrides
+    // IDescriptorManager overrides
 #ifndef DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
     void CompleteInitialization() override { /* intentionally uninitialized */}
 #endif

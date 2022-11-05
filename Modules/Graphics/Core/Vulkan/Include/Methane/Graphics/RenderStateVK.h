@@ -23,7 +23,7 @@ Vulkan implementation of the render state interface.
 
 #pragma once
 
-#include <Methane/Graphics/RenderStateBase.h>
+#include <Methane/Graphics/Base/RenderState.h>
 
 #include <vulkan/vulkan.hpp>
 #include <vector>
@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 struct IContextVK;
 
-class ViewStateVK final : public ViewStateBase
+class ViewStateVK final : public Base::ViewState
 {
 public:
     explicit ViewStateVK(const Settings& settings);
@@ -43,8 +43,8 @@ public:
     bool SetViewports(const Viewports& viewports) override;
     bool SetScissorRects(const ScissorRects& scissor_rects) override;
 
-    // ViewStateBase interface
-    void Apply(RenderCommandListBase& command_list) override;
+    // Base::ViewState interface
+    void Apply(Base::RenderCommandList& command_list) override;
 
     const std::vector<vk::Viewport>& GetNativeViewports() const noexcept    { return m_vk_viewports; }
     const std::vector<vk::Rect2D>&   GetNativeScissorRects() const noexcept { return m_vk_scissor_rects; }
@@ -54,16 +54,16 @@ private:
     std::vector<vk::Rect2D>   m_vk_scissor_rects;
 };
 
-class RenderStateVK final : public RenderStateBase
+class RenderStateVK final : public Base::RenderState
 {
 public:
-    RenderStateVK(const RenderContextBase& context, const Settings& settings);
+    RenderStateVK(const Base::RenderContext& context, const Settings& settings);
     
     // IRenderState interface
     void Reset(const Settings& settings) override;
 
-    // RenderStateBase interface
-    void Apply(RenderCommandListBase& render_command_list, Groups state_groups) override;
+    // Base::RenderState interface
+    void Apply(Base::RenderCommandList& render_command_list, Groups state_groups) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;

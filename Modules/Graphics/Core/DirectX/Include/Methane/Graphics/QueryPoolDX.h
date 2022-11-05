@@ -23,7 +23,7 @@ DirectX 12 GPU query pool implementation.
 
 #pragma once
 
-#include <Methane/Graphics/QueryPoolBase.h>
+#include <Methane/Graphics/Base/QueryPool.h>
 #include <Methane/Memory.hpp>
 
 #include <directx/d3d12.h>
@@ -39,10 +39,10 @@ class  CommandQueueDX;
 class  QueryPoolDX;
 class  TimestampQueryPoolDX;
 
-class QueryDX : public QueryBase
+class QueryDX : public Base::Query
 {
 public:
-    QueryDX(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range);
+    QueryDX(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range);
 
     // Query overrides
     void Begin() override;
@@ -58,7 +58,7 @@ private:
     const D3D12_QUERY_TYPE      m_native_query_type;
 };
 
-class QueryPoolDX : public QueryPoolBase
+class QueryPoolDX : public Base::QueryPool
 {
 public:
     QueryPoolDX(CommandQueueDX& command_queue, Type type,
@@ -87,7 +87,7 @@ class TimestampQueryDX final
     , public ITimestampQuery
 {
 public:
-    TimestampQueryDX(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range);
+    TimestampQueryDX(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range);
 
     // TimestampQuery overrides
     void InsertTimestamp() override;
@@ -101,7 +101,7 @@ private:
 
 class TimestampQueryPoolDX final
     : public QueryPoolDX
-    , public TimestampQueryPoolBase
+    , public Base::TimestampQueryPool
 {
 public:
     TimestampQueryPoolDX(CommandQueueDX& command_queue, uint32_t max_timestamps_per_frame);

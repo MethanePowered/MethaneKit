@@ -137,7 +137,7 @@ DeviceFeatures DeviceDX::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /
 }
 
 DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities)
-    : DeviceBase(GetAdapterNameDxgi(*cp_adapter.Get()),
+    : Base::Device(GetAdapterNameDxgi(*cp_adapter.Get()),
                  IsSoftwareAdapterDxgi(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
                  capabilities)
     , m_cp_adapter(cp_adapter)
@@ -149,7 +149,7 @@ DeviceDX::DeviceDX(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVE
 bool DeviceDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!DeviceBase::SetName(name))
+    if (!Base::Device::SetName(name))
         return false;
 
     if (m_cp_device)
@@ -374,7 +374,7 @@ void SystemDX::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATUR
     if (!static_cast<bool>(device_supported_features & GetDeviceCapabilities().features))
         return;
 
-    SystemBase::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level, GetDeviceCapabilities()));
+    Base::System::AddDevice(std::make_shared<DeviceDX>(cp_adapter, feature_level, GetDeviceCapabilities()));
 }
 
 void SystemDX::ReportLiveObjects() const noexcept

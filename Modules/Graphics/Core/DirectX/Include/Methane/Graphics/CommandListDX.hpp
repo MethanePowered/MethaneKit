@@ -30,7 +30,7 @@ DirectX 12 base template implementation of the command list interface.
 #include "ResourceDX.h"
 #include "ProgramBindingsDX.h"
 
-#include <Methane/Graphics/CommandListBase.h>
+#include <Methane/Graphics/Base/CommandList.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -48,7 +48,7 @@ namespace Methane::Graphics
 
 namespace wrl = Microsoft::WRL;
 
-template<class CommandListBaseT, typename = std::enable_if_t<std::is_base_of_v<CommandListBase, CommandListBaseT>>>
+template<class CommandListBaseT, typename = std::enable_if_t<std::is_base_of_v<Base::CommandList, CommandListBaseT>>>
 class CommandListDX
     : public CommandListBaseT
     , public ICommandListDX
@@ -92,7 +92,7 @@ public:
     void Commit() override
     {
         META_FUNCTION_TASK();
-        const auto state_lock = CommandListBase::LockStateMutex();
+        const auto state_lock = Base::CommandList::LockStateMutex();
         CommandListBaseT::Commit();
 
         EndGpuZoneDX();
@@ -106,7 +106,7 @@ public:
         META_FUNCTION_TASK();
         VerifyEncodingState();
         
-        const auto lock_guard = static_cast<const ResourceBarriersBase&>(resource_barriers).Lock();
+        const auto lock_guard = static_cast<const Base::ResourceBarriers&>(resource_barriers).Lock();
         if (resource_barriers.IsEmpty())
             return;
 
@@ -123,7 +123,7 @@ public:
     void Reset(ICommandListDebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
-        const auto state_lock = CommandListBase::LockStateMutex();
+        const auto state_lock = Base::CommandList::LockStateMutex();
         if (!m_is_native_committed)
             return;
 
@@ -135,7 +135,7 @@ public:
 
         BeginGpuZoneDX();
 
-        CommandListBase::Reset(p_debug_group);
+        Base::CommandList::Reset(p_debug_group);
     }
 
     // IObject interface
@@ -166,10 +166,10 @@ public:
     ID3D12GraphicsCommandList4* GetNativeCommandList4() const final { return m_cp_command_list_4.Get(); }
 
 protected:
-    void ApplyProgramBindings(ProgramBindingsBase& program_bindings, IProgramBindings::ApplyBehavior apply_behavior) final
+    void ApplyProgramBindings(Base::ProgramBindings& program_bindings, IProgramBindings::ApplyBehavior apply_behavior) final
     {
-        // Optimization to skip dynamic_cast required to call Apply method of the ProgramBindingBase implementation
-        static_cast<ProgramBindingsDX&>(program_bindings).Apply(*this, CommandListBase::GetProgramBindingsPtr(), apply_behavior);
+        // Optimization to skip dynamic_cast required to call Apply method of the Base::ProgramBinding implementation
+        static_cast<ProgramBindingsDX&>(program_bindings).Apply(*this, Base::CommandList::GetProgramBindingsPtr(), apply_behavior);
     }
 
     bool IsNativeCommitted() const             { return m_is_native_committed; }

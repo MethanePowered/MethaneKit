@@ -79,7 +79,7 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, ITexture::Dimens
 Ptr<ITexture> ITexture::CreateRenderTarget(const IRenderContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), settings);
+    return std::make_shared<TextureMT>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
 Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex /*frame_buffer_index*/)
@@ -87,7 +87,7 @@ Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& context, FrameBu
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
-    return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings);
+    return std::make_shared<TextureMT>(dynamic_cast<const Base::RenderContext&>(context), texture_settings);
 }
 
 Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& context)
@@ -95,24 +95,24 @@ Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& context)
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
     const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
-    return std::make_shared<TextureMT>(dynamic_cast<const RenderContextBase&>(context), texture_settings);
+    return std::make_shared<TextureMT>(dynamic_cast<const Base::RenderContext&>(context), texture_settings);
 }
 
 Ptr<ITexture> ITexture::CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), texture_settings);
+    return std::make_shared<TextureMT>(dynamic_cast<const Base::Context&>(context), texture_settings);
 }
 
 Ptr<ITexture> ITexture::CreateCube(const IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
-    return std::make_shared<TextureMT>(dynamic_cast<const ContextBase&>(context), texture_settings);
+    return std::make_shared<TextureMT>(dynamic_cast<const Base::Context&>(context), texture_settings);
 }
 
-TextureMT::TextureMT(const ContextBase& context, const Settings& settings)
+TextureMT::TextureMT(const Base::Context& context, const Settings& settings)
     : ResourceMT(context, settings)
     , m_mtl_texture(settings.type == ITexture::Type::FrameBuffer
                       ? nil // actual frame buffer texture descriptor is set in UpdateFrameBuffer()
@@ -223,13 +223,13 @@ MTLTextureUsage TextureMT::GetNativeTextureUsage()
     NSUInteger texture_usage = MTLTextureUsageUnknown;
     const Settings& settings = GetSettings();
     
-    if (static_cast<bool>(settings.usage_mask & TextureBase::Usage::ShaderRead))
+    if (static_cast<bool>(settings.usage_mask & Base::Texture::Usage::ShaderRead))
         texture_usage |= MTLTextureUsageShaderRead;
     
-    if (static_cast<bool>(settings.usage_mask & TextureBase::Usage::ShaderWrite))
+    if (static_cast<bool>(settings.usage_mask & Base::Texture::Usage::ShaderWrite))
         texture_usage |= MTLTextureUsageShaderWrite;
     
-    if (static_cast<bool>(settings.usage_mask & TextureBase::Usage::RenderTarget))
+    if (static_cast<bool>(settings.usage_mask & Base::Texture::Usage::RenderTarget))
         texture_usage |= MTLTextureUsageRenderTarget;
 
     return texture_usage;

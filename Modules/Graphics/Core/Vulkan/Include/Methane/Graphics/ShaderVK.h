@@ -23,7 +23,7 @@ Vulkan implementation of the shader interface.
 
 #pragma once
 
-#include <Methane/Graphics/ShaderBase.h>
+#include <Methane/Graphics/Base/Shader.h>
 #include <Methane/Data/MutableChunk.hpp>
 #include <Methane/Memory.hpp>
 
@@ -47,12 +47,12 @@ namespace Methane::Graphics
 struct IContextVK;
 class ProgramVK;
 
-class ShaderVK final : public ShaderBase
+class ShaderVK final : public Base::Shader
 {
 public:
-    ShaderVK(ShaderType shader_type, const ContextBase& context, const Settings& settings);
+    ShaderVK(ShaderType shader_type, const Base::Context& context, const Settings& settings);
 
-    // ShaderBase interface
+    // Base::Shader interface
     ArgumentBindings GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const override;
 
     const Data::Chunk&                     GetNativeByteCode() const noexcept { return m_byte_code_chunk.AsConstChunk(); }

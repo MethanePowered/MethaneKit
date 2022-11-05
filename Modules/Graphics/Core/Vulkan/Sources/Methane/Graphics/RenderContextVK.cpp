@@ -53,7 +53,7 @@ Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, 
 
 RenderContextVK::RenderContextVK(const Platform::AppEnvironment& app_env, DeviceVK& device,
                                  tf::Executor& parallel_executor, const RenderContextSettings& settings)
-    : ContextVK<RenderContextBase>(device, parallel_executor, settings)
+    : ContextVK<Base::RenderContext>(device, parallel_executor, settings)
     , m_vk_device(device.GetNativeDevice())
     , m_vk_unique_surface(PlatformVK::CreateVulkanSurfaceForWindow(static_cast<SystemVK&>(ISystem::Get()).GetNativeInstance(), app_env))
 {
@@ -81,7 +81,7 @@ void RenderContextVK::Release()
 {
     META_FUNCTION_TASK();
     ReleaseNativeSwapchainResources();
-    ContextVK<RenderContextBase>::Release();
+    ContextVK<Base::RenderContext>::Release();
 }
 
 bool RenderContextVK::SetName(const std::string& name)
@@ -94,19 +94,19 @@ bool RenderContextVK::SetName(const std::string& name)
     return true;
 }
 
-void RenderContextVK::Initialize(DeviceBase& device, bool is_callback_emitted)
+void RenderContextVK::Initialize(Base::Device& device, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
     SetDevice(device);
     InitializeNativeSwapchain();
     UpdateFrameBufferIndex();
-    ContextVK<RenderContextBase>::Initialize(device, is_callback_emitted);
+    ContextVK<Base::RenderContext>::Initialize(device, is_callback_emitted);
 }
 
 void RenderContextVK::WaitForGpu(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
-    ContextVK<RenderContextBase>::WaitForGpu(wait_for);
+    ContextVK<Base::RenderContext>::WaitForGpu(wait_for);
 
     std::optional<Data::Index> frame_buffer_index;
     CommandListType cl_type = CommandListType::Render;
@@ -132,7 +132,7 @@ void RenderContextVK::Resize(const FrameSize& frame_size)
     META_FUNCTION_TASK();
     ReleaseNativeSwapchainResources();
 
-    ContextVK<RenderContextBase>::Resize(frame_size);
+    ContextVK<Base::RenderContext>::Resize(frame_size);
 
     InitializeNativeSwapchain();
     UpdateFrameBufferIndex();
@@ -142,7 +142,7 @@ void RenderContextVK::Present()
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("RenderContextDX::Present");
-    ContextVK<RenderContextBase>::Present();
+    ContextVK<Base::RenderContext>::Present();
 
     auto& render_command_queue = static_cast<CommandQueueVK&>(GetRenderCommandKit().GetQueue());
 
@@ -159,14 +159,14 @@ void RenderContextVK::Present()
 
     render_command_queue.ResetWaitForFrameExecution(image_index);
 
-    ContextVK<RenderContextBase>::OnCpuPresentComplete();
+    ContextVK<Base::RenderContext>::OnCpuPresentComplete();
     UpdateFrameBufferIndex();
 }
 
 bool RenderContextVK::SetVSyncEnabled(bool vsync_enabled)
 {
     META_FUNCTION_TASK();
-    if (RenderContextBase::SetVSyncEnabled(vsync_enabled))
+    if (Base::RenderContext::SetVSyncEnabled(vsync_enabled))
     {
         ResetNativeSwapchain();
         return true;
@@ -177,7 +177,7 @@ bool RenderContextVK::SetVSyncEnabled(bool vsync_enabled)
 bool RenderContextVK::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
     META_FUNCTION_TASK();
-    if (RenderContextBase::SetFrameBuffersCount(frame_buffers_count))
+    if (Base::RenderContext::SetFrameBuffersCount(frame_buffers_count))
     {
         ResetNativeSwapchain();
         return true;
@@ -209,14 +209,14 @@ uint32_t RenderContextVK::GetNextFrameBufferIndex()
 {
     META_FUNCTION_TASK();
     uint32_t next_image_index = 0;
-    const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[RenderContextBase::GetFrameBufferIndex()].get();
+    const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[Base::RenderContext::GetFrameBufferIndex()].get();
     if (const vk::Result image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(), vk_image_available_semaphore, {}, &next_image_index);
         image_acquire_result != vk::Result::eSuccess &&
         image_acquire_result != vk::Result::eSuboptimalKHR)
         throw InvalidArgumentException<vk::Result>("RenderContextVK::GetNextFrameBufferIndex", "image_acquire_result", image_acquire_result, "failed to acquire next image");
 
     m_vk_frame_image_available_semaphores[next_image_index % m_vk_frame_image_available_semaphores.size()] = vk_image_available_semaphore;
-    return next_image_index % RenderContextBase::GetSettings().frame_buffers_count;
+    return next_image_index % Base::RenderContext::GetSettings().frame_buffers_count;
 }
 
 vk::SurfaceFormatKHR RenderContextVK::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const

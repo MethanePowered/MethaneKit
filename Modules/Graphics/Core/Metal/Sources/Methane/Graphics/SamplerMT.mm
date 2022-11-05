@@ -26,17 +26,17 @@ Metal implementation of the sampler interface.
 #include <Methane/Graphics/DeviceMT.hh>
 #include <Methane/Graphics/TypesMT.hh>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics
 {
 
-static MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Address::Mode& address_mode)
+static MTLSamplerAddressMode ConvertAddressModeToMetal(const Base::Sampler::Address::Mode& address_mode)
 {
     META_FUNCTION_TASK();
-    using AddressMode = SamplerBase::Address::Mode;
+    using AddressMode = Base::Sampler::Address::Mode;
 
     switch(address_mode)
     {
@@ -51,10 +51,10 @@ static MTLSamplerAddressMode ConvertAddressModeToMetal(const SamplerBase::Addres
     }
 }
 
-static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filter::MinMag& min_mag_filter)
+static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const Base::Sampler::Filter::MinMag& min_mag_filter)
 {
     META_FUNCTION_TASK();
-    using MinMagFilter = SamplerBase::Filter::MinMag;
+    using MinMagFilter = Base::Sampler::Filter::MinMag;
 
     switch(min_mag_filter)
     {
@@ -64,10 +64,10 @@ static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const SamplerBase::Filt
     }
 }
 
-static MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mip& mip_filter)
+static MTLSamplerMipFilter ConvertMipFilterToMetal(const Base::Sampler::Filter::Mip& mip_filter)
 {
     META_FUNCTION_TASK();
-    using MipFilter = SamplerBase::Filter::Mip;
+    using MipFilter = Base::Sampler::Filter::Mip;
 
     switch(mip_filter)
     {
@@ -79,10 +79,10 @@ static MTLSamplerMipFilter ConvertMipFilterToMetal(const SamplerBase::Filter::Mi
 }
 
 #ifndef APPLE_TVOS // MTLSamplerBorderColor is not supported on tvOS
-static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::BorderColor& border_color)
+static MTLSamplerBorderColor ConvertBorderColorToMetal(const Base::Sampler::BorderColor& border_color)
 {
     META_FUNCTION_TASK();
-    using BorderColor = SamplerBase::BorderColor;
+    using BorderColor = Base::Sampler::BorderColor;
 
     switch(border_color)
     {
@@ -97,10 +97,10 @@ static MTLSamplerBorderColor ConvertBorderColorToMetal(const SamplerBase::Border
 Ptr<ISampler> ISampler::Create(const IContext& context, const ISampler::Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<SamplerMT>(dynamic_cast<const ContextBase&>(context), settings);
+    return std::make_shared<SamplerMT>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-SamplerMT::SamplerMT(const ContextBase& context, const Settings& settings)
+SamplerMT::SamplerMT(const Base::Context& context, const Settings& settings)
     : ResourceMT(context, settings)
     , m_mtl_sampler_desc([[MTLSamplerDescriptor alloc] init])
 {

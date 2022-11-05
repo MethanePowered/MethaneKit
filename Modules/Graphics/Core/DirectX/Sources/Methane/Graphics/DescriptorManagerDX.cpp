@@ -23,7 +23,7 @@ Descriptor manager is a central place for creating and accessing descriptor heap
 
 #include <Methane/Graphics/DescriptorManagerDX.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -32,7 +32,7 @@ Descriptor manager is a central place for creating and accessing descriptor heap
 namespace Methane::Graphics
 {
 
-inline void AddDescriptorHeap(UniquePtrs<DescriptorHeapDX>& desc_heaps, const ContextBase& context, bool deferred_heap_allocation,
+inline void AddDescriptorHeap(UniquePtrs<DescriptorHeapDX>& desc_heaps, const Base::Context& context, bool deferred_heap_allocation,
                               const DescriptorManagerDX::Settings& settings, DescriptorHeapDX::Type heap_type, bool is_shader_visible)
 {
     const auto heap_type_idx = magic_enum::enum_integer(heap_type);
@@ -41,8 +41,8 @@ inline void AddDescriptorHeap(UniquePtrs<DescriptorHeapDX>& desc_heaps, const Co
     desc_heaps.push_back(std::make_unique<DescriptorHeapDX>(context, heap_settings));
 }
 
-DescriptorManagerDX::DescriptorManagerDX(ContextBase& context)
-    : DescriptorManagerBase(context)
+DescriptorManagerDX::DescriptorManagerDX(Base::Context& context)
+    : Base::DescriptorManager(context)
 {
     META_FUNCTION_TASK();
 }
@@ -88,7 +88,7 @@ void DescriptorManagerDX::CompleteInitialization()
         }
     }
 
-    DescriptorManagerBase::CompleteInitialization();
+    Base::DescriptorManager::CompleteInitialization();
 
     // Enable deferred heap allocation in case if more resources will be created in runtime
     m_deferred_heap_allocation = true;
@@ -97,7 +97,7 @@ void DescriptorManagerDX::CompleteInitialization()
 void DescriptorManagerDX::Release()
 {
     META_FUNCTION_TASK();
-    DescriptorManagerBase::Release();
+    Base::DescriptorManager::Release();
 
     for (UniquePtrs<DescriptorHeapDX>& desc_heaps : m_descriptor_heap_types)
     {

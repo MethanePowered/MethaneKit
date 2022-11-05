@@ -30,7 +30,7 @@ DirectX 12 specialization of the resource interface.
 
 #include <Methane/Graphics/IContext.h>
 #include <Methane/Graphics/ITexture.h>
-#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/Base/Resource.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

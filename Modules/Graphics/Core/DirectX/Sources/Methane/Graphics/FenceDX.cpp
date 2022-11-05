@@ -26,7 +26,7 @@ DirectX 12 fence implementation.
 #include <Methane/Graphics/DeviceDX.h>
 #include <Methane/Graphics/ContextDX.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 
@@ -38,11 +38,11 @@ namespace Methane::Graphics
 Ptr<IFence> IFence::Create(ICommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<FenceDX>(static_cast<CommandQueueBase&>(command_queue));
+    return std::make_shared<FenceDX>(static_cast<Base::CommandQueue&>(command_queue));
 }
 
-FenceDX::FenceDX(CommandQueueBase& command_queue)
-    : FenceBase(command_queue)
+FenceDX::FenceDX(Base::CommandQueue& command_queue)
+    : Base::Fence(command_queue)
     , m_event(CreateEvent(nullptr, FALSE, FALSE, nullptr))
 {
     META_FUNCTION_TASK();
@@ -66,7 +66,7 @@ FenceDX::~FenceDX()
 void FenceDX::Signal()
 {
     META_FUNCTION_TASK();
-    FenceBase::Signal();
+    Base::Fence::Signal();
 
     META_CHECK_ARG_NOT_NULL(m_cp_fence);
     CommandQueueDX& command_queue = GetCommandQueueDX();
@@ -77,7 +77,7 @@ void FenceDX::Signal()
 void FenceDX::WaitOnCpu()
 {
     META_FUNCTION_TASK();
-    FenceBase::WaitOnCpu();
+    Base::Fence::WaitOnCpu();
 
     const uint64_t wait_value = GetValue();
     const uint64_t curr_value = m_cp_fence->GetCompletedValue();
@@ -99,7 +99,7 @@ void FenceDX::WaitOnCpu()
 void FenceDX::WaitOnGpu(ICommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
-    FenceBase::WaitOnGpu(wait_on_command_queue);
+    Base::Fence::WaitOnGpu(wait_on_command_queue);
 
     META_CHECK_ARG_NOT_NULL(m_cp_fence);
     auto& dx_wait_on_command_queue = static_cast<CommandQueueDX&>(wait_on_command_queue);
@@ -111,7 +111,7 @@ void FenceDX::WaitOnGpu(ICommandQueue& wait_on_command_queue)
 bool FenceDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!FenceBase::SetName(name))
+    if (!Base::Fence::SetName(name))
         return false;
 
     META_CHECK_ARG_NOT_NULL(m_cp_fence);

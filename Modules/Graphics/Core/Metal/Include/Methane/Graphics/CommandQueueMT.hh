@@ -23,7 +23,7 @@ Metal implementation of the command queue interface.
 
 #pragma once
 
-#include <Methane/Graphics/CommandQueueBase.h>
+#include <Methane/Graphics/Base/CommandQueue.h>
 
 #import <Metal/Metal.h>
 
@@ -33,10 +33,10 @@ namespace Methane::Graphics
 struct IContextMT;
 class RenderContextMT;
 
-class CommandQueueMT final : public CommandQueueBase
+class CommandQueueMT final : public Base::CommandQueue
 {
 public:
-    CommandQueueMT(const ContextBase& context, CommandListType command_lists_type);
+    CommandQueueMT(const Base::Context& context, CommandListType command_lists_type);
 
     // ICommandQueue interface
     uint32_t GetFamilyIndex() const noexcept override { return 0U; }

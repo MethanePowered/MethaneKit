@@ -40,13 +40,13 @@ namespace Methane::Graphics
 
 struct ICommandQueue;
 
-template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<ContextBase, ContextBaseT>>>
+template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<Base::Context, ContextBaseT>>>
 class ContextVK
     : public ContextBaseT
     , public IContextVK
 {
 public:
-    ContextVK(DeviceBase& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
+    ContextVK(Base::Device& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, std::make_unique<DescriptorManagerVK>(*this), parallel_executor, settings)
     {
         META_FUNCTION_TASK();

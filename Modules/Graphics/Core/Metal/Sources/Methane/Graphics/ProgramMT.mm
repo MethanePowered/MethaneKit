@@ -27,7 +27,7 @@ Metal implementation of the program interface.
 #include <Methane/Graphics/DeviceMT.hh>
 #include <Methane/Graphics/TypesMT.hh>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -38,11 +38,11 @@ namespace Methane::Graphics
 Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramMT>(dynamic_cast<const ContextBase&>(context), settings);
+    return std::make_shared<ProgramMT>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-ProgramMT::ProgramMT(const ContextBase& context, const Settings& settings)
-    : ProgramBase(context, settings)
+ProgramMT::ProgramMT(const Base::Context& context, const Settings& settings)
+    : Base::Program(context, settings)
     , m_mtl_vertex_desc(GetShaderMT(ShaderType::Vertex).GetNativeVertexDescriptor(*this))
 {
     META_FUNCTION_TASK();

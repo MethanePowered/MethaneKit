@@ -41,7 +41,7 @@ DeviceFeatures DeviceMT::GetSupportedFeatures(const id<MTLDevice>&)
 }
 
 DeviceMT::DeviceMT(const id<MTLDevice>& mtl_device, const Capabilities& capabilities)
-    : DeviceBase(MacOS::ConvertFromNsType<NSString, std::string>(mtl_device.name), false, capabilities)
+    : Base::Device(MacOS::ConvertFromNsType<NSString, std::string>(mtl_device.name), false, capabilities)
     , m_mtl_device(mtl_device)
 {
     META_FUNCTION_TASK();
@@ -128,7 +128,7 @@ void SystemMT::AddDevice(const id<MTLDevice>& mtl_device)
     if (!static_cast<bool>(device_supported_features & GetDeviceCapabilities().features))
         return;
 
-    SystemBase::AddDevice(std::make_shared<DeviceMT>(mtl_device, GetDeviceCapabilities()));
+    Base::System::AddDevice(std::make_shared<DeviceMT>(mtl_device, GetDeviceCapabilities()));
 }
 
 const Ptr<IDevice>& SystemMT::FindMetalDevice(const id<MTLDevice>& mtl_device) const

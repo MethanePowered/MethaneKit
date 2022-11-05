@@ -25,7 +25,7 @@ DirectX 12 implementation of the render context interface.
 
 #include "ContextDX.hpp"
 
-#include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Graphics/Base/RenderContext.h>
 
 #include <dxgi1_4.h>
 #include <vector>
@@ -34,10 +34,10 @@ namespace Methane::Graphics
 {
 
 class RenderContextDX final // NOSONAR - manual destructor is required, inheritance hierarchy is greater than 5
-    : public ContextDX<RenderContextBase>
+    : public ContextDX<Base::RenderContext>
 {
 public:
-    RenderContextDX(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor,
+    RenderContextDX(const Platform::AppEnvironment& env, Base::Device& device, tf::Executor& parallel_executor,
                     const RenderContextSettings& settings);
     ~RenderContextDX() override;
 
@@ -50,14 +50,14 @@ public:
     void Present() override;
     Platform::AppView GetAppView() const override { return { nullptr }; }
 
-    // ContextBase interface
-    void Initialize(DeviceBase& device, bool is_callback_emitted = true) override;
+    // Base::Context interface
+    void Initialize(Base::Device& device, bool is_callback_emitted = true) override;
     void Release() override;
 
     const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }
 
 protected:
-    // RenderContextBase overrides
+    // Base::RenderContext overrides
     uint32_t GetNextFrameBufferIndex() override;
 
 private:

@@ -231,7 +231,7 @@ Ptr<IViewState> IViewState::Create(const IViewState::Settings& state_settings)
 }
 
 ViewStateDX::ViewStateDX(const Settings& settings)
-    : ViewStateBase(settings)
+    : Base::ViewState(settings)
     , m_dx_viewports(ViewportsToD3D(settings.viewports))
     , m_dx_scissor_rects(ScissorRectsToD3D(settings.scissor_rects))
 {
@@ -241,7 +241,7 @@ ViewStateDX::ViewStateDX(const Settings& settings)
 bool ViewStateDX::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (!ViewStateBase::Reset(settings))
+    if (!Base::ViewState::Reset(settings))
         return false;
 
     m_dx_viewports     = ViewportsToD3D(settings.viewports);
@@ -252,7 +252,7 @@ bool ViewStateDX::Reset(const Settings& settings)
 bool ViewStateDX::SetViewports(const Viewports& viewports)
 {
     META_FUNCTION_TASK();
-    if (!ViewStateBase::SetViewports(viewports))
+    if (!Base::ViewState::SetViewports(viewports))
         return false;
 
     m_dx_viewports = ViewportsToD3D(viewports);
@@ -262,14 +262,14 @@ bool ViewStateDX::SetViewports(const Viewports& viewports)
 bool ViewStateDX::SetScissorRects(const ScissorRects& scissor_rects)
 {
     META_FUNCTION_TASK();
-    if (!ViewStateBase::SetScissorRects(scissor_rects))
+    if (!Base::ViewState::SetScissorRects(scissor_rects))
         return false;
 
     m_dx_scissor_rects = ScissorRectsToD3D(scissor_rects);
     return true;
 }
 
-void ViewStateDX::Apply(RenderCommandListBase& command_list)
+void ViewStateDX::Apply(Base::RenderCommandList& command_list)
 {
     META_FUNCTION_TASK();
     const auto& dx_render_command_list = static_cast<const RenderCommandListDX&>(command_list);
@@ -282,11 +282,11 @@ void ViewStateDX::Apply(RenderCommandListBase& command_list)
 Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderStateDX>(dynamic_cast<const RenderContextBase&>(context), state_settings);
+    return std::make_shared<RenderStateDX>(dynamic_cast<const Base::RenderContext&>(context), state_settings);
 }
 
-RenderStateDX::RenderStateDX(const RenderContextBase& context, const Settings& settings)
-    : RenderStateBase(context, settings)
+RenderStateDX::RenderStateDX(const Base::RenderContext& context, const Settings& settings)
+    : Base::RenderState(context, settings)
 {
     META_FUNCTION_TASK();
     Reset(settings); // NOSONAR - method is not overridable in final class
@@ -295,7 +295,7 @@ RenderStateDX::RenderStateDX(const RenderContextBase& context, const Settings& s
 void RenderStateDX::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    RenderStateBase::Reset(settings);
+    Base::RenderState::Reset(settings);
 
     // Set Rasterizer state descriptor
     CD3DX12_RASTERIZER_DESC rasterizer_desc(D3D12_DEFAULT);
@@ -374,7 +374,7 @@ void RenderStateDX::Reset(const Settings& settings)
     m_cp_pipeline_state.Reset();
 }
 
-void RenderStateDX::Apply(RenderCommandListBase& command_list, Groups state_groups)
+void RenderStateDX::Apply(Base::RenderCommandList& command_list, Groups state_groups)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -401,7 +401,7 @@ void RenderStateDX::Apply(RenderCommandListBase& command_list, Groups state_grou
 bool RenderStateDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!RenderStateBase::SetName(name))
+    if (!Base::RenderState::SetName(name))
         return false;
 
     if (m_cp_pipeline_state)

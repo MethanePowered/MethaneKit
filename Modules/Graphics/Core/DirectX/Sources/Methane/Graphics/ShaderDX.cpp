@@ -27,7 +27,7 @@ DirectX 12 implementation of the shader interface.
 #include <Methane/Graphics/DeviceDX.h>
 #include <Methane/Graphics/TypesDX.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Data/IProvider.h>
 #include <Methane/Instrumentation.h>
@@ -62,7 +62,7 @@ static IResource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_ty
     }
 }
 
-using StepType = ProgramBase::InputBufferLayout::StepType;
+using StepType = Base::Program::InputBufferLayout::StepType;
 
 [[nodiscard]]
 static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepType step_type)
@@ -79,11 +79,11 @@ static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepTyp
 Ptr<IShader> IShader::Create(Type type, const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ShaderDX>(type, dynamic_cast<const ContextBase&>(context), settings);
+    return std::make_shared<ShaderDX>(type, dynamic_cast<const Base::Context&>(context), settings);
 }
 
-ShaderDX::ShaderDX(Type type, const ContextBase& context, const Settings& settings)
-    : ShaderBase(type, context, settings)
+ShaderDX::ShaderDX(Type type, const Base::Context& context, const Settings& settings)
+    : Base::Shader(type, context, settings)
 {
     META_FUNCTION_TASK();
 
@@ -129,12 +129,12 @@ ShaderDX::ShaderDX(Type type, const ContextBase& context, const Settings& settin
     ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->GetDataPtr(), m_byte_code_chunk_ptr->GetDataSize(), IID_PPV_ARGS(&m_cp_reflection)));
 }
 
-ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const
+Base::Shader::ArgumentBindings ShaderDX::GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_reflection);
 
-    ShaderBase::ArgumentBindings argument_bindings;
+    Base::Shader::ArgumentBindings argument_bindings;
 
     D3D12_SHADER_DESC shader_desc{};
     m_cp_reflection->GetDesc(&shader_desc);
@@ -151,7 +151,7 @@ ShaderBase::ArgumentBindings ShaderDX::GetArgumentBindings(const ProgramArgument
         D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const IProgram::Argument         shader_argument(GetType(), ShaderBase::GetCachedArgName(binding_desc.Name));
+        const IProgram::Argument         shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
         const auto                       argument_acc_it = IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
         const ProgramArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
                                                    ? ProgramArgumentAccessor(shader_argument)
@@ -243,13 +243,13 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> ShaderDX::GetNativeProgramInputLayout(cons
         if (g_skip_semantic_names.count(param_desc.SemanticName))
             continue;
 
-        const ProgramBase::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
+        const Base::Program::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
         const uint32_t buffer_index = GetProgramInputBufferIndexByArgumentSemantic(program, param_desc.SemanticName);
 
         META_CHECK_ARG_LESS_DESCR(buffer_index, input_buffer_layouts.size(),
                                   "Provided description of program input layout has insufficient buffers count {}, while shader requires buffer at index {}",
                                   input_buffer_layouts.size(), buffer_index);
-        const ProgramBase::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];
+        const Base::Program::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];
 
         if (buffer_index <= input_buffer_byte_offsets.size())
             input_buffer_byte_offsets.resize(buffer_index + 1, 0);

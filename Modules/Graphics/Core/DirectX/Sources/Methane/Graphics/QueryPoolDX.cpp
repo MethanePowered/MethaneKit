@@ -27,7 +27,7 @@ DirectX 12 GPU query pool implementation.
 #include <Methane/Graphics/BufferDX.h>
 #include <Methane/Graphics/ContextDX.h>
 
-#include <Methane/Graphics/QueryPoolBase.h>
+#include <Methane/Graphics/Base/QueryPool.h>
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
@@ -100,8 +100,8 @@ static bool CheckCommandQueueSupportsTimestampQueries(CommandQueueDX& command_qu
     return true;
 }
 
-QueryDX::QueryDX(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range)
-    : QueryBase(buffer, command_list, index, data_range)
+QueryDX::QueryDX(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range)
+    : Base::Query(buffer, command_list, index, data_range)
     , m_native_command_list(dynamic_cast<ICommandListDX&>(command_list).GetNativeCommandList())
     , m_native_query_type(GetQueryTypeDx(buffer.GetType()))
 {
@@ -111,21 +111,21 @@ QueryDX::QueryDX(QueryPoolBase& buffer, CommandListBase& command_list, Index ind
 void QueryDX::Begin()
 {
     META_FUNCTION_TASK();
-    QueryBase::Begin();
+    Base::Query::Begin();
     m_native_command_list.BeginQuery(&GetQueryPoolDX().GetNativeQueryHeap(), m_native_query_type, GetIndex());
 }
 
 void QueryDX::End()
 {
     META_FUNCTION_TASK();
-    QueryBase::End();
+    Base::Query::End();
     m_native_command_list.EndQuery(&GetQueryPoolDX().GetNativeQueryHeap(), m_native_query_type, GetIndex());
 }
 
 void QueryDX::ResolveData()
 {
     META_FUNCTION_TASK();
-    QueryBase::ResolveData();
+    Base::Query::ResolveData();
     QueryPoolDX& query_pool_dx = GetQueryPoolDX();
     m_native_command_list.ResolveQueryData(
         &query_pool_dx.GetNativeQueryHeap(),
@@ -139,7 +139,7 @@ void QueryDX::ResolveData()
 IResource::SubResource QueryDX::GetData() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), CommandListBase::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
+    META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), Base::CommandList::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
     META_CHECK_ARG_EQUAL_DESCR(GetState(), IQuery::State::Resolved, "query data can not be retrieved for unresolved query");
     return GetQueryPoolDX().GetResultResourceDX().GetData(IResource::SubResource::Index(), GetDataRange());
 }
@@ -161,7 +161,7 @@ Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queu
 QueryPoolDX::QueryPoolDX(CommandQueueDX& command_queue, Type type,
                          Data::Size max_query_count, IQuery::Count slots_count_per_query,
                          Data::Size buffer_size, Data::Size query_size)
-    : QueryPoolBase(static_cast<CommandQueueBase&>(command_queue), type, max_query_count, slots_count_per_query, buffer_size, query_size)
+    : Base::QueryPool(static_cast<Base::CommandQueue&>(command_queue), type, max_query_count, slots_count_per_query, buffer_size, query_size)
     , m_result_buffer_ptr(IBuffer::CreateReadBackBuffer(GetContext(), buffer_size))
     , m_context_dx(dynamic_cast<const IContextDX&>(GetContext()))
     , m_result_resource_dx(dynamic_cast<IResourceDX&>(*m_result_buffer_ptr))
@@ -190,7 +190,7 @@ TimestampQueryPoolDX::TimestampQueryPoolDX(CommandQueueDX& command_queue, uint32
 Ptr<ITimestampQuery> TimestampQueryPoolDX::CreateTimestampQuery(ICommandList& command_list)
 {
     META_FUNCTION_TASK();
-    return QueryPoolBase::CreateQuery<TimestampQueryDX>(dynamic_cast<CommandListBase&>(command_list));
+    return Base::QueryPool::CreateQuery<TimestampQueryDX>(dynamic_cast<Base::CommandList&>(command_list));
 }
 
 ITimestampQueryPool::CalibratedTimestamps TimestampQueryPoolDX::Calibrate()
@@ -204,7 +204,7 @@ ITimestampQueryPool::CalibratedTimestamps TimestampQueryPoolDX::Calibrate()
     return calibrated_timestamps;
 }
 
-TimestampQueryDX::TimestampQueryDX(QueryPoolBase& buffer, CommandListBase& command_list, Index index, Range data_range)
+TimestampQueryDX::TimestampQueryDX(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range)
     : QueryDX(buffer, command_list, index, data_range)
 {
     META_FUNCTION_TASK();

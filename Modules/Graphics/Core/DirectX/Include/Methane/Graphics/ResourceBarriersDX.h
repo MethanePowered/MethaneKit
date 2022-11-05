@@ -23,7 +23,7 @@ DirectX 12 specialization of the resource barriers.
 
 #pragma once
 
-#include <Methane/Graphics/ResourceBarriersBase.h>
+#include <Methane/Graphics/Base/ResourceBarriers.h>
 #include <Methane/Graphics/IResource.h>
 #include <Methane/Data/Receiver.hpp>
 
@@ -34,7 +34,7 @@ namespace Methane::Graphics
 {
 
 class ResourceBarriersDX final
-    : public ResourceBarriersBase
+    : public Base::ResourceBarriers
     , private Data::Receiver<IResourceCallback>
 {
 public:

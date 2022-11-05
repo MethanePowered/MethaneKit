@@ -27,7 +27,7 @@ DirectX 12 implementation of the parallel render command list interface.
 #include <Methane/Graphics/CommandQueueDX.h>
 #include <Methane/Graphics/DeviceDX.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 
 #include <directx/d3dx12.h>
@@ -41,11 +41,11 @@ namespace Methane::Graphics
 Ptr<IParallelRenderCommandList> IParallelRenderCommandList::Create(ICommandQueue& cmd_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ParallelRenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
+    return std::make_shared<ParallelRenderCommandListDX>(static_cast<Base::CommandQueue&>(cmd_queue), static_cast<Base::RenderPass&>(render_pass));
 }
 
-ParallelRenderCommandListDX::ParallelRenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass)
-    : ParallelRenderCommandListBase(cmd_queue, render_pass)
+ParallelRenderCommandListDX::ParallelRenderCommandListDX(Base::CommandQueue& cmd_queue, Base::RenderPass& render_pass)
+    : Base::ParallelRenderCommandList(cmd_queue, render_pass)
     , m_beginning_command_list(cmd_queue, render_pass)
     , m_ending_command_list(cmd_queue, render_pass)
 {
@@ -77,7 +77,7 @@ void ParallelRenderCommandListDX::ResetWithState(IRenderState& render_state, IDe
     auto& dx_render_state = static_cast<RenderStateDX&>(render_state);
     dx_render_state.InitializeNativePipelineState();
 
-    ParallelRenderCommandListBase::ResetWithState(render_state, p_debug_group);
+    Base::ParallelRenderCommandList::ResetWithState(render_state, p_debug_group);
 }
 
 void ParallelRenderCommandListDX::SetBeginningResourceBarriers(const IResourceBarriers& resource_barriers)
@@ -95,7 +95,7 @@ void ParallelRenderCommandListDX::SetEndingResourceBarriers(const IResourceBarri
 bool ParallelRenderCommandListDX::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!ParallelRenderCommandListBase::SetName(name))
+    if (!Base::ParallelRenderCommandList::SetName(name))
         return false;
 
     m_beginning_command_list.SetName(GetTrailingCommandListDebugName(name, true));
@@ -106,7 +106,7 @@ bool ParallelRenderCommandListDX::SetName(const std::string& name)
 void ParallelRenderCommandListDX::Commit()
 {
     META_FUNCTION_TASK();
-    ParallelRenderCommandListBase::Commit();
+    Base::ParallelRenderCommandList::Commit();
 
     // Render pass was begun in "beginning" command list,
     // but it is ended in "ending" command list only
@@ -119,7 +119,7 @@ void ParallelRenderCommandListDX::Execute(const ICommandList::CompletedCallback&
     META_FUNCTION_TASK();
     m_beginning_command_list.Execute();
     
-    ParallelRenderCommandListBase::Execute(completed_callback);
+    Base::ParallelRenderCommandList::Execute(completed_callback);
 
     m_ending_command_list.Execute();
 }
@@ -129,7 +129,7 @@ void ParallelRenderCommandListDX::Complete()
     META_FUNCTION_TASK();
     m_beginning_command_list.Complete();
 
-    ParallelRenderCommandListBase::Complete();
+    Base::ParallelRenderCommandList::Complete();
 
     m_ending_command_list.Complete();
 }

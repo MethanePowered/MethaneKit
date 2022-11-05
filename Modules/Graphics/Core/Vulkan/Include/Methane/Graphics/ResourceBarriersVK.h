@@ -23,7 +23,7 @@ Vulkan implementation of the resource interface.
 
 #pragma once
 
-#include <Methane/Graphics/ResourceBarriersBase.h>
+#include <Methane/Graphics/Base/ResourceBarriers.h>
 #include <Methane/Graphics/IResource.h>
 #include <Methane/Data/Receiver.hpp>
 
@@ -37,7 +37,7 @@ class BufferVK;
 struct ITextureVK;
 
 class ResourceBarriersVK
-    : public ResourceBarriersBase
+    : public Base::ResourceBarriers
     , private Data::Receiver<IResourceCallback>
 {
 public:

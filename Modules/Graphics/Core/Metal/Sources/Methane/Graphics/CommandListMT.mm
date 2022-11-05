@@ -36,8 +36,8 @@ Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& na
 }
 
 CommandListDebugGroupMT::CommandListDebugGroupMT(const std::string& name)
-    : CommandListBase::DebugGroupBase(std::move(name))
-    , m_ns_name(MacOS::ConvertToNsType<std::string, NSString*>(ObjectBase::GetName()))
+    : Base::CommandList::DebugGroup(std::move(name))
+    , m_ns_name(MacOS::ConvertToNsType<std::string, NSString*>(Base::Object::GetName()))
 {
     META_FUNCTION_TASK();
 }
@@ -49,7 +49,7 @@ Ptr<ICommandListSet> ICommandListSet::Create(const Refs<ICommandList>& command_l
 }
 
 CommandListSetMT::CommandListSetMT(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
-    : CommandListSetBase(command_list_refs, frame_index_opt)
+    : Base::CommandListSet(command_list_refs, frame_index_opt)
 {
     META_FUNCTION_TASK();
 }

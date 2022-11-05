@@ -23,7 +23,7 @@ Vulkan fence implementation.
 
 #pragma once
 
-#include <Methane/Graphics/FenceBase.h>
+#include <Methane/Graphics/Base/Fence.h>
 
 #include <vulkan/vulkan.hpp>
 
@@ -32,7 +32,7 @@ namespace Methane::Graphics
 
 class CommandQueueVK;
 
-class FenceVK final : public FenceBase
+class FenceVK final : public Base::Fence
 {
 public:
     explicit FenceVK(CommandQueueVK& command_queue);

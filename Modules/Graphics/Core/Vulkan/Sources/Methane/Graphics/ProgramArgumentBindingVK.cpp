@@ -25,19 +25,19 @@ Vulkan implementation of the program argument binding interface.
 #include <Methane/Graphics/ContextVK.h>
 #include <Methane/Graphics/DeviceVK.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 
 namespace Methane::Graphics
 {
 
-Ptr<ProgramArgumentBindingBase> ProgramArgumentBindingBase::CreateCopy(const ProgramArgumentBindingBase& other_argument_binding)
+Ptr<Base::ProgramArgumentBinding> Base::ProgramArgumentBinding::CreateCopy(const Base::ProgramArgumentBinding& other_argument_binding)
 {
     META_FUNCTION_TASK();
     return std::make_shared<ProgramArgumentBindingVK>(static_cast<const ProgramArgumentBindingVK&>(other_argument_binding));
 }
 
-ProgramArgumentBindingVK::ProgramArgumentBindingVK(const ContextBase& context, const SettingsVK& settings)
-    : ProgramArgumentBindingBase(context, settings)
+ProgramArgumentBindingVK::ProgramArgumentBindingVK(const Base::Context& context, const SettingsVK& settings)
+    : Base::ProgramArgumentBinding(context, settings)
     , m_settings_vk(settings)
 {
     META_FUNCTION_TASK();
@@ -56,10 +56,10 @@ void ProgramArgumentBindingVK::SetDescriptorSet(const vk::DescriptorSet& descrip
     m_vk_descriptor_set_ptr = &descriptor_set;
 }
 
-void ProgramArgumentBindingVK::MergeSettings(const ProgramArgumentBindingBase& other)
+void ProgramArgumentBindingVK::MergeSettings(const Base::ProgramArgumentBinding& other)
 {
     META_FUNCTION_TASK();
-    ProgramArgumentBindingBase::MergeSettings(other);
+    Base::ProgramArgumentBinding::MergeSettings(other);
 
     const SettingsVK& settings_vk = dynamic_cast<const ProgramArgumentBindingVK&>(other).GetSettingsVK();
     META_CHECK_ARG_EQUAL(m_settings_vk.descriptor_type, settings_vk.descriptor_type);
@@ -83,7 +83,7 @@ bool AddDescriptor(std::vector<VkDescriptorType>& descriptors, size_t total_desc
 bool ProgramArgumentBindingVK::SetResourceViews(const IResource::Views& resource_views)
 {
     META_FUNCTION_TASK();
-    if (!ProgramArgumentBindingBase::SetResourceViews(resource_views))
+    if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
         return false;
 
     META_CHECK_ARG_NOT_NULL(m_vk_descriptor_set_ptr);

@@ -185,7 +185,7 @@ Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const
 }
 
 RenderPatternVK::RenderPatternVK(RenderContextVK& render_context, const Settings& settings)
-    : RenderPatternBase(render_context, settings)
+    : Base::RenderPattern(render_context, settings)
     , m_vk_unique_render_pass(CreateVulkanRenderPass(render_context.GetDeviceVK().GetNativeDevice(), settings))
 {
     META_FUNCTION_TASK();
@@ -211,7 +211,7 @@ RenderPatternVK::RenderPatternVK(RenderContextVK& render_context, const Settings
 bool RenderPatternVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!RenderPatternBase::SetName(name))
+    if (!Base::RenderPattern::SetName(name))
         return false;
 
     SetVulkanObjectName(GetRenderContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_render_pass.get(), name.c_str());
@@ -237,7 +237,7 @@ Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Setti
 }
 
 RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings)
-    : RenderPassBase(render_pattern, settings)
+    : Base::RenderPass(render_pattern, settings)
     , m_vk_context(dynamic_cast<const IContextVK&>(render_pattern.GetRenderContextBase()))
     , m_vk_unique_frame_buffer(CreateNativeFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
     , m_vk_pass_begin_info(CreateNativeBeginInfo(GetNativeFrameBuffer()))
@@ -249,7 +249,7 @@ RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& sett
 bool RenderPassVK::Update(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (!RenderPassBase::Update(settings))
+    if (!Base::RenderPass::Update(settings))
         return false;
 
     Reset();
@@ -263,31 +263,31 @@ void RenderPassVK::ReleaseAttachmentTextures()
     m_vk_unique_frame_buffer.release();
     m_vk_pass_begin_info = vk::RenderPassBeginInfo();
 
-    RenderPassBase::ReleaseAttachmentTextures();
+    Base::RenderPass::ReleaseAttachmentTextures();
 }
 
-void RenderPassVK::Begin(RenderCommandListBase& command_list)
+void RenderPassVK::Begin(Base::RenderCommandList& command_list)
 {
     META_FUNCTION_TASK();
-    RenderPassBase::Begin(command_list);
+    Base::RenderPass::Begin(command_list);
 
     const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
     vk_command_buffer.beginRenderPass(m_vk_pass_begin_info, vk::SubpassContents::eSecondaryCommandBuffers);
 }
 
-void RenderPassVK::End(RenderCommandListBase& command_list)
+void RenderPassVK::End(Base::RenderCommandList& command_list)
 {
     META_FUNCTION_TASK();
     const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandListVK&>(command_list).GetNativeCommandBuffer(ICommandListVK::CommandBufferType::Primary);
     vk_command_buffer.endRenderPass();
 
-    RenderPassBase::End(command_list);
+    Base::RenderPass::End(command_list);
 }
 
 bool RenderPassVK::SetName(const std::string& name)
 {
     META_FUNCTION_TASK();
-    if (!RenderPassBase::SetName(name))
+    if (!Base::RenderPass::SetName(name))
         return false;
 
     SetVulkanObjectName(GetContextVK().GetDeviceVK().GetNativeDevice(), m_vk_unique_frame_buffer.get(), name.c_str());

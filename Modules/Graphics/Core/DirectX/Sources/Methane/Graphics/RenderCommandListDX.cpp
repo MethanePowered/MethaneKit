@@ -30,7 +30,7 @@ DirectX 12 implementation of the render command list interface.
 #include <Methane/Graphics/ProgramDX.h>
 #include <Methane/Graphics/BufferDX.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 
@@ -57,35 +57,35 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderPrimitive primitive)
 Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& cmd_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue), static_cast<RenderPassBase&>(render_pass));
+    return std::make_shared<RenderCommandListDX>(static_cast<Base::CommandQueue&>(cmd_queue), static_cast<Base::RenderPass&>(render_pass));
 }
 
 Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& parallel_render_command_list)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderCommandListDX>(static_cast<ParallelRenderCommandListBase&>(parallel_render_command_list));
+    return std::make_shared<RenderCommandListDX>(static_cast<Base::ParallelRenderCommandList&>(parallel_render_command_list));
 }
 
-Ptr<IRenderCommandList> RenderCommandListBase::CreateForSynchronization(ICommandQueue& cmd_queue)
+Ptr<IRenderCommandList> Base::RenderCommandList::CreateForSynchronization(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<RenderCommandListDX>(static_cast<CommandQueueBase&>(cmd_queue));
+    return std::make_shared<RenderCommandListDX>(static_cast<Base::CommandQueue&>(cmd_queue));
 }
 
-RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_queue)
-    : CommandListDX<RenderCommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_queue)
-{
-    META_FUNCTION_TASK();
-}
-
-RenderCommandListDX::RenderCommandListDX(CommandQueueBase& cmd_queue, RenderPassBase& render_pass)
-    : CommandListDX<RenderCommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_queue, render_pass)
+RenderCommandListDX::RenderCommandListDX(Base::CommandQueue& cmd_queue)
+    : CommandListDX<Base::RenderCommandList>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_queue)
 {
     META_FUNCTION_TASK();
 }
 
-RenderCommandListDX::RenderCommandListDX(ParallelRenderCommandListBase& parallel_render_command_list)
-    : CommandListDX<RenderCommandListBase>(D3D12_COMMAND_LIST_TYPE_DIRECT, parallel_render_command_list)
+RenderCommandListDX::RenderCommandListDX(Base::CommandQueue& cmd_queue, Base::RenderPass& render_pass)
+    : CommandListDX<Base::RenderCommandList>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_queue, render_pass)
+{
+    META_FUNCTION_TASK();
+}
+
+RenderCommandListDX::RenderCommandListDX(Base::ParallelRenderCommandList& parallel_render_command_list)
+    : CommandListDX<Base::RenderCommandList>(D3D12_COMMAND_LIST_TYPE_DIRECT, parallel_render_command_list)
 {
     META_FUNCTION_TASK();
 }
@@ -138,7 +138,7 @@ void RenderCommandListDX::Reset(IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetNative();
-    RenderCommandListBase::Reset(p_debug_group);
+    Base::RenderCommandList::Reset(p_debug_group);
     if (HasPass())
     {
         ResetRenderPass();
@@ -148,8 +148,8 @@ void RenderCommandListDX::Reset(IDebugGroup* p_debug_group)
 void RenderCommandListDX::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
-    ResetNative(static_cast<RenderStateBase&>(render_state).GetPtr<RenderStateDX>());
-    RenderCommandListBase::ResetWithState(render_state, p_debug_group);
+    ResetNative(static_cast<Base::RenderState&>(render_state).GetPtr<RenderStateDX>());
+    Base::RenderCommandList::ResetWithState(render_state, p_debug_group);
     if (HasPass())
     {
         ResetRenderPass();
@@ -159,7 +159,7 @@ void RenderCommandListDX::ResetWithState(IRenderState& render_state, IDebugGroup
 bool RenderCommandListDX::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
-    if (!RenderCommandListBase::SetVertexBuffers(vertex_buffers, set_resource_barriers))
+    if (!Base::RenderCommandList::SetVertexBuffers(vertex_buffers, set_resource_barriers))
         return false;
 
     auto& dx_vertex_buffer_set = static_cast<BufferSetDX&>(vertex_buffers);
@@ -177,7 +177,7 @@ bool RenderCommandListDX::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_
 bool RenderCommandListDX::SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
-    if (!RenderCommandListBase::SetIndexBuffer(index_buffer, set_resource_barriers))
+    if (!Base::RenderCommandList::SetIndexBuffer(index_buffer, set_resource_barriers))
         return false;
 
     auto& dx_index_buffer = static_cast<IndexBufferDX&>(index_buffer);
@@ -202,7 +202,7 @@ void RenderCommandListDX::DrawIndexed(Primitive primitive, uint32_t index_count,
         index_count = drawing_state.index_buffer_ptr->GetFormattedItemsCount();
     }
 
-    RenderCommandListBase::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
+    Base::RenderCommandList::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
 
     using namespace magic_enum::bitwise_operators;
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
@@ -220,7 +220,7 @@ void RenderCommandListDX::Draw(Primitive primitive, uint32_t vertex_count, uint3
                                uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
-    RenderCommandListBase::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
+    Base::RenderCommandList::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
     using namespace magic_enum::bitwise_operators;
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
@@ -239,7 +239,7 @@ void RenderCommandListDX::Commit()
     META_FUNCTION_TASK();
     if (IsParallel())
     {
-        CommandListDX<RenderCommandListBase>::Commit();
+        CommandListDX<Base::RenderCommandList>::Commit();
         return;
     }
 
@@ -249,7 +249,7 @@ void RenderCommandListDX::Commit()
         pass_dx->End(*this);
     }
 
-    CommandListDX<RenderCommandListBase>::Commit();
+    CommandListDX<Base::RenderCommandList>::Commit();
 }
 
 RenderPassDX& RenderCommandListDX::GetPassDX()

@@ -29,7 +29,7 @@ Vulkan implementation of the program interface.
 #include <Methane/Graphics/DescriptorManagerVK.h>
 #include <Methane/Graphics/UtilsVK.hpp>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -58,7 +58,7 @@ Ptr<IProgramBindings> IProgramBindings::CreateCopy(const IProgramBindings& other
 ProgramBindingsVK::ProgramBindingsVK(const Ptr<IProgram>& program_ptr,
                                      const ResourceViewsByArgument& resource_views_by_argument,
                                      Data::Index frame_index)
-    : ProgramBindingsBase(program_ptr, frame_index)
+    : Base::ProgramBindings(program_ptr, frame_index)
 {
     META_FUNCTION_TASK();
     auto& program = static_cast<ProgramVK&>(GetProgram());
@@ -126,7 +126,7 @@ ProgramBindingsVK::ProgramBindingsVK(const Ptr<IProgram>& program_ptr,
 ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bindings,
                                      const ResourceViewsByArgument& replace_resource_view_by_argument,
                                      const Opt<Data::Index>& frame_index)
-    : ProgramBindingsBase(other_program_bindings, frame_index)
+    : Base::ProgramBindings(other_program_bindings, frame_index)
     , m_descriptor_sets(other_program_bindings.m_descriptor_sets)
     , m_has_mutable_descriptor_set(other_program_bindings.m_has_mutable_descriptor_set)
     , m_dynamic_offsets(other_program_bindings.m_dynamic_offsets)
@@ -170,7 +170,7 @@ ProgramBindingsVK::ProgramBindingsVK(const ProgramBindingsVK& other_program_bind
 void ProgramBindingsVK::SetResourcesForArgumentsVK(const ResourceViewsByArgument& resource_views_by_argument)
 {
     META_FUNCTION_TASK();
-    ProgramBindingsBase::SetResourcesForArguments(resource_views_by_argument);
+    Base::ProgramBindings::SetResourcesForArguments(resource_views_by_argument);
 
     auto                             & program                    = static_cast<ProgramVK&>(GetProgram());
     const ProgramArgumentAccessors& program_argument_accessors = program.GetSettings().argument_accessors;
@@ -224,7 +224,7 @@ void ProgramBindingsVK::CompleteInitialization()
     });
 }
 
-void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
+void ProgramBindingsVK::Apply(Base::CommandList& command_list, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
     Apply(dynamic_cast<ICommandListVK&>(command_list), command_list.GetCommandQueue(),
@@ -232,7 +232,7 @@ void ProgramBindingsVK::Apply(CommandListBase& command_list, ApplyBehavior apply
 }
 
 void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const ICommandQueue& command_queue,
-                              const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const
+                              const Base::ProgramBindings* p_applied_program_bindings, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(m_descriptor_sets);
@@ -256,7 +256,7 @@ void ProgramBindingsVK::Apply(ICommandListVK& command_list_vk, const ICommandQue
     // Set resource transition barriers before applying resource bindings
     if (static_cast<bool>(apply_behavior & ApplyBehavior::StateBarriers))
     {
-        ProgramBindingsBase::ApplyResourceTransitionBarriers(command_list_vk, apply_access_mask, &command_queue);
+        Base::ProgramBindings::ApplyResourceTransitionBarriers(command_list_vk, apply_access_mask, &command_queue);
     }
 
     const vk::CommandBuffer&    vk_command_buffer      = command_list_vk.GetNativeCommandBufferDefault();

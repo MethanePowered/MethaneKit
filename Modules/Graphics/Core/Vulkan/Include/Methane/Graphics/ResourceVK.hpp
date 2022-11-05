@@ -29,8 +29,8 @@ Vulkan implementation of the resource interface.
 #include "TransferCommandListVK.h"
 #include "UtilsVK.hpp"
 
-#include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/ResourceBase.h>
+#include <Methane/Graphics/Base/Context.h>
+#include <Methane/Graphics/Base/Resource.h>
 #include <Methane/Graphics/ICommandKit.h>
 #include <Methane/Instrumentation.h>
 
@@ -49,7 +49,7 @@ template<typename T>
 constexpr bool is_defined_v<T, std::void_t<decltype(sizeof(T))>> = true;
 
 template<typename ResourceBaseType, typename NativeResourceType, bool is_unique_resource,
-         typename = std::enable_if_t<std::is_base_of_v<ResourceBase, ResourceBaseType>, void>>
+         typename = std::enable_if_t<std::is_base_of_v<Base::Resource, ResourceBaseType>, void>>
 class ResourceVK // NOSONAR - destructor in use
     : public ResourceBaseType
     , public IResourceVK
@@ -60,7 +60,7 @@ class ResourceVK // NOSONAR - destructor in use
 
 public:
     template<typename SettingsType, typename T = ResourceStorageType>
-    ResourceVK(const ContextBase& context, const SettingsType& settings, T&& vk_resource)
+    ResourceVK(const Base::Context& context, const SettingsType& settings, T&& vk_resource)
         : ResourceBaseType(context, settings, State::Undefined)
         , m_vk_device(GetContextVK().GetDeviceVK().GetNativeDevice())
         , m_vk_resource(std::forward<T>(vk_resource))
@@ -93,7 +93,7 @@ public:
     bool operator=(const ResourceVK&) = delete;
     bool operator=(ResourceVK&&) = delete;
 
-    // ObjectBase override
+    // Base::Object override
     bool SetName(const std::string& name) override
     {
         META_FUNCTION_TASK();
@@ -139,7 +139,7 @@ public:
     // IResourceVK overrides
     const IContextVK& GetContextVK() const noexcept final
     {
-        return dynamic_cast<const IContextVK&>(ResourceBase::GetContextBase());
+        return dynamic_cast<const IContextVK&>(Base::Resource::GetContextBase());
     }
 
     const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept final
@@ -210,7 +210,7 @@ protected:
     TransferCommandListVK& PrepareResourceUpload(ICommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
-        const ICommandKit& upload_cmd_kit  = ResourceBase::GetContext().GetUploadCommandKit();
+        const ICommandKit& upload_cmd_kit  = Base::Resource::GetContext().GetUploadCommandKit();
         auto&              upload_cmd_list = dynamic_cast<TransferCommandListVK&>(upload_cmd_kit.GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
 

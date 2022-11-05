@@ -25,7 +25,7 @@ Metal implementation of the render context interface.
 
 #include "ContextMT.hpp"
 
-#include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Graphics/Base/RenderContext.h>
 #include <Methane/TracyGpu.hpp>
 
 #ifdef APPLE_MACOS
@@ -39,10 +39,10 @@ Metal implementation of the render context interface.
 namespace Methane::Graphics
 {
 
-class RenderContextMT final : public ContextMT<RenderContextBase>
+class RenderContextMT final : public ContextMT<Base::RenderContext>
 {
 public:
-    RenderContextMT(const Platform::AppEnvironment& env, DeviceBase& device, tf::Executor& parallel_executor, const Settings& settings);
+    RenderContextMT(const Platform::AppEnvironment& env, Base::Device& device, tf::Executor& parallel_executor, const Settings& settings);
     ~RenderContextMT() override;
 
     // IContext interface
@@ -56,8 +56,8 @@ public:
     bool     SetFrameBuffersCount(uint32_t frame_buffers_count) override;
     Platform::AppView GetAppView() const override { return { m_app_view }; }
 
-    // ContextBase overrides
-    void Initialize(DeviceBase& device, bool is_callback_emitted = true) override;
+    // Base::Context overrides
+    void Initialize(Base::Device& device, bool is_callback_emitted = true) override;
     void Release() override;
 
     id<CAMetalDrawable> GetNativeDrawable() const { return m_app_view.currentDrawable; }

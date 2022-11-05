@@ -28,9 +28,9 @@ DirectX 12 implementation of the program bindings interface.
 #include <Methane/Graphics/DescriptorHeapDX.h>
 #include <Methane/Graphics/DescriptorManagerDX.h>
 
-#include <Methane/Graphics/CommandListBase.h>
-#include <Methane/Graphics/ContextBase.h>
-#include <Methane/Graphics/RenderContextBase.h>
+#include <Methane/Graphics/Base/CommandList.h>
+#include <Methane/Graphics/Base/Context.h>
+#include <Methane/Graphics/Base/RenderContext.h>
 #include <Methane/Platform/Windows/Utils.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -73,14 +73,14 @@ Ptr<IProgramBindings> IProgramBindings::CreateCopy(const IProgramBindings& other
 }
 
 ProgramBindingsDX::ProgramBindingsDX(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
-    : ProgramBindingsBase(program_ptr, resource_views_by_argument, frame_index)
+    : Base::ProgramBindings(program_ptr, resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
     ReserveDescriptorHeapRanges();
 }
 
 ProgramBindingsDX::ProgramBindingsDX(const ProgramBindingsDX& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
-    : ProgramBindingsBase(other_program_bindings, replace_resource_views_by_argument, frame_index)
+    : Base::ProgramBindings(other_program_bindings, replace_resource_views_by_argument, frame_index)
     , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
 {
     META_FUNCTION_TASK();
@@ -131,12 +131,12 @@ void ProgramBindingsDX::CompleteInitialization()
     UpdateRootParameterBindings();
 }
 
-void ProgramBindingsDX::Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const
+void ProgramBindingsDX::Apply(Base::CommandList& command_list, ApplyBehavior apply_behavior) const
 {
     Apply(dynamic_cast<ICommandListDX&>(command_list), command_list.GetProgramBindingsPtr(), apply_behavior);
 }
 
-void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const ProgramBindingsBase* applied_program_bindings_ptr, ApplyBehavior apply_behavior) const
+void ProgramBindingsDX::Apply(ICommandListDX& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehavior apply_behavior) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -192,7 +192,7 @@ void ProgramBindingsDX::ReserveDescriptorHeapRanges()
     META_FUNCTION_TASK();
     const auto& program = static_cast<const ProgramDX&>(GetProgram());
     const uint32_t frames_count = program.GetContext().GetType() == IContext::Type::Render
-                                ? dynamic_cast<const RenderContextBase&>(program.GetContext()).GetSettings().frame_buffers_count
+                                ? dynamic_cast<const Base::RenderContext&>(program.GetContext()).GetSettings().frame_buffers_count
                                 : 1U;
 
     // Count the number of constant and mutable descriptors to be allocated in each descriptor heap
@@ -314,7 +314,7 @@ void ProgramBindingsDX::AddRootParameterBindingsForArgument(ArgumentBindingDX& a
 }
 
 void ProgramBindingsDX::ApplyRootParameterBindings(ProgramArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
-                                                   const ProgramBindingsBase* applied_program_bindings_ptr, bool apply_changes_only) const
+                                                   const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;

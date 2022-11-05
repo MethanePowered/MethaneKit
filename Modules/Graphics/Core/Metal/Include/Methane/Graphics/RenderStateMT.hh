@@ -23,7 +23,7 @@ Metal implementation of the render state interface.
 
 #pragma once
 
-#include <Methane/Graphics/RenderStateBase.h>
+#include <Methane/Graphics/Base/RenderState.h>
 
 #import <Metal/Metal.h>
 
@@ -34,7 +34,7 @@ namespace Methane::Graphics
 
 class RenderContextMT;
 
-class ViewStateMT final : public ViewStateBase
+class ViewStateMT final : public Base::ViewState
 {
 public:
     explicit ViewStateMT(const Settings& settings);
@@ -44,24 +44,24 @@ public:
     bool SetViewports(const Viewports& viewports) override;
     bool SetScissorRects(const ScissorRects& scissor_rects) override;
 
-    // ViewStateBase interface
-    void Apply(RenderCommandListBase& command_list) override;
+    // Base::ViewState interface
+    void Apply(Base::RenderCommandList& command_list) override;
 
 private:
     std::vector<MTLViewport>    m_mtl_viewports;
     std::vector<MTLScissorRect> m_mtl_scissor_rects;
 };
 
-class RenderStateMT final : public RenderStateBase
+class RenderStateMT final : public Base::RenderState
 {
 public:
-    RenderStateMT(const RenderContextBase& context, const Settings& settings);
+    RenderStateMT(const Base::RenderContext& context, const Settings& settings);
 
     // IRenderState interface
     void Reset(const Settings& settings) override;
 
-    // RenderStateBase interface
-    void Apply(RenderCommandListBase& command_list, Groups state_groups) override;
+    // Base::RenderState interface
+    void Apply(Base::RenderCommandList& command_list, Groups state_groups) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;

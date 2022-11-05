@@ -25,9 +25,9 @@ Descriptor manager is a central place for creating and accessing descriptor heap
 
 #include "DescriptorHeapDX.h"
 
-#include <Methane/Graphics/DescriptorManagerBase.h>
-#include <Methane/Graphics/ResourceBase.h>
-#include <Methane/Graphics/ProgramBase.h>
+#include <Methane/Graphics/Base/DescriptorManager.h>
+#include <Methane/Graphics/Base/Resource.h>
+#include <Methane/Graphics/Base/Program.h>
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
@@ -37,9 +37,9 @@ Descriptor manager is a central place for creating and accessing descriptor heap
 namespace Methane::Graphics
 {
 
-class ContextBase;
+class Base::Context;
 
-class DescriptorManagerDX : public DescriptorManagerBase
+class DescriptorManagerDX : public Base::DescriptorManager
 {
 public:
     using DescriptorHeapSizeByType = std::array<uint32_t, magic_enum::enum_count<DescriptorHeapDX::Type>() - 1>;
@@ -51,11 +51,11 @@ public:
         DescriptorHeapSizeByType shader_visible_heap_sizes;
     };
 
-    explicit DescriptorManagerDX(ContextBase& context);
+    explicit DescriptorManagerDX(Base::Context& context);
 
     void Initialize(const Settings& settings);
 
-    // DescriptorManager overrides
+    // IDescriptorManager overrides
     void CompleteInitialization() override;
     void Release() override;
 

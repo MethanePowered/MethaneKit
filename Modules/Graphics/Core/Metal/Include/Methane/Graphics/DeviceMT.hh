@@ -23,14 +23,14 @@ Metal implementation of the device interface.
 
 #pragma once
 
-#include <Methane/Graphics/DeviceBase.h>
+#include <Methane/Graphics/Base/Device.h>
 
 #import <Metal/Metal.h>
 
 namespace Methane::Graphics
 {
 
-class DeviceMT final : public DeviceBase
+class DeviceMT final : public Base::Device
 {
 public:
     static DeviceFeatures GetSupportedFeatures(const id<MTLDevice>& mtl_device);
@@ -43,7 +43,7 @@ private:
     id<MTLDevice> m_mtl_device;
 };
 
-class SystemMT final : public SystemBase
+class SystemMT final : public Base::System
 {
 public:
     ~SystemMT() override;

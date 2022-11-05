@@ -25,9 +25,9 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Graphics/DeviceDX.h>
 #include <Methane/Graphics/TypesDX.h>
 
-#include <Methane/Graphics/ContextBase.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/TypeConverters.hpp>
-#include <Methane/Graphics/BufferFactory.hpp>
+#include <Methane/Graphics/Base/BufferFactory.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -53,25 +53,25 @@ static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Re
 Ptr<IBuffer> IBuffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateVertexBuffer<VertexBufferDX>(context, size, stride, is_volatile, stride);
+    return Base::CreateVertexBuffer<VertexBufferDX>(context, size, stride, is_volatile, stride);
 }
 
 Ptr<IBuffer> IBuffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateIndexBuffer<IndexBufferDX>(context, size, format, is_volatile, format);
+    return Base::CreateIndexBuffer<IndexBufferDX>(context, size, format, is_volatile, format);
 }
 
 Ptr<IBuffer> IBuffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateConstantBuffer<ConstantBufferDX>(context, size, addressable, is_volatile);
+    return Base::CreateConstantBuffer<ConstantBufferDX>(context, size, addressable, is_volatile);
 }
 
 Ptr<IBuffer> IBuffer::CreateReadBackBuffer(const IContext& context, Data::Size size)
 {
     META_FUNCTION_TASK();
-    return Graphics::CreateReadBackBuffer<ReadBackBufferDX>(context, size);
+    return Base::CreateReadBackBuffer<ReadBackBufferDX>(context, size);
 }
 
 Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
@@ -157,7 +157,7 @@ Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffe
 }
 
 BufferSetDX::BufferSetDX(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
-    : BufferSetBase(buffers_type, buffer_refs)
+    : Base::BufferSet(buffers_type, buffer_refs)
 {
     META_FUNCTION_TASK();
     if (buffers_type == IBuffer::Type::Vertex)

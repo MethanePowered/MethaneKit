@@ -25,7 +25,7 @@ Vulkan implementation of the program interface.
 
 #include "ProgramArgumentBindingVK.h"
 
-#include <Methane/Graphics/ProgramBindingsBase.h>
+#include <Methane/Graphics/Base/ProgramBindings.h>
 #include <Methane/Data/Receiver.hpp>
 
 #include <vulkan/vulkan.hpp>
@@ -37,7 +37,7 @@ namespace Methane::Graphics
 struct ICommandListVK;
 
 class ProgramBindingsVK final
-    : public ProgramBindingsBase
+    : public Base::ProgramBindings
     , private Data::Receiver<IObjectCallback>
 {
 public:
@@ -49,13 +49,13 @@ public:
     void Initialize();
 
     // IProgramBindings interface
-    void Apply(CommandListBase& command_list, ApplyBehavior apply_behavior) const override;
+    void Apply(Base::CommandList& command_list, ApplyBehavior apply_behavior) const override;
 
-    // ProgramBindingsBase interface
+    // Base::ProgramBindings interface
     void CompleteInitialization() override;
 
     void Apply(ICommandListVK& command_list, const ICommandQueue& command_queue,
-               const ProgramBindingsBase* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
+               const Base::ProgramBindings* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
 
 private:
     // IObjectCallback interface

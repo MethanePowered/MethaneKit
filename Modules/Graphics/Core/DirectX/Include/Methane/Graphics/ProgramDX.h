@@ -26,7 +26,7 @@ DirectX 12 implementation of the program interface.
 #include "ShaderDX.h"
 #include "ProgramBindingsDX.h"
 
-#include <Methane/Graphics/ProgramBase.h>
+#include <Methane/Graphics/Base/Program.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>
@@ -41,12 +41,12 @@ struct IResourceDX;
 
 namespace wrl = Microsoft::WRL;
 
-class ProgramDX final : public ProgramBase // NOSONAR - this class requires destructor
+class ProgramDX final : public Base::Program // NOSONAR - this class requires destructor
 {
     friend class ProgramBindingsDX;
 
 public:
-    ProgramDX(const ContextBase& context, const Settings& settings);
+    ProgramDX(const Base::Context& context, const Settings& settings);
     ~ProgramDX() override;
 
     // IObject interface
