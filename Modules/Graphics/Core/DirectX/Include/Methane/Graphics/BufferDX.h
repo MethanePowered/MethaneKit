@@ -23,9 +23,9 @@ DirectX 12 implementation of the buffer interface.
 
 #pragma once
 
-#include <Methane/Graphics/TransferCommandListDX.h>
+#include "TransferCommandListDX.h"
 #include "ResourceDX.hpp"
-#include <Methane/Graphics/DescriptorHeapDX.h>
+#include "DescriptorHeapDX.h"
 
 #include <Methane/Graphics/BufferBase.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>

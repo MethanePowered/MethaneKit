@@ -29,7 +29,7 @@ Vulkan implementation of the render state interface.
 #include <Methane/Graphics/ProgramVK.h>
 #include <Methane/Graphics/ShaderVK.h>
 #include <Methane/Graphics/TypesVK.h>
-#include "UtilsVK.hpp"
+#include <Methane/Graphics/UtilsVK.hpp>
 
 #include <Methane/Graphics/RenderContextBase.h>
 #include <Methane/Instrumentation.h>

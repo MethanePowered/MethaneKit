@@ -23,10 +23,10 @@ Vulkan implementation of the resource interface.
 
 #pragma once
 
-#include <Methane/Graphics/ResourceVK.h>
-#include <Methane/Graphics/ContextVK.h>
-#include <Methane/Graphics/DeviceVK.h>
-#include <Methane/Graphics/TransferCommandListVK.h>
+#include "ResourceVK.h"
+#include "ContextVK.h"
+#include "DeviceVK.h"
+#include "TransferCommandListVK.h"
 #include "UtilsVK.hpp"
 
 #include <Methane/Graphics/ContextBase.h>

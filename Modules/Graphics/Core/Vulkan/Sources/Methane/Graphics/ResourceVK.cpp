@@ -26,7 +26,7 @@ Vulkan implementation of the resource objects.
 #include <Methane/Graphics/TextureVK.h>
 #include <Methane/Graphics/SamplerVK.h>
 #include <Methane/Graphics/TypesVK.h>
-#include "UtilsVK.hpp"
+#include <Methane/Graphics/UtilsVK.hpp>
 
 #include <Methane/Instrumentation.h>
 #include <fmt/format.h>

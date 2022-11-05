@@ -23,10 +23,10 @@ Vulkan template implementation of the base context interface.
 
 #pragma once
 
-#include <Methane/Graphics/ContextVK.h>
-#include <Methane/Graphics/DeviceVK.h>
-#include <Methane/Graphics/CommandQueueVK.h>
-#include <Methane/Graphics/DescriptorManagerVK.h>
+#include "ContextVK.h"
+#include "DeviceVK.h"
+#include "CommandQueueVK.h"
+#include "DescriptorManagerVK.h"
 
 #include <Methane/Graphics/IRenderContext.h>
 #include <Methane/Graphics/ICommandKit.h>

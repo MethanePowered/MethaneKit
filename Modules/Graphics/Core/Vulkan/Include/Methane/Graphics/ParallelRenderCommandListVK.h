@@ -23,7 +23,7 @@ Vulkan implementation of the parallel render command list interface.
 
 #pragma once
 
-#include <Methane/Graphics/RenderCommandListVK.h>
+#include "RenderCommandListVK.h"
 
 #include <Methane/Graphics/ParallelRenderCommandListBase.h>
 #include <Methane/Graphics/QueryPoolBase.h>

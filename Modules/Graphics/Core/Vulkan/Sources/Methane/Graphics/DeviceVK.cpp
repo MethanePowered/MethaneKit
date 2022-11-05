@@ -23,7 +23,7 @@ Vulkan implementation of the device interface.
 
 #include <Methane/Graphics/DeviceVK.h>
 #include <Methane/Graphics/PlatformVK.h>
-#include "UtilsVK.hpp"
+#include <Methane/Graphics/UtilsVK.hpp>
 
 #include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Platform/Utils.h>

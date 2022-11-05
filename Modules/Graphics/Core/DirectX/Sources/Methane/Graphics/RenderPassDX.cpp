@@ -25,7 +25,6 @@ DirectX 12 implementation of the render pass interface.
 #include <Methane/Graphics/RenderContextDX.h>
 #include <Methane/Graphics/DescriptorHeapDX.h>
 #include <Methane/Graphics/RenderCommandListDX.h>
-#include "ResourceDX.hpp"
 #include <Methane/Graphics/DeviceDX.h>
 #include <Methane/Graphics/TypesDX.h>
 

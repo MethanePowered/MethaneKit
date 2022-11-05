@@ -23,8 +23,8 @@ Vulkan implementation of the render pass interface.
 
 #pragma once
 
-#include <Methane/Graphics/RenderContextVK.h>
-#include <Methane/Graphics/ResourceVK.h>
+#include "RenderContextVK.h"
+#include "ResourceVK.h"
 
 #include <Methane/Graphics/RenderPassBase.h>
 

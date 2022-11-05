@@ -23,9 +23,9 @@ DirectX 12 specialization of the resource interface.
 
 #pragma once
 
-#include <Methane/Graphics/ContextDX.h>
-#include <Methane/Graphics/DescriptorHeapDX.h>
-#include <Methane/Graphics/ResourceBarriersDX.h>
+#include "ContextDX.h"
+#include "DescriptorHeapDX.h"
+#include "ResourceBarriersDX.h"
 
 #include <Methane/Graphics/IResource.h>
 

@@ -23,7 +23,7 @@ DirectX 12 command list accessor interface for template class CommandListDX<Comm
 
 #pragma once
 
-#include <Methane/Graphics/FenceDX.h>
+#include "FenceDX.h"
 
 #include <Methane/Graphics/CommandListBase.h>
 

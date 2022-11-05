@@ -25,9 +25,8 @@ Vulkan implementation of the render state interface.
 
 #include <Methane/Graphics/RenderStateBase.h>
 
-#include <vector>
-
 #include <vulkan/vulkan.hpp>
+#include <vector>
 
 namespace Methane::Graphics
 {

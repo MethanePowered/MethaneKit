@@ -23,8 +23,8 @@ Vulkan implementation of the program interface.
 
 #pragma once
 
-#include <Methane/Graphics/ShaderVK.h>
-#include <Methane/Graphics/ProgramBindingsVK.h>
+#include "ShaderVK.h"
+#include "ProgramBindingsVK.h"
 
 #include <Methane/Graphics/ProgramBase.h>
 

@@ -23,7 +23,7 @@ DirectX 12 implementation of the program bindings interface.
 
 #pragma once
 
-#include <Methane/Graphics/ProgramArgumentBindingDX.h>
+#include "ProgramArgumentBindingDX.h"
 
 #include <Methane/Graphics/ProgramBindingsBase.h>
 

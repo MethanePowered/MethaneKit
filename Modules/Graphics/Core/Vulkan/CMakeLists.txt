@@ -10,6 +10,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/DeviceVK.h
     ${INCLUDE_DIR}/FenceVK.h
     ${INCLUDE_DIR}/ContextVK.h
+    ${INCLUDE_DIR}/ContextVK.hpp
     ${INCLUDE_DIR}/ShaderVK.h
     ${INCLUDE_DIR}/ProgramVK.h
     ${INCLUDE_DIR}/ProgramArgumentBindingVK.h
@@ -20,25 +21,26 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ResourceBarriersVK.h
     ${INCLUDE_DIR}/DescriptorManagerVK.h
     ${INCLUDE_DIR}/QueryPoolVK.h
+    ${INCLUDE_DIR}/ResourceVK.hpp
     ${INCLUDE_DIR}/BufferVK.h
     ${INCLUDE_DIR}/TextureVK.h
     ${INCLUDE_DIR}/SamplerVK.h
     ${INCLUDE_DIR}/RenderPassVK.h
     ${INCLUDE_DIR}/CommandQueueVK.h
     ${INCLUDE_DIR}/CommandListVK.h
+    ${INCLUDE_DIR}/CommandListVK.hpp
     ${INCLUDE_DIR}/TransferCommandListVK.h
     ${INCLUDE_DIR}/RenderCommandListVK.h
     ${INCLUDE_DIR}/ParallelRenderCommandListVK.h
+    ${INCLUDE_DIR}/UtilsVK.hpp
 )
 
 list(APPEND SOURCES
     ${SOURCES_DIR}/PlatformVK.cpp
     ${SOURCES_DIR}/${PLATFORM_DIR}/PlatformExtVK.${CPP_EXT}
-    ${SOURCES_DIR}/UtilsVK.hpp
     ${SOURCES_DIR}/TypesVK.cpp
     ${SOURCES_DIR}/DeviceVK.cpp
     ${SOURCES_DIR}/FenceVK.cpp
-    ${SOURCES_DIR}/ContextVK.hpp
     ${SOURCES_DIR}/ShaderVK.cpp
     ${SOURCES_DIR}/ProgramVK.cpp
     ${SOURCES_DIR}/ProgramArgumentBindingVK.cpp
@@ -46,7 +48,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderContextVK.cpp
     ${SOURCES_DIR}/RenderStateVK.cpp
     ${SOURCES_DIR}/ResourceVK.cpp
-    ${SOURCES_DIR}/ResourceVK.hpp
     ${SOURCES_DIR}/ResourceBarriersVK.cpp
     ${SOURCES_DIR}/DescriptorManagerVK.cpp
     ${SOURCES_DIR}/QueryPoolVK.cpp
@@ -56,7 +57,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderPassVK.cpp
     ${SOURCES_DIR}/CommandQueueVK.cpp
     ${SOURCES_DIR}/CommandListVK.cpp
-    ${SOURCES_DIR}/CommandListVK.hpp
     ${SOURCES_DIR}/TransferCommandListVK.cpp
     ${SOURCES_DIR}/RenderCommandListVK.cpp
     ${SOURCES_DIR}/ParallelRenderCommandListVK.cpp

@@ -23,10 +23,10 @@ DirectX 12 implementation of the program interface.
 
 #pragma once
 
-#include <Methane/Graphics/ProgramBase.h>
+#include "ShaderDX.h"
+#include "ProgramBindingsDX.h"
 
-#include <Methane/Graphics/ShaderDX.h>
-#include <Methane/Graphics/ProgramBindingsDX.h>
+#include <Methane/Graphics/ProgramBase.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>

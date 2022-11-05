@@ -28,7 +28,7 @@ Vulkan implementation of the render context interface.
 #include <Methane/Graphics/CommandListVK.h>
 #include <Methane/Graphics/PlatformVK.h>
 #include <Methane/Graphics/TypesVK.h>
-#include "UtilsVK.hpp"
+#include <Methane/Graphics/UtilsVK.hpp>
 
 #include <Methane/Instrumentation.h>
 

@@ -27,7 +27,7 @@ Vulkan implementation of the render pass interface.
 #include <Methane/Graphics/RenderContextVK.h>
 #include <Methane/Graphics/RenderCommandListVK.h>
 #include <Methane/Graphics/TypesVK.h>
-#include "UtilsVK.hpp"
+#include <Methane/Graphics/UtilsVK.hpp>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>

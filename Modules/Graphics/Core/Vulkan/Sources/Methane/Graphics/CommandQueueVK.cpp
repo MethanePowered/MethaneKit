@@ -25,7 +25,7 @@ Vulkan implementation of the command queue interface.
 #include <Methane/Graphics/CommandListVK.h>
 #include <Methane/Graphics/ContextVK.h>
 #include <Methane/Graphics/DeviceVK.h>
-#include "UtilsVK.hpp"
+#include <Methane/Graphics/UtilsVK.hpp>
 
 #include <Methane/Graphics/ContextBase.h>
 #include <Methane/Instrumentation.h>

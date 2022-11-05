@@ -23,12 +23,12 @@ Vulkan base template implementation of the command list interface.
 
 #pragma once
 
-#include <Methane/Graphics/CommandListVK.h>
-#include <Methane/Graphics/CommandQueueVK.h>
-#include <Methane/Graphics/DeviceVK.h>
-#include <Methane/Graphics/ContextVK.h>
-#include <Methane/Graphics/ProgramBindingsVK.h>
-#include <Methane/Graphics/ResourceBarriersVK.h>
+#include "CommandListVK.h"
+#include "CommandQueueVK.h"
+#include "DeviceVK.h"
+#include "ContextVK.h"
+#include "ProgramBindingsVK.h"
+#include "ResourceBarriersVK.h"
 #include "UtilsVK.hpp"
 
 #include <Methane/Graphics/CommandListBase.h>

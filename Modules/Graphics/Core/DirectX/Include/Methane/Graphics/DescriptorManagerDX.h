@@ -23,7 +23,7 @@ Descriptor manager is a central place for creating and accessing descriptor heap
 
 #pragma once
 
-#include <Methane/Graphics/DescriptorHeapDX.h>
+#include "DescriptorHeapDX.h"
 
 #include <Methane/Graphics/DescriptorManagerBase.h>
 #include <Methane/Graphics/ResourceBase.h>

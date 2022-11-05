@@ -23,7 +23,7 @@ Vulkan implementation of the program interface.
 
 #pragma once
 
-#include <Methane/Graphics/ProgramArgumentBindingVK.h>
+#include "ProgramArgumentBindingVK.h"
 
 #include <Methane/Graphics/ProgramBindingsBase.h>
 #include <Methane/Data/Receiver.hpp>

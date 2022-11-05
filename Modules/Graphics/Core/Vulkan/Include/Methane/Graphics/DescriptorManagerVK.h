@@ -43,7 +43,8 @@ class ContextBase;
 struct IProgramBindings;
 struct IContextVK;
 
-class DescriptorManagerVK final : public DescriptorManagerBase
+class DescriptorManagerVK final
+    : public DescriptorManagerBase
 {
 public:
     using PoolSizeRatioByDescType = std::map<vk::DescriptorType, float>;
@@ -75,8 +76,9 @@ public:
 private:
     vk::DescriptorPool CreateDescriptorPool();
     vk::DescriptorPool AcquireDescriptorPool();
+    const IContextVK&  GetContextVk();
 
-    const IContextVK&                     m_vk_context;
+    const IContextVK*                     m_vk_context_ptr = nullptr;
     uint32_t                              m_pool_sets_count;
     PoolSizeRatioByDescType               m_pool_size_ratio_by_desc_type;
     std::vector<vk::UniqueDescriptorPool> m_vk_descriptor_pools;

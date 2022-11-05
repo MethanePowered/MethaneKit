@@ -23,12 +23,12 @@ DirectX 12 base template implementation of the command list interface.
 
 #pragma once
 
-#include <Methane/Graphics/CommandListDX.h>
-#include <Methane/Graphics/CommandQueueDX.h>
-#include <Methane/Graphics/DeviceDX.h>
-#include <Methane/Graphics/ContextDX.h>
-#include <Methane/Graphics/ResourceDX.h>
-#include <Methane/Graphics/ProgramBindingsDX.h>
+#include "CommandListDX.h"
+#include "CommandQueueDX.h"
+#include "DeviceDX.h"
+#include "ContextDX.h"
+#include "ResourceDX.h"
+#include "ProgramBindingsDX.h"
 
 #include <Methane/Graphics/CommandListBase.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>

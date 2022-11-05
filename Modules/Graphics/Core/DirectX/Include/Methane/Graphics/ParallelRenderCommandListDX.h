@@ -23,8 +23,8 @@ DirectX 12 implementation of the render command list interface.
 
 #pragma once
 
-#include <Methane/Graphics/RenderPassDX.h>
-#include <Methane/Graphics/RenderCommandListDX.h>
+#include "RenderPassDX.h"
+#include "RenderCommandListDX.h"
 
 #include <Methane/Graphics/ParallelRenderCommandListBase.h>
 

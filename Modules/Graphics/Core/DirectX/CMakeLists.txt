@@ -9,6 +9,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/DeviceDX.h
     ${INCLUDE_DIR}/FenceDX.h
     ${INCLUDE_DIR}/ContextDX.h
+    ${INCLUDE_DIR}/ContextDX.hpp
     ${INCLUDE_DIR}/ShaderDX.h
     ${INCLUDE_DIR}/ProgramDX.h
     ${INCLUDE_DIR}/ProgramArgumentBindingDX.h
@@ -20,12 +21,14 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/DescriptorManagerDX.h
     ${INCLUDE_DIR}/DescriptorHeapDX.h
     ${INCLUDE_DIR}/QueryPoolDX.h
+    ${INCLUDE_DIR}/ResourceDX.hpp
     ${INCLUDE_DIR}/BufferDX.h
     ${INCLUDE_DIR}/TextureDX.h
     ${INCLUDE_DIR}/SamplerDX.h
     ${INCLUDE_DIR}/RenderPassDX.h
     ${INCLUDE_DIR}/CommandQueueDX.h
     ${INCLUDE_DIR}/CommandListDX.h
+    ${INCLUDE_DIR}/CommandListDX.hpp
     ${INCLUDE_DIR}/TransferCommandListDX.h
     ${INCLUDE_DIR}/RenderCommandListDX.h
     ${INCLUDE_DIR}/ParallelRenderCommandListDX.h
@@ -35,7 +38,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/TypesDX.cpp
     ${SOURCES_DIR}/DeviceDX.cpp
     ${SOURCES_DIR}/FenceDX.cpp
-    ${SOURCES_DIR}/ContextDX.hpp
     ${SOURCES_DIR}/ShaderDX.cpp
     ${SOURCES_DIR}/ProgramDX.cpp
     ${SOURCES_DIR}/ProgramArgumentBindingDX.cpp
@@ -43,7 +45,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderContextDX.cpp
     ${SOURCES_DIR}/RenderStateDX.cpp
     ${SOURCES_DIR}/ResourceDX.cpp
-    ${SOURCES_DIR}/ResourceDX.hpp
     ${SOURCES_DIR}/ResourceBarriersDX.cpp
     ${SOURCES_DIR}/DescriptorManagerDX.cpp
     ${SOURCES_DIR}/DescriptorHeapDX.cpp
@@ -54,7 +55,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderPassDX.cpp
     ${SOURCES_DIR}/CommandQueueDX.cpp
     ${SOURCES_DIR}/CommandListDX.cpp
-    ${SOURCES_DIR}/CommandListDX.hpp
     ${SOURCES_DIR}/TransferCommandListDX.cpp
     ${SOURCES_DIR}/RenderCommandListDX.cpp
     ${SOURCES_DIR}/ParallelRenderCommandListDX.cpp

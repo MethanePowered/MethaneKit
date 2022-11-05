@@ -23,11 +23,11 @@ DirectX 12 implementation of the resource interface.
 
 #pragma once
 
-#include <Methane/Graphics/ResourceDX.h>
-#include <Methane/Graphics/DescriptorHeapDX.h>
-#include <Methane/Graphics/RenderContextDX.h>
-#include <Methane/Graphics/TransferCommandListDX.h>
-#include <Methane/Graphics/DeviceDX.h>
+#include "ResourceDX.h"
+#include "DescriptorHeapDX.h"
+#include "RenderContextDX.h"
+#include "TransferCommandListDX.h"
+#include "DeviceDX.h"
 
 #include <Methane/Graphics/TextureBase.h>
 #include <Methane/Graphics/ICommandKit.h>
