@@ -32,71 +32,7 @@ set(HEADERS
     ${INCLUDE_DIR}/QueryPoolBase.h
 )
 
-if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
-
-    set(GRAPHICS_API_SOURCES
-        ${SOURCES_GRAPHICS_DIR}/TypesDX.h
-        ${SOURCES_GRAPHICS_DIR}/TypesDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/DeviceDX.h
-        ${SOURCES_GRAPHICS_DIR}/DeviceDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/FenceDX.h
-        ${SOURCES_GRAPHICS_DIR}/FenceDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/ContextDX.h
-        ${SOURCES_GRAPHICS_DIR}/ContextDX.hpp
-        ${SOURCES_GRAPHICS_DIR}/ShaderDX.h
-        ${SOURCES_GRAPHICS_DIR}/ShaderDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/ProgramDX.h
-        ${SOURCES_GRAPHICS_DIR}/ProgramDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/ProgramArgumentBindingDX.h
-        ${SOURCES_GRAPHICS_DIR}/ProgramArgumentBindingDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsDX.h
-        ${SOURCES_GRAPHICS_DIR}/ProgramBindingsDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/RenderContextDX.h
-        ${SOURCES_GRAPHICS_DIR}/RenderContextDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/RenderStateDX.h
-        ${SOURCES_GRAPHICS_DIR}/RenderStateDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/ResourceDX.h
-        ${SOURCES_GRAPHICS_DIR}/ResourceDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/ResourceDX.hpp
-        ${SOURCES_GRAPHICS_DIR}/ResourceBarriersDX.h
-        ${SOURCES_GRAPHICS_DIR}/ResourceBarriersDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerDX.h
-        ${SOURCES_GRAPHICS_DIR}/DescriptorManagerDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.h
-        ${SOURCES_GRAPHICS_DIR}/DescriptorHeapDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/QueryPoolDX.h
-        ${SOURCES_GRAPHICS_DIR}/QueryPoolDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/BufferDX.h
-        ${SOURCES_GRAPHICS_DIR}/BufferDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/TextureDX.h
-        ${SOURCES_GRAPHICS_DIR}/TextureDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/SamplerDX.h
-        ${SOURCES_GRAPHICS_DIR}/SamplerDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/RenderPassDX.h
-        ${SOURCES_GRAPHICS_DIR}/RenderPassDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.h
-        ${SOURCES_GRAPHICS_DIR}/CommandQueueDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/CommandListDX.h
-        ${SOURCES_GRAPHICS_DIR}/CommandListDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/CommandListDX.hpp
-        ${SOURCES_GRAPHICS_DIR}/TransferCommandListDX.h
-        ${SOURCES_GRAPHICS_DIR}/TransferCommandListDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.h
-        ${SOURCES_GRAPHICS_DIR}/RenderCommandListDX.cpp
-        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListDX.h
-        ${SOURCES_GRAPHICS_DIR}/ParallelRenderCommandListDX.cpp
-    )
-
-    set(PLATFORM_LIBRARIES
-        DirectX-Headers
-        DirectXTex
-        DirectXCompiler
-        d3d12
-        dxgi
-        dxguid
-    )
-
-elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
+if(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
 
     set(GRAPHICS_API_SOURCES
         ${SOURCES_GRAPHICS_DIR}/PlatformVK.h
@@ -240,7 +176,6 @@ target_compile_definitions(${TARGET}
         $<$<BOOL:${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}>:METHANE_COMMAND_DEBUG_GROUPS_ENABLED>
     PRIVATE
         $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED=1> # 1 - Methane, 2 - Tracy
-        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_DIRECTX}>:METHANE_GFX_DIRECTX>
         $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>:METHANE_GFX_VULKAN VK_NO_PROTOTYPES>
         $<$<AND:$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>,$<BOOL:${WIN32}>>:VK_USE_PLATFORM_WIN32_KHR>
         $<$<AND:$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>,$<BOOL:${APPLE}>>:VK_USE_PLATFORM_METAL_EXT>
