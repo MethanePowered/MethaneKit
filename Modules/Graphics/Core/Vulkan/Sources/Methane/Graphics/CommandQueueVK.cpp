@@ -257,7 +257,7 @@ bool CommandQueueVK::SetName(const std::string& name)
 DeviceVK& CommandQueueVK::GetDeviceVK() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<DeviceVK&>(GetDeviceBase());
+    return static_cast<DeviceVK&>(GetBaseDevice());
 }
 
 } // namespace Methane::Graphics

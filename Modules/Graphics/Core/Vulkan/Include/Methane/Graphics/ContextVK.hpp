@@ -68,7 +68,7 @@ public:
     const DeviceVK& GetDeviceVK() const noexcept final
     {
         META_FUNCTION_TASK();
-        return static_cast<const DeviceVK&>(ContextBaseT::GetDeviceBase());
+        return static_cast<const DeviceVK&>(ContextBaseT::GetBaseDevice());
     }
 
     CommandQueueVK& GetDefaultCommandQueueVK(CommandListType type) final

@@ -39,7 +39,8 @@ namespace wrl = Microsoft::WRL;
 
 class CommandQueue;
 
-class CommandListDebugGroup final : public Base::CommandList::DebugGroup
+class CommandListDebugGroup final
+    : public Base::CommandListDebugGroup
 {
 public:
     explicit CommandListDebugGroup(const std::string& name);
@@ -62,7 +63,8 @@ struct ICommandListDx
     virtual ~ICommandListDx() = default;
 };
 
-class CommandListSet final : public Base::CommandListSet
+class CommandListSet final
+    : public Base::CommandListSet
 {
 public:
 public:

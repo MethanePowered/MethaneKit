@@ -49,8 +49,8 @@ public:
     [[nodiscard]] Data::Size            GetAttachmentCount() const noexcept final;
     [[nodiscard]] AttachmentFormats     GetAttachmentFormats() const noexcept final;
 
-    [[nodiscard]] const RenderContext& GetRenderContextBase() const noexcept { return *m_render_context_ptr; }
-    [[nodiscard]] RenderContext&       GetRenderContextBase() noexcept       { return *m_render_context_ptr; }
+    [[nodiscard]] const RenderContext& GetBaseRenderContext() const noexcept { return *m_render_context_ptr; }
+    [[nodiscard]] RenderContext&       GetBaseRenderContext() noexcept       { return *m_render_context_ptr; }
 
 private:
     const Ptr<RenderContext> m_render_context_ptr;
@@ -84,7 +84,7 @@ public:
     bool                  IsBegun() const noexcept   { return m_is_begun; }
 
 protected:
-    RenderPattern& GetPatternBase() const noexcept { return *m_pattern_base_ptr; }
+    RenderPattern& GetBasePattern() const noexcept { return *m_pattern_base_ptr; }
 
     void SetAttachmentStates(const std::optional<IResource::State>& color_state,
                              const std::optional<IResource::State>& depth_state) const;

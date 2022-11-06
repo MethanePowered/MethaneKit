@@ -144,7 +144,7 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
     META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
     META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, MTLStorageModePrivate);
 
-    TransferCommandListMT& transfer_command_list = dynamic_cast<TransferCommandListMT&>(GetContextBase().GetUploadCommandKit().GetListForEncoding());
+    TransferCommandListMT& transfer_command_list = dynamic_cast<TransferCommandListMT&>(GetBaseContext().GetUploadCommandKit().GetListForEncoding());
     transfer_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
@@ -165,7 +165,7 @@ void BufferMT::SetDataToPrivateBuffer(const SubResources& sub_resources)
         data_offset += sub_resource.GetDataSize();
     }
     
-    GetContextBase().RequestDeferredAction(ContextDeferredAction::UploadResources);
+    GetBaseContext().RequestDeferredAction(ContextDeferredAction::UploadResources);
 }
 
 MTLIndexType BufferMT::GetNativeIndexType() const noexcept

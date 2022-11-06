@@ -159,7 +159,7 @@ ParallelRenderCommandList::D3D12CommandLists ParallelRenderCommandList::GetNativ
 CommandQueue& ParallelRenderCommandList::GetDirectCommandQueue()
 {
     META_FUNCTION_TASK();
-    return static_cast<CommandQueue&>(GetCommandQueueBase());
+    return static_cast<CommandQueue&>(GetBaseCommandQueue());
 }
 
 RenderPass& ParallelRenderCommandList::GetDirectPass()

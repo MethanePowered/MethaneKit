@@ -179,7 +179,7 @@ QueryPool::QueryPool(CommandQueue& command_queue, Type type,
 CommandQueue& QueryPool::GetDirectCommandQueue() noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<CommandQueue&>(GetCommandQueueBase());
+    return static_cast<CommandQueue&>(GetBaseCommandQueue());
 }
 
 TimestampQueryPool::TimestampQueryPool(CommandQueue& command_queue, uint32_t max_timestamps_per_frame)

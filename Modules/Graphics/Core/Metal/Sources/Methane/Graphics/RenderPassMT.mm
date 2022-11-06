@@ -118,7 +118,7 @@ void RenderPassMT::Reset()
     META_FUNCTION_TASK();
 
     m_mtl_pass_descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
-    const Pattern::Settings& pattern_settings = GetPatternBase().GetSettings();
+    const Pattern::Settings& pattern_settings = GetBasePattern().GetSettings();
 
     uint32_t color_attach_index = 0;
     for(const ColorAttachment& color_attach : pattern_settings.color_attachments)
@@ -154,7 +154,7 @@ MTLRenderPassDescriptor* RenderPassMT::GetNativeDescriptor(bool reset)
 const IContextMT& RenderPassMT::GetContextMT() const noexcept
 {
     META_FUNCTION_TASK();
-    return dynamic_cast<const IContextMT&>(GetPatternBase().GetRenderContextBase());
+    return dynamic_cast<const IContextMT&>(GetBasePattern().GetBaseRenderContext());
 }
 
 } // namespace Methane::Graphics

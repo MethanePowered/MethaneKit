@@ -197,14 +197,14 @@ const IDevice& Context::GetDevice() const
     return *m_device_ptr;
 }
 
-Device& Context::GetDeviceBase()
+Device& Context::GetBaseDevice()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_device_ptr);
     return *m_device_ptr;
 }
 
-const Device& Context::GetDeviceBase() const
+const Device& Context::GetBaseDevice() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_device_ptr);
@@ -224,7 +224,7 @@ bool Context::SetName(const std::string& name)
     if (!Object::SetName(name))
         return false;
 
-    GetDeviceBase().SetName(fmt::format("{} Device", name));
+    GetBaseDevice().SetName(fmt::format("{} Device", name));
     for(const Ptr<ICommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
     {
         if (cmd_kit_ptr)

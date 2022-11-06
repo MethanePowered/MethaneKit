@@ -67,7 +67,7 @@ public:
     [[nodiscard]] Ptr<IBarriers>& GetSetupTransitionBarriers() noexcept  { return m_setup_transition_barriers_ptr; }
 
 protected:
-    [[nodiscard]] const Context& GetContextBase() const noexcept         { return m_context; }
+    [[nodiscard]] const Context& GetBaseContext() const noexcept         { return m_context; }
     [[nodiscard]] Data::Size     GetInitializedDataSize() const noexcept { return m_initialized_data_size; }
 
     void  SetSubResourceCount(const SubResource::Count& sub_resource_count);

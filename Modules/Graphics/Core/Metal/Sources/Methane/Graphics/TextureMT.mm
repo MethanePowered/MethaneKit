@@ -139,7 +139,7 @@ void TextureMT::SetData(const SubResources& sub_resources, ICommandQueue& target
 
     ResourceMT::SetData(sub_resources, target_cmd_queue);
 
-    TransferCommandListMT& transfer_command_list = dynamic_cast<TransferCommandListMT&>(GetContextBase().GetUploadCommandKit().GetListForEncoding());
+    TransferCommandListMT& transfer_command_list = dynamic_cast<TransferCommandListMT&>(GetBaseContext().GetUploadCommandKit().GetListForEncoding());
     transfer_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
@@ -185,7 +185,7 @@ void TextureMT::SetData(const SubResources& sub_resources, ICommandQueue& target
         GenerateMipLevels(transfer_command_list);
     }
 
-    GetContextBase().RequestDeferredAction(IContext::DeferredAction::UploadResources);
+    GetBaseContext().RequestDeferredAction(IContext::DeferredAction::UploadResources);
 }
 
 void TextureMT::UpdateFrameBuffer()
@@ -211,7 +211,7 @@ void TextureMT::GenerateMipLevels(TransferCommandListMT& transfer_command_list)
 const RenderContextMT& TextureMT::GetRenderContextMT() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetContextBase().GetType(), ContextType::Render, "incompatible context type");
+    META_CHECK_ARG_EQUAL_DESCR(GetBaseContext().GetType(), ContextType::Render, "incompatible context type");
     return static_cast<const RenderContextMT&>(GetContextMT());
 }
 

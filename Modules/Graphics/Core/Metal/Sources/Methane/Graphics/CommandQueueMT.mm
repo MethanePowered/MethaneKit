@@ -68,13 +68,13 @@ bool CommandQueueMT::SetName(const std::string& name)
 const IContextMT& CommandQueueMT::GetContextMT() const noexcept
 {
     META_FUNCTION_TASK();
-    return dynamic_cast<const IContextMT&>(GetContextBase());
+    return dynamic_cast<const IContextMT&>(GetBaseContext());
 }
 
 const RenderContextMT& CommandQueueMT::GetRenderContextMT() const
 {
     META_FUNCTION_TASK();
-    const Base::Context& context = GetContextBase();
+    const Base::Context& context = GetBaseContext();
     META_CHECK_ARG_EQUAL_DESCR(context.GetType(), ContextType::Render, "incompatible context type");
     return static_cast<const RenderContextMT&>(context);
 }

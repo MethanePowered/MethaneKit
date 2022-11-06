@@ -90,9 +90,9 @@ public:
     bool SetName(const std::string& name) override;
 
     DeferredAction      GetRequestedAction() const noexcept { return m_requested_action; }
-    Ptr<Device>         GetDeviceBasePtr() const noexcept   { return m_device_ptr; }
-    Device&             GetDeviceBase();
-    const Device&       GetDeviceBase() const;
+    Ptr<Device>         GetBaseDevicePtr() const noexcept   { return m_device_ptr; }
+    Device&             GetBaseDevice();
+    const Device&       GetBaseDevice() const;
     IDescriptorManager& GetDescriptorManager() const;
 
 protected:

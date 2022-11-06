@@ -96,7 +96,7 @@ protected:
     using CreateQueryArgs = std::tuple<IQuery::Index, IQuery::Range>;
     [[nodiscard]] CreateQueryArgs GetCreateQueryArguments();
 
-    [[nodiscard]] CommandQueue& GetCommandQueueBase() noexcept { return m_command_queue; }
+    [[nodiscard]] CommandQueue& GetBaseCommandQueue() noexcept { return m_command_queue; }
 
 private:
     using RangeSet = Data::RangeSet<Data::Index>;

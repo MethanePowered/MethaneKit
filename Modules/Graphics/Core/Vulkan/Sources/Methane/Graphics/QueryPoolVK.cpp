@@ -137,7 +137,7 @@ QueryPoolVK::QueryPoolVK(CommandQueueVK& command_queue, Type type,
 CommandQueueVK& QueryPoolVK::GetCommandQueueVK() noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<CommandQueueVK&>(GetCommandQueueBase());
+    return static_cast<CommandQueueVK&>(GetBaseCommandQueue());
 }
 
 TimestampQueryPoolVK::TimestampQueryPoolVK(CommandQueueVK& command_queue, uint32_t max_timestamps_per_frame)

@@ -157,7 +157,7 @@ public:
 
     // ICommandList interface
 
-    CommandQueue&               GetDirectCommandQueue() final { return static_cast<CommandQueue&>(GetCommandQueueBase()); }
+    CommandQueue&               GetDirectCommandQueue() final { return static_cast<CommandQueue&>(GetBaseCommandQueue()); }
     ID3D12GraphicsCommandList&  GetNativeCommandList() const final
     {
         META_CHECK_ARG_NOT_NULL(m_cp_command_list);

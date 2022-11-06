@@ -50,7 +50,7 @@ namespace Methane::Graphics::DirectX
 {
 
 CommandListDebugGroup::CommandListDebugGroup(const std::string& name)
-    : Base::CommandList::DebugGroup(name)
+    : Base::CommandListDebugGroup(name)
     , m_wide_name(nowide::widen(Base::Object::GetName()))
 {
     META_FUNCTION_TASK();
@@ -58,7 +58,7 @@ CommandListDebugGroup::CommandListDebugGroup(const std::string& name)
 
 CommandListSet::CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
     : Base::CommandListSet(command_list_refs, frame_index_opt)
-    , m_execution_completed_fence(GetCommandQueueBase())
+    , m_execution_completed_fence(GetBaseCommandQueue())
 {
     META_FUNCTION_TASK();
 
@@ -104,13 +104,13 @@ void CommandListSet::WaitUntilCompleted()
 CommandQueue& CommandListSet::GetDirectCommandQueue() noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<CommandQueue&>(GetCommandQueueBase());
+    return static_cast<CommandQueue&>(GetBaseCommandQueue());
 }
 
 const CommandQueue& CommandListSet::GetDirectCommandQueue() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<const CommandQueue&>(GetCommandQueueBase());
+    return static_cast<const CommandQueue&>(GetBaseCommandQueue());
 }
 
 } // namespace Methane::Graphics::DirectX

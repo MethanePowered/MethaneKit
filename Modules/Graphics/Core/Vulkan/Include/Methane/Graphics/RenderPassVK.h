@@ -77,7 +77,7 @@ public:
     void Reset();
 
     const IContextVK& GetContextVK() const noexcept { return m_vk_context; }
-    RenderPatternVK&  GetPatternVK() const noexcept { return static_cast<RenderPatternVK&>(GetPatternBase()); }
+    RenderPatternVK&  GetPatternVK() const noexcept { return static_cast<RenderPatternVK&>(GetBasePattern()); }
 
     const vk::Framebuffer& GetNativeFrameBuffer() const noexcept { return m_vk_unique_frame_buffer.get(); }
 

@@ -65,7 +65,7 @@ protected:
     const IContextMT& GetContextMT() const noexcept
     {
         META_FUNCTION_TASK();
-        return dynamic_cast<const IContextMT&>(Base::Resource::GetContextBase());
+        return dynamic_cast<const IContextMT&>(Base::Resource::GetBaseContext());
     }
 
     id<MTLBuffer> GetUploadSubresourceBuffer(const IResource::SubResource& sub_resource)

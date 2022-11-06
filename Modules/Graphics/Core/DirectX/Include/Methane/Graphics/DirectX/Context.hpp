@@ -94,7 +94,7 @@ public:
     }
 
     // IContext interface
-    const Device&      GetDirectDevice() const noexcept final                   { return static_cast<const Device&>(Base::Context::GetDeviceBase()); }
+    const Device&      GetDirectDevice() const noexcept final                   { return static_cast<const Device&>(Base::Context::GetBaseDevice()); }
     CommandQueue&      GetDirectDefaultCommandQueue(CommandListType type) final { return static_cast<CommandQueue&>(Base::Context::GetDefaultCommandKit(type).GetQueue()); }
     DescriptorManager& GetDirectDescriptorManager() const noexcept final        { return static_cast<DescriptorManager&>(Base::Context::GetDescriptorManager()); }
 
@@ -116,7 +116,7 @@ public:
     }
 
 protected:
-    Device& GetDirectMutableDevice() noexcept { return static_cast<Device&>(GetDeviceBase()); }
+    Device& GetDirectMutableDevice() noexcept { return static_cast<Device&>(GetBaseDevice()); }
 
 private:
     using NativeQueryHeaps = std::array<wrl::ComPtr<ID3D12QueryHeap>, D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP + 1>;

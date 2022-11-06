@@ -43,6 +43,25 @@ Base implementation of the command list interface.
 namespace Methane::Graphics::Base
 {
 
+class CommandListDebugGroup
+    : public ICommandListDebugGroup
+    , public Object
+{
+public:
+    explicit CommandListDebugGroup(const std::string& name);
+
+    // IObject overrides
+    bool SetName(const std::string&) override;
+
+    // IDebugGroup interface
+    ICommandListDebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
+    ICommandListDebugGroup* GetSubGroup(Data::Index id) const noexcept final;
+    bool                    HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
+
+private:
+    Ptrs<ICommandListDebugGroup> m_sub_groups;
+};
+
 class CommandQueue;
 class ProgramBindings;
 
@@ -54,31 +73,14 @@ class CommandList // NOSONAR - custom destructor is used for logging, class has 
     friend class CommandQueue;
 
 public:
+    using DebugGroup = CommandListDebugGroup;
+
     struct CommandState final
     {
         // Raw pointer is used for program bindings instead of smart pointer for performance reasons
         // to get rid of shared_from_this() overhead required to acquire smart pointer from reference
         const ProgramBindings* program_bindings_ptr;
         Ptrs<Object>           retained_resources;
-    };
-
-    class DebugGroup
-        : public IDebugGroup
-        , public Object
-    {
-    public:
-        explicit DebugGroup(const std::string& name);
-
-        // IObject overrides
-        bool SetName(const std::string&) override;
-
-        // IDebugGroup interface
-        IDebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
-        IDebugGroup* GetSubGroup(Data::Index id) const noexcept final;
-        bool        HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
-
-    private:
-        Ptrs<IDebugGroup> m_sub_groups;
     };
 
     CommandList(CommandQueue& command_queue, Type type);
@@ -105,8 +107,8 @@ public:
     void PushOpenDebugGroup(IDebugGroup& debug_group);
     void ClearOpenDebugGroups();
 
-    CommandQueue&          GetCommandQueueBase();
-    const CommandQueue&    GetCommandQueueBase() const;
+    CommandQueue&          GetBaseCommandQueue();
+    const CommandQueue&    GetBaseCommandQueue() const;
     const ProgramBindings* GetProgramBindingsPtr() const noexcept { return GetCommandState().program_bindings_ptr; }
     Ptr<CommandList>       GetCommandListPtr()                    { return GetPtr<CommandList>(); }
 
@@ -192,9 +194,9 @@ public:
 
     [[nodiscard]] Ptr<CommandListSet>      GetPtr()                     { return shared_from_this(); }
     [[nodiscard]] const Refs<CommandList>& GetBaseRefs() const noexcept { return m_base_refs; }
-    [[nodiscard]] const CommandList&       GetCommandListBase(Data::Index index) const;
-    [[nodiscard]] CommandQueue&            GetCommandQueueBase()        { return m_base_refs.back().get().GetCommandQueueBase(); }
-    [[nodiscard]] const CommandQueue&      GetCommandQueueBase() const  { return m_base_refs.back().get().GetCommandQueueBase(); }
+    [[nodiscard]] const CommandList&       GetBaseCommandList(Data::Index index) const;
+    [[nodiscard]] CommandQueue&            GetBaseCommandQueue()        { return m_base_refs.back().get().GetBaseCommandQueue(); }
+    [[nodiscard]] const CommandQueue&      GetBaseCommandQueue() const  { return m_base_refs.back().get().GetBaseCommandQueue(); }
     [[nodiscard]] const std::string&       GetCombinedName();
 
 protected:

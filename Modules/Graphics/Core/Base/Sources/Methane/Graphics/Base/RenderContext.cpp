@@ -128,7 +128,7 @@ void RenderContext::ResetWithSettings(const Settings& settings)
 
     WaitForGpu(WaitFor::RenderComplete);
 
-    Ptr<Device> device_ptr = GetDeviceBase().GetPtr<Device>();
+    Ptr<Device> device_ptr = GetBaseDevice().GetPtr<Device>();
     m_settings = settings;
 
     Release();

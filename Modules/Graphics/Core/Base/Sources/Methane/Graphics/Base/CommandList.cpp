@@ -45,18 +45,18 @@ static Data::TimeRange GetNormalTimeRange(Timestamp start, Timestamp end)
 }
 #endif
 
-CommandList::DebugGroup::DebugGroup(const std::string& name)
+CommandListDebugGroup::CommandListDebugGroup(const std::string& name)
     : Object(name)
 {
     META_FUNCTION_TASK();
 }
 
-bool CommandList::DebugGroup::SetName(const std::string&)
+bool CommandListDebugGroup::SetName(const std::string&)
 {
     META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(false, "Debug Group can not be renamed");
 }
 
-ICommandListDebugGroup& CommandList::DebugGroup::AddSubGroup(Data::Index id, const std::string& name)
+ICommandListDebugGroup& CommandListDebugGroup::AddSubGroup(Data::Index id, const std::string& name)
 {
     META_FUNCTION_TASK();
     if (id >= m_sub_groups.size())
@@ -64,12 +64,12 @@ ICommandListDebugGroup& CommandList::DebugGroup::AddSubGroup(Data::Index id, con
         m_sub_groups.resize(id + 1);
     }
 
-    Ptr<IDebugGroup> sub_group_ptr = IDebugGroup::Create(name);
+    Ptr<ICommandListDebugGroup> sub_group_ptr = ICommandListDebugGroup::Create(name);
     m_sub_groups[id] = sub_group_ptr;
     return *sub_group_ptr;
 }
 
-ICommandListDebugGroup* CommandList::DebugGroup::GetSubGroup(Data::Index id) const noexcept
+ICommandListDebugGroup* CommandListDebugGroup::GetSubGroup(Data::Index id) const noexcept
 {
     META_FUNCTION_TASK();
     return id < m_sub_groups.size() ? m_sub_groups[id].get() : nullptr;
@@ -269,7 +269,7 @@ void CommandList::CompleteInternal()
     META_LOG("{} Command list '{}' was COMPLETED with GPU timings {}", magic_enum::enum_name(m_type), GetName(), static_cast<std::string>(GetGpuTimeRange(true)));
 }
 
-CommandList::DebugGroup* CommandList::GetTopOpenDebugGroup() const
+CommandListDebugGroup* CommandList::GetTopOpenDebugGroup() const
 {
     META_FUNCTION_TASK();
     return m_open_debug_groups.empty() ? nullptr : m_open_debug_groups.top().get();
@@ -388,14 +388,14 @@ void CommandList::ApplyProgramBindings(ProgramBindings& program_bindings, IProgr
     program_bindings.Apply(*this, apply_behavior);
 }
 
-CommandQueue& CommandList::GetCommandQueueBase()
+CommandQueue& CommandList::GetBaseCommandQueue()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
     return *m_command_queue_ptr;
 }
 
-const CommandQueue& CommandList::GetCommandQueueBase() const
+const CommandQueue& CommandList::GetBaseCommandQueue() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
@@ -464,7 +464,7 @@ void CommandListSet::Complete() const
     m_is_executing = false;
 }
 
-const CommandList& CommandListSet::GetCommandListBase(Data::Index index) const
+const CommandList& CommandListSet::GetBaseCommandList(Data::Index index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(index, m_base_refs.size());

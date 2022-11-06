@@ -147,13 +147,13 @@ void CommandListSetVK::WaitUntilCompleted()
 CommandQueueVK& CommandListSetVK::GetCommandQueueVK() noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<CommandQueueVK&>(GetCommandQueueBase());
+    return static_cast<CommandQueueVK&>(GetBaseCommandQueue());
 }
 
 const CommandQueueVK& CommandListSetVK::GetCommandQueueVK() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<const CommandQueueVK&>(GetCommandQueueBase());
+    return static_cast<const CommandQueueVK&>(GetBaseCommandQueue());
 }
 
 const std::vector<vk::Semaphore>& CommandListSetVK::GetWaitSemaphores()

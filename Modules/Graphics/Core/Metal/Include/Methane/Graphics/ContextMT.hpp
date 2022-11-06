@@ -59,7 +59,7 @@ public:
     const DeviceMT& GetDeviceMT() const noexcept final
     {
         META_FUNCTION_TASK();
-        return static_cast<const DeviceMT&>(Base::Context::GetDeviceBase());
+        return static_cast<const DeviceMT&>(Base::Context::GetBaseDevice());
     }
 
     CommandQueueMT& GetDefaultCommandQueueMT(CommandListType type) final

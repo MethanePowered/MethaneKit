@@ -221,13 +221,13 @@ bool RenderPatternVK::SetName(const std::string& name)
 const RenderContextVK& RenderPatternVK::GetRenderContextVK() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<const RenderContextVK&>(GetRenderContextBase());
+    return static_cast<const RenderContextVK&>(GetBaseRenderContext());
 }
 
 RenderContextVK& RenderPatternVK::GetRenderContextVK() noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<RenderContextVK&>(GetRenderContextBase());
+    return static_cast<RenderContextVK&>(GetBaseRenderContext());
 }
 
 Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
@@ -238,7 +238,7 @@ Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Setti
 
 RenderPassVK::RenderPassVK(RenderPatternVK& render_pattern, const Settings& settings)
     : Base::RenderPass(render_pattern, settings)
-    , m_vk_context(dynamic_cast<const IContextVK&>(render_pattern.GetRenderContextBase()))
+    , m_vk_context(dynamic_cast<const IContextVK&>(render_pattern.GetBaseRenderContext()))
     , m_vk_unique_frame_buffer(CreateNativeFrameBuffer(render_pattern.GetRenderContextVK().GetDeviceVK().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
     , m_vk_pass_begin_info(CreateNativeBeginInfo(GetNativeFrameBuffer()))
 {

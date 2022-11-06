@@ -139,7 +139,7 @@ public:
     // IResourceVK overrides
     const IContextVK& GetContextVK() const noexcept final
     {
-        return dynamic_cast<const IContextVK&>(Base::Resource::GetContextBase());
+        return dynamic_cast<const IContextVK&>(Base::Resource::GetBaseContext());
     }
 
     const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept final

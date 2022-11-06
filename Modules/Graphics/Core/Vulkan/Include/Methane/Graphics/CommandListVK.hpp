@@ -243,8 +243,8 @@ public:
     }
 
     // ICommandListVK interface
-    CommandQueueVK&          GetCommandQueueVK() final                   { return static_cast<CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
-    const CommandQueueVK&    GetCommandQueueVK() const final             { return static_cast<const CommandQueueVK&>(CommandListBaseT::GetCommandQueueBase()); }
+    CommandQueueVK&          GetCommandQueueVK() final                   { return static_cast<CommandQueueVK&>(CommandListBaseT::GetBaseCommandQueue()); }
+    const CommandQueueVK&    GetCommandQueueVK() const final             { return static_cast<const CommandQueueVK&>(CommandListBaseT::GetBaseCommandQueue()); }
     vk::PipelineBindPoint    GetNativePipelineBindPoint() const final    { return pipeline_bind_point; }
     const vk::CommandBuffer& GetNativeCommandBufferDefault() const final { return GetNativeCommandBuffer(default_command_buffer_type); }
     const vk::CommandBuffer& GetNativeCommandBuffer(CommandBufferType cmd_buffer_type) const final

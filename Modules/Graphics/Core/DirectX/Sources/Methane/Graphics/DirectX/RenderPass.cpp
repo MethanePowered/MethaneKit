@@ -202,7 +202,7 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(IRenderPass::Access ac
 
 RenderPass::RenderPass(Base::RenderPattern& render_pattern, const Settings& settings)
     : Base::RenderPass(render_pattern, settings, false)
-    , m_dx_context(static_cast<const RenderContext&>(render_pattern.GetRenderContextBase()))
+    , m_dx_context(static_cast<const RenderContext&>(render_pattern.GetBaseRenderContext()))
 {
     META_FUNCTION_TASK();
     std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
@@ -287,7 +287,7 @@ void RenderPass::UpdateNativeRenderPassDesc(bool settings_changed)
         m_depth_stencil_desc.reset();
     }
 
-    const Pattern::Settings& pattern_settings = GetPatternBase().GetSettings();
+    const Pattern::Settings& pattern_settings = GetBasePattern().GetSettings();
 
     uint32_t color_attachment_index = 0;
     for (const Base::RenderPass::ColorAttachment& color_attachment : pattern_settings.color_attachments)
@@ -331,7 +331,7 @@ void RenderPass::UpdateNativeClearDesc()
     META_FUNCTION_TASK();
 
     m_rt_clear_infos.clear();
-    const Pattern::Settings& settings = GetPatternBase().GetSettings();
+    const Pattern::Settings& settings = GetBasePattern().GetSettings();
     for (const Base::RenderPass::ColorAttachment& color_attach : settings.color_attachments)
     {
         if (color_attach.load_action != Base::RenderPass::Attachment::LoadAction::Clear)
@@ -348,7 +348,7 @@ void RenderPass::ForEachAccessibleDescriptorHeap(FuncType do_action) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    const Pattern::Settings& settings = GetPatternBase().GetSettings();
+    const Pattern::Settings& settings = GetBasePattern().GetSettings();
 
     static constexpr auto s_access_values = magic_enum::enum_values<Access>();
     for (Access access : s_access_values)
@@ -432,7 +432,7 @@ void RenderPass::End(Base::RenderCommandList& command_list)
         p_dx_command_list_4->EndRenderPass();
     }
 
-    if (GetPatternBase().GetSettings().is_final_pass)
+    if (GetBasePattern().GetSettings().is_final_pass)
     {
         SetAttachmentStates(IResource::State::Present, {}, m_end_transition_barriers_ptr, command_list);
     }
@@ -483,7 +483,7 @@ const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& RenderPass::GetNativeRenderTarge
     if (!m_native_rt_cpu_handles.empty())
         return m_native_rt_cpu_handles;
 
-    for (const ColorAttachment& color_attach : GetPatternBase().GetSettings().color_attachments)
+    for (const ColorAttachment& color_attach : GetBasePattern().GetSettings().color_attachments)
     {
         m_native_rt_cpu_handles.push_back(GetDirectAttachmentTextureView(color_attach).GetNativeCpuDescriptorHandle());
     }
@@ -496,7 +496,7 @@ const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPass::GetNativeDepthStencilCPUHandle() 
     if (m_native_ds_cpu_handle.ptr)
         return &m_native_ds_cpu_handle;
 
-    const Pattern::Settings& settings = GetPatternBase().GetSettings();
+    const Pattern::Settings& settings = GetBasePattern().GetSettings();
     if (!settings.depth_attachment)
         return nullptr;
 
