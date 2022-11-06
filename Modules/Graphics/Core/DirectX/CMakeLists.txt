@@ -2,62 +2,63 @@ set(TARGET MethaneGraphicsCoreDirectX)
 
 include(MethaneModules)
 
-get_module_dirs("Methane/Graphics")
+get_module_dirs("Methane/Graphics/DirectX")
 
 list(APPEND HEADERS
-    ${INCLUDE_DIR}/TypesDX.h
-    ${INCLUDE_DIR}/DeviceDX.h
-    ${INCLUDE_DIR}/FenceDX.h
-    ${INCLUDE_DIR}/ContextDX.h
-    ${INCLUDE_DIR}/ContextDX.hpp
-    ${INCLUDE_DIR}/ShaderDX.h
-    ${INCLUDE_DIR}/ProgramDX.h
-    ${INCLUDE_DIR}/ProgramArgumentBindingDX.h
-    ${INCLUDE_DIR}/ProgramBindingsDX.h
-    ${INCLUDE_DIR}/RenderContextDX.h
-    ${INCLUDE_DIR}/RenderStateDX.h
-    ${INCLUDE_DIR}/ResourceDX.h
-    ${INCLUDE_DIR}/ResourceBarriersDX.h
-    ${INCLUDE_DIR}/DescriptorManagerDX.h
-    ${INCLUDE_DIR}/DescriptorHeapDX.h
-    ${INCLUDE_DIR}/QueryPoolDX.h
-    ${INCLUDE_DIR}/ResourceDX.hpp
-    ${INCLUDE_DIR}/BufferDX.h
-    ${INCLUDE_DIR}/TextureDX.h
-    ${INCLUDE_DIR}/SamplerDX.h
-    ${INCLUDE_DIR}/RenderPassDX.h
-    ${INCLUDE_DIR}/CommandQueueDX.h
-    ${INCLUDE_DIR}/CommandListDX.h
-    ${INCLUDE_DIR}/CommandListDX.hpp
-    ${INCLUDE_DIR}/TransferCommandListDX.h
-    ${INCLUDE_DIR}/RenderCommandListDX.h
-    ${INCLUDE_DIR}/ParallelRenderCommandListDX.h
+    ${INCLUDE_DIR}/Types.h
+    ${INCLUDE_DIR}/Device.h
+    ${INCLUDE_DIR}/Fence.h
+    ${INCLUDE_DIR}/IContextDx.h
+    ${INCLUDE_DIR}/Context.hpp
+    ${INCLUDE_DIR}/Shader.h
+    ${INCLUDE_DIR}/Program.h
+    ${INCLUDE_DIR}/ProgramArgumentBinding.h
+    ${INCLUDE_DIR}/ProgramBindings.h
+    ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/RenderState.h
+    ${INCLUDE_DIR}/IResourceDx.h
+    ${INCLUDE_DIR}/ResourceView.h
+    ${INCLUDE_DIR}/Resource.hpp
+    ${INCLUDE_DIR}/ResourceBarriers.h
+    ${INCLUDE_DIR}/DescriptorManager.h
+    ${INCLUDE_DIR}/DescriptorHeap.h
+    ${INCLUDE_DIR}/Buffer.h
+    ${INCLUDE_DIR}/Texture.h
+    ${INCLUDE_DIR}/Sampler.h
+    ${INCLUDE_DIR}/QueryPool.h
+    ${INCLUDE_DIR}/RenderPass.h
+    ${INCLUDE_DIR}/CommandQueue.h
+    ${INCLUDE_DIR}/CommandListSet.h
+    ${INCLUDE_DIR}/CommandList.hpp
+    ${INCLUDE_DIR}/TransferCommandList.h
+    ${INCLUDE_DIR}/RenderCommandList.h
+    ${INCLUDE_DIR}/ParallelRenderCommandList.h
 )
 
 list(APPEND SOURCES
-    ${SOURCES_DIR}/TypesDX.cpp
-    ${SOURCES_DIR}/DeviceDX.cpp
-    ${SOURCES_DIR}/FenceDX.cpp
-    ${SOURCES_DIR}/ShaderDX.cpp
-    ${SOURCES_DIR}/ProgramDX.cpp
-    ${SOURCES_DIR}/ProgramArgumentBindingDX.cpp
-    ${SOURCES_DIR}/ProgramBindingsDX.cpp
-    ${SOURCES_DIR}/RenderContextDX.cpp
-    ${SOURCES_DIR}/RenderStateDX.cpp
-    ${SOURCES_DIR}/ResourceDX.cpp
-    ${SOURCES_DIR}/ResourceBarriersDX.cpp
-    ${SOURCES_DIR}/DescriptorManagerDX.cpp
-    ${SOURCES_DIR}/DescriptorHeapDX.cpp
-    ${SOURCES_DIR}/QueryPoolDX.cpp
-    ${SOURCES_DIR}/BufferDX.cpp
-    ${SOURCES_DIR}/TextureDX.cpp
-    ${SOURCES_DIR}/SamplerDX.cpp
-    ${SOURCES_DIR}/RenderPassDX.cpp
-    ${SOURCES_DIR}/CommandQueueDX.cpp
-    ${SOURCES_DIR}/CommandListDX.cpp
-    ${SOURCES_DIR}/TransferCommandListDX.cpp
-    ${SOURCES_DIR}/RenderCommandListDX.cpp
-    ${SOURCES_DIR}/ParallelRenderCommandListDX.cpp
+    ${SOURCES_DIR}/Types.cpp
+    ${SOURCES_DIR}/Device.cpp
+    ${SOURCES_DIR}/Fence.cpp
+    ${SOURCES_DIR}/Shader.cpp
+    ${SOURCES_DIR}/Program.cpp
+    ${SOURCES_DIR}/ProgramArgumentBinding.cpp
+    ${SOURCES_DIR}/ProgramBindings.cpp
+    ${SOURCES_DIR}/RenderContext.cpp
+    ${SOURCES_DIR}/RenderState.cpp
+    ${SOURCES_DIR}/ResourceView.cpp
+    ${SOURCES_DIR}/ResourceBarriers.cpp
+    ${SOURCES_DIR}/DescriptorManager.cpp
+    ${SOURCES_DIR}/DescriptorHeap.cpp
+    ${SOURCES_DIR}/Buffer.cpp
+    ${SOURCES_DIR}/Texture.cpp
+    ${SOURCES_DIR}/Sampler.cpp
+    ${SOURCES_DIR}/QueryPool.cpp
+    ${SOURCES_DIR}/RenderPass.cpp
+    ${SOURCES_DIR}/CommandQueue.cpp
+    ${SOURCES_DIR}/CommandListSet.cpp
+    ${SOURCES_DIR}/TransferCommandList.cpp
+    ${SOURCES_DIR}/RenderCommandList.cpp
+    ${SOURCES_DIR}/ParallelRenderCommandList.cpp
 )
 
 add_library(${TARGET} STATIC

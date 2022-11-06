@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2022 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,23 +16,26 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/IResource.cpp
-Methane resource interface: base class of all GPU resources.
+FILE: Methane/Graphics/DirectX/TransferCommandList.h
+DirectX 12 implementation of the transfer command list interface.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/IResource.h>
+#pragma once
 
-#include <Methane/Instrumentation.h>
+#include "CommandList.hpp"
 
-namespace Methane::Graphics
+#include <Methane/Graphics/ITransferCommandList.h>
+
+namespace Methane::Graphics::DirectX
 {
 
-ResourceAllocationError::ResourceAllocationError(const IResource& resource, std::string_view error_message)
-    : std::runtime_error(fmt::format("Failed to allocate memory for GPU resource '{}': {}", resource.GetName(), error_message))
-    , m_resource(resource)
+class TransferCommandList final
+    : public CommandList<Base::CommandList>
+    , public ITransferCommandList
 {
-    META_FUNCTION_TASK();
-}
+public:
+    explicit TransferCommandList(Base::CommandQueue& cmd_buffer);
+};
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::DirectX

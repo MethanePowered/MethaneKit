@@ -33,6 +33,22 @@ Methane resource interface: base class of all GPU resources.
 
 #include <string_view>
 
+// FIXME: DirectX specific types should not be declared in the Base layer
+namespace Methane::Graphics::DirectX
+{
+
+class DescriptorHeap;
+
+struct ResourceDescriptor
+{
+    DescriptorHeap& heap;
+    Data::Index     index;
+
+    ResourceDescriptor(DescriptorHeap& in_heap, Data::Index in_index);
+};
+
+} // namespace Methane::Graphics::DirectX
+
 namespace Methane::Graphics
 {
 
@@ -41,16 +57,6 @@ enum class ResourceType
     Buffer,
     Texture,
     Sampler,
-};
-
-class DescriptorHeapDX;
-
-struct ResourceDescriptor
-{
-    DescriptorHeapDX& heap;
-    Data::Index       index;
-
-    ResourceDescriptor(DescriptorHeapDX& in_heap, Data::Index in_index);
 };
 
 struct IResource;
@@ -82,7 +88,7 @@ struct IResource
 {
     using Usage              = ResourceUsage;
     using Type               = ResourceType;
-    using Descriptor         = ResourceDescriptor;
+    using Descriptor         = DirectX::ResourceDescriptor;
     using DescriptorByViewId = std::map<ResourceView::Id, Descriptor>;
     using AllocationError    = ResourceAllocationError;
     using State              = ResourceState;
