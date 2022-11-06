@@ -137,8 +137,8 @@ ICommandList& CommandKit::GetList(CommandListId cmd_list_id = 0U) const
     switch (m_cmd_list_type)
     {
     case CommandListType::Transfer: cmd_list_ptr = ITransferCommandList::Create(GetQueue()); break;
-    case CommandListType::Render: cmd_list_ptr = RenderCommandList::CreateForSynchronization(GetQueue()); break;
-    default:                          META_UNEXPECTED_ARG(m_cmd_list_type);
+    case CommandListType::Render:   cmd_list_ptr = RenderCommandList::CreateForSynchronization(GetQueue()); break;
+    default:                        META_UNEXPECTED_ARG(m_cmd_list_type);
     }
 
     cmd_list_ptr->SetName(fmt::format("{} Utility Command List {}", GetName(), cmd_list_id));

@@ -77,6 +77,10 @@ target_link_libraries(${TARGET}
         "-framework Metal"
 )
 
+# Add cyclic dependency of the CoreBase library from CoreMetal due to symbolic dependency
+# from CoreInterface fabric methods ISomething::Create(...) implementations defined in CoreMetal
+target_link_libraries(MethaneGraphicsCoreBase PRIVATE ${TARGET})
+
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 
 target_include_directories(${TARGET}

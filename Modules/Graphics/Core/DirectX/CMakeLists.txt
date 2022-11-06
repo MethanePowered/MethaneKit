@@ -87,6 +87,10 @@ target_link_libraries(${TARGET}
         dxguid
 )
 
+# Add cyclic dependency of the CoreBase library from CoreDirectX due to symbolic dependency
+# from CoreInterface fabric methods ISomething::Create(...) implementations defined in CoreDirectX
+target_link_libraries(MethaneGraphicsCoreBase PRIVATE ${TARGET})
+
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 
 target_include_directories(${TARGET}

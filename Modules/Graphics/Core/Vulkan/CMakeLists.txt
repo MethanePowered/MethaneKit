@@ -106,6 +106,10 @@ target_link_libraries(${TARGET}
         spirv-cross-hlsl
 )
 
+# Add cyclic dependency of the CoreBase library from CoreVulkan due to symbolic dependency
+# from CoreInterface fabric methods ISomething::Create(...), which is required for correct linking with GCC
+target_link_libraries(MethaneGraphicsCoreBase PRIVATE ${TARGET})
+
 target_include_directories(${TARGET}
     PRIVATE
         Sources
