@@ -2,80 +2,83 @@ set(TARGET MethaneGraphicsCoreVulkan)
 
 include(MethaneModules)
 
-get_module_dirs("Methane/Graphics")
+get_module_dirs("Methane/Graphics/Vulkan")
 
 list(APPEND HEADERS
-    ${INCLUDE_DIR}/PlatformVK.h
-    ${INCLUDE_DIR}/TypesVK.h
-    ${INCLUDE_DIR}/DeviceVK.h
-    ${INCLUDE_DIR}/FenceVK.h
-    ${INCLUDE_DIR}/ContextVK.h
-    ${INCLUDE_DIR}/ContextVK.hpp
-    ${INCLUDE_DIR}/ShaderVK.h
-    ${INCLUDE_DIR}/ProgramVK.h
-    ${INCLUDE_DIR}/ProgramArgumentBindingVK.h
-    ${INCLUDE_DIR}/ProgramBindingsVK.h
-    ${INCLUDE_DIR}/RenderContextVK.h
-    ${INCLUDE_DIR}/RenderStateVK.h
-    ${INCLUDE_DIR}/ResourceVK.h
-    ${INCLUDE_DIR}/ResourceBarriersVK.h
-    ${INCLUDE_DIR}/DescriptorManagerVK.h
-    ${INCLUDE_DIR}/QueryPoolVK.h
-    ${INCLUDE_DIR}/ResourceVK.hpp
-    ${INCLUDE_DIR}/BufferVK.h
-    ${INCLUDE_DIR}/TextureVK.h
-    ${INCLUDE_DIR}/SamplerVK.h
-    ${INCLUDE_DIR}/RenderPassVK.h
-    ${INCLUDE_DIR}/CommandQueueVK.h
-    ${INCLUDE_DIR}/CommandListVK.h
-    ${INCLUDE_DIR}/CommandListVK.hpp
-    ${INCLUDE_DIR}/TransferCommandListVK.h
-    ${INCLUDE_DIR}/RenderCommandListVK.h
-    ${INCLUDE_DIR}/ParallelRenderCommandListVK.h
-    ${INCLUDE_DIR}/UtilsVK.hpp
+    ${INCLUDE_DIR}/Platform.h
+    ${INCLUDE_DIR}/Types.h
+    ${INCLUDE_DIR}/Device.h
+    ${INCLUDE_DIR}/Fence.h
+    ${INCLUDE_DIR}/IContextVk.h
+    ${INCLUDE_DIR}/Context.hpp
+    ${INCLUDE_DIR}/Shader.h
+    ${INCLUDE_DIR}/Program.h
+    ${INCLUDE_DIR}/ProgramArgumentBinding.h
+    ${INCLUDE_DIR}/ProgramBindings.h
+    ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/RenderState.h
+    ${INCLUDE_DIR}/IResourceVk.h
+    ${INCLUDE_DIR}/ResourceView.h
+    ${INCLUDE_DIR}/ResourceBarriers.h
+    ${INCLUDE_DIR}/DescriptorManager.h
+    ${INCLUDE_DIR}/QueryPool.h
+    ${INCLUDE_DIR}/Resource.hpp
+    ${INCLUDE_DIR}/Buffer.h
+    ${INCLUDE_DIR}/Texture.h
+    ${INCLUDE_DIR}/Sampler.h
+    ${INCLUDE_DIR}/RenderPass.h
+    ${INCLUDE_DIR}/CommandQueue.h
+    ${INCLUDE_DIR}/CommandList.h
+    ${INCLUDE_DIR}/CommandList.hpp
+    ${INCLUDE_DIR}/TransferCommandList.h
+    ${INCLUDE_DIR}/RenderCommandList.h
+    ${INCLUDE_DIR}/ParallelRenderCommandList.h
+    ${INCLUDE_DIR}/Utils.hpp
 )
 
 list(APPEND SOURCES
-    ${SOURCES_DIR}/PlatformVK.cpp
-    ${SOURCES_DIR}/${PLATFORM_DIR}/PlatformExtVK.${CPP_EXT}
-    ${SOURCES_DIR}/TypesVK.cpp
-    ${SOURCES_DIR}/DeviceVK.cpp
-    ${SOURCES_DIR}/FenceVK.cpp
-    ${SOURCES_DIR}/ShaderVK.cpp
-    ${SOURCES_DIR}/ProgramVK.cpp
-    ${SOURCES_DIR}/ProgramArgumentBindingVK.cpp
-    ${SOURCES_DIR}/ProgramBindingsVK.cpp
-    ${SOURCES_DIR}/RenderContextVK.cpp
-    ${SOURCES_DIR}/RenderStateVK.cpp
-    ${SOURCES_DIR}/ResourceVK.cpp
-    ${SOURCES_DIR}/ResourceBarriersVK.cpp
-    ${SOURCES_DIR}/DescriptorManagerVK.cpp
-    ${SOURCES_DIR}/QueryPoolVK.cpp
-    ${SOURCES_DIR}/BufferVK.cpp
-    ${SOURCES_DIR}/TextureVK.cpp
-    ${SOURCES_DIR}/SamplerVK.cpp
-    ${SOURCES_DIR}/RenderPassVK.cpp
-    ${SOURCES_DIR}/CommandQueueVK.cpp
-    ${SOURCES_DIR}/CommandListVK.cpp
-    ${SOURCES_DIR}/TransferCommandListVK.cpp
-    ${SOURCES_DIR}/RenderCommandListVK.cpp
-    ${SOURCES_DIR}/ParallelRenderCommandListVK.cpp
+    ${SOURCES_DIR}/Platform.cpp
+    ${SOURCES_DIR}/${PLATFORM_DIR}/PlatformExt.${CPP_EXT}
+    ${SOURCES_DIR}/Types.cpp
+    ${SOURCES_DIR}/Device.cpp
+    ${SOURCES_DIR}/Fence.cpp
+    ${SOURCES_DIR}/Shader.cpp
+    ${SOURCES_DIR}/Program.cpp
+    ${SOURCES_DIR}/ProgramArgumentBinding.cpp
+    ${SOURCES_DIR}/ProgramBindings.cpp
+    ${SOURCES_DIR}/RenderContext.cpp
+    ${SOURCES_DIR}/RenderState.cpp
+    ${SOURCES_DIR}/IResourceVk.cpp
+    ${SOURCES_DIR}/ResourceView.cpp
+    ${SOURCES_DIR}/ResourceBarriers.cpp
+    ${SOURCES_DIR}/DescriptorManager.cpp
+    ${SOURCES_DIR}/QueryPool.cpp
+    ${SOURCES_DIR}/Buffer.cpp
+    ${SOURCES_DIR}/Texture.cpp
+    ${SOURCES_DIR}/Sampler.cpp
+    ${SOURCES_DIR}/RenderPass.cpp
+    ${SOURCES_DIR}/CommandQueue.cpp
+    ${SOURCES_DIR}/CommandList.cpp
+    ${SOURCES_DIR}/TransferCommandList.cpp
+    ${SOURCES_DIR}/RenderCommandList.cpp
+    ${SOURCES_DIR}/ParallelRenderCommandList.cpp
 )
 
 if (APPLE)
-    set(METAL_SOURCE_DIR ../Metal)
+    set(METAL_SOURCES_DIR ../Metal/Include/Methane/Graphics)
+    set(METAL_INCLUDE_DIR ../Metal/Sources/Methane/Graphics)
     list(APPEND METAL_SOURCES
-        ${METAL_SOURCE_DIR}/${INCLUDE_DIR}/RenderContextAppViewMT.hh
-        ${METAL_SOURCE_DIR}/${INCLUDE_DIR}/TypesMT.hh
-        ${METAL_SOURCE_DIR}/${SOURCES_DIR}/TypesMT.mm
+        ${METAL_INCLUDE_DIR}/RenderContextAppViewMT.hh
+        ${METAL_INCLUDE_DIR}/TypesMT.hh
+        ${METAL_SOURCES_DIR}/TypesMT.mm
     )
     list(APPEND SOURCES
-        ${SOURCES_DIR}/RenderContextVK.mm
+        ${SOURCES_DIR}/RenderContext.mm
     )
     set(PLATFORM_SOURCES_OBJC
         ${METAL_SOURCES}
-        ${SOURCES_DIR}/RenderContextVK.mm
-        ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformExtVK.mm
+        ${SOURCES_DIR}/RenderContext.mm
+        ${SOURCES_GRAPHICS_DIR}/${PLATFORM_DIR}/PlatformExt.mm
     )
 endif()
 
@@ -101,7 +104,7 @@ target_link_libraries(${TARGET}
         # Vulkan Libs
         $<$<NOT:$<BOOL:${APPLE}>>:Vulkan-Headers> # Lin/Win: Dynamic linking with Vulkan, only Vulkan headers are needed
         $<$<BOOL:${LINUX}>:dl>                    # Linux: Link with dynamic linker for vk::DynamicLoader on Linux
-        $<$<BOOL:${APPLE}>:Vulkan::Vulkan>        # MacOS: Link statically with MoltenVK framework on MacOS
+        $<$<BOOL:${APPLE}>:Vulkan::Vulkan>        # MacOS: Link statically with Molten framework on MacOS
         spirv-cross-core
         spirv-cross-hlsl
 )
@@ -123,11 +126,11 @@ target_compile_definitions(${TARGET}
         $<$<BOOL:${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}>:METHANE_COMMAND_DEBUG_GROUPS_ENABLED>
     PRIVATE
         METHANE_GFX_VULKAN
-        VK_NO_PROTOTYPES
+        _NO_PROTOTYPES
         $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED=1> # 1 - Methane, 2 - Tracy
-        $<$<BOOL:${WIN32}>:VK_USE_PLATFORM_WIN32_KHR>
-        $<$<BOOL:${APPLE}>:VK_USE_PLATFORM_METAL_EXT>
-        $<$<BOOL:${LINUX}>:VK_USE_PLATFORM_XCB_KHR>
+        $<$<BOOL:${WIN32}>:_USE_PLATFORM_WIN32_KHR>
+        $<$<BOOL:${APPLE}>:_USE_PLATFORM_METAL_EXT>
+        $<$<BOOL:${LINUX}>:_USE_PLATFORM_XCB_KHR>
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

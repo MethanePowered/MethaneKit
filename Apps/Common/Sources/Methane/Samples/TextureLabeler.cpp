@@ -45,10 +45,10 @@ static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size
                                               const gfx::SubResource::Count& sub_res_count)
 {
     TextureLabeler::SliceDesc slice_desc = cube_slice_descs[depth_index % cube_slice_descs.size()];
-    if (rt_texture_settings.dimension_type == gfx::ITexture::DimensionType::Cube)
+    if (rt_texture_settings.dimension_type == gfx::TextureDimensionType::Cube)
         return slice_desc;
 
-    if (rt_texture_settings.dimension_type == gfx::ITexture::DimensionType::CubeArray)
+    if (rt_texture_settings.dimension_type == gfx::TextureDimensionType::CubeArray)
     {
         slice_desc.label = fmt::format("{}{}", array_index, slice_desc.label);
         return slice_desc;
@@ -138,7 +138,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
             TextureLabeler::Slice& slice = m_slices.back();
 
             slice.render_pass_ptr = gfx::IRenderPass::Create(*m_texture_face_render_pattern_ptr, {
-                { gfx::ITexture::View(rt_texture, gfx::SubResource::Index(depth_index, array_index), {}, gfx::ITexture::DimensionType::Tex2D) },
+                { gfx::ITexture::View(rt_texture, gfx::SubResource::Index(depth_index, array_index), {}, gfx::TextureDimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
             slice.render_pass_ptr->SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));

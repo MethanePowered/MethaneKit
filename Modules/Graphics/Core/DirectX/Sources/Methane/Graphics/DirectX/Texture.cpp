@@ -116,11 +116,11 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const ITexture::Settings& 
     CD3DX12_RESOURCE_DESC tex_desc{};
     switch (settings.dimension_type)
     {
-    case ITexture::DimensionType::Tex1D:
+    case TextureDimensionType::Tex1D:
         META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single 1D texture must have array length equal to 1");
         [[fallthrough]];
 
-    case ITexture::DimensionType::Tex1DArray:
+    case TextureDimensionType::Tex1DArray:
         META_CHECK_ARG_DESCR(settings.dimensions, settings.dimensions.GetHeight() == 1 && settings.dimensions.GetDepth() == 1,
                              "1D textures must have height and depth dimensions equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex1D(
@@ -131,14 +131,14 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const ITexture::Settings& 
         );
         break;
 
-    case ITexture::DimensionType::Tex2DMultisample:
+    case TextureDimensionType::Tex2DMultisample:
         META_UNEXPECTED_ARG_DESCR(settings.dimension_type, "2D Multisample textures are not supported yet");
 
-    case ITexture::DimensionType::Tex2D:
+    case TextureDimensionType::Tex2D:
         META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single 2D texture must have array length equal to 1");
         [[fallthrough]];
 
-    case ITexture::DimensionType::Tex2DArray:
+    case TextureDimensionType::Tex2DArray:
         META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 1, "2D textures must have depth dimension equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
             TypeConverter::PixelFormatToDxgi(settings.pixel_format),
@@ -149,7 +149,7 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const ITexture::Settings& 
         );
         break;
 
-    case ITexture::DimensionType::Tex3D:
+    case TextureDimensionType::Tex3D:
         META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single 3D texture must have array length equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex3D(
             TypeConverter::PixelFormatToDxgi(settings.pixel_format),
@@ -160,11 +160,11 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const ITexture::Settings& 
         );
         break;
 
-    case ITexture::DimensionType::Cube:
+    case TextureDimensionType::Cube:
         META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single Cube texture must have array length equal to 1");
         [[fallthrough]];
 
-    case ITexture::DimensionType::CubeArray:
+    case TextureDimensionType::CubeArray:
         META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 6, "Cube textures depth dimension must be equal to 6");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
             TypeConverter::PixelFormatToDxgi(settings.pixel_format),
@@ -192,13 +192,13 @@ static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeShaderResourceViewDesc(const 
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
     switch (settings.dimension_type)
     {
-    case ITexture::DimensionType::Tex1D:
+    case TextureDimensionType::Tex1D:
         srv_desc.Texture1D.MostDetailedMip      = sub_resource_index.GetMipLevel();
         srv_desc.Texture1D.MipLevels            = sub_resource_count.GetMipLevelsCount();
         srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURE1D;
         break;
 
-    case ITexture::DimensionType::Tex1DArray:
+    case TextureDimensionType::Tex1DArray:
         srv_desc.Texture1DArray.MostDetailedMip = sub_resource_index.GetMipLevel();
         srv_desc.Texture1DArray.MipLevels       = sub_resource_count.GetMipLevelsCount();
         srv_desc.Texture1DArray.FirstArraySlice = sub_resource_index.GetArrayIndex();
@@ -206,14 +206,14 @@ static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeShaderResourceViewDesc(const 
         srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURE1DARRAY;
         break;
 
-    case ITexture::DimensionType::Tex2DMultisample:
-    case ITexture::DimensionType::Tex2D:
+    case TextureDimensionType::Tex2DMultisample:
+    case TextureDimensionType::Tex2D:
         srv_desc.Texture2D.MostDetailedMip      = sub_resource_index.GetMipLevel();
         srv_desc.Texture2D.MipLevels            = sub_resource_count.GetMipLevelsCount();
         srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURE2D;
         break;
 
-    case ITexture::DimensionType::Tex2DArray:
+    case TextureDimensionType::Tex2DArray:
         srv_desc.Texture2DArray.MostDetailedMip = sub_resource_index.GetMipLevel();
         srv_desc.Texture2DArray.MipLevels       = sub_resource_count.GetMipLevelsCount();
         srv_desc.Texture2DArray.FirstArraySlice = sub_resource_index.GetArrayIndex();
@@ -221,19 +221,19 @@ static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeShaderResourceViewDesc(const 
         srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
         break;
 
-    case ITexture::DimensionType::Tex3D:
+    case TextureDimensionType::Tex3D:
         srv_desc.Texture3D.MostDetailedMip      = sub_resource_index.GetMipLevel();
         srv_desc.Texture3D.MipLevels            = sub_resource_count.GetMipLevelsCount();
         srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURE3D;
         break;
 
-    case ITexture::DimensionType::Cube:
+    case TextureDimensionType::Cube:
         srv_desc.TextureCube.MostDetailedMip    = sub_resource_index.GetMipLevel();
         srv_desc.TextureCube.MipLevels          = sub_resource_count.GetMipLevelsCount();
         srv_desc.ViewDimension                  = D3D12_SRV_DIMENSION_TEXTURECUBE;
         break;
 
-    case ITexture::DimensionType::CubeArray:
+    case TextureDimensionType::CubeArray:
         srv_desc.TextureCubeArray.First2DArrayFace = sub_resource_index.GetArrayIndex() * 6U + sub_resource_index.GetDepthSlice();
         srv_desc.TextureCubeArray.NumCubes         = sub_resource_count.GetArraySize();
         srv_desc.TextureCubeArray.MostDetailedMip  = sub_resource_index.GetMipLevel();
@@ -261,36 +261,36 @@ static D3D12_RENDER_TARGET_VIEW_DESC CreateNativeRenderTargetViewDesc(const ITex
     D3D12_RENDER_TARGET_VIEW_DESC rtv_desc{};
     switch (settings.dimension_type)
     {
-    case ITexture::DimensionType::Tex1D:
+    case TextureDimensionType::Tex1D:
         rtv_desc.Texture1D.MipSlice             = sub_resource_index.GetMipLevel();
         rtv_desc.ViewDimension                  = D3D12_RTV_DIMENSION_TEXTURE1D;
         break;
 
-    case ITexture::DimensionType::Tex1DArray:
+    case TextureDimensionType::Tex1DArray:
         rtv_desc.Texture1DArray.MipSlice        = sub_resource_index.GetMipLevel();
         rtv_desc.Texture1DArray.FirstArraySlice = sub_resource_index.GetArrayIndex();
         rtv_desc.Texture1DArray.ArraySize       = sub_resource_count.GetArraySize();
         rtv_desc.ViewDimension                  = D3D12_RTV_DIMENSION_TEXTURE1DARRAY;
         break;
 
-    case ITexture::DimensionType::Tex2DMultisample:
-    case ITexture::DimensionType::Tex2D:
+    case TextureDimensionType::Tex2DMultisample:
+    case TextureDimensionType::Tex2D:
         rtv_desc.Texture2D.MipSlice             = sub_resource_index.GetMipLevel();
         rtv_desc.ViewDimension                  = D3D12_RTV_DIMENSION_TEXTURE2D;
         break;
 
-    case ITexture::DimensionType::Cube:
-    case ITexture::DimensionType::CubeArray:
-    case ITexture::DimensionType::Tex2DArray:
+    case TextureDimensionType::Cube:
+    case TextureDimensionType::CubeArray:
+    case TextureDimensionType::Tex2DArray:
         rtv_desc.Texture2DArray.MipSlice        = sub_resource_index.GetMipLevel();
-        rtv_desc.Texture2DArray.FirstArraySlice = settings.dimension_type == ITexture::DimensionType::Tex2DArray
+        rtv_desc.Texture2DArray.FirstArraySlice = settings.dimension_type == TextureDimensionType::Tex2DArray
                                                 ? sub_resource_index.GetArrayIndex()
                                                 : (sub_resource_index.GetArrayIndex() * 6U + sub_resource_index.GetDepthSlice());
         rtv_desc.Texture2DArray.ArraySize       = sub_resource_count.GetArraySize();
         rtv_desc.ViewDimension                  = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
         break;
 
-    case ITexture::DimensionType::Tex3D:
+    case TextureDimensionType::Tex3D:
         rtv_desc.Texture3D.MipSlice             = sub_resource_index.GetMipLevel();
         rtv_desc.ViewDimension                  = D3D12_RTV_DIMENSION_TEXTURE3D;
         break;

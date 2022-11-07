@@ -52,7 +52,7 @@ SkyBox::SkyBox(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, 
     , m_mesh_buffers(render_cmd_queue, mesh, "Sky-Box")
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, ITexture::DimensionType::Cube);
+    META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, TextureDimensionType::Cube);
     m_mesh_buffers.SetTexture(std::dynamic_pointer_cast<ITexture>(cube_map_texture.GetPtr()));
 
     IRenderState::Settings state_settings;
