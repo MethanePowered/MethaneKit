@@ -16,42 +16,32 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppView.h
-Methane application view used both by IRenderContext in Core API
-and by Methane App implementations.
+FILE: Methane/Graphics/Metal/Context.h
+Metal context accessor interface for template class Context<ContextBaseT>
 
 ******************************************************************************/
 
 #pragma once
 
-#ifdef __OBJC__
+#include <Methane/Graphics/ICommandList.h>
+#include <Methane/Memory.hpp>
 
-#ifdef APPLE_MACOS
-#import "MacOS/AppViewMetal.hh"
-#else
-#import "iOS/AppViewMetal.hh"
-#endif
+#include <string>
 
-#endif // __OBJC__
-
-namespace Methane::Platform
+namespace Methane::Graphics::Metal
 {
 
-#ifdef __OBJC__
+class Device;
+class CommandQueue;
+class ProgramLibrary;
 
-using NativeAppView = AppViewMetal;
-using NativeAppViewPtr = NativeAppView* _Nonnull;
-
-#else // __OBJC__
-
-using NativeAppView = uint8_t;
-using NativeAppViewPtr = NativeAppView*;
-
-#endif // __OBJC__
-
-struct AppView
+struct IContext
 {
-    NativeAppViewPtr p_native_view;
+    virtual const Device& GetMetalDevice() const noexcept = 0;
+    virtual CommandQueue& GetMetalDefaultCommandQueue(CommandListType type) = 0;
+    virtual const Ptr<ProgramLibrary>& GetMetalLibrary(const std::string& library_name = "") const = 0;
+
+    virtual ~IContext() = default;
 };
 
-} // namespace Methane::Platform
+} // namespace Methane::Graphics::Metal

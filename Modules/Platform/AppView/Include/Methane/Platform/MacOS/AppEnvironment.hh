@@ -27,14 +27,14 @@ MacOS application environment.
 
 #import <AppKit/AppKit.h>
 
-@class AppViewMT;
+@class AppViewMetal;
 
 @protocol MetalAppViewDelegate<NSObject>
 
 @property (nonatomic, readonly, nullable) NSWindow* window;
 
-- (void)drawInView:(nonnull AppViewMT *) view;
-- (void)appView: (nonnull AppViewMT *) view drawableSizeWillChange: (CGSize)size;
+- (void)drawInView:(nonnull AppViewMetal *) view;
+- (void)appView: (nonnull AppViewMetal *) view drawableSizeWillChange: (CGSize)size;
 
 @end
 

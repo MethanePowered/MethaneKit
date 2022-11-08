@@ -16,42 +16,36 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppView.h
-Methane application view used both by IRenderContext in Core API
-and by Methane App implementations.
+FILE: Methane/Graphics/Metal/Resource.mm
+Metal implementation of the resource interface.
 
 ******************************************************************************/
 
-#pragma once
+#include <Methane/Graphics/Metal/Resource.hh>
 
-#ifdef __OBJC__
+#include <Methane/Graphics/Base/ResourceBarriers.h>
 
-#ifdef APPLE_MACOS
-#import "MacOS/AppViewMetal.hh"
-#else
-#import "iOS/AppViewMetal.hh"
-#endif
-
-#endif // __OBJC__
-
-namespace Methane::Platform
+namespace Methane::Graphics::Metal
 {
 
-#ifdef __OBJC__
-
-using NativeAppView = AppViewMetal;
-using NativeAppViewPtr = NativeAppView* _Nonnull;
-
-#else // __OBJC__
-
-using NativeAppView = uint8_t;
-using NativeAppViewPtr = NativeAppView*;
-
-#endif // __OBJC__
-
-struct AppView
+class ResourceBarriers final
+    : public Base::ResourceBarriers
 {
-    NativeAppViewPtr p_native_view;
+public:
+    explicit ResourceBarriers(const Set& barriers)
+        : Base::ResourceBarriers(barriers)
+    { }
 };
 
-} // namespace Methane::Platform
+} // namespace Methane::Graphics::Metal
+
+namespace Methane::Graphics
+{
+
+Ptr<IResourceBarriers> IResourceBarriers::Create(const Set& barriers)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Metal::ResourceBarriers>(barriers);
+}
+
+} // namespace Methane::Graphics

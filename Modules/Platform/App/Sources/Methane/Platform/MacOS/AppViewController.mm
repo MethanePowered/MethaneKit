@@ -81,7 +81,7 @@ using namespace Methane::Platform;
     [self.view.window makeFirstResponder:self];
 }
 
-- (void)appView: (nonnull AppViewMT *) view drawableSizeWillChange: (CGSize)size
+- (void)appView: (nonnull AppViewMetal *) view drawableSizeWillChange: (CGSize)size
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
@@ -94,7 +94,7 @@ using namespace Methane::Platform;
     m_p_app->Resize( Data::FrameSize(size.width, size.height), false);
 }
 
-- (void) drawInView: (nonnull AppViewMT*) view
+- (void) drawInView: (nonnull AppViewMetal*) view
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);

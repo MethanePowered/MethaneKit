@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,42 +16,38 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppView.h
-Methane application view used both by IRenderContext in Core API
-and by Methane App implementations.
+FILE: Methane/Graphics/Metal/RenderPass.hh
+Metal implementation of the render pass interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#ifdef __OBJC__
+#include <Methane/Graphics/Base/RenderPass.h>
 
-#ifdef APPLE_MACOS
-#import "MacOS/AppViewMetal.hh"
-#else
-#import "iOS/AppViewMetal.hh"
-#endif
+#import <Metal/Metal.h>
 
-#endif // __OBJC__
-
-namespace Methane::Platform
+namespace Methane::Graphics::Metal
 {
 
-#ifdef __OBJC__
+struct IContext;
 
-using NativeAppView = AppViewMetal;
-using NativeAppViewPtr = NativeAppView* _Nonnull;
-
-#else // __OBJC__
-
-using NativeAppView = uint8_t;
-using NativeAppViewPtr = NativeAppView*;
-
-#endif // __OBJC__
-
-struct AppView
+class RenderPass final : public Base::RenderPass
 {
-    NativeAppViewPtr p_native_view;
+public:
+    RenderPass(Base::RenderPattern& render_pattern, const Settings& settings);
+
+    // IRenderPass interface
+    bool Update(const Settings& settings) override;
+    
+    void Reset();
+    
+    MTLRenderPassDescriptor* GetNativeDescriptor(bool reset);
+
+private:
+    const IContext& GetMetalContext() const noexcept;
+    
+    MTLRenderPassDescriptor* m_mtl_pass_descriptor;
 };
 
-} // namespace Methane::Platform
+} // namespace Methane::Graphics::Metal

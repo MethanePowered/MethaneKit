@@ -16,42 +16,31 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppView.h
-Methane application view used both by IRenderContext in Core API
-and by Methane App implementations.
+FILE: Methane/Graphics/Metal/ProgramLibrary.hh
+Wrapper of the Metal program library.
 
 ******************************************************************************/
 
 #pragma once
 
-#ifdef __OBJC__
+#import <Metal/Metal.h>
 
-#ifdef APPLE_MACOS
-#import "MacOS/AppViewMetal.hh"
-#else
-#import "iOS/AppViewMetal.hh"
-#endif
+#include <string>
 
-#endif // __OBJC__
-
-namespace Methane::Platform
+namespace Methane::Graphics::Metal
 {
 
-#ifdef __OBJC__
+class Device;
 
-using NativeAppView = AppViewMetal;
-using NativeAppViewPtr = NativeAppView* _Nonnull;
-
-#else // __OBJC__
-
-using NativeAppView = uint8_t;
-using NativeAppViewPtr = NativeAppView*;
-
-#endif // __OBJC__
-
-struct AppView
+class ProgramLibrary final
 {
-    NativeAppViewPtr p_native_view;
+public:
+    ProgramLibrary(const Device& metal_device, const std::string& library_name = "");
+
+    id<MTLLibrary> GetNativeLibrary() noexcept { return m_mtl_library; }
+
+private:
+    id<MTLLibrary> m_mtl_library;
 };
 
-} // namespace Methane::Platform
+} // namespace Methane::Graphics::Metal

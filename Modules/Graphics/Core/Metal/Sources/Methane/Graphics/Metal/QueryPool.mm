@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,42 +16,21 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppView.h
-Methane application view used both by IRenderContext in Core API
-and by Methane App implementations.
+FILE: Methane/Graphics/Metal/QueryPool.mm
+Metal stub implementation of the Base::TimestampQueryPool factory function
 
 ******************************************************************************/
 
-#pragma once
+#include <Methane/Graphics/IQueryPool.h>
 
-#ifdef __OBJC__
-
-#ifdef APPLE_MACOS
-#import "MacOS/AppViewMetal.hh"
-#else
-#import "iOS/AppViewMetal.hh"
-#endif
-
-#endif // __OBJC__
-
-namespace Methane::Platform
+namespace Methane::Graphics
 {
 
-#ifdef __OBJC__
-
-using NativeAppView = AppViewMetal;
-using NativeAppViewPtr = NativeAppView* _Nonnull;
-
-#else // __OBJC__
-
-using NativeAppView = uint8_t;
-using NativeAppViewPtr = NativeAppView*;
-
-#endif // __OBJC__
-
-struct AppView
+Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
 {
-    NativeAppViewPtr p_native_view;
-};
+    META_UNUSED(command_queue);
+    META_UNUSED(max_timestamps_per_frame);
+    return {};
+}
 
-} // namespace Methane::Platform
+} // namespace Methane::Graphics

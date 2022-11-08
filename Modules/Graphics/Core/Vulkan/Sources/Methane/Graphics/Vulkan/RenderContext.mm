@@ -23,16 +23,16 @@ Vulkan implementation of the render context interface specific to MacOS.
 
 #include <Methane/Graphics/Vulkan/RenderContext.h>
 #include <Methane/Graphics/Vulkan/Platform.h>
-#include <Methane/Graphics/RenderContextAppViewMT.hh>
+#include <Methane/Graphics/Metal/RenderContextAppView.hh>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Vulkan
 {
 
-RenderContext::RenderContext(const Platform::AppEnvironment& app_env, Device& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
+RenderContext::RenderContext(const Methane::Platform::AppEnvironment& app_env, Device& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
     : Context<Base::RenderContext>(device, parallel_executor, settings)
     , m_vk_device(device.GetNativeDevice())
-    , m_metal_view(CreateRenderContextAppView(app_env, settings))
+    , m_metal_view(Metal::CreateRenderContextAppView(app_env, settings))
     , m_vk_unique_surface(Platform::CreateVulkanSurfaceForWindow(static_cast<System&>(ISystem::Get()).GetNativeInstance(), app_env))
 {
     META_FUNCTION_TASK();

@@ -16,42 +16,39 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppView.h
-Methane application view used both by IRenderContext in Core API
-and by Methane App implementations.
+FILE: Methane/Graphics/Metal/Sampler.hh
+Metal implementation of the sampler interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#ifdef __OBJC__
+#include "Resource.hh"
 
-#ifdef APPLE_MACOS
-#import "MacOS/AppViewMetal.hh"
-#else
-#import "iOS/AppViewMetal.hh"
-#endif
+#include <Methane/Graphics/Base/Sampler.h>
 
-#endif // __OBJC__
+#import <Metal/Metal.h>
 
-namespace Methane::Platform
+namespace Methane::Graphics::Metal
 {
 
-#ifdef __OBJC__
+struct IContext;
 
-using NativeAppView = AppViewMetal;
-using NativeAppViewPtr = NativeAppView* _Nonnull;
-
-#else // __OBJC__
-
-using NativeAppView = uint8_t;
-using NativeAppViewPtr = NativeAppView*;
-
-#endif // __OBJC__
-
-struct AppView
+class Sampler final : public Resource<Base::Sampler>
 {
-    NativeAppViewPtr p_native_view;
+public:
+    Sampler(const Base::Context& context, const Settings& settings);
+
+    // IObject interface
+    bool SetName(const std::string& name) override;
+    
+    const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
+
+private:
+    void ResetSamplerState();
+
+    MTLSamplerDescriptor* m_mtl_sampler_desc = nullptr;
+    id<MTLSamplerState>   m_mtl_sampler_state = nil;
 };
 
-} // namespace Methane::Platform
+} // namespace Methane::Graphics::Metal

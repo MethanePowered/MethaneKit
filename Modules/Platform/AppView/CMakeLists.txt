@@ -13,12 +13,12 @@ if (WIN32)
 elseif(APPLE)
 
     list(APPEND PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_OS_DIR}/AppViewMT.hh
+        ${INCLUDE_PLATFORM_OS_DIR}/AppViewMetal.hh
         ${INCLUDE_PLATFORM_OS_DIR}/AppEnvironment.hh
     )
 
     list(APPEND PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_OS_DIR}/AppViewMT.mm
+        ${SOURCES_PLATFORM_OS_DIR}/AppViewMetal.mm
     )
 
     list(APPEND PLATFORM_LIBRARIES

@@ -33,9 +33,9 @@ Vulkan implementation of the render context interface.
 
 #ifdef __APPLE__
 #ifdef __OBJC__
-#import <Methane/Platform/MacOS/AppViewMT.hh>
+#import <Methane/Platform/MacOS/AppViewMetal.hh>
 #else
-using AppViewMT = void;
+using AppViewMetal = void;
 #endif
 #endif
 
@@ -56,7 +56,7 @@ class RenderContext final // NOSONAR - this class requires destructor
     , public Data::Emitter<IRenderContextCallback>
 {
 public:
-    RenderContext(const Platform::AppEnvironment& app_env, Device& device,
+    RenderContext(const Methane::Platform::AppEnvironment& app_env, Device& device,
                     tf::Executor& parallel_executor, const RenderContextSettings& settings);
     ~RenderContext() override;
 
@@ -102,7 +102,7 @@ private:
     const vk::Device m_vk_device;
 #ifdef __APPLE__
     // MacOS metal app view with swap-chain implementation to work via MoltenVK
-    AppViewMT* m_metal_view;
+    AppViewMetal* m_metal_view;
 #endif
     const vk::UniqueSurfaceKHR       m_vk_unique_surface;
     vk::UniqueSwapchainKHR           m_vk_unique_swapchain;

@@ -65,12 +65,13 @@ list(APPEND SOURCES
 )
 
 if (APPLE)
-    set(METAL_SOURCES_DIR ../Metal/Include/Methane/Graphics)
-    set(METAL_INCLUDE_DIR ../Metal/Sources/Methane/Graphics)
+    set(METAL_DIR ../Metal)
+    set(METAL_SOURCES_DIR ${METAL_DIR}/Sources/Methane/Graphics/Metal)
+    set(METAL_INCLUDE_DIR ${METAL_DIR}/Include/Methane/Graphics/Metal)
     list(APPEND METAL_SOURCES
-        ${METAL_INCLUDE_DIR}/RenderContextAppViewMT.hh
-        ${METAL_INCLUDE_DIR}/TypesMT.hh
-        ${METAL_SOURCES_DIR}/TypesMT.mm
+        ${METAL_INCLUDE_DIR}/RenderContextAppView.hh
+        ${METAL_INCLUDE_DIR}/Types.hh
+        ${METAL_SOURCES_DIR}/Types.mm
     )
     list(APPEND SOURCES
         ${SOURCES_DIR}/RenderContext.mm
@@ -116,7 +117,7 @@ target_link_libraries(MethaneGraphicsCoreBase PRIVATE ${TARGET})
 target_include_directories(${TARGET}
     PRIVATE
         Sources
-        $<$<BOOL:${APPLE}>:${CMAKE_CURRENT_SOURCE_DIR}/${METAL_SOURCE_DIR}/Include>
+        $<$<BOOL:${APPLE}>:${CMAKE_CURRENT_SOURCE_DIR}/${METAL_DIR}/Include>
     PUBLIC
         Include
 )
@@ -143,7 +144,7 @@ set_target_properties(${TARGET}
 )
 
 if (APPLE)
-    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/${METAL_SOURCE_DIR} FILES ${METAL_SOURCES})
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/${METAL_DIR} FILES ${METAL_SOURCES})
     set_source_files_properties(
         ${PLATFORM_SOURCES_OBJC}
         PROPERTIES

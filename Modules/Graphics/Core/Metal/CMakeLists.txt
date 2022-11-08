@@ -2,58 +2,58 @@ set(TARGET MethaneGraphicsCoreMetal)
 
 include(MethaneModules)
 
-get_module_dirs("Methane/Graphics")
+get_module_dirs("Methane/Graphics/Metal")
 
 list(APPEND HEADERS
-    ${INCLUDE_DIR}/TypesMT.hh
-    ${INCLUDE_DIR}/DeviceMT.hh
-    ${INCLUDE_DIR}/FenceMT.hh
-    ${INCLUDE_DIR}/ContextMT.h
-    ${INCLUDE_DIR}/ContextMT.hpp
-    ${INCLUDE_DIR}/RenderContextMT.hh
-    ${INCLUDE_DIR}/RenderContextAppViewMT.hh
-    ${INCLUDE_DIR}/ShaderMT.hh
-    ${INCLUDE_DIR}/ProgramMT.hh
-    ${INCLUDE_DIR}/ProgramLibraryMT.hh
-    ${INCLUDE_DIR}/ProgramArgumentBindingMT.hh
-    ${INCLUDE_DIR}/ProgramBindingsMT.hh
-    ${INCLUDE_DIR}/RenderStateMT.hh
-    ${INCLUDE_DIR}/ResourceMT.hh
-    ${INCLUDE_DIR}/DescriptorManagerMT.h
-    ${INCLUDE_DIR}/BufferMT.hh
-    ${INCLUDE_DIR}/TextureMT.hh
-    ${INCLUDE_DIR}/SamplerMT.hh
-    ${INCLUDE_DIR}/RenderPassMT.hh
-    ${INCLUDE_DIR}/CommandQueueMT.hh
-    ${INCLUDE_DIR}/CommandListMT.hh
-    ${INCLUDE_DIR}/CommandListMT.hpp
-    ${INCLUDE_DIR}/TransferCommandListMT.hh
-    ${INCLUDE_DIR}/RenderCommandListMT.hh
-    ${INCLUDE_DIR}/ParallelRenderCommandListMT.hh
+    ${INCLUDE_DIR}/Types.hh
+    ${INCLUDE_DIR}/Device.hh
+    ${INCLUDE_DIR}/Fence.hh
+    ${INCLUDE_DIR}/Context.h
+    ${INCLUDE_DIR}/Context.hpp
+    ${INCLUDE_DIR}/RenderContext.hh
+    ${INCLUDE_DIR}/RenderContextAppView.hh
+    ${INCLUDE_DIR}/Shader.hh
+    ${INCLUDE_DIR}/Program.hh
+    ${INCLUDE_DIR}/ProgramLibrary.hh
+    ${INCLUDE_DIR}/ProgramArgumentBinding.hh
+    ${INCLUDE_DIR}/ProgramBindings.hh
+    ${INCLUDE_DIR}/RenderState.hh
+    ${INCLUDE_DIR}/Resource.hh
+    ${INCLUDE_DIR}/DescriptorManager.h
+    ${INCLUDE_DIR}/Buffer.hh
+    ${INCLUDE_DIR}/Texture.hh
+    ${INCLUDE_DIR}/Sampler.hh
+    ${INCLUDE_DIR}/RenderPass.hh
+    ${INCLUDE_DIR}/CommandQueue.hh
+    ${INCLUDE_DIR}/CommandList.hh
+    ${INCLUDE_DIR}/CommandList.hpp
+    ${INCLUDE_DIR}/TransferCommandList.hh
+    ${INCLUDE_DIR}/RenderCommandList.hh
+    ${INCLUDE_DIR}/ParallelRenderCommandList.hh
 )
 
 list(APPEND SOURCES
-    ${SOURCES_DIR}/TypesMT.mm
-    ${SOURCES_DIR}/DeviceMT.mm
-    ${SOURCES_DIR}/FenceMT.mm
-    ${SOURCES_DIR}/RenderContextMT.mm
-    ${SOURCES_DIR}/ShaderMT.mm
-    ${SOURCES_DIR}/ProgramMT.mm
-    ${SOURCES_DIR}/ProgramLibraryMT.mm
-    ${SOURCES_DIR}/ProgramArgumentBindingMT.mm
-    ${SOURCES_DIR}/ProgramBindingsMT.mm
-    ${SOURCES_DIR}/RenderStateMT.mm
-    ${SOURCES_DIR}/ResourceMT.mm
-    ${SOURCES_DIR}/QueryPoolMT.mm
-    ${SOURCES_DIR}/BufferMT.mm
-    ${SOURCES_DIR}/TextureMT.mm
-    ${SOURCES_DIR}/SamplerMT.mm
-    ${SOURCES_DIR}/RenderPassMT.mm
-    ${SOURCES_DIR}/CommandQueueMT.mm
-    ${SOURCES_DIR}/CommandListMT.mm
-    ${SOURCES_DIR}/TransferCommandListMT.mm
-    ${SOURCES_DIR}/RenderCommandListMT.mm
-    ${SOURCES_DIR}/ParallelRenderCommandListMT.mm
+    ${SOURCES_DIR}/Types.mm
+    ${SOURCES_DIR}/Device.mm
+    ${SOURCES_DIR}/Fence.mm
+    ${SOURCES_DIR}/RenderContext.mm
+    ${SOURCES_DIR}/Shader.mm
+    ${SOURCES_DIR}/Program.mm
+    ${SOURCES_DIR}/ProgramLibrary.mm
+    ${SOURCES_DIR}/ProgramArgumentBinding.mm
+    ${SOURCES_DIR}/ProgramBindings.mm
+    ${SOURCES_DIR}/RenderState.mm
+    ${SOURCES_DIR}/Resource.mm
+    ${SOURCES_DIR}/QueryPool.mm
+    ${SOURCES_DIR}/Buffer.mm
+    ${SOURCES_DIR}/Texture.mm
+    ${SOURCES_DIR}/Sampler.mm
+    ${SOURCES_DIR}/RenderPass.mm
+    ${SOURCES_DIR}/CommandQueue.mm
+    ${SOURCES_DIR}/CommandList.mm
+    ${SOURCES_DIR}/TransferCommandList.mm
+    ${SOURCES_DIR}/RenderCommandList.mm
+    ${SOURCES_DIR}/ParallelRenderCommandList.mm
 )
 
 add_library(${TARGET} STATIC

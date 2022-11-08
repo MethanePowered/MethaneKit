@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,42 +16,23 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Platform/AppView.h
-Methane application view used both by IRenderContext in Core API
-and by Methane App implementations.
+FILE: Methane/Graphics/Metal/DescriptorManager.h
+Dummy Metal resource manager.
 
 ******************************************************************************/
 
 #pragma once
 
-#ifdef __OBJC__
+#include <Methane/Graphics/IDescriptorManager.h>
 
-#ifdef APPLE_MACOS
-#import "MacOS/AppViewMetal.hh"
-#else
-#import "iOS/AppViewMetal.hh"
-#endif
-
-#endif // __OBJC__
-
-namespace Methane::Platform
+namespace Methane::Graphics::Metal
 {
 
-#ifdef __OBJC__
-
-using NativeAppView = AppViewMetal;
-using NativeAppViewPtr = NativeAppView* _Nonnull;
-
-#else // __OBJC__
-
-using NativeAppView = uint8_t;
-using NativeAppViewPtr = NativeAppView*;
-
-#endif // __OBJC__
-
-struct AppView
+struct DescriptorManager final : IDescriptorManager
 {
-    NativeAppViewPtr p_native_view;
+    void AddProgramBindings(IProgramBindings&) override {}
+    void CompleteInitialization() override {}
+    void Release() override {}
 };
 
-} // namespace Methane::Platform
+} // namespace Methane::Graphics::Metal

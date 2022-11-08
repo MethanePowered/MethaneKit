@@ -23,8 +23,8 @@ Vulkan platform dependent functions for MacOS.
 
 #include <Methane/Graphics/Vulkan/Platform.h>
 
-#include <Methane/Platform/MacOS/AppViewMT.hh>
-#include <Methane/Graphics/RenderContextAppViewMT.hh>
+#include <Methane/Platform/MacOS/AppViewMetal.hh>
+#include <Methane/Graphics/Metal/RenderContextAppView.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -44,16 +44,16 @@ const std::vector<std::string_view>& Platform::GetVulkanInstanceRequiredExtensio
 vk::UniqueSurfaceKHR Platform::CreateVulkanSurfaceForWindow(const vk::Instance& vk_instance, const Methane::Platform::AppEnvironment& env)
 {
     META_FUNCTION_TASK();
-    AppViewMT* metal_view = nil;
+    AppViewMetal* metal_view = nil;
     if (!env.ns_app_delegate.isViewLoaded)
     {
         // Create temporary application view for Window if it was not created yet
-        metal_view = CreateTemporaryAppView(env);
+        metal_view = Metal::CreateTemporaryAppView(env);
         env.ns_app_delegate.view = metal_view;
     }
     else
     {
-        metal_view = static_cast<AppViewMT*>(env.ns_app_delegate.view);
+        metal_view = static_cast<AppViewMetal*>(env.ns_app_delegate.view);
     }
 
     CAMetalLayer* metal_layer = metal_view.metalLayer;
