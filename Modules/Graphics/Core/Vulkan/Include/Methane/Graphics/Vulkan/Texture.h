@@ -65,7 +65,7 @@ public:
 
 private:
     // Resource override
-    Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
+    Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const ResourceView::Id& view_id) override;
 
     // IResource interface
     void SetData(const SubResources& sub_resources, ICommandQueue&) override;
@@ -91,7 +91,7 @@ public:
 
 private:
     // Resource override
-    Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
+    Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const ResourceView::Id& view_id) override;
 
     Opt<DepthStencil>      m_depth_stencil_opt;
 };
@@ -112,7 +112,7 @@ public:
 
 private:
     // Resource override
-    Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
+    Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const ResourceView::Id& view_id) override;
 };
 
 class ImageTexture final // NOSONAR - inheritance hierarchy is greater than 5
@@ -134,7 +134,7 @@ public:
 
 private:
     // Resource override
-    Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
+    Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const ResourceView::Id& view_id) override;
 
     void GenerateMipLevels(ICommandQueue& target_cmd_queue, State target_resource_state);
 

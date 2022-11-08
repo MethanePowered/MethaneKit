@@ -41,8 +41,8 @@ public:
     using Barrier  = IResource::Barrier;
     using Barriers = IResourceBarriers;
     using State    = IResource::State;
-    using View   = ResourceView;
-    using Views  = ResourceViews;
+    using View     = ResourceView;
+    using Views    = ResourceViews;
 
     [[nodiscard]] virtual const IContextVk&       GetVulkanContext() const noexcept = 0;
     [[nodiscard]] virtual const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept = 0;

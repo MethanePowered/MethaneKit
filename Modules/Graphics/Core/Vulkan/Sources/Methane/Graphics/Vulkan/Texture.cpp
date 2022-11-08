@@ -299,7 +299,7 @@ vk::ImageSubresourceRange FrameBufferTexture::GetNativeSubresourceRange() const 
     );
 }
 
-Ptr<ResourceView::ViewDescriptorVariant> FrameBufferTexture::CreateNativeViewDescriptor(const View::Id& view_id)
+Ptr<ResourceView::ViewDescriptorVariant> FrameBufferTexture::CreateNativeViewDescriptor(const ResourceView::Id& view_id)
 {
     META_FUNCTION_TASK();
     return CreateNativeImageViewDescriptor(view_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
@@ -344,7 +344,7 @@ vk::ImageSubresourceRange DepthStencilTexture::GetNativeSubresourceRange() const
     );
 }
 
-Ptr<ResourceView::ViewDescriptorVariant> DepthStencilTexture::CreateNativeViewDescriptor(const View::Id& view_id)
+Ptr<ResourceView::ViewDescriptorVariant> DepthStencilTexture::CreateNativeViewDescriptor(const ResourceView::Id& view_id)
 {
     META_FUNCTION_TASK();
     return CreateNativeImageViewDescriptor(view_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
@@ -376,7 +376,7 @@ vk::ImageSubresourceRange RenderTargetTexture::GetNativeSubresourceRange() const
     );
 }
 
-Ptr<ResourceView::ViewDescriptorVariant> RenderTargetTexture::CreateNativeViewDescriptor(const View::Id& view_id)
+Ptr<ResourceView::ViewDescriptorVariant> RenderTargetTexture::CreateNativeViewDescriptor(const ResourceView::Id& view_id)
 {
     META_FUNCTION_TASK();
     return CreateNativeImageViewDescriptor(view_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
@@ -607,7 +607,7 @@ vk::ImageSubresourceRange ImageTexture::GetNativeSubresourceRange() const noexce
     );
 }
 
-Ptr<ResourceView::ViewDescriptorVariant> ImageTexture::CreateNativeViewDescriptor(const View::Id& view_id)
+Ptr<ResourceView::ViewDescriptorVariant> ImageTexture::CreateNativeViewDescriptor(const ResourceView::Id& view_id)
 {
     META_FUNCTION_TASK();
     return CreateNativeImageViewDescriptor(view_id, GetSettings(), GetSubresourceCount(), GetName(), GetNativeDevice(), GetNativeImage());
