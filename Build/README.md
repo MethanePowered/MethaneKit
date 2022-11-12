@@ -76,7 +76,7 @@ cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTA
 cmake --build %OUTPUT_DIR%\Build --config Release --target install
 ```
 
-[Methane Graphics Core](/Modules/Graphics/Core) is built using **DirectX 12** graphics API by default on Windows.
+[Methane Graphics RHI](/Modules/Graphics/RHI) is built using **DirectX 12** graphics API by default on Windows.
 Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON`.
 Auxiliary build script [Build/Windows/Build.bat](/Build/Windows/Build.bat) can make it more simple for you:
 
@@ -99,7 +99,7 @@ cmake -S . -B $OUTPUT_DIR/Build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pw
 cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel 8
 ```
 
-[Methane Graphics Core](/Modules/Graphics/Core) is built using **Vulkan** graphics API on Linux.
+[Methane Graphics RHI](/Modules/Graphics/RHI) is built using **Vulkan** graphics API on Linux.
 Auxiliary build script [Build/Unix/Build.sh](/Build/Unix/Build.sh) can make it more simple for you:
 
 ```console
@@ -136,7 +136,7 @@ Auxiliary build script [Build/Unix/Build.sh](/Build/Unix/Build.sh) can make it m
 Alternatively root [CMakeLists.txt](/CMakeLists.txt) can be opened directly in Visual Studio or 
 [any other IDE with native CMake support](/README.md#development-environments) and [built using CMake presets](#cmake-presets).
 
-[Methane Graphics Core](/Modules/Graphics/Core) is built using **Metal** graphics API on MacOS by default.
+[Methane Graphics RHI](/Modules/Graphics/RHI) is built using **Metal** graphics API on MacOS by default.
 Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON` or
 by running `Build/Unix/Build.sh --vulkan`, but it requires Vulkan SDK installation with MoltenVK driver implementation
 on top of Metal, which is not currently supporting all extensions required by Methane Kit.

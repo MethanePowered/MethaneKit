@@ -1,7 +1,7 @@
 # User Interface App
 
-[Graphics application](../../Graphics/App) implementation with basic User Interface elements rendered using 
-[graphics Core API](../../Graphics/Core).
+[Graphics application](/Modules/Graphics/App) implementation with basic User Interface elements rendered using 
+[graphics RHI](/Modules/Graphics/RHI).
 
 ## User Interface Application Base Class
 

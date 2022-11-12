@@ -37,7 +37,7 @@ target_link_libraries(${TARGET}
         MethaneDataEvents
     PRIVATE
         MethanePlatformApp
-        MethaneGraphicsCore
+        MethaneGraphicsRhi
         MethaneBuildOptions
         MethanePrecompiledExtraHeaders
         MethaneInstrumentation

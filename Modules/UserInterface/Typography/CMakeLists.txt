@@ -42,7 +42,7 @@ add_methane_shaders_library(${TARGET})
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneUserInterfaceTypes
-        MethaneGraphicsCore
+        MethaneGraphicsRhi
         MethaneDataProvider
         MethaneDataEvents
     PRIVATE

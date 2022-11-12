@@ -1,7 +1,7 @@
 # Graphics App
 
 Graphics application rendering infrastructure implemented on top of [application platform abstraction](../../Platform/App)
-and [graphics Core API](../Core).
+and [graphics RHI API](../RHI).
 
 ## Graphics Application Base Class
 
@@ -29,7 +29,7 @@ The following settings are available:
 ### [Graphics::App](Include/Methane/Graphics/App.hpp)
 
 Graphics application base template class `Graphics::App<Graphics::AppFrame>` is derived from [Platform::App](../../Platform/App)
-extending it with common graphics application functionality implemented with [Graphics::Core](../Core) API:
+extending it with common graphics application functionality implemented with [Graphics::RHI](../RHI) API:
 - Parsing graphics app and context settings from command line arguments.
 - Graphics render context initialization using provided settings.
 - Initialization of the common graphics resources, such as frame-buffers and m_depth textures, final view state.
@@ -45,7 +45,7 @@ and extended with other frame-dependent resources in final applications.
 `Graphics::AppSettings` structure aggregates 3 setting structures passed all together to the `Graphics::App` constructor:
 - [Graphics::IApp::Settings](#graphicsiappincludemethanegraphicsapph) - graphics app settings described above
 - [Platform::AppBase::Settings](../../Platform/App/README.md#platformappbaseincludemethaneplatformappbaseh) - platform app settings
-- [Graphics::RenderContextSettings](../Core) - render context settings
+- [Graphics::RenderContextSettings](../RHI/Interface/Include/Methane/Graphics/IRenderContext.h) - render context settings
 
 Some parameters of the render context settings can be also changed with command line flags:
 

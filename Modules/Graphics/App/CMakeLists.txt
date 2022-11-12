@@ -38,7 +38,7 @@ PUBLIC
     MethanePlatformApp
     MethanePlatformUtils
     MethanePlatformInput
-    MethaneGraphicsCore
+    MethaneGraphicsRhi
     MethaneGraphicsExtensions
     MethaneGraphicsPrimitives
     MethaneGraphicsCamera

@@ -1,4 +1,4 @@
-set(TARGET MethaneGraphicsCoreBase)
+set(TARGET MethaneGraphicsRhiBase)
 
 include(MethaneModules)
 
@@ -65,7 +65,7 @@ add_library(${TARGET} STATIC
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneGraphicsCoreInterface
+        MethaneGraphicsRhiInterface
     PRIVATE
         MethaneBuildOptions
         MethaneDataPrimitives
@@ -91,7 +91,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-        FOLDER Modules/Graphics/Core
+        FOLDER Modules/Graphics/RHI
         UNITY_BUILD ${METHANE_UNITY_BUILD_ENABLED}
         UNITY_BUILD_BATCH_SIZE 6
 )

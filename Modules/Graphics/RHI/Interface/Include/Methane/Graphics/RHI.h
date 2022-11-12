@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Core.h
+FILE: Methane/Graphics/RHI.h
 Methane graphics core interfaces: all headers under one umbrella.
 
 ******************************************************************************/

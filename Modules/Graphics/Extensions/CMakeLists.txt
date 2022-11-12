@@ -34,7 +34,7 @@ add_library(${TARGET} STATIC
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneGraphicsCore
+        MethaneGraphicsRhi
         MethaneGraphicsMesh
         MethaneDataPrimitives
         MethaneInstrumentation

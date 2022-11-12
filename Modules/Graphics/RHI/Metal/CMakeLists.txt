@@ -1,4 +1,4 @@
-set(TARGET MethaneGraphicsCoreMetal)
+set(TARGET MethaneGraphicsRhiMetal)
 
 include(MethaneModules)
 
@@ -63,7 +63,7 @@ add_library(${TARGET} STATIC
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneGraphicsCoreBase
+        MethaneGraphicsRhiBase
     PRIVATE
         MethaneBuildOptions
         MethaneDataPrimitives
@@ -77,9 +77,9 @@ target_link_libraries(${TARGET}
         "-framework Metal"
 )
 
-# Add cyclic dependency of the CoreBase library from CoreMetal due to symbolic dependency
-# from CoreInterface fabric methods ISomething::Create(...) implementations defined in CoreMetal
-target_link_libraries(MethaneGraphicsCoreBase PRIVATE ${TARGET})
+# Add cyclic dependency of the RhiBase library from RhiDirectX due to symbolic dependency
+# from RhiInterface fabric methods ISomething::Create(...) implementations defined in RhiDirectX
+target_link_libraries(MethaneGraphicsRhiBase PRIVATE ${TARGET})
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 
@@ -102,7 +102,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-        FOLDER Modules/Graphics/Core
+        FOLDER Modules/Graphics/RHI
         UNITY_BUILD ${METHANE_UNITY_BUILD_ENABLED}
         UNITY_BUILD_BATCH_SIZE 4
 )

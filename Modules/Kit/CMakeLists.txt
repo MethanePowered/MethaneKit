@@ -28,7 +28,7 @@ target_link_libraries(${TARGET}
         MethaneGraphicsPrimitives
         MethaneGraphicsMesh
         MethaneGraphicsCamera
-        MethaneGraphicsCore
+        MethaneGraphicsRhi
         MethaneGraphicsExtensions
         MethaneGraphicsApp
         MethaneUserInterfaceTypes
@@ -43,7 +43,7 @@ target_precompile_headers(${TARGET}
 )
 
 set(PREREQUISITE_TARGETS
-    MethaneGraphicsCore
+    MethaneGraphicsRhi
     MethaneGraphicsExtensions
     MethaneUserInterfaceTypography
     MethaneUserInterfaceWidgets

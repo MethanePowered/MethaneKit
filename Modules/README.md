@@ -36,25 +36,9 @@ Diagram generated with CMake using integrated GraphViz support shows detailed re
   - Shaders are converted to native API shading language (Metal on MacOS) at build time with [DirectXShaderCompiler](https://github.com/microsoft/DirectXShaderCompiler) and [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross) tools
   - Shaders are compiled at build time and embedded in application resources as bytecode (with all variations of preprocessor definitions configured by developer)
 - **Easy to use object-oriented graphics API**
-  - [Core graphics interfaces](/Modules/Graphics/Core/Include/Methane/Graphics):
-    - [IRenderContext](/Modules/Graphics/Core/Include/Methane/Graphics/IRenderContext.h) and [IDevice](/Modules/Graphics/Core/Include/Methane/Graphics/IDevice.h) classes with frame-buffers management and swap-chain logic.
-    - [IResource](/Modules/Graphics/Core/Include/Methane/Graphics/IResource.h) derived interface: [IBuffer](/Modules/Graphics/Core/Include/Methane/Graphics/IBuffer.h), [ITexture](/Modules/Graphics/Core/Include/Methane/Graphics/ITexture.h), [ISampler](/Modules/Graphics/Core/Include/Methane/Graphics/ISampler.h) to work with resources in GPU memory.
-    - [IShader](/Modules/Graphics/Core/Include/Methane/Graphics/IShader.h) and [IProgram](/Modules/Graphics/Core/Include/Methane/Graphics/IProgram.h) providing unified access to compiled shaders with automatic input layout and uniform variables reflection.
-    - [IProgramBindings](/Modules/Graphics/Core/Include/Methane/Graphics/IProgramBindings.h) simplifies binding resources to programs by uniform variable names, enabling fast bindings switching at runtime.
-    - [IRenderState](/Modules/Graphics/Core/Include/Methane/Graphics/IRenderState.h) and [IRenderPass](/Modules/Graphics/Core/Include/Methane/Graphics/IRenderPass.h) used for inputs and outputs configuration of the graphics pipeline.
-    - [IRenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/IRenderCommandList.h) and [IParallelRenderCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/IParallelRenderCommandList.h) for render commands encoding in one thread or in parallel contributing into single render pass.
-    - [ITransferCommandList](/Modules/Graphics/Core/Include/Methane/Graphics/ITransferCommandList.h) for data transfer operations with GPU memory textures and buffers (WIP).
-    - [ICommandQueue](/Modules/Graphics/Core/Include/Methane/Graphics/ICommandQueue.h) for execution of render commands encoded with command lists on graphics device. 
-  - [Core interface extensions](/Modules/Graphics/Extensions/Include/Methane/Graphics):
-    - [ImageLoader](/Modules/Graphics/Extensions/Include/Methane/Graphics/ImageLoader.h) class for loading images from image files or application resources into graphics textures.
-    - [MeshBuffers.hpp](/Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp) template class used for unified vertex and index buffers management of the mesh object along with its textures.
-    - [ScreenQuad](/Modules/Graphics/Extensions/Include/Methane/Graphics/ScreenQuad.h) class for rendering quad with texture on screen.
-    - [SkyBox](/Modules/Graphics/Extensions/Include/Methane/Graphics/SkyBox.h) class for rendering sky-box with a cube-map texture.
-  - [Common 3D graphics helpers](/Modules/Graphics/Helpers/Include/Methane/Graphics):
-    - [FpsCounter](/Modules/Graphics/Helpers/Include/Methane/Graphics/FpsCounter.h) implements FPS calculation with moving-average algorithm.
-    - [Camera](/Modules/Graphics/Helpers/Include/Methane/Graphics/Camera.h) and [ArcBallCamera](/Modules/Graphics/Helpers/Include/Methane/Graphics/ArcBallCamera.h) implement static scene camera and interactive arc-ball camera.
-    - [Mesh](/Modules/Graphics/Helpers/Include/Methane/Graphics/Mesh) generators for Quad, Cube, Sphere, Icosahedron and Uber meshes with customizable vertex fields and layout.
-    - Multi-octave Perlin [Noise](/Modules/Graphics/Helpers/Include/Methane/Graphics/Noise.h) generator.
+  - [Rendering Hardware Interface](/Modules/Graphics/RHI), abstraction API for native graphic APIs (DirectX 12, Vulkan and Metal).
+  - [Graphics Extensions](/Modules/Graphics/Extensions) with graphics rendering primitives built on top of Methane RHI. 
+  - [Common 3D graphics primities](/Modules/Graphics/Primitives) like FpsCounter, Camera, Mesh generators, etc.
 - **User Interface** libraries:
   - UI application base class with integrated HUD, logo badge and help/parameters text panels
   - Typography library for fonts loading, rendering & text layout

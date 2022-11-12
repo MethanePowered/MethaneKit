@@ -1,4 +1,4 @@
-set(TARGET MethaneGraphicsCoreInterface)
+set(TARGET MethaneGraphicsRhiInterface)
 
 include(MethaneModules)
 
@@ -80,7 +80,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
-        FOLDER Modules/Graphics/Core
+        FOLDER Modules/Graphics/RHI
         PUBLIC_HEADER "${HEADERS}"
         UNITY_BUILD ${METHANE_UNITY_BUILD_ENABLED}
         UNITY_BUILD_BATCH_SIZE 4

@@ -1,5 +1,5 @@
 add_subdirectory(App)
-add_subdirectory(Core)
+add_subdirectory(RHI)
 add_subdirectory(Extensions)
 add_subdirectory(Primitives)
 add_subdirectory(Mesh)
