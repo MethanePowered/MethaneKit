@@ -24,9 +24,9 @@ Base implementation of the context interface.
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Base/Device.h>
 #include <Methane/Graphics/Base/CommandQueue.h>
-#include <Methane/Graphics/IDescriptorManager.h>
+#include <Methane/Graphics/RHI/IDescriptorManager.h>
 
-#include <Methane/Graphics/ICommandKit.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
@@ -34,21 +34,21 @@ Base implementation of the context interface.
 namespace Methane::Graphics::Base
 {
 
-static const std::array<std::string, magic_enum::enum_count<CommandListType>()> g_default_command_kit_names = { {
+static const std::array<std::string, magic_enum::enum_count<Rhi::CommandListType>()> g_default_command_kit_names = { {
     "Upload",
     "Render",
     "Parallel Render"
 } };
 
 #ifdef METHANE_LOGGING_ENABLED
-static const std::array<std::string, magic_enum::enum_count<IContext::WaitFor>()> g_wait_for_names = {{
+static const std::array<std::string, magic_enum::enum_count<Rhi::IContext::WaitFor>()> g_wait_for_names = {{
     "Render Complete",
     "Frame Present",
     "Resources Upload"
 }};
 #endif
 
-Context::Context(Device& device, UniquePtr<IDescriptorManager>&& descriptor_manager_ptr,
+Context::Context(Device& device, UniquePtr<Rhi::IDescriptorManager>&& descriptor_manager_ptr,
                          tf::Executor& parallel_executor, Type type)
     : m_type(type)
     , m_device_ptr(device.GetPtr<Device>())
@@ -75,7 +75,7 @@ void Context::CompleteInitialization()
     m_is_completing_initialization = true;
     META_LOG("Complete initialization of context '{}'", GetName());
 
-    Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextCompletingInitialization, *this);
+    Data::Emitter<Rhi::IContextCallback>::Emit(&Rhi::IContextCallback::OnContextCompletingInitialization, *this);
     UploadResources();
     GetDescriptorManager().CompleteInitialization();
 
@@ -97,7 +97,7 @@ void Context::WaitForGpu(WaitFor wait_for)
     }
 }
 
-void Context::Reset(IDevice& device)
+void Context::Reset(Rhi::IDevice& device)
 {
     META_FUNCTION_TASK();
     META_LOG("Context '{}' RESET with device adapter '{}'", GetName(), device.GetAdapterName());
@@ -141,10 +141,10 @@ void Context::Release()
     m_device_ptr.reset();
 
     m_default_command_kit_ptr_by_queue.clear();
-    for (Ptr<ICommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
+    for (Ptr<Rhi::ICommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
         cmd_kit_ptr.reset();
 
-    Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextReleased, std::ref(*this));
+    Data::Emitter<Rhi::IContextCallback>::Emit(&Rhi::IContextCallback::OnContextReleased, std::ref(*this));
 }
 
 void Context::Initialize(Device& device, bool is_callback_emitted)
@@ -161,36 +161,36 @@ void Context::Initialize(Device& device, bool is_callback_emitted)
 
     if (is_callback_emitted)
     {
-        Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextInitialized, *this);
+        Data::Emitter<Rhi::IContextCallback>::Emit(&Rhi::IContextCallback::OnContextInitialized, *this);
     }
 }
 
-ICommandKit& Context::GetDefaultCommandKit(CommandListType type) const
+Rhi::ICommandKit& Context::GetDefaultCommandKit(Rhi::CommandListType type) const
 {
     META_FUNCTION_TASK();
-    Ptr<ICommandKit>& cmd_kit_ptr = m_default_command_kit_ptrs[magic_enum::enum_index(type).value()];
+    Ptr<Rhi::ICommandKit>& cmd_kit_ptr = m_default_command_kit_ptrs[magic_enum::enum_index(type).value()];
     if (cmd_kit_ptr)
         return *cmd_kit_ptr;
 
-    cmd_kit_ptr = ICommandKit::Create(*this, type);
+    cmd_kit_ptr = Rhi::ICommandKit::Create(*this, type);
     cmd_kit_ptr->SetName(fmt::format("{} {}", GetName(), g_default_command_kit_names[magic_enum::enum_index(type).value()]));
 
     m_default_command_kit_ptr_by_queue[std::addressof(cmd_kit_ptr->GetQueue())] = cmd_kit_ptr;
     return *cmd_kit_ptr;
 }
 
-ICommandKit& Context::GetDefaultCommandKit(ICommandQueue& cmd_queue) const
+Rhi::ICommandKit& Context::GetDefaultCommandKit(Rhi::ICommandQueue& cmd_queue) const
 {
     META_FUNCTION_TASK();
-    Ptr<ICommandKit>& cmd_kit_ptr = m_default_command_kit_ptr_by_queue[std::addressof(cmd_queue)];
+    Ptr<Rhi::ICommandKit>& cmd_kit_ptr = m_default_command_kit_ptr_by_queue[std::addressof(cmd_queue)];
     if (cmd_kit_ptr)
         return *cmd_kit_ptr;
 
-    cmd_kit_ptr = ICommandKit::Create(cmd_queue);
+    cmd_kit_ptr = Rhi::ICommandKit::Create(cmd_queue);
     return *cmd_kit_ptr;
 }
 
-const IDevice& Context::GetDevice() const
+const Rhi::IDevice& Context::GetDevice() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_device_ptr);
@@ -211,7 +211,7 @@ const Device& Context::GetBaseDevice() const
     return *m_device_ptr;
 }
 
-IDescriptorManager& Context::GetDescriptorManager() const
+Rhi::IDescriptorManager& Context::GetDescriptorManager() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_descriptor_manager_ptr);
@@ -225,7 +225,7 @@ bool Context::SetName(const std::string& name)
         return false;
 
     GetBaseDevice().SetName(fmt::format("{} Device", name));
-    for(const Ptr<ICommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
+    for(const Ptr<Rhi::ICommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
     {
         if (cmd_kit_ptr)
             cmd_kit_ptr->SetName(fmt::format("{} {}", name, g_default_command_kit_names[magic_enum::enum_index(cmd_kit_ptr->GetListType()).value()]));
@@ -233,42 +233,42 @@ bool Context::SetName(const std::string& name)
     return true;
 }
 
-template<CommandListPurpose cmd_list_purpose>
-void Context::ExecuteSyncCommandLists(const ICommandKit& upload_cmd_kit) const
+template<Rhi::CommandListPurpose cmd_list_purpose>
+void Context::ExecuteSyncCommandLists(const Rhi::ICommandKit& upload_cmd_kit) const
 {
     META_FUNCTION_TASK();
-    constexpr auto cmd_list_id = static_cast<CommandListId>(cmd_list_purpose);
-    const std::vector<CommandListId> cmd_list_ids = { cmd_list_id };
+    constexpr auto cmd_list_id = static_cast<Rhi::CommandListId>(cmd_list_purpose);
+    const std::vector<Rhi::CommandListId> cmd_list_ids = { cmd_list_id };
 
     for (const auto& [cmd_queue_ptr, cmd_kit_ptr] : m_default_command_kit_ptr_by_queue)
     {
         if (cmd_kit_ptr.get() == std::addressof(upload_cmd_kit) || !cmd_kit_ptr->HasList(cmd_list_id))
             continue;
 
-        ICommandList& cmd_list = cmd_kit_ptr->GetList(cmd_list_id);
-        const CommandListState cmd_list_state = cmd_list.GetState();
-        if (cmd_list_state == CommandListState::Pending ||
-            cmd_list_state == CommandListState::Executing)
+        Rhi::ICommandList& cmd_list = cmd_kit_ptr->GetList(cmd_list_id);
+        const Rhi::CommandListState cmd_list_state = cmd_list.GetState();
+        if (cmd_list_state == Rhi::CommandListState::Pending ||
+            cmd_list_state == Rhi::CommandListState::Executing)
             continue;
 
-        if (cmd_list_state == CommandListState::Encoding)
+        if (cmd_list_state == Rhi::CommandListState::Encoding)
             cmd_list.Commit();
 
         META_LOG("Context '{}' SYNCHRONIZING resources", GetName());
-        ICommandQueue& cmd_queue = cmd_kit_ptr->GetQueue();
+        Rhi::ICommandQueue& cmd_queue = cmd_kit_ptr->GetQueue();
 
-        if constexpr (cmd_list_purpose == CommandListPurpose::PreUploadSync)
+        if constexpr (cmd_list_purpose == Rhi::CommandListPurpose::PreUploadSync)
         {
             // Execute pre-upload synchronization on other queue and wait for sync completion on upload queue
             cmd_queue.Execute(cmd_kit_ptr->GetListSet(cmd_list_ids));
-            IFence& cmd_kit_fence = cmd_kit_ptr->GetFence(cmd_list_id);
+            Rhi::IFence& cmd_kit_fence = cmd_kit_ptr->GetFence(cmd_list_id);
             cmd_kit_fence.Signal();
             cmd_kit_fence.WaitOnGpu(upload_cmd_kit.GetQueue());
         }
-        if constexpr (cmd_list_purpose == CommandListPurpose::PostUploadSync)
+        if constexpr (cmd_list_purpose == Rhi::CommandListPurpose::PostUploadSync)
         {
             // Wait for upload execution on other queue and execute post-upload synchronization commands on that queue
-            IFence& upload_fence = upload_cmd_kit.GetFence(cmd_list_id);
+            Rhi::IFence& upload_fence = upload_cmd_kit.GetFence(cmd_list_id);
             upload_fence.Signal();
             upload_fence.WaitOnGpu(cmd_queue);
             cmd_queue.Execute(cmd_kit_ptr->GetListSet(cmd_list_ids));
@@ -279,33 +279,33 @@ void Context::ExecuteSyncCommandLists(const ICommandKit& upload_cmd_kit) const
 bool Context::UploadResources()
 {
     META_FUNCTION_TASK();
-    const ICommandKit& upload_cmd_kit = GetUploadCommandKit();
+    const Rhi::ICommandKit& upload_cmd_kit = GetUploadCommandKit();
     if (!upload_cmd_kit.HasList())
         return false;
 
-    ICommandList& upload_cmd_list = upload_cmd_kit.GetList();
-    const CommandListState upload_cmd_state = upload_cmd_list.GetState();
-    if (upload_cmd_state == CommandListState::Pending)
+    Rhi::ICommandList& upload_cmd_list = upload_cmd_kit.GetList();
+    const Rhi::CommandListState upload_cmd_state = upload_cmd_list.GetState();
+    if (upload_cmd_state == Rhi::CommandListState::Pending)
         return false;
 
-    if (upload_cmd_state == CommandListState::Executing)
+    if (upload_cmd_state == Rhi::CommandListState::Executing)
         return true;
 
     META_LOG("Context '{}' UPLOAD resources", GetName());
 
-    if (upload_cmd_state == CommandListState::Encoding)
+    if (upload_cmd_state == Rhi::CommandListState::Encoding)
         upload_cmd_list.Commit();
 
     // Execute pre-upload synchronization command lists for all queues except the upload command queue
     // and set upload command queue fence to wait for pre-upload synchronization completion in other command queues
-    ExecuteSyncCommandLists<CommandListPurpose::PreUploadSync>(upload_cmd_kit);
+    ExecuteSyncCommandLists<Rhi::CommandListPurpose::PreUploadSync>(upload_cmd_kit);
 
     // Execute resource upload command lists
     upload_cmd_kit.GetQueue().Execute(upload_cmd_kit.GetListSet());
 
     // Execute post-upload synchronization command lists for all queues except the upload command queue
     // and set post-upload command queue fences to wait for upload command command queue completion
-    ExecuteSyncCommandLists<CommandListPurpose::PostUploadSync>(upload_cmd_kit);
+    ExecuteSyncCommandLists<Rhi::CommandListPurpose::PostUploadSync>(upload_cmd_kit);
 
     return true;
 }

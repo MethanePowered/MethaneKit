@@ -35,9 +35,9 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/UserInterface/Font.h>
 #include <Methane/UserInterface/Context.h>
 
-#include <Methane/Graphics/IRenderContext.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Graphics/FpsCounter.h>
-#include <Methane/Graphics/IDevice.h>
+#include <Methane/Graphics/RHI/IDevice.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
@@ -278,7 +278,7 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     }
 
     const gfx::FpsCounter&            fps_counter      = GetUIContext().GetRenderContext().GetFpsCounter();
-    const gfx::RenderContextSettings& context_settings = GetUIContext().GetRenderContext().GetSettings();
+    const rhi::RenderContextSettings& context_settings = GetUIContext().GetRenderContext().GetSettings();
 
     GetTextBlock(TextBlock::Fps).SetText(fmt::format("{:d} FPS", fps_counter.GetFramesPerSecond()));
     GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
@@ -288,7 +288,7 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
                                                                     context_settings.frame_size.GetWidth(),
                                                                     context_settings.frame_size.GetHeight(),
                                                                     context_settings.frame_buffers_count,
-                                                                    magic_enum::enum_name(Graphics::ISystem::GetNativeApi())));
+                                                                    magic_enum::enum_name(rhi::ISystem::GetNativeApi())));
     GetTextBlock(TextBlock::VSync).SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
     GetTextBlock(TextBlock::VSync).SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
 
@@ -297,7 +297,7 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     m_update_timer.Reset();
 }
 
-void HeadsUpDisplay::Draw(gfx::IRenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group) const
+void HeadsUpDisplay::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group) const
 {
     META_FUNCTION_TASK();
     Panel::Draw(cmd_list, p_debug_group);

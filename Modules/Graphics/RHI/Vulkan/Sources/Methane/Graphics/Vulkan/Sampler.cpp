@@ -30,74 +30,74 @@ Vulkan implementation of the sampler interface.
 
 #include <magic_enum.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<ISampler> ISampler::Create(const IContext& context, const ISampler::Settings& settings)
+Ptr<ISampler> Rhi::ISampler::Create(const Rhi::IContext& context, const Rhi::ISampler::Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::Sampler>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
 
-static vk::Filter ConvertMinMagFilterToVulkan(ISampler::Filter::MinMag filter_min_mag)
+static vk::Filter ConvertMinMagFilterToVulkan(Rhi::ISampler::Filter::MinMag filter_min_mag)
 {
     META_FUNCTION_TASK();
     switch(filter_min_mag)
     {
-    case ISampler::Filter::MinMag::Nearest: return vk::Filter::eNearest;
-    case ISampler::Filter::MinMag::Linear:  return vk::Filter::eLinear;
+    case Rhi::ISampler::Filter::MinMag::Nearest: return vk::Filter::eNearest;
+    case Rhi::ISampler::Filter::MinMag::Linear:  return vk::Filter::eLinear;
     default: META_UNEXPECTED_ARG_RETURN(filter_min_mag, vk::Filter::eNearest);
     }
 }
 
-static vk::SamplerMipmapMode ConvertMipmapFilterToVulkan(ISampler::Filter::Mip filter_mip_map)
+static vk::SamplerMipmapMode ConvertMipmapFilterToVulkan(Rhi::ISampler::Filter::Mip filter_mip_map)
 {
     META_FUNCTION_TASK();
     switch(filter_mip_map)
     {
-    case ISampler::Filter::Mip::NotMipmapped:
-    case ISampler::Filter::Mip::Nearest:      return vk::SamplerMipmapMode::eNearest;
-    case ISampler::Filter::Mip::Linear:       return vk::SamplerMipmapMode::eLinear;
+    case Rhi::ISampler::Filter::Mip::NotMipmapped:
+    case Rhi::ISampler::Filter::Mip::Nearest:      return vk::SamplerMipmapMode::eNearest;
+    case Rhi::ISampler::Filter::Mip::Linear:       return vk::SamplerMipmapMode::eLinear;
     default: META_UNEXPECTED_ARG_RETURN(filter_mip_map, vk::SamplerMipmapMode::eNearest);
     }
 }
 
-static vk::SamplerAddressMode ConvertSamplerAddressModeToVulkan(ISampler::Address::Mode address_mode)
+static vk::SamplerAddressMode ConvertSamplerAddressModeToVulkan(Rhi::ISampler::Address::Mode address_mode)
 {
     META_FUNCTION_TASK();
     switch(address_mode)
     {
-    case ISampler::Address::Mode::ClampToEdge:        return vk::SamplerAddressMode::eClampToEdge;
-    case ISampler::Address::Mode::ClampToZero:        return vk::SamplerAddressMode::eClampToBorder;
-    case ISampler::Address::Mode::ClampToBorderColor: return vk::SamplerAddressMode::eClampToBorder;
-    case ISampler::Address::Mode::Repeat:             return vk::SamplerAddressMode::eRepeat;
-    case ISampler::Address::Mode::RepeatMirror:       return vk::SamplerAddressMode::eMirroredRepeat;
+    case Rhi::ISampler::Address::Mode::ClampToEdge:        return vk::SamplerAddressMode::eClampToEdge;
+    case Rhi::ISampler::Address::Mode::ClampToZero:        return vk::SamplerAddressMode::eClampToBorder;
+    case Rhi::ISampler::Address::Mode::ClampToBorderColor: return vk::SamplerAddressMode::eClampToBorder;
+    case Rhi::ISampler::Address::Mode::Repeat:             return vk::SamplerAddressMode::eRepeat;
+    case Rhi::ISampler::Address::Mode::RepeatMirror:       return vk::SamplerAddressMode::eMirroredRepeat;
     default: META_UNEXPECTED_ARG_RETURN(address_mode, vk::SamplerAddressMode::eClampToEdge);
     }
 }
 
-static vk::BorderColor ConvertSamplerBorderColorToVulkan(ISampler::BorderColor border_color)
+static vk::BorderColor ConvertSamplerBorderColorToVulkan(Rhi::ISampler::BorderColor border_color)
 {
     META_FUNCTION_TASK();
     switch(border_color)
     {
-    case ISampler::BorderColor::TransparentBlack: return vk::BorderColor::eFloatTransparentBlack;
-    case ISampler::BorderColor::OpaqueBlack:      return vk::BorderColor::eFloatOpaqueBlack;
-    case ISampler::BorderColor::OpaqueWhite:      return vk::BorderColor::eFloatOpaqueWhite;
+    case Rhi::ISampler::BorderColor::TransparentBlack: return vk::BorderColor::eFloatTransparentBlack;
+    case Rhi::ISampler::BorderColor::OpaqueBlack:      return vk::BorderColor::eFloatOpaqueBlack;
+    case Rhi::ISampler::BorderColor::OpaqueWhite:      return vk::BorderColor::eFloatOpaqueWhite;
     default: META_UNEXPECTED_ARG_RETURN(border_color, vk::BorderColor::eFloatTransparentBlack);
     }
 }
 
-static bool IsAnisotropicFilteringSupported(const IContext& context) noexcept
+static bool IsAnisotropicFilteringSupported(const Rhi::IContext& context) noexcept
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    return static_cast<bool>(context.GetDevice().GetCapabilities().features & DeviceFeatures::AnisotropicFiltering);
+    return static_cast<bool>(context.GetDevice().GetCapabilities().features & Rhi::DeviceFeatures::AnisotropicFiltering);
 }
 
 Sampler::Sampler(const Base::Context& context, const Settings& settings)

@@ -38,31 +38,31 @@ Vulkan implementation of the render state interface.
 #include <magic_enum.hpp>
 #include <algorithm>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IViewState> IViewState::Create(const IViewState::Settings& state_settings)
+Ptr<IViewState> Rhi::IViewState::Create(const Rhi::IViewState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::ViewState>(state_settings);
 }
 
-Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRenderState::Settings& state_settings)
+Ptr<IRenderState> Rhi::IRenderState::Create(const Rhi::IRenderContext& context, const Rhi::IRenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::RenderState>(dynamic_cast<const Base::RenderContext&>(context), state_settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
 
 [[nodiscard]]
-static vk::PolygonMode RasterizerFillModeToVulkan(IRenderState::Rasterizer::FillMode fill_mode)
+static vk::PolygonMode RasterizerFillModeToVulkan(Rhi::IRenderState::Rasterizer::FillMode fill_mode)
 {
     META_FUNCTION_TASK();
-    using FillMode = IRenderState::Rasterizer::FillMode;
+    using FillMode = Rhi::IRenderState::Rasterizer::FillMode;
     switch(fill_mode)
     {
     case FillMode::Solid:     return vk::PolygonMode::eFill;
@@ -73,10 +73,10 @@ static vk::PolygonMode RasterizerFillModeToVulkan(IRenderState::Rasterizer::Fill
 }
 
 [[nodiscard]]
-static vk::CullModeFlags RasterizerCullModeToVulkan(IRenderState::Rasterizer::CullMode cull_mode)
+static vk::CullModeFlags RasterizerCullModeToVulkan(Rhi::IRenderState::Rasterizer::CullMode cull_mode)
 {
     META_FUNCTION_TASK();
-    using CullMode = IRenderState::Rasterizer::CullMode;
+    using CullMode = Rhi::IRenderState::Rasterizer::CullMode;
     switch(cull_mode)
     {
     case CullMode::None:  return vk::CullModeFlagBits::eNone;
@@ -106,29 +106,29 @@ static vk::SampleCountFlagBits RasterizerSampleCountToVulkan(uint32_t sample_cou
 }
 
 [[nodiscard]]
-static vk::StencilOp StencilOperationToVulkan(FaceOperation stencil_operation)
+static vk::StencilOp StencilOperationToVulkan(Rhi::FaceOperation stencil_operation)
 {
     META_FUNCTION_TASK();
     switch(stencil_operation)
     {
-    case FaceOperation::Keep:            return vk::StencilOp::eKeep;
-    case FaceOperation::Zero:            return vk::StencilOp::eZero;
-    case FaceOperation::Replace:         return vk::StencilOp::eReplace;
-    case FaceOperation::Invert:          return vk::StencilOp::eInvert;
-    case FaceOperation::IncrementClamp:  return vk::StencilOp::eIncrementAndClamp;
-    case FaceOperation::DecrementClamp:  return vk::StencilOp::eDecrementAndClamp;
-    case FaceOperation::IncrementWrap:   return vk::StencilOp::eIncrementAndWrap;
-    case FaceOperation::DecrementWrap:   return vk::StencilOp::eDecrementAndWrap;
+    case Rhi::FaceOperation::Keep:            return vk::StencilOp::eKeep;
+    case Rhi::FaceOperation::Zero:            return vk::StencilOp::eZero;
+    case Rhi::FaceOperation::Replace:         return vk::StencilOp::eReplace;
+    case Rhi::FaceOperation::Invert:          return vk::StencilOp::eInvert;
+    case Rhi::FaceOperation::IncrementClamp:  return vk::StencilOp::eIncrementAndClamp;
+    case Rhi::FaceOperation::DecrementClamp:  return vk::StencilOp::eDecrementAndClamp;
+    case Rhi::FaceOperation::IncrementWrap:   return vk::StencilOp::eIncrementAndWrap;
+    case Rhi::FaceOperation::DecrementWrap:   return vk::StencilOp::eDecrementAndWrap;
     default:
         META_UNEXPECTED_ARG_RETURN(stencil_operation, vk::StencilOp::eKeep);
     }
 }
 
 [[nodiscard]]
-static vk::BlendFactor BlendingFactorToVulkan(IRenderState::Blending::Factor blend_factor)
+static vk::BlendFactor BlendingFactorToVulkan(Rhi::IRenderState::Blending::Factor blend_factor)
 {
     META_FUNCTION_TASK();
-    using BlendFactor = IRenderState::Blending::Factor;
+    using BlendFactor = Rhi::IRenderState::Blending::Factor;
     switch(blend_factor)
     {
     case BlendFactor::Zero:                     return vk::BlendFactor::eZero;
@@ -150,16 +150,15 @@ static vk::BlendFactor BlendingFactorToVulkan(IRenderState::Blending::Factor ble
     case BlendFactor::OneMinusSource1Color:     return vk::BlendFactor::eOneMinusSrc1Color;
     case BlendFactor::Source1Alpha:             return vk::BlendFactor::eSrc1Alpha;
     case BlendFactor::OneMinusSource1Alpha:     return vk::BlendFactor::eOneMinusSrc1Alpha;
-    default:
-        META_UNEXPECTED_ARG_RETURN(blend_factor, vk::BlendFactor::eZero);
+    default: META_UNEXPECTED_ARG_RETURN(blend_factor, vk::BlendFactor::eZero);
     }
 }
 
 [[nodiscard]]
-vk::BlendOp BlendingOperationToVulkan(IRenderState::Blending::Operation blend_operation)
+vk::BlendOp BlendingOperationToVulkan(Rhi::IRenderState::Blending::Operation blend_operation)
 {
     META_FUNCTION_TASK();
-    using BlendOperation = IRenderState::Blending::Operation;
+    using BlendOperation = Rhi::IRenderState::Blending::Operation;
     switch(blend_operation)
     {
     case BlendOperation::Add:               return vk::BlendOp::eAdd;
@@ -173,11 +172,11 @@ vk::BlendOp BlendingOperationToVulkan(IRenderState::Blending::Operation blend_op
 }
 
 [[nodiscard]]
-vk::ColorComponentFlags BlendingColorChannelsToVulkan(IRenderState::Blending::ColorChannels color_channels)
+vk::ColorComponentFlags BlendingColorChannelsToVulkan(Rhi::IRenderState::Blending::ColorChannels color_channels)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    using ColorChannels = IRenderState::Blending::ColorChannels;
+    using ColorChannels = Rhi::IRenderState::Blending::ColorChannels;
 
     vk::ColorComponentFlags color_component_flags{};
     if (static_cast<bool>(color_channels & ColorChannels::Red))

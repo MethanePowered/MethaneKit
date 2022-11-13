@@ -24,38 +24,50 @@ Renders text labels to the faces of cube-map texture array
 #pragma once
 
 #include <Methane/Graphics/Color.hpp>
-#include <Methane/Graphics/IResourceBarriers.h>
+#include <Methane/Graphics/RHI/IResourceBarriers.h>
 
 #include <string>
 #include <array>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
+
 struct IRenderPattern;
 struct IRenderPass;
 struct IRenderCommandList;
 struct ICommandListSet;
 struct ITexture;
-class  ResourceBarriersBase;
+
+} // namespace Methane::Graphics::Rhi
+
+namespace Methane::Graphics
+{
+
 class  ScreenQuad;
-}
+
+} // namespace Methane::Graphics
 
 namespace Methane::UserInterface
 {
+
 class Context;
 class Font;
 class Text;
-}
+
+} // namespace Methane::UserInterface
 
 namespace Methane::Data
 {
+
 struct IProvider;
-}
+
+} // namespace Methane::Data
 
 namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 namespace gui = Methane::UserInterface;
 
 class TextureLabeler
@@ -96,7 +108,7 @@ public:
     };
 
     TextureLabeler(gui::Context& gui_context, const Data::IProvider& font_provider,
-                   gfx::ITexture& rt_texture, gfx::ResourceState rt_texture_final_state, const Settings& settings);
+                   rhi::ITexture& rt_texture, rhi::ResourceState rt_texture_final_state, const Settings& settings);
 
     void Render();
 
@@ -107,22 +119,22 @@ private:
             : SliceDesc(slice_desc)
         {}
 
-        Ptr<gfx::IRenderPass>        render_pass_ptr;
-        Ptr<gfx::IRenderCommandList> render_cmd_list_ptr;
+        Ptr<rhi::IRenderPass>        render_pass_ptr;
+        Ptr<rhi::IRenderCommandList> render_cmd_list_ptr;
         Ptr<gui::Text>               label_text_ptr;
         Ptr<gfx::ScreenQuad>         bg_quad_ptr;
     };
 
     gui::Context &               m_gui_context;
-    gfx::ITexture&               m_rt_texture;
+    rhi::ITexture&               m_rt_texture;
     gui::Font&                   m_font;
     std::vector<Slice>           m_slices;
-    Ptr<gfx::IRenderPattern>     m_texture_face_render_pattern_ptr;
-    Ptr<gfx::IResourceBarriers>  m_ending_resource_barriers_ptr;
-    Ptr<gfx::IRenderPattern>     m_ending_render_pattern_ptr;
-    Ptr<gfx::IRenderPass>        m_ending_render_pass_ptr;
-    Ptr<gfx::IRenderCommandList> m_ending_render_cmd_list_ptr;
-    Ptr<gfx::ICommandListSet>    m_render_cmd_list_set_ptr;
+    Ptr<rhi::IRenderPattern>     m_texture_face_render_pattern_ptr;
+    Ptr<rhi::IResourceBarriers>  m_ending_resource_barriers_ptr;
+    Ptr<rhi::IRenderPattern>     m_ending_render_pattern_ptr;
+    Ptr<rhi::IRenderPass>        m_ending_render_pass_ptr;
+    Ptr<rhi::IRenderCommandList> m_ending_render_cmd_list_ptr;
+    Ptr<rhi::ICommandListSet>    m_render_cmd_list_set_ptr;
 };
 
 } // namespace Methane::Tutorials

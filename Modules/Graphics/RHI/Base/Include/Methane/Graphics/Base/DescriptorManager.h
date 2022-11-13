@@ -23,32 +23,33 @@ Base descriptor manager implementation.
 
 #pragma once
 
-#include <Methane/Graphics/IDescriptorManager.h>
+#include <Methane/Graphics/RHI/IDescriptorManager.h>
 
 #include <Methane/Memory.hpp>
 #include <Tracy.hpp>
 
 #include <mutex>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct IProgramBindings;
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Base
 {
 
 class Context;
 
-class DescriptorManager : public IDescriptorManager
+class DescriptorManager
+    : public Rhi::IDescriptorManager
 {
 public:
     explicit DescriptorManager(Context& context, bool is_parallel_bindings_processing_enabled = true);
 
     // IDescriptorManager interface
-    void AddProgramBindings(IProgramBindings& program_bindings) final;
+    void AddProgramBindings(Rhi::IProgramBindings& program_bindings) final;
     void CompleteInitialization() override;
     void Release() override;
 
@@ -60,19 +61,19 @@ protected:
     void ForEachProgramBinding(const BindingsFuncType& bindings_functor)
     {
         std::scoped_lock lock_guard(m_program_bindings_mutex);
-        for (const WeakPtr<IProgramBindings>& program_bindings_wptr : m_program_bindings)
+        for (const WeakPtr<Rhi::IProgramBindings>& program_bindings_wptr : m_program_bindings)
         {
-            const Ptr<IProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
+            const Ptr<Rhi::IProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
             if (program_bindings_ptr)
                 bindings_functor(*program_bindings_ptr);
         }
     }
 
 private:
-    Context&                   m_context;
-    const bool                 m_is_parallel_bindings_processing_enabled;
-    WeakPtrs<IProgramBindings> m_program_bindings;
-    TracyLockable(std::mutex,  m_program_bindings_mutex)
+    Context&                        m_context;
+    const bool                      m_is_parallel_bindings_processing_enabled;
+    WeakPtrs<Rhi::IProgramBindings> m_program_bindings;
+    TracyLockable(std::mutex,       m_program_bindings_mutex)
 };
 
 } // namespace Methane::Graphics::Base

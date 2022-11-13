@@ -31,7 +31,7 @@ Vulkan implementation of the resource interface.
 
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Base/Resource.h>
-#include <Methane/Graphics/ICommandKit.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Instrumentation.h>
 
 #include <vulkan/vulkan.hpp>
@@ -77,7 +77,7 @@ public:
         try
         {
             // Resource released callback has to be emitted before native resource is released
-            Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
+            Data::Emitter<Rhi::IResourceCallback>::Emit(&Rhi::IResourceCallback::OnResourceReleased, std::ref(*this));
         }
         catch (const std::exception& e)
         {
@@ -207,11 +207,11 @@ protected:
         m_vk_resource = std::forward<T>(vk_resource);
     }
 
-    TransferCommandList& PrepareResourceUpload(ICommandQueue& target_cmd_queue)
+    TransferCommandList& PrepareResourceUpload(Rhi::ICommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
-        const ICommandKit& upload_cmd_kit  = Base::Resource::GetContext().GetUploadCommandKit();
-        auto&              upload_cmd_list = dynamic_cast<TransferCommandList&>(upload_cmd_kit.GetListForEncoding());
+        const Rhi::ICommandKit& upload_cmd_kit = Base::Resource::GetContext().GetUploadCommandKit();
+        auto& upload_cmd_list = dynamic_cast<TransferCommandList&>(upload_cmd_kit.GetListForEncoding());
         upload_cmd_list.RetainResource(*this);
 
         const bool owner_changed = SetOwnerQueueFamily(upload_cmd_kit.GetQueue().GetFamilyIndex(), m_upload_begin_transition_barriers_ptr);
@@ -225,15 +225,15 @@ protected:
         // If owner queue family has changed, resource barriers have to be also repeated on target command queue
         if (owner_changed && m_upload_begin_transition_barriers_ptr)
         {
-            constexpr auto pre_upload_cmd_list_id = static_cast<CommandListId>(CommandListPurpose::PreUploadSync);
-            ICommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(pre_upload_cmd_list_id);
+            constexpr auto pre_upload_cmd_list_id = static_cast<Rhi::CommandListId>(Rhi::CommandListPurpose::PreUploadSync);
+            Rhi::ICommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(pre_upload_cmd_list_id);
             target_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
         }
 
         return upload_cmd_list;
     }
 
-    void CompleteResourceUpload(TransferCommandList& upload_cmd_list, State final_resource_state, ICommandQueue& target_cmd_queue)
+    void CompleteResourceUpload(TransferCommandList& upload_cmd_list, State final_resource_state, Rhi::ICommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
         const bool owner_changed = SetOwnerQueueFamily(target_cmd_queue.GetFamilyIndex(), m_upload_end_transition_barriers_ptr);
@@ -247,8 +247,8 @@ protected:
         // If owner queue family has changed, resource barriers have to be also repeated on target command queue
         if (owner_changed && upload_end_barriers_non_empty)
         {
-            constexpr auto post_upload_cmd_list_id = static_cast<CommandListId>(CommandListPurpose::PostUploadSync);
-            ICommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
+            constexpr auto post_upload_cmd_list_id = static_cast<Rhi::CommandListId>(Rhi::CommandListPurpose::PostUploadSync);
+            Rhi::ICommandList& target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
             target_cmd_list.SetResourceBarriers(*m_upload_end_transition_barriers_ptr);
         }
     }
@@ -260,13 +260,13 @@ protected:
 private:
     using ViewDescriptorByViewId = std::map<ResourceView::Id, Ptr<ResourceView::ViewDescriptorVariant>>;
 
-    vk::Device              m_vk_device;
-    vk::UniqueDeviceMemory  m_vk_unique_device_memory;
-    ResourceStorageType     m_vk_resource;
-    ViewDescriptorByViewId  m_view_descriptor_by_view_id;
-    Opt<uint32_t>            m_owner_queue_family_index_opt;
-    Ptr<IResourceBarriers>  m_upload_begin_transition_barriers_ptr;
-    Ptr<IResourceBarriers>  m_upload_end_transition_barriers_ptr;
+    vk::Device                   m_vk_device;
+    vk::UniqueDeviceMemory       m_vk_unique_device_memory;
+    ResourceStorageType          m_vk_resource;
+    ViewDescriptorByViewId       m_view_descriptor_by_view_id;
+    Opt<uint32_t>                m_owner_queue_family_index_opt;
+    Ptr<Rhi::IResourceBarriers>  m_upload_begin_transition_barriers_ptr;
+    Ptr<Rhi::IResourceBarriers>  m_upload_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics::Vulkan

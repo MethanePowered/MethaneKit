@@ -37,13 +37,14 @@ namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 
 struct CubeMapArrayFrame final : Graphics::AppFrame
 {
     gfx::MeshBufferBindings      cube;
     gfx::MeshBufferBindings      sky_box;
-    Ptr<gfx::IRenderCommandList> render_cmd_list_ptr;
-    Ptr<gfx::ICommandListSet>    execute_cmd_list_set_ptr;
+    Ptr<rhi::IRenderCommandList> render_cmd_list_ptr;
+    Ptr<rhi::ICommandListSet>    execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -64,7 +65,7 @@ public:
 
 protected:
     // IContextCallback override
-    void OnContextReleased(gfx::IContext& context) override;
+    void OnContextReleased(rhi::IContext& context) override;
 
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);
@@ -73,8 +74,8 @@ private:
 
     hlslpp::float4x4         m_model_matrix;
     gfx::Camera              m_camera;
-    Ptr<gfx::IRenderState>   m_render_state_ptr;
-    Ptr<gfx::ISampler>       m_texture_sampler_ptr;
+    Ptr<rhi::IRenderState>   m_render_state_ptr;
+    Ptr<rhi::ISampler>       m_texture_sampler_ptr;
     Ptr<TexturedMeshBuffers> m_cube_buffers_ptr;
     Ptr<gfx::SkyBox>         m_sky_box_ptr;
 };

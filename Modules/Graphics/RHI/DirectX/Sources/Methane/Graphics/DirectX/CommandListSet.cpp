@@ -29,22 +29,22 @@ DirectX 12 command lists collection implementation
 #include <magic_enum.hpp>
 #include <nowide/convert.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& name)
+Ptr<ICommandListDebugGroup> Rhi::ICommandListDebugGroup::Create(const std::string& name)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::CommandListDebugGroup>(name);
 }
 
-Ptr<ICommandListSet> ICommandListSet::Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+Ptr<ICommandListSet> Rhi::ICommandListSet::Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::CommandListSet>(command_list_refs, frame_index_opt);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -78,7 +78,7 @@ CommandListSet::CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<
         }
         else
         {
-            m_native_command_lists.emplace_back(&dynamic_cast<const ICommandListDx&>(command_list).GetNativeCommandList());
+            m_native_command_lists.emplace_back(&dynamic_cast<const Rhi::ICommandListDx&>(command_list).GetNativeCommandList());
         }
         fence_name_ss << " '" << command_list.GetName() << "'";
     }
@@ -86,7 +86,7 @@ CommandListSet::CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<
     m_execution_completed_fence.SetName(fence_name_ss.str());
 }
 
-void CommandListSet::Execute(const ICommandList::CompletedCallback& completed_callback)
+void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     Base::CommandListSet::Execute(completed_callback);

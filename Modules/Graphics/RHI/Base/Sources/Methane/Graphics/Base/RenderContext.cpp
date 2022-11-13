@@ -25,14 +25,14 @@ Base implementation of the render context interface.
 #include <Methane/Graphics/Base/Device.h>
 
 #include <Methane/Graphics/TypeFormatters.hpp>
-#include <Methane/Graphics/ICommandKit.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Base
 {
 
-RenderContext::RenderContext(Device& device, UniquePtr<IDescriptorManager>&& descriptor_manager_ptr,
+RenderContext::RenderContext(Device& device, UniquePtr<Rhi::IDescriptorManager>&& descriptor_manager_ptr,
                                      tf::Executor& parallel_executor, const Settings& settings)
     : Context(device, std::move(descriptor_manager_ptr), parallel_executor, Type::Render)
     , m_settings(settings)
@@ -109,13 +109,13 @@ void RenderContext::OnCpuPresentComplete(bool signal_frame_fence)
     m_fps_counter.OnCpuFramePresented();
 }
 
-IFence& RenderContext::GetCurrentFrameFence() const
+Rhi::IFence& RenderContext::GetCurrentFrameFence() const
 {
     META_FUNCTION_TASK();
     return GetRenderCommandKit().GetFence(m_frame_buffer_index + 1);
 }
 
-IFence& RenderContext::GetRenderFence() const
+Rhi::IFence& RenderContext::GetRenderFence() const
 {
     META_FUNCTION_TASK();
     return GetRenderCommandKit().GetFence(0U);
@@ -144,7 +144,7 @@ void RenderContext::Initialize(Device& device, bool is_callback_emitted)
 
     if (is_callback_emitted)
     {
-        Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextInitialized, *this);
+        Data::Emitter<Rhi::IContextCallback>::Emit(&Rhi::IContextCallback::OnContextInitialized, *this);
     }
 }
 

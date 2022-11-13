@@ -38,10 +38,10 @@ DirectX 12 implementation of the command queue interface.
 #include <stdexcept>
 #include <cassert>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
+Ptr<ICommandQueue> Rhi::ICommandQueue::Create(const Rhi::IContext& context, CommandListType command_lists_type)
 {
     META_FUNCTION_TASK();
     auto command_queue_ptr =  std::make_shared<DirectX::CommandQueue>(dynamic_cast<const Base::Context&>(context), command_lists_type);
@@ -52,12 +52,12 @@ Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListTyp
     return command_queue_ptr;
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
 
-static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandListType command_list_type, IContext::Options options)
+static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandListType command_list_type, Rhi::IContext::Options options)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -65,7 +65,7 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandListType command_
     switch(command_list_type)
     {
     case CommandListType::Transfer:
-        return static_cast<bool>(options & IContext::Options::TransferWithDirectQueueOnWindows)
+        return static_cast<bool>(options & Rhi::IContext::Options::TransferWithDirectQueueOnWindows)
              ? D3D12_COMMAND_LIST_TYPE_DIRECT
              : D3D12_COMMAND_LIST_TYPE_COPY;
 
@@ -95,7 +95,7 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const Device& de
 
 CommandQueue::CommandQueue(const Base::Context& context, CommandListType command_lists_type)
     : Base::CommandQueueTracking(context, command_lists_type)
-    , m_dx_context(dynamic_cast<const IContextDx&>(context))
+    , m_dx_context(dynamic_cast<const Rhi::IContextDx&>(context))
     , m_cp_command_queue(CreateNativeCommandQueue(m_dx_context.GetDirectDevice(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
 {
     META_FUNCTION_TASK();

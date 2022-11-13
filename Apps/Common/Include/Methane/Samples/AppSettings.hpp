@@ -80,16 +80,16 @@ static constexpr AppOptions g_default_app_options_color_only_and_anim = []()
          | AppOptions::Animations;
 }();
 
-static constexpr Graphics::IRenderPass::Access g_default_screen_pass_access = []()
+static constexpr Graphics::Rhi::RenderPassAccess g_default_screen_pass_access = []()
 {
     using namespace magic_enum::bitwise_operators;
-    return Graphics::IRenderPass::Access::ShaderResources
-         | Graphics::IRenderPass::Access::Samplers;
+    return Graphics::Rhi::IRenderPass::Access::ShaderResources
+         | Graphics::Rhi::IRenderPass::Access::Samplers;
 }();
 
-static constexpr Graphics::IContext::Options g_default_context_options = Graphics::IContext::Options::None;
-static constexpr Graphics::DepthStencil     g_default_clear_depth_stencil(1.F, Graphics::Stencil(0));
-static const     Graphics::Color4F          g_default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
+static constexpr Graphics::Rhi::IContext::Options g_default_context_options = Graphics::Rhi::IContext::Options::None;
+static constexpr Graphics::DepthStencil g_default_clear_depth_stencil(1.F, Graphics::Stencil(0));
+static const     Graphics::Color4F      g_default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
 
 [[nodiscard]] inline Graphics::AppSettings GetGraphicsTutorialAppSettings(const std::string& app_name, AppOptions app_options)
 {
@@ -120,7 +120,7 @@ static const     Graphics::Color4F          g_default_clear_color(0.0F, 0.2F, 0.
             !hud_ui_enabled,                                    //   - show_hud_in_window_title
             0                                                   //   - default_device_index
         },                                                      // =========================
-        Graphics::RenderContextSettings {                       // render_context:
+        Graphics::Rhi::RenderContextSettings {                       // render_context:
             Graphics::FrameSize(),                              //   - frame_size
             Graphics::PixelFormat::BGRA8Unorm,                  //   - color_format
             depth_enabled                                       //   - depth_stencil_format

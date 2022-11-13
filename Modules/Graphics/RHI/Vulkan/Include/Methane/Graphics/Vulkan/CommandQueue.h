@@ -49,12 +49,12 @@ public:
         std::vector<uint64_t>               wait_values;
     };
 
-    CommandQueue(const Base::Context& context, CommandListType command_lists_type);
+    CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type);
     ~CommandQueue() override;
 
     // ICommandQueue interface
     uint32_t GetFamilyIndex() const noexcept override { return m_queue_family_index; }
-    void Execute(ICommandListSet& command_list_set, const ICommandList::CompletedCallback& completed_callback = {}) override;
+    void Execute(Rhi::ICommandListSet& command_list_set, const Rhi::ICommandList::CompletedCallback& completed_callback = {}) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;
@@ -82,14 +82,14 @@ protected:
     void CompleteCommandListSetExecution(Base::CommandListSet& executing_command_list_set) override;
 
 private:
-    CommandQueue(const Base::Context& context, CommandListType command_lists_type, const Device& device);
-    CommandQueue(const Base::Context& context, CommandListType command_lists_type, const Device& device,
+    CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type, const Device& device);
+    CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type, const Device& device,
                  const QueueFamilyReservation& family_reservation);
-    CommandQueue(const Base::Context& context, CommandListType command_lists_type, const Device& device,
+    CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type, const Device& device,
                  const QueueFamilyReservation& family_reservation, const vk::QueueFamilyProperties& family_properties);
 
     void Reset();
-    void AddWaitForFrameExecution(const ICommandListSet& command_list_set);
+    void AddWaitForFrameExecution(const Rhi::ICommandListSet& command_list_set);
 
     using FrameWaitInfos = std::vector<WaitInfo>;
 

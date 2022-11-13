@@ -26,7 +26,7 @@ Methane fence base implementation.
 #include "Object.h"
 
 #include <Methane/Memory.hpp>
-#include <Methane/Graphics/IFence.h>
+#include <Methane/Graphics/RHI/IFence.h>
 
 namespace Methane::Graphics::Base
 {
@@ -34,7 +34,7 @@ namespace Methane::Graphics::Base
 class CommandQueue;
 
 class Fence
-    : public IFence
+    : public Rhi::IFence
     , public Object
 {
 public:
@@ -43,13 +43,13 @@ public:
     // IFence overrides
     void Signal() override;
     void WaitOnCpu() override;
-    void WaitOnGpu(ICommandQueue& wait_on_command_queue) override;
+    void WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue) override;
     void FlushOnCpu() override;
-    void FlushOnGpu(ICommandQueue& wait_on_command_queue) override;
+    void FlushOnGpu(Rhi::ICommandQueue& wait_on_command_queue) override;
 
 protected:
     CommandQueue& GetCommandQueue() noexcept { return m_command_queue; }
-    uint64_t          GetValue() const noexcept  { return m_value; }
+    uint64_t      GetValue() const noexcept  { return m_value; }
 
 private:
     CommandQueue& m_command_queue;

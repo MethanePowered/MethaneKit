@@ -213,7 +213,7 @@ description here.
 - Pixel and vertex shaders are loaded for specific combination of macro definitions enabled during compilation done in build time.
   This macro definitions set is described in `gfx::IShader::MacroDefinitions` variable `textured_shadows_definitions` which
   is passed to `gfx::IShader::CreateVertex/CreatePixel` functions.
-- Configuration of `gfx::ProgramArgumentAccessors` is more complex than for simple cube mesh and mostly describes
+- Configuration of `rhi::ProgramArgumentAccessors` is more complex than for simple cube mesh and mostly describes
   Pixel-shader specific argument modifiers, except `g_mesh_uniforms` for Vertex-shader.
   `g_constants`, `g_shadow_sampler`, `g_texture_sampler` arguments are described with `Constant` modifier, while
   other arguments have no modifiers meaning that that can change during frames rendering.
@@ -235,22 +235,22 @@ description here.
                 gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
                 gfx::IShader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
             },
-            gfx::ProgramInputBufferLayouts
+            rhi::ProgramInputBufferLayouts
             {
                 gfx::IProgram::InputBufferLayout
                 {
                     gfx::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            gfx::ProgramArgumentAccessors
+            rhi::ProgramArgumentAccessors
             {
-                { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, gfx::ProgramArgumentAccessor::Type::Mutable       },
-                { { gfx::ShaderType::Pixel,  "g_scene_uniforms" }, gfx::ProgramArgumentAccessor::Type::FrameConstant },
-                { { gfx::ShaderType::Pixel,  "g_constants"      }, gfx::ProgramArgumentAccessor::Type::Constant      },
-                { { gfx::ShaderType::Pixel,  "g_shadow_map"     }, gfx::ProgramArgumentAccessor::Type::FrameConstant },
-                { { gfx::ShaderType::Pixel,  "g_shadow_sampler" }, gfx::ProgramArgumentAccessor::Type::Constant      },
-                { { gfx::ShaderType::Pixel,  "g_texture"        }, gfx::ProgramArgumentAccessor::Type::Mutable       },
-                { { gfx::ShaderType::Pixel,  "g_texture_sampler"}, gfx::ProgramArgumentAccessor::Type::Constant      },
+                { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, rhi::ProgramArgumentAccessor::Type::Mutable       },
+                { { rhi::ShaderType::Pixel,  "g_scene_uniforms" }, rhi::ProgramArgumentAccessor::Type::FrameConstant },
+                { { rhi::ShaderType::Pixel,  "g_constants"      }, rhi::ProgramArgumentAccessor::Type::Constant      },
+                { { rhi::ShaderType::Pixel,  "g_shadow_map"     }, rhi::ProgramArgumentAccessor::Type::FrameConstant },
+                { { rhi::ShaderType::Pixel,  "g_shadow_sampler" }, rhi::ProgramArgumentAccessor::Type::Constant      },
+                { { rhi::ShaderType::Pixel,  "g_texture"        }, rhi::ProgramArgumentAccessor::Type::Mutable       },
+                { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, rhi::ProgramArgumentAccessor::Type::Constant      },
             },
             GetScreenRenderPattern().GetAttachmentFormats()
         }
@@ -303,9 +303,9 @@ Vertex shader since it will be used for rendering to depth buffer only without c
                 gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
             },
             final_state_settings.program_ptr->GetSettings().input_buffer_layouts,
-            gfx::ProgramArgumentAccessors
+            rhi::ProgramArgumentAccessors
             {
-                { { gfx::ShaderType::All, "g_mesh_uniforms"  }, gfx::ProgramArgumentAccessor::Type::Mutable },
+                { { rhi::ShaderType::All, "g_mesh_uniforms"  }, rhi::ProgramArgumentAccessor::Type::Mutable },
             },
             m_shadow_pass_pattern_ptr->GetAttachmentFormats()
         }
@@ -384,12 +384,12 @@ rendered depth texture content for the next render pass. Render command list is 
 
         // Shadow-pass resource bindings for cube rendering
         frame.shadow_pass.cube.program_bindings_ptr = gfx::IProgramBindings::Create(shadow_state_settings.program_ptr, {
-            { { gfx::ShaderType::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.cube.uniforms_buffer_ptr } } },
+            { { rhi::ShaderType::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.cube.uniforms_buffer_ptr } } },
         }, frame.index);
 
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.program_bindings_ptr = gfx::IProgramBindings::Create(shadow_state_settings.program_ptr, {
-            { { gfx::ShaderType::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.floor.uniforms_buffer_ptr } } },
+            { { rhi::ShaderType::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.floor.uniforms_buffer_ptr } } },
         }, frame.index);
 
         // Create depth texture for shadow map rendering
@@ -424,19 +424,19 @@ application class `Methane::Graphics::App`. Render command list is created bound
 
         // Final-pass resource bindings for cube rendering
         frame.final_pass.cube.program_bindings_ptr = gfx::IProgramBindings::Create(final_state_settings.program_ptr, {
-            { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.cube.uniforms_buffer_ptr  } } },
-            { { gfx::ShaderType::Pixel,  "g_scene_uniforms" }, { { *frame.scene_uniforms_buffer_ptr            } } },
-            { { gfx::ShaderType::Pixel,  "g_constants"      }, { { *m_const_buffer_ptr                         } } },
-            { { gfx::ShaderType::Pixel,  "g_shadow_map"     }, { { *frame.shadow_pass.rt_texture_ptr           } } },
-            { { gfx::ShaderType::Pixel,  "g_shadow_sampler" }, { { *m_shadow_sampler_ptr                       } } },
-            { { gfx::ShaderType::Pixel,  "g_texture"        }, { { m_cube_buffers_ptr->GetTexture()            } } },
-            { { gfx::ShaderType::Pixel,  "g_texture_sampler"}, { { *m_texture_sampler_ptr                      } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.cube.uniforms_buffer_ptr  } } },
+            { { rhi::ShaderType::Pixel,  "g_scene_uniforms" }, { { *frame.scene_uniforms_buffer_ptr            } } },
+            { { rhi::ShaderType::Pixel,  "g_constants"      }, { { *m_const_buffer_ptr                         } } },
+            { { rhi::ShaderType::Pixel,  "g_shadow_map"     }, { { *frame.shadow_pass.rt_texture_ptr           } } },
+            { { rhi::ShaderType::Pixel,  "g_shadow_sampler" }, { { *m_shadow_sampler_ptr                       } } },
+            { { rhi::ShaderType::Pixel,  "g_texture"        }, { { m_cube_buffers_ptr->GetTexture()            } } },
+            { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, { { *m_texture_sampler_ptr                      } } },
         }, frame.index);
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.program_bindings_ptr = gfx::IProgramBindings::CreateCopy(*frame.final_pass.cube.program_bindings_ptr, {
-            { { gfx::ShaderType::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.floor.uniforms_buffer_ptr } } },
-            { { gfx::ShaderType::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexture()           } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.floor.uniforms_buffer_ptr } } },
+            { { rhi::ShaderType::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexture()           } } },
         }, frame.index);
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.

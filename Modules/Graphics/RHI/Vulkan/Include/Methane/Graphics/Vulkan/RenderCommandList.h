@@ -40,7 +40,7 @@ class ParallelRenderCommandList;
 
 class RenderCommandList final // NOSONAR - inheritance hierarchy is greater than 5
     : public CommandList<Base::RenderCommandList, vk::PipelineBindPoint::eGraphics, 2U, ICommandListVk::CommandBufferType::SecondaryRenderPass>
-    , private Data::Receiver<IRenderPassCallback>
+    , private Data::Receiver<Rhi::IRenderPassCallback>
 {
 public:
     explicit RenderCommandList(CommandQueue& command_queue);
@@ -52,9 +52,9 @@ public:
 
     // IRenderCommandList interface
     void Reset(IDebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
-    bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers) override;
-    bool SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers) override;
+    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
+    bool SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers) override;
+    bool SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_resource_barriers) override;
     void DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;
     void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
@@ -62,7 +62,7 @@ public:
 
 private:
     // IRenderPassCallback
-    void OnRenderPassUpdated(const IRenderPass& render_pass) override;
+    void OnRenderPassUpdated(const Rhi::IRenderPass& render_pass) override;
 
     void UpdatePrimitiveTopology(Primitive primitive);
 

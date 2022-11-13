@@ -50,7 +50,7 @@ public:
         Opt<uint32_t>                               index_opt;
         uint32_t                                    descriptors_count = 0U;
         std::vector<vk::DescriptorSetLayoutBinding> bindings;
-        std::vector<ProgramArgument>                arguments;                    // related arguments for each layout binding
+        std::vector<Argument>                       arguments;                    // related arguments for each layout binding
         std::vector<ByteCodeMaps>                   byte_code_maps_for_arguments; // related bytecode maps for each binding/argument
     };
 
@@ -59,20 +59,20 @@ public:
     // Base::Object overrides
     bool SetName(const std::string& name) override;
 
-    Shader& GetVulkanShader(ShaderType shader_type) const;
+    Shader& GetVulkanShader(Rhi::ShaderType shader_type) const;
     const IContextVk& GetVulkanContext() const noexcept { return m_vk_context; }
 
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
     const std::vector<vk::DescriptorSetLayout>& GetNativeDescriptorSetLayouts() const;
-    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(ProgramArgumentAccessor::Type argument_access_type);
-    const DescriptorSetLayoutInfo& GetDescriptorSetLayoutInfo(ProgramArgumentAccessor::Type argument_access_type);
+    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(ArgumentAccessor::Type argument_access_type);
+    const DescriptorSetLayoutInfo& GetDescriptorSetLayoutInfo(ArgumentAccessor::Type argument_access_type);
     const vk::PipelineLayout& GetNativePipelineLayout();
     const vk::DescriptorSet& GetConstantDescriptorSet();
     const vk::DescriptorSet& GetFrameConstantDescriptorSet(Data::Index frame_index);
 
 private:
-    using DescriptorSetLayoutInfoByAccessType = std::array<DescriptorSetLayoutInfo, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
+    using DescriptorSetLayoutInfoByAccessType = std::array<DescriptorSetLayoutInfo, magic_enum::enum_count<ArgumentAccessor::Type>()>;
 
     void InitializeDescriptorSetLayouts();
     void UpdatePipelineName();

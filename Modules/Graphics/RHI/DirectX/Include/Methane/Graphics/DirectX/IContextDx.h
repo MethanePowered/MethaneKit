@@ -23,7 +23,7 @@ DirectX 12 context accessor interface for template class Context<ContextBaseT>
 
 #pragma once
 
-#include <Methane/Graphics/ICommandList.h>
+#include <Methane/Graphics/RHI/ICommandList.h>
 
 #include <directx/d3d12.h>
 

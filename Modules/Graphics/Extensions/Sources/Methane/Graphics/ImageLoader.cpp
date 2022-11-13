@@ -24,7 +24,7 @@ by decoding them from popular image formats.
 
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Graphics/TypeFormatters.hpp>
-#include <Methane/Graphics/ICommandQueue.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
@@ -165,21 +165,21 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, Dat
 #endif
 }
 
-Ptr<ITexture> ImageLoader::LoadImageToTexture2D(ICommandQueue& target_cmd_queue, const std::string& image_path, Options options, const std::string& texture_name) const
+Ptr<Rhi::ITexture> ImageLoader::LoadImageToTexture2D(Rhi::ICommandQueue& target_cmd_queue, const std::string& image_path, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
-    const ImageData   image_data   = LoadImage(image_path, 4, false);
-    const PixelFormat image_format = GetDefaultImageFormat(static_cast<bool>(options & Options::SrgbColorSpace));
-    Ptr<ITexture>     texture_ptr  = ITexture::CreateImage(target_cmd_queue.GetContext(), image_data.GetDimensions(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
+    const ImageData    image_data   = LoadImage(image_path, 4, false);
+    const PixelFormat  image_format = GetDefaultImageFormat(static_cast<bool>(options & Options::SrgbColorSpace));
+    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::CreateImage(target_cmd_queue.GetContext(), image_data.GetDimensions(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
     texture_ptr->SetName(texture_name);
     texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } }, target_cmd_queue);
 
     return texture_ptr;
 }
 
-Ptr<ITexture> ImageLoader::LoadImagesToTextureCube(ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
+Ptr<Rhi::ITexture> ImageLoader::LoadImagesToTextureCube(Rhi::ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
 
@@ -210,19 +210,19 @@ Ptr<ITexture> ImageLoader::LoadImagesToTextureCube(ICommandQueue& target_cmd_que
     const uint32_t   face_channels_count = face_images_data.front().second.GetChannelsCount();
     META_CHECK_ARG_EQUAL_DESCR(face_dimensions.GetWidth(), face_dimensions.GetHeight(), "all images of cube texture faces must have equal width and height");
 
-    IResource::SubResources face_resources;
+    Rhi::IResource::SubResources face_resources;
     face_resources.reserve(face_images_data.size());
     for(const auto& [face_index, image_data] : face_images_data)
     {
         META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     image_data.GetDimensions(),    "all face image of cube texture must have equal dimensions");
         META_CHECK_ARG_EQUAL_DESCR(face_channels_count, image_data.GetChannelsCount(), "all face image of cube texture must have equal channels count");
-        face_resources.emplace_back(image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize(), IResource::SubResource::Index(face_index));
+        face_resources.emplace_back(image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize(), Rhi::IResource::SubResource::Index(face_index));
     }
 
     // Load face images to cube texture
     using namespace magic_enum::bitwise_operators;
-    const PixelFormat image_format = GetDefaultImageFormat(static_cast<bool>(options & Options::SrgbColorSpace));
-    Ptr<ITexture>     texture_ptr  = ITexture::CreateCube(target_cmd_queue.GetContext(), face_dimensions.GetWidth(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
+    const PixelFormat  image_format = GetDefaultImageFormat(static_cast<bool>(options & Options::SrgbColorSpace));
+    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::CreateCube(target_cmd_queue.GetContext(), face_dimensions.GetWidth(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
     texture_ptr->SetName(texture_name);
     texture_ptr->SetData(face_resources, target_cmd_queue);
 

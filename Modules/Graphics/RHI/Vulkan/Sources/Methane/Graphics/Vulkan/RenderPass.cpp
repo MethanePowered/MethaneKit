@@ -32,22 +32,22 @@ Vulkan implementation of the render pass interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
+Ptr<IRenderPattern> Rhi::IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::RenderPattern>(dynamic_cast<Vulkan::RenderContext&>(render_context), settings);
 }
 
-Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
+Ptr<IRenderPass> Rhi::IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::RenderPass>(dynamic_cast<Vulkan::RenderPattern&>(render_pattern), settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
@@ -68,10 +68,10 @@ vk::SampleCountFlagBits GetVulkanSampleCountFlag(Data::Size samples_count)
     }
 }
 
-static vk::AttachmentLoadOp GetVulkanAttachmentLoadOp(IRenderPattern::Attachment::LoadAction attachment_load_action)
+static vk::AttachmentLoadOp GetVulkanAttachmentLoadOp(Rhi::IRenderPattern::Attachment::LoadAction attachment_load_action)
 {
     META_FUNCTION_TASK();
-    using LoadAction = IRenderPattern::Attachment::LoadAction;
+    using LoadAction = Rhi::IRenderPattern::Attachment::LoadAction;
     switch(attachment_load_action)
     {
     case LoadAction::DontCare:  return vk::AttachmentLoadOp::eDontCare;
@@ -81,10 +81,10 @@ static vk::AttachmentLoadOp GetVulkanAttachmentLoadOp(IRenderPattern::Attachment
     }
 }
 
-static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(IRenderPattern::Attachment::StoreAction attachment_store_action)
+static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(Rhi::IRenderPattern::Attachment::StoreAction attachment_store_action)
 {
     META_FUNCTION_TASK();
-    using StoreAction = IRenderPattern::Attachment::StoreAction;
+    using StoreAction = Rhi::IRenderPattern::Attachment::StoreAction;
     switch(attachment_store_action)
     {
     case StoreAction::DontCare:  return vk::AttachmentStoreOp::eDontCare;
@@ -94,31 +94,31 @@ static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(IRenderPattern::Attachme
     }
 }
 
-static vk::ImageLayout GetFinalImageLayoutOfAttachment(const IRenderPattern::Attachment& attachment, bool is_final_pass)
+static vk::ImageLayout GetFinalImageLayoutOfAttachment(const Rhi::IRenderPattern::Attachment& attachment, bool is_final_pass)
 {
     META_FUNCTION_TASK();
-    const IRenderPattern::Attachment::Type attachment_type = attachment.GetType();
+    const Rhi::IRenderPattern::Attachment::Type attachment_type = attachment.GetType();
     switch(attachment_type)
     {
-    case IRenderPattern::Attachment::Type::Color:   return is_final_pass
-                                                        ? vk::ImageLayout::ePresentSrcKHR
-                                                        : vk::ImageLayout::eColorAttachmentOptimal;
-    case IRenderPattern::Attachment::Type::Depth:   return vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    case IRenderPattern::Attachment::Type::Stencil: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    case Rhi::IRenderPattern::Attachment::Type::Color:   return is_final_pass
+                                                              ? vk::ImageLayout::ePresentSrcKHR
+                                                              : vk::ImageLayout::eColorAttachmentOptimal;
+    case Rhi::IRenderPattern::Attachment::Type::Depth:   return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    case Rhi::IRenderPattern::Attachment::Type::Stencil: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
     default:
         META_UNEXPECTED_ARG_DESCR_RETURN(attachment_type, vk::ImageLayout::eUndefined,
                                          "attachment type is not supported by render pass");
     }
 }
 
-static vk::AttachmentDescription GetVulkanAttachmentDescription(const IRenderPattern::Attachment& attachment, bool is_final_pass)
+static vk::AttachmentDescription GetVulkanAttachmentDescription(const Rhi::IRenderPattern::Attachment& attachment, bool is_final_pass)
 {
     META_FUNCTION_TASK();
-    // FIXME: Current solution is unreliable, instead initial attachment State should be set in IRenderPattern::Settings
-    const vk::ImageLayout attachment_type_layout = attachment.GetType() == IRenderPattern::Attachment::Type::Color
+    // FIXME: Current solution is unreliable, instead initial attachment State should be set in Rhi::IRenderPattern::Settings
+    const vk::ImageLayout attachment_type_layout = attachment.GetType() == Rhi::IRenderPattern::Attachment::Type::Color
                                                  ? vk::ImageLayout::eColorAttachmentOptimal
                                                  : vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    const vk::ImageLayout initial_image_layout = attachment.load_action == IRenderPattern::Attachment::LoadAction::Load
+    const vk::ImageLayout initial_image_layout = attachment.load_action == Rhi::IRenderPattern::Attachment::LoadAction::Load
                                                ? attachment_type_layout
                                                : vk::ImageLayout::eUndefined;
     return vk::AttachmentDescription(
@@ -135,7 +135,7 @@ static vk::AttachmentDescription GetVulkanAttachmentDescription(const IRenderPat
     );
 }
 
-static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, const IRenderPattern::Settings& settings)
+static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, const Rhi::IRenderPattern::Settings& settings)
 {
     META_FUNCTION_TASK();
 
@@ -144,7 +144,7 @@ static vk::UniqueRenderPass CreateVulkanRenderPass(const vk::Device& vk_device, 
     std::vector<vk::AttachmentReference> vk_input_attachment_refs;
     vk::AttachmentReference vk_depth_stencil_attachment_ref;
 
-    for(const IRenderPattern::ColorAttachment& color_attachment : settings.color_attachments)
+    for(const Rhi::IRenderPattern::ColorAttachment& color_attachment : settings.color_attachments)
     {
         vk_attachment_descs.push_back(GetVulkanAttachmentDescription(color_attachment, settings.is_final_pass));
         vk_color_attachment_refs.emplace_back(color_attachment.attachment_index, vk::ImageLayout::eColorAttachmentOptimal);
@@ -306,19 +306,19 @@ void RenderPass::Reset()
     m_vk_unique_frame_buffer = CreateNativeFrameBuffer(GetVulkanContext().GetVulkanDevice().GetNativeDevice(), GetVulkanPattern().GetNativeRenderPass(), GetSettings());
     m_vk_pass_begin_info = CreateNativeBeginInfo(m_vk_unique_frame_buffer.get());
 
-    Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
+    Data::Emitter<Rhi::IRenderPassCallback>::Emit(&Rhi::IRenderPassCallback::OnRenderPassUpdated, *this);
 }
 
 void RenderPass::OnRenderContextSwapchainChanged(RenderContext&)
 {
     META_FUNCTION_TASK();
-    const TextureViews& attachment_texture_locations = GetSettings().attachments;
+    const Rhi::TextureViews& attachment_texture_locations = GetSettings().attachments;
     if (attachment_texture_locations.empty())
         return;
 
-    for (const TextureView& texture_location : attachment_texture_locations)
+    for (const Rhi::TextureView& texture_location : attachment_texture_locations)
     {
-        if (texture_location.GetTexture().GetSettings().type == TextureType::FrameBuffer)
+        if (texture_location.GetTexture().GetSettings().type == Rhi::TextureType::FrameBuffer)
             dynamic_cast<FrameBufferTexture&>(texture_location.GetTexture()).ResetNativeImage();
     }
 
@@ -352,8 +352,8 @@ vk::UniqueFramebuffer RenderPass::CreateNativeFrameBuffer(const vk::Device& vk_d
     if (m_vk_attachments.empty())
     {
         std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_vk_attachments),
-                       [](const Graphics::TextureView& texture_location)
-                       { return Vulkan::ResourceView(texture_location, ResourceUsage::RenderTarget); });
+                       [](const Rhi::TextureView& texture_location)
+                       { return Vulkan::ResourceView(texture_location, Rhi::ResourceUsage::RenderTarget); });
     }
 
     std::vector<vk::ImageView> vk_attachment_views;

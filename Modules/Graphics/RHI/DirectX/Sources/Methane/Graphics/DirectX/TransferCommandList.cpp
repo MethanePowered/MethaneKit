@@ -29,16 +29,16 @@ DirectX 12 implementation of the transfer command list interface.
 
 #include <magic_enum.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITransferCommandList> ITransferCommandList::Create(ICommandQueue& cmd_queue)
+Ptr<ITransferCommandList> Rhi::ITransferCommandList::Create(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::TransferCommandList>(static_cast<Base::CommandQueue&>(cmd_queue));
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {

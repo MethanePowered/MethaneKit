@@ -29,7 +29,7 @@ Metal implementation of the render pass interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
@@ -44,7 +44,7 @@ Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Setti
     return std::make_shared<Metal::RenderPass>(dynamic_cast<Base::RenderPattern&>(render_pattern), settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {

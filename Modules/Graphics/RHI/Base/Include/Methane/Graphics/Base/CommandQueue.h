@@ -26,7 +26,7 @@ Base implementation of the command queue interface.
 #include "Object.h"
 #include "CommandList.h"
 
-#include <Methane/Graphics/ICommandQueue.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
 #include <Methane/TracyGpu.hpp>
 
 #include <list>
@@ -42,23 +42,23 @@ class Device;
 
 class CommandQueue
     : public Object
-    , public ICommandQueue
+    , public Rhi::ICommandQueue
 {
     friend class CommandList;
 
 public:
-    CommandQueue(const Context& context, CommandListType command_lists_type);
+    CommandQueue(const Context& context, Rhi::CommandListType command_lists_type);
 
     // IObject interface
     bool SetName(const std::string& name) override;
 
     // ICommandQueue overrides
-    [[nodiscard]] const IContext& GetContext() const noexcept final;
-    CommandListType GetCommandListType() const noexcept final { return m_command_lists_type; }
-    void Execute(ICommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) override;
+    [[nodiscard]] const Rhi::IContext& GetContext() const noexcept final;
+    Rhi::CommandListType GetCommandListType() const noexcept final { return m_command_lists_type; }
+    void Execute(Rhi::ICommandListSet& command_lists, const Rhi::ICommandList::CompletedCallback& completed_callback = {}) override;
 
     // CommandQueue interface
-    virtual ITimestampQueryPool* GetTimestampQueryPool() const noexcept { return nullptr; }
+    virtual Rhi::ITimestampQueryPool* GetTimestampQueryPool() const noexcept { return nullptr; }
 
     const Context&     GetBaseContext() const noexcept     { return m_context; }
     Device&            GetBaseDevice() const noexcept      { return *m_device_ptr; }
@@ -72,7 +72,7 @@ protected:
 private:
     const Context&               m_context;
     const Ptr<Device>            m_device_ptr;
-    const CommandListType        m_command_lists_type;
+    const Rhi::CommandListType   m_command_lists_type;
     UniquePtr<Tracy::GpuContext> m_tracy_gpu_context_ptr;
 };
 

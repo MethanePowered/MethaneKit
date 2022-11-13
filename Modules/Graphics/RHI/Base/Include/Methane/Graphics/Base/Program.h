@@ -26,7 +26,7 @@ Base implementation of the program interface.
 #include "Shader.h"
 #include "ProgramBindings.h"
 
-#include <Methane/Graphics/IProgram.h>
+#include <Methane/Graphics/RHI/IProgram.h>
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
@@ -42,7 +42,7 @@ class Context;
 class CommandList;
 
 class Program
-    : public IProgram
+    : public Rhi::IProgram
     , public Object
 {
     friend class Shader;
@@ -52,11 +52,11 @@ public:
     Program(const Context& context, const Settings& settings);
 
     // IProgram interface
-    const Settings&     GetSettings() const noexcept final            { return m_settings; }
-    const ShaderTypes&  GetShaderTypes() const noexcept final         { return m_shader_types; }
-    const Ptr<IShader>& GetShader(ShaderType shader_type) const final { return m_shaders_by_type[magic_enum::enum_index(shader_type).value()]; }
-    bool                HasShader(ShaderType shader_type) const       { return !!GetShader(shader_type); }
-    Data::Size          GetBindingsCount() const noexcept final       { return m_bindings_count; }
+    const Settings&          GetSettings() const noexcept final                 { return m_settings; }
+    const Rhi::ShaderTypes&  GetShaderTypes() const noexcept final              { return m_shader_types; }
+    const Ptr<Rhi::IShader>& GetShader(Rhi::ShaderType shader_type) const final { return m_shaders_by_type[magic_enum::enum_index(shader_type).value()]; }
+    bool                     HasShader(Rhi::ShaderType shader_type) const       { return !!GetShader(shader_type); }
+    Data::Size               GetBindingsCount() const noexcept final            { return m_bindings_count; }
 
     const Context& GetContext() const { return m_context; }
 
@@ -68,25 +68,25 @@ protected:
     void InitArgumentBindings(const ArgumentAccessors& argument_accessors);
     const ArgumentBindings&         GetArgumentBindings() const noexcept      { return m_binding_by_argument; }
     const FrameArgumentBindings&    GetFrameArgumentBindings() const noexcept { return m_frame_bindings_by_argument; }
-    const Ptr<ArgumentBinding>&     GetFrameArgumentBinding(Data::Index frame_index, const ProgramArgumentAccessor& argument_accessor) const;
+    const Ptr<ArgumentBinding>&     GetFrameArgumentBinding(Data::Index frame_index, const Rhi::ProgramArgumentAccessor& argument_accessor) const;
     Ptr<ArgumentBinding>            CreateArgumentBindingInstance(const Ptr<ArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const;
 
-    IShader& GetShaderRef(ShaderType shader_type) const;
+    Rhi::IShader& GetShaderRef(Rhi::ShaderType shader_type) const;
     uint32_t GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const;
 
-    using ShadersByType = std::array<Ptr<IShader>, magic_enum::enum_count<ShaderType>() - 1>;
-    static ShadersByType CreateShadersByType(const Ptrs<IShader>& shaders);
+    using ShadersByType = std::array<Ptr<Rhi::IShader>, magic_enum::enum_count<Rhi::ShaderType>() - 1>;
+    static ShadersByType CreateShadersByType(const Ptrs<Rhi::IShader>& shaders);
 
     Data::Size GetBindingsCountAndIncrement() noexcept { return m_bindings_count++; }
 
 private:
-    const Context&        m_context;
-    const Settings        m_settings;
-    const ShadersByType   m_shaders_by_type;
-    const ShaderTypes     m_shader_types;
-    ArgumentBindings      m_binding_by_argument;
-    FrameArgumentBindings m_frame_bindings_by_argument;
-    Data::Size            m_bindings_count = 0u;
+    const Context&         m_context;
+    const Settings         m_settings;
+    const ShadersByType    m_shaders_by_type;
+    const Rhi::ShaderTypes m_shader_types;
+    ArgumentBindings       m_binding_by_argument;
+    FrameArgumentBindings  m_frame_bindings_by_argument;
+    Data::Size             m_bindings_count = 0u;
 };
 
 } // namespace Methane::Graphics::Base

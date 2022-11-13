@@ -36,10 +36,10 @@ class RenderContext;
 
 struct ITexture
 {
-    [[nodiscard]] static vk::ImageType        DimensionTypeToImageType(TextureDimensionType dimension_type);
-    [[nodiscard]] static vk::ImageViewType    DimensionTypeToImageViewType(TextureDimensionType dimension_type);
-    [[nodiscard]] static vk::ImageAspectFlags GetNativeImageAspectFlags(const TextureSettings& settings);
-    [[nodiscard]] static vk::ImageUsageFlags  GetNativeImageUsageFlags(const TextureSettings& settings,
+    [[nodiscard]] static vk::ImageType        DimensionTypeToImageType(Rhi::TextureDimensionType dimension_type);
+    [[nodiscard]] static vk::ImageViewType    DimensionTypeToImageViewType(Rhi::TextureDimensionType dimension_type);
+    [[nodiscard]] static vk::ImageAspectFlags GetNativeImageAspectFlags(const Rhi::TextureSettings& settings);
+    [[nodiscard]] static vk::ImageUsageFlags  GetNativeImageUsageFlags(const Rhi::TextureSettings& settings,
                                                                        vk::ImageUsageFlags initial_usage_flags = {});
 
     [[nodiscard]] virtual const vk::Image& GetNativeImage() const noexcept = 0;
@@ -68,7 +68,7 @@ private:
     Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const ResourceView::Id& view_id) override;
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, ICommandQueue&) override;
+    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
 
     const RenderContext& m_render_context;
     const FrameBufferIndex m_frame_buffer_index;
@@ -83,7 +83,7 @@ public:
                         const Opt<DepthStencil>& depth_stencil_opt);
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, ICommandQueue&) override;
+    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
 
     // ITexture interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
@@ -104,7 +104,7 @@ public:
     RenderTargetTexture(const RenderContext& context, const Settings& settings);
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, ICommandQueue&) override;
+    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
 
     // ITexture interface
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
@@ -123,7 +123,7 @@ public:
     ImageTexture(const Base::Context& context, const Settings& settings);
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, ICommandQueue&) override;
+    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
 
     // IObject overide
     bool SetName(const std::string& name) override;
@@ -136,7 +136,7 @@ private:
     // Resource override
     Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const ResourceView::Id& view_id) override;
 
-    void GenerateMipLevels(ICommandQueue& target_cmd_queue, State target_resource_state);
+    void GenerateMipLevels(Rhi::ICommandQueue& target_cmd_queue, State target_resource_state);
 
     vk::UniqueBuffer                 m_vk_unique_staging_buffer;
     vk::UniqueDeviceMemory           m_vk_unique_staging_memory;

@@ -27,22 +27,22 @@ Vulkan implementation of the transfer command list interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITransferCommandList> ITransferCommandList::Create(ICommandQueue& command_queue)
+Ptr<ITransferCommandList> Rhi::ITransferCommandList::Create(ICommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::TransferCommandList>(static_cast<Vulkan::CommandQueue&>(command_queue));
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
 
 TransferCommandList::TransferCommandList(CommandQueue& command_queue)
-    : CommandList(vk::CommandBufferLevel::ePrimary, {}, command_queue, CommandListType::Transfer)
+    : CommandList(vk::CommandBufferLevel::ePrimary, {}, command_queue, Rhi::CommandListType::Transfer)
 {
     META_FUNCTION_TASK();
 }

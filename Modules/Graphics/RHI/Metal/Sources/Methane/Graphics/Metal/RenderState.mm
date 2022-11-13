@@ -34,7 +34,7 @@ Metal implementation of the render state interface.
 
 #include <magic_enum.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<IViewState> IViewState::Create(const ViewSettings& state_settings)
@@ -49,7 +49,7 @@ Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRen
     return std::make_shared<Metal::RenderState>(dynamic_cast<const Base::RenderContext&>(context), state_settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {
@@ -293,8 +293,8 @@ void RenderState::Reset(const Settings& settings)
 
     // IProgram state
     m_mtl_pipeline_state_desc                           = [[MTLRenderPipelineDescriptor alloc] init];
-    m_mtl_pipeline_state_desc.vertexFunction            = metal_program.GetNativeShaderFunction(ShaderType::Vertex);
-    m_mtl_pipeline_state_desc.fragmentFunction          = metal_program.GetNativeShaderFunction(ShaderType::Pixel);
+    m_mtl_pipeline_state_desc.vertexFunction            = metal_program.GetNativeShaderFunction(Rhi::ShaderType::Vertex);
+    m_mtl_pipeline_state_desc.fragmentFunction          = metal_program.GetNativeShaderFunction(Rhi::ShaderType::Pixel);
     m_mtl_pipeline_state_desc.vertexDescriptor          = metal_program.GetNativeVertexDescriptor();
     
     // Rasterizer state

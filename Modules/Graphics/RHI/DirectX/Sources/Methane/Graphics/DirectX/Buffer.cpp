@@ -33,47 +33,47 @@ DirectX 12 implementation of the buffer interface.
 
 #include <magic_enum.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IBuffer> IBuffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
+Ptr<IBuffer> Rhi::IBuffer::CreateVertexBuffer(const Rhi::IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Base::CreateVertexBuffer<DirectX::VertexBuffer>(context, size, stride, is_volatile, stride);
 }
 
-Ptr<IBuffer> IBuffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
+Ptr<IBuffer> Rhi::IBuffer::CreateIndexBuffer(const Rhi::IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Base::CreateIndexBuffer<DirectX::IndexBuffer>(context, size, format, is_volatile, format);
 }
 
-Ptr<IBuffer> IBuffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
+Ptr<IBuffer> Rhi::IBuffer::CreateConstantBuffer(const Rhi::IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     META_FUNCTION_TASK();
     return Base::CreateConstantBuffer<DirectX::ConstantBuffer>(context, size, addressable, is_volatile);
 }
 
-Ptr<IBuffer> IBuffer::CreateReadBackBuffer(const IContext& context, Data::Size size)
+Ptr<IBuffer> Rhi::IBuffer::CreateReadBackBuffer(const Rhi::IContext& context, Data::Size size)
 {
     META_FUNCTION_TASK();
     return Base::CreateReadBackBuffer<DirectX::ReadBackBuffer>(context, size);
 }
 
-Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
+Data::Size Rhi::IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
 {
     META_FUNCTION_TASK();
     // Aligned size must be a multiple 256 bytes
     return (size + (D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1)) & ~(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1);
 }
 
-Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
+Ptr<IBufferSet> Rhi::IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::BufferSet>(buffers_type, buffer_refs);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -143,7 +143,7 @@ Opt<IResource::Descriptor> ConstantBuffer::InitializeNativeViewDescriptor(const 
          static_cast<bool>(usage_mask & Usage::Addressable))
         return std::nullopt;
 
-    const IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
+    const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
     const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
     GetDirectContext().GetDirectDevice().GetNativeDevice()->CreateConstantBufferView(&m_buffer_view, cpu_descriptor_handle);
     return descriptor;
@@ -165,7 +165,7 @@ BufferSet::BufferSet(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_ref
     : Base::BufferSet(buffers_type, buffer_refs)
 {
     META_FUNCTION_TASK();
-    if (buffers_type == IBuffer::Type::Vertex)
+    if (buffers_type == Rhi::IBuffer::Type::Vertex)
     {
         m_vertex_buffer_views = DirectX::GetNativeVertexBufferViews(GetRefs());
     }
@@ -174,8 +174,8 @@ BufferSet::BufferSet(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_ref
 const std::vector<D3D12_VERTEX_BUFFER_VIEW>& BufferSet::GetNativeVertexBufferViews() const
 {
     META_FUNCTION_TASK();
-    const IBuffer::Type buffers_type = GetType();
-    META_CHECK_ARG_EQUAL_DESCR(buffers_type, IBuffer::Type::Vertex,
+    const Rhi::IBuffer::Type buffers_type = GetType();
+    META_CHECK_ARG_EQUAL_DESCR(buffers_type, Rhi::IBuffer::Type::Vertex,
                                "unable to get vertex buffer views from buffer of {} type", magic_enum::enum_name(buffers_type));
     return m_vertex_buffer_views;
 }

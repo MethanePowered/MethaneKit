@@ -38,12 +38,12 @@ struct ICommandListVk;
 
 class ProgramBindings final
     : public Base::ProgramBindings
-    , private Data::Receiver<IObjectCallback>
+    , private Data::Receiver<Rhi::IObjectCallback>
 {
 public:
     using ArgumentBinding = ProgramArgumentBinding;
 
-    ProgramBindings(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
 
     void Initialize();
@@ -54,12 +54,12 @@ public:
     // Base::ProgramBindings interface
     void CompleteInitialization() override;
 
-    void Apply(ICommandListVk& command_list, const ICommandQueue& command_queue,
+    void Apply(ICommandListVk& command_list, const Rhi::ICommandQueue& command_queue,
                const Base::ProgramBindings* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
 
 private:
     // IObjectCallback interface
-    void OnObjectNameChanged(IObject&, const std::string&) override; // IProgram name changed
+    void OnObjectNameChanged(Rhi::IObject&, const std::string&) override; // IProgram name changed
 
     void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
 
@@ -67,11 +67,11 @@ private:
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
     void UpdateMutableDescriptorSetName();
 
-    mutable Ptr<IResourceBarriers> m_resource_ownership_transition_barriers_ptr;
-    std::vector<vk::DescriptorSet>   m_descriptor_sets; // descriptor sets corresponding to pipeline layout in the order of their access type
-    bool                             m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
-    std::vector<uint32_t>            m_dynamic_offsets; // dynamic buffer offsets for all descriptor sets from the bound ResourceView::Settings::offset
-    std::vector<uint32_t>            m_dynamic_offset_index_by_set_index; // beginning index in dynamic buffer offsets corresponding to the particular descriptor set or access type
+    mutable Ptr<Rhi::IResourceBarriers> m_resource_ownership_transition_barriers_ptr;
+    std::vector<vk::DescriptorSet>      m_descriptor_sets; // descriptor sets corresponding to pipeline layout in the order of their access type
+    bool                                m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
+    std::vector<uint32_t>               m_dynamic_offsets; // dynamic buffer offsets for all descriptor sets from the bound ResourceView::Settings::offset
+    std::vector<uint32_t>               m_dynamic_offset_index_by_set_index; // beginning index in dynamic buffer offsets corresponding to the particular descriptor set or access type
 };
 
 } // namespace Methane::Graphics::Vulkan

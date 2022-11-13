@@ -47,13 +47,14 @@ namespace Methane::Graphics::Vulkan
 struct IContextVk;
 class Program;
 
-class Shader final : public Base::Shader
+class Shader final
+    : public Base::Shader
 {
 public:
-    Shader(ShaderType shader_type, const Base::Context& context, const Settings& settings);
+    Shader(Type shader_type, const Base::Context& context, const Settings& settings);
 
     // Base::Shader interface
-    ArgumentBindings GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const override;
+    Ptrs<Base::ProgramArgumentBinding> GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const override;
 
     const Data::Chunk&                     GetNativeByteCode() const noexcept { return m_byte_code_chunk.AsConstChunk(); }
     const vk::ShaderModule&                GetNativeModule() const;
@@ -63,7 +64,7 @@ public:
 
     Data::MutableChunk& GetMutableByteCode() noexcept;
 
-    static vk::ShaderStageFlagBits ConvertTypeToStageFlagBits(ShaderType shader_type);
+    static vk::ShaderStageFlagBits ConvertTypeToStageFlagBits(Type shader_type);
 
 private:
     void InitializeVertexInputDescriptions(const Program& program);

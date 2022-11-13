@@ -35,12 +35,12 @@ Base implementation of the command queue with execution tracking.
 #include <condition_variable>
 #include <exception>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct ITimestampQueryPool;
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Base
 {
@@ -49,19 +49,19 @@ class CommandQueueTracking // NOSONAR - destructor is required
     : public CommandQueue
 {
 public:
-    CommandQueueTracking(const Context& context, CommandListType command_lists_type);
+    CommandQueueTracking(const Context& context, Rhi::CommandListType command_lists_type);
     ~CommandQueueTracking() override;
 
     // ICommandQueue interface
-    void Execute(ICommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) override;
+    void Execute(Rhi::ICommandListSet& command_lists, const Rhi::ICommandList::CompletedCallback& completed_callback = {}) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;
 
     virtual void CompleteExecution(const Opt<Data::Index>& frame_index = { });
 
-    Ptr<CommandListSet> GetLastExecutingCommandListSet() const;
-    ITimestampQueryPool*    GetTimestampQueryPool() const noexcept final { return m_timestamp_query_pool_ptr.get(); }
+    Ptr<CommandListSet>       GetLastExecutingCommandListSet() const;
+    Rhi::ITimestampQueryPool* GetTimestampQueryPool() const noexcept final { return m_timestamp_query_pool_ptr.get(); }
 
     void InitializeTimestampQueryPool();
 
@@ -108,7 +108,7 @@ private:
     std::thread                         m_execution_waiting_thread;
     std::exception_ptr                  m_execution_waiting_exception_ptr;
     std::atomic<bool>                   m_name_changed{ true };
-    Ptr<ITimestampQueryPool>            m_timestamp_query_pool_ptr;
+    Ptr<Rhi::ITimestampQueryPool>       m_timestamp_query_pool_ptr;
 };
 
 } // namespace Methane::Graphics::Base

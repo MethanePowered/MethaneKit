@@ -35,6 +35,7 @@ namespace Methane::UserInterface
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 
 template<typename FrameT>
 class App
@@ -149,7 +150,7 @@ protected:
     }
 
     // IContextCallback override
-    void OnContextReleased(gfx::IContext& context) override
+    void OnContextReleased(rhi::IContext& context) override
     {
         META_FUNCTION_TASK();
         AppBase::ReleaseUI();

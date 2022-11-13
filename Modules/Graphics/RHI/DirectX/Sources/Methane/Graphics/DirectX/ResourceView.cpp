@@ -28,8 +28,8 @@ DirectX 12 specialization of the resource interface.
 #include <Methane/Graphics/DirectX/IContextDx.h>
 #include <Methane/Graphics/DirectX/DescriptorManager.h>
 
-#include <Methane/Graphics/IContext.h>
-#include <Methane/Graphics/ITexture.h>
+#include <Methane/Graphics/RHI/IContext.h>
+#include <Methane/Graphics/RHI/ITexture.h>
 #include <Methane/Graphics/Base/Resource.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -37,21 +37,21 @@ DirectX 12 specialization of the resource interface.
 namespace Methane::Graphics::DirectX
 {
 
-DescriptorHeap::Type IResourceDx::GetDescriptorHeapTypeByUsage(const IResource& resource, IResource::Usage resource_usage)
+DescriptorHeap::Type Rhi::IResourceDx::GetDescriptorHeapTypeByUsage(const Rhi::IResource& resource, Rhi::IResource::Usage resource_usage)
 {
     META_FUNCTION_TASK();
-    const IResource::Type resource_type = resource.GetResourceType();
+    const Rhi::IResource::Type resource_type = resource.GetResourceType();
     switch (resource_usage)
     {
-    case IResource::Usage::ShaderRead:
-        return (resource_type == IResource::Type::Sampler)
+    case Rhi::IResource::Usage::ShaderRead:
+        return (resource_type == Rhi::IResource::Type::Sampler)
                ? DescriptorHeap::Type::Samplers
                : DescriptorHeap::Type::ShaderResources;
 
-    case IResource::Usage::ShaderWrite:
-    case IResource::Usage::RenderTarget:
-        return (resource_type == IResource::Type::Texture &&
-                dynamic_cast<const ITexture&>(resource).GetSettings().type == ITexture::Type::DepthStencilBuffer)
+    case Rhi::IResource::Usage::ShaderWrite:
+    case Rhi::IResource::Usage::RenderTarget:
+        return (resource_type == Rhi::IResource::Type::Texture &&
+                dynamic_cast<const Rhi::ITexture&>(resource).GetSettings().type == Rhi::ITexture::Type::DepthStencilBuffer)
                ? DescriptorHeap::Type::DepthStencil
                : DescriptorHeap::Type::RenderTargets;
 

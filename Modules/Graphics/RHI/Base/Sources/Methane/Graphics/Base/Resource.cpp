@@ -36,24 +36,24 @@ Base implementation of the resource interface.
 #include <algorithm>
 
 template<>
-struct fmt::formatter<Methane::Graphics::SubResource::Index>
+struct fmt::formatter<Methane::Graphics::Rhi::SubResource::Index>
 {
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 
     template<typename FormatContext>
-    auto format(const Methane::Graphics::SubResource::Index& index, FormatContext& ctx)
+    auto format(const Methane::Graphics::Rhi::SubResource::Index& index, FormatContext& ctx)
     {
         return format_to(ctx.out(), "{}", static_cast<std::string>(index));
     }
 };
 
 template<>
-struct fmt::formatter<Methane::Graphics::SubResource::Count>
+struct fmt::formatter<Methane::Graphics::Rhi::SubResource::Count>
 {
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 
     template<typename FormatContext>
-    auto format(const Methane::Graphics::SubResource::Count& count, FormatContext& ctx)
+    auto format(const Methane::Graphics::Rhi::SubResource::Count& count, FormatContext& ctx)
     {
         return format_to(ctx.out(), "{}", static_cast<std::string>(count));
     }
@@ -73,13 +73,13 @@ Resource::Resource(const Context& context, Type type, Usage usage_mask,
     META_FUNCTION_TASK();
 }
 
-void Resource::SetData(const SubResources& sub_resources, ICommandQueue&)
+void Resource::SetData(const SubResources& sub_resources, Rhi::ICommandQueue&)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY_DESCR(sub_resources, "can not set buffer data from empty sub-resources");
 
     Data::Size sub_resources_data_size = 0U;
-    for(const SubResource& sub_resource : sub_resources)
+    for(const Rhi::SubResource& sub_resource : sub_resources)
     {
         META_CHECK_ARG_NAME_DESCR("sub_resource", !sub_resource.IsEmptyOrNull(), "can not set empty subresource data to buffer");
         sub_resources_data_size += sub_resource.GetDataSize();
@@ -106,12 +106,12 @@ void Resource::SetData(const SubResources& sub_resources, ICommandQueue&)
     }
 }
 
-IResource::SubResource Resource::GetData(const SubResource::Index&, const std::optional<BytesRange>&)
+Rhi::IResource::SubResource Resource::GetData(const SubResource::Index&, const std::optional<BytesRange>&)
 {
     META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(IResource::SubResource(), "reading data is not allowed for this type of resource");
 }
 
-const IContext& Resource::GetContext() const noexcept
+const Rhi::IContext& Resource::GetContext() const noexcept
 {
     META_FUNCTION_TASK();
     return m_context;
@@ -146,7 +146,7 @@ bool Resource::SetState(State state, Ptr<IBarriers>& out_barriers)
     if (m_state != m_auto_transition_source_state_opt)
     {
         if (!out_barriers)
-            out_barriers = IResourceBarriers::Create();
+            out_barriers = Rhi::IResourceBarriers::Create();
 
         out_barriers->AddStateTransition(*this, m_state, state);
     }
@@ -189,7 +189,7 @@ bool Resource::SetOwnerQueueFamily(uint32_t family_index, Ptr<IBarriers>& out_ba
     if (m_owner_queue_family_index_opt)
     {
         if (!out_barriers)
-            out_barriers = IBarriers::Create();
+            out_barriers = Rhi::IResourceBarriers::Create();
 
         out_barriers->AddOwnerTransition(*this, *m_owner_queue_family_index_opt, family_index);
     }
@@ -224,7 +224,7 @@ void Resource::SetSubResourceCount(const SubResource::Count& sub_resource_count)
     FillSubresourceSizes();
 }
 
-void Resource::ValidateSubResource(const SubResource& sub_resource) const
+void Resource::ValidateSubResource(const Rhi::SubResource& sub_resource) const
 {
     META_FUNCTION_TASK();
     ValidateSubResource(sub_resource.GetIndex(), sub_resource.GetDataRangeOptional());

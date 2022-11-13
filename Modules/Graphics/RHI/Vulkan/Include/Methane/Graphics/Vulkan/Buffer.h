@@ -40,7 +40,7 @@ public:
     Buffer(const Base::Context& context, const Settings& settings);
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) override;
+    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;
@@ -55,10 +55,11 @@ private:
     std::vector<vk::BufferCopy> m_vk_copy_regions;
 };
 
-class BufferSet final : public Base::BufferSet
+class BufferSet final
+    : public Base::BufferSet
 {
 public:
-    BufferSet(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs);
+    BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buffer_refs);
 
     const std::vector<vk::Buffer>&     GetNativeBuffers() const noexcept { return m_vk_buffers; }
     const std::vector<vk::DeviceSize>& GetNativeOffsets() const noexcept { return m_vk_offsets; }

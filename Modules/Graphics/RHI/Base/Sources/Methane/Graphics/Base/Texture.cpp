@@ -33,7 +33,7 @@ namespace Methane::Graphics::Base
 
 Texture::Texture(const Context& context, const Settings& settings,
                          State initial_state, Opt<State> auto_transition_source_state_opt)
-    : Resource(context, IResource::Type::Texture, settings.usage_mask, initial_state, auto_transition_source_state_opt)
+    : Resource(context, Rhi::IResource::Type::Texture, settings.usage_mask, initial_state, auto_transition_source_state_opt)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();

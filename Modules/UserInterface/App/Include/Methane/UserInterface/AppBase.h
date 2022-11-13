@@ -41,6 +41,7 @@ namespace Methane::UserInterface
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 
 class Font;
 class Badge;
@@ -59,11 +60,11 @@ public:
     AppBase& operator=(AppBase&&) = delete;
 
 protected:
-    void InitUI(const Platform::IApp& app, gfx::ICommandQueue& render_cmd_queue, gfx::IRenderPattern& render_pattern, const gfx::FrameSize& frame_size);
+    void InitUI(const Platform::IApp& app, rhi::ICommandQueue& render_cmd_queue, rhi::IRenderPattern& render_pattern, const gfx::FrameSize& frame_size);
     void ReleaseUI();
     bool ResizeUI(const gfx::FrameSize& frame_size, bool is_minimized);
     bool UpdateUI() const;
-    void RenderOverlay(gfx::IRenderCommandList& cmd_list) const;
+    void RenderOverlay(rhi::IRenderCommandList& cmd_list) const;
 
     bool SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_mode);
     bool SetHelpText(std::string_view help_str);
@@ -92,7 +93,7 @@ private:
         Ptr<Text>   text_ptr;
 
         void Update(const FrameSize& frame_size) const;
-        void Draw(gfx::IRenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group) const;
+        void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group) const;
         void Reset(bool forget_text_string);
     };
 

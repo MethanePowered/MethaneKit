@@ -25,7 +25,7 @@ Vulkan specialization of the resource interface.
 
 #include "ResourceView.h"
 
-#include <Methane/Graphics/IResource.h>
+#include <Methane/Graphics/RHI/IResource.h>
 
 #include <vulkan/vulkan.hpp>
 
@@ -35,12 +35,13 @@ Vulkan specialization of the resource interface.
 namespace Methane::Graphics::Vulkan
 {
 
-struct IResourceVk : virtual IResource // NOSONAR
+struct IResourceVk
+    : virtual Rhi::IResource // NOSONAR
 {
 public:
-    using Barrier  = IResource::Barrier;
-    using Barriers = IResourceBarriers;
-    using State    = IResource::State;
+    using Barrier  = Rhi::ResourceBarrier;
+    using Barriers = Rhi::IResourceBarriers;
+    using State    = Rhi::ResourceState;
     using View     = ResourceView;
     using Views    = ResourceViews;
 
@@ -51,9 +52,9 @@ public:
 
     virtual const Ptr<ResourceView::ViewDescriptorVariant>& InitializeNativeViewDescriptor(const View::Id& view_id) = 0;
 
-    [[nodiscard]] static vk::AccessFlags        GetNativeAccessFlagsByResourceState(ResourceState resource_state);
-    [[nodiscard]] static vk::ImageLayout        GetNativeImageLayoutByResourceState(ResourceState resource_state);
-    [[nodiscard]] static vk::PipelineStageFlags GetNativePipelineStageFlagsByResourceState(ResourceState resource_state);
+    [[nodiscard]] static vk::AccessFlags        GetNativeAccessFlagsByResourceState(Rhi::ResourceState resource_state);
+    [[nodiscard]] static vk::ImageLayout        GetNativeImageLayoutByResourceState(Rhi::ResourceState resource_state);
+    [[nodiscard]] static vk::PipelineStageFlags GetNativePipelineStageFlagsByResourceState(Rhi::ResourceState resource_state);
 };
 
 } // namespace Methane::Graphics::Vulkan

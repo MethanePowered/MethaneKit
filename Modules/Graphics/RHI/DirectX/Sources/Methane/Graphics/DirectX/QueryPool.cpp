@@ -28,7 +28,7 @@ DirectX 12 GPU query pool implementation.
 #include <Methane/Graphics/DirectX/IContextDx.h>
 
 #include <Methane/Graphics/Base/QueryPool.h>
-#include <Methane/Graphics/IRenderContext.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -38,7 +38,7 @@ DirectX 12 GPU query pool implementation.
 
 namespace wrl = Microsoft::WRL;
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 static bool CheckCommandQueueSupportsTimestampQueries(DirectX::CommandQueue& command_queue)
@@ -54,7 +54,7 @@ static bool CheckCommandQueueSupportsTimestampQueries(DirectX::CommandQueue& com
     return true;
 }
 
-Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
+Ptr<ITimestampQueryPool> Rhi::ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
     return CheckCommandQueueSupportsTimestampQueries(static_cast<DirectX::CommandQueue&>(command_queue))
@@ -62,7 +62,7 @@ Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queu
            : nullptr;
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -72,7 +72,7 @@ static D3D12_QUERY_TYPE GetQueryTypeDx(IQueryPool::Type query_pool_type)
     META_FUNCTION_TASK();
     switch(query_pool_type) // NOSONAR - do not use if instead of switch
     {
-    case IQueryPool::Type::Timestamp: return D3D12_QUERY_TYPE_TIMESTAMP;
+    case Rhi::IQueryPool::Type::Timestamp: return D3D12_QUERY_TYPE_TIMESTAMP;
     //D3D12_QUERY_TYPE_OCCLUSION
     //D3D12_QUERY_TYPE_BINARY_OCCLUSION
     //D3D12_QUERY_TYPE_PIPELINE_STATISTICS
@@ -85,7 +85,7 @@ static D3D12_QUERY_HEAP_TYPE GetQueryHeapTypeDx(IQueryPool::Type query_pool_type
     META_FUNCTION_TASK();
     switch (query_pool_type) // NOSONAR - do not use if instead of switch
     {
-    case IQueryPool::Type::Timestamp:
+    case Rhi::IQueryPool::Type::Timestamp:
         return d3d_command_list_type == D3D12_COMMAND_LIST_TYPE_COPY
              ? D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP
              : D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
@@ -104,11 +104,11 @@ static Frequency GetGpuFrequency(ID3D12CommandQueue& native_command_queue, ID3D1
     return gpu_frequency;
 }
 
-static Data::Size GetMaxTimestampsCount(const IContext& context, uint32_t max_timestamps_per_frame)
+static Data::Size GetMaxTimestampsCount(const Rhi::IContext& context, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
-    const uint32_t frames_count = context.GetType() == IContext::Type::Render
-                                  ? dynamic_cast<const IRenderContext&>(context).GetSettings().frame_buffers_count
+    const uint32_t frames_count = context.GetType() == Rhi::IContext::Type::Render
+                                  ? dynamic_cast<const Rhi::IRenderContext&>(context).GetSettings().frame_buffers_count
                                   : 1U;
     return frames_count * max_timestamps_per_frame;
 }
@@ -149,11 +149,11 @@ void Query::ResolveData()
     );
 }
 
-IResource::SubResource Query::GetData() const
+Rhi::IResource::SubResource Query::GetData() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), Base::CommandList::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
-    META_CHECK_ARG_EQUAL_DESCR(GetState(), IQuery::State::Resolved, "query data can not be retrieved for unresolved query");
+    META_CHECK_ARG_EQUAL_DESCR(GetState(), Rhi::IQuery::State::Resolved, "query data can not be retrieved for unresolved query");
     return GetDirectQueryPool().GetDirectResultResource().GetData(IResource::SubResource::Index(), GetDataRange());
 }
 
@@ -164,11 +164,11 @@ QueryPool& Query::GetDirectQueryPool() const noexcept
 }
 
 QueryPool::QueryPool(CommandQueue& command_queue, Type type,
-                         Data::Size max_query_count, IQuery::Count slots_count_per_query,
+                         Data::Size max_query_count, Rhi::IQuery::Count slots_count_per_query,
                          Data::Size buffer_size, Data::Size query_size)
     : Base::QueryPool(static_cast<Base::CommandQueue&>(command_queue), type, max_query_count, slots_count_per_query, buffer_size, query_size)
     , m_result_buffer_ptr(IBuffer::CreateReadBackBuffer(GetContext(), buffer_size))
-    , m_context_dx(dynamic_cast<const IContextDx&>(GetContext()))
+    , m_context_dx(dynamic_cast<const Rhi::IContextDx&>(GetContext()))
     , m_result_resource_dx(dynamic_cast<IResourceDx&>(*m_result_buffer_ptr))
     , m_native_query_type(GetQueryTypeDx(type))
     , m_native_query_heap(m_context_dx.GetNativeQueryHeap(GetQueryHeapTypeDx(type, command_queue.GetNativeCommandQueue().GetDesc().Type), max_query_count))
@@ -198,7 +198,7 @@ Ptr<ITimestampQuery> TimestampQueryPool::CreateTimestampQuery(ICommandList& comm
     return Base::QueryPool::CreateQuery<TimestampQuery>(dynamic_cast<Base::CommandList&>(command_list));
 }
 
-ITimestampQueryPool::CalibratedTimestamps TimestampQueryPool::Calibrate()
+Rhi::ITimestampQueryPool::CalibratedTimestamps TimestampQueryPool::Calibrate()
 {
     META_FUNCTION_TASK();
     CalibratedTimestamps calibrated_timestamps{ 0U, 0U };
@@ -230,7 +230,7 @@ void TimestampQuery::ResolveTimestamp()
 Timestamp TimestampQuery::GetGpuTimestamp() const
 {
     META_FUNCTION_TASK();
-    IResource::SubResource query_data = GetData();
+    Rhi::IResource::SubResource query_data = GetData();
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(query_data.GetDataSize(), sizeof(Timestamp), "query data size is less than expected for timestamp");
     META_CHECK_ARG_NOT_NULL(query_data.GetDataPtr());
     return *reinterpret_cast<const Timestamp*>(query_data.GetDataPtr()); // NOSONAR

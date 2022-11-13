@@ -37,16 +37,16 @@ DirectX 12 implementation of the render command list interface.
 #include <magic_enum.hpp>
 #include <directx/d3dx12.h>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& cmd_queue, IRenderPass& render_pass)
+Ptr<IRenderCommandList> Rhi::IRenderCommandList::Create(ICommandQueue& cmd_queue, Rhi::IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::RenderCommandList>(static_cast<Base::CommandQueue&>(cmd_queue), static_cast<Base::RenderPass&>(render_pass));
 }
 
-Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& parallel_render_command_list)
+Ptr<IRenderCommandList> Rhi::IRenderCommandList::Create(IParallelRenderCommandList& parallel_render_command_list)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::RenderCommandList>(static_cast<Base::ParallelRenderCommandList&>(parallel_render_command_list));
@@ -58,7 +58,7 @@ Ptr<IRenderCommandList> Base::RenderCommandList::CreateForSynchronization(IComma
     return std::make_shared<DirectX::RenderCommandList>(static_cast<Base::CommandQueue&>(cmd_queue));
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -118,9 +118,9 @@ void RenderCommandList::ResetNative(const Ptr<RenderState>& render_state_ptr)
     using namespace magic_enum::bitwise_operators;
     DrawingState& drawing_state = GetDrawingState();
     drawing_state.render_state_ptr    = render_state_ptr;
-    drawing_state.render_state_groups = IRenderState::Groups::Program
-                                      | IRenderState::Groups::Rasterizer
-                                      | IRenderState::Groups::DepthStencil;
+    drawing_state.render_state_groups = Rhi::IRenderState::Groups::Program
+                                      | Rhi::IRenderState::Groups::Rasterizer
+                                      | Rhi::IRenderState::Groups::DepthStencil;
 }
 
 void RenderCommandList::ResetRenderPass()
@@ -150,7 +150,7 @@ void RenderCommandList::Reset(IDebugGroup* p_debug_group)
     }
 }
 
-void RenderCommandList::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
+void RenderCommandList::ResetWithState(IRenderState& render_state, Rhi::IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetNative(static_cast<Base::RenderState&>(render_state).GetPtr<RenderState>());

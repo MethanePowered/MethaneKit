@@ -31,7 +31,7 @@ Metal implementation of the command queue interface.
 
 #include <QuartzCore/CABase.h>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
@@ -40,7 +40,7 @@ Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListTyp
     return std::make_shared<Metal::CommandQueue>(dynamic_cast<const Base::Context&>(context), command_lists_type);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {

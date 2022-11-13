@@ -29,6 +29,8 @@ Badge widget displaying texture in specific corner of the screen.
 
 #include <string_view>
 
+namespace rhi = Methane::Graphics::Rhi;
+
 namespace Methane::Graphics
 {
 class ImageLoader;
@@ -68,7 +70,7 @@ public:
     };
 
     Badge(Context& ui_context, Data::IProvider& data_provider, const std::string& image_path, const Settings& settings);
-    Badge(Context& ui_context, const Ptr<gfx::ITexture>& texture_ptr, const Settings& settings);
+    Badge(Context& ui_context, const Ptr<rhi::ITexture>& texture_ptr, const Settings& settings);
 
     void FrameResize(const UnitSize& frame_size, Opt<UnitSize> badge_size = {}, Opt<UnitSize> margins = {});
     void SetCorner(FrameCorner frame_corner);

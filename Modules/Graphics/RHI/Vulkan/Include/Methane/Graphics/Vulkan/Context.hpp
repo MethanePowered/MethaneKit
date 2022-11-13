@@ -28,19 +28,19 @@ Vulkan template implementation of the base context interface.
 #include "CommandQueue.h"
 #include "DescriptorManager.h"
 
-#include <Methane/Graphics/IRenderContext.h>
-#include <Methane/Graphics/ICommandKit.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Instrumentation.h>
 
 #include <string>
 #include <map>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct ICommandQueue;
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
@@ -76,7 +76,7 @@ public:
         return static_cast<const Device&>(ContextBaseT::GetBaseDevice());
     }
 
-    CommandQueue& GetVulkanDefaultCommandQueue(CommandListType type) final
+    CommandQueue& GetVulkanDefaultCommandQueue(Rhi::CommandListType type) final
     {
         META_FUNCTION_TASK();
         return dynamic_cast<CommandQueue&>(ContextBaseT::GetDefaultCommandKit(type).GetQueue());

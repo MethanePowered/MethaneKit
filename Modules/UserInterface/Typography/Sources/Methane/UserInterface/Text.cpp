@@ -26,16 +26,16 @@ Methane text rendering primitive.
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Context.h>
 
-#include <Methane/Graphics/IRenderContext.h>
-#include <Methane/Graphics/IRenderCommandList.h>
-#include <Methane/Graphics/ICommandKit.h>
-#include <Methane/Graphics/ITexture.h>
-#include <Methane/Graphics/IBuffer.h>
-#include <Methane/Graphics/IRenderState.h>
-#include <Methane/Graphics/IRenderPass.h>
-#include <Methane/Graphics/IProgram.h>
-#include <Methane/Graphics/IProgramBindings.h>
-#include <Methane/Graphics/ISampler.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/IRenderCommandList.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
+#include <Methane/Graphics/RHI/ITexture.h>
+#include <Methane/Graphics/RHI/IBuffer.h>
+#include <Methane/Graphics/RHI/IRenderState.h>
+#include <Methane/Graphics/RHI/IRenderPass.h>
+#include <Methane/Graphics/RHI/IProgram.h>
+#include <Methane/Graphics/RHI/IProgramBindings.h>
+#include <Methane/Graphics/RHI/ISampler.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Data/Math.hpp>
@@ -59,7 +59,7 @@ Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
 {
 }
 
-Text::Text(Context& ui_context, gfx::IRenderPattern& render_pattern, Font& font, const SettingsUtf8& settings)
+Text::Text(Context& ui_context, rhi::IRenderPattern& render_pattern, Font& font, const SettingsUtf8& settings)
     : Text(ui_context, render_pattern, font,
         SettingsUtf32
         {
@@ -83,7 +83,7 @@ Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
 {
 }
 
-Text::Text(Context& ui_context, gfx::IRenderPattern& render_pattern, Font& font, SettingsUtf32 settings)
+Text::Text(Context& ui_context, rhi::IRenderPattern& render_pattern, Font& font, SettingsUtf32 settings)
     : Item(ui_context, settings.rect)
     , m_settings(std::move(settings))
     , m_font_ptr(font.shared_from_this())
@@ -96,8 +96,8 @@ Text::Text(Context& ui_context, gfx::IRenderPattern& render_pattern, Font& font,
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
 
-    gfx::IObjectRegistry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectRegistry();
-    m_render_state_ptr = std::dynamic_pointer_cast<gfx::IRenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
+    rhi::IObjectRegistry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectRegistry();
+    m_render_state_ptr = std::dynamic_pointer_cast<rhi::IRenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
     if (m_render_state_ptr)
     {
         META_CHECK_ARG_EQUAL_DESCR(m_render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
@@ -105,44 +105,44 @@ Text::Text(Context& ui_context, gfx::IRenderPattern& render_pattern, Font& font,
     }
     else
     {
-        gfx::IRenderState::Settings state_settings;
-        state_settings.program_ptr = gfx::IProgram::Create(GetUIContext().GetRenderContext(),
-            gfx::IProgram::Settings
+        rhi::IRenderState::Settings state_settings;
+        state_settings.program_ptr = rhi::IProgram::Create(GetUIContext().GetRenderContext(),
+            rhi::IProgram::Settings
             {
-                gfx::IProgram::Shaders
+                rhi::IProgram::Shaders
                 {
-                    gfx::IShader::CreateVertex(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
-                    gfx::IShader::CreatePixel(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
+                    rhi::IShader::CreateVertex(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } }),
+                    rhi::IShader::CreatePixel(GetUIContext().GetRenderContext(), { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } }),
                 },
-                gfx::ProgramInputBufferLayouts
+                rhi::ProgramInputBufferLayouts
                 {
-                    gfx::IProgram::InputBufferLayout
+                    rhi::IProgram::InputBufferLayout
                     {
-                        gfx::IProgram::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
+                        rhi::IProgram::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
                     }
                 },
-                gfx::ProgramArgumentAccessors
+                rhi::ProgramArgumentAccessors
                 {
-                    { { gfx::ShaderType::Vertex, "g_uniforms"  }, gfx::ProgramArgumentAccessor::Type::Mutable  },
-                    { { gfx::ShaderType::Pixel,  "g_constants" }, gfx::ProgramArgumentAccessor::Type::Mutable  },
-                    { { gfx::ShaderType::Pixel,  "g_texture"   }, gfx::ProgramArgumentAccessor::Type::Mutable  },
-                    { { gfx::ShaderType::Pixel,  "g_sampler"   }, gfx::ProgramArgumentAccessor::Type::Constant },
+                    { { rhi::ShaderType::Vertex, "g_uniforms"  }, rhi::ProgramArgumentAccessor::Type::Mutable  },
+                    { { rhi::ShaderType::Pixel,  "g_constants" }, rhi::ProgramArgumentAccessor::Type::Mutable  },
+                    { { rhi::ShaderType::Pixel,  "g_texture"   }, rhi::ProgramArgumentAccessor::Type::Mutable  },
+                    { { rhi::ShaderType::Pixel,  "g_sampler"   }, rhi::ProgramArgumentAccessor::Type::Constant },
                 },
                 render_pattern.GetAttachmentFormats()
             }
         );
         state_settings.program_ptr->SetName("Text Shading");
-        state_settings.render_pattern_ptr                                   = std::dynamic_pointer_cast<gfx::IRenderPattern>(render_pattern.GetPtr());
+        state_settings.render_pattern_ptr                                   = std::dynamic_pointer_cast<rhi::IRenderPattern>(render_pattern.GetPtr());
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;
         state_settings.blending.render_targets[0].blend_enabled             = true;
-        state_settings.blending.render_targets[0].source_rgb_blend_factor   = gfx::IRenderState::Blending::Factor::SourceAlpha;
-        state_settings.blending.render_targets[0].dest_rgb_blend_factor     = gfx::IRenderState::Blending::Factor::OneMinusSourceAlpha;
-        state_settings.blending.render_targets[0].source_alpha_blend_factor = gfx::IRenderState::Blending::Factor::Zero;
-        state_settings.blending.render_targets[0].dest_alpha_blend_factor   = gfx::IRenderState::Blending::Factor::Zero;
+        state_settings.blending.render_targets[0].source_rgb_blend_factor   = rhi::IRenderState::Blending::Factor::SourceAlpha;
+        state_settings.blending.render_targets[0].dest_rgb_blend_factor     = rhi::IRenderState::Blending::Factor::OneMinusSourceAlpha;
+        state_settings.blending.render_targets[0].source_alpha_blend_factor = rhi::IRenderState::Blending::Factor::Zero;
+        state_settings.blending.render_targets[0].dest_alpha_blend_factor   = rhi::IRenderState::Blending::Factor::Zero;
 
-        m_render_state_ptr = gfx::IRenderState::Create(GetUIContext().GetRenderContext(), state_settings);
+        m_render_state_ptr = rhi::IRenderState::Create(GetUIContext().GetRenderContext(), state_settings);
         m_render_state_ptr->SetName(m_settings.state_name);
 
         gfx_objects_registry.AddGraphicsObject(*m_render_state_ptr);
@@ -151,18 +151,18 @@ Text::Text(Context& ui_context, gfx::IRenderPattern& render_pattern, Font& font,
     UpdateTextMesh();
 
     const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsBase();
-    m_view_state_ptr = gfx::IViewState::Create({
+    m_view_state_ptr = rhi::IViewState::Create({
         { gfx::GetFrameViewport(viewport_rect)    },
         { gfx::GetFrameScissorRect(viewport_rect) }
     });
 
     static const std::string s_sampler_name = "Font Atlas Sampler";
-    m_atlas_sampler_ptr = std::dynamic_pointer_cast<gfx::ISampler>(gfx_objects_registry.GetGraphicsObject(s_sampler_name));
+    m_atlas_sampler_ptr = std::dynamic_pointer_cast<rhi::ISampler>(gfx_objects_registry.GetGraphicsObject(s_sampler_name));
     if (!m_atlas_sampler_ptr)
     {
-        m_atlas_sampler_ptr = gfx::ISampler::Create(GetUIContext().GetRenderContext(), {
-            gfx::ISampler::Filter(gfx::ISampler::Filter::MinMag::Linear),
-            gfx::ISampler::Address(gfx::ISampler::Address::Mode::ClampToZero),
+        m_atlas_sampler_ptr = rhi::ISampler::Create(GetUIContext().GetRenderContext(), {
+            rhi::ISampler::Filter(rhi::ISampler::Filter::MinMag::Linear),
+            rhi::ISampler::Address(rhi::ISampler::Address::Mode::ClampToZero),
         });
         m_atlas_sampler_ptr->SetName(s_sampler_name);
 
@@ -354,7 +354,7 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     assert(!frame_resources.IsDirty() || !m_text_mesh_ptr || !m_font_ptr);
 }
 
-void Text::Draw(gfx::IRenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group)
+void Text::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (m_frame_resources.empty())
@@ -369,10 +369,10 @@ void Text::Draw(gfx::IRenderCommandList& cmd_list, gfx::ICommandListDebugGroup* 
     cmd_list.SetProgramBindings(frame_resources.GetProgramBindings());
     cmd_list.SetVertexBuffers(frame_resources.GetVertexBufferSet());
     cmd_list.SetIndexBuffer(frame_resources.GetIndexBuffer());
-    cmd_list.DrawIndexed(gfx::RenderPrimitive::Triangle);
+    cmd_list.DrawIndexed(rhi::RenderPrimitive::Triangle);
 }
 
-void Text::OnFontAtlasTextureReset(Font& font, const Ptr<gfx::ITexture>& old_atlas_texture_ptr, const Ptr<gfx::ITexture>& new_atlas_texture_ptr)
+void Text::OnFontAtlasTextureReset(Font& font, const Ptr<rhi::ITexture>& old_atlas_texture_ptr, const Ptr<rhi::ITexture>& new_atlas_texture_ptr)
 {
     META_FUNCTION_TASK();
     META_UNUSED(old_atlas_texture_ptr);
@@ -416,8 +416,8 @@ bool Text::FrameResources::IsDirty(DirtyFlags dirty_flags) const noexcept
     return static_cast<bool>(m_dirty_mask & dirty_flags);
 }
 
-void Text::FrameResources::InitializeProgramBindings(const gfx::IRenderState& state, const Ptr<gfx::IBuffer>& const_buffer_ptr,
-                                                     const Ptr<gfx::ISampler>& atlas_sampler_ptr, std::string_view text_name)
+void Text::FrameResources::InitializeProgramBindings(const rhi::IRenderState& state, const Ptr<rhi::IBuffer>& const_buffer_ptr,
+                                                     const Ptr<rhi::ISampler>& atlas_sampler_ptr, std::string_view text_name)
 {
     META_FUNCTION_TASK();
     if (m_program_bindings_ptr)
@@ -428,37 +428,37 @@ void Text::FrameResources::InitializeProgramBindings(const gfx::IRenderState& st
     META_CHECK_ARG_NOT_NULL(m_atlas_texture_ptr);
     META_CHECK_ARG_NOT_NULL(m_uniforms_buffer_ptr);
 
-    m_program_bindings_ptr = gfx::IProgramBindings::Create(state.GetSettings().program_ptr, {
-        { { gfx::ShaderType::Vertex, "g_uniforms"  }, { { *m_uniforms_buffer_ptr } } },
-        { { gfx::ShaderType::Pixel,  "g_constants" }, { { *const_buffer_ptr      } } },
-        { { gfx::ShaderType::Pixel,  "g_texture"   }, { { *m_atlas_texture_ptr   } } },
-        { { gfx::ShaderType::Pixel,  "g_sampler"   }, { { *atlas_sampler_ptr     } } },
+    m_program_bindings_ptr = rhi::IProgramBindings::Create(state.GetSettings().program_ptr, {
+        { { rhi::ShaderType::Vertex, "g_uniforms"  }, { { *m_uniforms_buffer_ptr } } },
+        { { rhi::ShaderType::Pixel,  "g_constants" }, { { *const_buffer_ptr      } } },
+        { { rhi::ShaderType::Pixel,  "g_texture"   }, { { *m_atlas_texture_ptr   } } },
+        { { rhi::ShaderType::Pixel,  "g_sampler"   }, { { *atlas_sampler_ptr     } } },
     });
     m_program_bindings_ptr->SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
 }
 
-gfx::IBufferSet& Text::FrameResources::GetVertexBufferSet() const
+rhi::IBufferSet& Text::FrameResources::GetVertexBufferSet() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_vertex_buffer_set_ptr, "text vertex buffers are not initialized");
     return *m_vertex_buffer_set_ptr;
 }
 
-gfx::IBuffer& Text::FrameResources::GetIndexBuffer() const
+rhi::IBuffer& Text::FrameResources::GetIndexBuffer() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_index_buffer_ptr, "text index buffer are not initialized");
     return *m_index_buffer_ptr;
 }
 
-gfx::IProgramBindings& Text::FrameResources::GetProgramBindings() const
+rhi::IProgramBindings& Text::FrameResources::GetProgramBindings() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_program_bindings_ptr, "text program bindings are not initialized");
     return *m_program_bindings_ptr;
 }
 
-bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::ITexture>& new_atlas_texture_ptr)
+bool Text::FrameResources::UpdateAtlasTexture(const Ptr<rhi::ITexture>& new_atlas_texture_ptr)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -478,11 +478,11 @@ bool Text::FrameResources::UpdateAtlasTexture(const Ptr<gfx::ITexture>& new_atla
     if (!m_program_bindings_ptr)
         return false;
 
-    m_program_bindings_ptr->Get({ gfx::ShaderType::Pixel, "g_texture" }).SetResourceViews({ { *m_atlas_texture_ptr } });
+    m_program_bindings_ptr->Get({ rhi::ShaderType::Pixel, "g_texture" }).SetResourceViews({ { *m_atlas_texture_ptr } });
     return true;
 }
 
-void Text::FrameResources::UpdateMeshBuffers(const gfx::IRenderContext& render_context, const TextMesh& text_mesh,
+void Text::FrameResources::UpdateMeshBuffers(const rhi::IRenderContext& render_context, const TextMesh& text_mesh,
                                              std::string_view text_name, Data::Size reservation_multiplier)
 {
     META_FUNCTION_TASK();
@@ -494,14 +494,14 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::IRenderContext& render_c
     if (!m_vertex_buffer_set_ptr || (*m_vertex_buffer_set_ptr)[0].GetDataSize() < vertices_data_size)
     {
         const Data::Size  vertex_buffer_size = vertices_data_size * reservation_multiplier;
-        Ptr<gfx::IBuffer> vertex_buffer_ptr  = gfx::IBuffer::CreateVertexBuffer(render_context, vertex_buffer_size, text_mesh.GetVertexSize());
+        Ptr<rhi::IBuffer> vertex_buffer_ptr  = rhi::IBuffer::CreateVertexBuffer(render_context, vertex_buffer_size, text_mesh.GetVertexSize());
         vertex_buffer_ptr->SetName(fmt::format("{} Text Vertex Buffer {}", text_name, m_frame_index));
-        m_vertex_buffer_set_ptr = gfx::IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+        m_vertex_buffer_set_ptr = rhi::IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
     }
     (*m_vertex_buffer_set_ptr)[0].SetData({
-        gfx::IResource::SubResource(
+        rhi::IResource::SubResource(
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size, // NOSONAR
-            gfx::IResource::SubResource::Index(), gfx::IResource::BytesRange(0U, vertices_data_size)
+            rhi::IResource::SubResource::Index(), rhi::IResource::BytesRange(0U, vertices_data_size)
         )
     }, render_context.GetRenderCommandKit().GetQueue());
 
@@ -512,14 +512,14 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::IRenderContext& render_c
     if (!m_index_buffer_ptr || m_index_buffer_ptr->GetDataSize() < indices_data_size)
     {
         const Data::Size index_buffer_size = vertices_data_size * reservation_multiplier;
-        m_index_buffer_ptr = gfx::IBuffer::CreateIndexBuffer(render_context, index_buffer_size, gfx::PixelFormat::R16Uint);
+        m_index_buffer_ptr = rhi::IBuffer::CreateIndexBuffer(render_context, index_buffer_size, gfx::PixelFormat::R16Uint);
         m_index_buffer_ptr->SetName(fmt::format("{} Text Index Buffer {}", text_name, m_frame_index));
     }
 
     m_index_buffer_ptr->SetData({
-        gfx::IResource::SubResource(
+        rhi::IResource::SubResource(
             reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size, // NOSONAR
-            gfx::IResource::SubResource::Index(), gfx::IResource::BytesRange(0U, indices_data_size)
+            rhi::IResource::SubResource::Index(), rhi::IResource::BytesRange(0U, indices_data_size)
         )
     }, render_context.GetRenderCommandKit().GetQueue());
 
@@ -527,7 +527,7 @@ void Text::FrameResources::UpdateMeshBuffers(const gfx::IRenderContext& render_c
     m_dirty_mask &= ~DirtyFlags::Mesh;
 }
 
-void Text::FrameResources::UpdateUniformsBuffer(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name)
+void Text::FrameResources::UpdateUniformsBuffer(const rhi::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name)
 {
     META_FUNCTION_TASK();
 
@@ -546,16 +546,16 @@ void Text::FrameResources::UpdateUniformsBuffer(const gfx::IRenderContext& rende
 
     if (!m_uniforms_buffer_ptr)
     {
-        m_uniforms_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(render_context, uniforms_data_size);
+        m_uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(render_context, uniforms_data_size);
         m_uniforms_buffer_ptr->SetName(fmt::format("{} Text Uniforms Buffer {}", text_name, m_frame_index));
 
         if (m_program_bindings_ptr)
         {
-            m_program_bindings_ptr->Get({ gfx::ShaderType::Vertex, "g_uniforms" }).SetResourceViews({ { *m_uniforms_buffer_ptr } });
+            m_program_bindings_ptr->Get({ rhi::ShaderType::Vertex, "g_uniforms" }).SetResourceViews({ { *m_uniforms_buffer_ptr } });
         }
     }
     m_uniforms_buffer_ptr->SetData(
-        gfx::IResource::SubResources
+        rhi::IResource::SubResources
         {
             { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } // NOSONAR
         },
@@ -573,17 +573,17 @@ void Text::InitializeFrameResources()
     META_CHECK_ARG_NOT_NULL_DESCR(m_render_state_ptr, "text render state is not initialized");
     META_CHECK_ARG_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh is not initialized");
 
-    gfx::IRenderContext& render_context = GetUIContext().GetRenderContext();
+    rhi::IRenderContext& render_context = GetUIContext().GetRenderContext();
     const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
     m_frame_resources.reserve(frame_buffers_count);
 
     if (!m_const_buffer_ptr)
     {
-        m_const_buffer_ptr = gfx::IBuffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::TextConstants)));
+        m_const_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::TextConstants)));
         m_const_buffer_ptr->SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
     }
 
-    const Ptr<gfx::ITexture>& atlas_texture_ptr = m_font_ptr->GetAtlasTexturePtr(render_context);
+    const Ptr<rhi::ITexture>& atlas_texture_ptr = m_font_ptr->GetAtlasTexturePtr(render_context);
     for(uint32_t frame_buffer_index = 0U; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
     {
         m_frame_resources.emplace_back(
@@ -663,9 +663,9 @@ void Text::UpdateConstantsBuffer()
         m_settings.color.AsVector()
     };
     m_const_buffer_ptr->SetData(
-        gfx::IResource::SubResources
+        rhi::IResource::SubResources
         {
-            gfx::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
+            rhi::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
                                        static_cast<Data::Size>(sizeof(constants)))
         },
         GetUIContext().GetRenderContext().GetRenderCommandKit().GetQueue()

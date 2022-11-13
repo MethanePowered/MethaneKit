@@ -25,12 +25,12 @@ Mesh buffers with texture extension structure.
 
 #include "ImageLoader.h"
 
-#include <Methane/Graphics/IBuffer.h>
-#include <Methane/Graphics/ITexture.h>
-#include <Methane/Graphics/IProgram.h>
-#include <Methane/Graphics/ICommandQueue.h>
-#include <Methane/Graphics/IRenderCommandList.h>
-#include <Methane/Graphics/IParallelRenderCommandList.h>
+#include <Methane/Graphics/RHI/IBuffer.h>
+#include <Methane/Graphics/RHI/ITexture.h>
+#include <Methane/Graphics/RHI/IProgram.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
+#include <Methane/Graphics/RHI/IRenderCommandList.h>
+#include <Methane/Graphics/RHI/IParallelRenderCommandList.h>
 #include <Methane/Graphics/UberMesh.hpp>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/TypeConverters.hpp>
@@ -49,14 +49,14 @@ namespace Methane::Graphics
 
 struct MeshBufferBindings
 {
-    Ptr<IBuffer>          uniforms_buffer_ptr;
-    Ptr<IProgramBindings> program_bindings_ptr;
+    Ptr<Rhi::IBuffer>          uniforms_buffer_ptr;
+    Ptr<Rhi::IProgramBindings> program_bindings_ptr;
 };
     
 struct InstancedMeshBufferBindings
 {
-    Ptr<IBuffer>           uniforms_buffer_ptr;
-    Ptrs<IProgramBindings> program_bindings_per_instance;
+    Ptr<Rhi::IBuffer>           uniforms_buffer_ptr;
+    Ptrs<Rhi::IProgramBindings> program_bindings_per_instance;
 };
 
 template<typename UniformsType>
@@ -64,7 +64,7 @@ class MeshBuffers
 {
 public:
     template<typename VType>
-    MeshBuffers(ICommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
+    MeshBuffers(Rhi::ICommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name, const Mesh::Subsets& mesh_subsets = Mesh::Subsets())
         : m_context(render_cmd_queue.GetContext())
         , m_mesh_name(mesh_name)
         , m_mesh_subsets(!mesh_subsets.empty() ? mesh_subsets
@@ -74,7 +74,7 @@ public:
         META_FUNCTION_TASK();
         SetInstanceCount(static_cast<Data::Size>(m_mesh_subsets.size()));
 
-        Ptr<IBuffer> vertex_buffer_ptr = IBuffer::CreateVertexBuffer(render_cmd_queue.GetContext(),
+        Ptr<Rhi::IBuffer> vertex_buffer_ptr = Rhi::IBuffer::CreateVertexBuffer(render_cmd_queue.GetContext(),
                                                                      static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
                                                                      static_cast<Data::Size>(mesh_data.GetVertexSize()));
         vertex_buffer_ptr->SetName(fmt::format("{} Vertex Buffer", mesh_name));
@@ -84,9 +84,9 @@ public:
                 static_cast<Data::Size>(mesh_data.GetVertexDataSize())
             }
         }, render_cmd_queue);
-        m_vertex_ptr = IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+        m_vertex_ptr = Rhi::IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
 
-        m_index_ptr = IBuffer::CreateIndexBuffer(render_cmd_queue.GetContext(), static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0)));
+        m_index_ptr = Rhi::IBuffer::CreateIndexBuffer(render_cmd_queue.GetContext(), static_cast<Data::Size>(mesh_data.GetIndexDataSize()), GetIndexFormat(mesh_data.GetIndex(0)));
         m_index_ptr->SetName(fmt::format("{} Index Buffer", mesh_name));
         m_index_ptr->SetData({
             {
@@ -97,7 +97,7 @@ public:
     }
 
     template<typename VType>
-    MeshBuffers(ICommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+    MeshBuffers(Rhi::ICommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers(render_cmd_queue, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
     {
         META_FUNCTION_TASK();
@@ -105,31 +105,31 @@ public:
     
     virtual ~MeshBuffers() = default;
 
-    [[nodiscard]] const IContext& GetContext() const noexcept { return m_context; }
+    [[nodiscard]] const Rhi::IContext& GetContext() const noexcept { return m_context; }
 
-    Ptr<IResourceBarriers> CreateBeginningResourceBarriers(IBuffer* constants_buffer_ptr = nullptr)
+    Ptr<Rhi::IResourceBarriers> CreateBeginningResourceBarriers(Rhi::IBuffer* constants_buffer_ptr = nullptr)
     {
         META_FUNCTION_TASK();
-        Ptr<IResourceBarriers> beginning_resource_barriers_ptr = IResourceBarriers::Create({
-            { GetIndexBuffer(), GetIndexBuffer().GetState(), IResource::State::IndexBuffer },
+        Ptr<Rhi::IResourceBarriers> beginning_resource_barriers_ptr = Rhi::IResourceBarriers::Create({
+            { GetIndexBuffer(), GetIndexBuffer().GetState(), Rhi::ResourceState::IndexBuffer },
         });
 
         if (constants_buffer_ptr)
         {
-            beginning_resource_barriers_ptr->AddStateTransition(*constants_buffer_ptr, constants_buffer_ptr->GetState(), IResource::State::ConstantBuffer);
+            beginning_resource_barriers_ptr->AddStateTransition(*constants_buffer_ptr, constants_buffer_ptr->GetState(), Rhi::ResourceState::ConstantBuffer);
         }
 
-        const IBufferSet& vertex_buffer_set = GetVertexBuffers();
+        const Rhi::IBufferSet& vertex_buffer_set = GetVertexBuffers();
         for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffer_set.GetCount(); ++vertex_buffer_index)
         {
-            IBuffer& vertex_buffer = vertex_buffer_set[vertex_buffer_index];
-            beginning_resource_barriers_ptr->AddStateTransition(vertex_buffer, vertex_buffer.GetState(), IResource::State::VertexBuffer);
+            Rhi::IBuffer& vertex_buffer = vertex_buffer_set[vertex_buffer_index];
+            beginning_resource_barriers_ptr->AddStateTransition(vertex_buffer, vertex_buffer.GetState(), Rhi::ResourceState::VertexBuffer);
         }
 
         return beginning_resource_barriers_ptr;
     }
 
-    void Draw(IRenderCommandList& cmd_list, IProgramBindings& program_bindings,
+    void Draw(Rhi::IRenderCommandList& cmd_list, Rhi::IProgramBindings& program_bindings,
               uint32_t mesh_subset_index = 0, uint32_t instance_count = 1, uint32_t start_instance = 0)
     {
         META_FUNCTION_TASK();
@@ -139,35 +139,35 @@ public:
         cmd_list.SetProgramBindings(program_bindings);
         cmd_list.SetVertexBuffers(GetVertexBuffers());
         cmd_list.SetIndexBuffer(GetIndexBuffer());
-        cmd_list.DrawIndexed(RenderPrimitive::Triangle,
+        cmd_list.DrawIndexed(Rhi::RenderPrimitive::Triangle,
                              mesh_subset.indices.count, mesh_subset.indices.offset,
                              mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
                              instance_count, start_instance);
     }
 
-    void Draw(IRenderCommandList& cmd_list, const Ptrs<IProgramBindings>& instance_program_bindings,
-              IProgramBindings::ApplyBehavior bindings_apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental,
+    void Draw(Rhi::IRenderCommandList& cmd_list, const Ptrs<Rhi::IProgramBindings>& instance_program_bindings,
+              Rhi::IProgramBindings::ApplyBehavior bindings_apply_behavior = Rhi::IProgramBindings::ApplyBehavior::AllIncremental,
               uint32_t first_instance_index = 0, bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         Draw(cmd_list, instance_program_bindings.begin(), instance_program_bindings.end(),
              bindings_apply_behavior, first_instance_index, retain_bindings_once, set_resource_barriers);
     }
 
-    void Draw(IRenderCommandList& cmd_list,
-              const Ptrs<IProgramBindings>::const_iterator& instance_program_bindings_begin,
-              const Ptrs<IProgramBindings>::const_iterator& instance_program_bindings_end,
-              IProgramBindings::ApplyBehavior bindings_apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental,
+    void Draw(Rhi::IRenderCommandList& cmd_list,
+              const Ptrs<Rhi::IProgramBindings>::const_iterator& instance_program_bindings_begin,
+              const Ptrs<Rhi::IProgramBindings>::const_iterator& instance_program_bindings_end,
+              Rhi::IProgramBindings::ApplyBehavior bindings_apply_behavior = Rhi::IProgramBindings::ApplyBehavior::AllIncremental,
               uint32_t first_instance_index = 0, bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         META_FUNCTION_TASK();
         cmd_list.SetVertexBuffers(GetVertexBuffers(), set_resource_barriers);
         cmd_list.SetIndexBuffer(GetIndexBuffer(), set_resource_barriers);
 
-        for (Ptrs<IProgramBindings>::const_iterator instance_program_bindings_it = instance_program_bindings_begin;
+        for (Ptrs<Rhi::IProgramBindings>::const_iterator instance_program_bindings_it = instance_program_bindings_begin;
              instance_program_bindings_it != instance_program_bindings_end;
              ++instance_program_bindings_it)
         {
-            const Ptr<IProgramBindings>& program_bindings_ptr = *instance_program_bindings_it;
+            const Ptr<Rhi::IProgramBindings>& program_bindings_ptr = *instance_program_bindings_it;
             META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
 
             const uint32_t instance_index = first_instance_index + static_cast<uint32_t>(std::distance(instance_program_bindings_begin, instance_program_bindings_it));
@@ -177,26 +177,26 @@ public:
             const Mesh::Subset& mesh_subset = m_mesh_subsets[subset_index];
 
             using namespace magic_enum::bitwise_operators;
-            IProgramBindings::ApplyBehavior apply_behavior = bindings_apply_behavior;
+            Rhi::IProgramBindings::ApplyBehavior apply_behavior = bindings_apply_behavior;
             if (!retain_bindings_once || instance_program_bindings_it == instance_program_bindings_begin)
-                apply_behavior |= IProgramBindings::ApplyBehavior::RetainResources;
+                apply_behavior |= Rhi::IProgramBindings::ApplyBehavior::RetainResources;
             else
-                apply_behavior &= ~IProgramBindings::ApplyBehavior::RetainResources;
+                apply_behavior &= ~Rhi::IProgramBindings::ApplyBehavior::RetainResources;
 
             cmd_list.SetProgramBindings(*program_bindings_ptr, apply_behavior);
-            cmd_list.DrawIndexed(RenderPrimitive::Triangle,
+            cmd_list.DrawIndexed(Rhi::RenderPrimitive::Triangle,
                                  mesh_subset.indices.count, mesh_subset.indices.offset,
                                  mesh_subset.indices_adjusted ? 0 : mesh_subset.vertices.offset,
                                  1, 0);
         }
     }
 
-    void DrawParallel(const IParallelRenderCommandList& parallel_cmd_list, const Ptrs<IProgramBindings>& instance_program_bindings,
-                      IProgramBindings::ApplyBehavior bindings_apply_behavior = IProgramBindings::ApplyBehavior::AllIncremental,
+    void DrawParallel(const Rhi::IParallelRenderCommandList& parallel_cmd_list, const Ptrs<Rhi::IProgramBindings>& instance_program_bindings,
+                      Rhi::IProgramBindings::ApplyBehavior bindings_apply_behavior = Rhi::IProgramBindings::ApplyBehavior::AllIncremental,
                       bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         META_FUNCTION_TASK();
-        const Refs<IRenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
+        const Refs<Rhi::IRenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();
         const auto instances_count_per_command_list = static_cast<uint32_t>(Data::DivCeil(instance_program_bindings.size(), render_cmd_lists.size()));
 
         tf::Taskflow render_task_flow;
@@ -204,7 +204,7 @@ public:
             [this, &render_cmd_lists, instances_count_per_command_list, &instance_program_bindings,
              bindings_apply_behavior, retain_bindings_once, set_resource_barriers](const uint32_t cmd_list_index)
             {
-                IRenderCommandList& render_cmd_list = render_cmd_lists[cmd_list_index].get();
+                Rhi::IRenderCommandList& render_cmd_list = render_cmd_lists[cmd_list_index].get();
                 const uint32_t begin_instance_index = cmd_list_index * instances_count_per_command_list;
                 const uint32_t end_instance_index   = std::min(begin_instance_index + instances_count_per_command_list,
                                                                static_cast<uint32_t>(instance_program_bindings.size()));
@@ -241,7 +241,7 @@ public:
     [[nodiscard]]
     static constexpr Data::Size GetAlignedUniformSize() noexcept
     {
-        return IBuffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(UniformsType)));
+        return Rhi::IBuffer::GetAlignedBufferSize(static_cast<Data::Size>(sizeof(UniformsType)));
     }
 
     [[nodiscard]]
@@ -251,7 +251,7 @@ public:
         if (m_final_pass_instance_uniforms.empty())
             return 0;
         
-        return IBuffer::GetAlignedBufferSize(static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0])));
+        return Rhi::IBuffer::GetAlignedBufferSize(static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0])));
     }
 
     [[nodiscard]]
@@ -265,32 +265,32 @@ public:
     }
 
     [[nodiscard]]
-    const IResource::SubResources& GetFinalPassUniformsSubresources() const
+    const Rhi::IResource::SubResources& GetFinalPassUniformsSubresources() const
     { return m_final_pass_instance_uniforms_subresources; }
 
     [[nodiscard]]
-    const IBufferSet& GetVertexBuffers() const
+    const Rhi::IBufferSet& GetVertexBuffers() const
     {
         META_CHECK_ARG_NOT_NULL(m_vertex_ptr);
         return *m_vertex_ptr;
     }
 
     [[nodiscard]]
-    IBufferSet& GetVertexBuffers()
+    Rhi::IBufferSet& GetVertexBuffers()
     {
         META_CHECK_ARG_NOT_NULL(m_vertex_ptr);
         return *m_vertex_ptr;
     }
 
     [[nodiscard]]
-    const IBuffer& GetIndexBuffer() const
+    const Rhi::IBuffer& GetIndexBuffer() const
     {
         META_CHECK_ARG_NOT_NULL(m_index_ptr);
         return *m_index_ptr;
     }
 
     [[nodiscard]]
-    IBuffer& GetIndexBuffer()
+    Rhi::IBuffer& GetIndexBuffer()
     {
         META_CHECK_ARG_NOT_NULL(m_index_ptr);
         return *m_index_ptr;
@@ -302,7 +302,7 @@ protected:
     {
         META_FUNCTION_TASK();
         m_final_pass_instance_uniforms.resize(instance_count);
-        m_final_pass_instance_uniforms_subresources = IResource::SubResources{
+        m_final_pass_instance_uniforms_subresources = Rhi::IResource::SubResources{
             { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() } // NOSONAR
         };
     }
@@ -313,13 +313,13 @@ protected:
 private:
     using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, g_uniform_alignment>>;
 
-    const IContext&         m_context;
+    const Rhi::IContext&         m_context;
     const std::string       m_mesh_name;
     const Mesh::Subsets     m_mesh_subsets;
-    Ptr<IBufferSet>         m_vertex_ptr;
-    Ptr<IBuffer>            m_index_ptr;
+    Ptr<Rhi::IBufferSet>         m_vertex_ptr;
+    Ptr<Rhi::IBuffer>            m_index_ptr;
     InstanceUniforms        m_final_pass_instance_uniforms; // Actual uniforms buffers are created separately in Frame dependent resources
-    IResource::SubResources m_final_pass_instance_uniforms_subresources;
+    Rhi::IResource::SubResources m_final_pass_instance_uniforms_subresources;
 };
 
 template<typename UniformsType>
@@ -327,7 +327,7 @@ class TexturedMeshBuffers : public MeshBuffers<UniformsType>
 {
 public:
     template<typename VType>
-    TexturedMeshBuffers(ICommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
+    TexturedMeshBuffers(Rhi::ICommandQueue& render_cmd_queue, const BaseMesh<VType>& mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(render_cmd_queue, mesh_data, mesh_name)
     {
         META_FUNCTION_TASK();
@@ -335,34 +335,34 @@ public:
     }
 
     template<typename VType>
-    TexturedMeshBuffers(ICommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
+    TexturedMeshBuffers(Rhi::ICommandQueue& render_cmd_queue, const UberMesh<VType>& uber_mesh_data, const std::string& mesh_name)
         : MeshBuffers<UniformsType>(render_cmd_queue, uber_mesh_data, mesh_name)
     {
         META_FUNCTION_TASK();
         m_subset_textures.resize(MeshBuffers<UniformsType>::GetSubsetsCount());
     }
 
-    Ptr<IResourceBarriers> CreateBeginningResourceBarriers(IBuffer* constants_buffer_ptr = nullptr)
+    Ptr<Rhi::IResourceBarriers> CreateBeginningResourceBarriers(Rhi::IBuffer* constants_buffer_ptr = nullptr)
     {
         META_FUNCTION_TASK();
-        Ptr<IResourceBarriers> beginning_resource_barriers_ptr = MeshBuffers<UniformsType>::CreateBeginningResourceBarriers(constants_buffer_ptr);
-        for (const Ptr<ITexture>& texture_ptr : m_subset_textures)
+        Ptr<Rhi::IResourceBarriers> beginning_resource_barriers_ptr = MeshBuffers<UniformsType>::CreateBeginningResourceBarriers(constants_buffer_ptr);
+        for (const Ptr<Rhi::ITexture>& texture_ptr : m_subset_textures)
         {
             META_CHECK_ARG_NOT_NULL(texture_ptr);
-            beginning_resource_barriers_ptr->AddStateTransition(*texture_ptr, texture_ptr->GetState(), IResource::State::ShaderResource);
+            beginning_resource_barriers_ptr->AddStateTransition(*texture_ptr, texture_ptr->GetState(), Rhi::ResourceState::ShaderResource);
         }
         return beginning_resource_barriers_ptr;
     }
 
     [[nodiscard]]
-    const Ptr<ITexture>& GetTexturePtr() const
+    const Ptr<Rhi::ITexture>& GetTexturePtr() const
     {
         META_FUNCTION_TASK();
         return GetSubsetTexturePtr(0);
     }
 
     [[nodiscard]]
-    const Ptr<ITexture>& GetSubsetTexturePtr(uint32_t subset_index) const
+    const Ptr<Rhi::ITexture>& GetSubsetTexturePtr(uint32_t subset_index) const
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_LESS(subset_index, MeshBuffers<UniformsType>::GetSubsetsCount());
@@ -370,7 +370,7 @@ public:
     }
 
     [[nodiscard]]
-    const Ptr<ITexture>& GetInstanceTexturePtr(uint32_t instance_index = 0) const
+    const Ptr<Rhi::ITexture>& GetInstanceTexturePtr(uint32_t instance_index = 0) const
     {
         META_FUNCTION_TASK();
         const uint32_t subset_index = this->GetSubsetByInstanceIndex(instance_index);
@@ -378,33 +378,33 @@ public:
     }
 
     [[nodiscard]]
-    ITexture& GetTexture() const
+    Rhi::ITexture& GetTexture() const
     {
         META_FUNCTION_TASK();
-        const Ptr<ITexture>& texture_ptr = GetTexturePtr();
+        const Ptr<Rhi::ITexture>& texture_ptr = GetTexturePtr();
         META_CHECK_ARG_NOT_NULL(texture_ptr);
         return *texture_ptr;
     }
 
     [[nodiscard]]
-    ITexture& GetSubsetTexture(uint32_t subset_index) const
+    Rhi::ITexture& GetSubsetTexture(uint32_t subset_index) const
     {
         META_FUNCTION_TASK();
-        const Ptr<ITexture>& texture_ptr = GetSubsetTexturePtr(subset_index);
+        const Ptr<Rhi::ITexture>& texture_ptr = GetSubsetTexturePtr(subset_index);
         META_CHECK_ARG_NOT_NULL(texture_ptr);
         return *texture_ptr;
     }
 
     [[nodiscard]]
-    ITexture& GetInstanceTexture(uint32_t instance_index = 0) const
+    Rhi::ITexture& GetInstanceTexture(uint32_t instance_index = 0) const
     {
         META_FUNCTION_TASK();
-        const Ptr<ITexture>& texture_ptr = GetInstanceTexturePtr(instance_index);
+        const Ptr<Rhi::ITexture>& texture_ptr = GetInstanceTexturePtr(instance_index);
         META_CHECK_ARG_NOT_NULL(texture_ptr);
         return *texture_ptr;
     }
 
-    void SetTexture(const Ptr<ITexture>& texture_ptr)
+    void SetTexture(const Ptr<Rhi::ITexture>& texture_ptr)
     {
         META_FUNCTION_TASK();
 
@@ -416,7 +416,7 @@ public:
         }
     }
     
-    void SetSubsetTexture(const Ptr<ITexture>& texture_ptr, uint32_t subset_index)
+    void SetSubsetTexture(const Ptr<Rhi::ITexture>& texture_ptr, uint32_t subset_index)
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_LESS(subset_index, MeshBuffers<UniformsType>::GetSubsetsCount());
@@ -425,7 +425,7 @@ public:
     }
 
 protected:
-    using Textures = std::vector<Ptr<ITexture>>;
+    using Textures = std::vector<Ptr<Rhi::ITexture>>;
     
 private:
     Textures m_subset_textures;

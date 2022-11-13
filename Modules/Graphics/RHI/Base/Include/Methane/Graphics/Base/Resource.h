@@ -25,7 +25,7 @@ Base implementation of the resource interface.
 
 #include "Object.h"
 
-#include <Methane/Graphics/IResource.h>
+#include <Methane/Graphics/RHI/IResource.h>
 #include <Methane/Data/Emitter.hpp>
 
 #include <set>
@@ -38,13 +38,13 @@ namespace Methane::Graphics::Base
 class Context;
 
 class Resource
-    : public virtual IResource // NOSONAR
+    : public virtual Rhi::IResource // NOSONAR
     , public Object
-    , public Data::Emitter<IResourceCallback>
+    , public Data::Emitter<Rhi::IResourceCallback>
 {
 public:
     Resource(const Context& context, Type type, Usage usage_mask,
-                 State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
+             State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
     Resource(const Resource&) = delete;
     Resource(Resource&&) = delete;
 
@@ -53,7 +53,7 @@ public:
     [[nodiscard]] State                     GetState() const noexcept final            { return m_state;  }
     [[nodiscard]] const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept final { return m_owner_queue_family_index_opt; }
     [[nodiscard]] Usage                     GetUsage() const noexcept final            { return m_usage_mask; }
-    [[nodiscard]] const IContext&           GetContext() const noexcept final;
+    [[nodiscard]] const Rhi::IContext&      GetContext() const noexcept final;
     [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept final { return m_sub_resource_count; }
     [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
     [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(),
@@ -62,7 +62,7 @@ public:
     bool SetState(State state) final;
     bool SetOwnerQueueFamily(uint32_t family_index) final;
     bool SetOwnerQueueFamily(uint32_t family_index, Ptr<IBarriers>& out_barriers) final;
-    void SetData(const SubResources& sub_resources, ICommandQueue&) override;
+    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
 
     [[nodiscard]] Ptr<IBarriers>& GetSetupTransitionBarriers() noexcept  { return m_setup_transition_barriers_ptr; }
 

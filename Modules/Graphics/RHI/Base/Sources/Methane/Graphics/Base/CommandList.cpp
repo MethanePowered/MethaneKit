@@ -56,7 +56,7 @@ bool CommandListDebugGroup::SetName(const std::string&)
     META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(false, "Debug Group can not be renamed");
 }
 
-ICommandListDebugGroup& CommandListDebugGroup::AddSubGroup(Data::Index id, const std::string& name)
+Rhi::ICommandListDebugGroup& CommandListDebugGroup::AddSubGroup(Data::Index id, const std::string& name)
 {
     META_FUNCTION_TASK();
     if (id >= m_sub_groups.size())
@@ -64,12 +64,12 @@ ICommandListDebugGroup& CommandListDebugGroup::AddSubGroup(Data::Index id, const
         m_sub_groups.resize(id + 1);
     }
 
-    Ptr<ICommandListDebugGroup> sub_group_ptr = ICommandListDebugGroup::Create(name);
+    Ptr<ICommandListDebugGroup> sub_group_ptr = Rhi::ICommandListDebugGroup::Create(name);
     m_sub_groups[id] = sub_group_ptr;
     return *sub_group_ptr;
 }
 
-ICommandListDebugGroup* CommandListDebugGroup::GetSubGroup(Data::Index id) const noexcept
+Rhi::ICommandListDebugGroup* CommandListDebugGroup::GetSubGroup(Data::Index id) const noexcept
 {
     META_FUNCTION_TASK();
     return id < m_sub_groups.size() ? m_sub_groups[id].get() : nullptr;
@@ -159,7 +159,7 @@ void CommandList::ResetOnce(IDebugGroup* p_debug_group)
     Reset(p_debug_group);
 }
 
-void CommandList::SetProgramBindings(IProgramBindings& program_bindings, IProgramBindings::ApplyBehavior apply_behavior)
+void CommandList::SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rhi::IProgramBindings::ApplyBehavior apply_behavior)
 {
     META_FUNCTION_TASK();
     if (m_command_state.program_bindings_ptr == std::addressof(program_bindings))
@@ -173,14 +173,14 @@ void CommandList::SetProgramBindings(IProgramBindings& program_bindings, IProgra
     ApplyProgramBindings(program_bindings_base, apply_behavior);
 
     using namespace magic_enum::bitwise_operators;
-    if (static_cast<bool>(apply_behavior & IProgramBindings::ApplyBehavior::ConstantOnce) ||
-        static_cast<bool>(apply_behavior & IProgramBindings::ApplyBehavior::ChangesOnly))
+    if (static_cast<bool>(apply_behavior & Rhi::IProgramBindings::ApplyBehavior::ConstantOnce) ||
+        static_cast<bool>(apply_behavior & Rhi::IProgramBindings::ApplyBehavior::ChangesOnly))
     {
         META_SCOPE_TASK("AcquireProgramBindingsPtr");
         m_command_state.program_bindings_ptr = std::addressof(program_bindings_base);
     }
 
-    if (static_cast<bool>(apply_behavior & IProgramBindings::ApplyBehavior::RetainResources))
+    if (static_cast<bool>(apply_behavior & Rhi::IProgramBindings::ApplyBehavior::RetainResources))
     {
         META_SCOPE_TASK("RetainResource");
         RetainResource(program_bindings_base.GetBasePtr());
@@ -251,7 +251,7 @@ void CommandList::Complete()
     if (m_completed_callback)
         m_completed_callback(*this);
     
-    Data::Emitter<ICommandListCallback>::Emit(&ICommandListCallback::OnCommandListExecutionCompleted, *this);
+    Data::Emitter<Rhi::ICommandListCallback>::Emit(&Rhi::ICommandListCallback::OnCommandListExecutionCompleted, *this);
 }
 
 void CommandList::CompleteInternal()
@@ -309,14 +309,14 @@ void CommandList::SetCommandListStateNoLock(State state)
     m_state = state;
     m_state_change_condition_var.notify_one();
     
-    Data::Emitter<ICommandListCallback>::Emit(&ICommandListCallback::OnCommandListStateChanged, *this);
+    Data::Emitter<Rhi::ICommandListCallback>::Emit(&Rhi::ICommandListCallback::OnCommandListStateChanged, *this);
 }
 
 void CommandList::InitializeTimestampQueries() // NOSONAR - function is not const when instrumentation enabled
 {
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     META_FUNCTION_TASK();
-    ITimestampQueryPool* query_pool_ptr = GetCommandQueue().GetTimestampQueryPool();
+    Rhi::ITimestampQueryPool* query_pool_ptr = GetCommandQueue().GetTimestampQueryPool();
     if (!query_pool_ptr)
         return;
 
@@ -370,7 +370,7 @@ Data::TimeRange CommandList::GetGpuTimeRange(bool in_cpu_nanoseconds) const
     return { 0U, 0U };
 }
 
-ICommandQueue& CommandList::GetCommandQueue()
+Rhi::ICommandQueue& CommandList::GetCommandQueue()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
@@ -383,7 +383,7 @@ void CommandList::ResetCommandState()
     m_command_state.program_bindings_ptr = nullptr;
 }
 
-void CommandList::ApplyProgramBindings(ProgramBindings& program_bindings, IProgramBindings::ApplyBehavior apply_behavior)
+void CommandList::ApplyProgramBindings(ProgramBindings& program_bindings, Rhi::IProgramBindings::ApplyBehavior apply_behavior)
 {
     program_bindings.Apply(*this, apply_behavior);
 }
@@ -402,7 +402,7 @@ const CommandQueue& CommandList::GetBaseCommandQueue() const
     return *m_command_queue_ptr;
 }
 
-CommandListSet::CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
     : m_refs(command_list_refs)
     , m_frame_index_opt(frame_index_opt)
 {
@@ -412,7 +412,7 @@ CommandListSet::CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<
     m_base_refs.reserve(m_refs.size());
     m_base_ptrs.reserve(m_refs.size());
 
-    for(const Ref<ICommandList>& command_list_ref : m_refs)
+    for(const Ref<Rhi::ICommandList>& command_list_ref : m_refs)
     {
         auto& command_list_base = dynamic_cast<CommandList&>(command_list_ref.get());
         META_CHECK_ARG_NAME_DESCR("command_list_refs",
@@ -426,7 +426,7 @@ CommandListSet::CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<
     }
 }
 
-ICommandList& CommandListSet::operator[](Data::Index index) const
+Rhi::ICommandList& CommandListSet::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(index, m_refs.size());
@@ -434,7 +434,7 @@ ICommandList& CommandListSet::operator[](Data::Index index) const
     return m_refs[index].get();
 }
 
-void CommandListSet::Execute(const ICommandList::CompletedCallback& completed_callback)
+void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_command_lists_mutex);
@@ -497,7 +497,7 @@ const std::string& CommandListSet::GetCombinedName()
     return m_combined_name;
 }
 
-void CommandListSet::OnObjectNameChanged(IObject&, const std::string&)
+void CommandListSet::OnObjectNameChanged(Rhi::IObject&, const std::string&)
 {
     META_FUNCTION_TASK();
     m_combined_name.clear();

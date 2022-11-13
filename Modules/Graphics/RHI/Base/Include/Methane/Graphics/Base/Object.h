@@ -23,7 +23,7 @@ Base implementation of the named object interface.
 
 #pragma once
 
-#include <Methane/Graphics/IObject.h>
+#include <Methane/Graphics/RHI/IObject.h>
 #include <Methane/Memory.hpp>
 #include <Methane/Data/Emitter.hpp>
 
@@ -33,27 +33,27 @@ namespace Methane::Graphics::Base
 {
 
 class ObjectRegistry
-    : public IObjectRegistry
-    , private Data::Receiver<IObjectCallback>
+    : public Rhi::IObjectRegistry
+    , private Data::Receiver<Rhi::IObjectCallback>
 {
 public:
-    void         AddGraphicsObject(IObject& object) override;
-    void         RemoveGraphicsObject(IObject& object) override;
-    Ptr<IObject> GetGraphicsObject(const std::string& object_name) const noexcept override;
-    bool         HasGraphicsObject(const std::string& object_name) const noexcept override;
+    void              AddGraphicsObject(Rhi::IObject& object) override;
+    void              RemoveGraphicsObject(Rhi::IObject& object) override;
+    Ptr<Rhi::IObject> GetGraphicsObject(const std::string& object_name) const noexcept override;
+    bool              HasGraphicsObject(const std::string& object_name) const noexcept override;
 
 private:
     // IObjectCallback callback
-    void OnObjectNameChanged(IObject& object, const std::string& old_name) override;
-    void OnObjectDestroyed(IObject& object) override;
+    void OnObjectNameChanged(Rhi::IObject& object, const std::string& old_name) override;
+    void OnObjectDestroyed(Rhi::IObject& object) override;
 
-    std::map<std::string, WeakPtr<IObject>, std::less<>> m_object_by_name;
+    std::map<std::string, WeakPtr<Rhi::IObject>, std::less<>> m_object_by_name;
 };
 
 class Object // NOSONAR - destructor is required
-    : public virtual IObject // NOSONAR
+    : public virtual Rhi::IObject // NOSONAR
     , public std::enable_shared_from_this<Object>
-    , public Data::Emitter<IObjectCallback>
+    , public Data::Emitter<Rhi::IObjectCallback>
 {
 public:
     using Registry = ObjectRegistry;
@@ -71,7 +71,7 @@ public:
     // IObject interface
     bool               SetName(const std::string& name) override;
     const std::string& GetName() const noexcept override  { return m_name; }
-    Ptr<IObject>       GetPtr() override;
+    Ptr<Rhi::IObject>  GetPtr() override;
 
     Ptr<Object> GetBasePtr() { return shared_from_this(); }
 

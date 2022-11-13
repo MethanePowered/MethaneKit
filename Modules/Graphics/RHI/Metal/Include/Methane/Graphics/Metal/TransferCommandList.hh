@@ -25,7 +25,7 @@ Metal implementation of the transfer command list interface.
 
 #include "CommandList.hpp"
 
-#include <Methane/Graphics/ITransferCommandList.h>
+#include <Methane/Graphics/RHI/ITransferCommandList.h>
 #include <Methane/Graphics/Base/CommandList.h>
 
 #import <Metal/Metal.h>

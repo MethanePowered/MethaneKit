@@ -42,17 +42,17 @@ Vulkan implementation of the device interface.
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-ISystem& ISystem::Get()
+Rhi::ISystem& Rhi::ISystem::Get()
 {
     META_FUNCTION_TASK();
     static const auto s_system_ptr = std::make_shared<Vulkan::System>();
     return *s_system_ptr;
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
@@ -372,13 +372,13 @@ static bool IsSoftwarePhysicalDevice(const vk::PhysicalDevice& vk_physical_devic
            vk_device_type == vk::PhysicalDeviceType::eCpu;
 }
 
-static vk::QueueFlags GetQueueFlagsByType(CommandListType cmd_list_type)
+static vk::QueueFlags GetQueueFlagsByType(Rhi::CommandListType cmd_list_type)
 {
     META_FUNCTION_TASK();
     switch(cmd_list_type)
     {
-    case CommandListType::Transfer:   return vk::QueueFlagBits::eTransfer;
-    case CommandListType::Render: return vk::QueueFlagBits::eGraphics;
+    case Rhi::CommandListType::Transfer:   return vk::QueueFlagBits::eTransfer;
+    case Rhi::CommandListType::Render: return vk::QueueFlagBits::eGraphics;
     default: META_UNEXPECTED_ARG_RETURN(cmd_list_type, vk::QueueFlagBits::eGraphics);
     }
 }
@@ -437,16 +437,16 @@ void QueueFamilyReservation::IncrementQueuesCount(uint32_t extra_queues_count) n
     m_priorities.resize(m_queues_count, 0.F);
 }
 
-DeviceFeatures Device::GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device)
+Rhi::DeviceFeatures Device::GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
     vk::PhysicalDeviceFeatures vk_device_features = vk_physical_device.getFeatures();
-    DeviceFeatures             device_features    = DeviceFeatures::BasicRendering;
+    Rhi::DeviceFeatures        device_features    = Rhi::DeviceFeatures::BasicRendering;
     if (vk_device_features.samplerAnisotropy)
-        device_features |= DeviceFeatures::AnisotropicFiltering;
+        device_features |= Rhi::DeviceFeatures::AnisotropicFiltering;
     if (vk_device_features.imageCubeArray)
-        device_features |= DeviceFeatures::ImageCubeArray;
+        device_features |= Rhi::DeviceFeatures::ImageCubeArray;
     return device_features;
 }
 
@@ -460,7 +460,7 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     META_FUNCTION_TASK();
 
     using namespace magic_enum::bitwise_operators;
-    if (const DeviceFeatures device_supported_features = Device::GetSupportedFeatures(vk_physical_device);
+    if (const Rhi::DeviceFeatures device_supported_features = Device::GetSupportedFeatures(vk_physical_device);
         !static_cast<bool>(device_supported_features & capabilities.features))
         throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
 
@@ -469,10 +469,10 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     if (capabilities.present_to_window && !IsExtensionSupported(g_present_device_extensions))
         throw IncompatibleException("Device does not support some of required extensions");
 
-    ReserveQueueFamily(CommandListType::Render, capabilities.render_queues_count, reserved_queues_count_per_family,
+    ReserveQueueFamily(Rhi::CommandListType::Render, capabilities.render_queues_count, reserved_queues_count_per_family,
                        capabilities.present_to_window ? vk_surface : vk::SurfaceKHR());
 
-    ReserveQueueFamily(CommandListType::Transfer, capabilities.transfer_queues_count, reserved_queues_count_per_family);
+    ReserveQueueFamily(Rhi::CommandListType::Transfer, capabilities.transfer_queues_count, reserved_queues_count_per_family);
 
     std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
     std::set<QueueFamilyReservation*> unique_family_reservation_ptrs;
@@ -490,7 +490,7 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     {
         enabled_extension_names.insert(enabled_extension_names.end(), g_present_device_extensions.begin(), g_present_device_extensions.end());
     }
-    if (static_cast<bool>(capabilities.features & DeviceFeatures::BasicRendering))
+    if (static_cast<bool>(capabilities.features & Rhi::DeviceFeatures::BasicRendering))
     {
         enabled_extension_names.insert(enabled_extension_names.end(), g_render_device_extensions.begin(), g_render_device_extensions.end());
     }
@@ -544,7 +544,7 @@ bool Device::IsExtensionSupported(const std::vector<std::string_view>& required_
     return extensions.empty();
 }
 
-const QueueFamilyReservation* Device::GetQueueFamilyReservationPtr(CommandListType cmd_list_type) const noexcept
+const QueueFamilyReservation* Device::GetQueueFamilyReservationPtr(Rhi::CommandListType cmd_list_type) const noexcept
 {
     META_FUNCTION_TASK();
     const auto queue_family_reservation_by_type_it = m_queue_family_reservation_by_type.find(cmd_list_type);
@@ -553,7 +553,7 @@ const QueueFamilyReservation* Device::GetQueueFamilyReservationPtr(CommandListTy
          : nullptr;
 }
 
-const QueueFamilyReservation& Device::GetQueueFamilyReservation(CommandListType cmd_list_type) const
+const QueueFamilyReservation& Device::GetQueueFamilyReservation(Rhi::CommandListType cmd_list_type) const
 {
     META_FUNCTION_TASK();
     const QueueFamilyReservation* queue_family_reservation_ptr = GetQueueFamilyReservationPtr(cmd_list_type);
@@ -593,9 +593,9 @@ const vk::QueueFamilyProperties& Device::GetNativeQueueFamilyProperties(uint32_t
     return m_vk_queue_family_properties[queue_family_index];
 }
 
-void Device::ReserveQueueFamily(CommandListType cmd_list_type, uint32_t queues_count,
-                                  std::vector<uint32_t>& reserved_queues_count_per_family,
-                                  const vk::SurfaceKHR& vk_surface)
+void Device::ReserveQueueFamily(Rhi::CommandListType cmd_list_type, uint32_t queues_count,
+                                std::vector<uint32_t>& reserved_queues_count_per_family,
+                                const vk::SurfaceKHR& vk_surface)
 {
     META_FUNCTION_TASK();
     if (!queues_count)
@@ -650,7 +650,7 @@ void System::CheckForChanges()
     META_FUNCTION_TASK();
 }
 
-const Ptrs<IDevice>& System::UpdateGpuDevices(const Methane::Platform::AppEnvironment& app_env, const DeviceCaps& required_device_caps)
+const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Methane::Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
     if (required_device_caps.present_to_window && !m_vk_unique_surface)
@@ -659,7 +659,7 @@ const Ptrs<IDevice>& System::UpdateGpuDevices(const Methane::Platform::AppEnviro
         m_vk_unique_surface = Platform::CreateVulkanSurfaceForWindow(GetNativeInstance(), app_env);
     }
 
-    const Ptrs<IDevice>& gpu_devices = UpdateGpuDevices(required_device_caps);
+    const Ptrs<Rhi::IDevice>& gpu_devices = UpdateGpuDevices(required_device_caps);
 
     if (m_vk_unique_surface)
     {
@@ -669,7 +669,7 @@ const Ptrs<IDevice>& System::UpdateGpuDevices(const Methane::Platform::AppEnviro
     return gpu_devices;
 }
 
-const Ptrs<IDevice>& System::UpdateGpuDevices(const DeviceCaps& required_device_caps)
+const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
     SetDeviceCapabilities(required_device_caps);

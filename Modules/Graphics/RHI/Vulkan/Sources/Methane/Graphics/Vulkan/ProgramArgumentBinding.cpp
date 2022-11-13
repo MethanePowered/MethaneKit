@@ -85,7 +85,7 @@ bool AddDescriptor(std::vector<VkDescriptorType>& descriptors, size_t total_desc
     return true;
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const IResource::Views& resource_views)
+bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resource_views)
 {
     META_FUNCTION_TASK();
     if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
@@ -98,9 +98,9 @@ bool ProgramArgumentBinding::SetResourceViews(const IResource::Views& resource_v
     m_vk_buffer_views.clear();
 
     const size_t total_resources_count = resource_views.size();
-    for(const IResource::View& resource_view : resource_views)
+    for(const Rhi::IResource::View& resource_view : resource_views)
     {
-        const IResourceVk::View resource_view_vk(resource_view, ResourceUsage::ShaderRead);
+        const IResourceVk::View resource_view_vk(resource_view, Rhi::ResourceUsage::ShaderRead);
 
         if (AddDescriptor(m_vk_descriptor_images, total_resources_count, resource_view_vk.GetNativeDescriptorImageInfoPtr()))
             continue;
@@ -123,7 +123,7 @@ bool ProgramArgumentBinding::SetResourceViews(const IResource::Views& resource_v
 
     // Descriptions are updated on GPU during context initialization complete
 #ifdef DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
-    GetContext().RequestDeferredAction(IContext::DeferredAction::CompleteInitialization);
+    GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::CompleteInitialization);
 #else
     UpdateDescriptorSetsOnGpu();
 #endif

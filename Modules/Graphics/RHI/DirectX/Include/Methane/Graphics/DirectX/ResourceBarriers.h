@@ -24,7 +24,7 @@ DirectX 12 specialization of the resource barriers.
 #pragma once
 
 #include <Methane/Graphics/Base/ResourceBarriers.h>
-#include <Methane/Graphics/IResource.h>
+#include <Methane/Graphics/RHI/IResource.h>
 #include <Methane/Data/Receiver.hpp>
 
 #include <wrl.h>

@@ -32,10 +32,10 @@ Vulkan implementation of the texture interface.
 
 #include <algorithm>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITexture> ITexture::CreateRenderTarget(const IRenderContext& render_context, const Settings& settings)
+Ptr<ITexture> Rhi::ITexture::CreateRenderTarget(const Rhi::IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     switch (settings.type)
@@ -49,7 +49,7 @@ Ptr<ITexture> ITexture::CreateRenderTarget(const IRenderContext& render_context,
 
 }
 
-Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex frame_buffer_index)
+Ptr<ITexture> Rhi::ITexture::CreateFrameBuffer(const Rhi::IRenderContext& context, FrameBufferIndex frame_buffer_index)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
@@ -57,7 +57,7 @@ Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& context, FrameBu
     return std::make_shared<Vulkan::FrameBufferTexture>(dynamic_cast<const Vulkan::RenderContext&>(context), texture_settings, frame_buffer_index);
 }
 
-Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& context)
+Ptr<ITexture> Rhi::ITexture::CreateDepthStencilBuffer(const Rhi::IRenderContext& context)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
@@ -65,40 +65,40 @@ Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& context)
     return std::make_shared<Vulkan::DepthStencilTexture>(dynamic_cast<const Vulkan::RenderContext&>(context), texture_settings, context_settings.clear_depth_stencil);
 }
 
-Ptr<ITexture> ITexture::CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<ITexture> Rhi::ITexture::CreateImage(const Rhi::IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<Vulkan::ImageTexture>(dynamic_cast<const Vulkan::RenderContext&>(context), texture_settings);
 }
 
-Ptr<ITexture> ITexture::CreateCube(const IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<ITexture> Rhi::ITexture::CreateCube(const Rhi::IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<Vulkan::ImageTexture>(dynamic_cast<const Vulkan::RenderContext&>(context), texture_settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
 
-vk::ImageAspectFlags ITexture::GetNativeImageAspectFlags(const TextureSettings& settings)
+vk::ImageAspectFlags ITexture::GetNativeImageAspectFlags(const Rhi::TextureSettings& settings)
 {
     META_FUNCTION_TASK();
     switch(settings.type)
     {
-    case TextureType::Texture:
-    case TextureType::FrameBuffer:        return vk::ImageAspectFlagBits::eColor;
-    case TextureType::DepthStencilBuffer: return IsDepthFormat(settings.pixel_format)
-                                                 ? vk::ImageAspectFlagBits::eDepth
-                                                 : vk::ImageAspectFlagBits::eStencil;
+    case Rhi::TextureType::Texture:
+    case Rhi::TextureType::FrameBuffer:        return vk::ImageAspectFlagBits::eColor;
+    case Rhi::TextureType::DepthStencilBuffer: return IsDepthFormat(settings.pixel_format)
+                                                    ? vk::ImageAspectFlagBits::eDepth
+                                                    : vk::ImageAspectFlagBits::eStencil;
     default: META_UNEXPECTED_ARG_DESCR_RETURN(settings.type, vk::ImageAspectFlagBits::eColor, "Unsupported texture type");
     }
 }
 
-vk::ImageUsageFlags ITexture::GetNativeImageUsageFlags(const TextureSettings& settings, vk::ImageUsageFlags initial_usage_flags)
+vk::ImageUsageFlags ITexture::GetNativeImageUsageFlags(const Rhi::TextureSettings& settings, vk::ImageUsageFlags initial_usage_flags)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -106,16 +106,16 @@ vk::ImageUsageFlags ITexture::GetNativeImageUsageFlags(const TextureSettings& se
     vk::ImageUsageFlags usage_flags = initial_usage_flags;
     switch (settings.type)
     {
-    case TextureType::FrameBuffer:
+    case Rhi::TextureType::FrameBuffer:
         usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
         break;
 
-    case TextureType::DepthStencilBuffer:
+    case Rhi::TextureType::DepthStencilBuffer:
         usage_flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
         break;
 
-    case TextureType::Texture:
-        if (static_cast<bool>(settings.usage_mask & ResourceUsage::RenderTarget))
+    case Rhi::TextureType::Texture:
+        if (static_cast<bool>(settings.usage_mask & Rhi::ResourceUsage::RenderTarget))
             usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
         break;
 
@@ -130,24 +130,24 @@ vk::ImageUsageFlags ITexture::GetNativeImageUsageFlags(const TextureSettings& se
         usage_flags |= vk::ImageUsageFlagBits::eTransferDst;
     }
 
-    if (static_cast<bool>(settings.usage_mask & ResourceUsage::ShaderRead))
+    if (static_cast<bool>(settings.usage_mask & Rhi::ResourceUsage::ShaderRead))
         usage_flags |= vk::ImageUsageFlagBits::eSampled;
 
     return usage_flags;
 }
 
-static vk::ImageCreateFlags GetNativeImageCreateFlags(const TextureSettings& settings)
+static vk::ImageCreateFlags GetNativeImageCreateFlags(const Rhi::TextureSettings& settings)
 {
     META_FUNCTION_TASK();
     vk::ImageCreateFlags image_create_flags{};
     switch (settings.dimension_type)
     {
-    case TextureDimensionType::Cube:
-    case TextureDimensionType::CubeArray:
+    case Rhi::TextureDimensionType::Cube:
+    case Rhi::TextureDimensionType::CubeArray:
         image_create_flags |= vk::ImageCreateFlagBits::eCubeCompatible;
         break;
 
-    case TextureDimensionType::Tex3D:
+    case Rhi::TextureDimensionType::Tex3D:
         image_create_flags |= vk::ImageCreateFlagBits::e2DArrayCompatible;
         break;
 
@@ -157,7 +157,7 @@ static vk::ImageCreateFlags GetNativeImageCreateFlags(const TextureSettings& set
     return image_create_flags;
 }
 
-static vk::UniqueImage CreateNativeImage(const IContextVk& context, const TextureSettings& settings, vk::ImageUsageFlags initial_usage_flags = {})
+static vk::UniqueImage CreateNativeImage(const IContextVk& context, const Rhi::TextureSettings& settings, vk::ImageUsageFlags initial_usage_flags = {})
 {
     META_FUNCTION_TASK();
     return context.GetVulkanDevice().GetNativeDevice().createImageUnique(
@@ -165,7 +165,7 @@ static vk::UniqueImage CreateNativeImage(const IContextVk& context, const Textur
             GetNativeImageCreateFlags(settings),
             ITexture::DimensionTypeToImageType(settings.dimension_type),
             TypeConverter::PixelFormatToVulkan(settings.pixel_format),
-            settings.dimension_type == TextureDimensionType::Tex3D
+            settings.dimension_type == Rhi::TextureDimensionType::Tex3D
                 ? TypeConverter::DimensionsToExtent3D(settings.dimensions)
                 : TypeConverter::FrameSizeToExtent3D(settings.dimensions.AsRectSize()),
             settings.mipmapped
@@ -178,21 +178,21 @@ static vk::UniqueImage CreateNativeImage(const IContextVk& context, const Textur
             vk::SharingMode::eExclusive));
 }
 
-static vk::ImageLayout GetVulkanImageLayoutByUsage(TextureType texture_type, ResourceUsage usage) noexcept
+static vk::ImageLayout GetVulkanImageLayoutByUsage(Rhi::TextureType texture_type, Rhi::ResourceUsage usage) noexcept
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    if (static_cast<bool>(usage & ResourceUsage::ShaderRead))
+    if (static_cast<bool>(usage & Rhi::ResourceUsage::ShaderRead))
     {
-        return texture_type == TextureType::DepthStencilBuffer
+        return texture_type == Rhi::TextureType::DepthStencilBuffer
              ? vk::ImageLayout::eDepthStencilReadOnlyOptimal
              : vk::ImageLayout::eShaderReadOnlyOptimal;
     }
 
-    if (static_cast<bool>(usage & ResourceUsage::ShaderWrite) ||
-        static_cast<bool>(usage & ResourceUsage::RenderTarget))
+    if (static_cast<bool>(usage & Rhi::ResourceUsage::ShaderWrite) ||
+        static_cast<bool>(usage & Rhi::ResourceUsage::RenderTarget))
     {
-        return texture_type == TextureType::DepthStencilBuffer
+        return texture_type == Rhi::TextureType::DepthStencilBuffer
              ? vk::ImageLayout::eDepthStencilAttachmentOptimal
              : vk::ImageLayout::eColorAttachmentOptimal;
     }
@@ -201,11 +201,11 @@ static vk::ImageLayout GetVulkanImageLayoutByUsage(TextureType texture_type, Res
 }
 
 static Ptr<ResourceView::ViewDescriptorVariant> CreateNativeImageViewDescriptor(const ResourceView::Id& view_id,
-                                                                                  const TextureSettings& texture_settings,
-                                                                                  const SubResource::Count& texture_subresource_count,
-                                                                                  const std::string& texture_name,
-                                                                                  const vk::Device& vk_device,
-                                                                                  const vk::Image& vk_image)
+                                                                                const Rhi::TextureSettings& texture_settings,
+                                                                                const Rhi::SubResource::Count& texture_subresource_count,
+                                                                                const std::string& texture_name,
+                                                                                const vk::Device& vk_device,
+                                                                                const vk::Image& vk_image)
 {
     META_FUNCTION_TASK();
     ResourceView::ImageViewDescriptor image_view_desc;
@@ -236,42 +236,42 @@ static Ptr<ResourceView::ViewDescriptorVariant> CreateNativeImageViewDescriptor(
     return std::make_shared<ResourceView::ViewDescriptorVariant>(std::move(image_view_desc));
 }
 
-vk::ImageType ITexture::DimensionTypeToImageType(TextureDimensionType dimension_type)
+vk::ImageType ITexture::DimensionTypeToImageType(Rhi::TextureDimensionType dimension_type)
 {
     META_FUNCTION_TASK();
     switch(dimension_type)
     {
-    case TextureDimensionType::Tex1D:
-    case TextureDimensionType::Tex1DArray:
+    case Rhi::TextureDimensionType::Tex1D:
+    case Rhi::TextureDimensionType::Tex1DArray:
         return vk::ImageType::e1D;
 
-    case TextureDimensionType::Tex2D:
-    case TextureDimensionType::Tex2DArray:
-    case TextureDimensionType::Tex2DMultisample:
-    case TextureDimensionType::Cube:
-    case TextureDimensionType::CubeArray:
+    case Rhi::TextureDimensionType::Tex2D:
+    case Rhi::TextureDimensionType::Tex2DArray:
+    case Rhi::TextureDimensionType::Tex2DMultisample:
+    case Rhi::TextureDimensionType::Cube:
+    case Rhi::TextureDimensionType::CubeArray:
         return vk::ImageType::e2D;
 
-    case TextureDimensionType::Tex3D:
+    case Rhi::TextureDimensionType::Tex3D:
         return vk::ImageType::e3D;
 
     default: META_UNEXPECTED_ARG_RETURN(dimension_type, vk::ImageType::e1D);
     }
 }
 
-vk::ImageViewType ITexture::DimensionTypeToImageViewType(TextureDimensionType dimension_type)
+vk::ImageViewType ITexture::DimensionTypeToImageViewType(Rhi::TextureDimensionType dimension_type)
 {
     META_FUNCTION_TASK();
     switch(dimension_type)
     {
-    case TextureDimensionType::Tex1D:              return vk::ImageViewType::e1D;
-    case TextureDimensionType::Tex1DArray:         return vk::ImageViewType::e1DArray;
-    case TextureDimensionType::Tex2D:
-    case TextureDimensionType::Tex2DMultisample:   return vk::ImageViewType::e2D;
-    case TextureDimensionType::Tex2DArray:         return vk::ImageViewType::e2DArray;
-    case TextureDimensionType::Cube:               return vk::ImageViewType::eCube;
-    case TextureDimensionType::CubeArray:          return vk::ImageViewType::eCubeArray;
-    case TextureDimensionType::Tex3D:              return vk::ImageViewType::e3D;
+    case Rhi::TextureDimensionType::Tex1D:              return vk::ImageViewType::e1D;
+    case Rhi::TextureDimensionType::Tex1DArray:         return vk::ImageViewType::e1DArray;
+    case Rhi::TextureDimensionType::Tex2D:
+    case Rhi::TextureDimensionType::Tex2DMultisample:   return vk::ImageViewType::e2D;
+    case Rhi::TextureDimensionType::Tex2DArray:         return vk::ImageViewType::e2DArray;
+    case Rhi::TextureDimensionType::Cube:               return vk::ImageViewType::eCube;
+    case Rhi::TextureDimensionType::CubeArray:          return vk::ImageViewType::eCubeArray;
+    case Rhi::TextureDimensionType::Tex3D:              return vk::ImageViewType::e3D;
     default: META_UNEXPECTED_ARG_RETURN(dimension_type, vk::ImageViewType::e1D);
     }
 }
@@ -284,7 +284,7 @@ FrameBufferTexture::FrameBufferTexture(const RenderContext& render_context, cons
     META_FUNCTION_TASK();
 }
 
-void FrameBufferTexture::SetData(const SubResources&, ICommandQueue&)
+void FrameBufferTexture::SetData(const SubResources&, Rhi::ICommandQueue&)
 {
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("frame-buffer textures do not support data setup");
 }
@@ -313,12 +313,12 @@ void FrameBufferTexture::ResetNativeImage()
 }
 
 DepthStencilTexture::DepthStencilTexture(const RenderContext& render_context, const Settings& settings,
-                                             const Opt<DepthStencil>& depth_stencil_opt)
+                                         const Opt<DepthStencil>& depth_stencil_opt)
     : Resource(render_context, settings, CreateNativeImage(render_context, settings))
     , m_depth_stencil_opt(depth_stencil_opt)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(settings.dimension_type, TextureDimensionType::Tex2D, "depth-stencil texture is supported only with 2D dimensions");
+    META_CHECK_ARG_EQUAL_DESCR(settings.dimension_type, Rhi::TextureDimensionType::Tex2D, "depth-stencil texture is supported only with 2D dimensions");
     META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 1U, "depth-stencil texture does not support 3D dimensions");
     META_CHECK_ARG_FALSE_DESCR(settings.mipmapped, "depth-stencil texture does not support mip-map mode");
     META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1U, "depth-stencil texture does not support arrays");
@@ -329,7 +329,7 @@ DepthStencilTexture::DepthStencilTexture(const RenderContext& render_context, co
     vk_device.bindImageMemory(GetNativeResource(), GetNativeDeviceMemory(), 0);
 }
 
-void DepthStencilTexture::SetData(const SubResources&, ICommandQueue&)
+void DepthStencilTexture::SetData(const SubResources&, Rhi::ICommandQueue&)
 {
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("depth-stencil textures do not support data setup");
 }
@@ -360,7 +360,7 @@ RenderTargetTexture::RenderTargetTexture(const RenderContext& render_context, co
     vk_device.bindImageMemory(GetNativeResource(), GetNativeDeviceMemory(), 0);
 }
 
-void RenderTargetTexture::SetData(const SubResources&, ICommandQueue&)
+void RenderTargetTexture::SetData(const SubResources&, Rhi::ICommandQueue&)
 {
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("render-target textures do not support data setup");
 }
@@ -406,7 +406,7 @@ ImageTexture::ImageTexture(const Base::Context& context, const Settings& setting
     vk_device.bindBufferMemory(m_vk_unique_staging_buffer.get(), m_vk_unique_staging_memory.get(), 0);
 }
 
-void ImageTexture::SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue)
+void ImageTexture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
     Resource::SetData(sub_resources, target_cmd_queue);
@@ -448,7 +448,7 @@ void ImageTexture::SetData(const SubResources& sub_resources, ICommandQueue& tar
 
     // Copy buffer data from staging upload resource to the device-local GPU resource
     TransferCommandList&   upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
-    const vk::CommandBuffer& vk_cmd_buffer   = upload_cmd_list.GetNativeCommandBufferDefault();
+    const vk::CommandBuffer& vk_cmd_buffer = upload_cmd_list.GetNativeCommandBufferDefault();
     vk_cmd_buffer.copyBufferToImage(m_vk_unique_staging_buffer.get(), GetNativeResource(),
                                     vk::ImageLayout::eTransferDstOptimal, m_vk_copy_regions);
 
@@ -461,7 +461,7 @@ void ImageTexture::SetData(const SubResources& sub_resources, ICommandQueue& tar
     {
         CompleteResourceUpload(upload_cmd_list, State::ShaderResource, target_cmd_queue);
     }
-    GetContext().RequestDeferredAction(IContext::DeferredAction::UploadResources);
+    GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
 }
 
 bool ImageTexture::SetName(const std::string& name)
@@ -477,20 +477,20 @@ bool ImageTexture::SetName(const std::string& name)
     return true;
 }
 
-void ImageTexture::GenerateMipLevels(ICommandQueue& target_cmd_queue, State target_resource_state)
+void ImageTexture::GenerateMipLevels(Rhi::ICommandQueue& target_cmd_queue, State target_resource_state)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(target_cmd_queue.GetCommandListType(), CommandListType::Render,
+    META_CHECK_ARG_EQUAL_DESCR(target_cmd_queue.GetCommandListType(), Rhi::CommandListType::Render,
                                "texture target command queue is not suitable for mip-maps generation");
 
-    const TextureSettings& texture_settings = GetSettings();
+    const Rhi::TextureSettings& texture_settings = GetSettings();
     const vk::Format image_format = TypeConverter::PixelFormatToVulkan(texture_settings.pixel_format);
     const vk::FormatProperties image_format_properties = GetVulkanContext().GetVulkanDevice().GetNativePhysicalDevice().getFormatProperties(image_format);
     META_CHECK_ARG_TRUE_DESCR(static_cast<bool>(image_format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear),
                               "texture pixel format does not support linear blitting");
 
-    constexpr auto post_upload_cmd_list_id = static_cast<CommandListId>(CommandListPurpose::PostUploadSync);
-    const ICommandList     & target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
+    constexpr auto post_upload_cmd_list_id = static_cast<Rhi::CommandListId>(Rhi::CommandListPurpose::PostUploadSync);
+    const Rhi::ICommandList     & target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);
     const vk::CommandBuffer& vk_cmd_buffer   = dynamic_cast<const RenderCommandList&>(target_cmd_list).GetNativeCommandBufferDefault();
 
     const SubResource::Count& subresource_count = GetSubresourceCount();

@@ -36,10 +36,10 @@ class Program;
 class Shader final : public Base::Shader
 {
 public:
-    Shader(ShaderType shader_type, const Base::Context& context, const Settings& settings);
+    Shader(Rhi::ShaderType shader_type, const Base::Context& context, const Settings& settings);
 
     // Base::Shader interface
-    ArgumentBindings GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const final;
+    ArgumentBindings GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const final;
     
     id<MTLFunction> GetNativeFunction() noexcept                            { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const Program& program) const;

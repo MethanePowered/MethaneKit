@@ -31,6 +31,8 @@ Methane user interface types root header.
 #include <fmt/format.h>
 #include <magic_enum.hpp>
 
+namespace gfx = Methane::Graphics;
+
 namespace Methane::UserInterface
 {
 

@@ -37,13 +37,14 @@ namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 
 struct TexturedCubeFrame final : Graphics::AppFrame
 {
-    Ptr<gfx::IBuffer>           uniforms_buffer_ptr;
-    Ptr<gfx::IProgramBindings>   program_bindings_ptr;
-    Ptr<gfx::IRenderCommandList> render_cmd_list_ptr;
-    Ptr<gfx::ICommandListSet>    execute_cmd_list_set_ptr;
+    Ptr<rhi::IBuffer>           uniforms_buffer_ptr;
+    Ptr<rhi::IProgramBindings>   program_bindings_ptr;
+    Ptr<rhi::IRenderCommandList> render_cmd_list_ptr;
+    Ptr<rhi::ICommandListSet>    execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -64,7 +65,7 @@ public:
 
 protected:
     // IContextCallback override
-    void OnContextReleased(gfx::IContext& context) override;
+    void OnContextReleased(rhi::IContext& context) override;
 
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);
@@ -78,14 +79,14 @@ private:
     };
     hlslpp::Uniforms       m_shader_uniforms { };
     gfx::Camera            m_camera;
-    Ptr<gfx::IRenderState> m_render_state_ptr;
-    Ptr<gfx::IBufferSet>   m_vertex_buffer_set_ptr;
-    Ptr<gfx::IBuffer>      m_index_buffer_ptr;
-    Ptr<gfx::IBuffer>      m_const_buffer_ptr;
-    Ptr<gfx::ITexture>     m_cube_texture_ptr;
-    Ptr<gfx::ISampler>     m_texture_sampler_ptr;
+    Ptr<rhi::IRenderState> m_render_state_ptr;
+    Ptr<rhi::IBufferSet>   m_vertex_buffer_set_ptr;
+    Ptr<rhi::IBuffer>      m_index_buffer_ptr;
+    Ptr<rhi::IBuffer>      m_const_buffer_ptr;
+    Ptr<rhi::ITexture>     m_cube_texture_ptr;
+    Ptr<rhi::ISampler>     m_texture_sampler_ptr;
 
-    const gfx::IResource::SubResources m_shader_uniforms_subresources{
+    const rhi::IResource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
     };
 };

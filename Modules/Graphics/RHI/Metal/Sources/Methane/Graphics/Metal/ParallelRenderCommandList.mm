@@ -28,7 +28,7 @@ Metal implementation of the parallel render command list interface.
 
 #include <Methane/Instrumentation.h>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<IParallelRenderCommandList> IParallelRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
@@ -37,7 +37,7 @@ Ptr<IParallelRenderCommandList> IParallelRenderCommandList::Create(ICommandQueue
     return std::make_shared<Metal::ParallelRenderCommandList>(static_cast<Base::CommandQueue&>(command_queue), static_cast<Base::RenderPass&>(render_pass));
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {

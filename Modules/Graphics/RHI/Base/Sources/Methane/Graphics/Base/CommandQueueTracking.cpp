@@ -24,8 +24,8 @@ Base implementation of the command queue with execution tracking.
 #include <Methane/Graphics/Base/CommandQueueTracking.h>
 #include <Methane/Graphics/Base/Context.h>
 
-#include <Methane/Graphics/IQueryPool.h>
-#include <Methane/Graphics/IDevice.h>
+#include <Methane/Graphics/RHI/IQueryPool.h>
+#include <Methane/Graphics/RHI/IDevice.h>
 
 #include <Methane/TracyGpu.hpp>
 #include <Methane/Instrumentation.h>
@@ -39,20 +39,20 @@ Base implementation of the command queue with execution tracking.
 namespace Methane::Graphics::Base
 {
 
-static Tracy::GpuContext::Type ConvertSystemGraphicsApiToTracyGpuContextType(NativeApi graphics_api)
+static Tracy::GpuContext::Type ConvertSystemGraphicsApiToTracyGpuContextType(Rhi::NativeApi graphics_api)
 {
     META_FUNCTION_TASK();
     switch(graphics_api)
     {
-    case NativeApi::Undefined:    return Tracy::GpuContext::Type::Undefined;
-    case NativeApi::DirectX:      return Tracy::GpuContext::Type::DirectX12;
-    case NativeApi::Vulkan:       return Tracy::GpuContext::Type::Vulkan;
-    case NativeApi::Metal:        return Tracy::GpuContext::Type::Metal;
+    case Rhi::NativeApi::Undefined:    return Tracy::GpuContext::Type::Undefined;
+    case Rhi::NativeApi::DirectX:      return Tracy::GpuContext::Type::DirectX12;
+    case Rhi::NativeApi::Vulkan:       return Tracy::GpuContext::Type::Vulkan;
+    case Rhi::NativeApi::Metal:        return Tracy::GpuContext::Type::Metal;
     default: META_UNEXPECTED_ARG_RETURN(graphics_api, Tracy::GpuContext::Type::Undefined);
     }
 };
 
-CommandQueueTracking::CommandQueueTracking(const Context& context, CommandListType command_lists_type)
+CommandQueueTracking::CommandQueueTracking(const Context& context, Rhi::CommandListType command_lists_type)
     : CommandQueue(context, command_lists_type)
     , m_execution_waiting_thread(&CommandQueueTracking::WaitForExecution, this)
 {
@@ -69,14 +69,14 @@ void CommandQueueTracking::InitializeTimestampQueryPool()
 {
     META_FUNCTION_TASK();
     constexpr uint32_t g_max_timestamp_queries_count_per_frame = 1000;
-    m_timestamp_query_pool_ptr = ITimestampQueryPool::Create(*this, g_max_timestamp_queries_count_per_frame);
+    m_timestamp_query_pool_ptr = Rhi::ITimestampQueryPool::Create(*this, g_max_timestamp_queries_count_per_frame);
     if (!m_timestamp_query_pool_ptr)
         return;
 
-    const ITimestampQueryPool::CalibratedTimestamps& calibrated_timestamps = m_timestamp_query_pool_ptr->GetCalibratedTimestamps();
+    const Rhi::ITimestampQueryPool::CalibratedTimestamps& calibrated_timestamps = m_timestamp_query_pool_ptr->GetCalibratedTimestamps();
     InitializeTracyGpuContext(
         Tracy::GpuContext::Settings(
-            ConvertSystemGraphicsApiToTracyGpuContextType(ISystem::GetNativeApi()),
+            ConvertSystemGraphicsApiToTracyGpuContextType(Rhi::ISystem::GetNativeApi()),
             calibrated_timestamps.cpu_ts,
             calibrated_timestamps.gpu_ts,
             Data::ConvertFrequencyToTickPeriod(m_timestamp_query_pool_ptr->GetGpuFrequency())
@@ -84,7 +84,7 @@ void CommandQueueTracking::InitializeTimestampQueryPool()
     );
 }
 
-void CommandQueueTracking::Execute(ICommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback)
+void CommandQueueTracking::Execute(Rhi::ICommandListSet& command_lists, const Rhi::ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     CommandQueue::Execute(command_lists, completed_callback);
@@ -156,7 +156,7 @@ void CommandQueueTracking::WaitForExecution() noexcept
 
             if (m_timestamp_query_pool_ptr)
             {
-                const ITimestampQueryPool::CalibratedTimestamps calibrated_timestamps = m_timestamp_query_pool_ptr->Calibrate();
+                const Rhi::ITimestampQueryPool::CalibratedTimestamps calibrated_timestamps = m_timestamp_query_pool_ptr->Calibrate();
                 GetTracyContext().Calibrate(calibrated_timestamps.cpu_ts, calibrated_timestamps.gpu_ts);
             }
         }

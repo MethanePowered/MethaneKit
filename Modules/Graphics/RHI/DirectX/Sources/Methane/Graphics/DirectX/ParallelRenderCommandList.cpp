@@ -35,16 +35,16 @@ DirectX 12 implementation of the parallel render command list interface.
 #include <fmt/format.h>
 #include <string_view>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IParallelRenderCommandList> IParallelRenderCommandList::Create(ICommandQueue& cmd_queue, IRenderPass& render_pass)
+Ptr<IParallelRenderCommandList> Rhi::IParallelRenderCommandList::Create(ICommandQueue& cmd_queue, Rhi::IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::ParallelRenderCommandList>(static_cast<Base::CommandQueue&>(cmd_queue), static_cast<Base::RenderPass&>(render_pass));
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -61,7 +61,7 @@ ParallelRenderCommandList::ParallelRenderCommandList(Base::CommandQueue& cmd_que
     GetDirectPass().SetNativeRenderPassUsage(false);
 }
 
-void ParallelRenderCommandList::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
+void ParallelRenderCommandList::ResetWithState(IRenderState& render_state, Rhi::IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
@@ -85,13 +85,13 @@ void ParallelRenderCommandList::ResetWithState(IRenderState& render_state, IDebu
     Base::ParallelRenderCommandList::ResetWithState(render_state, p_debug_group);
 }
 
-void ParallelRenderCommandList::SetBeginningResourceBarriers(const IResourceBarriers& resource_barriers)
+void ParallelRenderCommandList::SetBeginningResourceBarriers(const Rhi::IResourceBarriers& resource_barriers)
 {
     META_FUNCTION_TASK();
     m_beginning_command_list.SetResourceBarriers(resource_barriers);
 }
 
-void ParallelRenderCommandList::SetEndingResourceBarriers(const IResourceBarriers& resource_barriers)
+void ParallelRenderCommandList::SetEndingResourceBarriers(const Rhi::IResourceBarriers& resource_barriers)
 {
     META_FUNCTION_TASK();
     m_ending_command_list.SetResourceBarriers(resource_barriers);
@@ -119,7 +119,7 @@ void ParallelRenderCommandList::Commit()
     m_beginning_command_list.Commit();
 }
 
-void ParallelRenderCommandList::Execute(const ICommandList::CompletedCallback& completed_callback)
+void ParallelRenderCommandList::Execute(const Rhi::ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     m_beginning_command_list.Execute();

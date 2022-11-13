@@ -26,7 +26,7 @@ Base implementation of the render context interface.
 #include "Context.h"
 #include "Fence.h"
 
-#include <Methane/Graphics/IRenderContext.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Graphics/FpsCounter.h>
 
 namespace Methane::Graphics::Base
@@ -34,10 +34,10 @@ namespace Methane::Graphics::Base
 
 class RenderContext
     : public Context
-    , public IRenderContext
+    , public Rhi::IRenderContext
 {
 public:
-    RenderContext(Device& device, UniquePtr<IDescriptorManager>&& descriptor_manager_ptr,
+    RenderContext(Device& device, UniquePtr<Rhi::IDescriptorManager>&& descriptor_manager_ptr,
                       tf::Executor& parallel_executor, const Settings& settings);
 
     // IContext interface
@@ -70,8 +70,8 @@ protected:
     // so it may be changed from RenderContextXX::Initialize() method
     void InvalidateFrameBuffersCount(uint32_t frame_buffers_count);
 
-    IFence& GetCurrentFrameFence() const;
-    IFence& GetRenderFence() const;
+    Rhi::IFence& GetCurrentFrameFence() const;
+    Rhi::IFence& GetRenderFence() const;
 
     // Context overrides
     bool UploadResources() override;

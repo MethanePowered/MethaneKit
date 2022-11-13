@@ -31,7 +31,7 @@ Base implementation of the named object interface.
 namespace Methane::Graphics::Base
 {
 
-void ObjectRegistry::AddGraphicsObject(IObject& object)
+void ObjectRegistry::AddGraphicsObject(Rhi::IObject& object)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY_DESCR(object.GetName(), "Can not add graphics object without name to the objects registry.");
@@ -46,7 +46,7 @@ void ObjectRegistry::AddGraphicsObject(IObject& object)
     object.Connect(*this);
 }
 
-void ObjectRegistry::RemoveGraphicsObject(IObject& object)
+void ObjectRegistry::RemoveGraphicsObject(Rhi::IObject& object)
 {
     META_FUNCTION_TASK();
 
@@ -59,7 +59,7 @@ void ObjectRegistry::RemoveGraphicsObject(IObject& object)
     }
 }
 
-Ptr<IObject> ObjectRegistry::GetGraphicsObject(const std::string& object_name) const noexcept
+Ptr<Rhi::IObject> ObjectRegistry::GetGraphicsObject(const std::string& object_name) const noexcept
 {
     META_FUNCTION_TASK();
     const auto object_by_name_it = m_object_by_name.find(object_name);
@@ -73,7 +73,7 @@ bool ObjectRegistry::HasGraphicsObject(const std::string& object_name) const noe
     return object_by_name_it != m_object_by_name.end() && !object_by_name_it->second.expired();
 }
 
-void ObjectRegistry::OnObjectNameChanged(IObject& object, const std::string& old_name)
+void ObjectRegistry::OnObjectNameChanged(Rhi::IObject& object, const std::string& old_name)
 {
     META_FUNCTION_TASK();
     const auto object_by_name_it = m_object_by_name.find(old_name);
@@ -97,7 +97,7 @@ void ObjectRegistry::OnObjectNameChanged(IObject& object, const std::string& old
     m_object_by_name.insert(std::move(object_node));
 }
 
-void ObjectRegistry::OnObjectDestroyed(IObject& object)
+void ObjectRegistry::OnObjectDestroyed(Rhi::IObject& object)
 {
     META_FUNCTION_TASK();
     RemoveGraphicsObject(object);
@@ -114,7 +114,7 @@ Object::~Object()
     META_FUNCTION_TASK();
     try
     {
-        Emit(&IObjectCallback::OnObjectDestroyed, *this);
+        Emit(&Rhi::IObjectCallback::OnObjectDestroyed, *this);
     }
     catch (const std::exception& e)
     {
@@ -124,7 +124,7 @@ Object::~Object()
     }
 }
 
-Ptr<IObject> Object::GetPtr()
+Ptr<Rhi::IObject> Object::GetPtr()
 {
     META_FUNCTION_TASK();
     return std::dynamic_pointer_cast<IObject>(shared_from_this());
@@ -139,7 +139,7 @@ bool Object::SetName(const std::string& name)
     const std::string old_name = m_name;
     m_name = name;
 
-    Emit(&IObjectCallback::OnObjectNameChanged, *this, old_name);
+    Emit(&Rhi::IObjectCallback::OnObjectNameChanged, *this, old_name);
     return true;
 }
 

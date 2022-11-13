@@ -25,7 +25,7 @@ Base implementation of the device interface.
 
 #include "Object.h"
 
-#include <Methane/Graphics/IDevice.h>
+#include <Methane/Graphics/RHI/IDevice.h>
 #include <Methane/Data/Emitter.hpp>
 
 namespace Methane::Graphics::Base
@@ -34,9 +34,9 @@ namespace Methane::Graphics::Base
 class System;
 
 class Device
-    : public IDevice
+    : public Rhi::IDevice
     , public Object
-    , public Data::Emitter<IDeviceCallback>
+    , public Data::Emitter<Rhi::IDeviceCallback>
 {
 public:
     Device(const std::string& adapter_name, bool is_software_adapter, const Capabilities& capabilities);
@@ -62,29 +62,29 @@ private:
 };
 
 class System
-    : public ISystem
+    : public Rhi::ISystem
     , public std::enable_shared_from_this<System>
 {
 public:
     // ISystem interface
-    const Ptrs<IDevice>& GetGpuDevices() const noexcept override          { return m_devices; }
-    const DeviceCaps&    GetDeviceCapabilities() const noexcept override  { return m_device_caps; }
-    Ptr<IDevice>         GetNextGpuDevice(const IDevice& device) const noexcept override;
-    Ptr<IDevice>         GetSoftwareGpuDevice() const noexcept override;
-    std::string          ToString() const override;
+    const Ptrs<Rhi::IDevice>& GetGpuDevices() const noexcept override          { return m_devices; }
+    const Rhi::DeviceCaps&    GetDeviceCapabilities() const noexcept override  { return m_device_caps; }
+    Ptr<Rhi::IDevice>         GetNextGpuDevice(const Rhi::IDevice& device) const noexcept override;
+    Ptr<Rhi::IDevice>         GetSoftwareGpuDevice() const noexcept override;
+    std::string               ToString() const override;
 
     Ptr<System> GetPtr() { return shared_from_this(); }
 
 protected:
-    void SetDeviceCapabilities(const DeviceCaps& device_caps) { m_device_caps = device_caps; }
+    void SetDeviceCapabilities(const Rhi::DeviceCaps& device_caps) { m_device_caps = device_caps; }
     void ClearDevices() { m_devices.clear(); }
-    void AddDevice(const Ptr<IDevice>& device_ptr) { m_devices.emplace_back(device_ptr); }
-    void RequestRemoveDevice(IDevice& device) const;
-    void RemoveDevice(IDevice& device);
+    void AddDevice(const Ptr<Rhi::IDevice>& device_ptr) { m_devices.emplace_back(device_ptr); }
+    void RequestRemoveDevice(Rhi::IDevice& device) const;
+    void RemoveDevice(Rhi::IDevice& device);
 
 private:
-    DeviceCaps    m_device_caps;
-    Ptrs<IDevice> m_devices;
+    Rhi::DeviceCaps    m_device_caps;
+    Ptrs<Rhi::IDevice> m_devices;
 };
 
 } // namespace Methane::Graphics::Base

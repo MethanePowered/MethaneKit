@@ -38,6 +38,7 @@ namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 
 struct ShadowCubeFrame final : gfx::AppFrame
 {
@@ -45,21 +46,21 @@ struct ShadowCubeFrame final : gfx::AppFrame
     {
         struct MeshResources
         {
-            Ptr<gfx::IBuffer>          uniforms_buffer_ptr;
-            Ptr<gfx::IProgramBindings> program_bindings_ptr;
+            Ptr<rhi::IBuffer>          uniforms_buffer_ptr;
+            Ptr<rhi::IProgramBindings> program_bindings_ptr;
         };
 
         MeshResources                cube;
         MeshResources                floor;
-        Ptr<gfx::ITexture>           rt_texture_ptr;
-        Ptr<gfx::IRenderPass>        render_pass_ptr;
-        Ptr<gfx::IRenderCommandList> cmd_list_ptr;
+        Ptr<rhi::ITexture>           rt_texture_ptr;
+        Ptr<rhi::IRenderPass>        render_pass_ptr;
+        Ptr<rhi::IRenderCommandList> cmd_list_ptr;
     };
 
     PassResources             shadow_pass;
     PassResources             final_pass;
-    Ptr<gfx::IBuffer>         scene_uniforms_buffer_ptr;
-    Ptr<gfx::ICommandListSet> execute_cmd_list_set_ptr;
+    Ptr<rhi::IBuffer>         scene_uniforms_buffer_ptr;
+    Ptr<rhi::ICommandListSet> execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -80,7 +81,7 @@ public:
 
 protected:
     // IContextCallback override
-    void OnContextReleased(gfx::IContext& context) override;
+    void OnContextReleased(rhi::IContext& context) override;
 
 private:
     using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<hlslpp::MeshUniforms>;
@@ -92,11 +93,11 @@ private:
         void SetShadowPassUniforms(hlslpp::MeshUniforms&& uniforms) noexcept { m_shadow_pass_uniforms = std::move(uniforms); }
 
         [[nodiscard]] const hlslpp::MeshUniforms&        GetShadowPassUniforms() const noexcept               { return m_shadow_pass_uniforms; }
-        [[nodiscard]] const gfx::IResource::SubResources& GetShadowPassUniformsSubresources() const noexcept   { return m_shadow_pass_uniforms_subresources; }
+        [[nodiscard]] const rhi::IResource::SubResources& GetShadowPassUniformsSubresources() const noexcept   { return m_shadow_pass_uniforms_subresources; }
 
     private:
         hlslpp::MeshUniforms         m_shadow_pass_uniforms{};
-        gfx::IResource::SubResources m_shadow_pass_uniforms_subresources{
+        rhi::IResource::SubResources m_shadow_pass_uniforms_subresources{
             { reinterpret_cast<Data::ConstRawPtr>(&m_shadow_pass_uniforms), sizeof(hlslpp::MeshUniforms) } // NOSONAR
         };
     };
@@ -107,9 +108,9 @@ private:
         void Release();
 
         const bool                             is_final_pass;
-        const Ptr<gfx::ICommandListDebugGroup> debug_group_ptr;
-        Ptr<gfx::IRenderState>                 render_state_ptr;
-        Ptr<gfx::IViewState>                   view_state_ptr;
+        const Ptr<rhi::ICommandListDebugGroup> debug_group_ptr;
+        Ptr<rhi::IRenderState>                 render_state_ptr;
+        Ptr<rhi::IViewState>                   view_state_ptr;
     };
 
     bool Animate(double elapsed_seconds, double delta_seconds);
@@ -123,17 +124,17 @@ private:
         30.F                      // - light_specular_factor
     };
     hlslpp::SceneUniforms        m_scene_uniforms{ };
-    gfx::IResource::SubResources m_scene_uniforms_subresources{
+    rhi::IResource::SubResources m_scene_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) } // NOSONAR
     };
     gfx::Camera                  m_view_camera;
     gfx::Camera                 m_light_camera;
-    Ptr<gfx::IBuffer>           m_const_buffer_ptr;
-    Ptr<gfx::ISampler>          m_texture_sampler_ptr;
-    Ptr<gfx::ISampler>          m_shadow_sampler_ptr;
+    Ptr<rhi::IBuffer>           m_const_buffer_ptr;
+    Ptr<rhi::ISampler>          m_texture_sampler_ptr;
+    Ptr<rhi::ISampler>          m_shadow_sampler_ptr;
     Ptr<TexturedMeshBuffers>    m_cube_buffers_ptr;
     Ptr<TexturedMeshBuffers> m_floor_buffers_ptr;
-    Ptr<gfx::IRenderPattern> m_shadow_pass_pattern_ptr;
+    Ptr<rhi::IRenderPattern> m_shadow_pass_pattern_ptr;
     RenderPassState          m_shadow_pass { false, "Shadow Render Pass" };
     RenderPassState             m_final_pass  { true,  "Final Render Pass" };
 };

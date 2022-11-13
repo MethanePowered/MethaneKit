@@ -33,11 +33,11 @@ Base implementation of the program interface.
 namespace Methane::Graphics::Base
 {
 
-Program::ShadersByType Program::CreateShadersByType(const Ptrs<IShader>& shaders)
+Program::ShadersByType Program::CreateShadersByType(const Ptrs<Rhi::IShader>& shaders)
 {
     META_FUNCTION_TASK();
     Program::ShadersByType shaders_by_type;
-    for (const Ptr<IShader>& shader_ptr : shaders)
+    for (const Ptr<Rhi::IShader>& shader_ptr : shaders)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(shader_ptr, "can not use empty shader pointer for program creation");
         shaders_by_type[magic_enum::enum_index(shader_ptr->GetType()).value()] = shader_ptr;
@@ -45,11 +45,11 @@ Program::ShadersByType Program::CreateShadersByType(const Ptrs<IShader>& shaders
     return shaders_by_type;
 }
 
-static ShaderTypes CreateShaderTypes(const Ptrs<IShader>& shaders)
+static Rhi::ShaderTypes CreateShaderTypes(const Ptrs<Rhi::IShader>& shaders)
 {
     META_FUNCTION_TASK();
-    ShaderTypes shader_types;
-    for (const Ptr<IShader>& shader_ptr : shaders)
+    Rhi::ShaderTypes shader_types;
+    for (const Ptr<Rhi::IShader>& shader_ptr : shaders)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(shader_ptr, "can not use empty shader pointer for program creation");
         shader_types.insert(shader_ptr->GetType());
@@ -69,17 +69,17 @@ Program::Program(const Context& context, const Settings& settings)
 void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
 {
     META_FUNCTION_TASK();
-    ShaderTypes                                          all_shader_types;
-    std::map<std::string_view, ShaderTypes, std::less<>> shader_types_by_argument_name_map;
+    Rhi::ShaderTypes all_shader_types;
+    std::map<std::string_view, Rhi::ShaderTypes, std::less<>> shader_types_by_argument_name_map;
     
     m_binding_by_argument.clear();
-    for (const Ptr<IShader>& shader_ptr : m_settings.shaders)
+    for (const Ptr<Rhi::IShader>& shader_ptr : m_settings.shaders)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(shader_ptr, "empty shader pointer in program is not allowed");
-        const ShaderType shader_type = shader_ptr->GetType();
+        const Rhi::ShaderType shader_type = shader_ptr->GetType();
         all_shader_types.insert(shader_type);
         
-        const Shader::ArgumentBindings argument_bindings = static_cast<const Shader&>(*shader_ptr).GetArgumentBindings(argument_accessors);
+        const Ptrs<ProgramArgumentBinding> argument_bindings = static_cast<const Shader&>(*shader_ptr).GetArgumentBindings(argument_accessors);
         for (const Ptr<ProgramBindings::ArgumentBinding>& argument_binging_ptr : argument_bindings)
         {
             META_CHECK_ARG_NOT_NULL_DESCR(argument_binging_ptr, "empty resource binding provided by shader");
@@ -100,7 +100,7 @@ void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
             continue;
 
         Ptr<ProgramBindings::ArgumentBinding> argument_binding_ptr;
-        for(ShaderType shader_type : all_shader_types)
+        for(Rhi::ShaderType shader_type : all_shader_types)
         {
             const Argument argument{ shader_type, argument_name };
             auto binding_by_argument_it = m_binding_by_argument.find(argument);
@@ -117,10 +117,10 @@ void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
         }
 
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "failed to create resource binding for argument '{}'", argument_name);
-        m_binding_by_argument.try_emplace(Argument{ ShaderType::All, argument_name }, argument_binding_ptr);
+        m_binding_by_argument.try_emplace(Argument{ Rhi::ShaderType::All, argument_name }, argument_binding_ptr);
     }
 
-    if (m_context.GetType() != IContext::Type::Render)
+    if (m_context.GetType() != Rhi::IContext::Type::Render)
         return;
 
     // Create frame-constant argument bindings only when program is created in render context
@@ -144,7 +144,7 @@ void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
     }
 }
 
-const Ptr<ProgramBindings::ArgumentBinding>& Program::GetFrameArgumentBinding(Data::Index frame_index, const ProgramArgumentAccessor& argument_accessor) const
+const Ptr<ProgramBindings::ArgumentBinding>& Program::GetFrameArgumentBinding(Data::Index frame_index, const Rhi::ProgramArgumentAccessor& argument_accessor) const
 {
     META_FUNCTION_TASK();
     const auto argument_frame_bindings_it = m_frame_bindings_by_argument.find(argument_accessor);
@@ -157,7 +157,7 @@ Ptr<ProgramBindings::ArgumentBinding> Program::CreateArgumentBindingInstance(con
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
 
-    const ProgramArgumentAccessor& argument_accessor = argument_binding_ptr->GetSettings().argument;
+    const Rhi::ProgramArgumentAccessor& argument_accessor = argument_binding_ptr->GetSettings().argument;
     switch(argument_accessor.GetAccessorType())
     {
     case ArgumentAccessor::Type::Mutable:       return ProgramBindings::ArgumentBinding::CreateCopy(*argument_binding_ptr);
@@ -167,10 +167,10 @@ Ptr<ProgramBindings::ArgumentBinding> Program::CreateArgumentBindingInstance(con
     }
 }
 
-IShader& Program::GetShaderRef(ShaderType shader_type) const
+Rhi::IShader& Program::GetShaderRef(Rhi::ShaderType shader_type) const
 {
     META_FUNCTION_TASK();
-    const Ptr<IShader>& shader_ptr = GetShader(shader_type);
+    const Ptr<Rhi::IShader>& shader_ptr = GetShader(shader_type);
     META_CHECK_ARG_DESCR(shader_type, shader_ptr, "{} shader was not found in program '{}'", magic_enum::enum_name(shader_type), GetName());
     return *shader_ptr;
 }

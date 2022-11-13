@@ -28,12 +28,12 @@ DirectX 12 GPU query pool implementation.
 
 #include <directx/d3d12.h>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct IBuffer;
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -54,7 +54,7 @@ public:
     void Begin() override;
     void End() override;
     void ResolveData() override;
-    SubResource GetData() const override;
+    Rhi::SubResource GetData() const override;
 
 protected:
     [[nodiscard]] QueryPool& GetDirectQueryPool() const noexcept;
@@ -68,7 +68,7 @@ class QueryPool : public Base::QueryPool
 {
 public:
     QueryPool(CommandQueue& command_queue, Type type,
-                Data::Size max_query_count, IQuery::Count slots_count_per_query,
+                Data::Size max_query_count, Rhi::IQuery::Count slots_count_per_query,
                 Data::Size buffer_size, Data::Size query_size);
 
     CommandQueue&      GetDirectCommandQueue() noexcept;

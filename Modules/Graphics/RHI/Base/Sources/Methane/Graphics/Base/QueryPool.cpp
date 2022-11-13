@@ -25,7 +25,7 @@ GPU data query pool base implementation.
 #include <Methane/Graphics/Base/CommandQueue.h>
 
 #include <Methane/Graphics/Base/Context.h>
-#include <Methane/Graphics/IRenderContext.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Data/RangeUtils.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -62,8 +62,8 @@ Query::~Query()
 void Query::Begin()
 {
     META_FUNCTION_TASK();
-    const IQueryPool::Type query_pool_type = GetQueryPool().GetType();
-    META_CHECK_ARG_NOT_EQUAL_DESCR(query_pool_type, IQueryPool::Type::Timestamp, "timestamp query can not be begun, it can be ended only");
+    const Rhi::IQueryPool::Type query_pool_type = GetQueryPool().GetType();
+    META_CHECK_ARG_NOT_EQUAL_DESCR(query_pool_type, Rhi::IQueryPool::Type::Timestamp, "timestamp query can not be begun, it can be ended only");
     META_CHECK_ARG_NOT_EQUAL_DESCR(m_state, State::Begun, "can not begin unresolved or not ended query");
     m_state = State::Begun;
 }
@@ -71,9 +71,9 @@ void Query::Begin()
 void Query::End()
 {
     META_FUNCTION_TASK();
-    const IQueryPool::Type query_pool_type = GetQueryPool().GetType();
+    const Rhi::IQueryPool::Type query_pool_type = GetQueryPool().GetType();
     META_UNUSED(query_pool_type);
-    META_CHECK_ARG_DESCR(m_state, query_pool_type == IQueryPool::Type::Timestamp || m_state == State::Begun,
+    META_CHECK_ARG_DESCR(m_state, query_pool_type == Rhi::IQueryPool::Type::Timestamp || m_state == State::Begun,
                          "can not end {} query that was not begun", magic_enum::enum_name(query_pool_type));
     m_state = State::Ended;
 }
@@ -85,20 +85,20 @@ void Query::ResolveData()
     m_state = State::Resolved;
 }
 
-IQueryPool& Query::GetQueryPool() const noexcept
+Rhi::IQueryPool& Query::GetQueryPool() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<IQueryPool&>(*m_query_pool_ptr);
+    return static_cast<Rhi::IQueryPool&>(*m_query_pool_ptr);
 }
 
-ICommandList& Query::GetCommandList() const noexcept
+Rhi::ICommandList& Query::GetCommandList() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<ICommandList&>(m_command_list);
+    return static_cast<Rhi::ICommandList&>(m_command_list);
 }
 
 QueryPool::QueryPool(CommandQueue& command_queue, Type type,
-                             IQuery::Count max_query_count, IQuery::Count slots_count_per_query,
+                             Rhi::IQuery::Count max_query_count, Rhi::IQuery::Count slots_count_per_query,
                              Data::Size buffer_size, Data::Size query_size)
     : m_type(type)
     , m_pool_size(buffer_size)
@@ -107,15 +107,15 @@ QueryPool::QueryPool(CommandQueue& command_queue, Type type,
     , m_free_indices({ { 0U, max_query_count * slots_count_per_query } })
     , m_free_data_ranges({ { 0U, buffer_size } })
     , m_command_queue(command_queue)
-    , m_context(dynamic_cast<const IContext&>(command_queue.GetContext()))
+    , m_context(dynamic_cast<const Rhi::IContext&>(command_queue.GetContext()))
 {
     META_FUNCTION_TASK();
 }
 
-ICommandQueue& QueryPool::GetCommandQueue() noexcept
+Rhi::ICommandQueue& QueryPool::GetCommandQueue() noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<ICommandQueue&>(m_command_queue);
+    return static_cast<Rhi::ICommandQueue&>(m_command_queue);
 }
 
 void QueryPool::ReleaseQuery(const Query& query)
@@ -131,7 +131,7 @@ QueryPool::CreateQueryArgs QueryPool::GetCreateQueryArguments()
     const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, m_slots_count_per_query);
     META_CHECK_ARG_DESCR(index_range, !index_range.IsEmpty(), "maximum queries count is reached");
 
-    const IQuery::Range data_range = Data::ReserveRange(m_free_data_ranges, m_query_size);
+    const Rhi::IQuery::Range data_range = Data::ReserveRange(m_free_data_ranges, m_query_size);
     META_CHECK_ARG_DESCR(data_range, !data_range.IsEmpty(), "there is no space available for new query");
 
     return { index_range.GetStart(), data_range };

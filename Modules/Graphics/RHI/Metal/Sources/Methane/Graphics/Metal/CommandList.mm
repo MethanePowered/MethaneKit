@@ -26,7 +26,7 @@ Metal command lists sequence implementation
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Apple/Types.hh>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& name)
@@ -41,7 +41,7 @@ Ptr<ICommandListSet> ICommandListSet::Create(const Refs<ICommandList>& command_l
     return std::make_shared<Metal::CommandListSet>(command_list_refs, frame_index_opt);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {

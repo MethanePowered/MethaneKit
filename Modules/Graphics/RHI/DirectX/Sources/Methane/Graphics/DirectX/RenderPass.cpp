@@ -37,22 +37,22 @@ DirectX 12 implementation of the render pass interface.
 #include <magic_enum.hpp>
 #include <directx/d3dx12.h>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
+Ptr<IRenderPattern> Rhi::IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Base::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
 }
 
-Ptr<IRenderPass> IRenderPass::Create(Pattern& render_pattern, const Settings& settings)
+Ptr<IRenderPass> Rhi::IRenderPass::Create(Pattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::RenderPass>(dynamic_cast<Base::RenderPattern&>(render_pattern), settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -170,9 +170,9 @@ RenderPass::RTClearInfo::RTClearInfo(const ColorAttachment& color_attach, const 
 
 RenderPass::DSClearInfo::DSClearInfo(const Opt<DepthAttachment>& depth_attach_opt, const Opt<StencilAttachment>& stencil_attach_opt, const RenderPass& render_pass)
     : cpu_handle(depth_attach_opt ? render_pass.GetDirectAttachmentTextureView(*depth_attach_opt).GetNativeCpuDescriptorHandle() : D3D12_CPU_DESCRIPTOR_HANDLE())
-    , depth_cleared(depth_attach_opt && depth_attach_opt->load_action == IRenderPass::Attachment::LoadAction::Clear)
+    , depth_cleared(depth_attach_opt && depth_attach_opt->load_action == Rhi::IRenderPass::Attachment::LoadAction::Clear)
     , depth_value(depth_attach_opt ? depth_attach_opt->clear_value : 1.F)
-    , stencil_cleared(stencil_attach_opt && stencil_attach_opt->load_action == IRenderPass::Attachment::LoadAction::Clear)
+    , stencil_cleared(stencil_attach_opt && stencil_attach_opt->load_action == Rhi::IRenderPass::Attachment::LoadAction::Clear)
     , stencil_value(stencil_attach_opt ? stencil_attach_opt->clear_value : 0)
 {
     META_FUNCTION_TASK();
@@ -192,10 +192,10 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(IRenderPass::Access ac
     META_FUNCTION_TASK();
     switch (access)
     {
-    case IRenderPass::Access::ShaderResources: return DescriptorHeap::Type::ShaderResources;
-    case IRenderPass::Access::Samplers:        return DescriptorHeap::Type::Samplers;
-    case IRenderPass::Access::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
-    case IRenderPass::Access::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
+    case Rhi::IRenderPass::Access::ShaderResources: return DescriptorHeap::Type::ShaderResources;
+    case Rhi::IRenderPass::Access::Samplers:        return DescriptorHeap::Type::Samplers;
+    case Rhi::IRenderPass::Access::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
+    case Rhi::IRenderPass::Access::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
     default:                                   META_UNEXPECTED_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
     }
 }
@@ -206,11 +206,11 @@ RenderPass::RenderPass(Base::RenderPattern& render_pattern, const Settings& sett
 {
     META_FUNCTION_TASK();
     std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
-                   [](const ITexture::View& texture_location)
-                   { return ResourceView(texture_location, IResource::Usage::RenderTarget); });
+                   [](const Rhi::ITexture::View& texture_location)
+                   { return ResourceView(texture_location, Rhi::IResource::Usage::RenderTarget); });
 
     using namespace magic_enum::bitwise_operators;
-    if (static_cast<bool>(render_pattern.GetRenderContext().GetSettings().options_mask & IContext::Options::EmulatedRenderPassOnWindows))
+    if (static_cast<bool>(render_pattern.GetRenderContext().GetSettings().options_mask & Rhi::IContext::Options::EmulatedRenderPassOnWindows))
     {
         m_is_native_render_pass_available = false;
     }
@@ -237,8 +237,8 @@ bool RenderPass::Update(const Settings& settings)
         m_end_transition_barriers_ptr.reset();
 
         std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
-                       [](const ITexture::View& texture_location)
-                       { return ResourceView(texture_location, IResource::Usage::RenderTarget); });
+                       [](const Rhi::ITexture::View& texture_location)
+                       { return ResourceView(texture_location, Rhi::IResource::Usage::RenderTarget); });
     }
 
     if (!m_is_native_render_pass_available.has_value() || m_is_native_render_pass_available.value())
@@ -380,7 +380,7 @@ void RenderPass::Begin(Base::RenderCommandList& command_list)
     }
 
     Base::RenderPass::Begin(command_list);
-    SetAttachmentStates(IResource::State::RenderTarget, IResource::State::DepthWrite, m_begin_transition_barriers_ptr, command_list);
+    SetAttachmentStates(IResource::State::RenderTarget, Rhi::IResource::State::DepthWrite, m_begin_transition_barriers_ptr, command_list);
 
     const auto& command_list_dx = static_cast<const RenderCommandList&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();

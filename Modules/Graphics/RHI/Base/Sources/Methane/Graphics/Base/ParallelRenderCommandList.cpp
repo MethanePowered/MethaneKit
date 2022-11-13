@@ -70,7 +70,7 @@ void ParallelRenderCommandList::Reset(IDebugGroup* p_debug_group)
     });
 }
 
-void ParallelRenderCommandList::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
+void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetImpl(p_debug_group, [this, &render_state, p_debug_group](Data::Index command_list_index)
@@ -122,7 +122,7 @@ void ParallelRenderCommandList::Commit()
     CommandList::Commit();
 }
 
-void ParallelRenderCommandList::SetViewState(IViewState& view_state)
+void ParallelRenderCommandList::SetViewState(Rhi::IViewState& view_state)
 {
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
@@ -149,7 +149,7 @@ void ParallelRenderCommandList::SetParallelCommandListsCount(uint32_t count)
 
     for(uint32_t cmd_list_index = initial_count; cmd_list_index < count; ++cmd_list_index)
     {
-        m_parallel_command_lists.emplace_back(std::static_pointer_cast<RenderCommandList>(IRenderCommandList::Create(*this)));
+        m_parallel_command_lists.emplace_back(std::static_pointer_cast<RenderCommandList>(Rhi::IRenderCommandList::Create(*this)));
         m_parallel_command_lists.back()->SetValidationEnabled(m_is_validation_enabled);
         m_parallel_command_lists_refs.emplace_back(*m_parallel_command_lists.back());
         if (!name.empty())
@@ -159,7 +159,7 @@ void ParallelRenderCommandList::SetParallelCommandListsCount(uint32_t count)
     }
 }
 
-void ParallelRenderCommandList::Execute(const ICommandList::CompletedCallback& completed_callback)
+void ParallelRenderCommandList::Execute(const Rhi::ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)

@@ -26,17 +26,17 @@ Base implementation of the shader interface.
 #include "CommandList.h"
 #include "ProgramBindings.h"
 
-#include <Methane/Graphics/IShader.h>
+#include <Methane/Graphics/RHI/IShader.h>
 
 #include <set>
 #include <string_view>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct IProgram;
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Base
 {
@@ -45,7 +45,7 @@ class Context;
 class Program;
 
 class Shader
-    : public IShader
+    : public Rhi::IShader
     , public std::enable_shared_from_this<Shader>
 {
 public:
@@ -56,16 +56,15 @@ public:
     const Settings&  GetSettings() const noexcept final { return m_settings; }
 
     // Shader interface
-    using ArgumentBindings = Ptrs<ProgramBindings::ArgumentBinding>;
-    virtual ArgumentBindings GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const = 0;
+    virtual Ptrs<ProgramArgumentBinding> GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const = 0;
 
-    const Context& GetContext() const noexcept { return m_context; }
-    std::string_view   GetCachedArgName(std::string_view arg_name) const;
-    Ptr<Shader>    GetPtr() { return shared_from_this(); }
+    const Context&   GetContext() const noexcept { return m_context; }
+    std::string_view GetCachedArgName(std::string_view arg_name) const;
+    Ptr<Shader>      GetPtr() { return shared_from_this(); }
 
 protected:
-    uint32_t            GetProgramInputBufferIndexByArgumentSemantic(const Program& program, const std::string& argument_semantic) const;
-    std::string         GetCompiledEntryFunctionName() const { return GetCompiledEntryFunctionName(m_settings); }
+    uint32_t    GetProgramInputBufferIndexByArgumentSemantic(const Program& program, const std::string& argument_semantic) const;
+    std::string GetCompiledEntryFunctionName() const { return GetCompiledEntryFunctionName(m_settings); }
 
     static std::string GetCompiledEntryFunctionName(const Settings& settings);
 

@@ -23,7 +23,7 @@ Vulkan context accessor interface for template class ContextMT<ContextBaseT>
 
 #pragma once
 
-#include <Methane/Graphics/ICommandList.h>
+#include <Methane/Graphics/RHI/ICommandList.h>
 
 namespace Methane::Graphics::Vulkan
 {
@@ -35,7 +35,7 @@ class DescriptorManager;
 struct IContextVk
 {
     virtual const Device& GetVulkanDevice() const noexcept = 0;
-    virtual CommandQueue& GetVulkanDefaultCommandQueue(CommandListType type) = 0;
+    virtual CommandQueue& GetVulkanDefaultCommandQueue(Rhi::CommandListType type) = 0;
     virtual DescriptorManager& GetVulkanDescriptorManager() const = 0;
 
     virtual ~IContextVk() = default;

@@ -23,7 +23,7 @@ Font atlas textures generation and fonts library management classes.
 
 #pragma once
 
-#include <Methane/Graphics/IRenderContext.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Data/IProvider.h>
 #include <Methane/Data/Emitter.hpp>
@@ -34,7 +34,7 @@ Font atlas textures generation and fonts library management classes.
 #include <cctype>
 #include <stdexcept>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 struct ITexture;
 }
@@ -43,6 +43,7 @@ namespace Methane::UserInterface
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 
 class Font;
 
@@ -56,7 +57,7 @@ struct IFontLibraryCallback
 
 struct IFontCallback
 {
-    virtual void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::ITexture>& old_atlas_texture_ptr, const Ptr<gfx::ITexture>& new_atlas_texture_ptr) = 0;
+    virtual void OnFontAtlasTextureReset(Font& font, const Ptr<rhi::ITexture>& old_atlas_texture_ptr, const Ptr<rhi::ITexture>& new_atlas_texture_ptr) = 0;
     virtual void OnFontAtlasUpdated(Font& font) = 0;
 
     virtual ~IFontCallback() = default;
@@ -69,7 +70,7 @@ using FT_Error = int;
 class Font // NOSONAR - class destructor is required, class has more than 35 methods
     : public std::enable_shared_from_this<Font>
     , public Data::Emitter<IFontCallback>
-    , protected Data::Receiver<gfx::IContextCallback> //NOSONAR
+    , protected Data::Receiver<rhi::IContextCallback> //NOSONAR
 {
 public:
     struct Description
@@ -205,8 +206,8 @@ public:
     [[nodiscard]] uint32_t                  GetLineHeight() const;
     [[nodiscard]] const gfx::FrameSize&     GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
     [[nodiscard]] const gfx::FrameSize&     GetAtlasSize() const noexcept;
-    [[nodiscard]] const Ptr<gfx::ITexture>& GetAtlasTexturePtr(gfx::IRenderContext& context);
-    [[nodiscard]] gfx::ITexture&            GetAtlasTexture(gfx::IRenderContext& context);
+    [[nodiscard]] const Ptr<rhi::ITexture>& GetAtlasTexturePtr(rhi::IRenderContext& context);
+    [[nodiscard]] rhi::ITexture&            GetAtlasTexture(rhi::IRenderContext& context);
 
 protected:
     // Font can be created only via Font::Library::Add
@@ -216,27 +217,27 @@ protected:
     bool PackCharsToAtlas(float pixels_reserve_multiplier);
 
     // IContextCallback interface
-    void OnContextReleased(gfx::IContext& context) override;
-    void OnContextCompletingInitialization(gfx::IContext& context) override;
-    void OnContextInitialized(gfx::IContext&) override { /* callback not handled in this class */}
+    void OnContextReleased(rhi::IContext& context) override;
+    void OnContextCompletingInitialization(rhi::IContext& context) override;
+    void OnContextInitialized(rhi::IContext&) override { /* callback not handled in this class */}
 
 private:
     struct AtlasTexture
     {
-        Ptr<gfx::ITexture> texture_ptr;
+        Ptr<rhi::ITexture> texture_ptr;
         bool               is_update_required = true;
     };
 
-    AtlasTexture CreateAtlasTexture(const gfx::IRenderContext& context, bool deferred_data_init);
-    void RemoveAtlasTexture(gfx::IRenderContext& context);
+    AtlasTexture CreateAtlasTexture(const rhi::IRenderContext& context, bool deferred_data_init);
+    void RemoveAtlasTexture(rhi::IRenderContext& context);
 
     bool UpdateAtlasBitmap(bool deferred_textures_update);
     void UpdateAtlasTextures(bool deferred_textures_update);
-    void UpdateAtlasTexture(const gfx::IRenderContext& context, AtlasTexture& atlas_texture);
+    void UpdateAtlasTexture(const rhi::IRenderContext& context, AtlasTexture& atlas_texture);
     void ClearAtlasTextures();
 
     class Face;
-    using TextureByContext = std::map<gfx::IRenderContext*, AtlasTexture>;
+    using TextureByContext = std::map<rhi::IRenderContext*, AtlasTexture>;
     using CharByCode = std::map<Char::Code, Char>;
 
     Settings               m_settings;

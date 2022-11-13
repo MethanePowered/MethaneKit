@@ -24,7 +24,7 @@ Vulkan implementation of the resource interface.
 #pragma once
 
 #include <Methane/Graphics/Base/ResourceBarriers.h>
-#include <Methane/Graphics/IResource.h>
+#include <Methane/Graphics/RHI/IResource.h>
 #include <Methane/Data/Receiver.hpp>
 
 #include <vulkan/vulkan.hpp>
@@ -38,7 +38,7 @@ struct ITexture;
 
 class ResourceBarriers
     : public Base::ResourceBarriers
-    , private Data::Receiver<IResourceCallback>
+    , private Data::Receiver<Rhi::IResourceCallback>
 {
 public:
     struct NativePipelineBarrier
@@ -53,29 +53,29 @@ public:
     explicit ResourceBarriers(const Set& barriers);
 
     // IResourceBarriers overrides
-    AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier) override;
-    bool Remove(const ResourceBarrier::Id& id) override;
+    AddResult Add(const Barrier::Id& id, const Barrier& barrier) override;
+    bool Remove(const Barrier::Id& id) override;
 
     const NativePipelineBarrier& GetNativePipelineBarrierData(const CommandQueue& target_cmd_queue) const;
 
 private:
     // IResourceCallback
-    void OnResourceReleased(IResource& resource) override;
+    void OnResourceReleased(Rhi::IResource& resource) override;
 
-    void SetResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier& barrier, bool is_new_barrier);
-    void SetBufferMemoryBarrier(const Buffer& buffer, const ResourceBarrier& barrier);
-    void SetImageMemoryBarrier(const ITexture& texture, const ResourceBarrier& barrier);
+    void SetResourceBarrier(const Barrier::Id& id, const Barrier& barrier, bool is_new_barrier);
+    void SetBufferMemoryBarrier(const Buffer& buffer, const Barrier& barrier);
+    void SetImageMemoryBarrier(const ITexture& texture, const Barrier& barrier);
 
-    void AddBufferMemoryStateChangeBarrier(const Buffer& buffer, const ResourceBarrier::StateChange& state_change);
-    void AddBufferMemoryOwnerChangeBarrier(const Buffer& buffer, const ResourceBarrier::OwnerChange& owner_change);
-    void AddImageMemoryStateChangeBarrier(const ITexture& texture, const ResourceBarrier::StateChange& state_change);
-    void AddImageMemoryOwnerChangeBarrier(const ITexture& texture, const ResourceBarrier::OwnerChange& owner_change);
+    void AddBufferMemoryStateChangeBarrier(const Buffer& buffer, const Barrier::StateChange& state_change);
+    void AddBufferMemoryOwnerChangeBarrier(const Buffer& buffer, const Barrier::OwnerChange& owner_change);
+    void AddImageMemoryStateChangeBarrier(const ITexture& texture, const Barrier::StateChange& state_change);
+    void AddImageMemoryOwnerChangeBarrier(const ITexture& texture, const Barrier::OwnerChange& owner_change);
 
-    void RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer, ResourceBarrier::Type barrier_type);
-    void RemoveImageMemoryBarrier(const vk::Image& vk_image, ResourceBarrier::Type barrier_type);
+    void RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer, Barrier::Type barrier_type);
+    void RemoveImageMemoryBarrier(const vk::Image& vk_image, Barrier::Type barrier_type);
 
     void UpdateStageMasks();
-    void UpdateStageMasks(const ResourceBarrier& barrier);
+    void UpdateStageMasks(const Barrier& barrier);
 
     NativePipelineBarrier m_vk_default_barrier;
     mutable std::map<uint32_t, NativePipelineBarrier> m_vk_barrier_by_queue_family;

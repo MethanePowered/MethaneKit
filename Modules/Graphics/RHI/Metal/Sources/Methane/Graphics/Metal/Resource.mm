@@ -39,7 +39,7 @@ public:
 
 } // namespace Methane::Graphics::Metal
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<IResourceBarriers> IResourceBarriers::Create(const Set& barriers)
@@ -48,4 +48,4 @@ Ptr<IResourceBarriers> IResourceBarriers::Create(const Set& barriers)
     return std::make_shared<Metal::ResourceBarriers>(barriers);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi

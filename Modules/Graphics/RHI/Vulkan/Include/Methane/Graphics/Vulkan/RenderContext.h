@@ -56,8 +56,8 @@ class RenderContext final // NOSONAR - this class requires destructor
     , public Data::Emitter<IRenderContextCallback>
 {
 public:
-    RenderContext(const Methane::Platform::AppEnvironment& app_env, Device& device,
-                    tf::Executor& parallel_executor, const RenderContextSettings& settings);
+    RenderContext(const Platform::AppEnvironment& app_env, Device& device,
+                  tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings);
     ~RenderContext() override;
 
     // IContext interface

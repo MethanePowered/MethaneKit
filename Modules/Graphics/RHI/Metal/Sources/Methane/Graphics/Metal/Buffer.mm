@@ -28,7 +28,7 @@ Metal implementation of the buffer interface.
 #include <Methane/Graphics/Metal/TransferCommandList.hh>
 
 #include <Methane/Graphics/Base/Context.h>
-#include <Methane/Graphics/ICommandKit.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Graphics/Base/BufferFactory.hpp>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
@@ -36,7 +36,7 @@ Metal implementation of the buffer interface.
 
 #include <magic_enum.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<IBuffer> IBuffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
@@ -69,7 +69,7 @@ Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffe
     return std::make_shared<Metal::BufferSet>(buffers_type, buffer_refs);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {

@@ -27,7 +27,7 @@ DirectX 12 specialization of the resource interface.
 #include "DescriptorHeap.h"
 #include "ResourceBarriers.h"
 
-#include <Methane/Graphics/IResource.h>
+#include <Methane/Graphics/RHI/IResource.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>

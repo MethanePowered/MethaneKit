@@ -30,7 +30,7 @@ Metal implementation of the sampler interface.
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<ISampler> ISampler::Create(const IContext& context, const ISampler::Settings& settings)
@@ -39,7 +39,7 @@ Ptr<ISampler> ISampler::Create(const IContext& context, const ISampler::Settings
     return std::make_shared<Metal::Sampler>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {

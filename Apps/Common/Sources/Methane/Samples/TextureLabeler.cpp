@@ -22,11 +22,11 @@ Renders text labels to the faces of cube-map texture array
 ******************************************************************************/
 
 #include <Methane/Samples/TextureLabeler.h>
-#include <Methane/Graphics/IDevice.h>
-#include <Methane/Graphics/IRenderCommandList.h>
-#include <Methane/Graphics/ITexture.h>
-#include <Methane/Graphics/IRenderPass.h>
-#include <Methane/Graphics/ICommandQueue.h>
+#include <Methane/Graphics/RHI/IDevice.h>
+#include <Methane/Graphics/RHI/IRenderCommandList.h>
+#include <Methane/Graphics/RHI/ITexture.h>
+#include <Methane/Graphics/RHI/IRenderPass.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
 #include <Methane/Graphics/ScreenQuad.h>
 #include <Methane/UserInterface/Context.h>
 #include <Methane/UserInterface/Font.h>
@@ -41,14 +41,14 @@ namespace Methane::Tutorials
 
 static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size depth_index,
                                               const TextureLabeler::CubeSliceDescs& cube_slice_descs,
-                                              const gfx::ITexture::Settings& rt_texture_settings,
-                                              const gfx::SubResource::Count& sub_res_count)
+                                              const rhi::ITexture::Settings& rt_texture_settings,
+                                              const rhi::SubResource::Count& sub_res_count)
 {
     TextureLabeler::SliceDesc slice_desc = cube_slice_descs[depth_index % cube_slice_descs.size()];
-    if (rt_texture_settings.dimension_type == gfx::TextureDimensionType::Cube)
+    if (rt_texture_settings.dimension_type == rhi::TextureDimensionType::Cube)
         return slice_desc;
 
-    if (rt_texture_settings.dimension_type == gfx::TextureDimensionType::CubeArray)
+    if (rt_texture_settings.dimension_type == rhi::TextureDimensionType::CubeArray)
     {
         slice_desc.label = fmt::format("{}{}", array_index, slice_desc.label);
         return slice_desc;
@@ -74,34 +74,34 @@ static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size
 }
 
 TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider& font_provider,
-                               gfx::ITexture& rt_texture, gfx::ResourceState rt_texture_final_state, const Settings& settings)
+                               rhi::ITexture& rt_texture, rhi::ResourceState rt_texture_final_state, const Settings& settings)
     : m_gui_context(gui_context)
     , m_rt_texture(rt_texture)
     , m_font(gui::Font::Library::Get().GetFont(font_provider, gui::Font::Settings{
         { "Face Labels",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", settings.font_size_pt }, 96U, U"XYZ+-:0123456789"
     }))
 {
-    const gfx::ITexture::Settings& rt_texture_settings = m_rt_texture.GetSettings();
-    const gfx::SubResource::Count& sub_res_count       = m_rt_texture.GetSubresourceCount();
+    const rhi::ITexture::Settings& rt_texture_settings = m_rt_texture.GetSettings();
+    const rhi::SubResource::Count& sub_res_count       = m_rt_texture.GetSubresourceCount();
 
     using namespace magic_enum::bitwise_operators;
-    META_CHECK_ARG_TRUE(static_cast<bool>(rt_texture_settings.usage_mask & gfx::ITexture::Usage::RenderTarget));
+    META_CHECK_ARG_TRUE(static_cast<bool>(rt_texture_settings.usage_mask & rhi::ITexture::Usage::RenderTarget));
 
-    m_texture_face_render_pattern_ptr = gfx::IRenderPattern::Create(m_gui_context.GetRenderContext(),
-                                                                    gfx::IRenderPattern::Settings
+    m_texture_face_render_pattern_ptr = rhi::IRenderPattern::Create(m_gui_context.GetRenderContext(),
+                                                                    rhi::IRenderPattern::Settings
         {
-            gfx::IRenderPattern::ColorAttachments
+            rhi::IRenderPattern::ColorAttachments
             {
-                gfx::IRenderPattern::ColorAttachment(
+                rhi::IRenderPattern::ColorAttachment(
                     0U, rt_texture_settings.pixel_format, 1U,
-                    gfx::IRenderPattern::ColorAttachment::LoadAction::Clear,
-                    gfx::IRenderPattern::ColorAttachment::StoreAction::Store,
+                    rhi::IRenderPattern::ColorAttachment::LoadAction::Clear,
+                    rhi::IRenderPattern::ColorAttachment::StoreAction::Store,
                     settings.border_color)
             },
             std::nullopt, // No depth attachment
             std::nullopt, // No stencil attachment
-            gfx::IRenderPass::Access::ShaderResources |
-            gfx::IRenderPass::Access::Samplers,
+            rhi::IRenderPass::Access::ShaderResources |
+            rhi::IRenderPass::Access::Samplers,
             false // intermediate render pass
         });
 
@@ -129,7 +129,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
     };
     slice_text_settings.SetStateName(fmt::format("Texture '{}' Face Label Text", rt_texture_name));
 
-    Refs<gfx::ICommandList> slice_render_cmd_list_refs;
+    Refs<rhi::ICommandList> slice_render_cmd_list_refs;
     for(Data::Size array_index = 0U; array_index < sub_res_count.GetArraySize(); ++array_index)
     {
         for(Data::Size depth_index = 0U; depth_index < sub_res_count.GetDepth(); ++depth_index)
@@ -137,13 +137,13 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
             m_slices.emplace_back(GetSliceDesc(array_index, depth_index, settings.cube_slice_descs, rt_texture_settings, sub_res_count));
             TextureLabeler::Slice& slice = m_slices.back();
 
-            slice.render_pass_ptr = gfx::IRenderPass::Create(*m_texture_face_render_pattern_ptr, {
-                { gfx::ITexture::View(rt_texture, gfx::SubResource::Index(depth_index, array_index), {}, gfx::TextureDimensionType::Tex2D) },
+            slice.render_pass_ptr = rhi::IRenderPass::Create(*m_texture_face_render_pattern_ptr, {
+                { rhi::ITexture::View(rt_texture, rhi::SubResource::Index(depth_index, array_index), {}, rhi::TextureDimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
             slice.render_pass_ptr->SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));
 
-            slice.render_cmd_list_ptr = gfx::IRenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *slice.render_pass_ptr);
+            slice.render_cmd_list_ptr = rhi::IRenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *slice.render_pass_ptr);
             slice.render_cmd_list_ptr->SetName(fmt::format("Render Texture '{}' Slice {}:{} Label", rt_texture_name, array_index, depth_index));
             slice_render_cmd_list_refs.emplace_back(*slice.render_cmd_list_ptr);
 
@@ -167,22 +167,22 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
         }
     }
 
-    if (rt_texture_final_state != gfx::IResource::State::Undefined &&
-        gfx::ISystem::GetNativeApi() != gfx::NativeApi::Metal) // No need in resource state transition barriers in Metal
+    if (rt_texture_final_state != rhi::ResourceState::Undefined &&
+        rhi::ISystem::GetNativeApi() != rhi::NativeApi::Metal) // No need in resource state transition barriers in Metal
     {
-        m_ending_render_pattern_ptr = gfx::IRenderPattern::Create(m_gui_context.GetRenderContext(), {
-            gfx::IRenderPattern::ColorAttachments{ }, std::nullopt, std::nullopt, gfx::IRenderPass::Access::ShaderResources, false
+        m_ending_render_pattern_ptr = rhi::IRenderPattern::Create(m_gui_context.GetRenderContext(), {
+            rhi::IRenderPattern::ColorAttachments{ }, std::nullopt, std::nullopt, rhi::IRenderPass::Access::ShaderResources, false
         });
-        m_ending_render_pass_ptr = gfx::IRenderPass::Create(*m_ending_render_pattern_ptr, { { }, rt_texture_settings.dimensions.AsRectSize() });
-        m_ending_render_cmd_list_ptr = gfx::IRenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_ending_render_pass_ptr);
+        m_ending_render_pass_ptr = rhi::IRenderPass::Create(*m_ending_render_pattern_ptr, { { }, rt_texture_settings.dimensions.AsRectSize() });
+        m_ending_render_cmd_list_ptr = rhi::IRenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_ending_render_pass_ptr);
         m_ending_render_cmd_list_ptr->SetName(fmt::format("Render Texture State Transition", rt_texture_name));
-        m_ending_resource_barriers_ptr = gfx::IResourceBarriers::Create({
-            { m_rt_texture, gfx::IResource::State::RenderTarget, rt_texture_final_state }
+        m_ending_resource_barriers_ptr = rhi::IResourceBarriers::Create({
+            { m_rt_texture, rhi::ResourceState::RenderTarget, rt_texture_final_state }
         });
         slice_render_cmd_list_refs.emplace_back(*m_ending_render_cmd_list_ptr);
     }
 
-    m_render_cmd_list_set_ptr = gfx::ICommandListSet::Create(slice_render_cmd_list_refs);
+    m_render_cmd_list_set_ptr = rhi::ICommandListSet::Create(slice_render_cmd_list_refs);
 }
 
 void TextureLabeler::Render()

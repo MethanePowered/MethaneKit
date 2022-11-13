@@ -29,7 +29,7 @@ Metal template implementation of the base context interface.
 #include "DescriptorManager.h"
 
 #include <Methane/Graphics/Base/Context.h>
-#include <Methane/Graphics/ICommandKit.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 

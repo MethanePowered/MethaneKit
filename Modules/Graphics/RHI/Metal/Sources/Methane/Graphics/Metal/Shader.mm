@@ -36,16 +36,16 @@ Metal implementation of the shader interface.
 #include <magic_enum.hpp>
 #include <regex>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IShader> IShader::Create(ShaderType shader_type, const IContext& context, const Settings& settings)
+Ptr<IShader> IShader::Create(Rhi::ShaderType shader_type, const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Metal::Shader>(shader_type, dynamic_cast<const Base::Context&>(context), settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {
@@ -109,7 +109,7 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
 
 #endif // ifndef NDEBUG
 
-Shader::Shader(ShaderType shader_type, const Base::Context& context, const Settings& settings)
+Shader::Shader(Rhi::ShaderType shader_type, const Base::Context& context, const Settings& settings)
     : Base::Shader(shader_type, context, settings)
     , m_mtl_function([dynamic_cast<const IContext&>(context).GetMetalLibrary(settings.entry_function.file_name)->GetNativeLibrary()
                          newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
@@ -118,7 +118,7 @@ Shader::Shader(ShaderType shader_type, const Base::Context& context, const Setti
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_function, "failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName());
 }
 
-Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const
+Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     ArgumentBindings argument_bindings;
@@ -143,8 +143,8 @@ Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const ProgramArgument
         
         const IProgram::Argument shader_argument(GetType(), Base::Shader::GetCachedArgName(argument_name));
         const auto argument_desc_it = IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const ProgramArgumentAccessor argument_desc = argument_desc_it == argument_accessors.end()
-                                                    ? ProgramArgumentAccessor(shader_argument)
+        const Rhi::ProgramArgumentAccessor argument_desc = argument_desc_it == argument_accessors.end()
+                                                    ? Rhi::ProgramArgumentAccessor(shader_argument)
                                                     : *argument_desc_it;
         
         argument_bindings.emplace_back(std::make_shared<ProgramBindings::ArgumentBinding>(

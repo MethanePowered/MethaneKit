@@ -64,7 +64,7 @@ DescriptorHeapReservation::DescriptorHeapReservation(const Ref<DescriptorHeap>& 
 
 DescriptorHeap::DescriptorHeap(const Base::Context& context, const Settings& settings)
     : m_context(context)
-    , m_dx_context(dynamic_cast<const IContextDx&>(context))
+    , m_dx_context(dynamic_cast<const Rhi::IContextDx&>(context))
     , m_settings(settings)
     , m_deferred_size(settings.size)
     , m_descriptor_heap_type(GetNativeHeapType(settings.type))
@@ -210,7 +210,7 @@ void DescriptorHeap::Allocate()
     {
         // Copy descriptors from old heap to the new one. It works for non-shader-visible CPU heaps only.
         // Shader-visible heaps must be re-filled with updated descriptors
-        // using IProgramBindings::CompleteInitialization() & DescriptorManager::CompleteInitialization()
+        // using Rhi::IProgramBindings::CompleteInitialization() & DescriptorManager::CompleteInitialization()
         cp_device->CopyDescriptorsSimple(allocated_size,
                                          m_cp_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),
                                          cp_old_descriptor_heap->GetCPUDescriptorHandleForHeapStart(),

@@ -33,7 +33,7 @@ Metal implementation of the render command list interface.
 
 #include <magic_enum.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
@@ -48,7 +48,7 @@ Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& p
     return std::make_shared<Metal::RenderCommandList>(dynamic_cast<Metal::ParallelRenderCommandList&>(parallel_render_command_list));
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Base
 {

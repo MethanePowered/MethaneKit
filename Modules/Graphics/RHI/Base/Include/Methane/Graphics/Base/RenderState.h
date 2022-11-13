@@ -25,7 +25,7 @@ Base implementation of the render state interface.
 
 #include "Object.h"
 
-#include <Methane/Graphics/IRenderState.h>
+#include <Methane/Graphics/RHI/IRenderState.h>
 
 namespace Methane::Graphics::Base
 {
@@ -35,7 +35,7 @@ class RenderCommandList;
 
 class ViewState
     : public Object
-    , public IViewState
+    , public Rhi::IViewState
 {
 public:
     explicit ViewState(const Settings& settings);
@@ -55,7 +55,7 @@ private:
 
 class RenderState
     : public Object
-    , public IRenderState
+    , public Rhi::IRenderState
 {
 public:
     RenderState(const RenderContext& context, const Settings& settings);
@@ -70,7 +70,7 @@ public:
     const RenderContext& GetRenderContext() const noexcept { return m_context; }
 
 protected:
-    IProgram& GetProgram();
+    Rhi::IProgram& GetProgram();
 
 private:
     const RenderContext& m_context;

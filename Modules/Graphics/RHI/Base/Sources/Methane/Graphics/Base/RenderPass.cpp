@@ -42,13 +42,13 @@ RenderPattern::RenderPattern(RenderContext& render_context, const Settings& sett
     META_FUNCTION_TASK();
 }
 
-const IRenderContext& RenderPattern::GetRenderContext() const noexcept
+const Rhi::IRenderContext& RenderPattern::GetRenderContext() const noexcept
 {
     META_FUNCTION_TASK();
     return *m_render_context_ptr;
 }
 
-IRenderContext& RenderPattern::GetRenderContext() noexcept
+Rhi::IRenderContext& RenderPattern::GetRenderContext() noexcept
 {
     META_FUNCTION_TASK();
     return *m_render_context_ptr;
@@ -92,7 +92,7 @@ RenderPass::RenderPass(RenderPattern& render_pattern, const Settings& settings, 
     InitAttachmentStates();
 }
 
-bool RenderPass::Update(const RenderPassSettings& settings)
+bool RenderPass::Update(const Rhi::RenderPassSettings& settings)
 {
     META_FUNCTION_TASK();
     if (m_settings == settings)
@@ -122,7 +122,7 @@ void RenderPass::Begin(RenderCommandList&)
 
     if (m_update_attachment_states)
     {
-        SetAttachmentStates(IResource::State::RenderTarget, IResource::State::DepthWrite);
+        SetAttachmentStates(Rhi::ResourceState::RenderTarget, Rhi::IResource::State::DepthWrite);
     }
     m_is_begun = true;
 }
@@ -134,7 +134,7 @@ void RenderPass::End(RenderCommandList&)
 
     if (m_update_attachment_states && GetPattern().GetSettings().is_final_pass)
     {
-        SetAttachmentStates(IResource::State::Present, { });
+        SetAttachmentStates(Rhi::ResourceState::Present, { });
     }
     m_is_begun = false;
 }
@@ -143,17 +143,17 @@ void RenderPass::InitAttachmentStates() const
 {
     META_FUNCTION_TASK();
     const bool             is_final_pass          = GetPattern().GetSettings().is_final_pass;
-    const IResource::State color_attachment_state = is_final_pass ? IResource::State::Present : IResource::State::RenderTarget;
+    const Rhi::IResource::State color_attachment_state = is_final_pass ? Rhi::IResource::State::Present : Rhi::IResource::State::RenderTarget;
     for (const Ref<Texture>& color_texture_ref : GetColorAttachmentTextures())
     {
-        if (color_texture_ref.get().GetState() == IResource::State::Common ||
-            color_texture_ref.get().GetState() == IResource::State::Undefined)
+        if (color_texture_ref.get().GetState() == Rhi::IResource::State::Common ||
+            color_texture_ref.get().GetState() == Rhi::IResource::State::Undefined)
             color_texture_ref.get().SetState(color_attachment_state);
     }
 }
 
-void RenderPass::SetAttachmentStates(const std::optional<IResource::State>& color_state,
-                                         const std::optional<IResource::State>& depth_state) const
+void RenderPass::SetAttachmentStates(const Opt<Rhi::ResourceState>& color_state,
+                                     const Opt<Rhi::ResourceState>& depth_state) const
 {
     META_FUNCTION_TASK();
     if (color_state)
@@ -174,10 +174,10 @@ void RenderPass::SetAttachmentStates(const std::optional<IResource::State>& colo
     }
 }
 
-void RenderPass::SetAttachmentStates(const std::optional<IResource::State>& color_state,
-                                         const std::optional<IResource::State>& depth_state,
-                                         Ptr<IResourceBarriers>& transition_barriers_ptr,
-                                         RenderCommandList& render_command_list) const
+void RenderPass::SetAttachmentStates(const Opt<Rhi::ResourceState>& color_state,
+                                     const Opt<Rhi::ResourceState>& depth_state,
+                                     Ptr<Rhi::IResourceBarriers>& transition_barriers_ptr,
+                                     RenderCommandList& render_command_list) const
 {
     META_FUNCTION_TASK();
     bool attachment_states_changed = false;
@@ -205,7 +205,7 @@ void RenderPass::SetAttachmentStates(const std::optional<IResource::State>& colo
     }
 }
 
-const ITexture::View& RenderPass::GetAttachmentTextureView(const RenderPassAttachment& attachment) const
+const Rhi::ITexture::View& RenderPass::GetAttachmentTextureView(const Rhi::RenderPassAttachment& attachment) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_settings.attachments.size(),
@@ -234,7 +234,7 @@ Texture* RenderPass::GetDepthAttachmentTexture() const
     if (m_p_depth_attachment_texture)
         return m_p_depth_attachment_texture;
 
-    const Opt<RenderPassDepthAttachment>& depth_attachment_opt = GetPattern().GetSettings().depth_attachment;
+    const Opt<Rhi::RenderPassDepthAttachment>& depth_attachment_opt = GetPattern().GetSettings().depth_attachment;
     if (!depth_attachment_opt)
         return nullptr;
 
@@ -267,7 +267,7 @@ const Ptrs<Texture>& RenderPass::GetNonFrameBufferAttachmentTextures() const
     for (const Ref<Texture>& color_texture_ref : GetColorAttachmentTextures())
     {
         Ptr<Texture> color_attachment_ptr = color_texture_ref.get().GetPtr<Texture>();
-        if (color_attachment_ptr->GetSettings().type == ITexture::Type::FrameBuffer)
+        if (color_attachment_ptr->GetSettings().type == Rhi::ITexture::Type::FrameBuffer)
             continue;
 
         m_non_frame_buffer_attachment_textures.emplace_back(std::move(color_attachment_ptr));

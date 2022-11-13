@@ -28,18 +28,18 @@ Base implementation of the program argument binding interface.
 #include <fmt/ranges.h>
 
 template<>
-struct fmt::formatter<Methane::Graphics::IResource::View>
+struct fmt::formatter<Methane::Graphics::Rhi::IResource::View>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::IResource::View& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::IResource::View& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
 template<>
-struct fmt::formatter<Methane::Graphics::ProgramArgumentAccessor>
+struct fmt::formatter<Methane::Graphics::Rhi::ProgramArgumentAccessor>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::ProgramArgumentAccessor& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ProgramArgumentAccessor& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
@@ -62,7 +62,7 @@ void ProgramArgumentBinding::MergeSettings(const ProgramArgumentBinding& other)
     META_CHECK_ARG_EQUAL(settings.resource_count, m_settings.resource_count);
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const IResource::Views& resource_views)
+bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resource_views)
 {
     META_FUNCTION_TASK();
     if (m_resource_views == resource_views)
@@ -74,26 +74,26 @@ bool ProgramArgumentBinding::SetResourceViews(const IResource::Views& resource_v
     META_CHECK_ARG_NOT_EMPTY_DESCR(resource_views, "can not set empty resources for resource binding");
 
     const bool            is_addressable_binding = m_settings.argument.IsAddressable();
-    const IResource::Type bound_resource_type    = m_settings.resource_type;
+    const Rhi::IResource::Type bound_resource_type    = m_settings.resource_type;
     META_UNUSED(is_addressable_binding);
     META_UNUSED(bound_resource_type);
 
-    for (const IResource::View& resource_view : resource_views)
+    for (const Rhi::IResource::View& resource_view : resource_views)
     {
         META_CHECK_ARG_NAME_DESCR("resource_view", resource_view.GetResource().GetResourceType() == bound_resource_type,
                                   "incompatible resource type '{}' is bound to argument '{}' of type '{}'",
                                   magic_enum::enum_name(resource_view.GetResource().GetResourceType()),
                                   m_settings.argument.GetName(), magic_enum::enum_name(bound_resource_type));
 
-        const IResource::Usage resource_usage_mask = resource_view.GetResource().GetUsage();
+        const Rhi::IResource::Usage resource_usage_mask = resource_view.GetResource().GetUsage();
         using namespace magic_enum::bitwise_operators;
-        META_CHECK_ARG_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & IResource::Usage::Addressable) == is_addressable_binding,
+        META_CHECK_ARG_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & Rhi::IResource::Usage::Addressable) == is_addressable_binding,
                              "resource addressable usage flag does not match with resource binding state");
         META_CHECK_ARG_NAME_DESCR("resource_view", is_addressable_binding || !resource_view.GetOffset(),
                                   "can not set resource view_id with non-zero offset to non-addressable resource binding");
     }
 
-    Data::Emitter<IProgramBindings::IArgumentBindingCallback>::Emit(&IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged, std::cref(*this), std::cref(m_resource_views), std::cref(resource_views));
+    Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(&Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged, std::cref(*this), std::cref(m_resource_views), std::cref(resource_views));
 
     m_resource_views = resource_views;
     return true;
@@ -105,7 +105,7 @@ ProgramArgumentBinding::operator std::string() const
     return fmt::format("{} is bound to {}", m_settings.argument, fmt::join(m_resource_views, ", "));
 }
 
-bool ProgramArgumentBinding::IsAlreadyApplied(const IProgram& program,
+bool ProgramArgumentBinding::IsAlreadyApplied(const Rhi::IProgram& program,
                                                   const ProgramBindings& applied_program_bindings,
                                                   bool check_binding_value_changes) const
 {
@@ -123,7 +123,7 @@ bool ProgramArgumentBinding::IsAlreadyApplied(const IProgram& program,
 
     // 2) No need in setting resource binding to the same location
     //    as a previous resource binding set in the same command list for the same program
-    if (const IProgramBindings::IArgumentBinding& previous_argument_argument_binding = applied_program_bindings.Get(m_settings.argument);
+    if (const Rhi::IProgramBindings::IArgumentBinding& previous_argument_argument_binding = applied_program_bindings.Get(m_settings.argument);
         previous_argument_argument_binding.GetResourceViews() == m_resource_views)
         return true;
 

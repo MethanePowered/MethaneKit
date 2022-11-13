@@ -29,31 +29,36 @@ Base implementation of the Methane graphics application.
 #include <Methane/Data/AnimationsPool.h>
 #include <Methane/Data/Receiver.hpp>
 #include <Methane/Platform/App.h>
-#include <Methane/Graphics/IRenderContext.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct ITexture;
 struct IViewState;
 struct IRenderPass;
 
+} // namespace Methane::Graphics::Rhi
+
+namespace Methane::Graphics
+{
+
 struct AppSettings
 {
     Platform::IApp::Settings platform_app;
     Graphics::IApp::Settings graphics_app;
-    RenderContextSettings render_context;
+    Rhi::RenderContextSettings render_context;
 
     AppSettings& SetPlatformAppSettings(Platform::IApp::Settings&& new_platform_app_settings) noexcept;
     AppSettings& SetGraphicsAppSettings(Graphics::IApp::Settings&& new_graphics_app_settings) noexcept;
-    AppSettings& SetRenderContextSettings(RenderContextSettings&& new_render_context_settings) noexcept;
+    AppSettings& SetRenderContextSettings(Rhi::RenderContextSettings&& new_render_context_settings) noexcept;
 };
 
 class AppBase // NOSONAR
     : public Platform::App
-    , protected Data::Receiver<IContextCallback> //NOSONAR
+    , protected Data::Receiver<Rhi::IContextCallback> //NOSONAR
 {
 public:
     AppBase(const AppSettings& settings, Data::IProvider& textures_provider);
@@ -80,10 +85,10 @@ public:
 protected:
     struct ResourceRestoreInfo
     {
-        IResource::DescriptorByViewId descriptor_by_view_id;
-        std::string                   name;
+        Rhi::IResource::DescriptorByViewId descriptor_by_view_id;
+        std::string name;
 
-        explicit ResourceRestoreInfo(const IResource& resource);
+        explicit ResourceRestoreInfo(const Rhi::IResource& resource);
         ResourceRestoreInfo(const ResourceRestoreInfo& other) = default;
         ResourceRestoreInfo(ResourceRestoreInfo&& other) noexcept = default;
 
@@ -91,8 +96,8 @@ protected:
         ResourceRestoreInfo& operator=(ResourceRestoreInfo&& other) noexcept = default;
     };
 
-    ITexture::Views GetScreenPassAttachments(ITexture& frame_buffer_texture) const;
-    Ptr<IRenderPass> CreateScreenRenderPass(ITexture& frame_buffer_texture) const;
+    Rhi::ITexture::Views GetScreenPassAttachments(Rhi::ITexture& frame_buffer_texture) const;
+    Ptr<Rhi::IRenderPass> CreateScreenRenderPass(Rhi::ITexture& frame_buffer_texture) const;
     Opt<ResourceRestoreInfo> ReleaseDepthTexture();
     void RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_info_opt);
 
@@ -107,39 +112,39 @@ protected:
     Platform::AppView GetView() const override { return m_context_ptr->GetAppView(); }
 
     // IContextCallback implementation
-    void OnContextReleased(IContext&) override;
-    void OnContextCompletingInitialization(IContext&) override { /* no event handling logic is needed here */ }
-    void OnContextInitialized(IContext&) override;
+    void OnContextReleased(Rhi::IContext&) override;
+    void OnContextCompletingInitialization(Rhi::IContext&) override { /* no event handling logic is needed here */ }
+    void OnContextInitialized(Rhi::IContext&) override;
 
-    const RenderContextSettings&  GetInitialContextSettings() const noexcept    { return m_initial_context_settings; }
-    IRenderPattern::Settings&        GetScreenRenderPatternSettings() noexcept     { return m_screen_pass_pattern_settings; }
-    bool                            IsRenderContextInitialized() const noexcept   { return !!m_context_ptr; }
-    const Ptr<IRenderContext>&       GetRenderContextPtr() const noexcept          { return m_context_ptr; }
-    IRenderContext&                  GetRenderContext() const                      { META_CHECK_ARG_NOT_NULL(m_context_ptr); return *m_context_ptr; }
-    const Ptr<IRenderPattern>&       GetScreenRenderPatternPtr() const noexcept    { return m_screen_render_pattern_ptr; }
-    IRenderPattern&                  GetScreenRenderPattern() const                { META_CHECK_ARG_NOT_NULL(m_screen_render_pattern_ptr); return *m_screen_render_pattern_ptr; }
-    const Ptr<IViewState>&          GetViewStatePtr() const noexcept              { return m_view_state_ptr; }
-    IViewState&                     GetViewState()                                { META_CHECK_ARG_NOT_NULL(m_view_state_ptr); return *m_view_state_ptr; }
-    FrameSize                       GetFrameSizeInDots() const                    { return m_context_ptr->GetSettings().frame_size / GetContentScalingFactor(); }
-    ImageLoader&                    GetImageLoader() noexcept                     { return m_image_loader; }
-    Data::AnimationsPool&           GetAnimations() noexcept                      { return m_animations; }
-    const Ptr<ITexture>&            GetDepthTexturePtr() const noexcept           { return m_depth_texture_ptr; }
-    ITexture&                       GetDepthTexture() const                       { META_CHECK_ARG_NOT_NULL(m_depth_texture_ptr); return *m_depth_texture_ptr; }
+    const Rhi::RenderContextSettings& GetInitialContextSettings() const noexcept  { return m_initial_context_settings; }
+    Rhi::IRenderPattern::Settings&    GetScreenRenderPatternSettings() noexcept   { return m_screen_pass_pattern_settings; }
+    bool                              IsRenderContextInitialized() const noexcept { return !!m_context_ptr; }
+    const Ptr<Rhi::IRenderContext>&   GetRenderContextPtr() const noexcept        { return m_context_ptr; }
+    Rhi::IRenderContext&              GetRenderContext() const                    { META_CHECK_ARG_NOT_NULL(m_context_ptr); return *m_context_ptr; }
+    const Ptr<Rhi::IRenderPattern>&   GetScreenRenderPatternPtr() const noexcept  { return m_screen_render_pattern_ptr; }
+    Rhi::IRenderPattern&              GetScreenRenderPattern() const              { META_CHECK_ARG_NOT_NULL(m_screen_render_pattern_ptr); return *m_screen_render_pattern_ptr; }
+    const Ptr<Rhi::IViewState>&       GetViewStatePtr() const noexcept            { return m_view_state_ptr; }
+    Rhi::IViewState&                  GetViewState()                              { META_CHECK_ARG_NOT_NULL(m_view_state_ptr); return *m_view_state_ptr; }
+    FrameSize                         GetFrameSizeInDots() const                  { return m_context_ptr->GetSettings().frame_size / GetContentScalingFactor(); }
+    ImageLoader&                      GetImageLoader() noexcept                   { return m_image_loader; }
+    Data::AnimationsPool&             GetAnimations() noexcept                    { return m_animations; }
+    const Ptr<Rhi::ITexture>&         GetDepthTexturePtr() const noexcept         { return m_depth_texture_ptr; }
+    Rhi::ITexture&                    GetDepthTexture() const                     { META_CHECK_ARG_NOT_NULL(m_depth_texture_ptr); return *m_depth_texture_ptr; }
 
     static std::string IndexedName(const std::string& base_name, uint32_t index);
 
 private:
-    Graphics::IApp::Settings m_settings;
-    RenderContextSettings    m_initial_context_settings;
-    IRenderPattern::Settings m_screen_pass_pattern_settings;
-    Timer                    m_title_update_timer;
-    ImageLoader              m_image_loader;
-    Data::AnimationsPool     m_animations;
-    Ptr<IRenderContext>      m_context_ptr;
-    Ptr<ITexture>            m_depth_texture_ptr;
-    Ptr<IRenderPattern>      m_screen_render_pattern_ptr;
-    Ptr<IViewState>          m_view_state_ptr;
-    bool                     m_restore_animations_enabled = true;
+    Graphics::IApp::Settings   m_settings;
+    Rhi::RenderContextSettings m_initial_context_settings;
+    Rhi::RenderPatternSettings m_screen_pass_pattern_settings;
+    Timer                      m_title_update_timer;
+    ImageLoader                m_image_loader;
+    Data::AnimationsPool       m_animations;
+    Ptr<Rhi::IRenderContext>   m_context_ptr;
+    Ptr<Rhi::ITexture>         m_depth_texture_ptr;
+    Ptr<Rhi::IRenderPattern>   m_screen_render_pattern_ptr;
+    Ptr<Rhi::IViewState>       m_view_state_ptr;
+    bool                       m_restore_animations_enabled = true;
 };
 
 } // namespace Methane::Graphics

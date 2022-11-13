@@ -30,7 +30,7 @@ DirectX 12 implementation of the resource interface.
 #include "Device.h"
 
 #include <Methane/Graphics/Base/Texture.h>
-#include <Methane/Graphics/ICommandKit.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>

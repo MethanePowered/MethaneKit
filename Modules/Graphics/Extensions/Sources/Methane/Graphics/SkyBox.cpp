@@ -24,13 +24,13 @@ SkyBox rendering primitive
 #include <Methane/Graphics/SkyBox.h>
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Graphics/Camera.h>
-#include <Methane/Graphics/ICommandQueue.h>
-#include <Methane/Graphics/IRenderContext.h>
-#include <Methane/Graphics/IRenderPass.h>
-#include <Methane/Graphics/IRenderState.h>
-#include <Methane/Graphics/IBuffer.h>
-#include <Methane/Graphics/IProgram.h>
-#include <Methane/Graphics/ISampler.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/IRenderPass.h>
+#include <Methane/Graphics/RHI/IRenderState.h>
+#include <Methane/Graphics/RHI/IBuffer.h>
+#include <Methane/Graphics/RHI/IProgram.h>
+#include <Methane/Graphics/RHI/ISampler.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
@@ -39,43 +39,43 @@ SkyBox rendering primitive
 namespace Methane::Graphics
 {
 
-SkyBox::SkyBox(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture, const Settings& settings)
+SkyBox::SkyBox(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern& render_pattern, Rhi::ITexture& cube_map_texture, const Settings& settings)
     : SkyBox(render_cmd_queue, render_pattern, cube_map_texture, settings, CubeMesh<Vertex>(Vertex::layout))
 {
 }
 
-SkyBox::SkyBox(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture,
+SkyBox::SkyBox(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern& render_pattern, Rhi::ITexture& cube_map_texture,
                const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
-    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<ICommandQueue>(render_cmd_queue.GetPtr()))
+    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<Rhi::ICommandQueue>(render_cmd_queue.GetPtr()))
     , m_context(render_pattern.GetRenderContext())
     , m_mesh_buffers(render_cmd_queue, mesh, "Sky-Box")
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, TextureDimensionType::Cube);
-    m_mesh_buffers.SetTexture(std::dynamic_pointer_cast<ITexture>(cube_map_texture.GetPtr()));
+    META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, Rhi::TextureDimensionType::Cube);
+    m_mesh_buffers.SetTexture(std::dynamic_pointer_cast<Rhi::ITexture>(cube_map_texture.GetPtr()));
 
-    IRenderState::Settings state_settings;
-    state_settings.program_ptr = IProgram::Create(m_context,
-        IProgram::Settings
+    Rhi::IRenderState::Settings state_settings;
+    state_settings.program_ptr = Rhi::IProgram::Create(m_context,
+        Rhi::IProgram::Settings
         {
-            IProgram::Shaders
+            Rhi::IProgram::Shaders
             {
-                IShader::CreateVertex(m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
-                IShader::CreatePixel( m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
+                Rhi::IShader::CreateVertex(m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } }),
+                Rhi::IShader::CreatePixel( m_context, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } }),
             },
-            ProgramInputBufferLayouts
+            Rhi::ProgramInputBufferLayouts
             {
-                IProgram::InputBufferLayout
+                Rhi::IProgram::InputBufferLayout
                 {
-                    IProgram::InputBufferLayout::ArgumentSemantics { mesh.GetVertexLayout().GetSemantics() }
+                    Rhi::IProgram::InputBufferLayout::ArgumentSemantics { mesh.GetVertexLayout().GetSemantics() }
                 }
             },
-            ProgramArgumentAccessors
+            Rhi::ProgramArgumentAccessors
             {
-                { { ShaderType::Vertex, "g_skybox_uniforms" }, ProgramArgumentAccessor::Type::FrameConstant },
-                { { ShaderType::Pixel,  "g_skybox_texture"  }, ProgramArgumentAccessor::Type::Constant      },
-                { { ShaderType::Pixel,  "g_texture_sampler" }, ProgramArgumentAccessor::Type::Constant      },
+                { { Rhi::ShaderType::Vertex, "g_skybox_uniforms" }, Rhi::ProgramArgumentAccessor::Type::FrameConstant },
+                { { Rhi::ShaderType::Pixel,  "g_skybox_texture"  }, Rhi::ProgramArgumentAccessor::Type::Constant      },
+                { { Rhi::ShaderType::Pixel,  "g_texture_sampler" }, Rhi::ProgramArgumentAccessor::Type::Constant      },
             },
             render_pattern.GetAttachmentFormats()
         }
@@ -83,34 +83,34 @@ SkyBox::SkyBox(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, 
 
     using namespace magic_enum::bitwise_operators;
     state_settings.program_ptr->SetName("Sky-box shading");
-    state_settings.render_pattern_ptr   = std::dynamic_pointer_cast<IRenderPattern>(render_pattern.GetPtr());
+    state_settings.render_pattern_ptr   = std::dynamic_pointer_cast<Rhi::IRenderPattern>(render_pattern.GetPtr());
     state_settings.depth.enabled        = static_cast<bool>(m_settings.render_options & Options::DepthEnabled);
     state_settings.depth.write_enabled  = false;
     state_settings.depth.compare        = static_cast<bool>(m_settings.render_options & Options::DepthReversed) ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
-    m_render_state_ptr = IRenderState::Create(m_context, state_settings);
+    m_render_state_ptr = Rhi::IRenderState::Create(m_context, state_settings);
     m_render_state_ptr->SetName("Sky-box render state");
 
-    m_texture_sampler_ptr = ISampler::Create(m_context, {
-        ISampler::Filter(ISampler::Filter::MinMag::Linear),
-        ISampler::Address(ISampler::Address::Mode::ClampToZero),
-        ISampler::LevelOfDetail(m_settings.lod_bias)
+    m_texture_sampler_ptr = Rhi::ISampler::Create(m_context, {
+        Rhi::ISampler::Filter(Rhi::ISampler::Filter::MinMag::Linear),
+        Rhi::ISampler::Address(Rhi::ISampler::Address::Mode::ClampToZero),
+        Rhi::ISampler::LevelOfDetail(m_settings.lod_bias)
     });
     m_texture_sampler_ptr->SetName("Sky-box Texture Sampler");
 }
 
-Ptr<IProgramBindings> SkyBox::CreateProgramBindings(const Ptr<IBuffer>& uniforms_buffer_ptr, Data::Index frame_index) const
+Ptr<Rhi::IProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Rhi::IBuffer>& uniforms_buffer_ptr, Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(uniforms_buffer_ptr);
     META_CHECK_ARG_NOT_NULL(m_texture_sampler_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
-    return IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-        { { ShaderType::Vertex, "g_skybox_uniforms" }, { { *uniforms_buffer_ptr         } } },
-        { { ShaderType::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexture() } } },
-        { { ShaderType::Pixel,  "g_texture_sampler" }, { { *m_texture_sampler_ptr       } } },
+    return Rhi::IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
+        { { Rhi::ShaderType::Vertex, "g_skybox_uniforms" }, { { *uniforms_buffer_ptr         } } },
+        { { Rhi::ShaderType::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexture() } } },
+        { { Rhi::ShaderType::Pixel,  "g_texture_sampler" }, { { *m_texture_sampler_ptr       } } },
     }, frame_index);
 }
 
@@ -127,7 +127,7 @@ void SkyBox::Update()
     });
 }
 
-void SkyBox::Draw(IRenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, IViewState& view_state)
+void SkyBox::Draw(Rhi::IRenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, Rhi::IViewState& view_state)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_ptr);

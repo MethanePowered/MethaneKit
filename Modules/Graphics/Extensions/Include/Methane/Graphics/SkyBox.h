@@ -40,13 +40,19 @@ namespace hlslpp // NOSONAR
 #include <memory>
 #include <array>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct ICommandQueue;
 struct IRenderContext;
 struct IRenderState;
 struct ISampler;
+
+} // namespace Methane::Graphics::Rhi
+
+namespace Methane::Graphics
+{
+
 class Camera;
 
 class SkyBox
@@ -73,11 +79,11 @@ public:
         hlslpp::float4x4 mvp_matrix;
     };
 
-    SkyBox(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture, const Settings& settings);
+    SkyBox(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern& render_pattern, Rhi::ITexture& cube_map_texture, const Settings& settings);
 
-    Ptr<IProgramBindings> CreateProgramBindings(const Ptr<IBuffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
+    Ptr<Rhi::IProgramBindings> CreateProgramBindings(const Ptr<Rhi::IBuffer>& uniforms_buffer_ptr, Data::Index frame_index) const;
     void Update();
-    void Draw(IRenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, IViewState& view_state);
+    void Draw(Rhi::IRenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, Rhi::IViewState& view_state);
 
 private:
     struct Vertex
@@ -89,17 +95,17 @@ private:
         };
     };
 
-    SkyBox(ICommandQueue& render_cmd_queue, IRenderPattern& render_pattern, ITexture& cube_map_texture,
+    SkyBox(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern& render_pattern, Rhi::ITexture& cube_map_texture,
            const Settings& settings, const BaseMesh<Vertex>& mesh);
 
     using TexMeshBuffers = TexturedMeshBuffers<hlslpp::SkyBoxUniforms>;
 
-    Settings                 m_settings;
-    const Ptr<ICommandQueue> m_render_cmd_queue_ptr;
-    IRenderContext&          m_context;
-    TexMeshBuffers           m_mesh_buffers;
-    Ptr<ISampler>            m_texture_sampler_ptr;
-    Ptr<IRenderState>        m_render_state_ptr;
+    Settings                      m_settings;
+    const Ptr<Rhi::ICommandQueue> m_render_cmd_queue_ptr;
+    Rhi::IRenderContext&          m_context;
+    TexMeshBuffers                m_mesh_buffers;
+    Ptr<Rhi::ISampler>            m_texture_sampler_ptr;
+    Ptr<Rhi::IRenderState>        m_render_state_ptr;
 };
 
 } // namespace Methane::Graphics

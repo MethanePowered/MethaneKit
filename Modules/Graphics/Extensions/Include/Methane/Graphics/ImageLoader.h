@@ -25,7 +25,7 @@ by decoding them from popular image formats.
 #pragma once
 
 #include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/ITexture.h>
+#include <Methane/Graphics/RHI/ITexture.h>
 #include <Methane/Data/IProvider.h>
 
 #include <magic_enum.hpp>
@@ -79,9 +79,9 @@ public:
 
     explicit ImageLoader(Data::IProvider& data_provider);
 
-    [[nodiscard]] ImageData    LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const;
-    [[nodiscard]] Ptr<ITexture> LoadImageToTexture2D(ICommandQueue& target_cmd_queue, const std::string& image_path, Options options = Options::None, const std::string& texture_name = "") const;
-    [[nodiscard]] Ptr<ITexture> LoadImagesToTextureCube(ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options = Options::None, const std::string& texture_name = "") const;
+    [[nodiscard]] ImageData          LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const;
+    [[nodiscard]] Ptr<Rhi::ITexture> LoadImageToTexture2D(Rhi::ICommandQueue& target_cmd_queue, const std::string& image_path, Options options = Options::None, const std::string& texture_name = "") const;
+    [[nodiscard]] Ptr<Rhi::ITexture> LoadImagesToTextureCube(Rhi::ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options = Options::None, const std::string& texture_name = "") const;
 
 private:
     Data::IProvider& m_data_provider;

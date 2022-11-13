@@ -21,9 +21,9 @@ Metal stub implementation of the Base::TimestampQueryPool factory function
 
 ******************************************************************************/
 
-#include <Methane/Graphics/IQueryPool.h>
+#include <Methane/Graphics/RHI/IQueryPool.h>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
@@ -33,4 +33,4 @@ Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queu
     return {};
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi

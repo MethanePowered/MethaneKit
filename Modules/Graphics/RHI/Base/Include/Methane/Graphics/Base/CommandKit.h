@@ -25,7 +25,7 @@ Methane command kit implementation.
 
 #include "Object.h"
 
-#include <Methane/Graphics/ICommandKit.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
 
 #include <map>
 
@@ -33,43 +33,43 @@ namespace Methane::Graphics::Base
 {
 
 class CommandKit final
-    : public ICommandKit
+    : public Rhi::ICommandKit
     , public Object
 {
 public:
-    CommandKit(const IContext& context, CommandListType cmd_list_type);
-    explicit CommandKit(ICommandQueue& cmd_queue);
+    CommandKit(const Rhi::IContext& context, Rhi::CommandListType cmd_list_type);
+    explicit CommandKit(Rhi::ICommandQueue& cmd_queue);
 
     // IObject overrides
     bool SetName(const std::string& name) override;
 
     // ICommandKit interface
-    [[nodiscard]] const IContext&   GetContext() const noexcept override  { return m_context; }
-    [[nodiscard]] CommandListType GetListType() const noexcept override { return m_cmd_list_type; }
-    [[nodiscard]] ICommandQueue&    GetQueue() const override;
-    [[nodiscard]] bool             HasList(CommandListId cmd_list_id) const noexcept override;
-    [[nodiscard]] bool             HasListWithState(CommandListState cmd_list_state, CommandListId cmd_list_id) const noexcept override;
-    [[nodiscard]] ICommandList&    GetList(CommandListId cmd_list_id) const override;
-    [[nodiscard]] ICommandList&    GetListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const override;
-    [[nodiscard]] ICommandListSet& GetListSet(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
-    [[nodiscard]] IFence&          GetFence(CommandListId fence_id) const override;
+    [[nodiscard]] const Rhi::IContext&  GetContext() const noexcept override  { return m_context; }
+    [[nodiscard]] Rhi::CommandListType  GetListType() const noexcept override { return m_cmd_list_type; }
+    [[nodiscard]] Rhi::ICommandQueue&   GetQueue() const override;
+    [[nodiscard]] bool                  HasList(Rhi::CommandListId cmd_list_id) const noexcept override;
+    [[nodiscard]] bool                  HasListWithState(Rhi::CommandListState cmd_list_state, Rhi::CommandListId cmd_list_id) const noexcept override;
+    [[nodiscard]] Rhi::ICommandList&    GetList(Rhi::CommandListId cmd_list_id) const override;
+    [[nodiscard]] Rhi::ICommandList&    GetListForEncoding(Rhi::CommandListId cmd_list_id, std::string_view debug_group_name) const override;
+    [[nodiscard]] Rhi::ICommandListSet& GetListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
+    [[nodiscard]] Rhi::IFence&          GetFence(Rhi::CommandListId fence_id) const override;
 
 private:
     using CommandListIndex = uint32_t;
     using CommandListSetId = std::pair<Opt<Data::Index>, uint32_t>;
-    using CommandListIndexById = std::map<CommandListId, uint32_t>;
-    using CommandListSetById = std::map<CommandListSetId, Ptr<ICommandListSet>>;
+    using CommandListIndexById = std::map<Rhi::CommandListId, uint32_t>;
+    using CommandListSetById = std::map<CommandListSetId, Ptr<Rhi::ICommandListSet>>;
 
-    CommandListIndex GetCommandListIndexById(CommandListId cmd_list_id) const noexcept;
-    CommandListSetId GetCommandListSetId(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const;
+    CommandListIndex GetCommandListIndexById(Rhi::CommandListId cmd_list_id) const noexcept;
+    CommandListSetId GetCommandListSetId(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const;
 
-    const IContext&              m_context;
-    CommandListType              m_cmd_list_type;
-    mutable Ptr<ICommandQueue>   m_cmd_queue_ptr;
-    mutable Ptrs<ICommandList>   m_cmd_list_ptrs;
-    mutable CommandListIndexById m_cmd_list_index_by_id;
-    mutable CommandListSetById   m_cmd_list_set_by_id;
-    mutable Ptrs<IFence>         m_fence_ptrs;
+    const Rhi::IContext&            m_context;
+    Rhi::CommandListType            m_cmd_list_type;
+    mutable Ptr<Rhi::ICommandQueue> m_cmd_queue_ptr;
+    mutable Ptrs<Rhi::ICommandList> m_cmd_list_ptrs;
+    mutable CommandListIndexById    m_cmd_list_index_by_id;
+    mutable CommandListSetById      m_cmd_list_set_by_id;
+    mutable Ptrs<Rhi::IFence>       m_fence_ptrs;
 };
 
 } // namespace Methane::Graphics::Base

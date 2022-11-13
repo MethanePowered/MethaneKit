@@ -42,6 +42,7 @@ static const std::string g_app_name = "Methane Hello Cube Simple";
 
 using namespace Methane;
 using namespace Methane::Graphics;
+using namespace Methane::Graphics::Rhi;
 
 struct HelloCubeFrame final : AppFrame
 {
@@ -155,12 +156,12 @@ public:
                             }
                         },
 #ifdef UNIFORMS_BUFFER_ENABLED
-                        ProgramArgumentAccessors
+                        Rhi::ProgramArgumentAccessors
                         {
-                            { { ShaderType::Vertex, "g_uniforms" }, ProgramArgumentAccessor::Type::FrameConstant }
+                            { { ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccessor::Type::FrameConstant }
                         },
 #else
-                        ProgramArgumentAccessors{ },
+                        Rhi::ProgramArgumentAccessors{ },
 #endif
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
@@ -294,7 +295,7 @@ public:
         return true;
     }
 
-    void OnContextReleased(Graphics::IContext& context) override
+    void OnContextReleased(Rhi::IContext& context) override
     {
 #ifdef UNIFORMS_BUFFER_EANBLED
         m_vertex_buffer_set_ptr.reset();

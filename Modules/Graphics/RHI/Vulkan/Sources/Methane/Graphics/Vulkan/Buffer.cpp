@@ -32,7 +32,7 @@ Vulkan implementation of the buffer interface.
 #include <magic_enum.hpp>
 #include <iterator>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<IBuffer> IBuffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
@@ -65,17 +65,17 @@ Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffe
     return std::make_shared<Vulkan::BufferSet>(buffers_type, buffer_refs);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
 
-static std::vector<vk::Buffer> GetVulkanBuffers(const Refs<IBuffer>& buffer_refs)
+static std::vector<vk::Buffer> GetVulkanBuffers(const Refs<Rhi::IBuffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
     std::vector<vk::Buffer> vk_buffers;
     std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vk_buffers),
-                   [](const Ref<IBuffer>& buffer_ref)
+                   [](const Ref<Rhi::IBuffer>& buffer_ref)
                    {
                        const auto& vertex_buffer = static_cast<const Buffer&>(buffer_ref.get());
                        return vertex_buffer.GetNativeResource();
@@ -84,37 +84,37 @@ static std::vector<vk::Buffer> GetVulkanBuffers(const Refs<IBuffer>& buffer_refs
     return vk_buffers;
 }
 
-static vk::BufferUsageFlags GetVulkanBufferUsageFlags(IBuffer::Type buffer_type, IBuffer::StorageMode storage_mode)
+static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Rhi::BufferType buffer_type, Rhi::BufferStorageMode storage_mode)
 {
     META_FUNCTION_TASK();
     vk::BufferUsageFlags vk_usage_flags;
     switch(buffer_type)
     {
-    case IBuffer::Type::Storage: vk_usage_flags |= vk::BufferUsageFlagBits::eStorageBuffer; break;
-    case IBuffer::Type::Constant: vk_usage_flags |= vk::BufferUsageFlagBits::eUniformBuffer; break;
-    case IBuffer::Type::Index: vk_usage_flags |= vk::BufferUsageFlagBits::eIndexBuffer; break;
-    case IBuffer::Type::Vertex: vk_usage_flags |= vk::BufferUsageFlagBits::eVertexBuffer; break;
-        // Buffer::Type::ReadBack - unsupported
+    case Rhi::BufferType::Storage:  vk_usage_flags |= vk::BufferUsageFlagBits::eStorageBuffer; break;
+    case Rhi::BufferType::Constant: vk_usage_flags |= vk::BufferUsageFlagBits::eUniformBuffer; break;
+    case Rhi::BufferType::Index:    vk_usage_flags |= vk::BufferUsageFlagBits::eIndexBuffer;   break;
+    case Rhi::BufferType::Vertex:   vk_usage_flags |= vk::BufferUsageFlagBits::eVertexBuffer;  break;
+    // Buffer::Type::ReadBack - unsupported
     default: META_UNEXPECTED_ARG_DESCR(buffer_type, "Unsupported buffer type");
     }
 
-    if (storage_mode == IBuffer::StorageMode::Private)
+    if (storage_mode == Rhi::BufferStorageMode::Private)
         vk_usage_flags |= vk::BufferUsageFlagBits::eTransferDst;
 
     return vk_usage_flags;
 }
 
-static IResource::State GetTargetResourceStateByBufferType(IBuffer::Type buffer_type)
+static Rhi::IResource::State GetTargetResourceStateByBufferType(Rhi::BufferType buffer_type)
 {
     META_FUNCTION_TASK();
     switch(buffer_type)
     {
-    case IBuffer::Type::Storage:     return IResource::State::ShaderResource;
-    case IBuffer::Type::Constant:    return IResource::State::ConstantBuffer;
-    case IBuffer::Type::Index:       return IResource::State::IndexBuffer;
-    case IBuffer::Type::Vertex:      return IResource::State::VertexBuffer;
-    case IBuffer::Type::ReadBack:    return IResource::State::StreamOut;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(buffer_type, IResource::State::Undefined, "Unsupported buffer type");
+    case Rhi::BufferType::Storage:     return Rhi::IResource::State::ShaderResource;
+    case Rhi::BufferType::Constant:    return Rhi::IResource::State::ConstantBuffer;
+    case Rhi::BufferType::Index:       return Rhi::IResource::State::IndexBuffer;
+    case Rhi::BufferType::Vertex:      return Rhi::IResource::State::VertexBuffer;
+    case Rhi::BufferType::ReadBack:    return Rhi::IResource::State::StreamOut;
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(buffer_type, Rhi::IResource::State::Undefined, "Unsupported buffer type");
     }
 }
 
@@ -128,7 +128,7 @@ Buffer::Buffer(const Base::Context& context, const Settings& settings)
                          vk::SharingMode::eExclusive)))
 {
     META_FUNCTION_TASK();
-    const bool is_private_storage = settings.storage_mode == IBuffer::StorageMode::Private;
+    const bool is_private_storage = settings.storage_mode == Rhi::BufferStorageMode::Private;
     const vk::MemoryPropertyFlags vk_staging_memory_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
     const vk::MemoryPropertyFlags vk_memory_property_flags = is_private_storage ? vk::MemoryPropertyFlagBits::eDeviceLocal : vk_staging_memory_flags;
 
@@ -151,13 +151,13 @@ Buffer::Buffer(const Base::Context& context, const Settings& settings)
     GetNativeDevice().bindBufferMemory(m_vk_unique_staging_buffer.get(), m_vk_unique_staging_memory.get(), 0);
 }
 
-void Buffer::SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue)
+void Buffer::SetData(const Rhi::SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
     Resource::SetData(sub_resources, target_cmd_queue);
 
     const Settings& buffer_settings = GetSettings();
-    const bool is_private_storage = buffer_settings.storage_mode == IBuffer::StorageMode::Private;
+    const bool is_private_storage = buffer_settings.storage_mode == Rhi::IBuffer::StorageMode::Private;
     if (is_private_storage)
     {
         m_vk_copy_regions.clear();
@@ -194,7 +194,7 @@ void Buffer::SetData(const SubResources& sub_resources, ICommandQueue& target_cm
     TransferCommandList& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
     upload_cmd_list.GetNativeCommandBufferDefault().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
     CompleteResourceUpload(upload_cmd_list, GetTargetResourceStateByBufferType(buffer_settings.type), target_cmd_queue);
-    GetContext().RequestDeferredAction(IContext::DeferredAction::UploadResources);
+    GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources);
 }
 
 bool Buffer::SetName(const std::string& name)
@@ -223,7 +223,7 @@ Ptr<ResourceView::ViewDescriptorVariant> Buffer::CreateNativeViewDescriptor(cons
     return std::make_shared<ResourceView::ViewDescriptorVariant>(std::move(buffer_view_desc));
 }
 
-BufferSet::BufferSet(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
+BufferSet::BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buffer_refs)
     : Base::BufferSet(buffers_type, buffer_refs)
     , m_vk_buffers(GetVulkanBuffers(buffer_refs))
     , m_vk_offsets(m_vk_buffers.size(), 0U)

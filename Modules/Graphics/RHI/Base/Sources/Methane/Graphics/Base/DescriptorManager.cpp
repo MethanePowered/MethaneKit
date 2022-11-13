@@ -45,17 +45,17 @@ void DescriptorManager::CompleteInitialization()
     std::scoped_lock lock_guard(m_program_bindings_mutex);
 
     const auto program_bindings_end_it = std::remove_if(m_program_bindings.begin(), m_program_bindings.end(),
-        [](const WeakPtr<IProgramBindings>& program_bindings_wptr)
+        [](const WeakPtr<Rhi::IProgramBindings>& program_bindings_wptr)
         { return program_bindings_wptr.expired(); }
     );
 
     m_program_bindings.erase(program_bindings_end_it, m_program_bindings.end());
 
-    static const auto binding_initialization_completer = [](const WeakPtr<IProgramBindings>& program_bindings_wptr)
+    static const auto binding_initialization_completer = [](const WeakPtr<Rhi::IProgramBindings>& program_bindings_wptr)
     {
         META_FUNCTION_TASK();
         // Some binding pointers may become expired here due to command list retained resources cleanup on execution completion
-        Ptr<IProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
+        Ptr<Rhi::IProgramBindings> program_bindings_ptr = program_bindings_wptr.lock();
         if (!program_bindings_ptr)
             return;
 
@@ -70,7 +70,7 @@ void DescriptorManager::CompleteInitialization()
     }
     else
     {
-        for (const WeakPtr<IProgramBindings>& program_bindings_wptr : m_program_bindings)
+        for (const WeakPtr<Rhi::IProgramBindings>& program_bindings_wptr : m_program_bindings)
             binding_initialization_completer(program_bindings_wptr);
     }
 }
@@ -81,7 +81,7 @@ void DescriptorManager::Release()
     m_program_bindings.clear();
 }
 
-void DescriptorManager::AddProgramBindings(IProgramBindings& program_bindings)
+void DescriptorManager::AddProgramBindings(Rhi::IProgramBindings& program_bindings)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_program_bindings_mutex);
@@ -90,7 +90,7 @@ void DescriptorManager::AddProgramBindings(IProgramBindings& program_bindings)
     // This may cause performance drop on adding massive amount of program bindings,
     // so we assume that only different program bindings are added and check it in Debug builds only
     const auto program_bindings_it = std::find_if(m_program_bindings.begin(), m_program_bindings.end(),
-        [&program_bindings](const WeakPtr<IProgramBindings>& program_bindings_ptr)
+        [&program_bindings](const WeakPtr<Rhi::IProgramBindings>& program_bindings_ptr)
         { return !program_bindings_ptr.expired() && program_bindings_ptr.lock().get() == std::addressof(program_bindings); }
     );
     META_CHECK_ARG_DESCR("program_bindings", program_bindings_it == m_program_bindings.end(),

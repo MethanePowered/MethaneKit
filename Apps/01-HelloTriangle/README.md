@@ -116,7 +116,7 @@ public:
                             IShader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } }),
                         },
                         ProgramInputBufferLayouts{ },
-                        ProgramArgumentAccessors{ },
+                        Rhi::ProgramArgumentAccessors{ },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),

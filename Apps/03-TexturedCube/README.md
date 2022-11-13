@@ -311,19 +311,19 @@ void TexturedCubeApp::Init()
                         gfx::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubeVS" } }),
                         gfx::IShader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "TexturedCube", "CubePS" } }),
                     },
-                    gfx::ProgramInputBufferLayouts
+                    rhi::ProgramInputBufferLayouts
                     {
                         gfx::IProgram::InputBufferLayout
                         {
                             gfx::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                         }
                     },
-                    gfx::ProgramArgumentAccessors
+                    rhi::ProgramArgumentAccessors
                     {
-                        { { gfx::ShaderType::All,   "g_uniforms"  }, gfx::ProgramArgumentAccessor::Type::FrameConstant },
-                        { { gfx::ShaderType::Pixel, "g_constants" }, gfx::ProgramArgumentAccessor::Type::Constant },
-                        { { gfx::ShaderType::Pixel, "g_texture"   }, gfx::ProgramArgumentAccessor::Type::Constant },
-                        { { gfx::ShaderType::Pixel, "g_sampler"   }, gfx::ProgramArgumentAccessor::Type::Constant },
+                        { { rhi::ShaderType::All,   "g_uniforms"  }, rhi::ProgramArgumentAccessor::Type::FrameConstant },
+                        { { rhi::ShaderType::Pixel, "g_constants" }, rhi::ProgramArgumentAccessor::Type::Constant },
+                        { { rhi::ShaderType::Pixel, "g_texture"   }, rhi::ProgramArgumentAccessor::Type::Constant },
+                        { { rhi::ShaderType::Pixel, "g_sampler"   }, rhi::ProgramArgumentAccessor::Type::Constant },
                     },
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }
@@ -359,10 +359,10 @@ void TexturedCubeApp::Init()
 
         // Configure program resource bindings
         frame.program_bindings_ptr = gfx::IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-            { { gfx::ShaderType::All,   "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } },
-            { { gfx::ShaderType::Pixel, "g_constants" }, { { *m_const_buffer_ptr        } } },
-            { { gfx::ShaderType::Pixel, "g_texture"   }, { { *m_cube_texture_ptr        } } },
-            { { gfx::ShaderType::Pixel, "g_sampler"   }, { { *m_texture_sampler_ptr     } } },
+            { { rhi::ShaderType::All,   "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } },
+            { { rhi::ShaderType::Pixel, "g_constants" }, { { *m_const_buffer_ptr        } } },
+            { { rhi::ShaderType::Pixel, "g_texture"   }, { { *m_cube_texture_ptr        } } },
+            { { rhi::ShaderType::Pixel, "g_sampler"   }, { { *m_texture_sampler_ptr     } } },
         }, frame.index);
         
         // Create command list for rendering
@@ -456,7 +456,7 @@ bool TexturedCubeApp::Render()
     frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
     frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
     frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
-    frame.render_cmd_list_ptr->DrawIndexed(gfx::RenderPrimitive::Triangle);
+    frame.render_cmd_list_ptr->DrawIndexed(rhi::RenderPrimitive::Triangle);
 
     RenderOverlay(*frame.render_cmd_list_ptr);
 

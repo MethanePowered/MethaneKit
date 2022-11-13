@@ -33,13 +33,13 @@ namespace Methane::Graphics::Vulkan
 {
 
 struct ProgramArgumentBindingSettings
-    : Graphics::ProgramArgumentBindingSettings
+    : Rhi::ProgramArgumentBindingSettings
 {
     struct ByteCodeMap
     {
-        ShaderType shader_type;
-        uint32_t   descriptor_set_offset;
-        uint32_t   binding_offset;
+        Rhi::ShaderType shader_type;
+        uint32_t        descriptor_set_offset;
+        uint32_t        binding_offset;
     };
 
     using ByteCodeMaps = std::vector<ByteCodeMap>;
@@ -68,7 +68,7 @@ public:
 
     // IArgumentBinding interface
     const Settings& GetSettings() const noexcept override { return m_settings_vk; }
-    bool SetResourceViews(const IResource::Views& resource_views) override;
+    bool SetResourceViews(const Rhi::IResource::Views& resource_views) override;
 
     void UpdateDescriptorSetsOnGpu();
 

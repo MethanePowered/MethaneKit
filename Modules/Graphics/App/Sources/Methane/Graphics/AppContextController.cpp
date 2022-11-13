@@ -23,8 +23,8 @@ Graphics context controller for switching parameters in runtime.
 
 #include <Methane/Graphics/AppContextController.h>
 
-#include <Methane/Graphics/IRenderContext.h>
-#include <Methane/Graphics/IDevice.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/IDevice.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -32,7 +32,7 @@ Graphics context controller for switching parameters in runtime.
 namespace Methane::Graphics
 {
 
-AppContextController::AppContextController(IRenderContext& context, const ActionByKeyboardState& action_by_keyboard_state)
+AppContextController::AppContextController(Rhi::IRenderContext& context, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller("GRAPHICS SETTINGS")
     , Platform::Keyboard::ActionControllerBase<AppContextAction>(action_by_keyboard_state, {})
     , m_context(context)
@@ -95,7 +95,7 @@ Platform::Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
 void AppContextController::ResetContextWithNextDevice()
 {
     META_FUNCTION_TASK();
-    const Ptr<IDevice> next_device_ptr = ISystem::Get().GetNextGpuDevice(m_context.GetDevice());
+    const Ptr<Rhi::IDevice> next_device_ptr = Rhi::ISystem::Get().GetNextGpuDevice(m_context.GetDevice());
     if (!next_device_ptr)
         return;
 

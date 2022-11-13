@@ -28,10 +28,15 @@ Graphics context controller for switching parameters in runtime.
 
 #include <map>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct IRenderContext;
+
+} // namespace Methane::Graphics::Rhi
+
+namespace Methane::Graphics
+{
 
 enum class AppContextAction
 {
@@ -54,7 +59,7 @@ public:
         { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Minus }, AppContextAction::RemoveFrameBufferFromSwapChain },
     };
 
-    AppContextController(IRenderContext& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
+    AppContextController(Rhi::IRenderContext& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
 
     // Input::Controller implementation
     void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
@@ -69,7 +74,7 @@ protected:
 private:
     void ResetContextWithNextDevice();
 
-    IRenderContext& m_context;
+    Rhi::IRenderContext& m_context;
 };
 
 } // namespace Methane::Graphics

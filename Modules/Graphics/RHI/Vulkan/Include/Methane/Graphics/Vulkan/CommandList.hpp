@@ -75,7 +75,7 @@ public:
         CommandListBaseT::InitializeTimestampQueries();
         CommandListBaseT::BeginGpuZone();
 
-        CommandListBaseT::SetCommandListState(CommandListState::Encoding);
+        CommandListBaseT::SetCommandListState(Rhi::CommandListState::Encoding);
     }
 
     CommandList(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info, ParallelRenderCommandList& parallel_render_command_list, bool is_beginning_cmd_list)
@@ -105,7 +105,7 @@ public:
             InitializeSecondaryCommandBuffers(0U);
         }
 
-        CommandListBaseT::SetCommandListState(CommandListState::Encoding);
+        CommandListBaseT::SetCommandListState(Rhi::CommandListState::Encoding);
     }
 
     template<typename... ConstructArgs, uint32_t buffers_count = command_buffers_count,
@@ -128,12 +128,12 @@ public:
             CommandListBaseT::BeginGpuZone();
         }
 
-        CommandListBaseT::SetCommandListState(CommandListState::Encoding);
+        CommandListBaseT::SetCommandListState(Rhi::CommandListState::Encoding);
     }
 
     // ICommandList interface
 
-    void PushDebugGroup(ICommandListDebugGroup& debug_group) final
+    void PushDebugGroup(Rhi::ICommandListDebugGroup& debug_group) final
     {
         META_FUNCTION_TASK();
         Base::CommandList::PushDebugGroup(debug_group);
@@ -168,7 +168,7 @@ public:
         m_is_native_committed = true;
     }
 
-    void SetResourceBarriers(const IResourceBarriers& resource_barriers) final
+    void SetResourceBarriers(const Rhi::IResourceBarriers& resource_barriers) final
     {
         META_FUNCTION_TASK();
         CommandListBaseT::VerifyEncodingState();
@@ -197,7 +197,7 @@ public:
 
     // ICommandList interface
 
-    void Reset(ICommandListDebugGroup* p_debug_group) override
+    void Reset(Rhi::ICommandListDebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
         const auto state_lock = Base::CommandList::LockStateMutex();
@@ -243,8 +243,8 @@ public:
     }
 
     // ICommandList interface
-    CommandQueue&          GetVulkanCommandQueue() final                   { return static_cast<CommandQueue&>(CommandListBaseT::GetBaseCommandQueue()); }
-    const CommandQueue&    GetVulkanCommandQueue() const final             { return static_cast<const CommandQueue&>(CommandListBaseT::GetBaseCommandQueue()); }
+    CommandQueue&            GetVulkanCommandQueue() final               { return static_cast<CommandQueue&>(CommandListBaseT::GetBaseCommandQueue()); }
+    const CommandQueue&      GetVulkanCommandQueue() const final         { return static_cast<const CommandQueue&>(CommandListBaseT::GetBaseCommandQueue()); }
     vk::PipelineBindPoint    GetNativePipelineBindPoint() const final    { return pipeline_bind_point; }
     const vk::CommandBuffer& GetNativeCommandBufferDefault() const final { return GetNativeCommandBuffer(default_command_buffer_type); }
     const vk::CommandBuffer& GetNativeCommandBuffer(CommandBufferType cmd_buffer_type) const final
@@ -271,7 +271,7 @@ protected:
         m_vk_command_buffer_encoding_flags[cmd_buffer_index] = false;
     }
 
-    void ApplyProgramBindings(Base::ProgramBindings& program_bindings, IProgramBindings::ApplyBehavior apply_behavior) final
+    void ApplyProgramBindings(Base::ProgramBindings& program_bindings, Rhi::IProgramBindings::ApplyBehavior apply_behavior) final
     {
         // Optimization to skip dynamic_cast required to call Apply method of the Base::ProgramBinding implementation
         static_cast<ProgramBindings&>(program_bindings).Apply(*this, Base::CommandList::GetCommandQueue(),
@@ -286,8 +286,8 @@ protected:
         const bool is_secondary_command_buffer = !m_vk_command_buffer_primary_flags[secondary_render_pass_index];
         m_vk_command_buffer_begin_infos[secondary_render_pass_index] = vk::CommandBufferBeginInfo(
             is_secondary_command_buffer && secondary_render_buffer_inherit_info.renderPass
-            ? vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eRenderPassContinue | vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
-            : vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit),
+                ? vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eRenderPassContinue | vk::CommandBufferUsageFlagBits::eOneTimeSubmit)
+                : vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit),
             &m_vk_secondary_render_buffer_inherit_info_opt.value()
         );
     }

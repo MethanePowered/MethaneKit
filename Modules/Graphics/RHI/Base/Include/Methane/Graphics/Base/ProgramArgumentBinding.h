@@ -23,8 +23,8 @@ Base implementation of the program argument binding interface.
 
 #pragma once
 
-#include <Methane/Graphics/IProgramBindings.h>
-#include <Methane/Graphics/IResource.h>
+#include <Methane/Graphics/RHI/IProgramBindings.h>
+#include <Methane/Graphics/RHI/IResource.h>
 #include <Methane/Data/Emitter.hpp>
 
 namespace Methane::Graphics::Base
@@ -34,8 +34,8 @@ class Context;
 class ProgramBindings;
 
 class ProgramArgumentBinding
-    : public IProgramArgumentBinding
-    , public Data::Emitter<IProgramBindings::IArgumentBindingCallback>
+    : public Rhi::IProgramArgumentBinding
+    , public Data::Emitter<Rhi::IProgramArgumentBindingCallback>
     , public std::enable_shared_from_this<ProgramArgumentBinding>
 {
 public:
@@ -46,14 +46,14 @@ public:
     virtual void MergeSettings(const ProgramArgumentBinding& other);
 
     // IArgumentBinding interface
-    const Settings&         GetSettings() const noexcept override     { return m_settings; }
-    const IResource::Views& GetResourceViews() const noexcept final   { return m_resource_views; }
-    bool                    SetResourceViews(const IResource::Views& resource_views) override;
+    const Settings&           GetSettings() const noexcept override     { return m_settings; }
+    const Rhi::ResourceViews& GetResourceViews() const noexcept final   { return m_resource_views; }
+    bool                      SetResourceViews(const Rhi::ResourceViews& resource_views) override;
     explicit operator std::string() const final;
 
     Ptr<ProgramArgumentBinding> GetPtr() { return shared_from_this(); }
 
-    bool IsAlreadyApplied(const IProgram& program,
+    bool IsAlreadyApplied(const Rhi::IProgram& program,
                           const ProgramBindings& applied_program_bindings,
                           bool check_binding_value_changes = true) const;
 
@@ -61,9 +61,9 @@ protected:
     const Context& GetContext() const noexcept { return m_context; }
 
 private:
-    const Context&   m_context;
-    const Settings   m_settings;
-    IResource::Views m_resource_views;
+    const Context&     m_context;
+    const Settings     m_settings;
+    Rhi::ResourceViews m_resource_views;
 };
 
 } // namespace Methane::Graphics::Base

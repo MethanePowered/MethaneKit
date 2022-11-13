@@ -23,7 +23,7 @@ Methane resource barriers base implementation.
 
 #pragma once
 
-#include <Methane/Graphics/IResourceBarriers.h>
+#include <Methane/Graphics/RHI/IResourceBarriers.h>
 
 #include <Tracy.hpp>
 
@@ -33,7 +33,7 @@ namespace Methane::Graphics::Base
 {
 
 class ResourceBarriers
-    : public IResourceBarriers
+    : public Rhi::IResourceBarriers
 {
 public:
     explicit ResourceBarriers(const Set& barriers);
@@ -44,19 +44,19 @@ public:
     [[nodiscard]] const Map& GetMap() const noexcept override { return m_barriers_map; }
     [[nodiscard]] explicit operator std::string() const noexcept override;
 
-    [[nodiscard]] const ResourceBarrier* GetBarrier(const ResourceBarrier::Id& id) const noexcept override;
-    [[nodiscard]] bool HasStateTransition(IResource& resource, ResourceState before, ResourceState after) override;
-    [[nodiscard]] bool HasOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) override;
+    [[nodiscard]] const Barrier* GetBarrier(const Barrier::Id& id) const noexcept override;
+    [[nodiscard]] bool HasStateTransition(Rhi::IResource& resource, State before, State after) override;
+    [[nodiscard]] bool HasOwnerTransition(Rhi::IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) override;
 
-    bool Remove(ResourceBarrier::Type type, IResource& resource) override;
-    bool RemoveStateTransition(IResource& resource) override;
-    bool RemoveOwnerTransition(IResource& resource) override;
+    bool Remove(Rhi::ResourceBarrier::Type type, Rhi::IResource& resource) override;
+    bool RemoveStateTransition(Rhi::IResource& resource) override;
+    bool RemoveOwnerTransition(Rhi::IResource& resource) override;
 
-    AddResult AddStateTransition(IResource& resource, ResourceState before, ResourceState after) override;
-    AddResult AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) override;
+    AddResult AddStateTransition(Rhi::IResource& resource, State before, State after) override;
+    AddResult AddOwnerTransition(Rhi::IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) override;
 
-    AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier) override;
-    bool Remove(const ResourceBarrier::Id& id) override;
+    AddResult Add(const Barrier::Id& id, const Barrier& barrier) override;
+    bool Remove(const Barrier::Id& id) override;
 
     void ApplyTransitions() const override;
 

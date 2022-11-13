@@ -25,7 +25,7 @@ Metal application view creation by render context settings (shared logic with Vu
 
 #include "Types.hh"
 
-#include <Methane/Graphics/IRenderContext.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Instrumentation.h>
 
 #ifdef APPLE_MACOS

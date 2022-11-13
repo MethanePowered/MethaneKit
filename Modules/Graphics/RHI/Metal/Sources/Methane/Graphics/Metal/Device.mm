@@ -30,7 +30,7 @@ Metal implementation of the device interface.
 #include <algorithm>
 #include <magic_enum.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 ISystem& ISystem::Get()
@@ -40,7 +40,7 @@ ISystem& ISystem::Get()
     return *s_system_ptr;
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {

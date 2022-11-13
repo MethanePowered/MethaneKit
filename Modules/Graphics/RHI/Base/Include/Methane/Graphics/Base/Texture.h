@@ -25,13 +25,13 @@ Base implementation of the texture interface.
 
 #include "Resource.h"
 
-#include <Methane/Graphics/ITexture.h>
+#include <Methane/Graphics/RHI/ITexture.h>
 
 namespace Methane::Graphics::Base
 {
 
 class Texture
-    : public ITexture
+    : public Rhi::ITexture
     , public Resource
 {
 public:

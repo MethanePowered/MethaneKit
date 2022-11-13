@@ -58,7 +58,7 @@ RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_
     META_FUNCTION_TASK();
 }
 
-IRenderPass& RenderCommandList::GetRenderPass() const
+Rhi::IRenderPass& RenderCommandList::GetRenderPass() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);
@@ -76,14 +76,14 @@ void RenderCommandList::Reset(IDebugGroup* p_debug_group)
     }
 }
 
-void RenderCommandList::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
+void RenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     RenderCommandList::Reset(p_debug_group);
     SetRenderState(render_state);
 }
 
-void RenderCommandList::ResetWithStateOnce(IRenderState& render_state, IDebugGroup* p_debug_group)
+void RenderCommandList::ResetWithStateOnce(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (GetState() == State::Encoding && GetDrawingState().render_state_ptr.get() == std::addressof(render_state))
@@ -94,7 +94,7 @@ void RenderCommandList::ResetWithStateOnce(IRenderState& render_state, IDebugGro
     ResetWithState(render_state, p_debug_group);
 }
 
-void RenderCommandList::SetRenderState(IRenderState& render_state, RenderStateGroups state_groups)
+void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroups state_groups)
 {
     META_FUNCTION_TASK();
     META_LOG("{} Command list '{}' SET RENDER STATE '{}':\n{}", magic_enum::enum_name(GetType()), GetName(), render_state.GetName(), static_cast<std::string>(render_state.GetSettings()));
@@ -104,10 +104,10 @@ void RenderCommandList::SetRenderState(IRenderState& render_state, RenderStateGr
     VerifyEncodingState();
 
     const bool           render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
-    IRenderState::Groups changed_states       = m_drawing_state.render_state_ptr ? IRenderState::Groups::None : IRenderState::Groups::All;
+    Rhi::IRenderState::Groups changed_states       = m_drawing_state.render_state_ptr ? Rhi::IRenderState::Groups::None : Rhi::IRenderState::Groups::All;
     if (m_drawing_state.render_state_ptr && render_state_changed)
     {
-        changed_states = IRenderState::Settings::Compare(render_state.GetSettings(),
+        changed_states = Rhi::IRenderState::Settings::Compare(render_state.GetSettings(),
                                                          m_drawing_state.render_state_ptr->GetSettings(),
                                                          m_drawing_state.render_state_groups);
     }
@@ -126,7 +126,7 @@ void RenderCommandList::SetRenderState(IRenderState& render_state, RenderStateGr
     }
 }
 
-void RenderCommandList::SetViewState(IViewState& view_state)
+void RenderCommandList::SetViewState(Rhi::IViewState& view_state)
 {
     META_FUNCTION_TASK();
     VerifyEncodingState();
@@ -145,7 +145,7 @@ void RenderCommandList::SetViewState(IViewState& view_state)
     drawing_state.view_state_ptr->Apply(*this);
 }
 
-bool RenderCommandList::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers)
+bool RenderCommandList::SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     META_UNUSED(set_resource_barriers);
@@ -154,7 +154,7 @@ bool RenderCommandList::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_re
 
     if (m_is_validation_enabled)
     {
-        META_CHECK_ARG_NAME_DESCR("vertex_buffers", vertex_buffers.GetType() == IBuffer::Type::Vertex,
+        META_CHECK_ARG_NAME_DESCR("vertex_buffers", vertex_buffers.GetType() == Rhi::IBuffer::Type::Vertex,
                                   "can not set buffers of '{}' type where 'Vertex' buffers are required",
                                   magic_enum::enum_name(vertex_buffers.GetType()));
     }
@@ -175,7 +175,7 @@ bool RenderCommandList::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_re
     return true;
 }
 
-bool RenderCommandList::SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers)
+bool RenderCommandList::SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     META_UNUSED(set_resource_barriers);
@@ -184,7 +184,7 @@ bool RenderCommandList::SetIndexBuffer(IBuffer& index_buffer, bool set_resource_
 
     if (m_is_validation_enabled)
     {
-        META_CHECK_ARG_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == IBuffer::Type::Index,
+        META_CHECK_ARG_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == Rhi::IBuffer::Type::Index,
                                   "can not set with index buffer of type '{}' where 'Index' buffer is required",
                                   magic_enum::enum_name(index_buffer.GetSettings().type));
     }
@@ -275,7 +275,7 @@ void RenderCommandList::ResetCommandState()
     m_drawing_state.index_buffer_ptr.reset();
     m_drawing_state.primitive_type_opt.reset();
     m_drawing_state.view_state_ptr = nullptr;
-    m_drawing_state.render_state_groups = IRenderState::Groups::None;
+    m_drawing_state.render_state_groups = Rhi::IRenderState::Groups::None;
     m_drawing_state.changes = DrawingState::Changes::None;
 }
 
@@ -301,7 +301,7 @@ void RenderCommandList::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, ui
     const Data::Size vertex_buffers_count = m_drawing_state.vertex_buffer_set_ptr->GetCount();
     for (Data::Index vertex_buffer_index = 0U; vertex_buffer_index < vertex_buffers_count; ++vertex_buffer_index)
     {
-        const IBuffer&  vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
+        const Rhi::IBuffer&  vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
         const uint32_t vertex_count  = vertex_buffer.GetFormattedItemsCount();
         META_UNUSED(vertex_count);
         META_CHECK_ARG_LESS_DESCR(draw_start_vertex, vertex_count - draw_vertex_count + 1U,

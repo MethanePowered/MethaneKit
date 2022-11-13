@@ -216,15 +216,15 @@ void TypographyApp::Init()
     // Create per-frame command lists
     for(TypographyFrame& frame : GetFrames())
     {
-        frame.render_cmd_list_ptr = gfx::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+        frame.render_cmd_list_ptr = rhi::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
         frame.render_cmd_list_ptr->SetName(IndexedName("Text Rendering", frame.index));
-        frame.execute_cmd_list_set_ptr = gfx::ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
+        frame.execute_cmd_list_set_ptr = rhi::ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
     }
 
     CompleteInitialization();
 }
 
-Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const Ptr<gfx::ITexture>& atlas_texture_ptr)
+Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const Ptr<rhi::ITexture>& atlas_texture_ptr)
 {
     const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().description.name);
     const gui::Color3F& font_color = font_color_by_name_it != g_font_color_by_name.end()
@@ -247,7 +247,7 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const
 void TypographyApp::UpdateFontAtlasBadges()
 {
     const Refs<gui::Font> font_refs = gui::Font::Library::Get().GetFonts();
-    gfx::IRenderContext& context = GetRenderContext();
+    rhi::IRenderContext& context = GetRenderContext();
 
     // Remove obsolete font atlas badges
     for(auto badge_it = m_font_atlas_badges.begin(); badge_it != m_font_atlas_badges.end();)
@@ -268,7 +268,7 @@ void TypographyApp::UpdateFontAtlasBadges()
     // Add new font atlas badges
     for(const Ref<gui::Font>& font_ref : font_refs)
     {
-        const Ptr<gfx::ITexture>& font_atlas_texture_ptr = font_ref.get().GetAtlasTexturePtr(context);
+        const Ptr<rhi::ITexture>& font_atlas_texture_ptr = font_ref.get().GetAtlasTexturePtr(context);
         if (!font_atlas_texture_ptr ||
             std::any_of(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
                         [&font_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
@@ -523,7 +523,7 @@ void TypographyApp::SetIncrementalTextUpdate(bool is_incremental_text_update)
     UpdateParametersText();
 }
 
-void TypographyApp::OnContextReleased(gfx::IContext& context)
+void TypographyApp::OnContextReleased(rhi::IContext& context)
 {
     gui::Font::Library::Get().Clear();
 
@@ -539,7 +539,7 @@ void TypographyApp::OnFontAdded(gui::Font& font)
     font.Connect(*this);
 }
 
-void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::ITexture>& old_atlas_texture_ptr, const Ptr<gfx::ITexture>& new_atlas_texture_ptr)
+void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<rhi::ITexture>& old_atlas_texture_ptr, const Ptr<rhi::ITexture>& new_atlas_texture_ptr)
 {
     const auto font_atlas_badge_ptr_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
                                                      [&old_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)

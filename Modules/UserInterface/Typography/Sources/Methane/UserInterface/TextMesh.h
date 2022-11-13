@@ -32,6 +32,7 @@ namespace Methane::UserInterface
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 
 class TextMesh
 {

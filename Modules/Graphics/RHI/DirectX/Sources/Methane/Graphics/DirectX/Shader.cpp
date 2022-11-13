@@ -42,16 +42,16 @@ DirectX 12 implementation of the shader interface.
 #include <sstream>
 #include <set>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IShader> IShader::Create(Type type, const IContext& context, const Settings& settings)
+Ptr<IShader> Rhi::IShader::Create(Type type, const Rhi::IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::Shader>(type, dynamic_cast<const Base::Context&>(context), settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -59,17 +59,17 @@ namespace Methane::Graphics::DirectX
 static const std::set<std::string, std::less<>> g_skip_semantic_names{{ "SV_VERTEXID", "SV_INSTANCEID", "SV_ISFRONTFACE" }};
 
 [[nodiscard]]
-static IResource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)
+static Rhi::IResource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)
 {
     META_FUNCTION_TASK();
     switch (input_type)
     {
     case D3D_SIT_CBUFFER:
     case D3D_SIT_STRUCTURED:
-    case D3D_SIT_TBUFFER:   return IResource::Type::Buffer;
-    case D3D_SIT_TEXTURE:   return IResource::Type::Texture;
-    case D3D_SIT_SAMPLER:   return IResource::Type::Sampler;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(input_type, IResource::Type::Buffer, "unable to determine resource type by DX shader input type");
+    case D3D_SIT_TBUFFER:   return Rhi::IResource::Type::Buffer;
+    case D3D_SIT_TEXTURE:   return Rhi::IResource::Type::Texture;
+    case D3D_SIT_SAMPLER:   return Rhi::IResource::Type::Sampler;
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(input_type, Rhi::IResource::Type::Buffer, "unable to determine resource type by DX shader input type");
     }
 }
 
@@ -134,7 +134,7 @@ Shader::Shader(Type type, const Base::Context& context, const Settings& settings
     ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->GetDataPtr(), m_byte_code_chunk_ptr->GetDataSize(), IID_PPV_ARGS(&m_cp_reflection)));
 }
 
-Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const
+Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_reflection);
@@ -156,10 +156,10 @@ Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const ProgramArgument
         D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const IProgram::Argument         shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
-        const auto                       argument_acc_it = IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const ProgramArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
-                                                   ? ProgramArgumentAccessor(shader_argument)
+        const Rhi::IProgram::Argument         shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
+        const auto                       argument_acc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Rhi::ProgramArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
+                                                   ? Rhi::ProgramArgumentAccessor(shader_argument)
                                                    : *argument_acc_it;
 
         const ProgramBindings::ArgumentBinding::Type dx_addressable_binding_type = binding_desc.Type == D3D_SIT_CBUFFER
@@ -173,7 +173,7 @@ Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const ProgramArgument
             GetContext(),
             ProgramBindings::ArgumentBinding::Settings
             {
-                IProgramArgumentBinding::Settings
+                Rhi::IProgramArgumentBinding::Settings
                 {
                     argument_acc,
                     GetResourceTypeByInputType(binding_desc.Type),

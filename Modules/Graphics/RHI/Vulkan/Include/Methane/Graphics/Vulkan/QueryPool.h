@@ -37,7 +37,8 @@ class  CommandQueue;
 class  QueryPool;
 class  TimestampQueryPool;
 
-class Query : public Base::Query
+class Query
+    : public Base::Query
 {
 public:
     Query(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range);
@@ -45,7 +46,7 @@ public:
     // Query overrides
     void Begin() final;
     void End() final;
-    [[nodiscard]] IResource::SubResource GetData() const final;
+    [[nodiscard]] Rhi::SubResource GetData() const final;
 
 protected:
     [[nodiscard]] QueryPool& GetVulkanQueryPool() const noexcept;
@@ -64,7 +65,7 @@ class QueryPool : public Base::QueryPool
 {
 public:
     QueryPool(CommandQueue& command_queue, Type type,
-                Data::Size max_query_count, IQuery::Count slots_count_per_query,
+                Data::Size max_query_count, Rhi::IQuery::Count slots_count_per_query,
                 Data::Size buffer_size, Data::Size query_size);
 
     CommandQueue&        GetVulkanCommandQueue() noexcept;
@@ -78,7 +79,7 @@ private:
 
 class TimestampQuery final
     : protected Query
-    , public ITimestampQuery
+    , public Rhi::ITimestampQuery
 {
 public:
     TimestampQuery(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range);
@@ -101,7 +102,7 @@ public:
     TimestampQueryPool(CommandQueue& command_queue, uint32_t max_timestamps_per_frame);
 
     // ITimestampQueryPool interface
-    Ptr<ITimestampQuery> CreateTimestampQuery(ICommandList& command_list) override;
+    Ptr<Rhi::ITimestampQuery> CreateTimestampQuery(Rhi::ICommandList& command_list) override;
     CalibratedTimestamps Calibrate() override;
 
 private:

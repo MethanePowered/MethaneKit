@@ -35,7 +35,7 @@ namespace Methane::Graphics::Base
 
 Buffer::Buffer(const Context& context, const Settings& settings,
                        State initial_state, Opt<State> auto_transition_source_state_opt)
-    : Resource(context, IResource::Type::Buffer, settings.usage_mask, initial_state, auto_transition_source_state_opt)
+    : Resource(context, Rhi::IResource::Type::Buffer, settings.usage_mask, initial_state, auto_transition_source_state_opt)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
@@ -56,7 +56,7 @@ uint32_t Buffer::GetFormattedItemsCount() const noexcept
     return m_settings.item_stride_size > 0U ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0U;
 }
 
-BufferSet::BufferSet(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
+BufferSet::BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buffer_refs)
     : m_buffers_type(buffers_type)
     , m_refs(buffer_refs)
 {
@@ -65,7 +65,7 @@ BufferSet::BufferSet(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_ref
 
     m_ptrs.reserve(m_refs.size());
     m_raw_ptrs.reserve(m_refs.size());
-    for(const Ref<IBuffer>& buffer_ref : m_refs)
+    for(const Ref<Rhi::IBuffer>& buffer_ref : m_refs)
     {
         META_CHECK_ARG_EQUAL_DESCR(buffer_ref.get().GetSettings().type, m_buffers_type,
                                    "All buffers must be of the same type '{}'", magic_enum::enum_name(m_buffers_type));
@@ -80,7 +80,7 @@ std::string BufferSet::GetNames() const noexcept
     META_FUNCTION_TASK();
     std::stringstream ss;
     bool is_empty = true;
-    for (const Ref<IBuffer>& buffer_ref : m_refs)
+    for (const Ref<Rhi::IBuffer>& buffer_ref : m_refs)
     {
         if (!is_empty)
             ss << ", ";
@@ -90,7 +90,7 @@ std::string BufferSet::GetNames() const noexcept
     return ss.str();
 }
 
-IBuffer& BufferSet::operator[](Data::Index index) const
+Rhi::IBuffer& BufferSet::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS(index, m_refs.size());
@@ -98,11 +98,11 @@ IBuffer& BufferSet::operator[](Data::Index index) const
     return m_refs[index].get();
 }
 
-bool BufferSet::SetState(IResource::State state)
+bool BufferSet::SetState(Rhi::ResourceState state)
 {
     META_FUNCTION_TASK();
     bool state_changed = false;
-    for(const Ref<IBuffer>& buffer_ref : m_refs)
+    for(const Ref<Rhi::IBuffer>& buffer_ref : m_refs)
     {
         state_changed |= static_cast<Buffer&>(buffer_ref.get()).SetState(state, m_setup_transition_barriers);
     }

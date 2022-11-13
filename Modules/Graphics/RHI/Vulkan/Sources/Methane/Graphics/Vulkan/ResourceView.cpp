@@ -34,8 +34,8 @@ Vulkan implementation of the resource objects.
 namespace Methane::Graphics::Vulkan
 {
 
-ResourceView::ResourceView(const Graphics::ResourceView& view_id, ResourceUsage usage)
-    : Graphics::ResourceView(view_id)
+ResourceView::ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsage usage)
+    : Rhi::ResourceView(view_id)
     , m_id(usage, GetSettings())
     , m_vulkan_resource_ref(dynamic_cast<IResourceVk&>(GetResource()))
     , m_view_desc_var_ptr(m_vulkan_resource_ref.get().InitializeNativeViewDescriptor(m_id))

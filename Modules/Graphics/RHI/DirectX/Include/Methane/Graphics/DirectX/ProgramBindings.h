@@ -72,7 +72,7 @@ private:
     template<typename FuncType> // function void(ArgumentBinding&, const DescriptorHeap::Reservation*)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
     void ReserveDescriptorHeapRanges();
-    void AddRootParameterBinding(const ProgramArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
+    void AddRootParameterBinding(const Rhi::ProgramArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBinding& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
     void ApplyRootParameterBindings(ProgramArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,

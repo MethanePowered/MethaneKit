@@ -32,7 +32,7 @@ Metal implementation of the program interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
@@ -41,22 +41,22 @@ Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings
     return std::make_shared<Metal::Program>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {
 
 Program::Program(const Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
-    , m_mtl_vertex_desc(GetMetalShader(ShaderType::Vertex).GetNativeVertexDescriptor(*this))
+    , m_mtl_vertex_desc(GetMetalShader(Rhi::ShaderType::Vertex).GetNativeVertexDescriptor(*this))
 {
     META_FUNCTION_TASK();
 
     // Create dummy pipeline state to get program reflection of vertex and fragment shader arguments
     MTLRenderPipelineDescriptor* mtl_reflection_state_desc = [MTLRenderPipelineDescriptor new];
     mtl_reflection_state_desc.vertexDescriptor = m_mtl_vertex_desc;
-    mtl_reflection_state_desc.vertexFunction   = GetNativeShaderFunction(ShaderType::Vertex);
-    mtl_reflection_state_desc.fragmentFunction = GetNativeShaderFunction(ShaderType::Pixel);
+    mtl_reflection_state_desc.vertexFunction   = GetNativeShaderFunction(Rhi::ShaderType::Vertex);
+    mtl_reflection_state_desc.fragmentFunction = GetNativeShaderFunction(Rhi::ShaderType::Pixel);
 
     // Fill state color attachment descriptors matching program's pixel shader output
     // NOTE: even when program has no pixel shaders render, render state must have at least one color format to be valid
@@ -86,8 +86,8 @@ Program::Program(const Base::Context& context, const Settings& settings)
 
     if (mtl_render_pipeline_reflection)
     {
-        SetNativeShaderArguments(ShaderType::Vertex, mtl_render_pipeline_reflection.vertexArguments);
-        SetNativeShaderArguments(ShaderType::Pixel,  mtl_render_pipeline_reflection.fragmentArguments);
+        SetNativeShaderArguments(Rhi::ShaderType::Vertex, mtl_render_pipeline_reflection.vertexArguments);
+        SetNativeShaderArguments(Rhi::ShaderType::Pixel,  mtl_render_pipeline_reflection.fragmentArguments);
         InitArgumentBindings(settings.argument_accessors);
     }
 }
@@ -98,19 +98,19 @@ const IContext& Program::GetMetalContext() const noexcept
     return dynamic_cast<const IContext&>(GetContext());
 }
 
-Shader& Program::GetMetalShader(ShaderType shader_type) noexcept
+Shader& Program::GetMetalShader(Rhi::ShaderType shader_type) noexcept
 {
     META_FUNCTION_TASK();
     return static_cast<Shader&>(GetShaderRef(shader_type));
 }
 
-id<MTLFunction> Program::GetNativeShaderFunction(ShaderType shader_type) noexcept
+id<MTLFunction> Program::GetNativeShaderFunction(Rhi::ShaderType shader_type) noexcept
 {
     META_FUNCTION_TASK();
     return HasShader(shader_type) ? static_cast<Shader&>(GetShaderRef(shader_type)).GetNativeFunction() : nil;
 }
 
-void Program::SetNativeShaderArguments(ShaderType shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept
+void Program::SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept
 {
     META_FUNCTION_TASK();
     if (HasShader(shader_type))

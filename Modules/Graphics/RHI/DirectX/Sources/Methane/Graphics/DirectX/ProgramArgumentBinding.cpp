@@ -24,7 +24,7 @@ DirectX 12 implementation of the program argument binding interface.
 #include <Methane/Graphics/DirectX/ProgramArgumentBinding.h>
 #include <Methane/Graphics/DirectX/Device.h>
 
-#include <Methane/Graphics/IContext.h>
+#include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/Base/Context.h>
 
 namespace Methane::Graphics::Base
@@ -46,7 +46,7 @@ namespace Methane::Graphics::DirectX
 ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, const Settings& settings)
     : Base::ProgramArgumentBinding(context, settings)
     , m_settings_dx(settings)
-    , m_cp_native_device(dynamic_cast<const IContextDx&>(context).GetDirectDevice().GetNativeDevice())
+    , m_cp_native_device(dynamic_cast<const Rhi::IContextDx&>(context).GetDirectDevice().GetNativeDevice())
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_native_device);
@@ -74,7 +74,7 @@ ProgramArgumentBinding::ProgramArgumentBinding(const ProgramArgumentBinding& oth
 DescriptorHeapType ProgramArgumentBinding::GetDescriptorHeapType() const
 {
     META_FUNCTION_TASK();
-    return (GetSettings().resource_type == IResource::Type::Sampler)
+    return (GetSettings().resource_type == Rhi::IResource::Type::Sampler)
            ? DescriptorHeapType::Samplers
            : DescriptorHeapType::ShaderResources;
 }
@@ -106,9 +106,9 @@ bool ProgramArgumentBinding::SetResourceViews(const Graphics::ResourceViews& res
     uint32_t resource_index = 0;
     m_resource_views_dx.clear();
     m_resource_views_dx.reserve(resource_views.size());
-    for(const IResource::View& resource_view : resource_views)
+    for(const Rhi::IResource::View& resource_view : resource_views)
     {
-        m_resource_views_dx.emplace_back(resource_view, IResource::Usage::ShaderRead);
+        m_resource_views_dx.emplace_back(resource_view, Rhi::IResource::Usage::ShaderRead);
         if (!p_dx_descriptor_heap)
             continue;
 

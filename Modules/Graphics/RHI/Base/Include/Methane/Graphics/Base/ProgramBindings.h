@@ -26,8 +26,8 @@ Base implementation of the program bindings interface.
 #include "Object.h"
 #include "ProgramArgumentBinding.h"
 
-#include <Methane/Graphics/IProgramBindings.h>
-#include <Methane/Graphics/IResource.h>
+#include <Methane/Graphics/RHI/IProgramBindings.h>
+#include <Methane/Graphics/RHI/IResource.h>
 #include <Methane/Data/Emitter.hpp>
 
 #include <magic_enum.hpp>
@@ -39,17 +39,17 @@ class CommandList;
 class Resource;
 
 class ProgramBindings
-    : public IProgramBindings
+    : public Rhi::IProgramBindings
     , public Object
-    , public Data::Receiver<IProgramBindings::IArgumentBindingCallback>
+    , public Data::Receiver<Rhi::IProgramBindings::IArgumentBindingCallback>
 {
 public:
     using ArgumentBinding  = ProgramArgumentBinding;
-    using ArgumentBindings = std::unordered_map<IProgram::Argument, Ptr<ArgumentBinding>, IProgram::Argument::Hash>;
+    using ArgumentBindings = std::unordered_map<Rhi::IProgram::Argument, Ptr<ArgumentBinding>, Rhi::IProgram::Argument::Hash>;
 
-    ProgramBindings(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
-    ProgramBindings(const Ptr<IProgram>& program_ptr, Data::Index frame_index);
+    ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, Data::Index frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const Opt<Data::Index>& frame_index);
     ProgramBindings(ProgramBindings&&) noexcept = default;
 
@@ -57,23 +57,23 @@ public:
     ProgramBindings& operator=(ProgramBindings&& other) = delete;
 
     // IProgramBindings interface
-    IProgram&                  GetProgram() const final;
-    const IProgram::Arguments& GetArguments() const noexcept final     { return m_arguments; }
-    Data::Index                GetFrameIndex() const noexcept final    { return m_frame_index; }
-    Data::Index                GetBindingsIndex() const noexcept final { return m_bindings_index; }
-    IArgumentBinding&          Get(const IProgram::Argument& shader_argument) const final;
+    Rhi::IProgram&                  GetProgram() const final;
+    const Rhi::IProgram::Arguments& GetArguments() const noexcept final     { return m_arguments; }
+    Data::Index                     GetFrameIndex() const noexcept final    { return m_frame_index; }
+    Data::Index                     GetBindingsIndex() const noexcept final { return m_bindings_index; }
+    IArgumentBinding&               Get(const Rhi::IProgram::Argument& shader_argument) const final;
     explicit operator std::string() const final;
 
     // ProgramBindings interface
     virtual void CompleteInitialization() = 0;
     virtual void Apply(CommandList& command_list, ApplyBehavior apply_behavior = ApplyBehavior::AllIncremental) const = 0;
 
-    IProgram::Arguments GetUnboundArguments() const;
+    Rhi::IProgram::Arguments GetUnboundArguments() const;
 
     template<typename CommandListType>
     void ApplyResourceTransitionBarriers(CommandListType& command_list,
-                                         ProgramArgumentAccessor::Type apply_access_mask = static_cast<ProgramArgumentAccessor::Type>(~0U),
-                                         const ICommandQueue* owner_queue_ptr = nullptr) const
+                                         Rhi::ProgramArgumentAccessor::Type apply_access_mask = static_cast<Rhi::ProgramArgumentAccessor::Type>(~0U),
+                                         const Rhi::ICommandQueue* owner_queue_ptr = nullptr) const
     {
         if (ApplyResourceStates(apply_access_mask, owner_queue_ptr) &&
             m_resource_state_transition_barriers_ptr && !m_resource_state_transition_barriers_ptr->IsEmpty())
@@ -84,47 +84,47 @@ public:
 
 protected:
     // IProgramBindings::IProgramArgumentBindingCallback
-    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const IResource::Views&, const IResource::Views&) override;
+    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::IResource::Views&, const Rhi::IResource::Views&) override;
 
     void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
 
-    IProgram& GetProgram();
+    Rhi::IProgram& GetProgram();
     void InitializeArgumentBindings(const ProgramBindings* other_program_bindings_ptr = nullptr);
     ResourceViewsByArgument ReplaceResourceViews(const ArgumentBindings& argument_bindings,
                                                  const ResourceViewsByArgument& replace_resource_views) const;
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
-    const Refs<IResource>& GetResourceRefsByAccess(ProgramArgumentAccessor::Type access_type) const;
+    const Refs<Rhi::IResource>& GetResourceRefsByAccess(Rhi::ProgramArgumentAccessor::Type access_type) const;
 
     void ClearTransitionResourceStates();
-    void RemoveTransitionResourceStates(const IProgramBindings::IArgumentBinding& argument_binding, const IResource& resource);
-    void AddTransitionResourceState(const IProgramBindings::IArgumentBinding& argument_binding, IResource& resource);
-    void AddTransitionResourceStates(const IProgramBindings::IArgumentBinding& argument_binding);
+    void RemoveTransitionResourceStates(const Rhi::IProgramBindings::IArgumentBinding& argument_binding, const Rhi::IResource& resource);
+    void AddTransitionResourceState(const Rhi::IProgramBindings::IArgumentBinding& argument_binding, Rhi::IResource& resource);
+    void AddTransitionResourceStates(const Rhi::IProgramBindings::IArgumentBinding& argument_binding);
 
 private:
     struct ResourceAndState
     {
         Ptr<Resource> resource_ptr;
-        IResource::State  state;
+        Rhi::IResource::State  state;
 
-        ResourceAndState(Ptr<Resource> resource_ptr, IResource::State);
+        ResourceAndState(Ptr<Resource> resource_ptr, Rhi::IResource::State);
     };
 
     using ResourceStates = std::vector<ResourceAndState>;
-    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
-    using ResourceRefsByAccess = std::array<Refs<IResource>, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
+    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Rhi::ProgramArgumentAccessor::Type>()>;
+    using ResourceRefsByAccess = std::array<Refs<Rhi::IResource>, magic_enum::enum_count<Rhi::ProgramArgumentAccessor::Type>()>;
 
-    bool ApplyResourceStates(ProgramArgumentAccessor::Type access_types_mask, const ICommandQueue* owner_queue_ptr = nullptr) const;
+    bool ApplyResourceStates(Rhi::ProgramArgumentAccessor::Type access_types_mask, const Rhi::ICommandQueue* owner_queue_ptr = nullptr) const;
     void InitResourceRefsByAccess();
 
-    const Ptr<IProgram>             m_program_ptr;
-    Data::Index                     m_frame_index;
-    IProgram::Arguments             m_arguments;
-    ArgumentBindings                m_binding_by_argument;
-    ResourceStatesByAccess          m_transition_resource_states_by_access;
-    ResourceRefsByAccess            m_resource_refs_by_access;
-    mutable Ptr<IResourceBarriers>  m_resource_state_transition_barriers_ptr;
-    Data::Index                     m_bindings_index = 0u; // index of this program bindings object between all program bindings of the program
+    const Ptr<Rhi::IProgram>             m_program_ptr;
+    Data::Index                          m_frame_index;
+    Rhi::IProgram::Arguments             m_arguments;
+    ArgumentBindings                     m_binding_by_argument;
+    ResourceStatesByAccess               m_transition_resource_states_by_access;
+    ResourceRefsByAccess                 m_resource_refs_by_access;
+    mutable Ptr<Rhi::IResourceBarriers>  m_resource_state_transition_barriers_ptr;
+    Data::Index                          m_bindings_index = 0u; // index of this program bindings object between all program bindings of the program
 };
 
 } // namespace Methane::Graphics::Base

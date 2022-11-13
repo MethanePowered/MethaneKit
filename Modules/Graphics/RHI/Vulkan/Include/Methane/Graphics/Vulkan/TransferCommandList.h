@@ -25,7 +25,7 @@ Vulkan implementation of the transfer command list interface.
 
 #include "CommandList.hpp"
 
-#include <Methane/Graphics/ITransferCommandList.h>
+#include <Methane/Graphics/RHI/ITransferCommandList.h>
 #include <Methane/Graphics/Base/CommandList.h>
 
 #include <vulkan/vulkan.hpp>
@@ -37,7 +37,7 @@ class CommandQueue;
 
 class TransferCommandList final
     : public CommandList<Base::CommandList, vk::PipelineBindPoint::eGraphics>
-    , public ITransferCommandList
+    , public Rhi::ITransferCommandList
 {
 public:
     explicit TransferCommandList(CommandQueue& command_queue);

@@ -101,7 +101,7 @@ void RenderState::Reset(const Settings& settings)
     m_settings = settings;
 }
 
-IProgram& RenderState::GetProgram()
+Rhi::IProgram& RenderState::GetProgram()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_settings.program_ptr);

@@ -36,12 +36,12 @@ Vulkan descriptor manager with descriptor sets allocator.
 // Uncomment to enable deferred program bindings initialization
 #define DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct IProgramBindings;
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Base
 {

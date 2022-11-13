@@ -25,9 +25,9 @@ Base implementation of the context interface.
 
 #include "Object.h"
 
-#include <Methane/Graphics/IFence.h>
-#include <Methane/Graphics/IContext.h>
-#include <Methane/Graphics/ICommandKit.h>
+#include <Methane/Graphics/RHI/IFence.h>
+#include <Methane/Graphics/RHI/IContext.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Data/Emitter.hpp>
 
 #include <array>
@@ -41,7 +41,7 @@ namespace tf
 class Executor;
 }
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct ICommandQueue;
@@ -49,7 +49,7 @@ struct ICommandList;
 struct ICommandListSet;
 struct IDescriptorManager;
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Base
 {
@@ -59,28 +59,29 @@ class CommandQueue;
 
 class Context
     : public Object
-    , public virtual IContext // NOSONAR
-    , public Data::Emitter<IContextCallback>
+    , public virtual Rhi::IContext // NOSONAR
+    , public Data::Emitter<Rhi::IContextCallback>
 {
 public:
-    Context(Device& device, UniquePtr<IDescriptorManager>&& descriptor_manager_ptr,
-                tf::Executor& parallel_executor, Type type);
+    Context(Device& device,
+            UniquePtr<Rhi::IDescriptorManager>&& descriptor_manager_ptr,
+            tf::Executor& parallel_executor, Type type);
     ~Context() override;
 
     // IContext interface
-    Type              GetType() const noexcept override                       { return m_type; }
-    tf::Executor&     GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
-    IObjectRegistry&  GetObjectRegistry() noexcept override                   { return m_objects_cache; }
-    const IObjectRegistry& GetObjectRegistry() const noexcept override        { return m_objects_cache; }
-    void              RequestDeferredAction(DeferredAction action) const noexcept override;
-    void              CompleteInitialization() override;
-    bool              IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
-    void              WaitForGpu(WaitFor wait_for) override;
-    void              Reset(IDevice& device) override;
-    void              Reset() override;
-    ICommandKit&      GetDefaultCommandKit(CommandListType type) const final;
-    ICommandKit&      GetDefaultCommandKit(ICommandQueue& cmd_queue) const final;
-    const IDevice&    GetDevice() const final;
+    Type                        GetType() const noexcept override                       { return m_type; }
+    tf::Executor&               GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
+    Rhi::IObjectRegistry&       GetObjectRegistry() noexcept override                   { return m_objects_cache; }
+    const Rhi::IObjectRegistry& GetObjectRegistry() const noexcept override             { return m_objects_cache; }
+    void                        RequestDeferredAction(DeferredAction action) const noexcept override;
+    void                        CompleteInitialization() override;
+    bool                        IsCompletingInitialization() const noexcept override    { return m_is_completing_initialization; }
+    void                        WaitForGpu(WaitFor wait_for) override;
+    void                        Reset(Rhi::IDevice& device) override;
+    void                        Reset() override;
+    Rhi::ICommandKit&           GetDefaultCommandKit(Rhi::CommandListType type) const final;
+    Rhi::ICommandKit&           GetDefaultCommandKit(Rhi::ICommandQueue& cmd_queue) const final;
+    const Rhi::IDevice&         GetDevice() const final;
 
     // Context interface
     virtual void Initialize(Device& device, bool is_callback_emitted = true);
@@ -93,7 +94,7 @@ public:
     Ptr<Device>         GetBaseDevicePtr() const noexcept   { return m_device_ptr; }
     Device&             GetBaseDevice();
     const Device&       GetBaseDevice() const;
-    IDescriptorManager& GetDescriptorManager() const;
+    Rhi::IDescriptorManager& GetDescriptorManager() const;
 
 protected:
     void PerformRequestedAction();
@@ -105,21 +106,21 @@ protected:
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:
-    using CommandKitPtrByType = std::array<Ptr<ICommandKit>, magic_enum::enum_count<CommandListType>()>;
-    using CommandKitByQueue   = std::map<ICommandQueue*, Ptr<ICommandKit>>;
+    using CommandKitPtrByType = std::array<Ptr<Rhi::ICommandKit>, magic_enum::enum_count<Rhi::CommandListType>()>;
+    using CommandKitByQueue   = std::map<Rhi::ICommandQueue*, Ptr<Rhi::ICommandKit>>;
 
-    template<CommandListPurpose cmd_list_purpose>
-    void ExecuteSyncCommandLists(const ICommandKit& upload_cmd_kit) const;
+    template<Rhi::CommandListPurpose cmd_list_purpose>
+    void ExecuteSyncCommandLists(const Rhi::ICommandKit& upload_cmd_kit) const;
 
-    const Type                   m_type;
-    Ptr<Device>                   m_device_ptr;
-    UniquePtr<IDescriptorManager> m_descriptor_manager_ptr;
-    tf::Executor&                 m_parallel_executor;
-    ObjectRegistry                m_objects_cache;
-    mutable CommandKitPtrByType   m_default_command_kit_ptrs;
-    mutable CommandKitByQueue     m_default_command_kit_ptr_by_queue;
-    mutable DeferredAction        m_requested_action = DeferredAction::None;
-    mutable bool                  m_is_completing_initialization = false;
+    const Type                         m_type;
+    Ptr<Device>                        m_device_ptr;
+    UniquePtr<Rhi::IDescriptorManager> m_descriptor_manager_ptr;
+    tf::Executor&                      m_parallel_executor;
+    ObjectRegistry                     m_objects_cache;
+    mutable CommandKitPtrByType        m_default_command_kit_ptrs;
+    mutable CommandKitByQueue          m_default_command_kit_ptr_by_queue;
+    mutable DeferredAction             m_requested_action = DeferredAction::None;
+    mutable bool                       m_is_completing_initialization = false;
 };
 
 } // namespace Methane::Graphics::Base

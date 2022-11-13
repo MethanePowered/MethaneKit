@@ -62,7 +62,7 @@ struct ICommandListVk
     virtual const vk::CommandBuffer& GetNativeCommandBufferDefault() const = 0;
     virtual const vk::CommandBuffer& GetNativeCommandBuffer(CommandBufferType cmd_buffer_type = CommandBufferType::Primary) const = 0;
     virtual vk::PipelineBindPoint    GetNativePipelineBindPoint() const = 0;
-    virtual void SetResourceBarriers(const IResourceBarriers& resource_barriers) = 0;
+    virtual void SetResourceBarriers(const Rhi::IResourceBarriers& resource_barriers) = 0;
 
     virtual ~ICommandListVk() = default;
 };
@@ -71,10 +71,10 @@ class CommandListSet final
     : public Base::CommandListSet
 {
 public:
-    explicit CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
+    explicit CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     // Base::CommandListSet interface
-    void Execute(const ICommandList::CompletedCallback& completed_callback) override;
+    void Execute(const Rhi::ICommandList::CompletedCallback& completed_callback) override;
     void WaitUntilCompleted() override;
 
     const std::vector<vk::CommandBuffer>& GetNativeCommandBuffers() const noexcept { return m_vk_command_buffers; }
@@ -86,7 +86,7 @@ public:
 
 protected:
     // IObjectCallback interface
-    void OnObjectNameChanged(IObject& object, const std::string& old_name) override;
+    void OnObjectNameChanged(Rhi::IObject& object, const std::string& old_name) override;
 
 private:
     const std::vector<vk::Semaphore>&          GetWaitSemaphores();

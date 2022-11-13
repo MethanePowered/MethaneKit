@@ -29,7 +29,7 @@ Vulkan GPU query pool implementation.
 
 #include <Methane/Graphics/Base/QueryPool.h>
 #include <Methane/Graphics/Base/Context.h>
-#include <Methane/Graphics/IRenderContext.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -45,37 +45,37 @@ static const vk::TimeDomainEXT g_vk_cpu_time_domain =
     static_cast<vk::TimeDomainEXT>(-1);
 #endif
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
+Ptr<ITimestampQueryPool> Rhi::ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::TimestampQueryPool>(dynamic_cast<Vulkan::CommandQueue&>(command_queue), max_timestamps_per_frame);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
 
-static vk::QueryType GetQueryTypeVk(IQueryPool::Type query_pool_type)
+static vk::QueryType GetQueryTypeVk(Rhi::IQueryPool::Type query_pool_type)
 {
     META_FUNCTION_TASK();
     switch(query_pool_type) // NOSONAR
     {
-    case IQueryPool::Type::Timestamp: return vk::QueryType::eTimestamp;
+    case Rhi::IQueryPool::Type::Timestamp: return vk::QueryType::eTimestamp;
     // vk::QueryType::eOcclusion
     // vk::QueryType::ePipelineStatistics
     default: META_UNEXPECTED_ARG_RETURN(query_pool_type, vk::QueryType::eTimestamp);
     }
 }
 
-static Data::Size GetMaxTimestampsCount(const IContext& context, uint32_t max_timestamps_per_frame)
+static Data::Size GetMaxTimestampsCount(const Rhi::IContext& context, uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
-    const uint32_t frames_count = context.GetType() == IContext::Type::Render
-                                ? dynamic_cast<const IRenderContext&>(context).GetSettings().frame_buffers_count
+    const uint32_t frames_count = context.GetType() == Rhi::IContext::Type::Render
+                                ? dynamic_cast<const Rhi::IRenderContext&>(context).GetSettings().frame_buffers_count
                                 : 1U;
     return frames_count * max_timestamps_per_frame;
 }
@@ -106,10 +106,10 @@ void Query::End()
     m_vk_command_buffer.writeTimestamp(vk::PipelineStageFlagBits::eBottomOfPipe, GetVulkanQueryPool().GetNativeQueryPool(), GetIndex());
 }
 
-SubResource Query::GetData() const
+Rhi::SubResource Query::GetData() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetState(), IQuery::State::Resolved, "query data can be retrieved only from resolved query");
+    META_CHECK_ARG_EQUAL_DESCR(GetState(), Rhi::IQuery::State::Resolved, "query data can be retrieved only from resolved query");
     META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), Base::CommandList::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
 
     vk::Result vk_query_result = m_vk_device.getQueryPoolResults(
@@ -118,8 +118,8 @@ SubResource Query::GetData() const
         vk::QueryResultFlagBits::e64);
     META_CHECK_ARG_EQUAL_DESCR(vk_query_result, vk::Result::eSuccess, "failed to get query pool results");
 
-    return SubResource(reinterpret_cast<Data::ConstRawPtr>(m_query_results.data()), // NOSONAR
-                       static_cast<Data::Size>(m_query_results_byte_size));
+    return Rhi::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_query_results.data()), // NOSONAR
+                            static_cast<Data::Size>(m_query_results_byte_size));
 }
 
 QueryPool& Query::GetVulkanQueryPool() const noexcept
@@ -146,8 +146,8 @@ CommandQueue& QueryPool::GetVulkanCommandQueue() noexcept
 
 TimestampQueryPool::TimestampQueryPool(CommandQueue& command_queue, uint32_t max_timestamps_per_frame)
     : QueryPool(command_queue, Type::Timestamp, 1U << 15U, 1U,
-                    GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
-                  sizeof(Timestamp))
+                GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
+                sizeof(Timestamp))
 {
     META_FUNCTION_TASK();
 
@@ -182,13 +182,13 @@ TimestampQueryPool::TimestampQueryPool(CommandQueue& command_queue, uint32_t max
     Calibrate();
 }
 
-Ptr<ITimestampQuery> TimestampQueryPool::CreateTimestampQuery(ICommandList& command_list)
+Ptr<Rhi::ITimestampQuery> TimestampQueryPool::CreateTimestampQuery(Rhi::ICommandList& command_list)
 {
     META_FUNCTION_TASK();
     return Base::QueryPool::CreateQuery<TimestampQuery>(dynamic_cast<Base::CommandList&>(command_list));
 }
 
-ITimestampQueryPool::CalibratedTimestamps TimestampQueryPool::Calibrate()
+Rhi::ITimestampQueryPool::CalibratedTimestamps TimestampQueryPool::Calibrate()
 {
     META_FUNCTION_TASK();
     const vk::Device& vk_device = GetVulkanCommandQueue().GetVulkanDevice().GetNativeDevice();
@@ -233,7 +233,7 @@ void TimestampQuery::ResolveTimestamp()
 Timestamp TimestampQuery::GetGpuTimestamp() const
 {
     META_FUNCTION_TASK();
-    IResource::SubResource query_data = GetData();
+    Rhi::IResource::SubResource query_data = GetData();
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(query_data.GetDataSize(), sizeof(Timestamp), "query data size is less than expected for timestamp");
     META_CHECK_ARG_NOT_NULL(query_data.GetDataPtr());
     return *reinterpret_cast<const Timestamp*>(query_data.GetDataPtr()); // NOSONAR

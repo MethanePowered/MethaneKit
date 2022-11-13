@@ -34,24 +34,24 @@ Vulkan implementation of the shader interface.
 #include <spirv_cross.hpp>
 #include <spirv_hlsl.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IShader> IShader::Create(ShaderType shader_type, const IContext& context, const Settings& settings)
+Ptr<IShader> IShader::Create(Rhi::ShaderType shader_type, const Rhi::IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::Shader>(shader_type, dynamic_cast<const Base::Context&>(context), settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
 
-static vk::VertexInputRate ConvertInputBufferLayoutStepTypeToVertexInputRate(IProgram::InputBufferLayout::StepType step_type)
+static vk::VertexInputRate ConvertInputBufferLayoutStepTypeToVertexInputRate(Rhi::IProgram::InputBufferLayout::StepType step_type)
 {
     META_FUNCTION_TASK();
-    using StepType = IProgram::InputBufferLayout::StepType;
+    using StepType = Rhi::IProgram::InputBufferLayout::StepType;
     switch(step_type)
     {
     case StepType::PerVertex:   return vk::VertexInputRate::eVertex;
@@ -122,28 +122,28 @@ static uint32_t GetArraySize(const spirv_cross::SPIRType& resource_type) noexcep
            : std::numeric_limits<uint32_t>::max();
 }
 
-static IResource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorType vk_descriptor_type)
+static Rhi::IResource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorType vk_descriptor_type)
 {
     META_FUNCTION_TASK();
     switch(vk_descriptor_type)
     {
     case vk::DescriptorType::eUniformBuffer:
     case vk::DescriptorType::eStorageBuffer:
-        return IResource::Type::Buffer;
+        return Rhi::IResource::Type::Buffer;
 
     case vk::DescriptorType::eStorageImage:
     case vk::DescriptorType::eSampledImage:
-        return IResource::Type::Texture;
+        return Rhi::IResource::Type::Texture;
 
     case vk::DescriptorType::eSampler:
-        return IResource::Type::Sampler;
+        return Rhi::IResource::Type::Sampler;
 
     default:
-        META_UNEXPECTED_ARG_RETURN(vk_descriptor_type, IResource::Type::Buffer);
+        META_UNEXPECTED_ARG_RETURN(vk_descriptor_type, Rhi::IResource::Type::Buffer);
     }
 }
 
-static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_descriptor_type, const ProgramArgumentAccessor& argument_accessor)
+static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_descriptor_type, const Rhi::ProgramArgumentAccessor& argument_accessor)
 {
     META_FUNCTION_TASK();
     if (!argument_accessor.IsAddressable())
@@ -161,23 +161,23 @@ static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_desc
 static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spirv_compiler,
                                                 const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
                                                 const vk::DescriptorType vk_descriptor_type,
-                                                const ProgramArgumentAccessors& argument_accessors,
+                                                const Rhi::ProgramArgumentAccessors& argument_accessors,
                                                 const Shader& shader,
-                                                Base::Shader::ArgumentBindings& argument_bindings)
+                                                Ptrs<Base::ProgramArgumentBinding>& argument_bindings)
 {
     META_FUNCTION_TASK();
     if (spirv_resources.begin() == spirv_resources.end())
         return;
 
-    const IResource::Type resource_type = ConvertDescriptorTypeToResourceType(vk_descriptor_type);\
-    const ShaderType shader_type = shader.GetType();
+    const Rhi::IResource::Type resource_type = ConvertDescriptorTypeToResourceType(vk_descriptor_type);\
+    const Rhi::ShaderType shader_type = shader.GetType();
 
     for (const spirv_cross::Resource& resource : spirv_resources)
     {
-        const IProgram::Argument         shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
-        const auto                       argument_acc_it = IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const ProgramArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
-                                                   ? ProgramArgumentAccessor(shader_argument)
+        const Rhi::IProgram::Argument shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
+        const auto argument_acc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Rhi::ProgramArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
+                                                   ? Rhi::ProgramArgumentAccessor(shader_argument)
                                                    : *argument_acc_it;
 
         const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
@@ -189,9 +189,9 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
 
         argument_bindings.push_back(std::make_shared<ProgramBindings::ArgumentBinding>(
             shader.GetContext(),
-            ProgramBindings::ArgumentBinding::Settings
+            ProgramArgumentBindingSettings
             {
-                IProgramBindings::IArgumentBinding::Settings
+                Rhi::ProgramArgumentBindingSettings
                 {
                     argument_acc,
                     resource_type,
@@ -209,7 +209,7 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
     }
 }
 
-Shader::Shader(ShaderType shader_type, const Base::Context& context, const Settings& settings)
+Shader::Shader(Rhi::ShaderType shader_type, const Base::Context& context, const Settings& settings)
     : Base::Shader(shader_type, context, settings)
     , m_vk_context(dynamic_cast<const IContextVk&>(context))
     , m_byte_code_chunk(settings.data_provider.GetData(fmt::format("{}.spirv", GetCompiledEntryFunctionName(settings))))
@@ -217,18 +217,18 @@ Shader::Shader(ShaderType shader_type, const Base::Context& context, const Setti
     META_FUNCTION_TASK();
 }
 
-Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const ProgramArgumentAccessors& argument_accessors) const
+Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
-    const IShader::Settings& shader_settings = GetSettings();
+    const Rhi::IShader::Settings& shader_settings = GetSettings();
     META_UNUSED(shader_settings);
 
     META_LOG("{} shader '{}' ({}) with argument bindings:",
              magic_enum::enum_name(GetType()),
              shader_settings.entry_function.function_name,
-             IShader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions));
+             Rhi::IShader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions));
 
-    ArgumentBindings argument_bindings;
+    Ptrs<Base::ProgramArgumentBinding> argument_bindings;
     const spirv_cross::Compiler& spirv_compiler = GetNativeCompiler();
     const auto add_spirv_resources_to_argument_bindings = [this, &spirv_compiler, &argument_accessors, &argument_bindings]
                                                           (const spirv_cross::SmallVector<spirv_cross::Resource>& spirv_resources,
@@ -296,7 +296,7 @@ vk::PipelineShaderStageCreateInfo Shader::GetNativeStageCreateInfo() const
 vk::PipelineVertexInputStateCreateInfo Shader::GetNativeVertexInputStateCreateInfo(const Program& program)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(GetType(), ShaderType::Vertex);
+    META_CHECK_ARG_EQUAL(GetType(), Rhi::ShaderType::Vertex);
     if (!m_vertex_input_initialized)
         InitializeVertexInputDescriptions(program);
 
@@ -318,15 +318,15 @@ Data::MutableChunk& Shader::GetMutableByteCode() noexcept
 void Shader::InitializeVertexInputDescriptions(const Program& program)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(GetType(), ShaderType::Vertex);
+    META_CHECK_ARG_EQUAL(GetType(), Rhi::ShaderType::Vertex);
     META_CHECK_ARG_FALSE_DESCR(m_vertex_input_initialized, "vertex input descriptions are already initialized");
 
-    const IShader::Settings              & shader_settings      = GetSettings();
+    const Rhi::IShader::Settings              & shader_settings      = GetSettings();
     const Base::Program::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
     m_vertex_input_binding_descriptions.reserve(input_buffer_layouts.size());
 
     uint32_t input_buffer_index = 0U;
-    for(const IProgram::InputBufferLayout& input_buffer_layout : input_buffer_layouts)
+    for(const Rhi::IProgram::InputBufferLayout& input_buffer_layout : input_buffer_layouts)
     {
         m_vertex_input_binding_descriptions.emplace_back(
             input_buffer_index,
@@ -343,7 +343,7 @@ void Shader::InitializeVertexInputDescriptions(const Program& program)
     std::stringstream log_ss;
     log_ss << magic_enum::enum_name(GetType())
            << " shader '" << shader_settings.entry_function.function_name
-           << "' (" << IShader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions)
+           << "' (" << Rhi::IShader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions)
            << ") input layout:" << std::endl;
     if (shader_resources.stage_inputs.empty())
         log_ss << " - No stage inputs." << std::endl;
@@ -392,15 +392,15 @@ void Shader::InitializeVertexInputDescriptions(const Program& program)
     m_vertex_input_initialized = true;
 }
 
-vk::ShaderStageFlagBits Shader::ConvertTypeToStageFlagBits(ShaderType shader_type)
+vk::ShaderStageFlagBits Shader::ConvertTypeToStageFlagBits(Rhi::ShaderType shader_type)
 {
     META_FUNCTION_TASK();
     switch(shader_type)
     {
-    case ShaderType::All:    return vk::ShaderStageFlagBits::eAll;
-    case ShaderType::Vertex: return vk::ShaderStageFlagBits::eVertex;
-    case ShaderType::Pixel:  return vk::ShaderStageFlagBits::eFragment;
-    default:                   META_UNEXPECTED_ARG_RETURN(shader_type, vk::ShaderStageFlagBits::eAll);
+    case Rhi::ShaderType::All:    return vk::ShaderStageFlagBits::eAll;
+    case Rhi::ShaderType::Vertex: return vk::ShaderStageFlagBits::eVertex;
+    case Rhi::ShaderType::Pixel:  return vk::ShaderStageFlagBits::eFragment;
+    default: META_UNEXPECTED_ARG_RETURN(shader_type, vk::ShaderStageFlagBits::eAll);
     }
 }
 

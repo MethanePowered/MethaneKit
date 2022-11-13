@@ -27,17 +27,12 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Font.h>
 #include <Methane/Graphics/Color.hpp>
-#include <Methane/Graphics/ICommandList.h>
+#include <Methane/Graphics/RHI/IRenderCommandList.h>
 #include <Methane/Platform/Keyboard.h>
 #include <Methane/Timer.hpp>
 #include <Methane/Memory.hpp>
 
 #include <magic_enum.hpp>
-
-namespace Methane::Graphics
-{
-struct IRenderCommandList;
-}
 
 namespace Methane::UserInterface
 {
@@ -82,7 +77,7 @@ public:
     void SetUpdateInterval(double update_interval_sec);
 
     void Update(const FrameSize& render_attachment_size);
-    void Draw(gfx::IRenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group = nullptr) const override;
+    void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group = nullptr) const override;
 
 private:
     enum class TextBlock : size_t

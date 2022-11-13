@@ -25,10 +25,10 @@ Base implementation of the command list interface.
 
 #include "Object.h"
 
-#include <Methane/Graphics/IQueryPool.h>
-#include <Methane/Graphics/IProgram.h>
-#include <Methane/Graphics/ICommandList.h>
-#include <Methane/Graphics/ICommandQueue.h>
+#include <Methane/Graphics/RHI/IQueryPool.h>
+#include <Methane/Graphics/RHI/IProgram.h>
+#include <Methane/Graphics/RHI/ICommandList.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
 #include <Methane/Data/Emitter.hpp>
 #include <Methane/Memory.hpp>
 #include <Methane/TracyGpu.hpp>
@@ -44,7 +44,7 @@ namespace Methane::Graphics::Base
 {
 
 class CommandListDebugGroup
-    : public ICommandListDebugGroup
+    : public Rhi::ICommandListDebugGroup
     , public Object
 {
 public:
@@ -54,12 +54,12 @@ public:
     bool SetName(const std::string&) override;
 
     // IDebugGroup interface
-    ICommandListDebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
-    ICommandListDebugGroup* GetSubGroup(Data::Index id) const noexcept final;
-    bool                    HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
+    Rhi::ICommandListDebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
+    Rhi::ICommandListDebugGroup* GetSubGroup(Data::Index id) const noexcept final;
+    bool                         HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
 
 private:
-    Ptrs<ICommandListDebugGroup> m_sub_groups;
+    Ptrs<Rhi::ICommandListDebugGroup> m_sub_groups;
 };
 
 class CommandQueue;
@@ -67,8 +67,8 @@ class ProgramBindings;
 
 class CommandList // NOSONAR - custom destructor is used for logging, class has more than 35 methods
     : public Object
-    , public virtual ICommandList // NOSONAR
-    , public Data::Emitter<ICommandListCallback>
+    , public virtual Rhi::ICommandList // NOSONAR
+    , public Data::Emitter<Rhi::ICommandListCallback>
 {
     friend class CommandQueue;
 
@@ -93,11 +93,11 @@ public:
     void  PopDebugGroup() override;
     void  Reset(IDebugGroup* p_debug_group = nullptr) override;
     void  ResetOnce(IDebugGroup* p_debug_group = nullptr) final;
-    void  SetProgramBindings(IProgramBindings& program_bindings, IProgramBindings::ApplyBehavior apply_behavior) override;
+    void  SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rhi::IProgramBindings::ApplyBehavior apply_behavior) override;
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
     Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override;
-    ICommandQueue& GetCommandQueue() final;
+    Rhi::ICommandQueue& GetCommandQueue() final;
 
     // CommandList interface
     virtual void Execute(const CompletedCallback& completed_callback = {});
@@ -125,7 +125,7 @@ public:
 
 protected:
     virtual void ResetCommandState();
-    virtual void ApplyProgramBindings(ProgramBindings& program_bindings, IProgramBindings::ApplyBehavior apply_behavior);
+    virtual void ApplyProgramBindings(ProgramBindings& program_bindings, Rhi::IProgramBindings::ApplyBehavior apply_behavior);
 
     CommandState&       GetCommandState()               { return m_command_state; }
     const CommandState& GetCommandState() const         { return m_command_state; }
@@ -172,21 +172,21 @@ private:
 };
 
 class CommandListSet
-    : public ICommandListSet
-    , protected Data::Receiver<IObjectCallback>
+    : public Rhi::ICommandListSet
+    , protected Data::Receiver<Rhi::IObjectCallback>
     , public std::enable_shared_from_this<CommandListSet>
 {
 public:
-    explicit CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
+    explicit CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     // ICommandListSet overrides
-    Data::Size               GetCount() const noexcept final        { return static_cast<Data::Size>(m_refs.size()); }
-    const Refs<ICommandList>& GetRefs() const noexcept final        { return m_refs; }
-    ICommandList&             operator[](Data::Index index) const final;
-    const Opt<Data::Index>&  GetFrameIndex() const noexcept final   { return m_frame_index_opt; }
+    Data::Size                     GetCount() const noexcept final       { return static_cast<Data::Size>(m_refs.size()); }
+    const Refs<Rhi::ICommandList>& GetRefs() const noexcept final        { return m_refs; }
+    Rhi::ICommandList&             operator[](Data::Index index) const final;
+    const Opt<Data::Index>&  GetFrameIndex() const noexcept final        { return m_frame_index_opt; }
 
     // CommandListSet interface
-    virtual void Execute(const ICommandList::CompletedCallback& completed_callback);
+    virtual void Execute(const Rhi::ICommandList::CompletedCallback& completed_callback);
     virtual void WaitUntilCompleted() = 0;
 
     bool IsExecuting() const noexcept { return m_is_executing; }
@@ -201,14 +201,14 @@ public:
 
 protected:
     // IObjectCallback interface
-    void OnObjectNameChanged(IObject&, const std::string&) override;
+    void OnObjectNameChanged(Rhi::IObject&, const std::string&) override;
 
 private:
-    Refs<ICommandList>    m_refs;
-    Refs<CommandList> m_base_refs;
-    Ptrs<CommandList> m_base_ptrs;
-    Opt<Data::Index>     m_frame_index_opt;
-    std::string           m_combined_name;
+    Refs<Rhi::ICommandList> m_refs;
+    Refs<CommandList>       m_base_refs;
+    Ptrs<CommandList>       m_base_ptrs;
+    Opt<Data::Index>        m_frame_index_opt;
+    std::string             m_combined_name;
 
     mutable TracyLockable(std::mutex, m_command_lists_mutex)
     mutable std::atomic<bool> m_is_executing = false;

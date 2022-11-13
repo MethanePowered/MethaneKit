@@ -157,7 +157,7 @@ public:
                                 IProgram::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
                             }
                         },
-                        ProgramArgumentAccessors{ },
+                        Rhi::ProgramArgumentAccessors{ },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
@@ -498,9 +498,9 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
                             IShader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
                         },
                         ...
-                        ProgramArgumentAccessors
+                        Rhi::ProgramArgumentAccessors
                         {
-                            { { ShaderType::Vertex, "g_uniforms" }, ProgramArgumentAccessor::Type::FrameConstant }
+                            { { ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccessor::Type::FrameConstant }
                         },
                         ...
                     }

@@ -27,16 +27,16 @@ DirectX 12 specialization of the resource barriers.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IResourceBarriers> IResourceBarriers::Create(const Set& barriers)
+Ptr<IResourceBarriers> Rhi::IResourceBarriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::ResourceBarriers>(barriers);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -77,7 +77,7 @@ D3D12_RESOURCE_BARRIER ResourceBarriers::GetNativeResourceBarrier(const Resource
     {
     case ResourceBarrier::Type::StateTransition:
         return CD3DX12_RESOURCE_BARRIER::Transition(
-            dynamic_cast<const IResourceDx&>(id.GetResource()).GetNativeResource(),
+            dynamic_cast<const Rhi::IResourceDx&>(id.GetResource()).GetNativeResource(),
             GetNativeResourceState(state_change.GetStateBefore()),
             GetNativeResourceState(state_change.GetStateAfter())
         );
@@ -167,7 +167,7 @@ bool ResourceBarriers::Remove(const ResourceBarrier::Id& id)
         return true;
 
     const D3D12_RESOURCE_BARRIER_TYPE native_barrier_type = GetNativeBarrierType(id.GetType());
-    const ID3D12Resource* native_resource_ptr = dynamic_cast<const IResourceDx&>(id.GetResource()).GetNativeResource();
+    const ID3D12Resource* native_resource_ptr = dynamic_cast<const Rhi::IResourceDx&>(id.GetResource()).GetNativeResource();
     const auto native_resource_barrier_it = std::find_if(m_native_resource_barriers.begin(), m_native_resource_barriers.end(),
                                                          GetNativeResourceBarrierPredicate(native_barrier_type, native_resource_ptr));
     META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
@@ -194,7 +194,7 @@ void ResourceBarriers::UpdateNativeResourceBarrier(const ResourceBarrier::Id& id
 {
     META_FUNCTION_TASK();
     const D3D12_RESOURCE_BARRIER_TYPE native_barrier_type = GetNativeBarrierType(id.GetType());
-    const ID3D12Resource* native_resource_ptr = dynamic_cast<const IResourceDx&>(id.GetResource()).GetNativeResource();
+    const ID3D12Resource* native_resource_ptr = dynamic_cast<const Rhi::IResourceDx&>(id.GetResource()).GetNativeResource();
     const auto native_resource_barrier_it = std::find_if(m_native_resource_barriers.begin(), m_native_resource_barriers.end(),
                                                          GetNativeResourceBarrierPredicate(native_barrier_type, native_resource_ptr));
     META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");

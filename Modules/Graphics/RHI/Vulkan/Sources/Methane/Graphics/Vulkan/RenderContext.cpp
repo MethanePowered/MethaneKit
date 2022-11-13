@@ -36,10 +36,10 @@ Vulkan implementation of the render context interface.
 #include <magic_enum.hpp>
 #include <sstream>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IRenderContext> IRenderContext::Create(const Methane::Platform::AppEnvironment& env, IDevice& device,
+Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, IDevice& device,
                                            tf::Executor& parallel_executor, const RenderContextSettings& settings)
 {
     META_FUNCTION_TASK();
@@ -49,7 +49,7 @@ Ptr<IRenderContext> IRenderContext::Create(const Methane::Platform::AppEnvironme
     return render_context_ptr;
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
@@ -57,10 +57,10 @@ namespace Methane::Graphics::Vulkan
 #ifndef __APPLE__
 
 RenderContext::RenderContext(const Methane::Platform::AppEnvironment& app_env, Device& device,
-                                 tf::Executor& parallel_executor, const RenderContextSettings& settings)
+                                 tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
     : Context<Base::RenderContext>(device, parallel_executor, settings)
     , m_vk_device(device.GetNativeDevice())
-    , m_vk_unique_surface(Platform::CreateVulkanSurfaceForWindow(static_cast<System&>(ISystem::Get()).GetNativeInstance(), app_env))
+    , m_vk_unique_surface(Platform::CreateVulkanSurfaceForWindow(static_cast<System&>(Rhi::ISystem::Get()).GetNativeInstance(), app_env))
 {
     META_FUNCTION_TASK();
 }
@@ -114,12 +114,12 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
     Context<Base::RenderContext>::WaitForGpu(wait_for);
 
     std::optional<Data::Index> frame_buffer_index;
-    CommandListType cl_type = CommandListType::Render;
+    Rhi::CommandListType cl_type = Rhi::CommandListType::Render;
     switch (wait_for)
     {
     case WaitFor::RenderComplete:    m_vk_device.waitIdle(); break;
     case WaitFor::FramePresented:    frame_buffer_index = GetFrameBufferIndex(); break;
-    case WaitFor::ResourcesUploaded: cl_type = CommandListType::Transfer; break;
+    case WaitFor::ResourcesUploaded: cl_type = Rhi::CommandListType::Transfer; break;
     default: META_UNEXPECTED_ARG(wait_for);
     }
 
@@ -236,7 +236,7 @@ vk::SurfaceFormatKHR RenderContext::ChooseSwapSurfaceFormat(const std::vector<vk
                                         { return format.format == required_color_format &&
                                                  format.colorSpace == s_required_color_space; });
     if (format_it == available_formats.end())
-        throw IContext::IncompatibleException(fmt::format("{} surface format with {} color space is not available for window surface.",
+        throw Rhi::IContext::IncompatibleException(fmt::format("{} surface format with {} color space is not available for window surface.",
                                                          magic_enum::enum_name(GetSettings().color_format), magic_enum::enum_name(s_required_color_space)));
 
     return *format_it;
@@ -270,7 +270,7 @@ vk::PresentModeKHR RenderContext::ChooseSwapPresentMode(const std::vector<vk::Pr
         {
             ss << " " << magic_enum::enum_name(required_present_mode);
         }
-        throw IContext::IncompatibleException(fmt::format("None of required present modes ({}) is available for window surface.", ss.str()));
+        throw Rhi::IContext::IncompatibleException(fmt::format("None of required present modes ({}) is available for window surface.", ss.str()));
     }
 
     return *present_mode_opt;
@@ -293,10 +293,10 @@ void RenderContext::InitializeNativeSwapchain()
 {
     META_FUNCTION_TASK();
 
-    if (const uint32_t present_queue_family_index = GetVulkanDevice().GetQueueFamilyReservation(CommandListType::Render).GetFamilyIndex();
+    if (const uint32_t present_queue_family_index = GetVulkanDevice().GetQueueFamilyReservation(Rhi::CommandListType::Render).GetFamilyIndex();
         !GetVulkanDevice().GetNativePhysicalDevice().getSurfaceSupportKHR(present_queue_family_index, GetNativeSurface()))
     {
-        throw IContext::IncompatibleException("Device does not support presentation to the window surface.");
+        throw Rhi::IContext::IncompatibleException("Device does not support presentation to the window surface.");
     }
 
     const Device::SwapChainSupport swap_chain_support  = GetVulkanDevice().GetSwapChainSupportForSurface(GetNativeSurface());

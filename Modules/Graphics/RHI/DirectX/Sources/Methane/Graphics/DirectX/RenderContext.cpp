@@ -32,10 +32,10 @@ DirectX 12 implementation of the render context interface.
 
 #include <nowide/convert.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, IDevice& device,
+Ptr<IRenderContext> Rhi::IRenderContext::Create(const Platform::AppEnvironment& env, Rhi::IDevice& device,
                                            tf::Executor& parallel_executor, const RenderContextSettings& settings)
 {
     META_FUNCTION_TASK();
@@ -45,7 +45,7 @@ Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, 
     return render_context_ptr;
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {

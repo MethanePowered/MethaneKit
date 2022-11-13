@@ -28,16 +28,16 @@ Base implementation of the render command list interface.
 #include "RenderPass.h"
 #include "RenderState.h"
 
-#include <Methane/Graphics/IRenderCommandList.h>
+#include <Methane/Graphics/RHI/IRenderCommandList.h>
 
 #include <optional>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct IRenderState;
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Base
 {
@@ -45,7 +45,7 @@ namespace Methane::Graphics::Base
 class ParallelRenderCommandList;
 
 class RenderCommandList
-    : public IRenderCommandList
+    : public Rhi::IRenderCommandList
     , public CommandList
 {
 public:
@@ -58,17 +58,17 @@ public:
             All           = ~0U
         };
 
-        Ptrs<Texture>        render_pass_attachments_ptr;
-        Ptr<RenderState>     render_state_ptr;
-        Ptr<BufferSet>       vertex_buffer_set_ptr;
-        Ptr<Buffer>          index_buffer_ptr;
-        Opt<Primitive>       primitive_type_opt;
-        ViewState*           view_state_ptr      = nullptr;
-        IRenderState::Groups render_state_groups = IRenderState::Groups::None;
-        Changes              changes             = Changes::None;
+        Ptrs<Texture>          render_pass_attachments_ptr;
+        Ptr<RenderState>       render_state_ptr;
+        Ptr<BufferSet>         vertex_buffer_set_ptr;
+        Ptr<Buffer>            index_buffer_ptr;
+        Opt<Primitive>         primitive_type_opt;
+        ViewState*             view_state_ptr      = nullptr;
+        Rhi::RenderStateGroups render_state_groups = Rhi::RenderStateGroups::None;
+        Changes                changes             = Changes::None;
     };
 
-    static Ptr<IRenderCommandList> CreateForSynchronization(ICommandQueue& cmd_queue);
+    static Ptr<IRenderCommandList> CreateForSynchronization(Rhi::ICommandQueue& cmd_queue);
 
     explicit RenderCommandList(CommandQueue& command_queue);
     RenderCommandList(CommandQueue& command_queue, RenderPass& render_pass);
@@ -79,21 +79,21 @@ public:
     // IRenderCommandList interface
     bool IsValidationEnabled() const noexcept final             { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) final { m_is_validation_enabled = is_validation_enabled; }
-    IRenderPass& GetRenderPass() const final;
+    Rhi::IRenderPass& GetRenderPass() const final;
     void Reset(IDebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
-    void ResetWithStateOnce(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) final;
-    void SetRenderState(IRenderState& render_state, RenderStateGroups state_groups = RenderStateGroups::All) override;
-    void SetViewState(IViewState& view_state) override;
-    bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers) override;
-    bool SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers) override;
+    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
+    void ResetWithStateOnce(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) final;
+    void SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroups state_groups = Rhi::RenderStateGroups::All) override;
+    void SetViewState(Rhi::IViewState& view_state) override;
+    bool SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers) override;
+    bool SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_resource_barriers) override;
     void DrawIndexed(Primitive primitive_type, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;
     void Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;
 
-    bool            HasPass() const noexcept    { return !!m_render_pass_ptr; }
-    RenderPass* GetPassPtr() const noexcept { return m_render_pass_ptr.get(); }
+    bool        HasPass() const noexcept     { return !!m_render_pass_ptr; }
+    RenderPass* GetPassPtr() const noexcept  { return m_render_pass_ptr.get(); }
     RenderPass& GetPass();
 
 protected:

@@ -24,7 +24,7 @@ Vulkan implementation of the device interface.
 #pragma once
 
 #include <Methane/Graphics/Base/Device.h>
-#include <Methane/Graphics/ICommandQueue.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
 #include <Methane/Data/RangeSet.hpp>
 #include <Methane/Memory.hpp>
 
@@ -78,15 +78,15 @@ public:
         std::vector<vk::PresentModeKHR> present_modes;
     };
 
-    static DeviceFeatures GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device);
+    static Rhi::DeviceFeatures GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device);
 
     Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities);
 
     // IObject interface
     bool SetName(const std::string& name) override;
 
-    [[nodiscard]] const QueueFamilyReservation* GetQueueFamilyReservationPtr(CommandListType cmd_queue_type) const noexcept;
-    [[nodiscard]] const QueueFamilyReservation& GetQueueFamilyReservation(CommandListType cmd_queue_type) const;
+    [[nodiscard]] const QueueFamilyReservation* GetQueueFamilyReservationPtr(Rhi::CommandListType cmd_queue_type) const noexcept;
+    [[nodiscard]] const QueueFamilyReservation& GetQueueFamilyReservation(Rhi::CommandListType cmd_queue_type) const;
     [[nodiscard]] SwapChainSupport GetSwapChainSupportForSurface(const vk::SurfaceKHR& vk_surface) const noexcept;
     [[nodiscard]] Opt<uint32_t> FindMemoryType(uint32_t type_filter, vk::MemoryPropertyFlags property_flags) const noexcept;
 
@@ -95,9 +95,9 @@ public:
     const vk::QueueFamilyProperties& GetNativeQueueFamilyProperties(uint32_t queue_family_index) const;
 
 private:
-    using QueueFamilyReservationByType = std::map<CommandListType, Ptr<QueueFamilyReservation>>;
+    using QueueFamilyReservationByType = std::map<Rhi::CommandListType, Ptr<QueueFamilyReservation>>;
 
-    void ReserveQueueFamily(CommandListType cmd_queue_type, uint32_t queues_count,
+    void ReserveQueueFamily(Rhi::CommandListType cmd_queue_type, uint32_t queues_count,
                             std::vector<uint32_t>& reserved_queues_count_per_family,
                             const vk::SurfaceKHR& vk_surface = vk::SurfaceKHR());
 
@@ -117,8 +117,8 @@ public:
 
     // ISystem interface
     void CheckForChanges() override;
-    const Ptrs<IDevice>& UpdateGpuDevices(const Methane::Platform::AppEnvironment& app_env, const DeviceCaps& required_device_caps) override;
-    const Ptrs<IDevice>& UpdateGpuDevices(const DeviceCaps& required_device_caps) override;
+    const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Methane::Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps) override;
+    const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps) override;
 
     vk::DynamicLoader&       GetNativeLoader() noexcept       { return m_vk_loader; }
     const vk::DynamicLoader& GetNativeLoader() const noexcept { return m_vk_loader; }

@@ -38,22 +38,22 @@ DirectX 12 implementation of the texture interface.
 #include <magic_enum.hpp>
 #include <DirectXTex.h>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITexture> ITexture::CreateRenderTarget(const IRenderContext& render_context, const Settings& settings)
+Ptr<ITexture> Rhi::ITexture::CreateRenderTarget(const Rhi::IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     switch (settings.type)
     {
-    case ITexture::Type::Texture:            return std::make_shared<DirectX::RenderTargetTexture>(static_cast<const Base::RenderContext&>(render_context), settings);
-    case ITexture::Type::DepthStencilBuffer: return std::make_shared<DirectX::DepthStencilTexture>(static_cast<const Base::RenderContext&>(render_context), settings, render_context.GetSettings().clear_depth_stencil);
-    case ITexture::Type::FrameBuffer:        META_UNEXPECTED_ARG_DESCR(settings.type, "frame buffer texture must be created with static method Texture::CreateFrameBuffer");
+    case Rhi::ITexture::Type::Texture:            return std::make_shared<DirectX::RenderTargetTexture>(static_cast<const Base::RenderContext&>(render_context), settings);
+    case Rhi::ITexture::Type::DepthStencilBuffer: return std::make_shared<DirectX::DepthStencilTexture>(static_cast<const Base::RenderContext&>(render_context), settings, render_context.GetSettings().clear_depth_stencil);
+    case Rhi::ITexture::Type::FrameBuffer:        META_UNEXPECTED_ARG_DESCR(settings.type, "frame buffer texture must be created with static method Texture::CreateFrameBuffer");
     default:                                 META_UNEXPECTED_ARG_RETURN(settings.type, nullptr);
     }
 }
 
-Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& render_context, FrameBufferIndex frame_buffer_index)
+Ptr<ITexture> Rhi::ITexture::CreateFrameBuffer(const Rhi::IRenderContext& render_context, FrameBufferIndex frame_buffer_index)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = render_context.GetSettings();
@@ -61,7 +61,7 @@ Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& render_context, 
     return std::make_shared<DirectX::FrameBufferTexture>(static_cast<const Base::RenderContext&>(render_context), texture_settings, frame_buffer_index);
 }
 
-Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& render_context)
+Ptr<ITexture> Rhi::ITexture::CreateDepthStencilBuffer(const Rhi::IRenderContext& render_context)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = render_context.GetSettings();
@@ -69,21 +69,21 @@ Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& render_co
     return std::make_shared<DirectX::DepthStencilTexture>(static_cast<const Base::RenderContext&>(render_context), texture_settings, context_settings.clear_depth_stencil);
 }
 
-Ptr<ITexture> ITexture::CreateImage(const IContext& render_context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<ITexture> Rhi::ITexture::CreateImage(const Rhi::IContext& render_context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<DirectX::ImageTexture>(dynamic_cast<const Base::Context&>(render_context), texture_settings, DirectX::ImageToken());
 }
 
-Ptr<ITexture> ITexture::CreateCube(const IContext& render_context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<ITexture> Rhi::ITexture::CreateCube(const Rhi::IContext& render_context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
     return std::make_shared<DirectX::ImageTexture>(dynamic_cast<const Base::Context&>(render_context), texture_settings, DirectX::ImageToken());
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -106,7 +106,7 @@ static D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
 }
 
 [[nodiscard]]
-static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const ITexture::Settings& settings, const SubResource::Count& sub_resource_count)
+static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Settings& settings, const SubResource::Count& sub_resource_count)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetDepth(), 1);
@@ -183,11 +183,11 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const ITexture::Settings& 
 }
 
 [[nodiscard]]
-static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeShaderResourceViewDesc(const ITexture::Settings& settings, const ResourceView::Id& view_id)
+static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeShaderResourceViewDesc(const Rhi::ITexture::Settings& settings, const ResourceView::Id& view_id)
 {
     META_FUNCTION_TASK();
-    const IResource::SubResource::Index& sub_resource_index = view_id.subresource_index;
-    const IResource::SubResource::Count& sub_resource_count = view_id.subresource_count;
+    const Rhi::IResource::SubResource::Index& sub_resource_index = view_id.subresource_index;
+    const Rhi::IResource::SubResource::Count& sub_resource_count = view_id.subresource_count;
 
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
     switch (settings.dimension_type)
@@ -251,12 +251,12 @@ static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeShaderResourceViewDesc(const 
 }
 
 [[nodiscard]]
-static D3D12_RENDER_TARGET_VIEW_DESC CreateNativeRenderTargetViewDesc(const ITexture::Settings& settings,
+static D3D12_RENDER_TARGET_VIEW_DESC CreateNativeRenderTargetViewDesc(const Rhi::ITexture::Settings& settings,
                                                                       const ResourceView::Id& view_id)
 {
     META_FUNCTION_TASK();
-    const IResource::SubResource::Index& sub_resource_index = view_id.subresource_index;
-    const IResource::SubResource::Count& sub_resource_count = view_id.subresource_count;
+    const Rhi::IResource::SubResource::Index& sub_resource_index = view_id.subresource_index;
+    const Rhi::IResource::SubResource::Count& sub_resource_count = view_id.subresource_count;
 
     D3D12_RENDER_TARGET_VIEW_DESC rtv_desc{};
     switch (settings.dimension_type)
@@ -315,7 +315,7 @@ template<>
 Opt<IResource::Descriptor> FrameBufferTexture::InitializeNativeViewDescriptor(const View::Id& view_id)
 {
     META_FUNCTION_TASK();
-    const IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
+    const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
     GetDirectContext().GetDirectDevice().GetNativeDevice()->CreateRenderTargetView(GetNativeResource(), nullptr, GetNativeCpuDescriptorHandle(descriptor));
     return descriptor;
 }
@@ -327,13 +327,13 @@ RenderTargetTexture::Texture(const Base::Context& context, const Settings& setti
     D3D12_RESOURCE_DESC tex_desc = CreateNativeResourceDesc(GetSettings(), GetSubresourceCount());
     tex_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
-    InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, IResource::State::RenderTarget);
+    InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, Rhi::IResource::State::RenderTarget);
 }
 
 Opt<IResource::Descriptor> RenderTargetTexture::InitializeNativeViewDescriptor(const View::Id& view_id)
 {
     META_FUNCTION_TASK();
-    const IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
+    const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
     switch(view_id.usage)
     {
     case ResourceUsage::ShaderRead:   CreateShaderResourceView(descriptor, view_id); break;
@@ -385,18 +385,18 @@ DepthStencilTexture::Texture(const Base::Context& render_context, const Settings
         // Performance tip: Tell the runtime at resource creation the desired clear value
         const DXGI_FORMAT view_write_format = TypeConverter::PixelFormatToDxgi(settings.pixel_format, TypeConverter::ResourceFormatType::ViewWrite);
         CD3DX12_CLEAR_VALUE clear_value(view_write_format, clear_depth_stencil->first, clear_depth_stencil->second);
-        InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, IResource::State::DepthWrite, &clear_value);
+        InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, Rhi::IResource::State::DepthWrite, &clear_value);
     }
     else
     {
-        InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, IResource::State::DepthWrite);
+        InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, Rhi::IResource::State::DepthWrite);
     }
 }
 
 void DepthStencilTexture::CreateShaderResourceView(const Descriptor& descriptor) const
 {
     META_FUNCTION_TASK();
-    const ITexture::Settings& settings = GetSettings();
+    const Rhi::ITexture::Settings& settings = GetSettings();
 
     D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc{};
     srv_desc.Format                  = TypeConverter::PixelFormatToDxgi(settings.pixel_format, TypeConverter::ResourceFormatType::ViewRead);
@@ -411,7 +411,7 @@ void DepthStencilTexture::CreateShaderResourceView(const Descriptor& descriptor)
 void DepthStencilTexture::CreateDepthStencilView(const Descriptor& descriptor) const
 {
     META_FUNCTION_TASK();
-    const ITexture::Settings& settings = GetSettings();
+    const Rhi::ITexture::Settings& settings = GetSettings();
 
     D3D12_DEPTH_STENCIL_VIEW_DESC dsv_desc{};
     dsv_desc.Format        = TypeConverter::PixelFormatToDxgi(settings.pixel_format, TypeConverter::ResourceFormatType::ViewWrite);
@@ -425,11 +425,11 @@ void DepthStencilTexture::CreateDepthStencilView(const Descriptor& descriptor) c
 Opt<IResource::Descriptor> DepthStencilTexture::InitializeNativeViewDescriptor(const View::Id& view_id)
 {
     META_FUNCTION_TASK();
-    const IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
+    const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
     switch(view_id.usage)
     {
-    case IResource::Usage::ShaderRead:   CreateShaderResourceView(descriptor); break;
-    case IResource::Usage::RenderTarget: CreateDepthStencilView(descriptor); break;
+    case Rhi::IResource::Usage::ShaderRead:   CreateShaderResourceView(descriptor); break;
+    case Rhi::IResource::Usage::RenderTarget: CreateDepthStencilView(descriptor); break;
     default: META_UNEXPECTED_ARG_DESCR_RETURN(view_id.usage, descriptor,
                                               "unsupported usage '{}' for Depth-Stencil buffer",
                                               magic_enum::enum_name(view_id.usage));
@@ -445,7 +445,7 @@ ImageTexture::Texture(const Base::Context& render_context, const Settings& setti
 
     const SubResource::Count& sub_resource_count = GetSubresourceCount();
     const CD3DX12_RESOURCE_DESC resource_desc = CreateNativeResourceDesc(settings, sub_resource_count);
-    InitializeCommittedResource(resource_desc, D3D12_HEAP_TYPE_DEFAULT, IResource::State::CopyDest);
+    InitializeCommittedResource(resource_desc, D3D12_HEAP_TYPE_DEFAULT, Rhi::IResource::State::CopyDest);
 
     const UINT64 upload_buffer_size = GetRequiredIntermediateSize(GetNativeResource(), 0, GetSubresourceCount().GetRawCount());
     m_cp_upload_resource = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
@@ -454,7 +454,7 @@ ImageTexture::Texture(const Base::Context& render_context, const Settings& setti
 Opt<IResource::Descriptor> ImageTexture::InitializeNativeViewDescriptor(const View::Id& view_id)
 {
     META_FUNCTION_TASK();
-    const IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
+    const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
     const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
     const D3D12_SHADER_RESOURCE_VIEW_DESC rtv_desc = CreateNativeShaderResourceViewDesc(GetSettings(), view_id);
     GetDirectContext().GetDirectDevice().GetNativeDevice()->CreateShaderResourceView(GetNativeResource(), &rtv_desc, cpu_descriptor_handle);
@@ -472,7 +472,7 @@ bool ImageTexture::SetName(const std::string& name)
     return true;
 }
 
-void ImageTexture::SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue)
+void ImageTexture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_upload_resource);

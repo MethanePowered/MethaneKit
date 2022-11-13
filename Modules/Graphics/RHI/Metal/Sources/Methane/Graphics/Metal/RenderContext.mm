@@ -39,7 +39,7 @@ Metal implementation of the render context interface.
 // Enables automatic capture of all initialization commands before the first frame rendering
 //#define CAPTURE_INITIALIZATION_SCOPE
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
@@ -51,7 +51,7 @@ Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, 
     return render_context_ptr;
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {

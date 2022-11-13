@@ -32,7 +32,7 @@ Vulkan implementation of the command queue interface.
 
 #include <fmt/format.h>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
@@ -46,7 +46,7 @@ Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListTyp
     return command_queue_ptr;
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
@@ -110,20 +110,20 @@ static vk::AccessFlags GetAccessFlagsByQueueFlags(vk::QueueFlags vk_queue_flags)
     return vk_access_flags;
 }
 
-CommandQueue::CommandQueue(const Base::Context& context, CommandListType command_lists_type)
+CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type)
     : CommandQueue(context, command_lists_type, dynamic_cast<const IContextVk&>(context).GetVulkanDevice())
 {
     META_FUNCTION_TASK();
 }
 
-CommandQueue::CommandQueue(const Base::Context& context, CommandListType command_lists_type, const Device& device)
+CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type, const Device& device)
     : CommandQueue(context, command_lists_type, device,
                      device.GetQueueFamilyReservation(command_lists_type))
 {
     META_FUNCTION_TASK();
 }
 
-CommandQueue::CommandQueue(const Base::Context& context, CommandListType command_lists_type, const Device& device,
+CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type, const Device& device,
                                const QueueFamilyReservation& family_reservation)
     : CommandQueue(context, command_lists_type, device, family_reservation,
                      device.GetNativeQueueFamilyProperties(family_reservation.GetFamilyIndex()))
@@ -131,7 +131,7 @@ CommandQueue::CommandQueue(const Base::Context& context, CommandListType command
     META_FUNCTION_TASK();
 }
 
-CommandQueue::CommandQueue(const Base::Context& context, CommandListType command_lists_type, const Device& device,
+CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type, const Device& device,
                                const QueueFamilyReservation& family_reservation, const vk::QueueFamilyProperties& family_properties)
     : Base::CommandQueueTracking(context, command_lists_type)
     , m_vk_context(dynamic_cast<const IContextVk&>(context))
@@ -151,7 +151,7 @@ CommandQueue::~CommandQueue()
     GetVulkanDevice().GetQueueFamilyReservation(Base::CommandQueue::GetCommandListType()).ReleaseQueueIndex(m_queue_index);
 }
 
-void CommandQueue::Execute(ICommandListSet& command_list_set, const ICommandList::CompletedCallback& completed_callback)
+void CommandQueue::Execute(Rhi::ICommandListSet& command_list_set, const Rhi::ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
 
@@ -224,10 +224,10 @@ void CommandQueue::ResetWaitForFrameExecution(Data::Index frame_index)
     wait_info.stages.clear();
 }
 
-void CommandQueue::AddWaitForFrameExecution(const ICommandListSet& command_list_set)
+void CommandQueue::AddWaitForFrameExecution(const Rhi::ICommandListSet& command_list_set)
 {
     META_FUNCTION_TASK();
-    if (GetCommandListType() != CommandListType::Render)
+    if (GetCommandListType() != Rhi::CommandListType::Render)
         return;
 
     const auto& vulkan_command_list_set = static_cast<const CommandListSet&>(command_list_set);

@@ -40,17 +40,17 @@ DirectX 12 implementation of the device interface.
 #include <algorithm>
 #include <cassert>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-ISystem& ISystem::Get()
+Rhi::ISystem& Rhi::ISystem::Get()
 {
     META_FUNCTION_TASK();
     static const auto s_system_ptr = std::make_shared<DirectX::System>();
     return *s_system_ptr;
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {

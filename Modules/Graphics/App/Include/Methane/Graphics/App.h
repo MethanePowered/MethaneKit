@@ -23,8 +23,8 @@ Interface of the graphics application base template class defined in App.hpp
 
 #pragma once
 
-#include <Methane/Graphics/IRenderPass.h>
-#include <Methane/Graphics/IDevice.h>
+#include <Methane/Graphics/RHI/IRenderPass.h>
+#include <Methane/Graphics/RHI/IDevice.h>
 
 #include <stdint.h>
 
@@ -35,17 +35,17 @@ struct IApp
 {
     struct Settings
     {
-        IRenderPass::Access screen_pass_access = IRenderPass::Access::None;
-        bool                animations_enabled = true;
-        bool               show_hud_in_window_title   = true;
-        int32_t            default_device_index       = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device
-        DeviceCaps         device_capabilities;
+        Rhi::RenderPassAccess screen_pass_access       = Rhi::RenderPassAccess::None;
+        bool                  animations_enabled       = true;
+        bool                  show_hud_in_window_title = true;
+        int32_t               default_device_index     = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device
+        Rhi::DeviceCaps       device_capabilities;
 
-        Settings& SetScreenPassAccess(IRenderPass::Access new_screen_pass_access) noexcept;
+        Settings& SetScreenPassAccess(Rhi::RenderPassAccess new_screen_pass_access) noexcept;
         Settings& SetAnimationsEnabled(bool new_animations_enabled) noexcept;
         Settings& SetShowHudInWindowTitle(bool new_show_hud_in_window_title) noexcept;
         Settings& SetDefaultDeviceIndex(int32_t new_default_device_index) noexcept;
-        Settings& SetDeviceCapabilities(DeviceCaps&& new_device_capabilities) noexcept;
+        Settings& SetDeviceCapabilities(Rhi::DeviceCaps&& new_device_capabilities) noexcept;
     };
 
     virtual const Settings& GetGraphicsAppSettings() const noexcept = 0;

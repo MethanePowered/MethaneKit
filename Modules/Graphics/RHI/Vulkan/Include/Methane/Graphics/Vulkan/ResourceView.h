@@ -23,8 +23,8 @@ Vulkan implementation of the ResourceView.
 
 #pragma once
 
-#include <Methane/Graphics/IResource.h>
-#include <Methane/Graphics/ResourceView.h>
+#include <Methane/Graphics/RHI/IResource.h>
+#include <Methane/Graphics/RHI/ResourceView.h>
 
 #include <vulkan/vulkan.hpp>
 
@@ -38,7 +38,7 @@ struct IContextVk;
 struct IResourceVk;
 
 class ResourceView final
-    : public Graphics::ResourceView
+    : public Rhi::ResourceView
 {
 public:
     template<typename DescType, typename ViewType>
@@ -52,11 +52,11 @@ public:
     using ImageViewDescriptor   = ViewDescriptor<vk::DescriptorImageInfo, vk::UniqueImageView>;
     using ViewDescriptorVariant = std::variant<BufferViewDescriptor, ImageViewDescriptor>;
 
-    ResourceView(const Graphics::ResourceView& view_id, ResourceUsage usage);
+    ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsage usage);
 
-    [[nodiscard]] const Id&       GetId() const noexcept    { return m_id; }
-    [[nodiscard]] ResourceUsage GetUsage() const noexcept { return m_id.usage; }
-    [[nodiscard]] IResourceVk&    GetVulkanResource() const;
+    [[nodiscard]] const Id&          GetId() const noexcept     { return m_id; }
+    [[nodiscard]] Rhi::ResourceUsage GetUsage() const noexcept  { return m_id.usage; }
+    [[nodiscard]] IResourceVk&       GetVulkanResource() const;
 
     [[nodiscard]] const BufferViewDescriptor*  GetBufferViewDescriptorPtr() const;
     [[nodiscard]] const BufferViewDescriptor&  GetBufferViewDescriptor() const;

@@ -26,24 +26,24 @@ Base implementation of the parallel render command list interface.
 #include "CommandList.h"
 #include "RenderPass.h"
 
-#include <Methane/Graphics/IParallelRenderCommandList.h>
+#include <Methane/Graphics/RHI/IParallelRenderCommandList.h>
 
 #include <optional>
 #include <string>
 #include <string_view>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 struct IRenderState;
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Base
 {
 
 class ParallelRenderCommandList
-    : public IParallelRenderCommandList
+    : public Rhi::IParallelRenderCommandList
     , public CommandList
 {
 public:
@@ -55,18 +55,18 @@ public:
     bool IsValidationEnabled() const noexcept override { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) override;
     void Reset(IDebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
-    void SetViewState(IViewState& view_state) override;
+    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
+    void SetViewState(Rhi::IViewState& view_state) override;
     void SetParallelCommandListsCount(uint32_t count) override;
-    const Refs<IRenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists_refs; }
+    const Refs<Rhi::IRenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists_refs; }
 
     // CommandList interface
-    void SetResourceBarriers(const IResourceBarriers&) override { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not set resource barriers on parallel render command list."); }
+    void SetResourceBarriers(const Rhi::IResourceBarriers&) override { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not set resource barriers on parallel render command list."); }
     void Execute(const ICommandList::CompletedCallback& completed_callback) override;
     void Complete() override;
 
     // ICommandList interface
-    void PushDebugGroup(IDebugGroup&) override   { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list."); }
+    void PushDebugGroup(IDebugGroup&) override  { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list."); }
     void PopDebugGroup() override               { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list."); }
     void Commit() override;
 
@@ -84,10 +84,10 @@ private:
     template<typename ResetCommandListFn>
     void ResetImpl(IDebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn);
 
-    const Ptr<RenderPass>    m_render_pass_ptr;
-    Ptrs<RenderCommandList>  m_parallel_command_lists;
-    Refs<IRenderCommandList> m_parallel_command_lists_refs;
-    bool                     m_is_validation_enabled = true;
+    const Ptr<RenderPass>         m_render_pass_ptr;
+    Ptrs<RenderCommandList>       m_parallel_command_lists;
+    Refs<Rhi::IRenderCommandList> m_parallel_command_lists_refs;
+    bool                          m_is_validation_enabled = true;
 };
 
 } // namespace Methane::Graphics::Base

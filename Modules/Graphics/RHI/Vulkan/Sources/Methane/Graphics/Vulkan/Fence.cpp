@@ -32,16 +32,16 @@ Vulkan fence implementation.
 
 #include <nowide/convert.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IFence> IFence::Create(ICommandQueue& command_queue)
+Ptr<IFence> Rhi::IFence::Create(ICommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::Fence>(static_cast<Vulkan::CommandQueue&>(command_queue));
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
@@ -95,7 +95,7 @@ void Fence::WaitOnCpu()
     META_LOG("Fence '{}' AWAKE on value {}", GetName(), wait_value);
 }
 
-void Fence::WaitOnGpu(ICommandQueue& wait_on_command_queue)
+void Fence::WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     Base::Fence::WaitOnGpu(wait_on_command_queue);

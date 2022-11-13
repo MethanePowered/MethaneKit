@@ -26,13 +26,13 @@ Methane text rendering primitive.
 #include "Font.h"
 
 #include <Methane/UserInterface/Item.h>
-#include <Methane/Graphics/ICommandList.h>
+#include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Data/Receiver.hpp>
 
 #include <string_view>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 struct IRenderContext;
 struct IRenderCommandList;
@@ -125,9 +125,9 @@ public:
     using SettingsUtf32 = Settings<std::u32string>;
 
 
-    Text(Context& ui_context, gfx::IRenderPattern& render_pattern, Font& font, const SettingsUtf8& settings);
+    Text(Context& ui_context, rhi::IRenderPattern& render_pattern, Font& font, const SettingsUtf8& settings);
     Text(Context& ui_context, Font& font, const SettingsUtf8& settings);
-    Text(Context& ui_context, gfx::IRenderPattern& render_pattern, Font& font, SettingsUtf32 settings);
+    Text(Context& ui_context, rhi::IRenderPattern& render_pattern, Font& font, SettingsUtf32 settings);
     Text(Context& ui_context, Font& font, SettingsUtf32 settings);
     ~Text() override;
 
@@ -150,21 +150,21 @@ public:
     bool SetRect(const UnitRect& ui_rect) override;
 
     void Update(const gfx::FrameSize& render_attachment_size);
-    void Draw(gfx::IRenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group = nullptr);
+    void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group = nullptr);
 
 protected:
     // IFontCallback interface
-    void OnFontAtlasTextureReset(Font& font, const Ptr<gfx::ITexture>& old_atlas_texture_ptr, const Ptr<gfx::ITexture>& new_atlas_texture_ptr) override;
+    void OnFontAtlasTextureReset(Font& font, const Ptr<rhi::ITexture>& old_atlas_texture_ptr, const Ptr<rhi::ITexture>& new_atlas_texture_ptr) override;
     void OnFontAtlasUpdated(Font&) override { /* not handled in this class */ }
 
 private:
     struct CommonResourceRefs
     {
-        gfx::IRenderContext&      render_context;
-        const gfx::IRenderState&  render_state;
-        const Ptr<gfx::IBuffer> & const_buffer_ptr;
-        const Ptr<gfx::ITexture>& atlas_texture_ptr;
-        const Ptr<gfx::ISampler>& atlas_sampler_ptr;
+        rhi::IRenderContext&      render_context;
+        const rhi::IRenderState&  render_state;
+        const Ptr<rhi::IBuffer> & const_buffer_ptr;
+        const Ptr<rhi::ITexture>& atlas_texture_ptr;
+        const Ptr<rhi::ISampler>& atlas_sampler_ptr;
         const TextMesh&           text_mesh;
     };
 
@@ -189,24 +189,24 @@ private:
         [[nodiscard]] bool IsInitialized() const noexcept                     { return m_program_bindings_ptr && m_vertex_buffer_set_ptr && m_index_buffer_ptr; }
         [[nodiscard]] bool IsAtlasInitialized() const noexcept                { return !!m_atlas_texture_ptr; }
 
-        [[nodiscard]] gfx::IBufferSet&       GetVertexBufferSet() const;
-        [[nodiscard]] gfx::IBuffer&          GetIndexBuffer() const;
-        [[nodiscard]] gfx::IProgramBindings& GetProgramBindings() const;
+        [[nodiscard]] rhi::IBufferSet&       GetVertexBufferSet() const;
+        [[nodiscard]] rhi::IBuffer&          GetIndexBuffer() const;
+        [[nodiscard]] rhi::IProgramBindings& GetProgramBindings() const;
 
-        bool UpdateAtlasTexture(const Ptr<gfx::ITexture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
-        void UpdateMeshBuffers(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
-        void UpdateUniformsBuffer(const gfx::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
-        void InitializeProgramBindings(const gfx::IRenderState& state, const Ptr<gfx::IBuffer>& const_buffer_ptr,
-                                       const Ptr<gfx::ISampler>& atlas_sampler_ptr, std::string_view text_name);
+        bool UpdateAtlasTexture(const Ptr<rhi::ITexture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
+        void UpdateMeshBuffers(const rhi::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
+        void UpdateUniformsBuffer(const rhi::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
+        void InitializeProgramBindings(const rhi::IRenderState& state, const Ptr<rhi::IBuffer>& const_buffer_ptr,
+                                       const Ptr<rhi::ISampler>& atlas_sampler_ptr, std::string_view text_name);
 
     private:
         uint32_t                   m_frame_index;
         DirtyFlags                 m_dirty_mask = DirtyFlags::All;
-        Ptr<gfx::IBufferSet>       m_vertex_buffer_set_ptr;
-        Ptr<gfx::IBuffer>          m_index_buffer_ptr;
-        Ptr<gfx::IBuffer>          m_uniforms_buffer_ptr;
-        Ptr<gfx::ITexture>         m_atlas_texture_ptr;
-        Ptr<gfx::IProgramBindings> m_program_bindings_ptr;
+        Ptr<rhi::IBufferSet>       m_vertex_buffer_set_ptr;
+        Ptr<rhi::IBuffer>          m_index_buffer_ptr;
+        Ptr<rhi::IBuffer>          m_uniforms_buffer_ptr;
+        Ptr<rhi::ITexture>         m_atlas_texture_ptr;
+        Ptr<rhi::IProgramBindings> m_program_bindings_ptr;
     };
 
     void InitializeFrameResources();
@@ -231,10 +231,10 @@ private:
     FrameSize                   m_render_attachment_size = FrameSize::Max();
     Ptr<Font>                   m_font_ptr;
     UniquePtr<TextMesh>    m_text_mesh_ptr;
-    Ptr<gfx::IRenderState> m_render_state_ptr;
-    Ptr<gfx::IViewState> m_view_state_ptr;
-    Ptr<gfx::IBuffer>           m_const_buffer_ptr;
-    Ptr<gfx::ISampler>          m_atlas_sampler_ptr;
+    Ptr<rhi::IRenderState> m_render_state_ptr;
+    Ptr<rhi::IViewState> m_view_state_ptr;
+    Ptr<rhi::IBuffer>           m_const_buffer_ptr;
+    Ptr<rhi::ISampler>          m_atlas_sampler_ptr;
     std::vector<FrameResources> m_frame_resources;
     bool                        m_is_viewport_dirty = true;
     bool                        m_is_const_buffer_dirty = true;

@@ -38,14 +38,14 @@ class Program final : public Base::Program
 public:
     Program(const Base::Context& context, const Settings& settings);
 
-    Shader& GetMetalShader(ShaderType shader_type) noexcept;
+    Shader& GetMetalShader(Rhi::ShaderType shader_type) noexcept;
     
-    id<MTLFunction> GetNativeShaderFunction(ShaderType shader_type) noexcept;
+    id<MTLFunction> GetNativeShaderFunction(Rhi::ShaderType shader_type) noexcept;
     MTLVertexDescriptor* GetNativeVertexDescriptor() noexcept { return m_mtl_vertex_desc; }
 
 private:
     const IContext& GetMetalContext() const noexcept;
-    void SetNativeShaderArguments(ShaderType shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept;
+    void SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept;
     
     MTLVertexDescriptor*         m_mtl_vertex_desc = nil;
     id<MTLRenderPipelineState>   m_mtl_dummy_pipeline_state_for_reflection;

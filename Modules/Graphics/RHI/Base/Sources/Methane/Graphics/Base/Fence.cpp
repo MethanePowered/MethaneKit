@@ -50,7 +50,7 @@ void Fence::WaitOnCpu()
     META_LOG("Fence '{}' WAIT on CPU with value {}", GetName(), m_value);
 }
 
-void Fence::WaitOnGpu(ICommandQueue& wait_on_command_queue)
+void Fence::WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     META_UNUSED(wait_on_command_queue);
@@ -66,7 +66,7 @@ void Fence::FlushOnCpu()
     WaitOnCpu();
 }
 
-void Fence::FlushOnGpu(ICommandQueue& wait_on_command_queue)
+void Fence::FlushOnGpu(Rhi::ICommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     Signal();

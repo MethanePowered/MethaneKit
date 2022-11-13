@@ -27,6 +27,7 @@ Tutorial demonstrating colored triangle rendering with Methane graphics API
 
 using namespace Methane;
 using namespace Methane::Graphics;
+using namespace Methane::Graphics::Rhi;
 
 struct HelloTriangleFrame final : AppFrame
 {
@@ -73,7 +74,7 @@ public:
                             IShader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } }),
                         },
                         ProgramInputBufferLayouts{ },
-                        ProgramArgumentAccessors{ },
+                        Rhi::ProgramArgumentAccessors{ },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
@@ -109,7 +110,7 @@ public:
         return true;
     }
 
-    void OnContextReleased(Graphics::IContext& context) override
+    void OnContextReleased(Rhi::IContext& context) override
     {
         m_render_state_ptr.reset();
 

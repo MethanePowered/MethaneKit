@@ -26,7 +26,7 @@ Base implementation of the render pass interface.
 #include "Object.h"
 #include "Resource.h"
 
-#include <Methane/Graphics/IRenderPass.h>
+#include <Methane/Graphics/RHI/IRenderPass.h>
 
 namespace Methane::Graphics::Base
 {
@@ -36,18 +36,18 @@ class RenderCommandList;
 class Texture;
 
 class RenderPattern
-    : public IRenderPattern
+    : public Rhi::IRenderPattern
     , public Object
 {
 public:
     RenderPattern(RenderContext& render_context, const Settings& settings);
 
     // IRenderPattern overrides
-    [[nodiscard]] const IRenderContext& GetRenderContext() const noexcept final;
-    [[nodiscard]] IRenderContext&       GetRenderContext() noexcept final;
-    [[nodiscard]] const Settings&       GetSettings() const noexcept final { return m_settings; }
-    [[nodiscard]] Data::Size            GetAttachmentCount() const noexcept final;
-    [[nodiscard]] AttachmentFormats     GetAttachmentFormats() const noexcept final;
+    [[nodiscard]] const Rhi::IRenderContext& GetRenderContext() const noexcept final;
+    [[nodiscard]] Rhi::IRenderContext&       GetRenderContext() noexcept final;
+    [[nodiscard]] const Settings&            GetSettings() const noexcept final { return m_settings; }
+    [[nodiscard]] Data::Size                 GetAttachmentCount() const noexcept final;
+    [[nodiscard]] AttachmentFormats          GetAttachmentFormats() const noexcept final;
 
     [[nodiscard]] const RenderContext& GetBaseRenderContext() const noexcept { return *m_render_context_ptr; }
     [[nodiscard]] RenderContext&       GetBaseRenderContext() noexcept       { return *m_render_context_ptr; }
@@ -58,13 +58,13 @@ private:
 };
 
 class RenderPass
-    : public IRenderPass
+    : public Rhi::IRenderPass
     , public Object
-    , public Data::Emitter<IRenderPassCallback>
+    , public Data::Emitter<Rhi::IRenderPassCallback>
 {
 public:
     RenderPass(RenderPattern& pattern, const Settings& settings,
-                   bool update_attachment_states = true);
+               bool update_attachment_states = true);
 
     // IRenderPass interface
     const Pattern&  GetPattern() const noexcept final  { return *m_pattern_base_ptr; }
@@ -76,21 +76,21 @@ public:
     virtual void Begin(RenderCommandList& render_command_list);
     virtual void End(RenderCommandList& render_command_list);
 
-    const ITexture::View& GetAttachmentTextureView(const Attachment& attachment) const;
-    const Refs<Texture>&  GetColorAttachmentTextures() const;
-    Texture*              GetDepthAttachmentTexture() const;
-    Texture*              GetStencilAttachmentTexture() const;
-    const Ptrs<Texture>&  GetNonFrameBufferAttachmentTextures() const;
-    bool                  IsBegun() const noexcept   { return m_is_begun; }
+    const Rhi::TextureView& GetAttachmentTextureView(const Attachment& attachment) const;
+    const Refs<Texture>&    GetColorAttachmentTextures() const;
+    Texture*                GetDepthAttachmentTexture() const;
+    Texture*                GetStencilAttachmentTexture() const;
+    const Ptrs<Texture>&    GetNonFrameBufferAttachmentTextures() const;
+    bool                    IsBegun() const noexcept   { return m_is_begun; }
 
 protected:
     RenderPattern& GetBasePattern() const noexcept { return *m_pattern_base_ptr; }
 
-    void SetAttachmentStates(const std::optional<IResource::State>& color_state,
-                             const std::optional<IResource::State>& depth_state) const;
-    void SetAttachmentStates(const std::optional<IResource::State>& color_state,
-                             const std::optional<IResource::State>& depth_state,
-                             Ptr<IResourceBarriers>& transition_barriers_ptr,
+    void SetAttachmentStates(const Opt<Rhi::ResourceState>& color_state,
+                             const Opt<Rhi::ResourceState>& depth_state) const;
+    void SetAttachmentStates(const Opt<Rhi::ResourceState>& color_state,
+                             const Opt<Rhi::ResourceState>& depth_state,
+                             Ptr<Rhi::IResourceBarriers>& transition_barriers_ptr,
                              RenderCommandList& render_command_list) const;
 
 private:

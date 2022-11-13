@@ -31,12 +31,13 @@ namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 namespace gui = Methane::UserInterface;
 
 struct TypographyFrame final : gfx::AppFrame
 {
-    Ptr<gfx::IRenderCommandList> render_cmd_list_ptr;
-    Ptr<gfx::ICommandListSet>    execute_cmd_list_set_ptr;
+    Ptr<rhi::IRenderCommandList> render_cmd_list_ptr;
+    Ptr<rhi::ICommandListSet>    execute_cmd_list_set_ptr;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -78,21 +79,21 @@ public:
 
 private:
     // IContextCallback overrides
-    void OnContextReleased(gfx::IContext& context) override;
+    void OnContextReleased(rhi::IContext& context) override;
 
     // IFontLibraryCallback implementation
     void OnFontAdded(gui::Font& font) override;
     void OnFontRemoved(gui::Font&) override { /* not handled in this controller */ }
 
     // IFontCallback implementation
-    void OnFontAtlasTextureReset(gui::Font& font, const Ptr<gfx::ITexture>& old_atlas_texture_ptr, const Ptr<gfx::ITexture>& new_atlas_texture_ptr) override;
+    void OnFontAtlasTextureReset(gui::Font& font, const Ptr<rhi::ITexture>& old_atlas_texture_ptr, const Ptr<rhi::ITexture>& new_atlas_texture_ptr) override;
     void OnFontAtlasUpdated(gui::Font& font) override;
 
     bool Animate(double elapsed_seconds, double);
     void AnimateTextBlock(size_t block_index, int32_t& vertical_text_pos_in_dots);
     void ResetAnimation();
 
-    Ptr<gui::Badge> CreateFontAtlasBadge(const gui::Font& font, const Ptr<gfx::ITexture>& atlas_texture_ptr);
+    Ptr<gui::Badge> CreateFontAtlasBadge(const gui::Font& font, const Ptr<rhi::ITexture>& atlas_texture_ptr);
     void UpdateFontAtlasBadges();
     void LayoutFontAtlasBadges(const gfx::FrameSize& frame_size);
 

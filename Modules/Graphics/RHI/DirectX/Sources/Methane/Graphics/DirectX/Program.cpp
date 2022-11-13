@@ -37,16 +37,16 @@ DirectX 12 implementation of the program interface.
 #include <nowide/convert.hpp>
 #include <iomanip>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
+Ptr<IProgram> Rhi::IProgram::Create(const Rhi::IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::Program>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -93,14 +93,14 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByRangeType(D3D12_DESCRIPTOR_RA
 }
 
 [[nodiscard]]
-static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(ShaderType shader_type)
+static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Rhi::ShaderType shader_type)
 {
     META_FUNCTION_TASK();
     switch (shader_type)
     {
-    case ShaderType::All:    return D3D12_SHADER_VISIBILITY_ALL;
-    case ShaderType::Vertex: return D3D12_SHADER_VISIBILITY_VERTEX;
-    case ShaderType::Pixel:  return D3D12_SHADER_VISIBILITY_PIXEL;
+    case Rhi::ShaderType::All:    return D3D12_SHADER_VISIBILITY_ALL;
+    case Rhi::ShaderType::Vertex: return D3D12_SHADER_VISIBILITY_VERTEX;
+    case Rhi::ShaderType::Pixel:  return D3D12_SHADER_VISIBILITY_PIXEL;
     default:                 META_UNEXPECTED_ARG_RETURN(shader_type, D3D12_SHADER_VISIBILITY_ALL);
     }
 };
@@ -132,7 +132,7 @@ static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>
 
 Program::Program(const Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
-    , m_dx_context(dynamic_cast<const IContextDx&>(context))
+    , m_dx_context(dynamic_cast<const Rhi::IContextDx&>(context))
 {
     META_FUNCTION_TASK();
     InitArgumentBindings(settings.argument_accessors);
@@ -272,13 +272,13 @@ DescriptorHeap::Range Program::ReserveDescriptorRange(DescriptorHeap& heap, Argu
 Shader& Program::GetDirectVertexShader() const
 {
     META_FUNCTION_TASK();
-    return static_cast<Shader&>(GetShaderRef(ShaderType::Vertex));
+    return static_cast<Shader&>(GetShaderRef(Rhi::ShaderType::Vertex));
 }
 
 Shader& Program::GetDirectPixelShader() const
 {
     META_FUNCTION_TASK();
-    return static_cast<Shader&>(GetShaderRef(ShaderType::Pixel));
+    return static_cast<Shader&>(GetShaderRef(Rhi::ShaderType::Pixel));
 }
 
 D3D12_INPUT_LAYOUT_DESC Program::GetNativeInputLayoutDesc() const noexcept

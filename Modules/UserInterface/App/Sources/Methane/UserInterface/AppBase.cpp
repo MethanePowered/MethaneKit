@@ -26,7 +26,7 @@ Base implementation of the Methane user interface application.
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Panel.h>
 #include <Methane/UserInterface/Badge.h>
-#include <Methane/Graphics/ICommandList.h>
+#include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
@@ -136,7 +136,7 @@ AppBase::~AppBase()
     Font::Library::Get().Clear();
 }
 
-void AppBase::InitUI(const Platform::IApp& app, gfx::ICommandQueue& render_cmd_queue, gfx::IRenderPattern& render_pattern, const gfx::FrameSize& frame_size)
+void AppBase::InitUI(const Platform::IApp& app, rhi::ICommandQueue& render_cmd_queue, rhi::IRenderPattern& render_pattern, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
     m_ui_context_ptr = std::make_unique<Context>(app, render_cmd_queue, render_pattern);
@@ -216,7 +216,7 @@ bool AppBase::UpdateUI() const
     return true;
 }
 
-void AppBase::RenderOverlay(gfx::IRenderCommandList& cmd_list) const
+void AppBase::RenderOverlay(rhi::IRenderCommandList& cmd_list) const
 {
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Overlay Rendering");
@@ -241,7 +241,7 @@ void AppBase::TextItem::Update(const FrameSize& frame_size) const
     }
 }
 
-void AppBase::TextItem::Draw(gfx::IRenderCommandList& cmd_list, gfx::ICommandListDebugGroup* p_debug_group) const
+void AppBase::TextItem::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group) const
 {
     META_FUNCTION_TASK();
     if (panel_ptr)
@@ -274,7 +274,7 @@ bool AppBase::SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_
     m_app_settings.heads_up_display_mode = heads_up_display_mode;
 
     // Wait for all in-flight rendering to complete before creating and releasing GPU resources
-    m_ui_context_ptr->GetRenderContext().WaitForGpu(gfx::IRenderContext::WaitFor::RenderComplete);
+    m_ui_context_ptr->GetRenderContext().WaitForGpu(rhi::IRenderContext::WaitFor::RenderComplete);
 
     if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface && m_ui_context_ptr)
     {
@@ -296,7 +296,7 @@ bool AppBase::SetHelpText(std::string_view help_str)
         return false;
 
     // Wait for all in-flight rendering to complete before creating and releasing GPU resources
-    m_ui_context_ptr->GetRenderContext().WaitForGpu(gfx::IRenderContext::WaitFor::RenderComplete);
+    m_ui_context_ptr->GetRenderContext().WaitForGpu(rhi::IRenderContext::WaitFor::RenderComplete);
 
     m_help_text_str = help_str;
     m_help_columns.first.text_str = help_str;
@@ -343,7 +343,7 @@ bool AppBase::SetParametersText(std::string_view parameters_str)
         return true;
 
     // Wait for all in-flight rendering to complete before creating and releasing GPU resources
-    m_ui_context_ptr->GetRenderContext().WaitForGpu(gfx::IRenderContext::WaitFor::RenderComplete);
+    m_ui_context_ptr->GetRenderContext().WaitForGpu(rhi::IRenderContext::WaitFor::RenderComplete);
 
     if (!UpdateTextItem(m_parameters))
         return false;

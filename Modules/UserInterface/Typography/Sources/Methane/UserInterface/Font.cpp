@@ -23,9 +23,9 @@ Font atlas textures generation and fonts library management classes.
 
 #include <Methane/UserInterface/Font.h>
 
-#include <Methane/Graphics/IRenderContext.h>
-#include <Methane/Graphics/ICommandKit.h>
-#include <Methane/Graphics/ITexture.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
+#include <Methane/Graphics/RHI/ITexture.h>
 #include <Methane/Data/RectBinPack.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -621,7 +621,7 @@ bool Font::PackCharsToAtlas(float pixels_reserve_multiplier)
     return true;
 }
 
-const Ptr<gfx::ITexture>& Font::GetAtlasTexturePtr(gfx::IRenderContext& context)
+const Ptr<rhi::ITexture>& Font::GetAtlasTexturePtr(rhi::IRenderContext& context)
 {
     META_FUNCTION_TASK();
     if (const auto atlas_texture_it = m_atlas_textures.find(&context);
@@ -631,7 +631,7 @@ const Ptr<gfx::ITexture>& Font::GetAtlasTexturePtr(gfx::IRenderContext& context)
         return atlas_texture_it->second.texture_ptr;
     }
 
-    static const Ptr<gfx::ITexture> empty_texture_ptr;
+    static const Ptr<rhi::ITexture> empty_texture_ptr;
     if (m_char_by_code.empty())
         return empty_texture_ptr;
 
@@ -645,40 +645,40 @@ const Ptr<gfx::ITexture>& Font::GetAtlasTexturePtr(gfx::IRenderContext& context)
     // Create atlas texture and render glyphs to it
     UpdateAtlasBitmap(true);
 
-    const Ptr<gfx::ITexture>& atlas_texture_ptr = m_atlas_textures.try_emplace(&context, CreateAtlasTexture(context, true)).first->second.texture_ptr;
+    const Ptr<rhi::ITexture>& atlas_texture_ptr = m_atlas_textures.try_emplace(&context, CreateAtlasTexture(context, true)).first->second.texture_ptr;
     Emit(&IFontCallback::OnFontAtlasTextureReset, *this, nullptr, atlas_texture_ptr);
 
     return atlas_texture_ptr;
 }
 
-gfx::ITexture& Font::GetAtlasTexture(gfx::IRenderContext& context)
+rhi::ITexture& Font::GetAtlasTexture(rhi::IRenderContext& context)
 {
     META_FUNCTION_TASK();
-    const Ptr<gfx::ITexture>& texture_ptr = GetAtlasTexturePtr(context);
+    const Ptr<rhi::ITexture>& texture_ptr = GetAtlasTexturePtr(context);
     META_CHECK_ARG_NOT_NULL_DESCR(texture_ptr, "atlas texture is not available for context");
     return *texture_ptr;
 }
 
-Font::AtlasTexture Font::CreateAtlasTexture(const gfx::IRenderContext& render_context, bool deferred_data_init)
+Font::AtlasTexture Font::CreateAtlasTexture(const rhi::IRenderContext& render_context, bool deferred_data_init)
 {
     META_FUNCTION_TASK();
-    const Ptr<gfx::ITexture> atlas_texture_ptr = gfx::ITexture::CreateImage(render_context, gfx::Dimensions(m_atlas_pack_ptr->GetSize()), std::nullopt, gfx::PixelFormat::R8Unorm, false);
+    const Ptr<rhi::ITexture> atlas_texture_ptr = rhi::ITexture::CreateImage(render_context, gfx::Dimensions(m_atlas_pack_ptr->GetSize()), std::nullopt, gfx::PixelFormat::R8Unorm, false);
     atlas_texture_ptr->SetName(fmt::format("{} Font Atlas", m_settings.description.name));
     if (deferred_data_init)
     {
-        render_context.RequestDeferredAction(gfx::IContext::DeferredAction::CompleteInitialization);
+        render_context.RequestDeferredAction(rhi::IContext::DeferredAction::CompleteInitialization);
     }
     else
     {
         atlas_texture_ptr->SetData(
-            { gfx::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }, // NOSONAR
+            { rhi::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }, // NOSONAR
             render_context.GetRenderCommandKit().GetQueue()
         );
     }
     return { atlas_texture_ptr, deferred_data_init };
 }
 
-void Font::RemoveAtlasTexture(gfx::IRenderContext& render_context)
+void Font::RemoveAtlasTexture(rhi::IRenderContext& render_context)
 {
     META_FUNCTION_TASK();
     m_atlas_textures.erase(&render_context);
@@ -722,7 +722,7 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
             // Texture will be updated on GPU context completing initialization,
             // when next GPU Frame rendering is started and just before uploading data on GPU with upload command queue
             atlas_texture.is_update_required = true;
-            context_ptr->RequestDeferredAction(gfx::IContext::DeferredAction::CompleteInitialization);
+            context_ptr->RequestDeferredAction(rhi::IContext::DeferredAction::CompleteInitialization);
         }
         else
         {
@@ -734,7 +734,7 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
     Emit(&IFontCallback::OnFontAtlasUpdated, *this);
 }
 
-void Font::UpdateAtlasTexture(const gfx::IRenderContext& render_context, AtlasTexture& atlas_texture)
+void Font::UpdateAtlasTexture(const rhi::IRenderContext& render_context, AtlasTexture& atlas_texture)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(atlas_texture.texture_ptr, "font atlas texture is not initialized");
@@ -743,7 +743,7 @@ void Font::UpdateAtlasTexture(const gfx::IRenderContext& render_context, AtlasTe
     if (const gfx::Dimensions& texture_dimensions = atlas_texture.texture_ptr->GetSettings().dimensions;
         texture_dimensions.GetWidth() != atlas_size.GetWidth() || texture_dimensions.GetHeight() != atlas_size.GetHeight())
     {
-        const Ptr<gfx::ITexture> old_texture_ptr = atlas_texture.texture_ptr;
+        const Ptr<rhi::ITexture> old_texture_ptr = atlas_texture.texture_ptr;
         atlas_texture.texture_ptr = CreateAtlasTexture(render_context, false).texture_ptr;
         Emit(&IFontCallback::OnFontAtlasTextureReset, *this, old_texture_ptr, atlas_texture.texture_ptr);
     }
@@ -751,8 +751,8 @@ void Font::UpdateAtlasTexture(const gfx::IRenderContext& render_context, AtlasTe
     {
         // TODO: Update only a region of atlas texture containing character bitmap
         atlas_texture.texture_ptr->SetData(
-            gfx::IResource::SubResources
-            { gfx::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }, // NOSONAR
+            rhi::IResource::SubResources
+            { rhi::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }, // NOSONAR
             render_context.GetRenderCommandKit().GetQueue()
         );
     }
@@ -774,18 +774,18 @@ void Font::ClearAtlasTextures()
     m_atlas_textures.clear();
 }
 
-void Font::OnContextReleased(gfx::IContext& context)
+void Font::OnContextReleased(rhi::IContext& context)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(context.GetType(), gfx::IContext::Type::Render);
-    RemoveAtlasTexture(dynamic_cast<gfx::IRenderContext&>(context));
+    META_CHECK_ARG_EQUAL(context.GetType(), rhi::IContext::Type::Render);
+    RemoveAtlasTexture(dynamic_cast<rhi::IRenderContext&>(context));
 }
 
-void Font::OnContextCompletingInitialization(gfx::IContext& context)
+void Font::OnContextCompletingInitialization(rhi::IContext& context)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(context.GetType(), gfx::IContext::Type::Render);
-    auto& render_context = dynamic_cast<gfx::IRenderContext&>(context);
+    META_CHECK_ARG_EQUAL(context.GetType(), rhi::IContext::Type::Render);
+    auto& render_context = dynamic_cast<rhi::IRenderContext&>(context);
     if (const auto atlas_texture_it = m_atlas_textures.find(&render_context);
         atlas_texture_it != m_atlas_textures.end() && atlas_texture_it->second.is_update_required)
     {

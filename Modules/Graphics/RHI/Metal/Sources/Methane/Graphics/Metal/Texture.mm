@@ -26,7 +26,7 @@ Metal implementation of the texture interface.
 #include <Methane/Graphics/Metal/TransferCommandList.hh>
 #include <Methane/Graphics/Metal/Types.hh>
 
-#include <Methane/Graphics/ICommandKit.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -34,7 +34,7 @@ Metal implementation of the texture interface.
 #include <magic_enum.hpp>
 #include <algorithm>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 Ptr<ITexture> ITexture::CreateRenderTarget(const IRenderContext& context, const Settings& settings)
@@ -73,7 +73,7 @@ Ptr<ITexture> ITexture::CreateCube(const IContext& context, uint32_t dimension_s
     return std::make_shared<Metal::Texture>(dynamic_cast<const Base::Context&>(context), texture_settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {

@@ -2,7 +2,7 @@ set(TARGET MethaneGraphicsRhiInterface)
 
 include(MethaneModules)
 
-get_module_dirs("Methane/Graphics")
+get_module_dirs("Methane/Graphics/RHI")
 
 list(APPEND HEADERS
     ${INCLUDE_DIR}/IObject.h

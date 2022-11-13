@@ -26,18 +26,21 @@ Methane user interface context used by all widgets for rendering.
 #include "Types.hpp"
 #include "TypeTraits.hpp"
 
-#include <Methane/Graphics/IRenderContext.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Data/TypeTraits.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Memory.hpp>
 
-namespace Methane::Graphics
+namespace rhi = Methane::Graphics::Rhi;
+namespace pal = Methane::Platform;
+
+namespace Methane::Graphics::Rhi
 {
 
 struct ICommandQueue;
 struct IRenderPattern;
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Platform
 {
@@ -47,20 +50,17 @@ struct IApp;
 namespace Methane::UserInterface
 {
 
-namespace gfx = Methane::Graphics;
-namespace pal = Methane::Platform;
-
 class Context
 {
 public:
-    Context(const pal::IApp& app, gfx::ICommandQueue& render_cmd_queue, gfx::IRenderPattern& render_pattern);
+    Context(const pal::IApp& app, rhi::ICommandQueue& render_cmd_queue, rhi::IRenderPattern& render_pattern);
 
-    const gfx::IRenderContext& GetRenderContext() const noexcept { return m_render_context; }
-    gfx::IRenderContext&       GetRenderContext() noexcept       { return m_render_context; }
-    gfx::ICommandQueue&        GetRenderCommandQueue() noexcept  { return *m_render_cmd_queue_ptr; }
+    const rhi::IRenderContext& GetRenderContext() const noexcept { return m_render_context; }
+    rhi::IRenderContext&       GetRenderContext() noexcept       { return m_render_context; }
+    rhi::ICommandQueue&        GetRenderCommandQueue() noexcept  { return *m_render_cmd_queue_ptr; }
 
-    const Ptr<gfx::IRenderPattern>& GetRenderPatternPtr() const noexcept { return m_render_pattern_ptr; }
-    gfx::IRenderPattern&            GetRenderPattern() const noexcept    { return *m_render_pattern_ptr; }
+    const Ptr<rhi::IRenderPattern>& GetRenderPatternPtr() const noexcept { return m_render_pattern_ptr; }
+    rhi::IRenderPattern&            GetRenderPattern() const noexcept    { return *m_render_pattern_ptr; }
 
     double           GetDotsToPixelsFactor() const noexcept     { return m_dots_to_pixels_factor; }
     uint32_t         GetFontResolutionDpi() const noexcept      { return m_font_resolution_dpi; }
@@ -156,9 +156,9 @@ public:
     }
 
 private:
-    gfx::IRenderContext&           m_render_context;
-    const Ptr<gfx::ICommandQueue>  m_render_cmd_queue_ptr;
-    const Ptr<gfx::IRenderPattern> m_render_pattern_ptr;
+    rhi::IRenderContext&           m_render_context;
+    const Ptr<rhi::ICommandQueue>  m_render_cmd_queue_ptr;
+    const Ptr<rhi::IRenderPattern> m_render_pattern_ptr;
     double                         m_dots_to_pixels_factor;
     uint32_t                       m_font_resolution_dpi;
 };

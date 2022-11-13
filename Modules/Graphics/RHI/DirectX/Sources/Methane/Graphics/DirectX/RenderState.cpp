@@ -42,22 +42,22 @@ DirectX 12 implementation of the render state interface.
 
 #include <algorithm>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IViewState> IViewState::Create(const IViewState::Settings& state_settings)
+Ptr<IViewState> Rhi::IViewState::Create(const Rhi::IViewState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::ViewState>(state_settings);
 }
 
-Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRenderState::Settings& state_settings)
+Ptr<IRenderState> Rhi::IRenderState::Create(const Rhi::IRenderContext& context, const Rhi::IRenderState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::RenderState>(dynamic_cast<const Base::RenderContext&>(context), state_settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -78,7 +78,7 @@ inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<IShader>& shader_ptr)
 static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(IRenderState::Rasterizer::FillMode fill_mode)
 {
     META_FUNCTION_TASK();
-    using RasterizerFillMode = IRenderState::Rasterizer::FillMode;
+    using RasterizerFillMode = Rhi::IRenderState::Rasterizer::FillMode;
     
     switch (fill_mode)
     {
@@ -92,7 +92,7 @@ static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(IRenderState::Rasterizer
 static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(IRenderState::Rasterizer::CullMode cull_mode)
 {
     META_FUNCTION_TASK();
-    using RasterizerCullMode = IRenderState::Rasterizer::CullMode;
+    using RasterizerCullMode = Rhi::IRenderState::Rasterizer::CullMode;
 
     switch (cull_mode)
     {
@@ -108,7 +108,7 @@ static UINT8 ConvertRenderTargetWriteMaskToD3D12(IRenderState::Blending::ColorCh
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    using ColorChannels = IRenderState::Blending::ColorChannels;
+    using ColorChannels = Rhi::IRenderState::Blending::ColorChannels;
 
     UINT8 d3d12_color_write_mask = 0;
     if (static_cast<bool>(rt_write_mask & ColorChannels::Red))
@@ -126,7 +126,7 @@ static UINT8 ConvertRenderTargetWriteMaskToD3D12(IRenderState::Blending::ColorCh
 static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(IRenderState::Blending::Operation blend_operation)
 {
     META_FUNCTION_TASK();
-    using BlendOp = IRenderState::Blending::Operation;
+    using BlendOp = Rhi::IRenderState::Blending::Operation;
 
     switch(blend_operation)
     {
@@ -143,7 +143,7 @@ static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(IRenderState::Blending::Op
 static D3D12_BLEND ConvertBlendingFactorToD3D12(IRenderState::Blending::Factor blend_factor)
 {
     META_FUNCTION_TASK();
-    using BlendFactor = IRenderState::Blending::Factor;
+    using BlendFactor = Rhi::IRenderState::Blending::Factor;
     
     switch (blend_factor)
     {
@@ -352,8 +352,8 @@ void RenderState::Reset(const Settings& settings)
     const Program& dx_program                 = RenderState::GetDirectProgram();
     m_pipeline_state_desc.InputLayout           = dx_program.GetNativeInputLayoutDesc();
     m_pipeline_state_desc.pRootSignature        = dx_program.GetNativeRootSignature().Get();
-    m_pipeline_state_desc.VS                    = GetShaderByteCode(dx_program.GetShader(ShaderType::Vertex));
-    m_pipeline_state_desc.PS                    = GetShaderByteCode(dx_program.GetShader(ShaderType::Pixel));
+    m_pipeline_state_desc.VS                    = GetShaderByteCode(dx_program.GetShader(Rhi::ShaderType::Vertex));
+    m_pipeline_state_desc.PS                    = GetShaderByteCode(dx_program.GetShader(Rhi::ShaderType::Pixel));
     m_pipeline_state_desc.DepthStencilState     = depth_stencil_desc;
     m_pipeline_state_desc.BlendState            = blend_desc;
     m_pipeline_state_desc.RasterizerState       = rasterizer_desc;

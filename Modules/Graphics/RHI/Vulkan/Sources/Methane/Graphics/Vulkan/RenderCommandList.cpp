@@ -34,14 +34,14 @@ Vulkan implementation of the render command list interface.
 
 #include <magic_enum.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
+Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& command_queue, Rhi::IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::RenderCommandList>(static_cast<Vulkan::CommandQueue&>(command_queue),
-                                                         static_cast<Vulkan::RenderPass&>(render_pass));
+                                                       static_cast<Vulkan::RenderPass&>(render_pass));
 }
 
 Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& parallel_render_command_list)
@@ -50,12 +50,12 @@ Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& p
     return std::make_shared<Vulkan::RenderCommandList>(static_cast<Vulkan::ParallelRenderCommandList&>(parallel_render_command_list), false);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Base
 {
 
-Ptr<IRenderCommandList> RenderCommandList::CreateForSynchronization(ICommandQueue& cmd_queue)
+Ptr<Rhi::IRenderCommandList> RenderCommandList::CreateForSynchronization(Rhi::ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::RenderCommandList>(static_cast<Vulkan::CommandQueue&>(cmd_queue));
@@ -66,16 +66,16 @@ Ptr<IRenderCommandList> RenderCommandList::CreateForSynchronization(ICommandQueu
 namespace Methane::Graphics::Vulkan
 {
 
-vk::PrimitiveTopology GetVulkanPrimitiveTopology(RenderPrimitive primitive_type)
+vk::PrimitiveTopology GetVulkanPrimitiveTopology(Rhi::RenderPrimitive primitive_type)
 {
     META_FUNCTION_TASK();
     switch(primitive_type)
     {
-    case RenderPrimitive::Point:           return vk::PrimitiveTopology::ePointList;
-    case RenderPrimitive::Line:            return vk::PrimitiveTopology::eLineList;
-    case RenderPrimitive::LineStrip:       return vk::PrimitiveTopology::eLineStrip;
-    case RenderPrimitive::Triangle:        return vk::PrimitiveTopology::eTriangleList;
-    case RenderPrimitive::TriangleStrip:   return vk::PrimitiveTopology::eTriangleStrip;
+    case Rhi::RenderPrimitive::Point:           return vk::PrimitiveTopology::ePointList;
+    case Rhi::RenderPrimitive::Line:            return vk::PrimitiveTopology::eLineList;
+    case Rhi::RenderPrimitive::LineStrip:       return vk::PrimitiveTopology::eLineStrip;
+    case Rhi::RenderPrimitive::Triangle:        return vk::PrimitiveTopology::eTriangleList;
+    case Rhi::RenderPrimitive::TriangleStrip:   return vk::PrimitiveTopology::eTriangleStrip;
     default:                               META_UNEXPECTED_ARG_RETURN(primitive_type, vk::PrimitiveTopology::ePointList);
     }
 }
@@ -129,7 +129,7 @@ void RenderCommandList::Reset(IDebugGroup* p_debug_group)
     CommandList::Reset(p_debug_group);
 }
 
-void RenderCommandList::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
+void RenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     CommandList::ResetCommandState();
@@ -137,7 +137,7 @@ void RenderCommandList::ResetWithState(IRenderState& render_state, IDebugGroup* 
     CommandList::SetRenderState(render_state);
 }
 
-bool RenderCommandList::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers)
+bool RenderCommandList::SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     if (!Base::RenderCommandList::SetVertexBuffers(vertex_buffers, set_resource_barriers))
@@ -145,8 +145,8 @@ bool RenderCommandList::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_re
 
     const auto& vk_vertex_buffers = static_cast<const BufferSet&>(vertex_buffers);
     auto& vk_vertex_buffer_set = static_cast<BufferSet&>(vertex_buffers);
-    if (const Ptr<IResourceBarriers>& buffer_set_setup_barriers_ptr = vk_vertex_buffer_set.GetSetupTransitionBarriers();
-        set_resource_barriers && vk_vertex_buffer_set.SetState(IResource::State::VertexBuffer) && buffer_set_setup_barriers_ptr)
+    if (const Ptr<Rhi::IResourceBarriers>& buffer_set_setup_barriers_ptr = vk_vertex_buffer_set.GetSetupTransitionBarriers();
+        set_resource_barriers && vk_vertex_buffer_set.SetState(Rhi::IResource::State::VertexBuffer) && buffer_set_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_set_setup_barriers_ptr);
     }
@@ -155,15 +155,15 @@ bool RenderCommandList::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_re
     return true;
 }
 
-bool RenderCommandList::SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers)
+bool RenderCommandList::SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     if (!Base::RenderCommandList::SetIndexBuffer(index_buffer, set_resource_barriers))
         return false;
 
     auto& vk_index_buffer = static_cast<Buffer&>(index_buffer);
-    if (Ptr<IResourceBarriers>& buffer_setup_barriers_ptr = vk_index_buffer.GetSetupTransitionBarriers();
-        set_resource_barriers && vk_index_buffer.SetState(IResource::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
+    if (Ptr<Rhi::IResourceBarriers>& buffer_setup_barriers_ptr = vk_index_buffer.GetSetupTransitionBarriers();
+        set_resource_barriers && vk_index_buffer.SetState(Rhi::IResource::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_setup_barriers_ptr);
     }
@@ -221,7 +221,7 @@ void RenderCommandList::Commit()
     CommandList::Commit();
 }
 
-void RenderCommandList::OnRenderPassUpdated(const IRenderPass& render_pass)
+void RenderCommandList::OnRenderPassUpdated(const Rhi::IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     SetSecondaryRenderBufferInheritInfo(CreateRenderCommandBufferInheritanceInfo(static_cast<const RenderPass&>(render_pass)));

@@ -23,7 +23,7 @@ Metal context accessor interface for template class Context<ContextBaseT>
 
 #pragma once
 
-#include <Methane/Graphics/ICommandList.h>
+#include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Memory.hpp>
 
 #include <string>

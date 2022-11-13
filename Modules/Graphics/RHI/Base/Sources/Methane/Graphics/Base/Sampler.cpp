@@ -36,7 +36,7 @@ Sampler::Sampler(const Context& context, const Settings& settings,
     META_FUNCTION_TASK();
 }
 
-void Sampler::SetData(const SubResources&, ICommandQueue&)
+void Sampler::SetData(const SubResources&, Rhi::ICommandQueue&)
 {
     META_FUNCTION_NOT_IMPLEMENTED_DESCR("Samplers do not support setting the data.");
 }

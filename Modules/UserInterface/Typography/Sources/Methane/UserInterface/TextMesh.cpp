@@ -23,7 +23,7 @@ Methane text mesh generation helper.
 
 #include "TextMesh.h"
 
-#include <Methane/Graphics/IRenderCommandList.h>
+#include <Methane/Graphics/RHI/IRenderCommandList.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Data/TypeFormatters.hpp>
 #include <Methane/Instrumentation.h>

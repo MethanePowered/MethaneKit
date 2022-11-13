@@ -30,24 +30,24 @@ DirectX 12 implementation of the sampler interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-Ptr<ISampler> ISampler::Create(const IContext& context, const ISampler::Settings& settings)
+Ptr<ISampler> Rhi::ISampler::Create(const Rhi::IContext& context, const Rhi::ISampler::Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::Sampler>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
 
-using FilterMinMag = ISampler::Filter::MinMag;
-using FilterMip = ISampler::Filter::Mip;
+using FilterMinMag = Rhi::ISampler::Filter::MinMag;
+using FilterMip = Rhi::ISampler::Filter::Mip;
 
-static D3D12_FILTER ConvertFilterMinNearestMagNearestToDirectX(const ISampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestMagNearestToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
@@ -62,7 +62,7 @@ static D3D12_FILTER ConvertFilterMinNearestMagNearestToDirectX(const ISampler::F
     }
 }
 
-static D3D12_FILTER ConvertFilterMinNearestMagLinearToDirectX(const ISampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestMagLinearToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
@@ -77,7 +77,7 @@ static D3D12_FILTER ConvertFilterMinNearestMagLinearToDirectX(const ISampler::Fi
     }
 }
 
-static D3D12_FILTER ConvertFilterMinNearestToDirectX(const ISampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinNearestToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
@@ -90,7 +90,7 @@ static D3D12_FILTER ConvertFilterMinNearestToDirectX(const ISampler::Filter& fil
     }
 }
 
-static D3D12_FILTER ConvertFilterMinLinearMagNearestToDirectX(const ISampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinLinearMagNearestToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
@@ -105,7 +105,7 @@ static D3D12_FILTER ConvertFilterMinLinearMagNearestToDirectX(const ISampler::Fi
     }
 }
 
-static D3D12_FILTER ConvertFilterMinLinearMagLinearToDirectX(const ISampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinLinearMagLinearToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
@@ -120,7 +120,7 @@ static D3D12_FILTER ConvertFilterMinLinearMagLinearToDirectX(const ISampler::Fil
     }
 }
 
-static D3D12_FILTER ConvertFilterMinLinearToDirectX(const ISampler::Filter& filter)
+static D3D12_FILTER ConvertFilterMinLinearToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
@@ -133,7 +133,7 @@ static D3D12_FILTER ConvertFilterMinLinearToDirectX(const ISampler::Filter& filt
     }
 }
 
-static D3D12_FILTER ConvertFilterToDirectX(const ISampler::Filter& filter)
+static D3D12_FILTER ConvertFilterToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
 
@@ -178,7 +178,7 @@ static D3D12_FILTER ConvertFilterToDirectX(const ISampler::Filter& filter)
 static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDirectX(ISampler::Address::Mode address_mode)
 {
     META_FUNCTION_TASK();
-    using AddressMode = ISampler::Address::Mode;
+    using AddressMode = Rhi::ISampler::Address::Mode;
     
     switch(address_mode)
     {
@@ -204,7 +204,7 @@ static void ConvertBorderColorToDXColor(ISampler::BorderColor border_color, FLOA
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(p_out_color);
-    using BorderColor = ISampler::BorderColor;
+    using BorderColor = Rhi::ISampler::BorderColor;
     
     switch (border_color)
     {
@@ -224,7 +224,7 @@ Sampler::Sampler(const Base::Context& context, const Settings& settings)
 Opt<IResource::Descriptor> Sampler::InitializeNativeViewDescriptor(const View::Id& view_id)
 {
     META_FUNCTION_TASK();
-    const IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
+    const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
     const D3D12_CPU_DESCRIPTOR_HANDLE cpu_descriptor_handle = GetNativeCpuDescriptorHandle(descriptor);
     const Settings& settings = GetSettings();
 
