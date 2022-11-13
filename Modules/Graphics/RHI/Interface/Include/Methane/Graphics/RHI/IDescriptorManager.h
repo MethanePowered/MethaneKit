@@ -23,6 +23,13 @@ Descriptor manager interface.
 
 #pragma once
 
+namespace Methane::Data
+{
+
+using Index = uint32_t;
+
+} // namespace Methane::Data
+
 // FIXME: DirectX specific types should not be declared in the Base layer
 namespace Methane::Graphics::DirectX
 {
