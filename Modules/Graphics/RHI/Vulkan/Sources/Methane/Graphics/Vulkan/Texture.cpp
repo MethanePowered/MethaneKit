@@ -157,7 +157,7 @@ static vk::ImageCreateFlags GetNativeImageCreateFlags(const Rhi::TextureSettings
     return image_create_flags;
 }
 
-static vk::UniqueImage CreateNativeImage(const IContextVk& context, const Rhi::TextureSettings& settings, vk::ImageUsageFlags initial_usage_flags = {})
+static vk::UniqueImage CreateNativeImage(const IContext& context, const Rhi::TextureSettings& settings, vk::ImageUsageFlags initial_usage_flags = {})
 {
     META_FUNCTION_TASK();
     return context.GetVulkanDevice().GetNativeDevice().createImageUnique(
@@ -383,7 +383,7 @@ Ptr<ResourceView::ViewDescriptorVariant> RenderTargetTexture::CreateNativeViewDe
 }
 
 ImageTexture::ImageTexture(const Base::Context& context, const Settings& settings)
-    : Resource(context, settings, CreateNativeImage(dynamic_cast<const IContextVk&>(context), settings, vk::ImageUsageFlagBits::eTransferDst))
+    : Resource(context, settings, CreateNativeImage(dynamic_cast<const IContext&>(context), settings, vk::ImageUsageFlagBits::eTransferDst))
 {
     META_FUNCTION_TASK();
 
@@ -497,13 +497,13 @@ void ImageTexture::GenerateMipLevels(Rhi::ICommandQueue& target_cmd_queue, State
     const uint32_t mip_levels_count = subresource_count.GetMipLevelsCount();
     const State source_resource_state = GetState();
 
-    const vk::ImageLayout        vk_old_image_layout = IResourceVk::GetNativeImageLayoutByResourceState(source_resource_state);
-    const vk::AccessFlags        vk_src_access_mask  = IResourceVk::GetNativeAccessFlagsByResourceState(source_resource_state);
-    const vk::PipelineStageFlags vk_src_stage_mask   = IResourceVk::GetNativePipelineStageFlagsByResourceState(source_resource_state);
+    const vk::ImageLayout        vk_old_image_layout = IResource::GetNativeImageLayoutByResourceState(source_resource_state);
+    const vk::AccessFlags        vk_src_access_mask  = IResource::GetNativeAccessFlagsByResourceState(source_resource_state);
+    const vk::PipelineStageFlags vk_src_stage_mask   = IResource::GetNativePipelineStageFlagsByResourceState(source_resource_state);
 
-    const vk::ImageLayout        vk_new_image_layout = IResourceVk::GetNativeImageLayoutByResourceState(target_resource_state);
-    const vk::AccessFlags        vk_dst_access_mask  = IResourceVk::GetNativeAccessFlagsByResourceState(target_resource_state);
-    const vk::PipelineStageFlags vk_dst_stage_mask   = IResourceVk::GetNativePipelineStageFlagsByResourceState(target_resource_state);
+    const vk::ImageLayout        vk_new_image_layout = IResource::GetNativeImageLayoutByResourceState(target_resource_state);
+    const vk::AccessFlags        vk_dst_access_mask  = IResource::GetNativeAccessFlagsByResourceState(target_resource_state);
+    const vk::PipelineStageFlags vk_dst_stage_mask   = IResource::GetNativePipelineStageFlagsByResourceState(target_resource_state);
 
     const vk::ImageLayout   vk_blit_old_image_layout = vk::ImageLayout::eTransferSrcOptimal;
     const vk::ImageLayout   vk_blit_new_image_layout = vk::ImageLayout::eTransferDstOptimal;

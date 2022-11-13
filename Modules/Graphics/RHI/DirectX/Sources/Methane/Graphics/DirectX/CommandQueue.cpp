@@ -95,7 +95,7 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const Device& de
 
 CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type)
     : Base::CommandQueueTracking(context, command_lists_type)
-    , m_dx_context(dynamic_cast<const IContextDx&>(context))
+    , m_dx_context(dynamic_cast<const IContext&>(context))
     , m_cp_command_queue(CreateNativeCommandQueue(m_dx_context.GetDirectDevice(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
 {
     META_FUNCTION_TASK();

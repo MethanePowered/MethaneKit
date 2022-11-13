@@ -38,8 +38,11 @@ class ResourceBarriers final
     , private Data::Receiver<Rhi::IResourceCallback>
 {
 public:
-    [[nodiscard]] static D3D12_RESOURCE_STATES GetNativeResourceState(State resource_state);
     [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
+    [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier)
+    {
+        return GetNativeResourceBarrier(resource_barrier.GetId(), resource_barrier.GetStateChange());
+    }
 
     explicit ResourceBarriers(const Set& barriers);
 

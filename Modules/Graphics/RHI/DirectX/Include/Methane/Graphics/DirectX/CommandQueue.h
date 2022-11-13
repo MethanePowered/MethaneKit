@@ -38,7 +38,7 @@ namespace Methane::Graphics::DirectX
 
 namespace wrl = Microsoft::WRL;
 
-struct IContextDx;
+struct IContext;
 class CommandListSet;
 
 class CommandQueue final // NOSONAR - destructor is needed
@@ -59,12 +59,12 @@ public:
     void CompleteExecution(const Opt<Data::Index>& frame_index = { }) override;
 #endif
 
-    const IContextDx&    GetDirectContext() const noexcept { return m_dx_context; }
+    const IContext&      GetDirectContext() const noexcept { return m_dx_context; }
     ID3D12CommandQueue&  GetNativeCommandQueue();
     const TracyD3D12Ctx& GetTracyD3D12Ctx() const noexcept { return m_tracy_context; }
 
 private:
-    const IContextDx&               m_dx_context;
+    const IContext&                 m_dx_context;
     wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
     TracyD3D12Ctx                   m_tracy_context;
 };

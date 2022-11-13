@@ -24,7 +24,7 @@ Vulkan implementation of the render pass interface.
 #pragma once
 
 #include "RenderContext.h"
-#include "IResourceVk.h"
+#include "IResource.h"
 
 #include <Methane/Graphics/Base/RenderPass.h>
 
@@ -33,7 +33,7 @@ Vulkan implementation of the render pass interface.
 namespace Methane::Graphics::Vulkan
 {
 
-struct IContextVk;
+struct IContext;
 class RenderContext;
 
 class RenderPattern
@@ -76,7 +76,7 @@ public:
     
     void Reset();
 
-    const IContextVk& GetVulkanContext() const noexcept { return m_vk_context; }
+    const IContext& GetVulkanContext() const noexcept { return m_vk_context; }
     RenderPattern&  GetVulkanPattern() const noexcept { return static_cast<RenderPattern&>(GetBasePattern()); }
 
     const vk::Framebuffer& GetNativeFrameBuffer() const noexcept { return m_vk_unique_frame_buffer.get(); }
@@ -89,7 +89,7 @@ private:
     vk::RenderPassBeginInfo CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const;
     vk::UniqueFramebuffer   CreateNativeFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const Settings& settings);
 
-    const IContextVk&       m_vk_context;
+    const IContext&         m_vk_context;
     ResourceViews           m_vk_attachments;
     vk::UniqueFramebuffer   m_vk_unique_frame_buffer;
     vk::RenderPassBeginInfo m_vk_pass_begin_info;

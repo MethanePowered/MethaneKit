@@ -22,7 +22,7 @@ Vulkan implementation of the buffer interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/Buffer.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Base/Context.h>
@@ -120,7 +120,7 @@ static Rhi::ResourceState GetTargetResourceStateByBufferType(Rhi::BufferType buf
 
 Buffer::Buffer(const Base::Context& context, const Settings& settings)
     : Resource(context, settings,
-                 dynamic_cast<const IContextVk&>(context).GetVulkanDevice().GetNativeDevice().createBufferUnique(
+                 dynamic_cast<const IContext&>(context).GetVulkanDevice().GetNativeDevice().createBufferUnique(
                      vk::BufferCreateInfo(
                          vk::BufferCreateFlags{},
                          settings.size,

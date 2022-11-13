@@ -23,7 +23,7 @@ Vulkan implementation of the program interface.
 
 #include <Methane/Graphics/Vulkan/Program.h>
 #include <Methane/Graphics/Vulkan/Shader.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>
 #include <Methane/Graphics/Vulkan/ProgramBindings.h>
@@ -52,7 +52,7 @@ namespace Methane::Graphics::Vulkan
 
 Program::Program(const Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
-    , m_vk_context(dynamic_cast<const IContextVk&>(context))
+    , m_vk_context(dynamic_cast<const IContext&>(context))
 {
     META_FUNCTION_TASK();
     InitArgumentBindings(settings.argument_accessors);

@@ -23,7 +23,7 @@ Vulkan template implementation of the base context interface.
 
 #pragma once
 
-#include "IContextVk.h"
+#include "IContext.h"
 #include "Device.h"
 #include "CommandQueue.h"
 #include "DescriptorManager.h"
@@ -48,7 +48,7 @@ namespace Methane::Graphics::Vulkan
 template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<Base::Context, ContextBaseT>>>
 class Context
     : public ContextBaseT
-    , public IContextVk
+    , public IContext
 {
 public:
     Context(Base::Device& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)

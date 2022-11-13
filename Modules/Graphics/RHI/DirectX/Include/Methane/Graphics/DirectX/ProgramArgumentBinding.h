@@ -23,7 +23,7 @@ DirectX 12 implementation of the program argument binding interface.
 
 #pragma once
 
-#include "IResourceDx.h"
+#include "IResource.h"
 
 #include <Methane/Graphics/Base/ProgramArgumentBinding.h>
 

@@ -31,7 +31,7 @@ Vulkan GPU query pool implementation.
 namespace Methane::Graphics::Vulkan
 {
 
-struct IContextVk;
+struct IContext;
 struct ICommandListVk;
 class  CommandQueue;
 class  QueryPool;
@@ -69,12 +69,12 @@ public:
                 Data::Size buffer_size, Data::Size query_size);
 
     CommandQueue&        GetVulkanCommandQueue() noexcept;
-    const IContextVk&    GetVulkanContext() const noexcept       { return m_context_vk; }
+    const IContext&      GetVulkanContext() const noexcept   { return m_context_vk; }
     const vk::QueryPool& GetNativeQueryPool() const noexcept { return m_vk_query_pool; }
 
 private:
-    const IContextVk& m_context_vk;
-    vk::QueryPool     m_vk_query_pool;
+    const IContext& m_context_vk;
+    vk::QueryPool   m_vk_query_pool;
 };
 
 class TimestampQuery final

@@ -23,7 +23,7 @@ DirectX 12 implementation of the resource interface.
 
 #pragma once
 
-#include "IResourceDx.h"
+#include "IResource.h"
 #include "DescriptorHeap.h"
 #include "RenderContext.h"
 #include "TransferCommandList.h"
@@ -43,19 +43,19 @@ namespace Methane::Graphics::DirectX
 
 namespace wrl = Microsoft::WRL;
 
-struct IContextDx;
+struct IContext;
 class DescriptorHeap;
 
 template<typename ResourceBaseType, typename = std::enable_if_t<std::is_base_of_v<Base::Resource, ResourceBaseType>, void>>
 class Resource // NOSONAR - destructor in use
     : public ResourceBaseType
-    , public IResourceDx
+    , public IResource
 {
 public:
     template<typename SettingsType>
     Resource(const Base::Context& context, const SettingsType& settings)
         : ResourceBaseType(context, settings, State::Common, State::Common)
-        , m_dx_context(dynamic_cast<const IContextDx&>(context))
+        , m_dx_context(dynamic_cast<const IContext&>(context))
     {
         META_FUNCTION_TASK();
     }
@@ -121,7 +121,7 @@ public:
     D3D12_GPU_VIRTUAL_ADDRESS          GetNativeGpuAddress() const noexcept final                                { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
 
 protected:
-    const IContextDx& GetDirectContext() const noexcept { return m_dx_context; }
+    const IContext& GetDirectContext() const noexcept { return m_dx_context; }
 
     wrl::ComPtr<ID3D12Resource> CreateCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
                                                         D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
@@ -149,7 +149,7 @@ protected:
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_DESCR(m_cp_resource, !m_cp_resource, "committed resource is already initialized");
-        const D3D12_RESOURCE_STATES d3d_resource_state = ResourceBarriers::GetNativeResourceState(resource_state);
+        const D3D12_RESOURCE_STATES d3d_resource_state = IResource::GetNativeResourceState(resource_state);
         m_cp_resource = CreateCommittedResource(resource_desc, heap_type, d3d_resource_state, p_clear_value);
         SetState(resource_state);
     }
@@ -214,12 +214,12 @@ private:
     {
         META_FUNCTION_TASK();
         DescriptorManager& descriptor_manager = GetDirectContext().GetDirectDescriptorManager();
-        const DescriptorHeap::Type heap_type = IResourceDx::GetDescriptorHeapTypeByUsage(*this, usage);
+        const DescriptorHeap::Type heap_type = IResource::GetDescriptorHeapTypeByUsage(*this, usage);
         DescriptorHeap& heap = descriptor_manager.GetDescriptorHeap(heap_type);
         return IResource::Descriptor(heap, heap.AddResource(dynamic_cast<Base::Resource&>(*this)));
     }
 
-    const IContextDx&           m_dx_context;
+    const IContext&             m_dx_context;
     DescriptorByViewId          m_descriptor_by_view_id;
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
     Ptr<Rhi::IResourceBarriers> m_upload_sync_transition_barriers_ptr;

@@ -97,7 +97,7 @@ struct IDescriptorHeapCallback
     virtual ~IDescriptorHeapCallback() = default;
 };
 
-struct IContextDx;
+struct IContext;
 
 class DescriptorHeap // NOSONAR - this class requires destructor
     : public Data::Emitter<IDescriptorHeapCallback>
@@ -137,7 +137,7 @@ private:
     using RangeSet     = Data::RangeSet<Data::Index>;
 
     const Base::Context&              m_context;
-    const IContextDx&                 m_dx_context;
+    const IContext&                   m_dx_context;
     Settings                          m_settings;
     Data::Size                        m_deferred_size;
     Data::Size                        m_allocated_size = 0;

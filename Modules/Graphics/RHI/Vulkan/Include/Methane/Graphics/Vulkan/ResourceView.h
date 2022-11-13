@@ -34,8 +34,8 @@ Vulkan implementation of the ResourceView.
 namespace Methane::Graphics::Vulkan
 {
 
-struct IContextVk;
-struct IResourceVk;
+struct IContext;
+struct IResource;
 
 class ResourceView final
     : public Rhi::ResourceView
@@ -56,7 +56,7 @@ public:
 
     [[nodiscard]] const Id&          GetId() const noexcept     { return m_id; }
     [[nodiscard]] Rhi::ResourceUsage GetUsage() const noexcept  { return m_id.usage; }
-    [[nodiscard]] IResourceVk&       GetVulkanResource() const;
+    [[nodiscard]] IResource&         GetVulkanResource() const;
 
     [[nodiscard]] const BufferViewDescriptor*  GetBufferViewDescriptorPtr() const;
     [[nodiscard]] const BufferViewDescriptor&  GetBufferViewDescriptor() const;
@@ -72,7 +72,7 @@ public:
 
 private:
     Id                         m_id;
-    Ref<IResourceVk>           m_vulkan_resource_ref;
+    Ref<IResource>             m_vulkan_resource_ref;
     Ptr<ViewDescriptorVariant> m_view_desc_var_ptr;
 };
 

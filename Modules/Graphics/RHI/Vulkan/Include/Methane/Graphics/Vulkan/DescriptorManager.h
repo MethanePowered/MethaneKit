@@ -53,7 +53,7 @@ class Context;
 namespace Methane::Graphics::Vulkan
 {
 
-struct IContextVk;
+struct IContext;
 
 class DescriptorManager final
     : public Base::DescriptorManager
@@ -88,9 +88,9 @@ public:
 private:
     vk::DescriptorPool CreateDescriptorPool();
     vk::DescriptorPool AcquireDescriptorPool();
-    const IContextVk&  GetContextVk();
+    const IContext&    GetContextVk();
 
-    const IContextVk*                     m_vk_context_ptr = nullptr;
+    const IContext*                       m_vk_context_ptr = nullptr;
     uint32_t                              m_pool_sets_count;
     PoolSizeRatioByDescType               m_pool_size_ratio_by_desc_type;
     std::vector<vk::UniqueDescriptorPool> m_vk_descriptor_pools;

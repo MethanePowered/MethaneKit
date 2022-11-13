@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/Resource.h
+FILE: Methane/Graphics/Vulkan/IResource.h
 Vulkan specialization of the resource interface.
 
 ******************************************************************************/
@@ -35,7 +35,7 @@ Vulkan specialization of the resource interface.
 namespace Methane::Graphics::Vulkan
 {
 
-struct IResourceVk
+struct IResource
     : virtual Rhi::IResource // NOSONAR
 {
 public:
@@ -45,7 +45,7 @@ public:
     using View     = ResourceView;
     using Views    = ResourceViews;
 
-    [[nodiscard]] virtual const IContextVk&       GetVulkanContext() const noexcept = 0;
+    [[nodiscard]] virtual const IContext&         GetVulkanContext() const noexcept = 0;
     [[nodiscard]] virtual const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept = 0;
     [[nodiscard]] virtual const vk::Device&       GetNativeDevice() const noexcept = 0;
     [[nodiscard]] virtual const Opt<uint32_t>&    GetOwnerQueueFamilyIndex() const noexcept = 0;

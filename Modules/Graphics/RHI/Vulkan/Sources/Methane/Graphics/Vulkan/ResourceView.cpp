@@ -37,13 +37,13 @@ namespace Methane::Graphics::Vulkan
 ResourceView::ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsage usage)
     : Rhi::ResourceView(view_id)
     , m_id(usage, GetSettings())
-    , m_vulkan_resource_ref(dynamic_cast<IResourceVk&>(GetResource()))
+    , m_vulkan_resource_ref(dynamic_cast<IResource&>(GetResource()))
     , m_view_desc_var_ptr(m_vulkan_resource_ref.get().InitializeNativeViewDescriptor(m_id))
 {
     META_FUNCTION_TASK();
 }
 
-IResourceVk& ResourceView::GetVulkanResource() const
+IResource& ResourceView::GetVulkanResource() const
 {
     META_FUNCTION_TASK();
     return m_vulkan_resource_ref.get();

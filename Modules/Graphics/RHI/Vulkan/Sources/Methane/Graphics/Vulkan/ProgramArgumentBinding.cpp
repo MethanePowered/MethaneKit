@@ -22,7 +22,7 @@ Vulkan implementation of the program argument binding interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/ProgramArgumentBinding.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 
 #include <Methane/Graphics/Base/Context.h>
@@ -100,7 +100,7 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
     const size_t total_resources_count = resource_views.size();
     for(const Rhi::IResource::View& resource_view : resource_views)
     {
-        const IResourceVk::View resource_view_vk(resource_view, Rhi::ResourceUsage::ShaderRead);
+        const IResource::View resource_view_vk(resource_view, Rhi::ResourceUsage::ShaderRead);
 
         if (AddDescriptor(m_vk_descriptor_images, total_resources_count, resource_view_vk.GetNativeDescriptorImageInfoPtr()))
             continue;
@@ -136,7 +136,7 @@ void ProgramArgumentBinding::UpdateDescriptorSetsOnGpu()
     if (m_vk_descriptor_images.empty() && m_vk_descriptor_buffers.empty() && m_vk_buffer_views.empty())
         return;
 
-    const auto& vulkan_context = dynamic_cast<const IContextVk&>(GetContext());
+    const auto& vulkan_context = dynamic_cast<const IContext&>(GetContext());
     vulkan_context.GetVulkanDevice().GetNativeDevice().updateDescriptorSets(m_vk_write_descriptor_set, {});
 
     m_vk_descriptor_images.clear();

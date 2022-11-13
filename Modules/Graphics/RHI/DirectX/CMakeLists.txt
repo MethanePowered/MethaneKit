@@ -8,7 +8,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/Types.h
     ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/Fence.h
-    ${INCLUDE_DIR}/IContextDx.h
+    ${INCLUDE_DIR}/IContext.h
     ${INCLUDE_DIR}/Context.hpp
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
@@ -16,7 +16,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ProgramBindings.h
     ${INCLUDE_DIR}/RenderContext.h
     ${INCLUDE_DIR}/RenderState.h
-    ${INCLUDE_DIR}/IResourceDx.h
+    ${INCLUDE_DIR}/IResource.h
     ${INCLUDE_DIR}/ResourceView.h
     ${INCLUDE_DIR}/Resource.hpp
     ${INCLUDE_DIR}/ResourceBarriers.h
@@ -45,6 +45,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/ProgramBindings.cpp
     ${SOURCES_DIR}/RenderContext.cpp
     ${SOURCES_DIR}/RenderState.cpp
+    ${SOURCES_DIR}/IResource.cpp
     ${SOURCES_DIR}/ResourceView.cpp
     ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/DescriptorManager.cpp

@@ -22,7 +22,7 @@ Vulkan implementation of the render pass interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/RenderPass.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Texture.h>
 #include <Methane/Graphics/Vulkan/RenderContext.h>
 #include <Methane/Graphics/Vulkan/RenderCommandList.h>
@@ -243,7 +243,7 @@ RenderContext& RenderPattern::GetVulkanRenderContext() noexcept
 
 RenderPass::RenderPass(RenderPattern& render_pattern, const Settings& settings)
     : Base::RenderPass(render_pattern, settings)
-    , m_vk_context(dynamic_cast<const IContextVk&>(render_pattern.GetBaseRenderContext()))
+    , m_vk_context(dynamic_cast<const IContext&>(render_pattern.GetBaseRenderContext()))
     , m_vk_unique_frame_buffer(CreateNativeFrameBuffer(render_pattern.GetVulkanRenderContext().GetVulkanDevice().GetNativeDevice(), render_pattern.GetNativeRenderPass(), settings))
     , m_vk_pass_begin_info(CreateNativeBeginInfo(GetNativeFrameBuffer()))
 {

@@ -21,7 +21,7 @@ Vulkan implementation of the resource objects.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Vulkan/IResourceVk.h>
+#include <Methane/Graphics/Vulkan/IResource.h>
 #include <Methane/Graphics/Vulkan/Types.h>
 
 #include <Methane/Instrumentation.h>
@@ -29,7 +29,7 @@ Vulkan implementation of the resource objects.
 namespace Methane::Graphics::Vulkan
 {
 
-vk::AccessFlags IResourceVk::GetNativeAccessFlagsByResourceState(Rhi::ResourceState resource_state)
+vk::AccessFlags IResource::GetNativeAccessFlagsByResourceState(Rhi::ResourceState resource_state)
 {
     META_FUNCTION_TASK();
     switch (resource_state)
@@ -63,7 +63,7 @@ vk::AccessFlags IResourceVk::GetNativeAccessFlagsByResourceState(Rhi::ResourceSt
     }
 }
 
-vk::ImageLayout IResourceVk::GetNativeImageLayoutByResourceState(Rhi::ResourceState resource_state)
+vk::ImageLayout IResource::GetNativeImageLayoutByResourceState(Rhi::ResourceState resource_state)
 {
     META_FUNCTION_TASK();
     switch (resource_state)
@@ -85,7 +85,7 @@ vk::ImageLayout IResourceVk::GetNativeImageLayoutByResourceState(Rhi::ResourceSt
     }
 }
 
-vk::PipelineStageFlags IResourceVk::GetNativePipelineStageFlagsByResourceState(Rhi::ResourceState resource_state)
+vk::PipelineStageFlags IResource::GetNativePipelineStageFlagsByResourceState(Rhi::ResourceState resource_state)
 {
     META_FUNCTION_TASK();
     switch (resource_state)

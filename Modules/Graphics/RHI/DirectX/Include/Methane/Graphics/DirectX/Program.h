@@ -36,8 +36,8 @@ DirectX 12 implementation of the program interface.
 namespace Methane::Graphics::DirectX
 {
 
-struct IContextDx;
-struct IResourceDx;
+struct IContext;
+struct IResource;
 
 namespace wrl = Microsoft::WRL;
 
@@ -58,7 +58,7 @@ public:
     const wrl::ComPtr<ID3D12RootSignature>& GetNativeRootSignature() const noexcept { return m_cp_root_signature; }
     D3D12_INPUT_LAYOUT_DESC                 GetNativeInputLayoutDesc() const noexcept;
 
-    const IContextDx& GetDirectContext() const noexcept { return m_dx_context; }
+    const IContext& GetDirectContext() const noexcept { return m_dx_context; }
 
 private:
     void InitRootSignature();
@@ -72,7 +72,7 @@ private:
 
     using DescriptorRangeByHeapAndAccessType = std::map<std::pair<DescriptorHeap::Type, ArgumentAccessor::Type>, DescriptorHeapReservation>;
 
-    const IContextDx&                             m_dx_context;
+    const IContext&                               m_dx_context;
     wrl::ComPtr<ID3D12RootSignature>              m_cp_root_signature;
     mutable std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_vertex_input_layout;
 

@@ -25,7 +25,7 @@ DirectX 12 base template implementation of the context interface.
 
 #include "Fence.h"
 #include "Device.h"
-#include "IContextDx.h"
+#include "IContext.h"
 #include "CommandQueue.h"
 #include "DescriptorManager.h"
 
@@ -48,7 +48,7 @@ namespace wrl = Microsoft::WRL;
 template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<Base::Context, ContextBaseT>>>
 class Context
     : public ContextBaseT
-    , public IContextDx
+    , public IContext
 {
 public:
     Context(Base::Device& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)

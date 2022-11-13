@@ -23,7 +23,7 @@ DirectX 12 specialization of the resource interface.
 
 #pragma once
 
-#include "IContextDx.h"
+#include "IContext.h"
 #include "DescriptorHeap.h"
 #include "ResourceBarriers.h"
 
@@ -37,7 +37,7 @@ namespace Methane::Graphics::DirectX
 
 namespace wrl = Microsoft::WRL;
 
-struct IResourceDx;
+struct IResource;
 
 class ResourceView final
     : public Rhi::ResourceView
@@ -51,7 +51,7 @@ public:
     [[nodiscard]] Rhi::ResourceUsage GetUsage() const noexcept
     { return m_id.usage; }
 
-    [[nodiscard]] IResourceDx& GetDirectResource() const noexcept
+    [[nodiscard]] IResource& GetDirectResource() const noexcept
     { return m_resource_dx; }
 
     [[nodiscard]] bool HasDescriptor() const noexcept
@@ -66,7 +66,7 @@ public:
 
 private:
     Id                      m_id;
-    IResourceDx&            m_resource_dx;
+    IResource&              m_resource_dx;
     Opt<ResourceDescriptor> m_descriptor_opt;
 };
 

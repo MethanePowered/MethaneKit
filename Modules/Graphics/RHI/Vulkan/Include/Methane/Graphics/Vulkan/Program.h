@@ -36,7 +36,7 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics::Vulkan
 {
 
-struct IContextVk;
+struct IContext;
 
 class Program final
     : public Base::Program
@@ -60,7 +60,7 @@ public:
     bool SetName(const std::string& name) override;
 
     Shader& GetVulkanShader(Rhi::ShaderType shader_type) const;
-    const IContextVk& GetVulkanContext() const noexcept { return m_vk_context; }
+    const IContext& GetVulkanContext() const noexcept { return m_vk_context; }
 
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
@@ -80,7 +80,7 @@ private:
     void UpdateConstantDescriptorSetName();
     void UpdateFrameConstantDescriptorSetNames() const;
 
-    const IContextVk&                          m_vk_context;
+    const IContext&                            m_vk_context;
     DescriptorSetLayoutInfoByAccessType        m_descriptor_set_layout_info_by_access_type;
     std::vector<vk::UniqueDescriptorSetLayout> m_vk_unique_descriptor_set_layouts;
     std::vector<vk::DescriptorSetLayout>       m_vk_descriptor_set_layouts;

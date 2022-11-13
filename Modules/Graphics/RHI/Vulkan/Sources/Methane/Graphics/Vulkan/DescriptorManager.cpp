@@ -22,7 +22,7 @@ Vulkan descriptor manager with descriptor sets allocator.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/DescriptorManager.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 
 #include <Methane/Graphics/Base/Context.h>
@@ -126,13 +126,13 @@ vk::DescriptorPool DescriptorManager::AcquireDescriptorPool()
     return free_pool;
 }
 
-const IContextVk& DescriptorManager::GetContextVk()
+const IContext& DescriptorManager::GetContextVk()
 {
     META_FUNCTION_TASK();
     if (m_vk_context_ptr)
         return *m_vk_context_ptr;
 
-    m_vk_context_ptr = dynamic_cast<const IContextVk*>(&GetContext());
+    m_vk_context_ptr = dynamic_cast<const IContext*>(&GetContext());
     return *m_vk_context_ptr;
 }
 

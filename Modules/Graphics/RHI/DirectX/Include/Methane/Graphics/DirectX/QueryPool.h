@@ -38,9 +38,9 @@ struct IBuffer;
 namespace Methane::Graphics::DirectX
 {
 
-struct IContextDx;
+struct IContext;
 struct ICommandListDx;
-struct IResourceDx;
+struct IResource;
 class  CommandQueue;
 class  QueryPool;
 class  TimestampQueryPool;
@@ -71,19 +71,19 @@ public:
                 Data::Size max_query_count, Rhi::IQuery::Count slots_count_per_query,
                 Data::Size buffer_size, Data::Size query_size);
 
-    CommandQueue&      GetDirectCommandQueue() noexcept;
-    const IContextDx&  GetDirectContext() const noexcept        { return m_context_dx; }
-    IResourceDx&       GetDirectResultResource() const noexcept { return m_result_resource_dx; }
-    D3D12_QUERY_TYPE   GetNativeQueryType() const noexcept      { return m_native_query_type; }
-    ID3D12QueryHeap&   GetNativeQueryHeap() noexcept            { return m_native_query_heap; }
+    CommandQueue&    GetDirectCommandQueue() noexcept;
+    const IContext&  GetDirectContext() const noexcept        { return m_context_dx; }
+    IResource&       GetDirectResultResource() const noexcept { return m_result_resource_dx; }
+    D3D12_QUERY_TYPE GetNativeQueryType() const noexcept      { return m_native_query_type; }
+    ID3D12QueryHeap& GetNativeQueryHeap() noexcept            { return m_native_query_heap; }
 
 protected:
     Rhi::IBuffer& GetResultBuffer() noexcept { return *m_result_buffer_ptr; }
 
 private:
     Ptr<Rhi::IBuffer> m_result_buffer_ptr;
-    const IContextDx& m_context_dx;
-    IResourceDx&      m_result_resource_dx;
+    const IContext&   m_context_dx;
+    IResource&        m_result_resource_dx;
     D3D12_QUERY_TYPE  m_native_query_type;
     ID3D12QueryHeap&  m_native_query_heap;
 };

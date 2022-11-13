@@ -32,7 +32,7 @@ Vulkan implementation of the sampler interface.
 namespace Methane::Graphics::Vulkan
 {
 
-struct IContextVk;
+struct IContext;
 
 class Sampler final // NOSONAR - inheritance hierarchy is greater than 5
     : public Resource<Base::Sampler, vk::Sampler, false>

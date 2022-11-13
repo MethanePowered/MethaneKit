@@ -22,7 +22,7 @@ Vulkan implementation of the sampler interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/Sampler.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Types.h>
 
 #include <Methane/Graphics/Base/Context.h>

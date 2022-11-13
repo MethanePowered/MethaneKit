@@ -26,7 +26,7 @@ Vulkan base template implementation of the command list interface.
 #include "CommandList.h"
 #include "CommandQueue.h"
 #include "Device.h"
-#include "IContextVk.h"
+#include "IContext.h"
 #include "ProgramBindings.h"
 #include "ResourceBarriers.h"
 #include "Utils.hpp"

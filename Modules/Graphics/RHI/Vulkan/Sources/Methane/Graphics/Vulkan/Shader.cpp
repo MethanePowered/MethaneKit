@@ -23,7 +23,7 @@ Vulkan implementation of the shader interface.
 
 #include <Methane/Graphics/Vulkan/Shader.h>
 #include <Methane/Graphics/Vulkan/Program.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/ProgramBindings.h>
 
@@ -211,7 +211,7 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
 
 Shader::Shader(Rhi::ShaderType shader_type, const Base::Context& context, const Settings& settings)
     : Base::Shader(shader_type, context, settings)
-    , m_vk_context(dynamic_cast<const IContextVk&>(context))
+    , m_vk_context(dynamic_cast<const IContext&>(context))
     , m_byte_code_chunk(settings.data_provider.GetData(fmt::format("{}.spirv", GetCompiledEntryFunctionName(settings))))
 {
     META_FUNCTION_TASK();

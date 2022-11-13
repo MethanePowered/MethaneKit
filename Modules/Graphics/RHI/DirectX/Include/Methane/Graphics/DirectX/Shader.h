@@ -40,7 +40,7 @@ namespace Methane::Graphics::DirectX
 
 namespace wrl = Microsoft::WRL;
 
-struct IContextDx;
+struct IContext;
 class Program;
 
 class Shader final

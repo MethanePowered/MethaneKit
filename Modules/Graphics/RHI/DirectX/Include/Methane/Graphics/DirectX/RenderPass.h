@@ -24,7 +24,7 @@ DirectX 12 implementation of the render pass interface.
 #pragma once
 
 #include "DescriptorHeap.h"
-#include "IResourceDx.h"
+#include "IResource.h"
 
 #include <Methane/Graphics/Base/RenderPass.h>
 #include <Methane/Data/Receiver.hpp>

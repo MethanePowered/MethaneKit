@@ -23,7 +23,7 @@ Vulkan implementation of the program interface.
 
 #include <Methane/Graphics/Vulkan/ProgramBindings.h>
 #include <Methane/Graphics/Vulkan/Program.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/CommandList.h>
 #include <Methane/Graphics/Vulkan/DescriptorManager.h>

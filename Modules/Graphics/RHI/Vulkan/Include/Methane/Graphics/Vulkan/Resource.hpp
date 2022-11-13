@@ -23,8 +23,8 @@ Vulkan implementation of the resource interface.
 
 #pragma once
 
-#include "IResourceVk.h"
-#include "IContextVk.h"
+#include "IResource.h"
+#include "IContext.h"
 #include "Device.h"
 #include "TransferCommandList.h"
 #include "Utils.hpp"
@@ -52,7 +52,7 @@ template<typename ResourceBaseType, typename NativeResourceType, bool is_unique_
          typename = std::enable_if_t<std::is_base_of_v<Base::Resource, ResourceBaseType>, void>>
 class Resource // NOSONAR - destructor in use
     : public ResourceBaseType
-    , public IResourceVk
+    , public IResource
 {
     using ResourceStorageType = std::conditional_t<is_unique_resource,
                                                    vk::UniqueHandle<NativeResourceType, VULKAN_HPP_DEFAULT_DISPATCHER_TYPE>,
@@ -137,9 +137,9 @@ public:
     void RestoreDescriptorViews(const DescriptorByViewId&) final { /* intentionally uninitialized */ }
 
     // IResource overrides
-    const IContextVk& GetVulkanContext() const noexcept final
+    const IContext& GetVulkanContext() const noexcept final
     {
-        return dynamic_cast<const IContextVk&>(Base::Resource::GetBaseContext());
+        return dynamic_cast<const IContext&>(Base::Resource::GetBaseContext());
     }
 
     const vk::DeviceMemory& GetNativeDeviceMemory() const noexcept final

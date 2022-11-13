@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX/Resource.h
+FILE: Methane/Graphics/DirectX/IResource.h
 DirectX 12 specialization of the resource interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "IContextDx.h"
+#include "IContext.h"
 #include "DescriptorHeap.h"
 #include "ResourceBarriers.h"
 #include "ResourceView.h"
@@ -38,7 +38,7 @@ namespace Methane::Graphics::DirectX
 
 namespace wrl = Microsoft::WRL;
 
-struct IResourceDx
+struct IResource
     : virtual Rhi::IResource // NOSONAR
 {
 public:
@@ -48,13 +48,8 @@ public:
     using View      = ResourceView;
     using Views     = ResourceViews;
 
-    [[nodiscard]] static DescriptorHeap::Type   GetDescriptorHeapTypeByUsage(const IResource& resource, IResource::Usage resource_usage);
+    [[nodiscard]] static DescriptorHeap::Type   GetDescriptorHeapTypeByUsage(const Rhi::IResource& resource, Usage resource_usage);
     [[nodiscard]] static D3D12_RESOURCE_STATES  GetNativeResourceState(State resource_state);
-    [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
-    [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier& resource_barrier)
-    {
-        return GetNativeResourceBarrier(resource_barrier.GetId(), resource_barrier.GetStateChange());
-    }
 
     [[nodiscard]] virtual ID3D12Resource&                    GetNativeResourceRef() const = 0;
     [[nodiscard]] virtual ID3D12Resource*                    GetNativeResource() const noexcept = 0;
@@ -63,7 +58,7 @@ public:
 
     virtual Opt<Descriptor> InitializeNativeViewDescriptor(const View::Id& view_id) = 0;
 
-    ~IResourceDx() override = default;
+    ~IResource() override = default;
 };
 
 } // namespace Methane::Graphics::DirectX

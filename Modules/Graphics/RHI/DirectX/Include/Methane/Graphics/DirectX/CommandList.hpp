@@ -26,8 +26,8 @@ DirectX 12 base template implementation of the command list interface.
 #include "CommandListSet.h"
 #include "CommandQueue.h"
 #include "Device.h"
-#include "IContextDx.h"
-#include "IResourceDx.h"
+#include "IContext.h"
+#include "IResource.h"
 #include "ProgramBindings.h"
 
 #include <Methane/Graphics/Base/CommandList.h>
@@ -113,7 +113,7 @@ public:
         META_LOG("{} Command list '{}' SET RESOURCE BARRIERS:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(resource_barriers));
         META_CHECK_ARG_NOT_NULL(m_cp_command_list);
 
-        const auto& dx_resource_barriers = static_cast<const IResourceDx::Barriers&>(resource_barriers);
+        const auto& dx_resource_barriers = static_cast<const IResource::Barriers&>(resource_barriers);
         const std::vector<D3D12_RESOURCE_BARRIER>& d3d12_resource_barriers = dx_resource_barriers.GetNativeResourceBarriers();
         m_cp_command_list->ResourceBarrier(static_cast<UINT>(d3d12_resource_barriers.size()), d3d12_resource_barriers.data());
     }

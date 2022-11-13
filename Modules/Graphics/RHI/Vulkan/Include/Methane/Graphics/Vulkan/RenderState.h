@@ -31,7 +31,7 @@ Vulkan implementation of the render state interface.
 namespace Methane::Graphics::Vulkan
 {
 
-struct IContextVk;
+struct IContext;
 
 class ViewState final : public Base::ViewState
 {
@@ -71,7 +71,7 @@ public:
     const vk::Pipeline& GetNativePipeline() const noexcept { return m_vk_unique_pipeline.get(); }
 
 private:
-    const IContextVk&  m_vk_context;
+    const IContext&    m_vk_context;
     vk::UniquePipeline m_vk_unique_pipeline;
 };
 

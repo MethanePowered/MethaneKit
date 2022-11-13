@@ -23,7 +23,7 @@ Vulkan fence implementation.
 
 #include <Methane/Graphics/Vulkan/Fence.h>
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>
 

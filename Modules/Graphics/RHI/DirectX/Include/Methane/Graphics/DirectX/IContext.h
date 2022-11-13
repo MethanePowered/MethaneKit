@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX/Context.h
+FILE: Methane/Graphics/DirectX/IContext.h
 DirectX 12 context accessor interface for template class Context<ContextBaseT>
 
 ******************************************************************************/
@@ -34,14 +34,14 @@ class CommandQueue;
 class Device;
 class DescriptorManager;
 
-struct IContextDx
+struct IContext
 {
     virtual const Device& GetDirectDevice() const noexcept = 0;
     virtual CommandQueue& GetDirectDefaultCommandQueue(Rhi::CommandListType type) = 0;
-    virtual ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const = 0;
     virtual DescriptorManager& GetDirectDescriptorManager() const noexcept = 0;
+    virtual ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const = 0;
 
-    virtual ~IContextDx() = default;
+    virtual ~IContext() = default;
 };
 
 } // namespace Methane::Graphics::DirectX

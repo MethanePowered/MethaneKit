@@ -45,8 +45,8 @@ namespace Methane::Graphics::Vulkan
 static void UpdateBufferMemoryStateChangeBarrier(vk::BufferMemoryBarrier& vk_buffer_memory_barrier, const Rhi::ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    vk_buffer_memory_barrier.setSrcAccessMask(IResourceVk::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()));
-    vk_buffer_memory_barrier.setDstAccessMask(IResourceVk::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()));
+    vk_buffer_memory_barrier.setSrcAccessMask(IResource::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()));
+    vk_buffer_memory_barrier.setDstAccessMask(IResource::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()));
 }
 
 static void UpdateBufferMemoryOwnerChangeBarrier(vk::BufferMemoryBarrier& vk_buffer_memory_barrier, const Rhi::ResourceBarrier::OwnerChange& owner_change)
@@ -61,10 +61,10 @@ static void UpdateBufferMemoryOwnerChangeBarrier(vk::BufferMemoryBarrier& vk_buf
 static void UpdateImageMemoryStateChangeBarrier(vk::ImageMemoryBarrier& vk_image_memory_barrier, const Rhi::ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    vk_image_memory_barrier.setSrcAccessMask(IResourceVk::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()));
-    vk_image_memory_barrier.setDstAccessMask(IResourceVk::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()));
-    vk_image_memory_barrier.setOldLayout(IResourceVk::GetNativeImageLayoutByResourceState(state_change.GetStateBefore()));
-    vk_image_memory_barrier.setNewLayout(IResourceVk::GetNativeImageLayoutByResourceState(state_change.GetStateAfter()));
+    vk_image_memory_barrier.setSrcAccessMask(IResource::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()));
+    vk_image_memory_barrier.setDstAccessMask(IResource::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()));
+    vk_image_memory_barrier.setOldLayout(IResource::GetNativeImageLayoutByResourceState(state_change.GetStateBefore()));
+    vk_image_memory_barrier.setNewLayout(IResource::GetNativeImageLayoutByResourceState(state_change.GetStateAfter()));
 }
 
 static void UpdateImageMemoryOwnerChangeBarrier(vk::ImageMemoryBarrier& vk_image_memory_barrier, const Rhi::ResourceBarrier::OwnerChange& owner_change)
@@ -252,8 +252,8 @@ void ResourceBarriers::AddBufferMemoryStateChangeBarrier(const Buffer& buffer, c
 {
     META_FUNCTION_TASK();
     m_vk_default_barrier.vk_buffer_memory_barriers.emplace_back(
-        IResourceVk::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()),
-        IResourceVk::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()),
+        IResource::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()),
+        IResource::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()),
         VK_QUEUE_FAMILY_IGNORED,
         VK_QUEUE_FAMILY_IGNORED,
         buffer.GetNativeResource(),
@@ -285,10 +285,10 @@ void ResourceBarriers::AddImageMemoryStateChangeBarrier(const ITexture& texture,
 {
     META_FUNCTION_TASK();
     m_vk_default_barrier.vk_image_memory_barriers.emplace_back(
-        IResourceVk::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()),
-        IResourceVk::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()),
-        IResourceVk::GetNativeImageLayoutByResourceState(state_change.GetStateBefore()),
-        IResourceVk::GetNativeImageLayoutByResourceState(state_change.GetStateAfter()),
+        IResource::GetNativeAccessFlagsByResourceState(state_change.GetStateBefore()),
+        IResource::GetNativeAccessFlagsByResourceState(state_change.GetStateAfter()),
+        IResource::GetNativeImageLayoutByResourceState(state_change.GetStateBefore()),
+        IResource::GetNativeImageLayoutByResourceState(state_change.GetStateAfter()),
         VK_QUEUE_FAMILY_IGNORED,
         VK_QUEUE_FAMILY_IGNORED,
         texture.GetNativeImage(),
@@ -374,8 +374,8 @@ void ResourceBarriers::UpdateStageMasks(const Rhi::ResourceBarrier& barrier)
     switch (barrier.GetId().GetType())
     {
     case Rhi::ResourceBarrier::Type::StateTransition:
-        m_vk_default_barrier.vk_src_stage_mask |= IResourceVk::GetNativePipelineStageFlagsByResourceState(barrier.GetStateChange().GetStateBefore());
-        m_vk_default_barrier.vk_dst_stage_mask |= IResourceVk::GetNativePipelineStageFlagsByResourceState(barrier.GetStateChange().GetStateAfter());
+        m_vk_default_barrier.vk_src_stage_mask |= IResource::GetNativePipelineStageFlagsByResourceState(barrier.GetStateChange().GetStateBefore());
+        m_vk_default_barrier.vk_dst_stage_mask |= IResource::GetNativePipelineStageFlagsByResourceState(barrier.GetStateChange().GetStateAfter());
         break;
 
     case Rhi::ResourceBarrier::Type::OwnerTransition:

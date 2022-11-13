@@ -22,7 +22,7 @@ DirectX 12 specialization of the resource barriers.
 ******************************************************************************/
 
 #include <Methane/Graphics/DirectX/ResourceBarriers.h>
-#include <Methane/Graphics/DirectX/IResourceDx.h>
+#include <Methane/Graphics/DirectX/IResource.h>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -82,35 +82,6 @@ static std::function<bool(const D3D12_RESOURCE_BARRIER&)> GetNativeResourceBarri
     }
 }
 
-D3D12_RESOURCE_STATES ResourceBarriers::GetNativeResourceState(State resource_state)
-{
-    META_FUNCTION_TASK();
-    switch (resource_state)
-    {
-    case State::Undefined:        return D3D12_RESOURCE_STATE_COMMON;
-    case State::Common:           return D3D12_RESOURCE_STATE_COMMON;
-    case State::VertexBuffer:     return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-    case State::ConstantBuffer:   return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-    case State::IndexBuffer:      return D3D12_RESOURCE_STATE_INDEX_BUFFER;
-    case State::RenderTarget:     return D3D12_RESOURCE_STATE_RENDER_TARGET;
-    case State::InputAttachment:  return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-    case State::UnorderedAccess:  return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-    case State::DepthWrite:       return D3D12_RESOURCE_STATE_DEPTH_WRITE;
-    case State::DepthRead:        return D3D12_RESOURCE_STATE_DEPTH_READ;
-    case State::ShaderResource:   return D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE |
-                                         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-    case State::StreamOut:        return D3D12_RESOURCE_STATE_STREAM_OUT;
-    case State::IndirectArgument: return D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-    case State::CopyDest:         return D3D12_RESOURCE_STATE_COPY_DEST;
-    case State::CopySource:       return D3D12_RESOURCE_STATE_COPY_SOURCE;
-    case State::ResolveDest:      return D3D12_RESOURCE_STATE_RESOLVE_DEST;
-    case State::ResolveSource:    return D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
-    case State::GenericRead:      return D3D12_RESOURCE_STATE_GENERIC_READ;
-    case State::Present:          return D3D12_RESOURCE_STATE_PRESENT;
-    default: META_UNEXPECTED_ARG_RETURN(resource_state, D3D12_RESOURCE_STATE_COMMON);
-    }
-}
-
 D3D12_RESOURCE_BARRIER ResourceBarriers::GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
@@ -118,9 +89,9 @@ D3D12_RESOURCE_BARRIER ResourceBarriers::GetNativeResourceBarrier(const Barrier:
     {
     case Barrier::Type::StateTransition:
         return CD3DX12_RESOURCE_BARRIER::Transition(
-            dynamic_cast<const IResourceDx&>(id.GetResource()).GetNativeResource(),
-            GetNativeResourceState(state_change.GetStateBefore()),
-            GetNativeResourceState(state_change.GetStateAfter())
+            dynamic_cast<const IResource&>(id.GetResource()).GetNativeResource(),
+            IResource::GetNativeResourceState(state_change.GetStateBefore()),
+            IResource::GetNativeResourceState(state_change.GetStateAfter())
         );
 
     default:
@@ -168,7 +139,7 @@ bool ResourceBarriers::Remove(const Barrier::Id& id)
         return true;
 
     const D3D12_RESOURCE_BARRIER_TYPE native_barrier_type = GetNativeBarrierType(id.GetType());
-    const ID3D12Resource* native_resource_ptr = dynamic_cast<const IResourceDx&>(id.GetResource()).GetNativeResource();
+    const ID3D12Resource* native_resource_ptr = dynamic_cast<const IResource&>(id.GetResource()).GetNativeResource();
     const auto native_resource_barrier_it = std::find_if(m_native_resource_barriers.begin(), m_native_resource_barriers.end(),
                                                          GetNativeResourceBarrierPredicate(native_barrier_type, native_resource_ptr));
     META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
@@ -195,7 +166,7 @@ void ResourceBarriers::UpdateNativeResourceBarrier(const Barrier::Id& id, const 
 {
     META_FUNCTION_TASK();
     const D3D12_RESOURCE_BARRIER_TYPE native_barrier_type = GetNativeBarrierType(id.GetType());
-    const ID3D12Resource* native_resource_ptr = dynamic_cast<const IResourceDx&>(id.GetResource()).GetNativeResource();
+    const ID3D12Resource* native_resource_ptr = dynamic_cast<const IResource&>(id.GetResource()).GetNativeResource();
     const auto native_resource_barrier_it = std::find_if(m_native_resource_barriers.begin(), m_native_resource_barriers.end(),
                                                          GetNativeResourceBarrierPredicate(native_barrier_type, native_resource_ptr));
     META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
@@ -203,8 +174,8 @@ void ResourceBarriers::UpdateNativeResourceBarrier(const Barrier::Id& id, const 
     switch (native_barrier_type) // NOSONAR - do not replace switch with if
     {
     case D3D12_RESOURCE_BARRIER_TYPE_TRANSITION:
-        native_resource_barrier_it->Transition.StateBefore = GetNativeResourceState(state_change.GetStateBefore());
-        native_resource_barrier_it->Transition.StateAfter  = GetNativeResourceState(state_change.GetStateAfter());
+        native_resource_barrier_it->Transition.StateBefore = IResource::GetNativeResourceState(state_change.GetStateBefore());
+        native_resource_barrier_it->Transition.StateAfter  = IResource::GetNativeResourceState(state_change.GetStateAfter());
         break;
 
     default:

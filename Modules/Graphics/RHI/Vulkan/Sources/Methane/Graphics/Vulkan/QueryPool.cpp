@@ -24,7 +24,7 @@ Vulkan GPU query pool implementation.
 #include <Methane/Graphics/Vulkan/QueryPool.h>
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
 #include <Methane/Graphics/Vulkan/CommandList.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 
 #include <Methane/Graphics/Base/QueryPool.h>
@@ -132,7 +132,7 @@ QueryPool::QueryPool(CommandQueue& command_queue, Type type,
                          Data::Size max_query_count, Base::Query::Count slots_count_per_query,
                          Data::Size buffer_size, Data::Size query_size)
     : Base::QueryPool(command_queue, type, max_query_count, slots_count_per_query, buffer_size, query_size)
-    , m_context_vk(dynamic_cast<const IContextVk&>(GetContext()))
+    , m_context_vk(dynamic_cast<const IContext&>(GetContext()))
     , m_vk_query_pool(command_queue.GetVulkanDevice().GetNativeDevice().createQueryPool(vk::QueryPoolCreateInfo({}, GetQueryTypeVk(type), max_query_count)))
 {
     META_FUNCTION_TASK();

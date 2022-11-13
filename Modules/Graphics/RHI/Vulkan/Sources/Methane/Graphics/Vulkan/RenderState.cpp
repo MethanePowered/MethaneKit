@@ -23,7 +23,7 @@ Vulkan implementation of the render state interface.
 
 #include <Methane/Graphics/Vulkan/RenderState.h>
 #include <Methane/Graphics/Vulkan/RenderPass.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/RenderCommandList.h>
 #include <Methane/Graphics/Vulkan/Program.h>
@@ -284,7 +284,7 @@ void ViewState::Apply(Base::RenderCommandList& command_list)
 
 RenderState::RenderState(const Base::RenderContext& context, const Settings& settings)
     : Base::RenderState(context, settings)
-    , m_vk_context(dynamic_cast<const IContextVk&>(GetRenderContext()))
+    , m_vk_context(dynamic_cast<const IContext&>(GetRenderContext()))
 {
     META_FUNCTION_TASK();
     Reset(settings);

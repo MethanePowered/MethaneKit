@@ -23,7 +23,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps.
 
 #include <Methane/Graphics/DirectX/DescriptorHeap.h>
 #include <Methane/Graphics/DirectX/Device.h>
-#include <Methane/Graphics/DirectX/IContextDx.h>
+#include <Methane/Graphics/DirectX/IContext.h>
 
 #include <Methane/Graphics/Base/Resource.h>
 #include <Methane/Graphics/Base/Context.h>
@@ -64,7 +64,7 @@ DescriptorHeapReservation::DescriptorHeapReservation(const Ref<DescriptorHeap>& 
 
 DescriptorHeap::DescriptorHeap(const Base::Context& context, const Settings& settings)
     : m_context(context)
-    , m_dx_context(dynamic_cast<const IContextDx&>(context))
+    , m_dx_context(dynamic_cast<const IContext&>(context))
     , m_settings(settings)
     , m_deferred_size(settings.size)
     , m_descriptor_heap_type(GetNativeHeapType(settings.type))

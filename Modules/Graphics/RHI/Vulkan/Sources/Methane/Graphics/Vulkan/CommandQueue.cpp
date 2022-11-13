@@ -23,7 +23,7 @@ Vulkan implementation of the command queue interface.
 
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
 #include <Methane/Graphics/Vulkan/CommandList.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>
 
@@ -111,7 +111,7 @@ static vk::AccessFlags GetAccessFlagsByQueueFlags(vk::QueueFlags vk_queue_flags)
 }
 
 CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type)
-    : CommandQueue(context, command_lists_type, dynamic_cast<const IContextVk&>(context).GetVulkanDevice())
+    : CommandQueue(context, command_lists_type, dynamic_cast<const IContext&>(context).GetVulkanDevice())
 {
     META_FUNCTION_TASK();
 }
@@ -134,7 +134,7 @@ CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType co
 CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type, const Device& device,
                                const QueueFamilyReservation& family_reservation, const vk::QueueFamilyProperties& family_properties)
     : Base::CommandQueueTracking(context, command_lists_type)
-    , m_vk_context(dynamic_cast<const IContextVk&>(context))
+    , m_vk_context(dynamic_cast<const IContext&>(context))
     , m_queue_family_index(family_reservation.GetFamilyIndex())
     , m_queue_index(family_reservation.ClaimQueueIndex())
     , m_vk_queue(device.GetNativeDevice().getQueue(m_queue_family_index, m_queue_index))

@@ -25,7 +25,7 @@ DirectX 12 GPU query pool implementation.
 #include <Methane/Graphics/DirectX/CommandQueue.h>
 #include <Methane/Graphics/DirectX/CommandListSet.h>
 #include <Methane/Graphics/DirectX/Buffer.h>
-#include <Methane/Graphics/DirectX/IContextDx.h>
+#include <Methane/Graphics/DirectX/IContext.h>
 
 #include <Methane/Graphics/Base/QueryPool.h>
 #include <Methane/Graphics/RHI/IRenderContext.h>
@@ -168,8 +168,8 @@ QueryPool::QueryPool(CommandQueue& command_queue, Type type,
                          Data::Size buffer_size, Data::Size query_size)
     : Base::QueryPool(static_cast<Base::CommandQueue&>(command_queue), type, max_query_count, slots_count_per_query, buffer_size, query_size)
     , m_result_buffer_ptr(Rhi::IBuffer::CreateReadBackBuffer(GetContext(), buffer_size))
-    , m_context_dx(dynamic_cast<const IContextDx&>(GetContext()))
-    , m_result_resource_dx(dynamic_cast<IResourceDx&>(*m_result_buffer_ptr))
+    , m_context_dx(dynamic_cast<const IContext&>(GetContext()))
+    , m_result_resource_dx(dynamic_cast<IResource&>(*m_result_buffer_ptr))
     , m_native_query_type(GetQueryTypeDx(type))
     , m_native_query_heap(m_context_dx.GetNativeQueryHeap(GetQueryHeapTypeDx(type, command_queue.GetNativeCommandQueue().GetDesc().Type), max_query_count))
 {

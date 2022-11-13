@@ -44,7 +44,7 @@ class Chunk;
 namespace Methane::Graphics::Vulkan
 {
 
-struct IContextVk;
+struct IContext;
 class Program;
 
 class Shader final
@@ -69,7 +69,7 @@ public:
 private:
     void InitializeVertexInputDescriptions(const Program& program);
 
-    const IContextVk&                                m_vk_context;
+    const IContext&                                  m_vk_context;
     Data::MutableChunk                               m_byte_code_chunk;
     mutable vk::UniqueShaderModule                   m_vk_unique_module;
     mutable UniquePtr<spirv_cross::Compiler>         m_spirv_compiler_ptr;

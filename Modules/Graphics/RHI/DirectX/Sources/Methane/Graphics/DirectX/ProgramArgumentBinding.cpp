@@ -46,7 +46,7 @@ namespace Methane::Graphics::DirectX
 ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, const Settings& settings)
     : Base::ProgramArgumentBinding(context, settings)
     , m_settings_dx(settings)
-    , m_cp_native_device(dynamic_cast<const IContextDx&>(context).GetDirectDevice().GetNativeDevice())
+    , m_cp_native_device(dynamic_cast<const IContext&>(context).GetDirectDevice().GetNativeDevice())
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_native_device);

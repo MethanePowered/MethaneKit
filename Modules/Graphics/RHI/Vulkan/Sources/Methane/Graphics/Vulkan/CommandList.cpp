@@ -23,7 +23,7 @@ Vulkan command lists sequence implementation
 
 #include <Methane/Graphics/Vulkan/CommandList.h>
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
-#include <Methane/Graphics/Vulkan/IContextVk.h>
+#include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/RenderContext.h>
 #include <Methane/Graphics/Vulkan/RenderCommandList.h>
 #include <Methane/Graphics/Vulkan/ParallelRenderCommandList.h>

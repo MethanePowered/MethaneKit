@@ -23,7 +23,7 @@ Vulkan implementation of the program argument binding interface.
 
 #pragma once
 
-#include "IResourceVk.h"
+#include "IResource.h"
 
 #include <Methane/Graphics/Base/ProgramBindings.h>
 

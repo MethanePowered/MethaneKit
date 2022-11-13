@@ -21,11 +21,11 @@ DirectX 12 specialization of the resource interface.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/DirectX/IResourceDx.h>
+#include <Methane/Graphics/DirectX/IResource.h>
 #include <Methane/Graphics/DirectX/Buffer.h>
 #include <Methane/Graphics/DirectX/Texture.h>
 #include <Methane/Graphics/DirectX/Sampler.h>
-#include <Methane/Graphics/DirectX/IContextDx.h>
+#include <Methane/Graphics/DirectX/IContext.h>
 #include <Methane/Graphics/DirectX/DescriptorManager.h>
 
 #include <Methane/Graphics/RHI/IContext.h>
@@ -37,30 +37,6 @@ DirectX 12 specialization of the resource interface.
 namespace Methane::Graphics::DirectX
 {
 
-DescriptorHeap::Type IResourceDx::GetDescriptorHeapTypeByUsage(const Rhi::IResource& resource, Rhi::IResource::Usage resource_usage)
-{
-    META_FUNCTION_TASK();
-    const Rhi::IResource::Type resource_type = resource.GetResourceType();
-    switch (resource_usage)
-    {
-    case Rhi::IResource::Usage::ShaderRead:
-        return (resource_type == Rhi::IResource::Type::Sampler)
-               ? DescriptorHeap::Type::Samplers
-               : DescriptorHeap::Type::ShaderResources;
-
-    case Rhi::IResource::Usage::ShaderWrite:
-    case Rhi::IResource::Usage::RenderTarget:
-        return (resource_type == Rhi::IResource::Type::Texture &&
-                dynamic_cast<const Rhi::ITexture&>(resource).GetSettings().type == Rhi::ITexture::Type::DepthStencilBuffer)
-               ? DescriptorHeap::Type::DepthStencil
-               : DescriptorHeap::Type::RenderTargets;
-
-    default:
-        META_UNEXPECTED_ARG_DESCR_RETURN(resource_usage, DescriptorHeap::Type::Undefined,
-                                         "resource usage does not map to descriptor heap");
-    }
-}
-
 ResourceDescriptor::ResourceDescriptor(DescriptorHeap& in_heap, Data::Index in_index)
     : heap(in_heap)
     , index(in_index)
@@ -71,7 +47,7 @@ ResourceDescriptor::ResourceDescriptor(DescriptorHeap& in_heap, Data::Index in_i
 ResourceView::ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsage usage)
     : Rhi::ResourceView(view_id)
     , m_id(usage, GetSettings())
-    , m_resource_dx(dynamic_cast<IResourceDx&>(GetResource()))
+    , m_resource_dx(dynamic_cast<IResource&>(GetResource()))
     , m_descriptor_opt(m_resource_dx.InitializeNativeViewDescriptor(m_id))
 {
     META_FUNCTION_TASK();
