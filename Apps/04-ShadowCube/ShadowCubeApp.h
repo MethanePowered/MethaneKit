@@ -127,16 +127,16 @@ private:
     rhi::IResource::SubResources m_scene_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) } // NOSONAR
     };
-    gfx::Camera                  m_view_camera;
-    gfx::Camera                 m_light_camera;
-    Ptr<rhi::IBuffer>           m_const_buffer_ptr;
-    Ptr<rhi::ISampler>          m_texture_sampler_ptr;
-    Ptr<rhi::ISampler>          m_shadow_sampler_ptr;
-    Ptr<TexturedMeshBuffers>    m_cube_buffers_ptr;
+    gfx::Camera              m_view_camera;
+    gfx::Camera              m_light_camera;
+    Ptr<rhi::IBuffer>        m_const_buffer_ptr;
+    Ptr<rhi::ISampler>       m_texture_sampler_ptr;
+    Ptr<rhi::ISampler>       m_shadow_sampler_ptr;
+    Ptr<TexturedMeshBuffers> m_cube_buffers_ptr;
     Ptr<TexturedMeshBuffers> m_floor_buffers_ptr;
     Ptr<rhi::IRenderPattern> m_shadow_pass_pattern_ptr;
     RenderPassState          m_shadow_pass { false, "Shadow Render Pass" };
-    RenderPassState             m_final_pass  { true,  "Final Render Pass" };
+    RenderPassState          m_final_pass  { true,  "Final Render Pass" };
 };
 
 } // namespace Methane::Tutorials

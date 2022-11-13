@@ -45,7 +45,7 @@ Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListTyp
 namespace Methane::Graphics::Metal
 {
 
-CommandQueue::CommandQueue(const Base::Context& context, CommandListType command_lists_type)
+CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type)
     : Base::CommandQueue(context, command_lists_type)
     , m_mtl_command_queue([GetMetalContext().GetMetalDevice().GetNativeDevice() newCommandQueue])
 {
@@ -80,7 +80,7 @@ const RenderContext& CommandQueue::GetMetalRenderContext() const
 {
     META_FUNCTION_TASK();
     const Base::Context& context = GetBaseContext();
-    META_CHECK_ARG_EQUAL_DESCR(context.GetType(), ContextType::Render, "incompatible context type");
+    META_CHECK_ARG_EQUAL_DESCR(context.GetType(), Rhi::ContextType::Render, "incompatible context type");
     return static_cast<const RenderContext&>(context);
 }
 

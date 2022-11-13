@@ -116,7 +116,7 @@ public:
 
     // ICommandList interface
     [[nodiscard]] Rhi::CommandListType  GetType() const noexcept override                           { return command_list_type; }
-    [[nodiscard]] Rhi::CommandListState GetState() const noexcept override                          { return CommandListState::Pending; }
+    [[nodiscard]] Rhi::CommandListState GetState() const noexcept override                          { return Rhi::CommandListState::Pending; }
     void PopDebugGroup() override                                                                   { META_FUNCTION_NOT_IMPLEMENTED(); }
     void PushDebugGroup(Rhi::ICommandListDebugGroup&) override                                      { META_FUNCTION_NOT_IMPLEMENTED(); }
     void Reset(Rhi::ICommandListDebugGroup*) override                                               { META_FUNCTION_NOT_IMPLEMENTED(); }

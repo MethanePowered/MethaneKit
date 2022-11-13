@@ -60,7 +60,7 @@ public:
         return static_cast<const Device&>(Base::Context::GetBaseDevice());
     }
 
-    CommandQueue& GetMetalDefaultCommandQueue(CommandListType type) final
+    CommandQueue& GetMetalDefaultCommandQueue(Rhi::CommandListType type) final
     {
         META_FUNCTION_TASK();
         return static_cast<CommandQueue&>(Base::Context::GetDefaultCommandKit(type).GetQueue());

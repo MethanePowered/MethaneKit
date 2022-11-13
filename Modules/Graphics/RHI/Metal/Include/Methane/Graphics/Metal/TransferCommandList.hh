@@ -37,13 +37,13 @@ class CommandQueue;
 
 class TransferCommandList final
     : public CommandList<id<MTLBlitCommandEncoder>, Base::CommandList>
-    , public ITransferCommandList
+    , public Rhi::ITransferCommandList
 {
 public:
     TransferCommandList(Base::CommandQueue& command_queue);
 
     // ICommandList interface
-    void Reset(ICommandListDebugGroup* p_debug_group = nullptr) override;
+    void Reset(Rhi::ICommandListDebugGroup* p_debug_group = nullptr) override;
 };
 
 } // namespace Methane::Graphics::Metal

@@ -50,16 +50,16 @@ public:
     {
         META_FUNCTION_TASK();
         // Resource released callback has to be emitted before native resource is released
-        Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
+        Data::Emitter<Rhi::IResourceCallback>::Emit(&Rhi::IResourceCallback::OnResourceReleased, std::ref(*this));
     }
 
-    const IResource::DescriptorByViewId& GetDescriptorByViewId() const noexcept final
+    const Rhi::IResource::DescriptorByViewId& GetDescriptorByViewId() const noexcept final
     {
-        static const IResource::DescriptorByViewId s_dummy_descriptor_by_view_id;
+        static const Rhi::IResource::DescriptorByViewId s_dummy_descriptor_by_view_id;
         return s_dummy_descriptor_by_view_id;
     }
 
-    void RestoreDescriptorViews(const IResource::DescriptorByViewId&) final { /* intentionally uninitialized */ }
+    void RestoreDescriptorViews(const Rhi::IResource::DescriptorByViewId&) final { /* intentionally uninitialized */ }
 
 protected:
     const IContext& GetMetalContext() const noexcept
@@ -68,7 +68,7 @@ protected:
         return dynamic_cast<const IContext&>(Base::Resource::GetBaseContext());
     }
 
-    id<MTLBuffer> GetUploadSubresourceBuffer(const IResource::SubResource& sub_resource)
+    id<MTLBuffer> GetUploadSubresourceBuffer(const Rhi::IResource::SubResource& sub_resource)
     {
         META_FUNCTION_TASK();
         const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(Base::Resource::GetSubresourceCount());

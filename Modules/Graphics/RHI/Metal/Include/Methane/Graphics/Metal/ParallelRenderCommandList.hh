@@ -44,9 +44,9 @@ public:
 
     // IParallelRenderCommandList interface
     void Reset(IDebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
-    void SetBeginningResourceBarriers(const IResourceBarriers&) override { }
-    void SetEndingResourceBarriers(const IResourceBarriers&) override { }
+    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
+    void SetBeginningResourceBarriers(const Rhi::IResourceBarriers&) override { }
+    void SetEndingResourceBarriers(const Rhi::IResourceBarriers&) override { }
 
 private:
     RenderPass& GetMetalRenderPass();

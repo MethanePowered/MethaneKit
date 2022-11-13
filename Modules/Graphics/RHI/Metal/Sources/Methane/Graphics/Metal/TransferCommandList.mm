@@ -40,12 +40,12 @@ namespace Methane::Graphics::Metal
 {
 
 TransferCommandList::TransferCommandList(Base::CommandQueue& command_queue)
-    : CommandList<id<MTLBlitCommandEncoder>, Base::CommandList>(true, command_queue, CommandListType::Transfer)
+    : CommandList<id<MTLBlitCommandEncoder>, Base::CommandList>(true, command_queue, Rhi::CommandListType::Transfer)
 {
     META_FUNCTION_TASK();
 }
 
-void TransferCommandList::Reset(ICommandListDebugGroup* p_debug_group)
+void TransferCommandList::Reset(Rhi::ICommandListDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     if (IsCommandEncoderInitialized())

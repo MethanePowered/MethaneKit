@@ -28,9 +28,10 @@ Dummy Metal resource manager.
 namespace Methane::Graphics::Metal
 {
 
-struct DescriptorManager final : IDescriptorManager
+struct DescriptorManager final
+    : Rhi::IDescriptorManager
 {
-    void AddProgramBindings(IProgramBindings&) override {}
+    void AddProgramBindings(Rhi::IProgramBindings&) override {}
     void CompleteInitialization() override {}
     void Release() override {}
 };

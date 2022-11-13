@@ -94,7 +94,7 @@ void Fence::WaitOnCpu()
     m_wait_condition_var.wait(lock, [this]{ return m_is_signalled; });
 }
 
-void Fence::WaitOnGpu(ICommandQueue& wait_on_command_queue)
+void Fence::WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     Base::Fence::WaitOnGpu(wait_on_command_queue);

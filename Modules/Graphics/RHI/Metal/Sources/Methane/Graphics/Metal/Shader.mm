@@ -66,14 +66,14 @@ static MTLVertexStepFunction GetVertexStepFunction(StepType step_type)
 }
 
 [[nodiscard]]
-static IResource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg_type)
+static Rhi::IResource::Type GetResourceTypeByMetalArgumentType(MTLArgumentType mtl_arg_type)
 {
     META_FUNCTION_TASK();
     switch(mtl_arg_type)
     {
-    case MTLArgumentTypeBuffer:     return IResource::Type::Buffer;
-    case MTLArgumentTypeTexture:    return IResource::Type::Texture;
-    case MTLArgumentTypeSampler:    return IResource::Type::Sampler;
+    case MTLArgumentTypeBuffer:     return Rhi::ResourceType::Buffer;
+    case MTLArgumentTypeTexture:    return Rhi::ResourceType::Texture;
+    case MTLArgumentTypeSampler:    return Rhi::ResourceType::Sampler;
     default:                        META_UNEXPECTED_ARG_RETURN(mtl_arg_type, IResource::Type::Buffer);
     }
 }
@@ -118,10 +118,10 @@ Shader::Shader(Rhi::ShaderType shader_type, const Base::Context& context, const 
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_function, "failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName());
 }
 
-Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
+Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
-    ArgumentBindings argument_bindings;
+    Ptrs<Base::ProgramArgumentBinding> argument_bindings;
     if (m_mtl_arguments == nil)
         return argument_bindings;
     
@@ -141,15 +141,15 @@ Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const Rhi::ProgramArg
             continue;
         }
         
-        const IProgram::Argument shader_argument(GetType(), Base::Shader::GetCachedArgName(argument_name));
-        const auto argument_desc_it = IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Rhi::IProgram::Argument shader_argument(GetType(), Base::Shader::GetCachedArgName(argument_name));
+        const auto argument_desc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
         const Rhi::ProgramArgumentAccessor argument_desc = argument_desc_it == argument_accessors.end()
-                                                    ? Rhi::ProgramArgumentAccessor(shader_argument)
-                                                    : *argument_desc_it;
+                                                         ? Rhi::ProgramArgumentAccessor(shader_argument)
+                                                         : *argument_desc_it;
         
         argument_bindings.emplace_back(std::make_shared<ProgramBindings::ArgumentBinding>(
             GetContext(),
-            ProgramBindings::ArgumentBinding::Settings
+            ProgramArgumentBindingSettings
             {
                 {
                     argument_desc,

@@ -142,7 +142,7 @@ void SetMetalResources(Rhi::ShaderType shader_type, const id<MTLRenderCommandEnc
 }
 
 template<typename TMetalResource>
-void SetMetalResourcesForAll(Rhi::ShaderType shader_type, const IProgram& program, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
+void SetMetalResourcesForAll(Rhi::ShaderType shader_type, const Rhi::IProgram& program, const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
                              const std::vector<TMetalResource>& mtl_resources, uint32_t arg_index,
                              const std::vector<NSUInteger>& offsets = std::vector<NSUInteger>())
 {
@@ -181,7 +181,7 @@ void SetMetalResourcesForAll(Rhi::ShaderType shader_type, const IProgram& progra
     }
 }
 
-ProgramBindings::ProgramBindings(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+ProgramBindings::ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
     : Base::ProgramBindings(program_ptr, resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
@@ -203,7 +203,7 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehavior apply
     
     for(const auto& binding_by_argument : GetArgumentBindings())
     {
-        const IProgram::Argument& program_argument = binding_by_argument.first;
+        const Rhi::IProgram::Argument& program_argument = binding_by_argument.first;
         const ArgumentBinding& metal_argument_binding = static_cast<const ArgumentBinding&>(*binding_by_argument.second);
 
         if ((static_cast<bool>(apply_behavior & ApplyBehavior::ConstantOnce) ||
@@ -217,16 +217,16 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehavior apply
 
         switch(metal_argument_binding.GetMetalSettings().resource_type)
         {
-            case IResource::Type::Buffer:
+            case Rhi::ResourceType::Buffer:
                 SetMetalResourcesForAll(program_argument.GetShaderType(), GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeBuffers(), arg_index,
                                        metal_argument_binding.GetBufferOffsets());
                 break;
 
-            case IResource::Type::Texture:
+            case Rhi::ResourceType::Texture:
                 SetMetalResourcesForAll(program_argument.GetShaderType(), GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeTextures(), arg_index);
                 break;
 
-            case IResource::Type::Sampler:
+            case Rhi::ResourceType::Sampler:
                 SetMetalResourcesForAll(program_argument.GetShaderType(), GetProgram(), mtl_cmd_encoder, metal_argument_binding.GetNativeSamplerStates(), arg_index);
                 break;
 

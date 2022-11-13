@@ -54,38 +54,38 @@ Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRen
 namespace Methane::Graphics::Metal
 {
 
-static MTLCullMode ConvertRasterizerCullModeToMetal(IRenderState::Rasterizer::CullMode cull_mode) noexcept
+static MTLCullMode ConvertRasterizerCullModeToMetal(Rhi::IRenderState::Rasterizer::CullMode cull_mode) noexcept
 {
     META_FUNCTION_TASK();
-    using RasterizerCullMode = IRenderState::Rasterizer::CullMode;
+    using RasterizerCullMode = Rhi::IRenderState::Rasterizer::CullMode;
 
     switch(cull_mode)
     {
         case RasterizerCullMode::None:  return MTLCullModeNone;
         case RasterizerCullMode::Back:  return MTLCullModeBack;
         case RasterizerCullMode::Front: return MTLCullModeFront;
-        default:                        META_UNEXPECTED_ARG_RETURN(cull_mode, MTLCullModeNone);
+        default: META_UNEXPECTED_ARG_RETURN(cull_mode, MTLCullModeNone);
     }
 }
 
-static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(IRenderState::Rasterizer::FillMode fill_mode) noexcept
+static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(Rhi::IRenderState::Rasterizer::FillMode fill_mode) noexcept
 {
     META_FUNCTION_TASK();
-    using RasterizerFillMode = IRenderState::Rasterizer::FillMode;
+    using RasterizerFillMode = Rhi::IRenderState::Rasterizer::FillMode;
 
     switch(fill_mode)
     {
         case RasterizerFillMode::Solid:     return MTLTriangleFillModeFill;
         case RasterizerFillMode::Wireframe: return MTLTriangleFillModeLines;
-        default:                            META_UNEXPECTED_ARG_RETURN(fill_mode, MTLTriangleFillModeFill);
+        default: META_UNEXPECTED_ARG_RETURN(fill_mode, MTLTriangleFillModeFill);
     }
 }
     
-static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(IRenderState::Blending::ColorChannels rt_write_mask)
+static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(Rhi::IRenderState::Blending::ColorChannels rt_write_mask)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    using ColorChannels = IRenderState::Blending::ColorChannels;
+    using ColorChannels = Rhi::IRenderState::Blending::ColorChannels;
 
     MTLColorWriteMask mtl_color_write_mask = 0U;
     if (static_cast<bool>(rt_write_mask & ColorChannels::Red))
@@ -99,10 +99,10 @@ static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(IRenderState::Blend
     return mtl_color_write_mask;
 };
 
-static MTLBlendOperation ConvertBlendingOperationToMetal(IRenderState::Blending::Operation blend_operation)
+static MTLBlendOperation ConvertBlendingOperationToMetal(Rhi::IRenderState::Blending::Operation blend_operation)
 {
     META_FUNCTION_TASK();
-    using BlendOp = IRenderState::Blending::Operation;
+    using BlendOp = Rhi::IRenderState::Blending::Operation;
 
     switch(blend_operation)
     {
@@ -111,14 +111,14 @@ static MTLBlendOperation ConvertBlendingOperationToMetal(IRenderState::Blending:
     case BlendOp::ReverseSubtract:  return MTLBlendOperationReverseSubtract;
     case BlendOp::Minimum:          return MTLBlendOperationMin;
     case BlendOp::Maximum:          return MTLBlendOperationMax;
-    default:                        META_UNEXPECTED_ARG_RETURN(blend_operation, MTLBlendOperationAdd);
+    default: META_UNEXPECTED_ARG_RETURN(blend_operation, MTLBlendOperationAdd);
     }
 }
 
-static MTLBlendFactor ConvertBlendingFactorToMetal(IRenderState::Blending::Factor blend_factor)
+static MTLBlendFactor ConvertBlendingFactorToMetal(Rhi::IRenderState::Blending::Factor blend_factor)
 {
     META_FUNCTION_TASK();
-    using BlendFactor = IRenderState::Blending::Factor;
+    using BlendFactor = Rhi::IRenderState::Blending::Factor;
     
     switch (blend_factor)
     {
@@ -141,24 +141,24 @@ static MTLBlendFactor ConvertBlendingFactorToMetal(IRenderState::Blending::Facto
     case BlendFactor::OneMinusSource1Color:     return MTLBlendFactorOneMinusSource1Color;
     case BlendFactor::Source1Alpha:             return MTLBlendFactorSource1Alpha;
     case BlendFactor::OneMinusSource1Alpha:     return MTLBlendFactorOneMinusSource1Alpha;
-    default:                                    META_UNEXPECTED_ARG_RETURN(blend_factor, MTLBlendFactorZero);
+    default: META_UNEXPECTED_ARG_RETURN(blend_factor, MTLBlendFactorZero);
     }
 }
 
-static MTLStencilOperation ConvertStencilOperationToMetal(FaceOperation operation) noexcept
+static MTLStencilOperation ConvertStencilOperationToMetal(Rhi::FaceOperation operation) noexcept
 {
     META_FUNCTION_TASK();
     switch(operation)
     {
-        case FaceOperation::Keep:            return MTLStencilOperationKeep;
-        case FaceOperation::Zero:            return MTLStencilOperationZero;
-        case FaceOperation::Replace:         return MTLStencilOperationReplace;
-        case FaceOperation::Invert:          return MTLStencilOperationInvert;
-        case FaceOperation::IncrementClamp:  return MTLStencilOperationIncrementClamp;
-        case FaceOperation::DecrementClamp:  return MTLStencilOperationDecrementClamp;
-        case FaceOperation::IncrementWrap:   return MTLStencilOperationIncrementWrap;
-        case FaceOperation::DecrementWrap:   return MTLStencilOperationDecrementWrap;
-        default:                             META_UNEXPECTED_ARG_RETURN(operation, MTLStencilOperationKeep);
+        case Rhi::FaceOperation::Keep:            return MTLStencilOperationKeep;
+        case Rhi::FaceOperation::Zero:            return MTLStencilOperationZero;
+        case Rhi::FaceOperation::Replace:         return MTLStencilOperationReplace;
+        case Rhi::FaceOperation::Invert:          return MTLStencilOperationInvert;
+        case Rhi::FaceOperation::IncrementClamp:  return MTLStencilOperationIncrementClamp;
+        case Rhi::FaceOperation::DecrementClamp:  return MTLStencilOperationDecrementClamp;
+        case Rhi::FaceOperation::IncrementWrap:   return MTLStencilOperationIncrementWrap;
+        case Rhi::FaceOperation::DecrementWrap:   return MTLStencilOperationDecrementWrap;
+        default: META_UNEXPECTED_ARG_RETURN(operation, MTLStencilOperationKeep);
     }
 }
 
@@ -168,13 +168,13 @@ static MTLWinding ConvertRasterizerFrontWindingToMetal(bool is_front_counter_clo
     return is_front_counter_clockwise ? MTLWindingCounterClockwise : MTLWindingClockwise;
 }
 
-static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const IRenderState::Stencil& stencil, bool for_front_face)
+static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const Rhi::IRenderState::Stencil& stencil, bool for_front_face)
 {
     META_FUNCTION_TASK();
     if (!stencil.enabled)
         return nil;
     
-    const FaceOperations& face_operations = for_front_face ? stencil.front_face : stencil.back_face;
+    const Rhi::FaceOperations& face_operations = for_front_face ? stencil.front_face : stencil.back_face;
     
     MTLStencilDescriptor* mtl_stencil_desc      = [[MTLStencilDescriptor alloc] init];
     mtl_stencil_desc.stencilFailureOperation    = ConvertStencilOperationToMetal(face_operations.stencil_failure);

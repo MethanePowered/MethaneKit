@@ -78,40 +78,40 @@ Ptr<ITexture> ITexture::CreateCube(const IContext& context, uint32_t dimension_s
 namespace Methane::Graphics::Metal
 {
 
-static MTLTextureType GetNativeTextureType(TextureDimensionType dimension_type)
+static MTLTextureType GetNativeTextureType(Rhi::TextureDimensionType dimension_type)
 {
     META_FUNCTION_TASK();
     switch(dimension_type)
     {
-    case TextureDimensionType::Tex1D:             return MTLTextureType1D;
-    case TextureDimensionType::Tex1DArray:        return MTLTextureType1DArray;
-    case TextureDimensionType::Tex2D:             return MTLTextureType2D;
-    case TextureDimensionType::Tex2DArray:        return MTLTextureType2DArray;
-    case TextureDimensionType::Tex2DMultisample:  return MTLTextureType2DMultisample;
+    case Rhi::TextureDimensionType::Tex1D:             return MTLTextureType1D;
+    case Rhi::TextureDimensionType::Tex1DArray:        return MTLTextureType1DArray;
+    case Rhi::TextureDimensionType::Tex2D:             return MTLTextureType2D;
+    case Rhi::TextureDimensionType::Tex2DArray:        return MTLTextureType2DArray;
+    case Rhi::TextureDimensionType::Tex2DMultisample:  return MTLTextureType2DMultisample;
     // TODO: add support for MTLTextureType2DMultisampleArray
-    case TextureDimensionType::Cube:              return MTLTextureTypeCube;
-    case TextureDimensionType::CubeArray:         return MTLTextureTypeCubeArray;
-    case TextureDimensionType::Tex3D:             return MTLTextureType3D;
+    case Rhi::TextureDimensionType::Cube:              return MTLTextureTypeCube;
+    case Rhi::TextureDimensionType::CubeArray:         return MTLTextureTypeCubeArray;
+    case Rhi::TextureDimensionType::Tex3D:             return MTLTextureType3D;
     // TODO: add support for MTLTextureTypeTextureBuffer
-    default:                                        META_UNEXPECTED_ARG_RETURN(dimension_type, MTLTextureType1D);
+    default: META_UNEXPECTED_ARG_RETURN(dimension_type, MTLTextureType1D);
     }
 }
 
-static MTLRegion GetTextureRegion(const Dimensions& dimensions, TextureDimensionType dimension_type)
+static MTLRegion GetTextureRegion(const Dimensions& dimensions, Rhi::TextureDimensionType dimension_type)
 {
     META_FUNCTION_TASK();
     switch(dimension_type)
     {
-    case TextureDimensionType::Tex1D:
-    case TextureDimensionType::Tex1DArray:
+    case Rhi::TextureDimensionType::Tex1D:
+    case Rhi::TextureDimensionType::Tex1DArray:
              return MTLRegionMake1D(0, dimensions.GetWidth());
-    case TextureDimensionType::Tex2D:
-    case TextureDimensionType::Tex2DArray:
-    case TextureDimensionType::Tex2DMultisample:
-    case TextureDimensionType::Cube:
-    case TextureDimensionType::CubeArray:
+    case Rhi::TextureDimensionType::Tex2D:
+    case Rhi::TextureDimensionType::Tex2DArray:
+    case Rhi::TextureDimensionType::Tex2DMultisample:
+    case Rhi::TextureDimensionType::Cube:
+    case Rhi::TextureDimensionType::CubeArray:
              return MTLRegionMake2D(0, 0, dimensions.GetWidth(), dimensions.GetHeight());
-    case TextureDimensionType::Tex3D:
+    case Rhi::TextureDimensionType::Tex3D:
              return MTLRegionMake3D(0, 0, 0, dimensions.GetWidth(), dimensions.GetHeight(), dimensions.GetDepth());
     default: META_UNEXPECTED_ARG_RETURN(dimension_type, MTLRegion{});
     }
@@ -136,7 +136,7 @@ bool Texture::SetName(const std::string& name)
     return true;
 }
 
-void Texture::SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue)
+void Texture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_mtl_texture);
@@ -160,14 +160,14 @@ void Texture::SetData(const SubResources& sub_resources, ICommandQueue& target_c
         uint32_t slice = 0;
         switch(settings.dimension_type)
         {
-            case TextureDimensionType::Tex1DArray:
-            case TextureDimensionType::Tex2DArray:
+            case Rhi::TextureDimensionType::Tex1DArray:
+            case Rhi::TextureDimensionType::Tex2DArray:
                 slice = sub_resource.GetIndex().GetArrayIndex();
                 break;
-            case TextureDimensionType::Cube:
+            case Rhi::TextureDimensionType::Cube:
                 slice = sub_resource.GetIndex().GetDepthSlice();
                 break;
-            case TextureDimensionType::CubeArray:
+            case Rhi::TextureDimensionType::CubeArray:
                 slice = sub_resource.GetIndex().GetDepthSlice() + sub_resource.GetIndex().GetArrayIndex() * 6;
                 break;
             default:
@@ -190,13 +190,13 @@ void Texture::SetData(const SubResources& sub_resources, ICommandQueue& target_c
         GenerateMipLevels(transfer_command_list);
     }
 
-    GetBaseContext().RequestDeferredAction(Graphics::IContext::DeferredAction::UploadResources);
+    GetBaseContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
 }
 
 void Texture::UpdateFrameBuffer()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, ITexture::Type::FrameBuffer, "unable to update frame buffer on non-FB texture");
+    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, Rhi::TextureType::FrameBuffer, "unable to update frame buffer on non-FB texture");
     m_mtl_texture = [GetMetalRenderContext().GetNativeDrawable() texture];
 }
 
@@ -216,7 +216,7 @@ void Texture::GenerateMipLevels(TransferCommandList& transfer_command_list)
 const RenderContext& Texture::GetMetalRenderContext() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetBaseContext().GetType(), ContextType::Render, "incompatible context type");
+    META_CHECK_ARG_EQUAL_DESCR(GetBaseContext().GetType(), Rhi::ContextType::Render, "incompatible context type");
     return static_cast<const RenderContext&>(GetMetalContext());
 }
 
@@ -251,31 +251,31 @@ MTLTextureDescriptor* Texture::GetNativeTextureDescriptor()
     MTLTextureDescriptor* mtl_tex_desc = nil;
     switch(settings.dimension_type)
     {
-    case TextureDimensionType::Tex2D:
+    case Rhi::TextureDimensionType::Tex2D:
         mtl_tex_desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:mtl_pixel_format
                                                                           width:settings.dimensions.GetWidth()
                                                                          height:settings.dimensions.GetHeight()
                                                                       mipmapped:is_tex_mipmapped];
         break;
 
-    case TextureDimensionType::Cube:
+    case Rhi::TextureDimensionType::Cube:
         mtl_tex_desc = [MTLTextureDescriptor textureCubeDescriptorWithPixelFormat:mtl_pixel_format
                                                                              size:settings.dimensions.GetWidth()
                                                                         mipmapped:is_tex_mipmapped];
         break;
 
-    case TextureDimensionType::Tex1D:
-    case TextureDimensionType::Tex1DArray:
-    case TextureDimensionType::Tex2DArray:
-    case TextureDimensionType::Tex2DMultisample:
-    case TextureDimensionType::CubeArray:
-    case TextureDimensionType::Tex3D:
+    case Rhi::TextureDimensionType::Tex1D:
+    case Rhi::TextureDimensionType::Tex1DArray:
+    case Rhi::TextureDimensionType::Tex2DArray:
+    case Rhi::TextureDimensionType::Tex2DMultisample:
+    case Rhi::TextureDimensionType::CubeArray:
+    case Rhi::TextureDimensionType::Tex3D:
         mtl_tex_desc                    = [[MTLTextureDescriptor alloc] init];
         mtl_tex_desc.pixelFormat        = mtl_pixel_format;
         mtl_tex_desc.textureType        = GetNativeTextureType(settings.dimension_type);
         mtl_tex_desc.width              = settings.dimensions.GetWidth();
         mtl_tex_desc.height             = settings.dimensions.GetHeight();
-        mtl_tex_desc.depth              = settings.dimension_type == TextureDimensionType::Tex3D
+        mtl_tex_desc.depth              = settings.dimension_type == Rhi::TextureDimensionType::Tex3D
                                         ? settings.dimensions.GetDepth()
                                         : 1U;
         mtl_tex_desc.arrayLength        = settings.array_length;

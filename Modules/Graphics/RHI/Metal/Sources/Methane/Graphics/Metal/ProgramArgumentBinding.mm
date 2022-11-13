@@ -52,7 +52,7 @@ ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, con
     META_FUNCTION_TASK();
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const IResource::Views& resource_views)
+bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
     if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
@@ -65,24 +65,24 @@ bool ProgramArgumentBinding::SetResourceViews(const IResource::Views& resource_v
 
     switch(m_settings_mt.resource_type)
     {
-    case IResource::Type::Sampler:
+    case Rhi::ResourceType::Sampler:
         m_mtl_sampler_states.reserve(resource_views.size());
         std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_mtl_sampler_states),
-                       [](const IResource::View& resource_view)
-                           { return dynamic_cast<const Sampler&>(resource_view.GetResource()).GetNativeSamplerState(); });
+                       [](const Rhi::ResourceView& resource_view)
+                       { return dynamic_cast<const Sampler&>(resource_view.GetResource()).GetNativeSamplerState(); });
         break;
 
-    case IResource::Type::Texture:
+    case Rhi::ResourceType::Texture:
         m_mtl_textures.reserve(resource_views.size());
         std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_mtl_textures),
-                       [](const IResource::View& resource_view)
+                       [](const Rhi::ResourceView& resource_view)
                            { return dynamic_cast<const Texture&>(resource_view.GetResource()).GetNativeTexture(); });
         break;
 
-    case IResource::Type::Buffer:
+    case Rhi::ResourceType::Buffer:
         m_mtl_buffers.reserve(resource_views.size());
         m_mtl_buffer_offsets.reserve(resource_views.size());
-        for (const IResource::View& resource_view : resource_views)
+        for (const Rhi::ResourceView& resource_view : resource_views)
         {
             m_mtl_buffers.push_back(dynamic_cast<const Buffer&>(resource_view.GetResource()).GetNativeBuffer());
             m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_view.GetOffset()));

@@ -166,8 +166,8 @@ private:
     TRACY_GPU_SCOPE_TYPE        m_tracy_gpu_scope;
 
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    Ptr<ITimestampQuery> m_begin_timestamp_query_ptr;
-    Ptr<ITimestampQuery> m_end_timestamp_query_ptr;
+    Ptr<Rhi::ITimestampQuery> m_begin_timestamp_query_ptr;
+    Ptr<Rhi::ITimestampQuery> m_end_timestamp_query_ptr;
 #endif
 };
 

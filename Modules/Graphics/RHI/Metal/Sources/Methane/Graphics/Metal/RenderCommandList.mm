@@ -53,7 +53,7 @@ Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& p
 namespace Methane::Graphics::Base
 {
 
-Ptr<IRenderCommandList> Base::RenderCommandList::CreateForSynchronization(ICommandQueue&)
+Ptr<Rhi::IRenderCommandList> Base::RenderCommandList::CreateForSynchronization(Rhi::ICommandQueue&)
 {
     META_FUNCTION_TASK();
     return nullptr;
@@ -64,16 +64,16 @@ Ptr<IRenderCommandList> Base::RenderCommandList::CreateForSynchronization(IComma
 namespace Methane::Graphics::Metal
 {
 
-static MTLPrimitiveType PrimitiveTypeToMetal(RenderPrimitive primitive) noexcept
+static MTLPrimitiveType PrimitiveTypeToMetal(Rhi::RenderPrimitive primitive) noexcept
 {
     META_FUNCTION_TASK();
     switch (primitive)
     {
-        case RenderPrimitive::Point:          return MTLPrimitiveTypePoint;
-        case RenderPrimitive::Line:           return MTLPrimitiveTypeLine;
-        case RenderPrimitive::LineStrip:      return MTLPrimitiveTypeLineStrip;
-        case RenderPrimitive::Triangle:       return MTLPrimitiveTypeTriangle;
-        case RenderPrimitive::TriangleStrip:  return MTLPrimitiveTypeTriangleStrip;
+        case Rhi::RenderPrimitive::Point:          return MTLPrimitiveTypePoint;
+        case Rhi::RenderPrimitive::Line:           return MTLPrimitiveTypeLine;
+        case Rhi::RenderPrimitive::LineStrip:      return MTLPrimitiveTypeLineStrip;
+        case Rhi::RenderPrimitive::Triangle:       return MTLPrimitiveTypeTriangle;
+        case Rhi::RenderPrimitive::TriangleStrip:  return MTLPrimitiveTypeTriangleStrip;
     }
     return MTLPrimitiveTypeTriangleStrip;
 }
@@ -108,7 +108,7 @@ void RenderCommandList::Reset(IDebugGroup* p_debug_group)
     Base::RenderCommandList::Reset(p_debug_group);
 }
 
-void RenderCommandList::ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group)
+void RenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetCommandEncoder();
@@ -138,7 +138,7 @@ void RenderCommandList::ResetCommandEncoder()
     }
 }
 
-bool RenderCommandList::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers)
+bool RenderCommandList::SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     if (!Base::RenderCommandList::SetVertexBuffers(vertex_buffers, set_resource_barriers))

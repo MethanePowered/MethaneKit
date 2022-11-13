@@ -31,7 +31,7 @@ namespace Methane::Graphics::Metal
 {
 
 struct ProgramArgumentBindingSettings final
-    : Graphics::ProgramArgumentBindingSettings
+    : Rhi::ProgramArgumentBindingSettings
 {
     uint32_t argument_index;
 };
@@ -49,7 +49,7 @@ public:
     ProgramArgumentBinding(const Base::Context& context, const Settings& settings);
 
     // IArgumentBinding interface
-    bool SetResourceViews(const IResource::Views& resource_views) override;
+    bool SetResourceViews(const Rhi::IResource::Views& resource_views) override;
 
     const Settings&            GetMetalSettings() const noexcept { return m_settings_mt; }
     const NativeSamplerStates& GetNativeSamplerStates() const { return m_mtl_sampler_states; }

@@ -46,7 +46,7 @@ class CommandListSet final
     : public Base::CommandListSet
 {
 public:
-    explicit CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
+    explicit CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     virtual void WaitUntilCompleted()
     {

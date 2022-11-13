@@ -53,7 +53,7 @@ CommandListDebugGroup::CommandListDebugGroup(const std::string& name)
     META_FUNCTION_TASK();
 }
 
-CommandListSet::CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
     : Base::CommandListSet(command_list_refs, frame_index_opt)
 {
     META_FUNCTION_TASK();

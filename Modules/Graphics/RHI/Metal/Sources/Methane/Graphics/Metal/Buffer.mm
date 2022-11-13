@@ -82,12 +82,12 @@ namespace Methane::Graphics::Metal
 #define NativeStorageModeManaged MTLStorageModeShared
 #endif
 
-static MTLResourceOptions GetNativeResourceOptions(IBuffer::StorageMode storage_mode)
+static MTLResourceOptions GetNativeResourceOptions(Rhi::BufferStorageMode storage_mode)
 {
     switch(storage_mode)
     {
-    case IBuffer::StorageMode::Managed: return NativeResourceStorageModeManaged;
-    case IBuffer::StorageMode::Private: return MTLResourceStorageModePrivate;
+    case Rhi::BufferStorageMode::Managed: return NativeResourceStorageModeManaged;
+    case Rhi::BufferStorageMode::Private: return MTLResourceStorageModePrivate;
     default: META_UNEXPECTED_ARG_RETURN(storage_mode, MTLResourceStorageModeShared);
     }
 }
@@ -95,7 +95,7 @@ static MTLResourceOptions GetNativeResourceOptions(IBuffer::StorageMode storage_
 Buffer::Buffer(const Base::Context& context, const Settings& settings)
     : Resource(context, settings)
     , m_mtl_buffer([GetMetalContext().GetMetalDevice().GetNativeDevice() newBufferWithLength:settings.size
-                                                                               options:GetNativeResourceOptions(settings.storage_mode)])
+                                                                                     options:GetNativeResourceOptions(settings.storage_mode)])
 {
     META_FUNCTION_TASK();
 }
@@ -110,7 +110,7 @@ bool Buffer::SetName(const std::string& name)
     return true;
 }
 
-void Buffer::SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue)
+void Buffer::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
     Resource::SetData(sub_resources, target_cmd_queue);
@@ -176,7 +176,7 @@ void Buffer::SetDataToPrivateBuffer(const SubResources& sub_resources)
         data_offset += sub_resource.GetDataSize();
     }
     
-    GetBaseContext().RequestDeferredAction(ContextDeferredAction::UploadResources);
+    GetBaseContext().RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources);
 }
 
 MTLIndexType Buffer::GetNativeIndexType() const noexcept
@@ -185,15 +185,15 @@ MTLIndexType Buffer::GetNativeIndexType() const noexcept
     return TypeConverter::DataFormatToMetalIndexType(GetSettings().data_format);
 }
 
-BufferSet::BufferSet(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
+BufferSet::BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buffer_refs)
     : Base::BufferSet(buffers_type, buffer_refs)
     , m_mtl_buffer_offsets(GetCount(), 0U)
 {
     META_FUNCTION_TASK();
-    const Refs<IBuffer>& refs = GetRefs();
+    const Refs<Rhi::IBuffer>& refs = GetRefs();
     m_mtl_buffers.reserve(refs.size());
     std::transform(refs.begin(), refs.end(), std::back_inserter(m_mtl_buffers),
-        [](const Ref<IBuffer>& buffer_ref)
+        [](const Ref<Rhi::IBuffer>& buffer_ref)
         {
            const Buffer& metal_buffer = static_cast<const Buffer&>(buffer_ref.get());
            return metal_buffer.GetNativeBuffer();

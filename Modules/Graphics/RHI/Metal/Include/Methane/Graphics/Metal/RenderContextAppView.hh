@@ -39,7 +39,7 @@ Metal application view creation by render context settings (shared logic with Vu
 namespace Methane::Graphics::Metal
 {
 
-inline AppViewMetal* CreateRenderContextAppView(const Platform::AppEnvironment& env, const RenderContextSettings& settings)
+inline AppViewMetal* CreateRenderContextAppView(const Platform::AppEnvironment& env, const Rhi::RenderContextSettings& settings)
 {
     META_FUNCTION_TASK();
     AppViewMetal* app_view = [[AppViewMetal alloc] initWithFrame: TypeConverter::CreateNSRect(settings.frame_size)

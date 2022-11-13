@@ -56,7 +56,7 @@ Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, 
 namespace Methane::Graphics::Metal
 {
 
-RenderContext::RenderContext(const Platform::AppEnvironment& env, Base::Device& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
+RenderContext::RenderContext(const Platform::AppEnvironment& env, Base::Device& device, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
     : Context<Base::RenderContext>(device, parallel_executor, settings)
     , m_app_view(CreateRenderContextAppView(env, settings))
     , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:Context<Base::RenderContext>::GetMetalDevice().GetNativeDevice()])
@@ -154,7 +154,7 @@ void RenderContext::Present()
     META_FUNCTION_TASK();
     Context<Base::RenderContext>::Present();
 
-    id<MTLCommandBuffer> mtl_cmd_buffer = [GetMetalDefaultCommandQueue(CommandListType::Render).GetNativeCommandQueue() commandBuffer];
+    id<MTLCommandBuffer> mtl_cmd_buffer = [GetMetalDefaultCommandQueue(Rhi::CommandListType::Render).GetNativeCommandQueue() commandBuffer];
     mtl_cmd_buffer.label = [NSString stringWithFormat:@"%@ Present Command", GetNsName()];
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     [mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {

@@ -33,13 +33,14 @@ namespace Methane::Graphics::Metal
 struct IContext;
 class Program;
 
-class Shader final : public Base::Shader
+class Shader final
+    : public Base::Shader
 {
 public:
     Shader(Rhi::ShaderType shader_type, const Base::Context& context, const Settings& settings);
 
     // Base::Shader interface
-    ArgumentBindings GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const final;
+    Ptrs<Base::ProgramArgumentBinding> GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const final;
     
     id<MTLFunction> GetNativeFunction() noexcept                            { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const Program& program) const;

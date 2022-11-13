@@ -45,10 +45,10 @@ ISystem& ISystem::Get()
 namespace Methane::Graphics::Metal
 {
 
-DeviceFeatures Device::GetSupportedFeatures(const id<MTLDevice>&)
+Rhi::DeviceFeatures Device::GetSupportedFeatures(const id<MTLDevice>&)
 {
     META_FUNCTION_TASK();
-    DeviceFeatures supported_features = DeviceFeatures::BasicRendering;
+    Rhi::DeviceFeatures supported_features = Rhi::DeviceFeatures::BasicRendering;
     return supported_features;
 }
 
@@ -68,13 +68,13 @@ System::~System()
 #endif
 }
 
-const Ptrs<IDevice>& System::UpdateGpuDevices(const Platform::AppEnvironment&, const DeviceCaps& required_device_caps)
+const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Platform::AppEnvironment&, const Rhi::DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
     return UpdateGpuDevices(required_device_caps);
 }
 
-const Ptrs<IDevice>& System::UpdateGpuDevices(const DeviceCaps& required_device_caps)
+const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
 #ifdef APPLE_MACOS
@@ -113,7 +113,7 @@ void System::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificatio
     }
     else
     {
-        const Ptr<IDevice>& device_ptr = FindMetalDevice(mtl_device);
+        const Ptr<Rhi::IDevice>& device_ptr = FindMetalDevice(mtl_device);
         META_CHECK_ARG_NOT_NULL_DESCR(device_ptr, "no device object found");
 
         if (device_notification == MTLDeviceRemovalRequestedNotification)
@@ -129,26 +129,26 @@ void System::AddDevice(const id<MTLDevice>& mtl_device)
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
-    DeviceFeatures device_supported_features = Device::GetSupportedFeatures(mtl_device);
+    Rhi::DeviceFeatures device_supported_features = Device::GetSupportedFeatures(mtl_device);
     if (!static_cast<bool>(device_supported_features & GetDeviceCapabilities().features))
         return;
 
     Base::System::AddDevice(std::make_shared<Device>(mtl_device, GetDeviceCapabilities()));
 }
 
-const Ptr<IDevice>& System::FindMetalDevice(const id<MTLDevice>& mtl_device) const
+const Ptr<Rhi::IDevice>& System::FindMetalDevice(const id<MTLDevice>& mtl_device) const
 {
     META_FUNCTION_TASK();
-    const Ptrs<IDevice>& devices = GetGpuDevices();
+    const Ptrs<Rhi::IDevice>& devices = GetGpuDevices();
     const auto device_it = std::find_if(devices.begin(), devices.end(),
-                                        [&mtl_device](const Ptr<IDevice>& device_ptr)
+                                        [&mtl_device](const Ptr<Rhi::IDevice>& device_ptr)
                                         {
                                             META_CHECK_ARG_NOT_NULL(device_ptr);
                                             Device& metal_device = static_cast<Device&>(*device_ptr);
                                             return metal_device.GetNativeDevice() == mtl_device;
                                         });
     
-    static const Ptr<IDevice> s_empty_device_ptr;
+    static const Ptr<Rhi::IDevice> s_empty_device_ptr;
     return device_it != devices.end() ? *device_it : s_empty_device_ptr;
 }
 

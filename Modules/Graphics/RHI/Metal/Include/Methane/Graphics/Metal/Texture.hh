@@ -36,13 +36,14 @@ namespace Methane::Graphics::Metal
 class RenderContext;
 class TransferCommandList;
 
-class Texture final : public Resource<Base::Texture>
+class Texture final
+    : public Resource<Base::Texture>
 {
 public:
     Texture(const Base::Context& context, const Settings& settings);
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) override;
+    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override;
 
     // IObject interface
     bool SetName(const std::string& name) override;

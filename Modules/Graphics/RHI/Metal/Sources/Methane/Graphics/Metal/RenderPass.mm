@@ -49,37 +49,38 @@ Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Setti
 namespace Methane::Graphics::Metal
 {
 
-static MTLStoreAction GetLStoreAction(IRenderPass::Attachment::StoreAction store_action)
+static MTLStoreAction GetLStoreAction(Rhi::RenderPassAttachment::StoreAction store_action)
 {
     META_FUNCTION_TASK();
     switch(store_action)
     {
-        case IRenderPass::Attachment::StoreAction::DontCare: return MTLStoreActionDontCare;
-        case IRenderPass::Attachment::StoreAction::Store:    return MTLStoreActionStore;
-        case IRenderPass::Attachment::StoreAction::Resolve:  return MTLStoreActionMultisampleResolve;
-        default:                                             META_UNEXPECTED_ARG_RETURN(store_action, MTLStoreActionUnknown);
+        case Rhi::RenderPassAttachment::StoreAction::DontCare: return MTLStoreActionDontCare;
+        case Rhi::RenderPassAttachment::StoreAction::Store:    return MTLStoreActionStore;
+        case Rhi::RenderPassAttachment::StoreAction::Resolve:  return MTLStoreActionMultisampleResolve;
+        default: META_UNEXPECTED_ARG_RETURN(store_action, MTLStoreActionUnknown);
     }
 }
 
-static MTLLoadAction GetLLoadAction(IRenderPass::Attachment::LoadAction load_action)
+static MTLLoadAction GetLLoadAction(Rhi::RenderPassAttachment::LoadAction load_action)
 {
     META_FUNCTION_TASK();
     switch(load_action)
     {
-        case IRenderPass::Attachment::LoadAction::DontCare: return MTLLoadActionDontCare;
-        case IRenderPass::Attachment::LoadAction::Load:     return MTLLoadActionLoad;
-        case IRenderPass::Attachment::LoadAction::Clear:    return MTLLoadActionClear;
-        default:                                            META_UNEXPECTED_ARG_RETURN(load_action, MTLLoadActionDontCare);
+        case Rhi::RenderPassAttachment::LoadAction::DontCare: return MTLLoadActionDontCare;
+        case Rhi::RenderPassAttachment::LoadAction::Load:     return MTLLoadActionLoad;
+        case Rhi::RenderPassAttachment::LoadAction::Clear:    return MTLLoadActionClear;
+        default: META_UNEXPECTED_ARG_RETURN(load_action, MTLLoadActionDontCare);
     }
 }
 
-static void ConvertRenderPassAttachmentToMetal(const Base::RenderPass& render_pass, const IRenderPattern::Attachment& attachment, MTLRenderPassAttachmentDescriptor* mtl_attachment_desc)
+static void ConvertRenderPassAttachmentToMetal(const Base::RenderPass& render_pass, const Rhi::RenderPassAttachment& attachment,
+                                               MTLRenderPassAttachmentDescriptor* mtl_attachment_desc)
 {
     META_FUNCTION_TASK();
-    const ITexture::View& texture_location = render_pass.GetAttachmentTextureView(attachment);
-    const SubResource::Index& sub_resource_index = texture_location.GetSubresourceIndex();
+    const Rhi::ITexture::View& texture_location = render_pass.GetAttachmentTextureView(attachment);
+    const Rhi::SubResource::Index& sub_resource_index = texture_location.GetSubresourceIndex();
     
-    if (texture_location.GetTexture().GetSettings().type == ITexture::Type::FrameBuffer)
+    if (texture_location.GetTexture().GetSettings().type == Rhi::TextureType::FrameBuffer)
     {
         static_cast<Texture&>(texture_location.GetTexture()).UpdateFrameBuffer();
     }
@@ -114,7 +115,7 @@ bool RenderPass::Update(const Settings& settings)
     META_FUNCTION_TASK();
     const bool settings_changed = Base::RenderPass::Update(settings);
     Reset();
-    Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
+    Data::Emitter<Rhi::IRenderPassCallback>::Emit(&Rhi::IRenderPassCallback::OnRenderPassUpdated, *this);
     return settings_changed;
 }
 
