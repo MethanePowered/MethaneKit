@@ -142,10 +142,10 @@ static void ConfigureDeviceDebugFeature(const wrl::ComPtr<ID3D12Device>& device_
 
 #endif
 
-DeviceFeatures Device::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
+Rhi::DeviceFeatures Device::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
 {
     META_FUNCTION_TASK();
-    return DeviceFeatures::BasicRendering;
+    return Rhi::DeviceFeatures::BasicRendering;
 }
 
 Device::Device(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities)
@@ -330,13 +330,13 @@ void System::CheckForChanges()
 #endif
 }
 
-const Ptrs<IDevice>& System::UpdateGpuDevices(const Platform::AppEnvironment&, const DeviceCaps& required_device_caps)
+const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Platform::AppEnvironment&, const Rhi::DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
     return UpdateGpuDevices(required_device_caps);
 }
 
-const Ptrs<IDevice>& System::UpdateGpuDevices(const DeviceCaps& required_device_caps)
+const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_factory);
@@ -373,7 +373,7 @@ void System::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_
     if (!SUCCEEDED(D3D12CreateDevice(cp_adapter.Get(), feature_level, _uuidof(ID3D12Device), nullptr)))
         return;
 
-    DeviceFeatures device_supported_features = Device::GetSupportedFeatures(cp_adapter, feature_level);
+    Rhi::DeviceFeatures device_supported_features = Device::GetSupportedFeatures(cp_adapter, feature_level);
 
     using namespace magic_enum::bitwise_operators;
     if (!static_cast<bool>(device_supported_features & GetDeviceCapabilities().features))

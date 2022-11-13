@@ -40,39 +40,44 @@ DirectX 12 implementation of the render command list interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IRenderCommandList> Rhi::IRenderCommandList::Create(ICommandQueue& cmd_queue, Rhi::IRenderPass& render_pass)
+Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& cmd_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::RenderCommandList>(static_cast<Base::CommandQueue&>(cmd_queue), static_cast<Base::RenderPass&>(render_pass));
 }
 
-Ptr<IRenderCommandList> Rhi::IRenderCommandList::Create(IParallelRenderCommandList& parallel_render_command_list)
+Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& parallel_render_command_list)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::RenderCommandList>(static_cast<Base::ParallelRenderCommandList&>(parallel_render_command_list));
 }
 
-Ptr<IRenderCommandList> Base::RenderCommandList::CreateForSynchronization(ICommandQueue& cmd_queue)
+} // namespace Methane::Graphics::Rhi
+
+namespace Methane::Graphics::Base
+{
+
+Ptr<Rhi::IRenderCommandList> RenderCommandList::CreateForSynchronization(Rhi::ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::RenderCommandList>(static_cast<Base::CommandQueue&>(cmd_queue));
 }
 
-} // namespace Methane::Graphics::Rhi
+} // namespace Methane::Graphics::Base
 
 namespace Methane::Graphics::DirectX
 {
 
-static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(RenderPrimitive primitive)
+static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(Rhi::RenderPrimitive primitive)
 {
     META_FUNCTION_TASK();
     switch (primitive)
     {
-    case RenderPrimitive::Point:          return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
-    case RenderPrimitive::Line:           return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
-    case RenderPrimitive::LineStrip:      return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
-    case RenderPrimitive::Triangle:       return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-    case RenderPrimitive::TriangleStrip:  return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+    case Rhi::RenderPrimitive::Point:          return D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+    case Rhi::RenderPrimitive::Line:           return D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+    case Rhi::RenderPrimitive::LineStrip:      return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
+    case Rhi::RenderPrimitive::Triangle:       return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+    case Rhi::RenderPrimitive::TriangleStrip:  return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
     default:                              META_UNEXPECTED_ARG_RETURN(primitive, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
     }
 }
@@ -102,7 +107,7 @@ void RenderCommandList::ResetNative(const Ptr<RenderState>& render_state_ptr)
         return;
 
     SetNativeCommitted(false);
-    SetCommandListState(CommandListState::Encoding);
+    SetCommandListState(Rhi::CommandListState::Encoding);
 
     ID3D12PipelineState* p_dx_initial_state = render_state_ptr ? render_state_ptr->GetNativePipelineState().Get() : nullptr;
     ID3D12CommandAllocator& dx_cmd_allocator = GetNativeCommandAllocatorRef();
@@ -150,7 +155,7 @@ void RenderCommandList::Reset(IDebugGroup* p_debug_group)
     }
 }
 
-void RenderCommandList::ResetWithState(IRenderState& render_state, Rhi::IDebugGroup* p_debug_group)
+void RenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
     ResetNative(static_cast<Base::RenderState&>(render_state).GetPtr<RenderState>());
@@ -161,15 +166,15 @@ void RenderCommandList::ResetWithState(IRenderState& render_state, Rhi::IDebugGr
     }
 }
 
-bool RenderCommandList::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers)
+bool RenderCommandList::SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     if (!Base::RenderCommandList::SetVertexBuffers(vertex_buffers, set_resource_barriers))
         return false;
 
     auto& dx_vertex_buffer_set = static_cast<BufferSet&>(vertex_buffers);
-    if (const Ptr<IResourceBarriers>& buffer_set_setup_barriers_ptr = dx_vertex_buffer_set.GetSetupTransitionBarriers();
-        set_resource_barriers && dx_vertex_buffer_set.SetState(IResource::State::VertexBuffer) && buffer_set_setup_barriers_ptr)
+    if (const Ptr<Rhi::IResourceBarriers>& buffer_set_setup_barriers_ptr = dx_vertex_buffer_set.GetSetupTransitionBarriers();
+        set_resource_barriers && dx_vertex_buffer_set.SetState(Rhi::ResourceState::VertexBuffer) && buffer_set_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_set_setup_barriers_ptr);
     }
@@ -179,15 +184,15 @@ bool RenderCommandList::SetVertexBuffers(IBufferSet& vertex_buffers, bool set_re
     return true;
 }
 
-bool RenderCommandList::SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers)
+bool RenderCommandList::SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_resource_barriers)
 {
     META_FUNCTION_TASK();
     if (!Base::RenderCommandList::SetIndexBuffer(index_buffer, set_resource_barriers))
         return false;
 
     auto& dx_index_buffer = static_cast<IndexBuffer&>(index_buffer);
-    if (Ptr <IResourceBarriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
-        set_resource_barriers && dx_index_buffer.SetState(IResource::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
+    if (Ptr<Rhi::IResourceBarriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
+        set_resource_barriers && dx_index_buffer.SetState(Rhi::ResourceState::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_setup_barriers_ptr);
     }

@@ -32,7 +32,7 @@ DirectX 12 implementation of the transfer command list interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITransferCommandList> Rhi::ITransferCommandList::Create(ICommandQueue& cmd_queue)
+Ptr<ITransferCommandList> ITransferCommandList::Create(ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::TransferCommandList>(static_cast<Base::CommandQueue&>(cmd_queue));
@@ -43,11 +43,11 @@ Ptr<ITransferCommandList> Rhi::ITransferCommandList::Create(ICommandQueue& cmd_q
 namespace Methane::Graphics::DirectX
 {
 
-static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(ContextOptions options)
+static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(Rhi::ContextOptions options)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    return static_cast<bool>(options & ContextOptions::TransferWithDirectQueueOnWindows)
+    return static_cast<bool>(options & Rhi::ContextOptions::TransferWithDirectQueueOnWindows)
          ? D3D12_COMMAND_LIST_TYPE_DIRECT
          : D3D12_COMMAND_LIST_TYPE_COPY;
 }

@@ -66,7 +66,7 @@ public:
     std::string               GetNames() const noexcept final;
     Rhi::IBuffer&             operator[](Data::Index index) const final;
 
-    [[nodiscard]] bool  SetState(Rhi::IResource::State state);
+    [[nodiscard]] bool  SetState(Rhi::ResourceState state);
     [[nodiscard]] const Ptr<Rhi::IResourceBarriers>& GetSetupTransitionBarriers() const noexcept { return m_setup_transition_barriers; }
     [[nodiscard]] const RawPtrs<Buffer>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
 

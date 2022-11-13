@@ -37,7 +37,7 @@ DirectX 12 specialization of the resource interface.
 namespace Methane::Graphics::DirectX
 {
 
-DescriptorHeap::Type Rhi::IResourceDx::GetDescriptorHeapTypeByUsage(const Rhi::IResource& resource, Rhi::IResource::Usage resource_usage)
+DescriptorHeap::Type IResourceDx::GetDescriptorHeapTypeByUsage(const Rhi::IResource& resource, Rhi::IResource::Usage resource_usage)
 {
     META_FUNCTION_TASK();
     const Rhi::IResource::Type resource_type = resource.GetResourceType();
@@ -68,8 +68,8 @@ ResourceDescriptor::ResourceDescriptor(DescriptorHeap& in_heap, Data::Index in_i
     META_FUNCTION_TASK();
 }
 
-ResourceView::ResourceView(const Graphics::ResourceView& view_id, ResourceUsage usage)
-    : Graphics::ResourceView(view_id)
+ResourceView::ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsage usage)
+    : Rhi::ResourceView(view_id)
     , m_id(usage, GetSettings())
     , m_resource_dx(dynamic_cast<IResourceDx&>(GetResource()))
     , m_descriptor_opt(m_resource_dx.InitializeNativeViewDescriptor(m_id))

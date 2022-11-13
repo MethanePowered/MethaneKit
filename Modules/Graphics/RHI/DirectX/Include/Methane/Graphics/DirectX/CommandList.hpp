@@ -69,12 +69,12 @@ public:
         InitializeTimestampQueries();
         BeginGpuZone();
 
-        SetCommandListState(CommandListState::Encoding);
+        SetCommandListState(Rhi::CommandListState::Encoding);
     }
 
     // ICommandList interface
 
-    void PushDebugGroup(ICommandListDebugGroup& debug_group) final
+    void PushDebugGroup(Rhi::ICommandListDebugGroup& debug_group) final
     {
         META_FUNCTION_TASK();
         CommandListBaseT::PushDebugGroup(debug_group);
@@ -101,7 +101,7 @@ public:
         m_is_native_committed = true;
     }
 
-    void SetResourceBarriers(const IResourceBarriers& resource_barriers) final
+    void SetResourceBarriers(const Rhi::IResourceBarriers& resource_barriers) final
     {
         META_FUNCTION_TASK();
         VerifyEncodingState();
@@ -120,7 +120,7 @@ public:
 
     // ICommandList interface
 
-    void Reset(ICommandListDebugGroup* p_debug_group) override
+    void Reset(Rhi::ICommandListDebugGroup* p_debug_group) override
     {
         META_FUNCTION_TASK();
         const auto state_lock = Base::CommandList::LockStateMutex();
@@ -166,7 +166,7 @@ public:
     ID3D12GraphicsCommandList4* GetNativeCommandList4() const final { return m_cp_command_list_4.Get(); }
 
 protected:
-    void ApplyProgramBindings(Base::ProgramBindings& program_bindings, IProgramBindings::ApplyBehavior apply_behavior) final
+    void ApplyProgramBindings(Base::ProgramBindings& program_bindings, Rhi::IProgramBindings::ApplyBehavior apply_behavior) final
     {
         // Optimization to skip dynamic_cast required to call Apply method of the Base::ProgramBinding implementation
         static_cast<ProgramBindings&>(program_bindings).Apply(*this, Base::CommandList::GetProgramBindingsPtr(), apply_behavior);

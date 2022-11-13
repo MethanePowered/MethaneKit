@@ -65,9 +65,10 @@ namespace Methane::Graphics::DirectX
 constexpr size_t g_max_rtv_count = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC::RTVFormats) / sizeof(DXGI_FORMAT);
 
 [[nodiscard]]
-inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<IShader>& shader_ptr)
+inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Rhi::IShader>& shader_ptr)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL_DESCR(shader_ptr, "Shader pointer is not initialized");
     const Data::Chunk* p_byte_code_chunk = shader_ptr ? static_cast<const Shader&>(*shader_ptr).GetNativeByteCode() : nullptr;
     return p_byte_code_chunk
         ? CD3DX12_SHADER_BYTECODE(p_byte_code_chunk->GetDataPtr(), p_byte_code_chunk->GetDataSize())
@@ -75,7 +76,7 @@ inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<IShader>& shader_ptr)
 }
 
 [[nodiscard]]
-static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(IRenderState::Rasterizer::FillMode fill_mode)
+static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(Rhi::IRenderState::Rasterizer::FillMode fill_mode)
 {
     META_FUNCTION_TASK();
     using RasterizerFillMode = Rhi::IRenderState::Rasterizer::FillMode;
@@ -89,7 +90,7 @@ static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(IRenderState::Rasterizer
 }
 
 [[nodiscard]]
-static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(IRenderState::Rasterizer::CullMode cull_mode)
+static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(Rhi::IRenderState::Rasterizer::CullMode cull_mode)
 {
     META_FUNCTION_TASK();
     using RasterizerCullMode = Rhi::IRenderState::Rasterizer::CullMode;
@@ -104,7 +105,7 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(IRenderState::Rasterizer
 }
 
 [[nodiscard]]
-static UINT8 ConvertRenderTargetWriteMaskToD3D12(IRenderState::Blending::ColorChannels rt_write_mask)
+static UINT8 ConvertRenderTargetWriteMaskToD3D12(Rhi::IRenderState::Blending::ColorChannels rt_write_mask)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -123,7 +124,7 @@ static UINT8 ConvertRenderTargetWriteMaskToD3D12(IRenderState::Blending::ColorCh
 };
 
 [[nodiscard]]
-static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(IRenderState::Blending::Operation blend_operation)
+static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(Rhi::IRenderState::Blending::Operation blend_operation)
 {
     META_FUNCTION_TASK();
     using BlendOp = Rhi::IRenderState::Blending::Operation;
@@ -140,7 +141,7 @@ static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(IRenderState::Blending::Op
 }
 
 [[nodiscard]]
-static D3D12_BLEND ConvertBlendingFactorToD3D12(IRenderState::Blending::Factor blend_factor)
+static D3D12_BLEND ConvertBlendingFactorToD3D12(Rhi::IRenderState::Blending::Factor blend_factor)
 {
     META_FUNCTION_TASK();
     using BlendFactor = Rhi::IRenderState::Blending::Factor;
@@ -171,26 +172,26 @@ static D3D12_BLEND ConvertBlendingFactorToD3D12(IRenderState::Blending::Factor b
 }
 
 [[nodiscard]]
-static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(FaceOperation operation)
+static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(Rhi::FaceOperation operation)
 {
     META_FUNCTION_TASK();
 
     switch (operation)
     {
-    case FaceOperation::Keep:            return D3D12_STENCIL_OP_KEEP;
-    case FaceOperation::Zero:            return D3D12_STENCIL_OP_ZERO;
-    case FaceOperation::Replace:         return D3D12_STENCIL_OP_REPLACE;
-    case FaceOperation::Invert:          return D3D12_STENCIL_OP_INVERT;
-    case FaceOperation::IncrementClamp:  return D3D12_STENCIL_OP_INCR_SAT;
-    case FaceOperation::DecrementClamp:  return D3D12_STENCIL_OP_DECR_SAT;
-    case FaceOperation::IncrementWrap:   return D3D12_STENCIL_OP_INCR;
-    case FaceOperation::DecrementWrap:   return D3D12_STENCIL_OP_DECR;
+    case Rhi::FaceOperation::Keep:            return D3D12_STENCIL_OP_KEEP;
+    case Rhi::FaceOperation::Zero:            return D3D12_STENCIL_OP_ZERO;
+    case Rhi::FaceOperation::Replace:         return D3D12_STENCIL_OP_REPLACE;
+    case Rhi::FaceOperation::Invert:          return D3D12_STENCIL_OP_INVERT;
+    case Rhi::FaceOperation::IncrementClamp:  return D3D12_STENCIL_OP_INCR_SAT;
+    case Rhi::FaceOperation::DecrementClamp:  return D3D12_STENCIL_OP_DECR_SAT;
+    case Rhi::FaceOperation::IncrementWrap:   return D3D12_STENCIL_OP_INCR;
+    case Rhi::FaceOperation::DecrementWrap:   return D3D12_STENCIL_OP_DECR;
     default:                             META_UNEXPECTED_ARG_RETURN(operation, D3D12_STENCIL_OP_KEEP);
     }
 }
 
 [[nodiscard]]
-static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const FaceOperations& stencil_face_op)
+static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const Rhi::FaceOperations& stencil_face_op)
 {
     META_FUNCTION_TASK();
     D3D12_DEPTH_STENCILOP_DESC stencil_desc{};
@@ -207,9 +208,9 @@ static D3D12_DEPTH_STENCILOP_DESC ConvertStencilFaceOperationsToD3D12(const Face
 static CD3DX12_VIEWPORT ViewportToD3D(const Viewport& viewport) noexcept
 {
     META_FUNCTION_TASK();
-    return CD3DX12_VIEWPORT(static_cast<float>(viewport.origin.GetX()), static_cast<float>(viewport.origin.GetY()),
+    return CD3DX12_VIEWPORT(static_cast<float>(viewport.origin.GetX()),   static_cast<float>(viewport.origin.GetY()),
                             static_cast<float>(viewport.size.GetWidth()), static_cast<float>(viewport.size.GetHeight()),
-                            static_cast<float>(viewport.origin.GetZ()), static_cast<float>(viewport.origin.GetZ() + viewport.size.GetDepth()));
+                            static_cast<float>(viewport.origin.GetZ()),   static_cast<float>(viewport.origin.GetZ() + viewport.size.GetDepth()));
 }
 
 [[nodiscard]]

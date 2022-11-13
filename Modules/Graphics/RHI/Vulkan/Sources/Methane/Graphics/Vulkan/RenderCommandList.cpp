@@ -146,7 +146,7 @@ bool RenderCommandList::SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool s
     const auto& vk_vertex_buffers = static_cast<const BufferSet&>(vertex_buffers);
     auto& vk_vertex_buffer_set = static_cast<BufferSet&>(vertex_buffers);
     if (const Ptr<Rhi::IResourceBarriers>& buffer_set_setup_barriers_ptr = vk_vertex_buffer_set.GetSetupTransitionBarriers();
-        set_resource_barriers && vk_vertex_buffer_set.SetState(Rhi::IResource::State::VertexBuffer) && buffer_set_setup_barriers_ptr)
+        set_resource_barriers && vk_vertex_buffer_set.SetState(Rhi::ResourceState::VertexBuffer) && buffer_set_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_set_setup_barriers_ptr);
     }
@@ -163,7 +163,7 @@ bool RenderCommandList::SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_reso
 
     auto& vk_index_buffer = static_cast<Buffer&>(index_buffer);
     if (Ptr<Rhi::IResourceBarriers>& buffer_setup_barriers_ptr = vk_index_buffer.GetSetupTransitionBarriers();
-        set_resource_barriers && vk_index_buffer.SetState(Rhi::IResource::State::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
+        set_resource_barriers && vk_index_buffer.SetState(Rhi::ResourceState::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_setup_barriers_ptr);
     }

@@ -50,7 +50,7 @@ public:
     // IFence overrides
     void Signal() override;
     void WaitOnCpu() override;
-    void WaitOnGpu(ICommandQueue& wait_on_command_queue) override;
+    void WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue) override;
 
     // IObject override
     bool SetName(const std::string& name) override;

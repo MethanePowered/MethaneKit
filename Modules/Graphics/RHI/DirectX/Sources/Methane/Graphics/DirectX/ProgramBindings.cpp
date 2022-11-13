@@ -41,7 +41,7 @@ DirectX 12 implementation of the program bindings interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IProgramBindings> Rhi::IProgramBindings::Create(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<IProgramBindings> IProgramBindings::Create(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
     const auto dx_program_bindings_ptr = std::make_shared<DirectX::ProgramBindings>(program_ptr, resource_views_by_argument, frame_index);
@@ -49,7 +49,7 @@ Ptr<IProgramBindings> Rhi::IProgramBindings::Create(const Ptr<IProgram>& program
     return dx_program_bindings_ptr;
 }
 
-Ptr<IProgramBindings> Rhi::IProgramBindings::CreateCopy(const Rhi::IProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+Ptr<IProgramBindings> IProgramBindings::CreateCopy(const Rhi::IProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
     const auto dx_program_bindings_ptr = std::make_shared<DirectX::ProgramBindings>(static_cast<const DirectX::ProgramBindings&>(other_program_bindings), replace_resource_views_by_argument, frame_index);
@@ -67,17 +67,17 @@ DescriptorsCountByAccess::DescriptorsCountByAccess()
     std::fill(m_count_by_access_type.begin(), m_count_by_access_type.end(), 0U);
 }
 
-uint32_t& DescriptorsCountByAccess::operator[](ProgramArgumentAccessor::Type access_type)
+uint32_t& DescriptorsCountByAccess::operator[](Rhi::ProgramArgumentAccessor::Type access_type)
 {
     return m_count_by_access_type[magic_enum::enum_index(access_type).value()];
 }
 
-uint32_t DescriptorsCountByAccess::operator[](ProgramArgumentAccessor::Type access_type) const
+uint32_t DescriptorsCountByAccess::operator[](Rhi::ProgramArgumentAccessor::Type access_type) const
 {
     return m_count_by_access_type[magic_enum::enum_index(access_type).value()];
 }
 
-ProgramBindings::ProgramBindings(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+ProgramBindings::ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
     : Base::ProgramBindings(program_ptr, resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
@@ -101,7 +101,7 @@ ProgramBindings::~ProgramBindings()
         if (!heap_reservation_opt)
             continue;
 
-        if (const DescriptorHeap::Range& mutable_descriptor_range = heap_reservation_opt->ranges[magic_enum::enum_index(ProgramArgumentAccessor::Type::Mutable).value()];
+        if (const DescriptorHeap::Range& mutable_descriptor_range = heap_reservation_opt->ranges[magic_enum::enum_index(Rhi::ProgramArgumentAccessor::Type::Mutable).value()];
             !mutable_descriptor_range.IsEmpty())
         {
             heap_reservation_opt->heap.get().ReleaseRange(mutable_descriptor_range);
@@ -121,7 +121,7 @@ void ProgramBindings::Initialize()
 
     if (descriptor_manager.IsDeferredHeapAllocation())
     {
-        program.GetContext().RequestDeferredAction(IContext::DeferredAction::CompleteInitialization);
+        program.GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::CompleteInitialization);
     }
     else
     {
@@ -239,7 +239,7 @@ void ProgramBindings::ReserveDescriptorHeapRanges()
         META_CHECK_ARG_EQUAL(heap_reservation.heap.get().GetSettings().type, heap_type);
         META_CHECK_ARG_TRUE(heap_reservation.heap.get().GetSettings().shader_visible);
 
-        for (ProgramArgumentAccessor::Type access_type : magic_enum::enum_values<ProgramArgumentAccessor::Type>())
+        for (Rhi::ProgramArgumentAccessor::Type access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccessor::Type>())
         {
             const uint32_t accessor_descr_count = descriptors_count[access_type];
             if (!accessor_descr_count)
@@ -318,12 +318,12 @@ void ProgramBindings::AddRootParameterBindingsForArgument(ArgumentBinding& argum
     }
 }
 
-void ProgramBindings::ApplyRootParameterBindings(ProgramArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
+void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
                                                    const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    for(ProgramArgumentAccessor::Type access_type : magic_enum::enum_values<ProgramArgumentAccessor::Type>())
+    for(Rhi::ProgramArgumentAccessor::Type access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccessor::Type>())
     {
         if (!static_cast<bool>(access_types_mask & access_type))
             continue;

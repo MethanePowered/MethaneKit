@@ -32,7 +32,7 @@ namespace Methane::Graphics::DirectX
 
 class TransferCommandList final
     : public CommandList<Base::CommandList>
-    , public ITransferCommandList
+    , public Rhi::ITransferCommandList
 {
 public:
     explicit TransferCommandList(Base::CommandQueue& cmd_buffer);

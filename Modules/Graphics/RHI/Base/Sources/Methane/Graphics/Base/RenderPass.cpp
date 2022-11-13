@@ -122,7 +122,7 @@ void RenderPass::Begin(RenderCommandList&)
 
     if (m_update_attachment_states)
     {
-        SetAttachmentStates(Rhi::ResourceState::RenderTarget, Rhi::IResource::State::DepthWrite);
+        SetAttachmentStates(Rhi::ResourceState::RenderTarget, Rhi::ResourceState::DepthWrite);
     }
     m_is_begun = true;
 }
@@ -143,11 +143,11 @@ void RenderPass::InitAttachmentStates() const
 {
     META_FUNCTION_TASK();
     const bool             is_final_pass          = GetPattern().GetSettings().is_final_pass;
-    const Rhi::IResource::State color_attachment_state = is_final_pass ? Rhi::IResource::State::Present : Rhi::IResource::State::RenderTarget;
+    const Rhi::ResourceState color_attachment_state = is_final_pass ? Rhi::ResourceState::Present : Rhi::ResourceState::RenderTarget;
     for (const Ref<Texture>& color_texture_ref : GetColorAttachmentTextures())
     {
-        if (color_texture_ref.get().GetState() == Rhi::IResource::State::Common ||
-            color_texture_ref.get().GetState() == Rhi::IResource::State::Undefined)
+        if (color_texture_ref.get().GetState() == Rhi::ResourceState::Common ||
+            color_texture_ref.get().GetState() == Rhi::ResourceState::Undefined)
             color_texture_ref.get().SetState(color_attachment_state);
     }
 }

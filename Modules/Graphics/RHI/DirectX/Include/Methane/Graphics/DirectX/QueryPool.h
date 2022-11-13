@@ -78,10 +78,10 @@ public:
     ID3D12QueryHeap&   GetNativeQueryHeap() noexcept            { return m_native_query_heap; }
 
 protected:
-    IBuffer& GetResultBuffer() noexcept { return *m_result_buffer_ptr; }
+    Rhi::IBuffer& GetResultBuffer() noexcept { return *m_result_buffer_ptr; }
 
 private:
-    Ptr<IBuffer>      m_result_buffer_ptr;
+    Ptr<Rhi::IBuffer> m_result_buffer_ptr;
     const IContextDx& m_context_dx;
     IResourceDx&      m_result_resource_dx;
     D3D12_QUERY_TYPE  m_native_query_type;
@@ -90,7 +90,7 @@ private:
 
 class TimestampQuery final
     : protected Query
-    , public ITimestampQuery
+    , public Rhi::ITimestampQuery
 {
 public:
     TimestampQuery(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range);
@@ -113,7 +113,7 @@ public:
     TimestampQueryPool(CommandQueue& command_queue, uint32_t max_timestamps_per_frame);
 
     // ITimestampQueryPool interface
-    Ptr<ITimestampQuery> CreateTimestampQuery(ICommandList& command_list) override;
+    Ptr<Rhi::ITimestampQuery> CreateTimestampQuery(Rhi::ICommandList& command_list) override;
     CalibratedTimestamps Calibrate() override;
 };
 

@@ -101,7 +101,7 @@ void Fence::WaitOnCpu()
     META_LOG("Fence '{}' AWAKE on value {}", GetName(), wait_value);
 }
 
-void Fence::WaitOnGpu(ICommandQueue& wait_on_command_queue)
+void Fence::WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     Base::Fence::WaitOnGpu(wait_on_command_queue);

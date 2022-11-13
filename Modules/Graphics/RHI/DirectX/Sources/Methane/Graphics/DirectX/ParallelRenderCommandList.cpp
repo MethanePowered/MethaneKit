@@ -38,7 +38,7 @@ DirectX 12 implementation of the parallel render command list interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IParallelRenderCommandList> Rhi::IParallelRenderCommandList::Create(ICommandQueue& cmd_queue, Rhi::IRenderPass& render_pass)
+Ptr<IParallelRenderCommandList> IParallelRenderCommandList::Create(ICommandQueue& cmd_queue, IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::ParallelRenderCommandList>(static_cast<Base::CommandQueue&>(cmd_queue), static_cast<Base::RenderPass&>(render_pass));
@@ -61,7 +61,7 @@ ParallelRenderCommandList::ParallelRenderCommandList(Base::CommandQueue& cmd_que
     GetDirectPass().SetNativeRenderPassUsage(false);
 }
 
-void ParallelRenderCommandList::ResetWithState(IRenderState& render_state, Rhi::IDebugGroup* p_debug_group)
+void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
 {
     META_FUNCTION_TASK();
 
@@ -143,11 +143,11 @@ ParallelRenderCommandList::D3D12CommandLists ParallelRenderCommandList::GetNativ
 {
     META_FUNCTION_TASK();
     D3D12CommandLists dx_command_lists;
-    const Refs<IRenderCommandList>& parallel_command_lists = GetParallelCommandLists();
+    const Refs<Rhi::IRenderCommandList>& parallel_command_lists = GetParallelCommandLists();
     dx_command_lists.reserve(parallel_command_lists.size() + 2); // 2 command lists reserved for beginning and ending
     dx_command_lists.push_back(&m_beginning_command_list.GetNativeCommandList());
 
-    for (const Ref<IRenderCommandList>& command_list_ref : parallel_command_lists)
+    for (const Ref<Rhi::IRenderCommandList>& command_list_ref : parallel_command_lists)
     {
         dx_command_lists.push_back(&static_cast<const RenderCommandList&>(command_list_ref.get()).GetNativeCommandList());
     }

@@ -32,13 +32,13 @@ DirectX 12 command lists collection implementation
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ICommandListDebugGroup> Rhi::ICommandListDebugGroup::Create(const std::string& name)
+Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& name)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::CommandListDebugGroup>(name);
 }
 
-Ptr<ICommandListSet> Rhi::ICommandListSet::Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+Ptr<ICommandListSet> ICommandListSet::Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::CommandListSet>(command_list_refs, frame_index_opt);
@@ -56,7 +56,7 @@ CommandListDebugGroup::CommandListDebugGroup(const std::string& name)
     META_FUNCTION_TASK();
 }
 
-CommandListSet::CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
     : Base::CommandListSet(command_list_refs, frame_index_opt)
     , m_execution_completed_fence(GetBaseCommandQueue())
 {
@@ -71,14 +71,14 @@ CommandListSet::CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<
     for(const Ref<Base::CommandList>& command_list_ref : base_command_list_refs)
     {
         const Base::CommandList& command_list = command_list_ref.get();
-        if (command_list.GetType() == CommandListType::ParallelRender)
+        if (command_list.GetType() == Rhi::CommandListType::ParallelRender)
         {
             const CommandListSet::NativeCommandLists parallel_native_cmd_lists = static_cast<const ParallelRenderCommandList&>(command_list).GetNativeCommandLists();
             m_native_command_lists.insert(m_native_command_lists.end(), parallel_native_cmd_lists.begin(), parallel_native_cmd_lists.end());
         }
         else
         {
-            m_native_command_lists.emplace_back(&dynamic_cast<const Rhi::ICommandListDx&>(command_list).GetNativeCommandList());
+            m_native_command_lists.emplace_back(&dynamic_cast<const ICommandListDx&>(command_list).GetNativeCommandList());
         }
         fence_name_ss << " '" << command_list.GetName() << "'";
     }

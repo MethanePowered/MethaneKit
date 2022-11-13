@@ -66,7 +66,7 @@ static void SetWindowTopMostFlag(HWND window_handle, bool is_top_most)
 }
 
 RenderContext::RenderContext(const Platform::AppEnvironment& env, Base::Device& device,
-                                 tf::Executor& parallel_executor, const RenderContextSettings& settings)
+                             tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
     : Context<Base::RenderContext>(device, parallel_executor, settings)
     , m_platform_env(env)
 {
@@ -84,7 +84,7 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
     Context<Base::RenderContext>::WaitForGpu(wait_for);
 
     std::optional<Data::Index> frame_buffer_index;
-    CommandListType cl_type = CommandListType::Render;
+    Rhi::CommandListType cl_type = Rhi::CommandListType::Render;
     switch (wait_for)
     {
     case WaitFor::RenderComplete:
@@ -96,7 +96,7 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
         break;
 
     case WaitFor::ResourcesUploaded:
-        cl_type = CommandListType::Transfer;
+        cl_type = Rhi::CommandListType::Transfer;
         break;
 
     default: META_UNEXPECTED_ARG(wait_for);
@@ -161,7 +161,7 @@ void RenderContext::Initialize(Base::Device& device, bool is_callback_emitted)
     }
 
     wrl::ComPtr<IDXGISwapChain1> cp_swap_chain;
-    ID3D12CommandQueue& dx_command_queue = GetDirectDefaultCommandQueue(CommandListType::Render).GetNativeCommandQueue();
+    ID3D12CommandQueue& dx_command_queue = GetDirectDefaultCommandQueue(Rhi::CommandListType::Render).GetNativeCommandQueue();
     ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, nullptr, nullptr, &cp_swap_chain), p_native_device);
 
     META_CHECK_ARG_NOT_NULL(cp_swap_chain);

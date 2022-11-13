@@ -58,7 +58,7 @@ struct ICommandListDx
     virtual CommandQueue&               GetDirectCommandQueue() = 0;
     virtual ID3D12GraphicsCommandList&  GetNativeCommandList() const = 0;
     virtual ID3D12GraphicsCommandList4* GetNativeCommandList4() const = 0;
-    virtual void SetResourceBarriers(const IResourceBarriers& resource_barriers) = 0;
+    virtual void SetResourceBarriers(const Rhi::IResourceBarriers& resource_barriers) = 0;
 
     virtual ~ICommandListDx() = default;
 };
@@ -68,10 +68,10 @@ class CommandListSet final
 {
 public:
 public:
-    explicit CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
+    explicit CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     // Base::CommandListSet interface
-    void Execute(const ICommandList::CompletedCallback& completed_callback) override;
+    void Execute(const Rhi::ICommandList::CompletedCallback& completed_callback) override;
     void WaitUntilCompleted() override;
 
     using NativeCommandLists = std::vector<ID3D12CommandList*>;

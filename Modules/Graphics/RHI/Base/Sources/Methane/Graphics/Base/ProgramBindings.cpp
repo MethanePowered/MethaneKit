@@ -40,7 +40,7 @@ Base implementation of the program bindings interface.
 namespace Methane::Graphics::Base
 {
 
-static Rhi::IResource::State GetBoundResourceTargetState(const Rhi::IResource& resource, Rhi::IResource::Type resource_type, bool is_constant_binding)
+static Rhi::ResourceState GetBoundResourceTargetState(const Rhi::IResource& resource, Rhi::IResource::Type resource_type, bool is_constant_binding)
 {
     META_FUNCTION_TASK();
     switch (resource_type)
@@ -51,21 +51,21 @@ static Rhi::IResource::State GetBoundResourceTargetState(const Rhi::IResource& r
         if (dynamic_cast<const Rhi::IBuffer&>(resource).GetSettings().storage_mode != Rhi::IBuffer::StorageMode::Private)
             return resource.GetState();
         else if (is_constant_binding)
-            return Rhi::IResource::State::ConstantBuffer;
+            return Rhi::ResourceState::ConstantBuffer;
         break;
 
     case Rhi::IResource::Type::Texture:
         if (dynamic_cast<const Rhi::ITexture&>(resource).GetSettings().type == Rhi::ITexture::Type::DepthStencilBuffer)
-            return Rhi::IResource::State::DepthRead;
+            return Rhi::ResourceState::DepthRead;
         break;
 
     default:
         break;
     }
-    return Rhi::IResource::State::ShaderResource;
+    return Rhi::ResourceState::ShaderResource;
 }
 
-ProgramBindings::ResourceAndState::ResourceAndState(Ptr<Resource> resource_ptr, Rhi::IResource::State state)
+ProgramBindings::ResourceAndState::ResourceAndState(Ptr<Resource> resource_ptr, Rhi::ResourceState state)
     : resource_ptr(std::move(resource_ptr))
     , state(state)
 {
@@ -304,7 +304,7 @@ void ProgramBindings::AddTransitionResourceState(const Rhi::IProgramBindings::IA
         return;
 
     const Rhi::IProgramBindings::IArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
-    const Rhi::IResource::State target_resource_state = GetBoundResourceTargetState(resource, argument_binding_settings.resource_type, argument_binding_settings.argument.IsConstant());
+    const Rhi::ResourceState target_resource_state = GetBoundResourceTargetState(resource, argument_binding_settings.resource_type, argument_binding_settings.argument.IsConstant());
     ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
     transition_resource_states.emplace_back(std::dynamic_pointer_cast<Resource>(resource.GetPtr()), target_resource_state);
 }
@@ -324,7 +324,7 @@ void ProgramBindings::AddTransitionResourceStates(const Rhi::IProgramBindings::I
         if (resource.GetResourceType() == Rhi::IResource::Type::Sampler)
             continue;
 
-        const Rhi::IResource::State target_resource_state = GetBoundResourceTargetState(resource, argument_binding_settings.resource_type, argument_binding_settings.argument.IsConstant());
+        const Rhi::ResourceState target_resource_state = GetBoundResourceTargetState(resource, argument_binding_settings.resource_type, argument_binding_settings.argument.IsConstant());
         transition_resource_states.emplace_back(std::dynamic_pointer_cast<Resource>(resource_view.GetResourcePtr()), target_resource_state);
     }
 }

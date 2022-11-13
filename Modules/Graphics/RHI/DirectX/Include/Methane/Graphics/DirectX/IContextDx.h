@@ -37,7 +37,7 @@ class DescriptorManager;
 struct IContextDx
 {
     virtual const Device& GetDirectDevice() const noexcept = 0;
-    virtual CommandQueue& GetDirectDefaultCommandQueue(CommandListType type) = 0;
+    virtual CommandQueue& GetDirectDefaultCommandQueue(Rhi::CommandListType type) = 0;
     virtual ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const = 0;
     virtual DescriptorManager& GetDirectDescriptorManager() const noexcept = 0;
 

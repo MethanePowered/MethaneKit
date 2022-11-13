@@ -105,9 +105,9 @@ private:
     struct ResourceAndState
     {
         Ptr<Resource> resource_ptr;
-        Rhi::IResource::State  state;
+        Rhi::ResourceState  state;
 
-        ResourceAndState(Ptr<Resource> resource_ptr, Rhi::IResource::State);
+        ResourceAndState(Ptr<Resource> resource_ptr, Rhi::ResourceState);
     };
 
     using ResourceStates = std::vector<ResourceAndState>;

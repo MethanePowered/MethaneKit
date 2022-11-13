@@ -78,12 +78,12 @@ Ptr<IBufferSet> Rhi::IBufferSet::Create(IBuffer::Type buffers_type, const Refs<I
 namespace Methane::Graphics::DirectX
 {
 
-static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Refs<IBuffer>& buffer_refs)
+static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Refs<Rhi::IBuffer>& buffer_refs)
 {
     META_FUNCTION_TASK();
     std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
     std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vertex_buffer_views),
-        [](const Ref<IBuffer>& buffer_ref)
+        [](const Ref<Rhi::IBuffer>& buffer_ref)
         {
            const auto& vertex_buffer = static_cast<const VertexBuffer&>(buffer_ref.get());
            return vertex_buffer.GetNativeView();
@@ -102,7 +102,7 @@ void VertexBuffer::InitializeView(Data::Size stride)
 }
 
 template<>
-Opt<IResource::Descriptor> VertexBuffer::InitializeNativeViewDescriptor(const View::Id&)
+Opt<Rhi::IResource::Descriptor> VertexBuffer::InitializeNativeViewDescriptor(const View::Id&)
 {
     META_FUNCTION_NOT_IMPLEMENTED();
 }
@@ -117,7 +117,7 @@ void IndexBuffer::InitializeView(PixelFormat format)
 }
 
 template<>
-Opt<IResource::Descriptor> IndexBuffer::InitializeNativeViewDescriptor(const View::Id&)
+Opt<Rhi::IResource::Descriptor> IndexBuffer::InitializeNativeViewDescriptor(const View::Id&)
 {
     META_FUNCTION_NOT_IMPLEMENTED();
 }
@@ -132,7 +132,7 @@ void ConstantBuffer::InitializeView()
 }
 
 template<>
-Opt<IResource::Descriptor> ConstantBuffer::InitializeNativeViewDescriptor(const View::Id& view_id)
+Opt<Rhi::IResource::Descriptor> ConstantBuffer::InitializeNativeViewDescriptor(const View::Id& view_id)
 {
     META_FUNCTION_TASK();
 
@@ -156,12 +156,12 @@ void ReadBackBuffer::InitializeView()
 }
 
 template<>
-Opt<IResource::Descriptor> ReadBackBuffer::InitializeNativeViewDescriptor(const View::Id&)
+Opt<Rhi::IResource::Descriptor> ReadBackBuffer::InitializeNativeViewDescriptor(const View::Id&)
 {
     META_FUNCTION_NOT_IMPLEMENTED();
 }
 
-BufferSet::BufferSet(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
+BufferSet::BufferSet(Rhi::IBuffer::Type buffers_type, const Refs<Rhi::IBuffer>& buffer_refs)
     : Base::BufferSet(buffers_type, buffer_refs)
 {
     META_FUNCTION_TASK();

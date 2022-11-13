@@ -57,20 +57,20 @@ Ptr<ICommandQueue> Rhi::ICommandQueue::Create(const Rhi::IContext& context, Comm
 namespace Methane::Graphics::DirectX
 {
 
-static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(CommandListType command_list_type, Rhi::IContext::Options options)
+static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(Rhi::CommandListType command_list_type, Rhi::IContext::Options options)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
     switch(command_list_type)
     {
-    case CommandListType::Transfer:
+    case Rhi::CommandListType::Transfer:
         return static_cast<bool>(options & Rhi::IContext::Options::TransferWithDirectQueueOnWindows)
              ? D3D12_COMMAND_LIST_TYPE_DIRECT
              : D3D12_COMMAND_LIST_TYPE_COPY;
 
-    case CommandListType::Render:
-    case CommandListType::ParallelRender:
+    case Rhi::CommandListType::Render:
+    case Rhi::CommandListType::ParallelRender:
         return D3D12_COMMAND_LIST_TYPE_DIRECT;
 
     default:
@@ -93,9 +93,9 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const Device& de
     return cp_command_queue;
 }
 
-CommandQueue::CommandQueue(const Base::Context& context, CommandListType command_lists_type)
+CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type)
     : Base::CommandQueueTracking(context, command_lists_type)
-    , m_dx_context(dynamic_cast<const Rhi::IContextDx&>(context))
+    , m_dx_context(dynamic_cast<const IContextDx&>(context))
     , m_cp_command_queue(CreateNativeCommandQueue(m_dx_context.GetDirectDevice(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
 {
     META_FUNCTION_TASK();

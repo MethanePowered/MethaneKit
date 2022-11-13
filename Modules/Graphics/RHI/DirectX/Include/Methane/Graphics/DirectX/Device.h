@@ -43,7 +43,7 @@ namespace wrl = Microsoft::WRL;
 class Device final : public Base::Device
 {
 public:
-    static DeviceFeatures GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
+    static Rhi::DeviceFeatures GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
     Device(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities);
 
@@ -79,8 +79,8 @@ public:
 
     // ISystem interface
     void  CheckForChanges() override;
-    const Ptrs<IDevice>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const DeviceCaps& required_device_caps) override;
-    const Ptrs<IDevice>& UpdateGpuDevices(const DeviceCaps& required_device_caps) override;
+    const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps) override;
+    const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps) override;
 
     [[nodiscard]] const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_cp_factory; }
     void ReportLiveObjects() const noexcept;
@@ -93,8 +93,8 @@ private:
     void RegisterAdapterChangeEvent();
     void UnregisterAdapterChangeEvent();
 
-    HANDLE                     m_adapter_change_event = NULL;
-    DWORD                      m_adapter_change_registration_cookie = 0;
+    HANDLE m_adapter_change_event = NULL;
+    DWORD  m_adapter_change_registration_cookie = 0;
 #endif
 
     wrl::ComPtr<IDXGIFactory5> m_cp_factory;

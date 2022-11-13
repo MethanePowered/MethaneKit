@@ -134,12 +134,12 @@ Shader::Shader(Type type, const Base::Context& context, const Settings& settings
     ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->GetDataPtr(), m_byte_code_chunk_ptr->GetDataSize(), IID_PPV_ARGS(&m_cp_reflection)));
 }
 
-Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
+Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_reflection);
 
-    Base::Shader::ArgumentBindings argument_bindings;
+    Ptrs<Base::ProgramArgumentBinding> argument_bindings;
 
     D3D12_SHADER_DESC shader_desc{};
     m_cp_reflection->GetDesc(&shader_desc);
@@ -156,8 +156,8 @@ Base::Shader::ArgumentBindings Shader::GetArgumentBindings(const Rhi::ProgramArg
         D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const Rhi::IProgram::Argument         shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
-        const auto                       argument_acc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Rhi::IProgram::Argument shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
+        const auto argument_acc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
         const Rhi::ProgramArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
                                                    ? Rhi::ProgramArgumentAccessor(shader_argument)
                                                    : *argument_acc_it;

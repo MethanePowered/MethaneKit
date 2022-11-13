@@ -35,27 +35,27 @@ namespace Methane::Graphics::DirectX
 
 class ResourceBarriers final
     : public Base::ResourceBarriers
-    , private Data::Receiver<IResourceCallback>
+    , private Data::Receiver<Rhi::IResourceCallback>
 {
 public:
-    [[nodiscard]] static D3D12_RESOURCE_STATES GetNativeResourceState(ResourceState resource_state);
-    [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
+    [[nodiscard]] static D3D12_RESOURCE_STATES GetNativeResourceState(State resource_state);
+    [[nodiscard]] static D3D12_RESOURCE_BARRIER GetNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
 
     explicit ResourceBarriers(const Set& barriers);
 
     // IResourceBarriers overrides
-    AddResult Add(const ResourceBarrier::Id& id, const ResourceBarrier& barrier) override;
-    bool Remove(const ResourceBarrier::Id& id) override;
+    AddResult Add(const Barrier::Id& id, const Barrier& barrier) override;
+    bool Remove(const Barrier::Id& id) override;
 
     [[nodiscard]] const std::vector <D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const
     { return m_native_resource_barriers; }
 
 private:
     // IResourceCallback
-    void OnResourceReleased(IResource& resource) override;
+    void OnResourceReleased(Rhi::IResource& resource) override;
 
-    void AddNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
-    void UpdateNativeResourceBarrier(const ResourceBarrier::Id& id, const ResourceBarrier::StateChange& state_change);
+    void AddNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
+    void UpdateNativeResourceBarrier(const Barrier::Id& id, const Barrier::StateChange& state_change);
 
     std::vector<D3D12_RESOURCE_BARRIER> m_native_resource_barriers;
 };

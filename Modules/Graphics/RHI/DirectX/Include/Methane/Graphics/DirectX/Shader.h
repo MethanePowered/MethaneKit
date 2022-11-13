@@ -43,13 +43,14 @@ namespace wrl = Microsoft::WRL;
 struct IContextDx;
 class Program;
 
-class Shader final : public Base::Shader
+class Shader final
+    : public Base::Shader
 {
 public:
     Shader(Type type, const Base::Context& context, const Settings& settings);
 
     // Base::Shader overrides
-    ArgumentBindings GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const override;
+    Ptrs<Base::ProgramArgumentBinding> GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const override;
 
     const Data::Chunk*                    GetNativeByteCode() const noexcept { return m_byte_code_chunk_ptr.get(); }
     std::vector<D3D12_INPUT_ELEMENT_DESC> GetNativeProgramInputLayout(const Program& program) const;

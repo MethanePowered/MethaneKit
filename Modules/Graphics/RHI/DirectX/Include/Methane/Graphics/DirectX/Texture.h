@@ -65,7 +65,7 @@ public:
     }
 
     // IResource override
-    void SetData(const SubResources&, ICommandQueue&) override
+    void SetData(const SubResources&, Rhi::ICommandQueue&) override
     {
         META_FUNCTION_NOT_IMPLEMENTED_DESCR("Texture data upload is allowed for image textures only");
     }
@@ -77,7 +77,7 @@ private:
     void Initialize(ExtraArgs...);
 };
 
-using FrameBufferTexture  = Texture<ITexture::FrameBufferIndex>;
+using FrameBufferTexture = Texture<Rhi::ITexture::FrameBufferIndex>;
 
 using RenderTargetTexture = Texture<>;
 template<> class Texture<> final // NOSONAR - inheritance hierarchy is greater than 5
@@ -95,6 +95,7 @@ private:
 };
 
 using DepthStencilTexture = Texture<const Opt<DepthStencil>&>;
+
 template<> class Texture<const Opt<DepthStencil>&> final // NOSONAR - inheritance hierarchy is greater than 5
     : public Resource<Base::Texture>
 {
@@ -121,7 +122,7 @@ public:
     bool SetName(const std::string& name) override;
 
     // IResource overrides
-    void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) override;
+    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override;
 
     // IResource override
     Opt<Descriptor> InitializeNativeViewDescriptor(const View::Id& view_id) override;

@@ -48,12 +48,12 @@ enum class ProgramArgumentBindingType : uint32_t
 };
 
 struct ProgramArgumentBindingSettings
-    : Graphics::ProgramArgumentBindingSettings
+    : Rhi::ProgramArgumentBindingSettings
 {
     ProgramArgumentBindingType type;
-    D3D_SHADER_INPUT_TYPE        input_type;
-    uint32_t                     point;
-    uint32_t                     space;
+    D3D_SHADER_INPUT_TYPE      input_type;
+    uint32_t                   point;
+    uint32_t                   space;
 };
 
 class ProgramArgumentBinding final  // NOSONAR - custom destructor is required
@@ -79,13 +79,13 @@ public:
     ProgramArgumentBinding& operator=(ProgramArgumentBinding&&) noexcept = default;
 
     // IArgumentBinding interface
-    bool SetResourceViews(const Graphics::ResourceViews& resource_views) override;
+    bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
 
-    const Settings&      GetDirectSettings() const noexcept          { return m_settings_dx; }
+    const Settings&        GetDirectSettings() const noexcept      { return m_settings_dx; }
     uint32_t               GetRootParameterIndex() const noexcept  { return m_root_parameter_index; }
     const DescriptorRange& GetDescriptorRange() const noexcept     { return m_descriptor_range; }
-    const ResourceViews& GetDirectResourceViews() const noexcept     { return m_resource_views_dx; }
-    DescriptorHeapType   GetDescriptorHeapType() const;
+    const ResourceViews&   GetDirectResourceViews() const noexcept { return m_resource_views_dx; }
+    DescriptorHeapType     GetDescriptorHeapType() const;
 
     void SetRootParameterIndex(uint32_t root_parameter_index)      { m_root_parameter_index = root_parameter_index; }
     void SetDescriptorRange(const DescriptorRange& descriptor_range);

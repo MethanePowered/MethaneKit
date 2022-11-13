@@ -40,7 +40,7 @@ DirectX 12 implementation of the program interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IProgram> Rhi::IProgram::Create(const Rhi::IContext& context, const Settings& settings)
+Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::Program>(dynamic_cast<const Base::Context&>(context), settings);
@@ -132,7 +132,7 @@ static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>
 
 Program::Program(const Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
-    , m_dx_context(dynamic_cast<const Rhi::IContextDx&>(context))
+    , m_dx_context(dynamic_cast<const IContextDx&>(context))
 {
     META_FUNCTION_TASK();
     InitArgumentBindings(settings.argument_accessors);

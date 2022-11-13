@@ -64,7 +64,7 @@ DescriptorHeapReservation::DescriptorHeapReservation(const Ref<DescriptorHeap>& 
 
 DescriptorHeap::DescriptorHeap(const Base::Context& context, const Settings& settings)
     : m_context(context)
-    , m_dx_context(dynamic_cast<const Rhi::IContextDx&>(context))
+    , m_dx_context(dynamic_cast<const IContextDx&>(context))
     , m_settings(settings)
     , m_deferred_size(settings.size)
     , m_descriptor_heap_type(GetNativeHeapType(settings.type))

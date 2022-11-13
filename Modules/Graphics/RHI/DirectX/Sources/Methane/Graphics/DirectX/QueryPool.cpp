@@ -67,7 +67,7 @@ Ptr<ITimestampQueryPool> Rhi::ITimestampQueryPool::Create(ICommandQueue& command
 namespace Methane::Graphics::DirectX
 {
 
-static D3D12_QUERY_TYPE GetQueryTypeDx(IQueryPool::Type query_pool_type)
+static D3D12_QUERY_TYPE GetQueryTypeDx(Rhi::IQueryPool::Type query_pool_type)
 {
     META_FUNCTION_TASK();
     switch(query_pool_type) // NOSONAR - do not use if instead of switch
@@ -80,7 +80,7 @@ static D3D12_QUERY_TYPE GetQueryTypeDx(IQueryPool::Type query_pool_type)
     }
 }
 
-static D3D12_QUERY_HEAP_TYPE GetQueryHeapTypeDx(IQueryPool::Type query_pool_type, D3D12_COMMAND_LIST_TYPE d3d_command_list_type)
+static D3D12_QUERY_HEAP_TYPE GetQueryHeapTypeDx(Rhi::IQueryPool::Type query_pool_type, D3D12_COMMAND_LIST_TYPE d3d_command_list_type)
 {
     META_FUNCTION_TASK();
     switch (query_pool_type) // NOSONAR - do not use if instead of switch
@@ -108,8 +108,8 @@ static Data::Size GetMaxTimestampsCount(const Rhi::IContext& context, uint32_t m
 {
     META_FUNCTION_TASK();
     const uint32_t frames_count = context.GetType() == Rhi::IContext::Type::Render
-                                  ? dynamic_cast<const Rhi::IRenderContext&>(context).GetSettings().frame_buffers_count
-                                  : 1U;
+                                ? dynamic_cast<const Rhi::IRenderContext&>(context).GetSettings().frame_buffers_count
+                                : 1U;
     return frames_count * max_timestamps_per_frame;
 }
 
@@ -154,7 +154,7 @@ Rhi::IResource::SubResource Query::GetData() const
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), Base::CommandList::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
     META_CHECK_ARG_EQUAL_DESCR(GetState(), Rhi::IQuery::State::Resolved, "query data can not be retrieved for unresolved query");
-    return GetDirectQueryPool().GetDirectResultResource().GetData(IResource::SubResource::Index(), GetDataRange());
+    return GetDirectQueryPool().GetDirectResultResource().GetData(Rhi::IResource::SubResource::Index(), GetDataRange());
 }
 
 QueryPool& Query::GetDirectQueryPool() const noexcept
@@ -167,8 +167,8 @@ QueryPool::QueryPool(CommandQueue& command_queue, Type type,
                          Data::Size max_query_count, Rhi::IQuery::Count slots_count_per_query,
                          Data::Size buffer_size, Data::Size query_size)
     : Base::QueryPool(static_cast<Base::CommandQueue&>(command_queue), type, max_query_count, slots_count_per_query, buffer_size, query_size)
-    , m_result_buffer_ptr(IBuffer::CreateReadBackBuffer(GetContext(), buffer_size))
-    , m_context_dx(dynamic_cast<const Rhi::IContextDx&>(GetContext()))
+    , m_result_buffer_ptr(Rhi::IBuffer::CreateReadBackBuffer(GetContext(), buffer_size))
+    , m_context_dx(dynamic_cast<const IContextDx&>(GetContext()))
     , m_result_resource_dx(dynamic_cast<IResourceDx&>(*m_result_buffer_ptr))
     , m_native_query_type(GetQueryTypeDx(type))
     , m_native_query_heap(m_context_dx.GetNativeQueryHeap(GetQueryHeapTypeDx(type, command_queue.GetNativeCommandQueue().GetDesc().Type), max_query_count))
@@ -192,7 +192,7 @@ TimestampQueryPool::TimestampQueryPool(CommandQueue& command_queue, uint32_t max
     Calibrate();
 }
 
-Ptr<ITimestampQuery> TimestampQueryPool::CreateTimestampQuery(ICommandList& command_list)
+Ptr<Rhi::ITimestampQuery> TimestampQueryPool::CreateTimestampQuery(Rhi::ICommandList& command_list)
 {
     META_FUNCTION_TASK();
     return Base::QueryPool::CreateQuery<TimestampQuery>(dynamic_cast<Base::CommandList&>(command_list));

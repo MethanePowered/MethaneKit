@@ -48,7 +48,7 @@ class ProgramBindings final // NOSONAR - custom destructor is required
 public:
     using ArgumentBinding = ProgramArgumentBinding;
     
-    ProgramBindings(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index);
     ~ProgramBindings() override;
 
@@ -75,7 +75,7 @@ private:
     void AddRootParameterBinding(const Rhi::ProgramArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBinding& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
-    void ApplyRootParameterBindings(ProgramArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
+    void ApplyRootParameterBindings(Rhi::ProgramArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
                                     const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();
@@ -83,7 +83,7 @@ private:
                                          const DescriptorHeap::Reservation* p_heap_reservation) const;
 
     using RootParameterBindings = std::vector<RootParameterBinding>;
-    using RootParameterBindingsByAccess = std::array<RootParameterBindings, magic_enum::enum_count<ProgramArgumentAccessor::Type>()>;
+    using RootParameterBindingsByAccess = std::array<RootParameterBindings, magic_enum::enum_count<Rhi::ProgramArgumentAccessor::Type>()>;
     RootParameterBindingsByAccess m_root_parameter_bindings_by_access;
 
     using DescriptorHeapReservationByType = std::array<std::optional<DescriptorHeap::Reservation>, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
@@ -95,11 +95,11 @@ class DescriptorsCountByAccess
 public:
     DescriptorsCountByAccess();
 
-    uint32_t& operator[](ProgramArgumentAccessor::Type access_type);
-    uint32_t  operator[](ProgramArgumentAccessor::Type access_type) const;
+    uint32_t& operator[](Rhi::ProgramArgumentAccessor::Type access_type);
+    uint32_t  operator[](Rhi::ProgramArgumentAccessor::Type access_type) const;
 
 private:
-    std::array<uint32_t, magic_enum::enum_count<ProgramArgumentAccessor::Type>()> m_count_by_access_type;
+    std::array<uint32_t, magic_enum::enum_count<Rhi::ProgramArgumentAccessor::Type>()> m_count_by_access_type;
 };
 
 } // namespace Methane::Graphics::DirectX

@@ -104,17 +104,17 @@ static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Rhi::BufferType buffer_typ
     return vk_usage_flags;
 }
 
-static Rhi::IResource::State GetTargetResourceStateByBufferType(Rhi::BufferType buffer_type)
+static Rhi::ResourceState GetTargetResourceStateByBufferType(Rhi::BufferType buffer_type)
 {
     META_FUNCTION_TASK();
     switch(buffer_type)
     {
-    case Rhi::BufferType::Storage:     return Rhi::IResource::State::ShaderResource;
-    case Rhi::BufferType::Constant:    return Rhi::IResource::State::ConstantBuffer;
-    case Rhi::BufferType::Index:       return Rhi::IResource::State::IndexBuffer;
-    case Rhi::BufferType::Vertex:      return Rhi::IResource::State::VertexBuffer;
-    case Rhi::BufferType::ReadBack:    return Rhi::IResource::State::StreamOut;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(buffer_type, Rhi::IResource::State::Undefined, "Unsupported buffer type");
+    case Rhi::BufferType::Storage:     return Rhi::ResourceState::ShaderResource;
+    case Rhi::BufferType::Constant:    return Rhi::ResourceState::ConstantBuffer;
+    case Rhi::BufferType::Index:       return Rhi::ResourceState::IndexBuffer;
+    case Rhi::BufferType::Vertex:      return Rhi::ResourceState::VertexBuffer;
+    case Rhi::BufferType::ReadBack:    return Rhi::ResourceState::StreamOut;
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(buffer_type, Rhi::ResourceState::Undefined, "Unsupported buffer type");
     }
 }
 

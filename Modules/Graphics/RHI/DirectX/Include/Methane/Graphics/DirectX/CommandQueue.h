@@ -45,7 +45,7 @@ class CommandQueue final // NOSONAR - destructor is needed
     : public Base::CommandQueueTracking
 {
 public:
-    CommandQueue(const Base::Context& context, CommandListType command_lists_type);
+    CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type);
     ~CommandQueue() override;
 
     // ICommandQueue interface

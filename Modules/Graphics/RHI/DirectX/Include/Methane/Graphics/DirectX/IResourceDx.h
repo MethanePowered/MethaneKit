@@ -38,12 +38,13 @@ namespace Methane::Graphics::DirectX
 
 namespace wrl = Microsoft::WRL;
 
-struct IResourceDx : virtual IResource // NOSONAR
+struct IResourceDx
+    : virtual Rhi::IResource // NOSONAR
 {
 public:
-    using Barrier   = ResourceBarrier;
+    using Barrier   = Rhi::ResourceBarrier;
     using Barriers  = ResourceBarriers;
-    using State     = ResourceState;
+    using State     = Rhi::ResourceState;
     using View      = ResourceView;
     using Views     = ResourceViews;
 
@@ -55,10 +56,10 @@ public:
         return GetNativeResourceBarrier(resource_barrier.GetId(), resource_barrier.GetStateChange());
     }
 
-    [[nodiscard]] virtual ID3D12Resource&                     GetNativeResourceRef() const = 0;
-    [[nodiscard]] virtual ID3D12Resource*                     GetNativeResource() const noexcept = 0;
-    [[nodiscard]] virtual const wrl::ComPtr<ID3D12Resource>&  GetNativeResourceComPtr() const noexcept = 0;
-    [[nodiscard]] virtual D3D12_GPU_VIRTUAL_ADDRESS           GetNativeGpuAddress() const noexcept = 0;
+    [[nodiscard]] virtual ID3D12Resource&                    GetNativeResourceRef() const = 0;
+    [[nodiscard]] virtual ID3D12Resource*                    GetNativeResource() const noexcept = 0;
+    [[nodiscard]] virtual const wrl::ComPtr<ID3D12Resource>& GetNativeResourceComPtr() const noexcept = 0;
+    [[nodiscard]] virtual D3D12_GPU_VIRTUAL_ADDRESS          GetNativeGpuAddress() const noexcept = 0;
 
     virtual Opt<Descriptor> InitializeNativeViewDescriptor(const View::Id& view_id) = 0;
 

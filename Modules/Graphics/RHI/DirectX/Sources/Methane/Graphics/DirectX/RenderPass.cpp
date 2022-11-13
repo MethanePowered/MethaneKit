@@ -106,7 +106,7 @@ RenderPass::AccessDesc::AccessDesc(const ColorAttachment& color_attachment, cons
 
     if (color_attachment.load_action == Attachment::LoadAction::Clear)
     {
-        const auto& texture = dynamic_cast<ITexture&>(texture_location.GetResource());
+        const auto& texture = dynamic_cast<Rhi::ITexture&>(texture_location.GetResource());
         const DXGI_FORMAT color_format = TypeConverter::PixelFormatToDxgi(texture.GetSettings().pixel_format);
         const std::array<float, 4> clear_color_components = color_attachment.clear_color.AsArray();
         beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(color_format, clear_color_components.data());
@@ -187,7 +187,7 @@ RenderPass::DSClearInfo::DSClearInfo(const Opt<DepthAttachment>& depth_attach_op
     }
 }
 
-static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(IRenderPass::Access access)
+static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(Rhi::IRenderPass::Access access)
 {
     META_FUNCTION_TASK();
     switch (access)
@@ -253,7 +253,7 @@ bool RenderPass::Update(const Settings& settings)
 
     if (settings_changed)
     {
-        Data::Emitter<IRenderPassCallback>::Emit(&IRenderPassCallback::OnRenderPassUpdated, *this);
+        Data::Emitter<Rhi::IRenderPassCallback>::Emit(&Rhi::IRenderPassCallback::OnRenderPassUpdated, *this);
     }
 
     return settings_changed;
@@ -380,7 +380,7 @@ void RenderPass::Begin(Base::RenderCommandList& command_list)
     }
 
     Base::RenderPass::Begin(command_list);
-    SetAttachmentStates(IResource::State::RenderTarget, Rhi::IResource::State::DepthWrite, m_begin_transition_barriers_ptr, command_list);
+    SetAttachmentStates(Rhi::ResourceState::RenderTarget, Rhi::ResourceState::DepthWrite, m_begin_transition_barriers_ptr, command_list);
 
     const auto& command_list_dx = static_cast<const RenderCommandList&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
@@ -434,7 +434,7 @@ void RenderPass::End(Base::RenderCommandList& command_list)
 
     if (GetBasePattern().GetSettings().is_final_pass)
     {
-        SetAttachmentStates(IResource::State::Present, {}, m_end_transition_barriers_ptr, command_list);
+        SetAttachmentStates(Rhi::ResourceState::Present, {}, m_end_transition_barriers_ptr, command_list);
     }
     Base::RenderPass::End(command_list);
 }

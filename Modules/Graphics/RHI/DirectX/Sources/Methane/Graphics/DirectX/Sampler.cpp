@@ -33,7 +33,7 @@ DirectX 12 implementation of the sampler interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ISampler> Rhi::ISampler::Create(const Rhi::IContext& context, const Rhi::ISampler::Settings& settings)
+Ptr<ISampler> ISampler::Create(const IContext& context, const SamplerSettings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::Sampler>(dynamic_cast<const Base::Context&>(context), settings);
@@ -175,7 +175,7 @@ static D3D12_FILTER ConvertFilterToDirectX(const Rhi::ISampler::Filter& filter)
     // D3D12_FILTER_MAXIMUM_ANISOTROPIC
 }
 
-static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDirectX(ISampler::Address::Mode address_mode)
+static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDirectX(Rhi::ISampler::Address::Mode address_mode)
 {
     META_FUNCTION_TASK();
     using AddressMode = Rhi::ISampler::Address::Mode;
@@ -200,7 +200,7 @@ static void SetColor(const Color4F& in_color, FLOAT* p_out_color)
     }
 }
 
-static void ConvertBorderColorToDXColor(ISampler::BorderColor border_color, FLOAT* p_out_color)
+static void ConvertBorderColorToDXColor(Rhi::ISampler::BorderColor border_color, FLOAT* p_out_color)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(p_out_color);
@@ -221,7 +221,7 @@ Sampler::Sampler(const Base::Context& context, const Settings& settings)
     META_FUNCTION_TASK();
 }
 
-Opt<IResource::Descriptor> Sampler::InitializeNativeViewDescriptor(const View::Id& view_id)
+Opt<ResourceDescriptor> Sampler::InitializeNativeViewDescriptor(const View::Id& view_id)
 {
     META_FUNCTION_TASK();
     const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);

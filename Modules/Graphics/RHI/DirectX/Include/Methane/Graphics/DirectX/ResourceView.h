@@ -39,15 +39,16 @@ namespace wrl = Microsoft::WRL;
 
 struct IResourceDx;
 
-class ResourceView final : public Graphics::ResourceView
+class ResourceView final
+    : public Rhi::ResourceView
 {
 public:
-    ResourceView(const Graphics::ResourceView& view_id, ResourceUsage usage);
+    ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsage usage);
 
     [[nodiscard]] const Id& GetId() const noexcept
     { return m_id; }
 
-    [[nodiscard]] ResourceUsage GetUsage() const noexcept
+    [[nodiscard]] Rhi::ResourceUsage GetUsage() const noexcept
     { return m_id.usage; }
 
     [[nodiscard]] IResourceDx& GetDirectResource() const noexcept
@@ -56,7 +57,7 @@ public:
     [[nodiscard]] bool HasDescriptor() const noexcept
     { return m_descriptor_opt.has_value(); }
 
-    [[nodiscard]] const Opt <IResource::Descriptor>& GetDescriptor() const noexcept
+    [[nodiscard]] const Opt<ResourceDescriptor>& GetDescriptor() const noexcept
     { return m_descriptor_opt; }
 
     [[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS   GetNativeGpuAddress() const noexcept;

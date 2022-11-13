@@ -46,7 +46,7 @@ namespace Methane::Graphics::DirectX
 ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, const Settings& settings)
     : Base::ProgramArgumentBinding(context, settings)
     , m_settings_dx(settings)
-    , m_cp_native_device(dynamic_cast<const Rhi::IContextDx&>(context).GetDirectDevice().GetNativeDevice())
+    , m_cp_native_device(dynamic_cast<const IContextDx&>(context).GetDirectDevice().GetNativeDevice())
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_cp_native_device);
@@ -79,7 +79,7 @@ DescriptorHeapType ProgramArgumentBinding::GetDescriptorHeapType() const
            : DescriptorHeapType::ShaderResources;
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const Graphics::ResourceViews& resource_views)
+bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
     if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
@@ -129,7 +129,7 @@ bool ProgramArgumentBinding::SetResourceViews(const Graphics::ResourceViews& res
         resource_index++;
     }
 
-    GetContext().RequestDeferredAction(ContextDeferredAction::CompleteInitialization);
+    GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
     return true;
 }
 

@@ -66,7 +66,7 @@ public:
         GetDirectDescriptorManager().Initialize(m_descriptor_manager_init_settings);
         if (is_callback_emitted)
         {
-            Data::Emitter<IContextCallback>::Emit(&IContextCallback::OnContextInitialized, *this);
+            Data::Emitter<Rhi::IContextCallback>::Emit(&Rhi::IContextCallback::OnContextInitialized, *this);
         }
     }
 
@@ -90,13 +90,13 @@ public:
         // to check that all descriptor ranges have been properly released by resources
         GetDescriptorManager().Release();
 
-        static_cast<System&>(ISystem::Get()).ReportLiveObjects();
+        static_cast<System&>(Rhi::ISystem::Get()).ReportLiveObjects();
     }
 
     // IContext interface
-    const Device&      GetDirectDevice() const noexcept final                   { return static_cast<const Device&>(Base::Context::GetBaseDevice()); }
-    CommandQueue&      GetDirectDefaultCommandQueue(CommandListType type) final { return static_cast<CommandQueue&>(Base::Context::GetDefaultCommandKit(type).GetQueue()); }
-    DescriptorManager& GetDirectDescriptorManager() const noexcept final        { return static_cast<DescriptorManager&>(Base::Context::GetDescriptorManager()); }
+    const Device&      GetDirectDevice() const noexcept final                        { return static_cast<const Device&>(Base::Context::GetBaseDevice()); }
+    CommandQueue&      GetDirectDefaultCommandQueue(Rhi::CommandListType type) final { return static_cast<CommandQueue&>(Base::Context::GetDefaultCommandKit(type).GetQueue()); }
+    DescriptorManager& GetDirectDescriptorManager() const noexcept final             { return static_cast<DescriptorManager&>(Base::Context::GetDescriptorManager()); }
 
     ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const final
     {
@@ -122,7 +122,7 @@ private:
     using NativeQueryHeaps = std::array<wrl::ComPtr<ID3D12QueryHeap>, D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP + 1>;
 
     DescriptorManager::Settings m_descriptor_manager_init_settings{ true, {}, {} };
-    mutable NativeQueryHeaps      m_query_heaps;
+    mutable NativeQueryHeaps    m_query_heaps;
 };
 
 } // namespace Methane::Graphics::DirectX

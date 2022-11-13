@@ -126,18 +126,18 @@ private:
     D3D12_RENDER_PASS_FLAGS                             m_pass_flags = D3D12_RENDER_PASS_FLAG_NONE;
 
     // Fallback to input assembler setup
-    std::vector<RTClearInfo>                            m_rt_clear_infos;
-    DSClearInfo                                         m_ds_clear_info;
-    bool                                                m_is_updated = false;
+    std::vector<RTClearInfo> m_rt_clear_infos;
+    DSClearInfo              m_ds_clear_info;
+    bool                     m_is_updated = false;
 
     // Cache of native type vectors to minimize memory allocation during rendering
-    mutable std::vector<ID3D12DescriptorHeap*>          m_native_descriptor_heaps;
-    mutable std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>    m_native_rt_cpu_handles;
-    mutable D3D12_CPU_DESCRIPTOR_HANDLE                 m_native_ds_cpu_handle{ };
+    mutable std::vector<ID3D12DescriptorHeap*>       m_native_descriptor_heaps;
+    mutable std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_native_rt_cpu_handles;
+    mutable D3D12_CPU_DESCRIPTOR_HANDLE              m_native_ds_cpu_handle{ };
 
     // IResource transition barriers
-    Ptr<IResourceBarriers> m_begin_transition_barriers_ptr;
-    Ptr<IResourceBarriers> m_end_transition_barriers_ptr;
+    Ptr<Rhi::IResourceBarriers> m_begin_transition_barriers_ptr;
+    Ptr<Rhi::IResourceBarriers> m_end_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics::DirectX

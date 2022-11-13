@@ -77,7 +77,7 @@ void DescriptorManager::CompleteInitialization()
     if (!m_deferred_heap_allocation)
         return;
 
-    GetContext().WaitForGpu(IContext::WaitFor::RenderComplete);
+    GetContext().WaitForGpu(Rhi::IContext::WaitFor::RenderComplete);
 
     for (const UniquePtrs<DescriptorHeap>& desc_heaps : m_descriptor_heap_types)
     {

@@ -70,7 +70,7 @@ public:
         // Resource released callback has to be emitted before native resource is released
         try
         {
-            Data::Emitter<IResourceCallback>::Emit(&IResourceCallback::OnResourceReleased, std::ref(*this));
+            Data::Emitter<Rhi::IResourceCallback>::Emit(&Rhi::IResourceCallback::OnResourceReleased, std::ref(*this));
         }
         catch(const std::exception& e)
         {
@@ -145,7 +145,7 @@ protected:
     }
 
     void InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
-                                     IResource::State resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
+                                     Rhi::ResourceState resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_DESCR(m_cp_resource, !m_cp_resource, "committed resource is already initialized");
@@ -164,7 +164,7 @@ protected:
         );
     }
 
-    TransferCommandList& PrepareResourceUpload(ICommandQueue& target_cmd_queue)
+    TransferCommandList& PrepareResourceUpload(Rhi::ICommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
         auto& upload_cmd_list = dynamic_cast<TransferCommandList&>(GetContext().GetUploadCommandKit().GetListForEncoding());
@@ -176,8 +176,8 @@ protected:
         if (upload_cmd_list.GetNativeCommandList().GetType() == D3D12_COMMAND_LIST_TYPE_COPY &&
             SetState(State::Common, m_upload_sync_transition_barriers_ptr) && m_upload_sync_transition_barriers_ptr)
         {
-            ICommandList& sync_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(
-                static_cast<CommandListId>(CommandListPurpose::PreUploadSync));
+            Rhi::ICommandList& sync_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(
+                static_cast<Rhi::CommandListId>(Rhi::CommandListPurpose::PreUploadSync));
             sync_cmd_list.SetResourceBarriers(*m_upload_sync_transition_barriers_ptr);
         }
 
@@ -210,7 +210,7 @@ protected:
     }
 
 private:
-    IResource::Descriptor CreateResourceDescriptor(Usage usage)
+    Rhi::IResource::Descriptor CreateResourceDescriptor(Usage usage)
     {
         META_FUNCTION_TASK();
         DescriptorManager& descriptor_manager = GetDirectContext().GetDirectDescriptorManager();
@@ -222,8 +222,8 @@ private:
     const IContextDx&           m_dx_context;
     DescriptorByViewId          m_descriptor_by_view_id;
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
-    Ptr<IResourceBarriers>      m_upload_sync_transition_barriers_ptr;
-    Ptr<IResourceBarriers>      m_upload_begin_transition_barriers_ptr;
+    Ptr<Rhi::IResourceBarriers> m_upload_sync_transition_barriers_ptr;
+    Ptr<Rhi::IResourceBarriers> m_upload_begin_transition_barriers_ptr;
 };
 
 } // namespace Methane::Graphics::DirectX

@@ -55,7 +55,9 @@ public:
 
         const D3D12_HEAP_TYPE     normal_heap_type = is_private_storage  ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
         const D3D12_HEAP_TYPE       heap_type      = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
-        const IResource::State      resource_state = is_read_back_buffer || is_private_storage ? ResourceState::CopyDest : ResourceState::GenericRead;
+        const Rhi::ResourceState    resource_state = is_read_back_buffer || is_private_storage
+                                                   ? Rhi::ResourceState::CopyDest
+                                                   : Rhi::ResourceState::GenericRead;
         const CD3DX12_RESOURCE_DESC resource_desc  = CD3DX12_RESOURCE_DESC::Buffer(settings.size);
 
         InitializeCommittedResource(resource_desc, heap_type, resource_state);
@@ -86,7 +88,7 @@ public:
     }
 
     // IResource overrides
-    void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) override
+    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override
     {
         META_FUNCTION_TASK();
         Resource::SetData(sub_resources, target_cmd_queue);
@@ -128,7 +130,7 @@ public:
         // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
         const TransferCommandList& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
         upload_cmd_list.GetNativeCommandList().CopyResource(GetNativeResource(), m_cp_upload_resource.Get());
-        GetContext().RequestDeferredAction(IContext::DeferredAction::UploadResources);
+        GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
     }
 
     SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override
@@ -187,10 +189,11 @@ using IndexBuffer    = Buffer<D3D12_INDEX_BUFFER_VIEW, PixelFormat>;
 using ConstantBuffer = Buffer<D3D12_CONSTANT_BUFFER_VIEW_DESC>;
 using ReadBackBuffer = Buffer<ReadBackBufferViewDesc>;
 
-class BufferSet final : public Base::BufferSet
+class BufferSet final
+    : public Base::BufferSet
 {
 public:
-    BufferSet(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs);
+    BufferSet(Rhi::IBuffer::Type buffers_type, const Refs<Rhi::IBuffer>& buffer_refs);
 
     const std::vector<D3D12_VERTEX_BUFFER_VIEW>& GetNativeVertexBufferViews() const;
 

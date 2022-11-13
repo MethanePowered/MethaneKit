@@ -38,7 +38,7 @@ class RenderContext final // NOSONAR - manual destructor is required, inheritanc
 {
 public:
     RenderContext(const Platform::AppEnvironment& env, Base::Device& device, tf::Executor& parallel_executor,
-                    const RenderContextSettings& settings);
+                  const Rhi::RenderContextSettings& settings);
     ~RenderContext() override;
 
     // IContext interface
