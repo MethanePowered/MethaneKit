@@ -22,6 +22,7 @@ DirectX 12 specialization of the resource interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/DirectX/IResource.h>
+#include <Methane/Graphics/Rhi/ITexture.h>
 
 namespace Methane::Graphics::DirectX
 {
