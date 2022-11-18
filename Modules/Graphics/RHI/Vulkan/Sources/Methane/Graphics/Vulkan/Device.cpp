@@ -383,6 +383,18 @@ static vk::QueueFlags GetQueueFlagsByType(Rhi::CommandListType cmd_list_type)
     }
 }
 
+static bool IsDeviceExtensionSupported(const vk::PhysicalDevice& vk_physical_device, const std::vector<std::string_view>& required_extensions)
+{
+    META_FUNCTION_TASK();
+    std::set<std::string_view> extensions(required_extensions.begin(), required_extensions.end());
+    const std::vector<vk::ExtensionProperties> vk_device_extension_properties = vk_physical_device.enumerateDeviceExtensionProperties();
+    for(const vk::ExtensionProperties& vk_extension_props : vk_device_extension_properties)
+    {
+        extensions.erase(vk_extension_props.extensionName);
+    }
+    return extensions.empty();
+}
+
 QueueFamilyReservation::QueueFamilyReservation(uint32_t family_index, vk::QueueFlags queue_flags, uint32_t queues_count, bool can_present_to_window)
     : m_family_index(family_index)
     , m_queue_flags(queue_flags)
@@ -440,13 +452,12 @@ void QueueFamilyReservation::IncrementQueuesCount(uint32_t extra_queues_count) n
 Rhi::DeviceFeatures Device::GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
     vk::PhysicalDeviceFeatures vk_device_features = vk_physical_device.getFeatures();
-    Rhi::DeviceFeatures        device_features    = Rhi::DeviceFeatures::BasicRendering;
-    if (vk_device_features.samplerAnisotropy)
-        device_features |= Rhi::DeviceFeatures::AnisotropicFiltering;
-    if (vk_device_features.imageCubeArray)
-        device_features |= Rhi::DeviceFeatures::ImageCubeArray;
+
+    Rhi::DeviceFeatures device_features;
+    device_features.present_to_window = IsDeviceExtensionSupported(vk_physical_device, g_present_device_extensions);
+    device_features.anisotropic_filtering = vk_device_features.samplerAnisotropy;
+    device_features.image_cube_array  = vk_device_features.imageCubeArray;
     return device_features;
 }
 
@@ -458,19 +469,14 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     , m_vk_queue_family_properties(vk_physical_device.getQueueFamilyProperties())
 {
     META_FUNCTION_TASK();
-
-    using namespace magic_enum::bitwise_operators;
     if (const Rhi::DeviceFeatures device_supported_features = Device::GetSupportedFeatures(vk_physical_device);
-        !static_cast<bool>(device_supported_features & capabilities.features))
+        !static_cast<bool>(device_supported_features.mask & capabilities.features.mask))
         throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
 
     std::vector<uint32_t> reserved_queues_count_per_family(m_vk_queue_family_properties.size(), 0U);
 
-    if (capabilities.present_to_window && !IsExtensionSupported(g_present_device_extensions))
-        throw IncompatibleException("Device does not support some of required extensions");
-
     ReserveQueueFamily(Rhi::CommandListType::Render, capabilities.render_queues_count, reserved_queues_count_per_family,
-                       capabilities.present_to_window ? vk_surface : vk::SurfaceKHR());
+                       capabilities.features.present_to_window ? vk_surface : vk::SurfaceKHR());
 
     ReserveQueueFamily(Rhi::CommandListType::Transfer, capabilities.transfer_queues_count, reserved_queues_count_per_family);
 
@@ -486,14 +492,12 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     }
 
     std::vector<std::string_view> enabled_extension_names = g_common_device_extensions;
-    if (capabilities.present_to_window)
+    if (capabilities.features.present_to_window)
     {
         enabled_extension_names.insert(enabled_extension_names.end(), g_present_device_extensions.begin(), g_present_device_extensions.end());
     }
-    if (static_cast<bool>(capabilities.features & Rhi::DeviceFeatures::BasicRendering))
-    {
-        enabled_extension_names.insert(enabled_extension_names.end(), g_render_device_extensions.begin(), g_render_device_extensions.end());
-    }
+
+    enabled_extension_names.insert(enabled_extension_names.end(), g_render_device_extensions.begin(), g_render_device_extensions.end());
 
     std::vector<const char*> raw_enabled_extension_names;
     std::transform(enabled_extension_names.begin(), enabled_extension_names.end(), std::back_inserter(raw_enabled_extension_names),
@@ -501,8 +505,8 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
 
     // Enable physical device features:
     vk::PhysicalDeviceFeatures vk_device_features;
-    vk_device_features.samplerAnisotropy = static_cast<bool>(capabilities.features & Features::AnisotropicFiltering);
-    vk_device_features.imageCubeArray    = static_cast<bool>(capabilities.features & Features::ImageCubeArray);
+    vk_device_features.samplerAnisotropy = capabilities.features.anisotropic_filtering;
+    vk_device_features.imageCubeArray    = capabilities.features.image_cube_array;
 
     // Add descriptions of enabled device features:
     vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_feature(true);
@@ -535,13 +539,7 @@ bool Device::SetName(const std::string& name)
 bool Device::IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const
 {
     META_FUNCTION_TASK();
-    std::set<std::string_view> extensions(required_extensions.begin(), required_extensions.end());
-    const std::vector<vk::ExtensionProperties> vk_device_extension_properties = m_vk_physical_device.enumerateDeviceExtensionProperties();
-    for(const vk::ExtensionProperties& vk_extension_props : vk_device_extension_properties)
-    {
-        extensions.erase(vk_extension_props.extensionName);
-    }
-    return extensions.empty();
+    return IsDeviceExtensionSupported(m_vk_physical_device, required_extensions);
 }
 
 const QueueFamilyReservation* Device::GetQueueFamilyReservationPtr(Rhi::CommandListType cmd_list_type) const noexcept
@@ -605,7 +603,8 @@ void Device::ReserveQueueFamily(Rhi::CommandListType cmd_list_type, uint32_t que
     const std::optional<uint32_t> vk_queue_family_index = FindQueueFamily(m_vk_queue_family_properties, queue_flags, queues_count,
                                                                           reserved_queues_count_per_family, m_vk_physical_device, vk_surface);
     if (!vk_queue_family_index)
-        throw IncompatibleException(fmt::format("Device does not support the required queue type {} and count {}", magic_enum::enum_name(cmd_list_type), queues_count));
+        throw IncompatibleException(fmt::format("Device does not support the required queue type {} and count {}",
+                                                magic_enum::enum_name(cmd_list_type), queues_count));
 
     META_CHECK_ARG_LESS(*vk_queue_family_index, m_vk_queue_family_properties.size());
     META_CHECK_ARG_TRUE(static_cast<bool>(m_vk_queue_family_properties[*vk_queue_family_index].queueFlags & queue_flags));
@@ -653,7 +652,7 @@ void System::CheckForChanges()
 const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Methane::Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
-    if (required_device_caps.present_to_window && !m_vk_unique_surface)
+    if (required_device_caps.features.present_to_window && !m_vk_unique_surface)
     {
         // Temporary surface object is used only to test devices for ability to present to the window
         m_vk_unique_surface = Platform::CreateVulkanSurfaceForWindow(GetNativeInstance(), app_env);

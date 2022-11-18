@@ -93,13 +93,6 @@ static vk::BorderColor ConvertSamplerBorderColorToVulkan(Rhi::ISampler::BorderCo
     }
 }
 
-static bool IsAnisotropicFilteringSupported(const Rhi::IContext& context) noexcept
-{
-    META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-    return static_cast<bool>(context.GetDevice().GetCapabilities().features & Rhi::DeviceFeatures::AnisotropicFiltering);
-}
-
 Sampler::Sampler(const Base::Context& context, const Settings& settings)
     : Resource(context, settings, {})
     , m_vk_unique_sampler(GetNativeDevice().createSamplerUnique(
@@ -112,7 +105,7 @@ Sampler::Sampler(const Base::Context& context, const Settings& settings)
             ConvertSamplerAddressModeToVulkan(settings.address.t),
             ConvertSamplerAddressModeToVulkan(settings.address.r),
             settings.lod.bias,
-            IsAnisotropicFilteringSupported(context), // anisotropy enable
+            context.GetDevice().GetCapabilities().features.anisotropic_filtering,
             std::min(static_cast<float>(settings.max_anisotropy),
                      GetVulkanContext().GetVulkanDevice().GetNativePhysicalDevice().getProperties().limits.maxSamplerAnisotropy),
             settings.compare_function != Compare::Never,

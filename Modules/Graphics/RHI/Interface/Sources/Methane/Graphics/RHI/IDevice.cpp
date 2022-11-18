@@ -36,13 +36,6 @@ DeviceCaps& DeviceCaps::SetFeatures(DeviceFeatures new_features) noexcept
     return *this;
 }
 
-DeviceCaps& DeviceCaps::SetPresentToWindow(bool new_present_to_window) noexcept
-{
-    META_FUNCTION_TASK();
-    present_to_window = new_present_to_window;
-    return *this;
-}
-
 DeviceCaps& DeviceCaps::SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept
 {
     META_FUNCTION_TASK();

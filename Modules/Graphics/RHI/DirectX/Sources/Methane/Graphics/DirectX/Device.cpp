@@ -35,7 +35,6 @@ DirectX 12 implementation of the device interface.
 // #define BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
 #endif
 
-#include <magic_enum.hpp>
 #include <nowide/convert.hpp>
 #include <algorithm>
 #include <cassert>
@@ -145,7 +144,11 @@ static void ConfigureDeviceDebugFeature(const wrl::ComPtr<ID3D12Device>& device_
 Rhi::DeviceFeatures Device::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
 {
     META_FUNCTION_TASK();
-    return Rhi::DeviceFeatures::BasicRendering;
+    Rhi::DeviceFeatures supported_features;
+    supported_features.present_to_window = true;
+    supported_features.anisotropic_filtering = true;
+    supported_features.image_cube_array = true;
+    return supported_features;
 }
 
 Device::Device(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities)
@@ -373,10 +376,8 @@ void System::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_
     if (!SUCCEEDED(D3D12CreateDevice(cp_adapter.Get(), feature_level, _uuidof(ID3D12Device), nullptr)))
         return;
 
-    Rhi::DeviceFeatures device_supported_features = Device::GetSupportedFeatures(cp_adapter, feature_level);
-
-    using namespace magic_enum::bitwise_operators;
-    if (!static_cast<bool>(device_supported_features & GetDeviceCapabilities().features))
+    const Rhi::DeviceFeatures device_supported_features = Device::GetSupportedFeatures(cp_adapter, feature_level);
+    if (!(device_supported_features.mask & GetDeviceCapabilities().features.mask))
         return;
 
     Base::System::AddDevice(std::make_shared<Device>(cp_adapter, feature_level, GetDeviceCapabilities()));

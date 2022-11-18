@@ -28,7 +28,6 @@ Metal implementation of the device interface.
 #include <Methane/Checks.hpp>
 
 #include <algorithm>
-#include <magic_enum.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -45,10 +44,14 @@ ISystem& ISystem::Get()
 namespace Methane::Graphics::Metal
 {
 
-Rhi::DeviceFeatures Device::GetSupportedFeatures(const id<MTLDevice>&)
+Rhi::DeviceFeatures Device::GetSupportedFeatures(const id<MTLDevice>& mtl_device)
 {
     META_FUNCTION_TASK();
-    Rhi::DeviceFeatures supported_features = Rhi::DeviceFeatures::BasicRendering;
+    Rhi::DeviceFeatures supported_features;
+    supported_features.present_to_window = true;
+    supported_features.anisotropic_filtering = true;
+    supported_features.image_cube_array = [mtl_device supportsFamily: MTLGPUFamilyCommon2] ||
+                                          [mtl_device supportsFamily: MTLGPUFamilyCommon3];
     return supported_features;
 }
 
@@ -127,10 +130,8 @@ void System::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificatio
 void System::AddDevice(const id<MTLDevice>& mtl_device)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
-    Rhi::DeviceFeatures device_supported_features = Device::GetSupportedFeatures(mtl_device);
-    if (!static_cast<bool>(device_supported_features & GetDeviceCapabilities().features))
+    const Rhi::DeviceFeatures device_supported_features = Device::GetSupportedFeatures(mtl_device);
+    if (!(device_supported_features.mask & GetDeviceCapabilities().features.mask))
         return;
 
     Base::System::AddDevice(std::make_shared<Device>(mtl_device, GetDeviceCapabilities()));

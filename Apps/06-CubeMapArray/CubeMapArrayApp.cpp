@@ -52,9 +52,9 @@ CubeMapArrayApp::CubeMapArrayApp()
     : UserInterfaceApp(
         []() {
             Graphics::AppSettings settings = GetGraphicsTutorialAppSettings("Methane Cube Map Array", g_default_app_options_color_with_depth_and_anim);
-            settings.render_context
-                .SetClearDepthStencil(gfx::DepthStencil(0.F, {})) // Clear depth with 0.F to support reversed depth rendering
-                .SetClearColor({}); // Disable color clearing, use sky-box instead
+            settings.graphics_app.device_capabilities.features.image_cube_array = true;
+            settings.render_context.clear_depth_stencil = gfx::DepthStencil(0.F, {}); // Clear depth with 0.F to support reversed depth rendering
+            settings.render_context.clear_color = {}; // Disable color clearing, use sky-box instead
             return settings;
         }(),
         GetUserInterfaceTutorialAppSettings(g_default_app_options_color_with_depth_and_anim),

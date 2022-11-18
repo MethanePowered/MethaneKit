@@ -48,6 +48,7 @@ enum class NativeApi
     Vulkan
 };
 
+/*
 enum class DeviceFeatures : uint32_t
 {
     Unknown              = 0U,
@@ -56,16 +57,30 @@ enum class DeviceFeatures : uint32_t
     ImageCubeArray       = 1U << 3U,
     All                  = ~0U,
 };
+*/
+
+union DeviceFeatures
+{
+    struct
+    {
+        bool present_to_window;
+        bool anisotropic_filtering;
+        bool image_cube_array;
+    };
+
+    uint32_t mask { 0U };
+
+    DeviceFeatures() = default;
+    DeviceFeatures(uint32_t mask) : mask(mask) { }
+};
 
 struct DeviceCaps
 {
-    DeviceFeatures features              = DeviceFeatures::All;
-    bool           present_to_window     = true;
-    uint32_t       render_queues_count   = 1U;
-    uint32_t       transfer_queues_count = 1U;
+    DeviceFeatures features              { ~0U };
+    uint32_t       render_queues_count   { 1U };
+    uint32_t       transfer_queues_count { 1U };
 
     DeviceCaps& SetFeatures(DeviceFeatures new_features) noexcept;
-    DeviceCaps& SetPresentToWindow(bool new_present_to_window) noexcept;
     DeviceCaps& SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept;
     DeviceCaps& SetTransferQueuesCount(uint32_t new_transfer_queues_count) noexcept;
 };
