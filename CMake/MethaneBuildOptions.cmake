@@ -98,7 +98,8 @@ if (MSVC)
             # Disable useless warnings
             /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
             /wd4324 # - C4324: structure was padded due to alignment specifier
-        )
+            /wd4201 # - C4201: nonstandard extension used : nameless struct/union (used for bitfields with mask)
+            )
 
     else() # Clang compiler on Windows
 
