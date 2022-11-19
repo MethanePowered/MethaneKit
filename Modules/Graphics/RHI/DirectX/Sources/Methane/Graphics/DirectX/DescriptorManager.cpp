@@ -157,6 +157,8 @@ DescriptorHeap& DescriptorManager::GetDefaultShaderVisibleDescriptorHeap(Descrip
                                                 META_CHECK_ARG_NOT_NULL(descriptor_heap_ptr);
                                                 return descriptor_heap_ptr && descriptor_heap_ptr->GetSettings().shader_visible;
                                             });
+    META_CHECK_ARG_FALSE_DESCR(descriptor_heaps_it == descriptor_heaps.end(),
+                               "Can not find shader visible {} descriptor heap", magic_enum::enum_name(type));
 
     const UniquePtr<DescriptorHeap>& descriptor_heap_ptr = *descriptor_heaps_it;
     META_CHECK_ARG_NOT_NULL_DESCR(descriptor_heap_ptr, "There is no shader visible descriptor heap of type '{}'",

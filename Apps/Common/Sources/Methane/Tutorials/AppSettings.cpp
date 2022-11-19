@@ -29,6 +29,8 @@ Common application settings for Methane samples and tutorials.
 namespace Methane::Tutorials
 {
 
+namespace rhi = Methane::Graphics::Rhi;
+
 AppOptions AppOptions::GetDefaultWithColorOnly() noexcept
 {
     AppOptions options;
@@ -71,11 +73,8 @@ Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& 
     using ColorOpt        = std::optional<Graphics::Color4F>;
 
     using namespace magic_enum::bitwise_operators;
-    const Graphics::Rhi::RenderPassAccess default_screen_pass_access =
-          Graphics::Rhi::IRenderPass::Access::ShaderResources |
-          Graphics::Rhi::IRenderPass::Access::Samplers;
-
-    const Graphics::Rhi::ContextOptions default_context_options;
+    const rhi::RenderPassAccess default_screen_pass_access({ rhi::RenderPassAccess::Bit::ShaderResources, rhi::RenderPassAccess::Bit::Samplers });
+    const rhi::ContextOptions default_context_options;
     const Graphics::DepthStencil        default_clear_depth_stencil(1.F, Graphics::Stencil(0));
     const Graphics::Color4F             default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
 
@@ -94,7 +93,7 @@ Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& 
             !app_options.hud_visible,                           //   - show_hud_in_window_title
             0                                                   //   - default_device_index
         },                                                      // =========================
-        Graphics::Rhi::RenderContextSettings {                  // render_context:
+        rhi::RenderContextSettings {                            // render_context:
             Graphics::FrameSize(),                              //   - frame_size
             Graphics::PixelFormat::BGRA8Unorm,                  //   - color_format
             app_options.depth_buffer                            //   - depth_stencil_format

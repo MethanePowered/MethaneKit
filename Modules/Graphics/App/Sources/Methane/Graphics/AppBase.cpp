@@ -105,8 +105,8 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     static_cast<Data::IEmitter<IContextCallback>&>(*m_context_ptr).Connect(*this);
 
     // Fill initial screen render-pass pattern settings
-    m_screen_pass_pattern_settings.shader_access_mask = m_settings.screen_pass_access;
-    m_screen_pass_pattern_settings.is_final_pass      = true;
+    m_screen_pass_pattern_settings.shader_access = m_settings.screen_pass_access;
+    m_screen_pass_pattern_settings.is_final_pass = true;
 
     // Final frame color attachment
     Data::Index attachment_index = 0U;

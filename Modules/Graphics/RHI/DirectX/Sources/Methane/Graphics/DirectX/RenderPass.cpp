@@ -34,7 +34,6 @@ DirectX 12 implementation of the render pass interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
 #include <directx/d3dx12.h>
 
 namespace Methane::Graphics::Rhi
@@ -187,16 +186,17 @@ RenderPass::DSClearInfo::DSClearInfo(const Opt<DepthAttachment>& depth_attach_op
     }
 }
 
-static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(Rhi::IRenderPass::Access access)
+static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(Rhi::RenderPassAccess::Bit access)
 {
     META_FUNCTION_TASK();
+    using AccessBit = Rhi::RenderPassAccess::Bit;
     switch (access)
     {
-    case Rhi::IRenderPass::Access::ShaderResources: return DescriptorHeap::Type::ShaderResources;
-    case Rhi::IRenderPass::Access::Samplers:        return DescriptorHeap::Type::Samplers;
-    case Rhi::IRenderPass::Access::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
-    case Rhi::IRenderPass::Access::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
-    default:                                   META_UNEXPECTED_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
+    case AccessBit::ShaderResources: return DescriptorHeap::Type::ShaderResources;
+    case AccessBit::Samplers:        return DescriptorHeap::Type::Samplers;
+    case AccessBit::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
+    case AccessBit::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
+    default: META_UNEXPECTED_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
     }
 }
 
@@ -346,16 +346,10 @@ template<typename FuncType>
 void RenderPass::ForEachAccessibleDescriptorHeap(FuncType do_action) const
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
     const Pattern::Settings& settings = GetBasePattern().GetSettings();
-
-    static constexpr auto s_access_values = magic_enum::enum_values<Access>();
-    for (Access access : s_access_values)
+    for (Access::Bit access_bit : settings.shader_access.GetBits())
     {
-        if (!static_cast<bool>(settings.shader_access_mask & access))
-            continue;
-
-        const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access);
+        const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access_bit);
         do_action(m_dx_context.GetDirectDescriptorManager().GetDefaultShaderVisibleDescriptorHeap(heap_type));
     }
 }

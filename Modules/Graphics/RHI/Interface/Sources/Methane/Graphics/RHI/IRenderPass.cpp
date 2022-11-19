@@ -39,6 +39,66 @@ struct fmt::formatter<Methane::Graphics::Rhi::RenderPassColorAttachment>
 namespace Methane::Graphics::Rhi
 {
 
+RenderPassAccess::RenderPassAccess()
+    : mask(0U)
+{
+}
+
+RenderPassAccess::RenderPassAccess(uint32_t mask)
+    : mask(mask)
+{
+}
+
+RenderPassAccess::RenderPassAccess(const std::initializer_list<Bit>& bits)
+    : mask(0U)
+{
+    META_FUNCTION_TASK();
+    for(Bit bit : bits)
+    {
+        SetBit(bit, true);
+    }
+}
+
+void RenderPassAccess::SetBit(Bit bit, bool value)
+{
+    META_FUNCTION_TASK();
+    switch(bit)
+    {
+    case Bit::ShaderResources: shader_resources = value; break;
+    case Bit::Samplers:        samplers = value; break;
+    case Bit::RenderTargets:   render_targets = value; break;
+    case Bit::DepthStencil:    depth_stencil = value; break;
+    default: META_UNEXPECTED_ARG(bit);
+    }
+}
+
+std::vector<RenderPassAccess::Bit> RenderPassAccess::GetBits() const
+{
+    META_FUNCTION_TASK();
+    std::vector<Bit> bits;
+    if (shader_resources)
+        bits.push_back(Bit::ShaderResources);
+    if (samplers)
+        bits.push_back(Bit::Samplers);
+    if (render_targets)
+        bits.push_back(Bit::RenderTargets);
+    if (depth_stencil)
+        bits.push_back(Bit::DepthStencil);
+    return bits;
+}
+
+std::vector<std::string> RenderPassAccess::GetBitNames() const
+{
+    META_FUNCTION_TASK();
+    const std::vector<Bit> bits = GetBits();
+    std::vector<std::string> bit_names;
+    for(Bit bit : bits)
+    {
+        bit_names.emplace_back(magic_enum::enum_name(bit));
+    }
+    return bit_names;
+}
+
 RenderPassAttachment::RenderPassAttachment(Data::Index attachment_index, PixelFormat format,
                                            Data::Size samples_count, LoadAction load_action, StoreAction store_action)
     : attachment_index(attachment_index)
@@ -162,15 +222,15 @@ RenderPassStencilAttachment::operator std::string() const
 bool RenderPatternSettings::operator==(const RenderPatternSettings& other) const
 {
     META_FUNCTION_TASK();
-    return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access_mask, is_final_pass) ==
-           std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access_mask, other.is_final_pass);
+    return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access.mask, is_final_pass) ==
+           std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access.mask, other.is_final_pass);
 }
 
 bool RenderPatternSettings::operator!=(const RenderPatternSettings& other) const
 {
     META_FUNCTION_TASK();
-    return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access_mask, is_final_pass) !=
-           std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access_mask, other.is_final_pass);
+    return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access.mask, is_final_pass) !=
+           std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access.mask, other.is_final_pass);
 }
 
 RenderPatternSettings::operator std::string() const
@@ -180,11 +240,11 @@ RenderPatternSettings::operator std::string() const
     if (!color_attachments.empty())
         color_attachments_str = fmt::format("{}", fmt::join(color_attachments, ";\n"));
 
-    return fmt::format("{};\n{};\n{};\n  - shader_access_mask={}, {} pass.",
+    return fmt::format("{};\n{};\n{};\n  - shader_access={}, {} pass.",
                        color_attachments_str,
                        depth_attachment   ? static_cast<std::string>(*depth_attachment)   : "  - No stencil attachment",
                        stencil_attachment ? static_cast<std::string>(*stencil_attachment) : "  - No depth attachment",
-                       Data::GetBitMaskFlagNames(shader_access_mask),
+                       fmt::join(shader_access.GetBitNames(), "|"),
                        (is_final_pass ? "final" : "intermediate"));
 }
 

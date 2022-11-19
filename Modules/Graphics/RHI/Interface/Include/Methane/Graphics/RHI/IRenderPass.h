@@ -137,14 +137,33 @@ struct RenderPassStencilAttachment final : RenderPassAttachment
     [[nodiscard]] Type GetType() const noexcept override { return Type::Stencil; }
 };
 
-enum class RenderPassAccess : uint32_t
+union RenderPassAccess
 {
-    None            = 0U,
-    ShaderResources = 1U << 0U,
-    Samplers        = 1U << 1U,
-    RenderTargets   = 1U << 2U,
-    DepthStencil    = 1U << 3U,
-    All             = ~0U,
+    enum class Bit : uint32_t
+    {
+        ShaderResources,
+        Samplers,
+        RenderTargets,
+        DepthStencil
+    };
+
+    struct
+    {
+        bool shader_resources : 1;
+        bool samplers         : 1;
+        bool render_targets   : 1;
+        bool depth_stencil    : 1;
+    };
+
+    uint32_t mask;
+
+    RenderPassAccess();
+    RenderPassAccess(const std::initializer_list<Bit>& bits);
+    RenderPassAccess(uint32_t mask);
+
+    void SetBit(Bit bit, bool value);
+    std::vector<Bit> GetBits() const;
+    std::vector<std::string> GetBitNames() const;
 };
 
 struct RenderPatternSettings
@@ -152,7 +171,7 @@ struct RenderPatternSettings
     RenderPassColorAttachments       color_attachments;
     Opt<RenderPassDepthAttachment>   depth_attachment;
     Opt<RenderPassStencilAttachment> stencil_attachment;
-    RenderPassAccess                 shader_access_mask = RenderPassAccess::None;
+    RenderPassAccess                 shader_access;
     bool                             is_final_pass = true;
 
     [[nodiscard]] bool operator==(const RenderPatternSettings& other) const;

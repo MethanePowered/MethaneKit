@@ -33,7 +33,7 @@ namespace Methane::Graphics
 
 struct AppSettings
 {
-    Rhi::RenderPassAccess screen_pass_access       = Rhi::RenderPassAccess::None;
+    Rhi::RenderPassAccess screen_pass_access;
     bool                  animations_enabled       = true;
     bool                  show_hud_in_window_title = true;
     int32_t               default_device_index     = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device

@@ -100,8 +100,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
             },
             std::nullopt, // No depth attachment
             std::nullopt, // No stencil attachment
-            rhi::IRenderPass::Access::ShaderResources |
-            rhi::IRenderPass::Access::Samplers,
+            rhi::RenderPassAccess({ rhi::RenderPassAccess::Bit::ShaderResources, rhi::RenderPassAccess::Bit::Samplers }),
             false // intermediate render pass
         });
 
@@ -171,7 +170,10 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
         rhi::ISystem::GetNativeApi() != rhi::NativeApi::Metal) // No need in resource state transition barriers in Metal
     {
         m_ending_render_pattern_ptr = rhi::IRenderPattern::Create(m_gui_context.GetRenderContext(), {
-            rhi::IRenderPattern::ColorAttachments{ }, std::nullopt, std::nullopt, rhi::IRenderPass::Access::ShaderResources, false
+            rhi::IRenderPattern::ColorAttachments{ },
+            std::nullopt, std::nullopt,
+            rhi::RenderPassAccess({ rhi::RenderPassAccess::Bit::ShaderResources }),
+            false
         });
         m_ending_render_pass_ptr = rhi::IRenderPass::Create(*m_ending_render_pattern_ptr, { { }, rt_texture_settings.dimensions.AsRectSize() });
         m_ending_render_cmd_list_ptr = rhi::IRenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_ending_render_pass_ptr);
