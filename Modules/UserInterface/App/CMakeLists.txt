@@ -5,13 +5,14 @@ include(MethaneResources)
 get_module_dirs("Methane/UserInterface")
 
 set(HEADERS
-    ${INCLUDE_DIR}/App.h
+    ${INCLUDE_DIR}/IApp.h
     ${INCLUDE_DIR}/App.hpp
     ${INCLUDE_DIR}/AppBase.h
     ${INCLUDE_DIR}/AppController.h
 )
 
 set(SOURCES
+    ${SOURCES_DIR}/IApp.cpp
     ${SOURCES_DIR}/AppBase.cpp
     ${SOURCES_DIR}/AppController.cpp
 )

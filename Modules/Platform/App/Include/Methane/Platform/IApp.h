@@ -34,45 +34,49 @@ namespace Methane::Data
 namespace Methane::Platform
 {
 
+struct AppSettings
+{
+    std::string      name;
+    Data::FloatSize  size     { 0.8F, 0.8F};   // if dimension < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
+    Data::FrameSize  min_size { 640U, 480U };
+    bool             is_full_screen = false;
+    Data::IProvider* icon_provider  = nullptr;
+
+    AppSettings& SetName(std::string&& new_name) noexcept;
+    AppSettings& SetSize(Data::FloatSize&& new_size) noexcept;
+    AppSettings& SetMinSize(Data::FrameSize&& new_min_size) noexcept;
+    AppSettings& SetFullScreen(bool new_full_screen) noexcept;
+    AppSettings& SetIconProvider(Data::IProvider* new_icon_provider) noexcept;
+};
+
+struct AppRunArgs
+{
+    int          cmd_arg_count  = 0;
+    const char** cmd_arg_values = nullptr;
+};
+
+struct AppMessage
+{
+    enum class Type : uint32_t
+    {
+        Information = 0,
+        Warning,
+        Error
+    };
+
+    Type        type = Type::Information;
+    std::string title;
+    std::string information;
+};
+
 struct AppEnvironment;
 
 struct IApp
 {
 public:
-    struct Settings
-    {
-        std::string     name;
-        Data::FloatSize size     { 0.8F, 0.8F};   // if dimension < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
-        Data::FrameSize min_size { 640U, 480U };
-        bool            is_full_screen = false;
-        Data::IProvider* icon_provider = nullptr;
-
-        Settings& SetName(std::string&& new_name) noexcept;
-        Settings& SetSize(Data::FloatSize&& new_size) noexcept;
-        Settings& SetMinSize(Data::FrameSize&& new_min_size) noexcept;
-        Settings& SetFullScreen(bool new_full_screen) noexcept;
-        Settings& SetIconProvider(Data::IProvider* new_icon_provider) noexcept;
-    };
-
-    struct RunArgs
-    {
-        int          cmd_arg_count;
-        const char** cmd_arg_values;
-    };
-
-    struct Message
-    {
-        enum class Type : uint32_t
-        {
-            Information = 0,
-            Warning,
-            Error
-        };
-
-        Type        type;
-        std::string title;
-        std::string information;
-    };
+    using Settings = AppSettings;
+    using RunArgs = AppRunArgs;
+    using Message = AppMessage;
 
     // IApp interface
     virtual int      Run(const RunArgs& args) = 0;

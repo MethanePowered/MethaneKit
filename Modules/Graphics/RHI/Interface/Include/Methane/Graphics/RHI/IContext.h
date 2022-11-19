@@ -61,12 +61,20 @@ enum class ContextDeferredAction : uint32_t
     CompleteInitialization
 };
 
-enum class ContextOptions : uint32_t
+union ContextOptions
 {
-    None                             = 0U,
-    TransferWithDirectQueueOnWindows = 1U << 0U, // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
-    EmulatedRenderPassOnWindows      = 1U << 1U, // Render passes are emulated with traditional DX API, instead of using native DX render pass API
+    struct
+    {
+        bool transfer_with_d3d12_direct_queue; // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
+        bool emulate_d3d12_render_pass;        // Render passes are emulated with traditional DX API, instead of using native DX render pass API
+    };
+
+    uint32_t mask = 0U;
+
+    ContextOptions() = default;
+    ContextOptions(uint32_t mask) : mask(mask) { }
 };
+
 
 class ContextIncompatibleException
     : public std::runtime_error

@@ -23,8 +23,8 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 
 #include "CubeMapArrayApp.h"
 
-#include <Methane/Samples/TextureLabeler.h>
-#include <Methane/Samples/AppSettings.hpp>
+#include <Methane/Tutorials/TextureLabeler.h>
+#include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
@@ -51,13 +51,13 @@ constexpr float    g_model_scale = 6.F;
 CubeMapArrayApp::CubeMapArrayApp()
     : UserInterfaceApp(
         []() {
-            Graphics::AppSettings settings = GetGraphicsTutorialAppSettings("Methane Cube Map Array", g_default_app_options_color_with_depth_and_anim);
+            Graphics::CombinedAppSettings settings = GetGraphicsTutorialAppSettings("Methane Cube Map Array", AppOptions::GetDefaultWithColorDepthAndAnim());
             settings.graphics_app.device_capabilities.features.image_cube_array = true;
             settings.render_context.clear_depth_stencil = gfx::DepthStencil(0.F, {}); // Clear depth with 0.F to support reversed depth rendering
             settings.render_context.clear_color = {}; // Disable color clearing, use sky-box instead
             return settings;
         }(),
-        GetUserInterfaceTutorialAppSettings(g_default_app_options_color_with_depth_and_anim),
+        GetUserInterfaceTutorialAppSettings(AppOptions::GetDefaultWithColorDepthAndAnim()),
         "Methane tutorial of cube-map array texturing")
     , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(g_model_scale), hlslpp::float4x4::rotation_z(gfx::ConstFloat::Pi))) // NOSONAR
 {

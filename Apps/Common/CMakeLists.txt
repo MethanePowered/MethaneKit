@@ -1,13 +1,14 @@
 set(TARGET MethaneAppsCommon)
 
-get_module_dirs("Methane/Samples")
+get_module_dirs("Methane/Tutorials")
 
 set(HEADERS
-    ${INCLUDE_DIR}/AppSettings.hpp
+    ${INCLUDE_DIR}/AppSettings.h
     ${INCLUDE_DIR}/TextureLabeler.h
 )
 
 set(SOURCES
+    ${SOURCES_DIR}/AppSettings.cpp
     ${SOURCES_DIR}/TextureLabeler.cpp
 )
 
@@ -24,10 +25,11 @@ target_include_directories(${TARGET}
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsApp
+        MethaneUserInterfaceApp
         MethaneBuildOptions
-        magic_enum
     PRIVATE
         MethaneUserInterfaceTypography
+        magic_enum
 )
 
 set_target_properties(${TARGET}

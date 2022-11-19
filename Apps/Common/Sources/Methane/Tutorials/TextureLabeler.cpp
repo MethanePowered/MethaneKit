@@ -21,7 +21,7 @@ Renders text labels to the faces of cube-map texture array
 
 ******************************************************************************/
 
-#include <Methane/Samples/TextureLabeler.h>
+#include <Methane/Tutorials/TextureLabeler.h>
 #include <Methane/Graphics/RHI/IDevice.h>
 #include <Methane/Graphics/RHI/IRenderCommandList.h>
 #include <Methane/Graphics/RHI/ITexture.h>

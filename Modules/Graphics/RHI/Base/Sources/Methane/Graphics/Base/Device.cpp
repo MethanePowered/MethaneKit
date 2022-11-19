@@ -28,24 +28,6 @@ Base implementation of the device interface.
 
 #include <sstream>
 
-namespace Methane::Graphics
-{
-
-Rhi::NativeApi Rhi::ISystem::GetNativeApi() noexcept
-{
-#if defined METHANE_GFX_METAL
-    return NativeApi::Metal;
-#elif defined METHANE_GFX_DIRECTX
-    return NativeApi::DirectX;
-#elif defined METHANE_GFX_VULKAN
-    return NativeApi::Vulkan;
-#else
-    return NativeApi::Undefined;
-#endif
-}
-
-} // namespace Methane::Graphics
-
 namespace Methane::Graphics::Base
 {
 

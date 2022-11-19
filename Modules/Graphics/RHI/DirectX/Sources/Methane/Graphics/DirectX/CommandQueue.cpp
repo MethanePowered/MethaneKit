@@ -65,7 +65,7 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(Rhi::CommandListType com
     switch(command_list_type)
     {
     case Rhi::CommandListType::Transfer:
-        return static_cast<bool>(options & Rhi::IContext::Options::TransferWithDirectQueueOnWindows)
+        return options.transfer_with_d3d12_direct_queue
              ? D3D12_COMMAND_LIST_TYPE_DIRECT
              : D3D12_COMMAND_LIST_TYPE_COPY;
 

@@ -23,7 +23,7 @@ Base user interface application controller.
 
 #pragma once
 
-#include "App.h"
+#include "IApp.h"
 
 #include <Methane/Graphics/AppController.h>
 

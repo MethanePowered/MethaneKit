@@ -20,6 +20,6 @@ graphics rendering on simple examples using Methane Kit API in a cross-platform 
 ## Common
 
 Common applications source code beyond Methane Kit, used by multiple Tutorials to minimize code duplication.
-- [AppSettings](Common/Include/Methane/Samples/AppSettings.hpp) - common application settings initialization helper;
-- [TextureLabeler](Common/Include/Methane/Samples/TextureLabeler.h) - texture faces text labels renderer;
+- [AppSettings](Common/Include/Methane/Tutorials/AppSettings.h) - common application settings initialization helper;
+- [TextureLabeler](Common/Include/Methane/Tutorials/TextureLabeler.h) - texture faces text labels renderer;
 - [Shaders/Primitives.hlsl](Common/Shaders/Primitives.hlsl) - common shader pritimve functions.

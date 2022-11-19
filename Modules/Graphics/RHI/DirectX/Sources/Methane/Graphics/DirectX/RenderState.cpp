@@ -68,7 +68,6 @@ constexpr size_t g_max_rtv_count = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC::RT
 inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Rhi::IShader>& shader_ptr)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(shader_ptr, "Shader pointer is not initialized");
     const Data::Chunk* p_byte_code_chunk = shader_ptr ? static_cast<const Shader&>(*shader_ptr).GetNativeByteCode() : nullptr;
     return p_byte_code_chunk
         ? CD3DX12_SHADER_BYTECODE(p_byte_code_chunk->GetDataPtr(), p_byte_code_chunk->GetDataSize())

@@ -50,4 +50,17 @@ DeviceCaps& DeviceCaps::SetTransferQueuesCount(uint32_t new_transfer_queues_coun
     return *this;
 }
 
+NativeApi ISystem::GetNativeApi() noexcept
+{
+#if defined METHANE_GFX_METAL
+    return NativeApi::Metal;
+#elif defined METHANE_GFX_DIRECTX
+    return NativeApi::DirectX;
+#elif defined METHANE_GFX_VULKAN
+    return NativeApi::Vulkan;
+#else
+    return NativeApi::Undefined;
+#endif
+}
+
 } // namespace Methane::Graphics::Rhi

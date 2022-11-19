@@ -24,7 +24,7 @@ Tutorial demonstrating dynamic text rendering and fonts management with Methane 
 #include "TypographyApp.h"
 #include "TypographyAppController.h"
 
-#include <Methane/Samples/AppSettings.hpp>
+#include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Data/TimeAnimation.h>
 
 #include <magic_enum.hpp>
@@ -129,8 +129,8 @@ inline Timer::TimeDuration UpdateText(gui::Text& text, const std::u32string& dis
 
 TypographyApp::TypographyApp()
     : UserInterfaceApp(
-        GetGraphicsTutorialAppSettings("Methane Typography", g_default_app_options_color_only_and_anim),
-        { gui::IApp::HeadsUpDisplayMode::UserInterface },
+        GetGraphicsTutorialAppSettings("Methane Typography", AppOptions::GetDefaultWithColorOnlyAndAnim()),
+        { gui::HeadsUpDisplayMode::UserInterface },
         "Dynamic text rendering and fonts management tutorial.")
 {
     m_displayed_text_lengths.resize(g_text_blocks_count, 0);

@@ -63,11 +63,11 @@ class App
     static_assert(std::is_base_of_v<AppFrame, FrameT>, "Application Frame type must be derived from AppFrame.");
 
 public:
-    explicit App(const AppSettings& settings)
+    explicit App(const CombinedAppSettings& settings)
         : AppBase(settings, Data::TextureProvider::Get())
     { }
 
-    App(const AppSettings& settings, const std::string& help_description)
+    App(const CombinedAppSettings& settings, const std::string& help_description)
         : App(settings)
     {
         META_FUNCTION_TASK();

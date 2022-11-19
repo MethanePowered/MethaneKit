@@ -24,7 +24,7 @@ Tutorial demonstrating colored cube rendering with Methane graphics API
 #include <Methane/Kit.h>
 #include <Methane/Graphics/App.hpp>
 #include <Methane/Graphics/CubeMesh.hpp>
-#include <Methane/Samples/AppSettings.hpp>
+#include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Data/TimeAnimation.h>
 
 #ifdef UNIFORMS_BUFFER_ENABLED
@@ -94,7 +94,7 @@ public:
     HelloCubeApp()
         : GraphicsApp(
             []() {
-                Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings(g_app_name, Tutorials::g_default_app_options_color_only_and_anim);
+                Graphics::CombinedAppSettings settings = Tutorials::GetGraphicsTutorialAppSettings(g_app_name, Tutorials::AppOptions::GetDefaultWithColorOnlyAndAnim());
 #ifdef UNIFORMS_BUFFER_ENABLED
                 settings.graphics_app.SetScreenPassAccess(IRenderPass::Access::ShaderResources);
 #else

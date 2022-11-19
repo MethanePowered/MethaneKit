@@ -31,22 +31,24 @@ Interface of the graphics application base template class defined in App.hpp
 namespace Methane::Graphics
 {
 
+struct AppSettings
+{
+    Rhi::RenderPassAccess screen_pass_access       = Rhi::RenderPassAccess::None;
+    bool                  animations_enabled       = true;
+    bool                  show_hud_in_window_title = true;
+    int32_t               default_device_index     = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device
+    Rhi::DeviceCaps       device_capabilities;
+
+    AppSettings& SetScreenPassAccess(Rhi::RenderPassAccess new_screen_pass_access) noexcept;
+    AppSettings& SetAnimationsEnabled(bool new_animations_enabled) noexcept;
+    AppSettings& SetShowHudInWindowTitle(bool new_show_hud_in_window_title) noexcept;
+    AppSettings& SetDefaultDeviceIndex(int32_t new_default_device_index) noexcept;
+    AppSettings& SetDeviceCapabilities(Rhi::DeviceCaps&& new_device_capabilities) noexcept;
+};
+
 struct IApp
 {
-    struct Settings
-    {
-        Rhi::RenderPassAccess screen_pass_access       = Rhi::RenderPassAccess::None;
-        bool                  animations_enabled       = true;
-        bool                  show_hud_in_window_title = true;
-        int32_t               default_device_index     = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device
-        Rhi::DeviceCaps       device_capabilities;
-
-        Settings& SetScreenPassAccess(Rhi::RenderPassAccess new_screen_pass_access) noexcept;
-        Settings& SetAnimationsEnabled(bool new_animations_enabled) noexcept;
-        Settings& SetShowHudInWindowTitle(bool new_show_hud_in_window_title) noexcept;
-        Settings& SetDefaultDeviceIndex(int32_t new_default_device_index) noexcept;
-        Settings& SetDeviceCapabilities(Rhi::DeviceCaps&& new_device_capabilities) noexcept;
-    };
+    using Settings = AppSettings;
 
     virtual const Settings& GetGraphicsAppSettings() const noexcept = 0;
     virtual bool SetAnimationsEnabled(bool animations_enabled) = 0;

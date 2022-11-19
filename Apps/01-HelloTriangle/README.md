@@ -35,7 +35,7 @@ Destroying of application along with its resources is delayed until all renderin
 ```cpp
 #include <Methane/Kit.h>
 #include <Methane/Graphics/App.hpp>
-#include <Methane/Samples/AppSettings.hpp>
+#include <Methane/Tutorials/AppSettings.hpp>
 
 using namespace Methane;
 using namespace Methane::Graphics;

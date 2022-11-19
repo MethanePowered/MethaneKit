@@ -23,7 +23,8 @@ Base implementation of the Methane graphics application.
 
 #pragma once
 
-#include "App.h"
+#include "IApp.h"
+#include "CombinedAppSettings.h"
 
 #include <Methane/Data/IProvider.h>
 #include <Methane/Data/AnimationsPool.h>
@@ -45,23 +46,12 @@ struct IRenderPass;
 namespace Methane::Graphics
 {
 
-struct AppSettings
-{
-    Platform::IApp::Settings platform_app;
-    Graphics::IApp::Settings graphics_app;
-    Rhi::RenderContextSettings render_context;
-
-    AppSettings& SetPlatformAppSettings(Platform::IApp::Settings&& new_platform_app_settings) noexcept;
-    AppSettings& SetGraphicsAppSettings(Graphics::IApp::Settings&& new_graphics_app_settings) noexcept;
-    AppSettings& SetRenderContextSettings(Rhi::RenderContextSettings&& new_render_context_settings) noexcept;
-};
-
 class AppBase // NOSONAR
     : public Platform::App
     , protected Data::Receiver<Rhi::IContextCallback> //NOSONAR
 {
 public:
-    AppBase(const AppSettings& settings, Data::IProvider& textures_provider);
+    AppBase(const CombinedAppSettings& settings, Data::IProvider& textures_provider);
     ~AppBase() override;
 
     AppBase(const AppBase&) = delete;

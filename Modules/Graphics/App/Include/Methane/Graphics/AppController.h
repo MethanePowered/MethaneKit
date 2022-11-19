@@ -23,7 +23,7 @@ Base graphics application controller.
 
 #pragma once
 
-#include "App.h"
+#include "IApp.h"
 
 #include <Methane/Platform/AppController.h>
 #include <Methane/Platform/KeyboardActionControllerBase.hpp>

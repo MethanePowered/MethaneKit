@@ -24,8 +24,8 @@ Tutorial demonstrating parallel rendering with Methane graphics API
 #include "ParallelRenderingApp.h"
 #include "ParallelRenderingAppController.h"
 
-#include <Methane/Samples/TextureLabeler.h>
-#include <Methane/Samples/AppSettings.hpp>
+#include <Methane/Tutorials/TextureLabeler.h>
+#include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 #include <Methane/Instrumentation.h>
@@ -88,8 +88,8 @@ uint32_t ParallelRenderingApp::Settings::GetActiveRenderThreadCount() const noex
 
 ParallelRenderingApp::ParallelRenderingApp()
     : UserInterfaceApp(
-        GetGraphicsTutorialAppSettings("Methane Parallel Rendering", g_default_app_options_color_with_depth_and_anim),
-        GetUserInterfaceTutorialAppSettings(g_default_app_options_color_with_depth_and_anim),
+        GetGraphicsTutorialAppSettings("Methane Parallel Rendering", AppOptions::GetDefaultWithColorDepthAndAnim()),
+        GetUserInterfaceTutorialAppSettings(AppOptions::GetDefaultWithColorDepthAndAnim()),
         "Methane tutorial of parallel rendering")
 {
     META_FUNCTION_TASK();

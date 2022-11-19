@@ -78,6 +78,7 @@ list(APPEND HEADERS ${PLATFORM_HEADERS}
 )
 
 list(APPEND SOURCES ${PLATFORM_SOURCES}
+    ${SOURCES_DIR}/IApp.cpp
     ${SOURCES_DIR}/AppBase.cpp
     ${SOURCES_DIR}/AppController.cpp
 )

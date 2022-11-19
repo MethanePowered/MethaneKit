@@ -48,17 +48,6 @@ enum class NativeApi
     Vulkan
 };
 
-/*
-enum class DeviceFeatures : uint32_t
-{
-    Unknown              = 0U,
-    BasicRendering       = 1U << 0U,
-    AnisotropicFiltering = 1U << 2U,
-    ImageCubeArray       = 1U << 3U,
-    All                  = ~0U,
-};
-*/
-
 union DeviceFeatures
 {
     struct
@@ -117,7 +106,7 @@ struct ISystem
     virtual void CheckForChanges() = 0;
     [[nodiscard]] virtual const Ptrs<IDevice>& UpdateGpuDevices(const DeviceCaps& required_device_caps = {}) = 0;
     [[nodiscard]] virtual const Ptrs<IDevice>& UpdateGpuDevices(const Platform::AppEnvironment& app_env,
-                                                                     const DeviceCaps& required_device_caps = {}) = 0;
+                                                                const DeviceCaps& required_device_caps = {}) = 0;
     [[nodiscard]] virtual const Ptrs<IDevice>& GetGpuDevices() const noexcept = 0;
     [[nodiscard]] virtual Ptr<IDevice>         GetNextGpuDevice(const IDevice& device) const noexcept = 0;
     [[nodiscard]] virtual Ptr<IDevice>         GetSoftwareGpuDevice() const noexcept = 0;

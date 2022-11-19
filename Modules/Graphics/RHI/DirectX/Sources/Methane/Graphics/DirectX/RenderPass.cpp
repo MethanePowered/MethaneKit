@@ -209,8 +209,7 @@ RenderPass::RenderPass(Base::RenderPattern& render_pattern, const Settings& sett
                    [](const Rhi::ITexture::View& texture_location)
                    { return ResourceView(texture_location, Rhi::IResource::Usage::RenderTarget); });
 
-    using namespace magic_enum::bitwise_operators;
-    if (static_cast<bool>(render_pattern.GetRenderContext().GetSettings().options_mask & Rhi::IContext::Options::EmulatedRenderPassOnWindows))
+    if (render_pattern.GetRenderContext().GetSettings().options_mask.emulate_d3d12_render_pass)
     {
         m_is_native_render_pass_available = false;
     }

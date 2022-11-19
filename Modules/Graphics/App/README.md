@@ -5,7 +5,7 @@ and [graphics RHI API](../RHI).
 
 ## Graphics Application Base Class
 
-### [Graphics::IApp](Include/Methane/Graphics/App.h)
+### [Graphics::IApp](Include/Methane/Graphics/IApp.h)
 
 `Graphics::IApp` interface contains declaration of `Settings` structure and abstract methods
 to get current graphics application settings and methods to modify individual setting values.

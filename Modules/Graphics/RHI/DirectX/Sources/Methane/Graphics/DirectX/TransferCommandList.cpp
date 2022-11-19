@@ -47,7 +47,7 @@ static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(Rhi::ContextOpti
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    return static_cast<bool>(options & Rhi::ContextOptions::TransferWithDirectQueueOnWindows)
+    return options.transfer_with_d3d12_direct_queue
          ? D3D12_COMMAND_LIST_TYPE_DIRECT
          : D3D12_COMMAND_LIST_TYPE_COPY;
 }

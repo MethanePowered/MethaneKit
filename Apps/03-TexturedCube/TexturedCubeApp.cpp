@@ -23,7 +23,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 
 #include "TexturedCubeApp.h"
 
-#include <Methane/Samples/AppSettings.hpp>
+#include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
@@ -47,8 +47,8 @@ struct CubeVertex
 
 TexturedCubeApp::TexturedCubeApp()
     : UserInterfaceApp(
-        GetGraphicsTutorialAppSettings("Methane Textured Cube", g_default_app_options_color_only_and_anim),
-        GetUserInterfaceTutorialAppSettings(g_default_app_options_color_only_and_anim),
+        GetGraphicsTutorialAppSettings("Methane Textured Cube", AppOptions::GetDefaultWithColorOnlyAndAnim()),
+        GetUserInterfaceTutorialAppSettings(AppOptions::GetDefaultWithColorOnlyAndAnim()),
         "Methane tutorial of textured cube rendering")
 {
     m_shader_uniforms.light_position = hlslpp::float3(0.F, 20.F, -25.F);

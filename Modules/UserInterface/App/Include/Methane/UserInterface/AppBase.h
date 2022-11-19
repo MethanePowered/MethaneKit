@@ -23,7 +23,7 @@ Base implementation of the Methane user interface application.
 
 #pragma once
 
-#include "App.h"
+#include "IApp.h"
 
 #include <Methane/UserInterface/HeadsUpDisplay.h>
 #include <Methane/Checks.hpp>
@@ -66,7 +66,7 @@ protected:
     bool UpdateUI() const;
     void RenderOverlay(rhi::IRenderCommandList& cmd_list) const;
 
-    bool SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_mode);
+    bool SetHeadsUpDisplayUIMode(HeadsUpDisplayMode heads_up_display_mode);
     bool SetHelpText(std::string_view help_str);
     bool SetParametersText(std::string_view parameters_str);
 

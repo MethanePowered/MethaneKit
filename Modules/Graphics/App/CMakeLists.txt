@@ -3,16 +3,19 @@ set(TARGET MethaneGraphicsApp)
 get_module_dirs("Methane/Graphics")
 
 set(HEADERS
-    ${INCLUDE_DIR}/App.h
+    ${INCLUDE_DIR}/IApp.h
     ${INCLUDE_DIR}/App.hpp
     ${INCLUDE_DIR}/AppBase.h
+    ${INCLUDE_DIR}/CombinedAppSettings.h
     ${INCLUDE_DIR}/AppController.h
     ${INCLUDE_DIR}/AppCameraController.h
     ${INCLUDE_DIR}/AppContextController.h
 )
 
 set(SOURCES
+    ${SOURCES_DIR}/IApp.cpp
     ${SOURCES_DIR}/AppBase.cpp
+    ${SOURCES_DIR}/CombinedAppSettings.cpp
     ${SOURCES_DIR}/AppController.cpp
     ${SOURCES_DIR}/AppCameraController.cpp
     ${SOURCES_DIR}/AppContextController.cpp

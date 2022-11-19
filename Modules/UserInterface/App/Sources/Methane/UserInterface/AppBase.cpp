@@ -63,62 +63,6 @@ static void SplitTextToColumns(std::string_view text_str, std::string& left_colu
     right_column_str = text_str.substr(middle_line_break_position + 1);
 };
 
-IApp::Settings& IApp::Settings::SetHeadsUpDisplayMode(HeadsUpDisplayMode new_heads_up_display_mode) noexcept
-{
-    META_FUNCTION_TASK();
-    heads_up_display_mode = new_heads_up_display_mode;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetLogoBadgeVisible(bool new_logo_badge_visible) noexcept
-{
-    META_FUNCTION_TASK();
-    logo_badge_visible = new_logo_badge_visible;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetLogoBadgeColor(const Color4F& new_logo_badge_color) noexcept
-{
-    META_FUNCTION_TASK();
-    logo_badge_color = new_logo_badge_color;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetTextColor(const Color4F& new_text_color) noexcept
-{
-    META_FUNCTION_TASK();
-    text_color = new_text_color;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetTextMargins(const UnitPoint& new_text_margings) noexcept
-{
-    META_FUNCTION_TASK();
-    text_margins = new_text_margings;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetWindowPadding(const UnitPoint& new_window_padding) noexcept
-{
-    META_FUNCTION_TASK();
-    window_padding = new_window_padding;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetMainFont(const Font::Description& new_main_font) noexcept
-{
-    META_FUNCTION_TASK();
-    main_font = new_main_font;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetHudSettings(const HeadsUpDisplay::Settings& new_hud_settings) noexcept
-{
-    META_FUNCTION_TASK();
-    hud_settings = new_hud_settings;
-    return *this;
-}
-
 AppBase::AppBase(const IApp::Settings& ui_app_settings)
     : m_app_settings(ui_app_settings)
 {
@@ -156,7 +100,7 @@ void AppBase::InitUI(const Platform::IApp& app, rhi::ICommandQueue& render_cmd_q
 
     // Create heads-up-display (HUD)
     m_app_settings.hud_settings.position = m_app_settings.window_padding;
-    if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
+    if (m_app_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
     {
         m_hud_ptr = std::make_shared<HeadsUpDisplay>(*m_ui_context_ptr, Data::FontProvider::Get(), m_app_settings.hud_settings);
     }
@@ -207,7 +151,7 @@ bool AppBase::ResizeUI(const gfx::FrameSize& frame_size, bool)
 bool AppBase::UpdateUI() const
 {
     META_FUNCTION_TASK();
-    if (m_hud_ptr && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
+    if (m_hud_ptr && m_app_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
         m_hud_ptr->Update(m_frame_size);
 
     m_help_columns.first.Update(m_frame_size);
@@ -221,7 +165,7 @@ void AppBase::RenderOverlay(rhi::IRenderCommandList& cmd_list) const
     META_FUNCTION_TASK();
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Overlay Rendering");
 
-    if (m_hud_ptr && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
+    if (m_hud_ptr && m_app_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
         m_hud_ptr->Draw(cmd_list, s_debug_group.get());
 
     m_help_columns.first.Draw(cmd_list, s_debug_group.get());
@@ -265,7 +209,7 @@ void AppBase::TextItem::Reset(bool forget_text_string)
         text_str.clear();
 }
 
-bool AppBase::SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_mode)
+bool AppBase::SetHeadsUpDisplayUIMode(HeadsUpDisplayMode heads_up_display_mode)
 {
     META_FUNCTION_TASK();
     if (m_app_settings.heads_up_display_mode == heads_up_display_mode)
@@ -276,7 +220,7 @@ bool AppBase::SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_
     // Wait for all in-flight rendering to complete before creating and releasing GPU resources
     m_ui_context_ptr->GetRenderContext().WaitForGpu(rhi::IRenderContext::WaitFor::RenderComplete);
 
-    if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface && m_ui_context_ptr)
+    if (m_app_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface && m_ui_context_ptr)
     {
         m_hud_ptr = std::make_shared<HeadsUpDisplay>(*m_ui_context_ptr, Data::FontProvider::Get(), m_app_settings.hud_settings);
     }

@@ -5,7 +5,7 @@
 
 ## User Interface Application Base Class
 
-### [UserInterface::IApp](Include/Methane/UserInterface/App.h)
+### [UserInterface::IApp](Include/Methane/UserInterface/IApp.h)
 
 `UserInterface::IApp` interface contains declaration of `Settings` structure and abstract methods
 to get current graphics application settings and methods to modify individual setting values.

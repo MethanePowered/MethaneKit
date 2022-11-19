@@ -23,7 +23,7 @@ Tutorial demonstrating colored triangle rendering with Methane graphics API
 
 #include <Methane/Kit.h>
 #include <Methane/Graphics/App.hpp>
-#include <Methane/Samples/AppSettings.hpp>
+#include <Methane/Tutorials/AppSettings.h>
 
 using namespace Methane;
 using namespace Methane::Graphics;
@@ -36,7 +36,7 @@ struct HelloTriangleFrame final : AppFrame
     using AppFrame::AppFrame;
 };
 
-using GraphicsApp = App<HelloTriangleFrame>;
+using GraphicsApp = Graphics::App<HelloTriangleFrame>;
 class HelloTriangleApp final : public GraphicsApp // NOSONAR
 {
 private:
@@ -46,7 +46,7 @@ public:
     HelloTriangleApp()
         : GraphicsApp(
             []() {
-                Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Triangle", Tutorials::g_default_app_options_color_only);
+                Graphics::CombinedAppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Triangle", Tutorials::AppOptions::GetDefaultWithColorOnly());
                 settings.graphics_app.SetScreenPassAccess(IRenderPass::Access::None);
                 return settings;
             }(),

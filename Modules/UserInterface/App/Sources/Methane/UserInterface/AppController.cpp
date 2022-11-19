@@ -55,8 +55,8 @@ void AppController::OnKeyboardStateAction(AppAction action)
     switch(action) // NOSONAR
     {
     case AppAction::SwitchHeadsUpDisplayMode:
-        m_application.SetHeadsUpDisplayMode(magic_enum::enum_value<IApp::HeadsUpDisplayMode>(
-            (magic_enum::enum_integer(m_application.GetUserInterfaceAppSettings().heads_up_display_mode) + 1) % magic_enum::enum_count<IApp::HeadsUpDisplayMode>()));
+        m_application.SetHeadsUpDisplayMode(magic_enum::enum_value<HeadsUpDisplayMode>(
+            (magic_enum::enum_integer(m_application.GetUserInterfaceAppSettings().heads_up_display_mode) + 1) % magic_enum::enum_count<HeadsUpDisplayMode>()));
         break;
 
     default:

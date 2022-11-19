@@ -42,68 +42,12 @@ namespace Methane::Graphics
 
 static constexpr double g_title_update_interval_sec = 1.0;
 
-IApp::Settings& IApp::Settings::SetScreenPassAccess(Rhi::RenderPassAccess new_screen_pass_access) noexcept
-{
-    META_FUNCTION_TASK();
-    screen_pass_access = new_screen_pass_access;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetAnimationsEnabled(bool new_animations_enabled) noexcept
-{
-    META_FUNCTION_TASK();
-    animations_enabled = new_animations_enabled;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetShowHudInWindowTitle(bool new_show_hud_in_window_title) noexcept
-{
-    META_FUNCTION_TASK();
-    show_hud_in_window_title = new_show_hud_in_window_title;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetDefaultDeviceIndex(int32_t new_default_device_index) noexcept
-{
-    META_FUNCTION_TASK();
-    default_device_index = new_default_device_index;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetDeviceCapabilities(Rhi::DeviceCaps&& new_device_capabilities) noexcept
-{
-    META_FUNCTION_TASK();
-    device_capabilities = std::move(new_device_capabilities);
-    return *this;
-}
-
-AppSettings& AppSettings::SetPlatformAppSettings(Platform::IApp::Settings&& new_platform_app_settings) noexcept
-{
-    META_FUNCTION_TASK();
-    platform_app = std::move(new_platform_app_settings);
-    return *this;
-}
-
-AppSettings& AppSettings::SetGraphicsAppSettings(Graphics::IApp::Settings&& new_graphics_app_settings) noexcept
-{
-    META_FUNCTION_TASK();
-    graphics_app = std::move(new_graphics_app_settings);
-    return *this;
-}
-
-AppSettings& AppSettings::SetRenderContextSettings(Rhi::RenderContextSettings&& new_render_context_settings) noexcept
-{
-    META_FUNCTION_TASK();
-    render_context = std::move(new_render_context_settings);
-    return *this;
-}
-
 AppBase::ResourceRestoreInfo::ResourceRestoreInfo(const Rhi::IResource& resource)
     : descriptor_by_view_id(resource.GetDescriptorByViewId())
     , name(resource.GetName())
 { }
 
-AppBase::AppBase(const AppSettings& settings, Data::IProvider& textures_provider)
+AppBase::AppBase(const CombinedAppSettings& settings, Data::IProvider& textures_provider)
     : Platform::App(settings.platform_app)
     , m_settings(settings.graphics_app)
     , m_initial_context_settings(settings.render_context)
@@ -119,10 +63,10 @@ AppBase::AppBase(const AppSettings& settings, Data::IProvider& textures_provider
 
 #ifdef _WIN32
     add_flag("-e,--emulated-render-pass",
-             [this](int64_t is_emulated) { if (is_emulated) m_initial_context_settings.options_mask |= Rhi::IContext::Options::EmulatedRenderPassOnWindows; },
+             [this](int64_t is_emulated) { m_initial_context_settings.options_mask.emulate_d3d12_render_pass = is_emulated; },
              "Render pass emulation with traditional DX API");
     add_flag("-q,--transfer-with-direct-queue",
-             [this](int64_t is_direct) { if (is_direct) m_initial_context_settings.options_mask |= Rhi::IContext::Options::TransferWithDirectQueueOnWindows; },
+             [this](int64_t is_direct) { m_initial_context_settings.options_mask.transfer_with_d3d12_direct_queue = is_direct; },
              "Transfer command lists and queues use DIRECT instead of COPY type in DX API");
 #endif
 }
