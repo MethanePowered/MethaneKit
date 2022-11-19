@@ -52,9 +52,9 @@ union DeviceFeatures
 {
     struct
     {
-        bool present_to_window;
-        bool anisotropic_filtering;
-        bool image_cube_array;
+        bool present_to_window     : 1;
+        bool anisotropic_filtering : 1;
+        bool image_cube_array      : 1;
     };
 
     uint32_t mask { 0U };

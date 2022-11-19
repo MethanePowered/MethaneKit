@@ -65,11 +65,11 @@ union ContextOptions
 {
     struct
     {
-        bool transfer_with_d3d12_direct_queue; // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
-        bool emulate_d3d12_render_pass;        // Render passes are emulated with traditional DX API, instead of using native DX render pass API
+        bool transfer_with_d3d12_direct_queue : 1; // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
+        bool emulate_d3d12_render_pass        : 1; // Render passes are emulated with traditional DX API, instead of using native DX render pass API
     };
 
-    uint32_t mask = 0U;
+    uint32_t mask { 0U };
 
     ContextOptions() = default;
     ContextOptions(uint32_t mask) : mask(mask) { }

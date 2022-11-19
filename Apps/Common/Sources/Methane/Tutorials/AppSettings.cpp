@@ -71,13 +71,13 @@ Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& 
     using ColorOpt        = std::optional<Graphics::Color4F>;
 
     using namespace magic_enum::bitwise_operators;
-    constexpr Graphics::Rhi::RenderPassAccess default_screen_pass_access =
-              Graphics::Rhi::IRenderPass::Access::ShaderResources |
-              Graphics::Rhi::IRenderPass::Access::Samplers;
+    const Graphics::Rhi::RenderPassAccess default_screen_pass_access =
+          Graphics::Rhi::IRenderPass::Access::ShaderResources |
+          Graphics::Rhi::IRenderPass::Access::Samplers;
 
-    constexpr Graphics::Rhi::ContextOptions default_context_options;
-    constexpr Graphics::DepthStencil        default_clear_depth_stencil(1.F, Graphics::Stencil(0));
-    const     Graphics::Color4F             default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
+    const Graphics::Rhi::ContextOptions default_context_options;
+    const Graphics::DepthStencil        default_clear_depth_stencil(1.F, Graphics::Stencil(0));
+    const Graphics::Color4F             default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
 
     return Graphics::CombinedAppSettings
     {                                                           // =========================

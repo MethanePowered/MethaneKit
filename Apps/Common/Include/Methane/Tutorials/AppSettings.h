@@ -33,16 +33,16 @@ union AppOptions
 {
     struct
     {
-        bool depth_buffer;
-        bool clear_depth;
-        bool clear_color;
-        bool animations;
-        bool full_screen;
-        bool vsync;
-        bool hud_visible;
+        bool depth_buffer : 1;
+        bool clear_depth  : 1;
+        bool clear_color  : 1;
+        bool animations   : 1;
+        bool full_screen  : 1;
+        bool vsync        : 1;
+        bool hud_visible  : 1;
     };
 
-    uint32_t mask = 0U;
+    uint32_t mask { 0U };
 
     AppOptions() = default;
     AppOptions(const AppOptions&) = default;
