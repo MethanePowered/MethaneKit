@@ -21,8 +21,6 @@ Interface of the base user interface application template class defined in App.h
 
 ******************************************************************************/
 
-#pragma once
-
 #include <Methane/UserInterface/IApp.h>
 
 namespace Methane::UserInterface
