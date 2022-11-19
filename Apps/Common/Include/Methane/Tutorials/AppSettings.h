@@ -42,10 +42,9 @@ union AppOptions
         bool hud_visible  : 1;
     };
 
-    uint32_t mask { 0U };
+    uint32_t mask;
 
-    AppOptions() = default;
-    AppOptions(const AppOptions&) = default;
+    AppOptions() : mask(0U) { }
     AppOptions(uint32_t mask) : mask(mask) { }
 
     static AppOptions GetDefaultWithColorOnly() noexcept;

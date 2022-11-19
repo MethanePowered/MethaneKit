@@ -57,9 +57,9 @@ union DeviceFeatures
         bool image_cube_array      : 1;
     };
 
-    uint32_t mask { 0U };
+    uint32_t mask;
 
-    DeviceFeatures() = default;
+    DeviceFeatures() : mask(0U) { }
     DeviceFeatures(uint32_t mask) : mask(mask) { }
 };
 
