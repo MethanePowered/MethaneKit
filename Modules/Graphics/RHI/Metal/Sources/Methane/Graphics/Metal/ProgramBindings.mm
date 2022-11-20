@@ -206,11 +206,9 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehavior apply
         const Rhi::IProgram::Argument& program_argument = binding_by_argument.first;
         const ArgumentBinding& metal_argument_binding = static_cast<const ArgumentBinding&>(*binding_by_argument.second);
 
-        if ((static_cast<bool>(apply_behavior & ApplyBehavior::ConstantOnce) ||
-             static_cast<bool>(apply_behavior & ApplyBehavior::ChangesOnly)) &&
+        if ((apply_behavior.constant_once || apply_behavior.changes_only) &&
             metal_command_list.GetProgramBindingsPtr() &&
-            metal_argument_binding.IsAlreadyApplied(GetProgram(), *metal_command_list.GetProgramBindingsPtr(),
-                                                    static_cast<bool>(apply_behavior & ApplyBehavior::ChangesOnly)))
+            metal_argument_binding.IsAlreadyApplied(GetProgram(), *metal_command_list.GetProgramBindingsPtr(), apply_behavior.changes_only))
             continue;
 
         const uint32_t arg_index = metal_argument_binding.GetMetalSettings().argument_index;

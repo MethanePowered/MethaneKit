@@ -146,7 +146,7 @@ public:
     }
 
     void Draw(Rhi::IRenderCommandList& cmd_list, const Ptrs<Rhi::IProgramBindings>& instance_program_bindings,
-              Rhi::IProgramBindings::ApplyBehavior bindings_apply_behavior = Rhi::IProgramBindings::ApplyBehavior::AllIncremental,
+              Rhi::ProgramBindingsApplyBehavior bindings_apply_behavior = Rhi::ProgramBindingsApplyBehavior(~0U),
               uint32_t first_instance_index = 0, bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         Draw(cmd_list, instance_program_bindings.begin(), instance_program_bindings.end(),
@@ -156,7 +156,7 @@ public:
     void Draw(Rhi::IRenderCommandList& cmd_list,
               const Ptrs<Rhi::IProgramBindings>::const_iterator& instance_program_bindings_begin,
               const Ptrs<Rhi::IProgramBindings>::const_iterator& instance_program_bindings_end,
-              Rhi::IProgramBindings::ApplyBehavior bindings_apply_behavior = Rhi::IProgramBindings::ApplyBehavior::AllIncremental,
+              Rhi::ProgramBindingsApplyBehavior bindings_apply_behavior = Rhi::ProgramBindingsApplyBehavior(~0U),
               uint32_t first_instance_index = 0, bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         META_FUNCTION_TASK();
@@ -178,10 +178,7 @@ public:
 
             using namespace magic_enum::bitwise_operators;
             Rhi::IProgramBindings::ApplyBehavior apply_behavior = bindings_apply_behavior;
-            if (!retain_bindings_once || instance_program_bindings_it == instance_program_bindings_begin)
-                apply_behavior |= Rhi::IProgramBindings::ApplyBehavior::RetainResources;
-            else
-                apply_behavior &= ~Rhi::IProgramBindings::ApplyBehavior::RetainResources;
+            apply_behavior.retain_resources = !retain_bindings_once || instance_program_bindings_it == instance_program_bindings_begin;
 
             cmd_list.SetProgramBindings(*program_bindings_ptr, apply_behavior);
             cmd_list.DrawIndexed(Rhi::RenderPrimitive::Triangle,
@@ -192,7 +189,7 @@ public:
     }
 
     void DrawParallel(const Rhi::IParallelRenderCommandList& parallel_cmd_list, const Ptrs<Rhi::IProgramBindings>& instance_program_bindings,
-                      Rhi::IProgramBindings::ApplyBehavior bindings_apply_behavior = Rhi::IProgramBindings::ApplyBehavior::AllIncremental,
+                      Rhi::ProgramBindingsApplyBehavior bindings_apply_behavior = Rhi::ProgramBindingsApplyBehavior(~0U),
                       bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         META_FUNCTION_TASK();
