@@ -162,6 +162,7 @@ union RenderPassAccess
     explicit RenderPassAccess(const std::initializer_list<Bit>& bits);
 
     void SetBit(Bit bit, bool value);
+    bool HasBit(Bit bit) const;
     std::vector<Bit> GetBits() const;
     std::vector<std::string> GetBitNames() const;
 };

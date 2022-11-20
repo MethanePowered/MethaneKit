@@ -71,6 +71,19 @@ void RenderPassAccess::SetBit(Bit bit, bool value)
     }
 }
 
+bool RenderPassAccess::HasBit(Bit bit) const
+{
+    META_FUNCTION_TASK();
+    switch(bit)
+    {
+    case Bit::ShaderResources: return shader_resources;
+    case Bit::Samplers:        return samplers;
+    case Bit::RenderTargets:   return render_targets;
+    case Bit::DepthStencil:    return depth_stencil;
+    default: META_UNEXPECTED_ARG(bit);
+    }
+}
+
 std::vector<RenderPassAccess::Bit> RenderPassAccess::GetBits() const
 {
     META_FUNCTION_TASK();

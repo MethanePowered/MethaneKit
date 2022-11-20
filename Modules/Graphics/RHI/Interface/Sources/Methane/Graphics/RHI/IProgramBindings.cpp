@@ -101,6 +101,19 @@ void ProgramBindingsApplyBehavior::SetBit(Bit bit, bool value)
     }
 }
 
+bool ProgramBindingsApplyBehavior::HasBit(Bit bit) const
+{
+    META_FUNCTION_TASK();
+    switch(bit)
+    {
+    case Bit::ConstantOnce:    return constant_once;
+    case Bit::ChangesOnly:     return changes_only;
+    case Bit::StateBarriers:   return state_barriers;
+    case Bit::RetainResources: return retain_resources;
+    default: META_UNEXPECTED_ARG(bit);
+    }
+}
+
 std::vector<ProgramBindingsApplyBehavior::Bit> ProgramBindingsApplyBehavior::GetBits() const
 {
     META_FUNCTION_TASK();

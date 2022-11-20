@@ -104,6 +104,7 @@ union ProgramBindingsApplyBehavior
     bool operator!=(const ProgramBindingsApplyBehavior& other) const noexcept;
 
     void SetBit(Bit bit, bool value);
+    bool HasBit(Bit bit) const;
     std::vector<Bit> GetBits() const;
     std::vector<std::string> GetBitNames() const;
 };

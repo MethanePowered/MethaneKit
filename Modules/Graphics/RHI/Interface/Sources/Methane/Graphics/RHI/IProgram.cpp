@@ -74,11 +74,24 @@ ProgramArgumentAccess::ProgramArgumentAccess(const std::initializer_list<Type>& 
 
 void ProgramArgumentAccess::SetType(Type type, bool value)
 {
+    META_FUNCTION_TASK();
     switch(type)
     {
     case Type::Constant:      is_constant       = value; break;
     case Type::FrameConstant: is_frame_constant = value; break;
     case Type::Mutable:       is_mutable        = value; break;
+    default: META_UNEXPECTED_ARG(type);
+    }
+}
+
+bool ProgramArgumentAccess::HasType(Type type) const
+{
+    META_FUNCTION_TASK();
+    switch(type)
+    {
+    case Type::Constant:      return is_constant;
+    case Type::FrameConstant: return is_frame_constant;
+    case Type::Mutable:       return is_mutable;
     default: META_UNEXPECTED_ARG(type);
     }
 }

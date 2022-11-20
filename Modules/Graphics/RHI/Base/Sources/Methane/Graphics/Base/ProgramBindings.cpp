@@ -334,11 +334,13 @@ bool ProgramBindings::ApplyResourceStates(Rhi::ProgramArgumentAccess access, con
     META_FUNCTION_TASK();
     bool resource_states_changed = false;
 
-    for(Rhi::ProgramArgumentAccess::Type access_type : access.GetTypes())
+    for(Rhi::ProgramArgumentAccess::Type access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccess::Type>())
     {
+        if (!access.HasType(access_type))
+            continue;
+
         using namespace magic_enum::bitwise_operators;
         const ResourceStates& resource_states = m_transition_resource_states_by_access[magic_enum::enum_index(access_type).value()];
-
         for(const ResourceAndState& resource_state : resource_states)
         {
             META_CHECK_ARG_NOT_NULL(resource_state.resource_ptr);

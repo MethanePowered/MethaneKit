@@ -323,8 +323,11 @@ void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccess acce
                                                  const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const
 {
     META_FUNCTION_TASK();
-    for(Rhi::ProgramArgumentAccess::Type access_type : access.GetTypes())
+    for(Rhi::ProgramArgumentAccess::Type access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccess::Type>())
     {
+        if (!access.HasType(access_type))
+            continue;
+
         using namespace magic_enum::bitwise_operators;
         const bool do_program_bindings_comparing = access_type == Rhi::ProgramArgumentAccess::Type::Mutable && apply_changes_only && applied_program_bindings_ptr;
         const RootParameterBindings& root_parameter_bindings = m_root_parameter_bindings_by_access[magic_enum::enum_index(access_type).value()];

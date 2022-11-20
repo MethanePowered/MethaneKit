@@ -116,6 +116,19 @@ void BlendingColorChannels::SetBit(Bit bit, bool value)
     }
 }
 
+bool BlendingColorChannels::HasBit(Bit bit) const
+{
+    META_FUNCTION_TASK();
+    switch(bit)
+    {
+    case Bit::Red:   return red;
+    case Bit::Green: return green;
+    case Bit::Blue:  return blue;
+    case Bit::Alpha: return alpha;
+    default: META_UNEXPECTED_ARG(bit);
+    }
+}
+
 std::vector<BlendingColorChannels::Bit> BlendingColorChannels::GetBits() const
 {
     META_FUNCTION_TASK();
@@ -293,6 +306,20 @@ void RenderStateGroups::SetBit(Bit bit, bool value)
     case Bit::Blending:      blending       = value; break;
     case Bit::BlendingColor: blending_color = value; break;
     case Bit::DepthStencil:  depth_stencil  = value; break;
+    default: META_UNEXPECTED_ARG(bit);
+    }
+}
+
+bool RenderStateGroups::HasBit(Bit bit) const
+{
+    META_FUNCTION_TASK();
+    switch(bit)
+    {
+    case Bit::Program:       return program;
+    case Bit::Rasterizer:    return rasterizer;
+    case Bit::Blending:      return blending;
+    case Bit::BlendingColor: return blending_color;
+    case Bit::DepthStencil:  return depth_stencil;
     default: META_UNEXPECTED_ARG(bit);
     }
 }

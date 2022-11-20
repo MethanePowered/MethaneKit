@@ -121,6 +121,7 @@ union ProgramArgumentAccess
     explicit ProgramArgumentAccess(const std::initializer_list<Type>& type);
 
     void SetType(Type type, bool value);
+    bool HasType(Type type) const;
     std::vector<Type> GetTypes() const;
     std::vector<std::string> GetTypeNames() const;
 };
