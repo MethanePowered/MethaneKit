@@ -97,13 +97,13 @@ ScreenQuad::ScreenQuad(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
     const Rhi::IShader::MacroDefinitions ps_macro_definitions       = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
     Rhi::ProgramArgumentAccessors program_argument_accessors = {
-        { { Rhi::ShaderType::Pixel, "g_constants" }, Rhi::ProgramArgumentAccessor::Type::Mutable }
+        { { Rhi::ShaderType::Pixel, "g_constants" }, Rhi::ProgramArgumentAccess::Type::Mutable }
     };
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_argument_accessors.emplace(Rhi::ShaderType::Pixel, "g_texture", Rhi::ProgramArgumentAccessor::Type::Mutable);
-        program_argument_accessors.emplace(Rhi::ShaderType::Pixel, "g_sampler", Rhi::ProgramArgumentAccessor::Type::Constant);
+        program_argument_accessors.emplace(Rhi::ShaderType::Pixel, "g_texture", Rhi::ProgramArgumentAccess::Type::Mutable);
+        program_argument_accessors.emplace(Rhi::ShaderType::Pixel, "g_sampler", Rhi::ProgramArgumentAccess::Type::Constant);
     }
 
     const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);

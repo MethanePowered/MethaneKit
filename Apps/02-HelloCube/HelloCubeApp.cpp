@@ -158,7 +158,7 @@ public:
 #ifdef UNIFORMS_BUFFER_ENABLED
                         Rhi::ProgramArgumentAccessors
                         {
-                            { { ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccessor::Type::FrameConstant }
+                            { { ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccess::Type::FrameConstant }
                         },
 #else
                         Rhi::ProgramArgumentAccessors{ },

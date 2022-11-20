@@ -21,7 +21,7 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Rhi/IContext.h>
+#include <Methane/Graphics/RHI/IContext.h>
 
 namespace Methane::Graphics::Rhi
 {

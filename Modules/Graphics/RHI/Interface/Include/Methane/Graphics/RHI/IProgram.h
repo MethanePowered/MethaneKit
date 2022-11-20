@@ -98,17 +98,40 @@ private:
     size_t           m_hash;
 };
 
-using ProgramArguments = std::unordered_set<ProgramArgument, ProgramArgument::Hash>;
-
-class ProgramArgumentAccessor : public ProgramArgument
+union ProgramArgumentAccess
 {
-public:
     enum class Type : uint32_t
     {
         Constant      = 1U << 0U,
         FrameConstant = 1U << 1U,
         Mutable       = 1U << 2U,
     };
+
+    struct
+    {
+        bool is_constant       : 1;
+        bool is_frame_constant : 1;
+        bool is_mutable        : 1;
+    };
+
+    uint32_t mask;
+
+    ProgramArgumentAccess() noexcept;
+    explicit ProgramArgumentAccess(uint32_t mask) noexcept;
+    explicit ProgramArgumentAccess(const std::initializer_list<Type>& type);
+
+    void SetType(Type type, bool value);
+    std::vector<Type> GetTypes() const;
+    std::vector<std::string> GetTypeNames() const;
+};
+
+using ProgramArguments = std::unordered_set<ProgramArgument, ProgramArgument::Hash>;
+
+class ProgramArgumentAccessor : public ProgramArgument
+{
+public:
+    using Type  = ProgramArgumentAccess::Type;
+    using Types = ProgramArgumentAccess;
 
     ProgramArgumentAccessor(ShaderType shader_type, std::string_view argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
     ProgramArgumentAccessor(const ProgramArgument& argument, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;

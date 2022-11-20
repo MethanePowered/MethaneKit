@@ -177,7 +177,7 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
             continue;
 
         Ptr<ProgramBindings::ArgumentBinding> argument_binding_instance_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
-        if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == Rhi::ProgramArgumentAccessor::Type::Mutable)
+        if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == Rhi::ProgramArgumentAccess::Type::Mutable)
             argument_binding_instance_ptr->Connect(*this);
 
         m_binding_by_argument.try_emplace(program_argument, std::move(argument_binding_instance_ptr));
@@ -329,18 +329,16 @@ void ProgramBindings::AddTransitionResourceStates(const Rhi::IProgramBindings::I
     }
 }
 
-bool ProgramBindings::ApplyResourceStates(Rhi::ProgramArgumentAccessor::Type access_types_mask, const Rhi::ICommandQueue* owner_queue_ptr) const
+bool ProgramBindings::ApplyResourceStates(Rhi::ProgramArgumentAccess access, const Rhi::ICommandQueue* owner_queue_ptr) const
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
+    bool resource_states_changed = false;
 
-    bool                                 resource_states_changed = false;
-    for(Rhi::ProgramArgumentAccessor::Type access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccessor::Type>())
+    for(Rhi::ProgramArgumentAccess::Type access_type : access.GetTypes())
     {
-        if (!static_cast<bool>(access_types_mask & access_type))
-            continue;
-
+        using namespace magic_enum::bitwise_operators;
         const ResourceStates& resource_states = m_transition_resource_states_by_access[magic_enum::enum_index(access_type).value()];
+
         for(const ResourceAndState& resource_state : resource_states)
         {
             META_CHECK_ARG_NOT_NULL(resource_state.resource_ptr);
@@ -357,7 +355,7 @@ bool ProgramBindings::ApplyResourceStates(Rhi::ProgramArgumentAccessor::Type acc
 void ProgramBindings::InitResourceRefsByAccess()
 {
     META_FUNCTION_TASK();
-    constexpr size_t                               access_count = magic_enum::enum_count<Rhi::ProgramArgumentAccessor::Type>();
+    constexpr size_t                               access_count = magic_enum::enum_count<Rhi::ProgramArgumentAccess::Type>();
     std::array<std::set<Rhi::IResource*>, access_count> unique_resources_by_access;
 
     for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
@@ -380,7 +378,7 @@ void ProgramBindings::InitResourceRefsByAccess()
     }
 }
 
-const Refs<Rhi::IResource>& ProgramBindings::GetResourceRefsByAccess(Rhi::ProgramArgumentAccessor::Type access_type) const
+const Refs<Rhi::IResource>& ProgramBindings::GetResourceRefsByAccess(Rhi::ProgramArgumentAccess::Type access_type) const
 {
     META_FUNCTION_TASK();
     return m_resource_refs_by_access[magic_enum::enum_index(access_type).value()];

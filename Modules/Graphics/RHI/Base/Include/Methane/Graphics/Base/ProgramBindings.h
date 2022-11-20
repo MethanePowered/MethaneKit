@@ -72,10 +72,10 @@ public:
 
     template<typename CommandListType>
     void ApplyResourceTransitionBarriers(CommandListType& command_list,
-                                         Rhi::ProgramArgumentAccessor::Type apply_access_mask = static_cast<Rhi::ProgramArgumentAccessor::Type>(~0U),
+                                         Rhi::ProgramArgumentAccess apply_access = Rhi::ProgramArgumentAccess(~0U),
                                          const Rhi::ICommandQueue* owner_queue_ptr = nullptr) const
     {
-        if (ApplyResourceStates(apply_access_mask, owner_queue_ptr) &&
+        if (ApplyResourceStates(apply_access, owner_queue_ptr) &&
             m_resource_state_transition_barriers_ptr && !m_resource_state_transition_barriers_ptr->IsEmpty())
         {
             command_list.SetResourceBarriers(*m_resource_state_transition_barriers_ptr);
@@ -94,7 +94,7 @@ protected:
                                                  const ResourceViewsByArgument& replace_resource_views) const;
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
-    const Refs<Rhi::IResource>& GetResourceRefsByAccess(Rhi::ProgramArgumentAccessor::Type access_type) const;
+    const Refs<Rhi::IResource>& GetResourceRefsByAccess(Rhi::ProgramArgumentAccess::Type access_type) const;
 
     void ClearTransitionResourceStates();
     void RemoveTransitionResourceStates(const Rhi::IProgramBindings::IArgumentBinding& argument_binding, const Rhi::IResource& resource);
@@ -111,10 +111,10 @@ private:
     };
 
     using ResourceStates = std::vector<ResourceAndState>;
-    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Rhi::ProgramArgumentAccessor::Type>()>;
-    using ResourceRefsByAccess = std::array<Refs<Rhi::IResource>, magic_enum::enum_count<Rhi::ProgramArgumentAccessor::Type>()>;
+    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Rhi::ProgramArgumentAccess::Type>()>;
+    using ResourceRefsByAccess = std::array<Refs<Rhi::IResource>, magic_enum::enum_count<Rhi::ProgramArgumentAccess::Type>()>;
 
-    bool ApplyResourceStates(Rhi::ProgramArgumentAccessor::Type access_types_mask, const Rhi::ICommandQueue* owner_queue_ptr = nullptr) const;
+    bool ApplyResourceStates(Rhi::ProgramArgumentAccess access, const Rhi::ICommandQueue* owner_queue_ptr = nullptr) const;
     void InitResourceRefsByAccess();
 
     const Ptr<Rhi::IProgram>             m_program_ptr;

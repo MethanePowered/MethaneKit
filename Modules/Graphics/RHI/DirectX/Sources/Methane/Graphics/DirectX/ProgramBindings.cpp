@@ -67,12 +67,12 @@ DescriptorsCountByAccess::DescriptorsCountByAccess()
     std::fill(m_count_by_access_type.begin(), m_count_by_access_type.end(), 0U);
 }
 
-uint32_t& DescriptorsCountByAccess::operator[](Rhi::ProgramArgumentAccessor::Type access_type)
+uint32_t& DescriptorsCountByAccess::operator[](Rhi::ProgramArgumentAccess::Type access_type)
 {
     return m_count_by_access_type[magic_enum::enum_index(access_type).value()];
 }
 
-uint32_t DescriptorsCountByAccess::operator[](Rhi::ProgramArgumentAccessor::Type access_type) const
+uint32_t DescriptorsCountByAccess::operator[](Rhi::ProgramArgumentAccess::Type access_type) const
 {
     return m_count_by_access_type[magic_enum::enum_index(access_type).value()];
 }
@@ -101,7 +101,7 @@ ProgramBindings::~ProgramBindings()
         if (!heap_reservation_opt)
             continue;
 
-        if (const DescriptorHeap::Range& mutable_descriptor_range = heap_reservation_opt->ranges[magic_enum::enum_index(Rhi::ProgramArgumentAccessor::Type::Mutable).value()];
+        if (const DescriptorHeap::Range& mutable_descriptor_range = heap_reservation_opt->ranges[magic_enum::enum_index(Rhi::ProgramArgumentAccess::Type::Mutable).value()];
             !mutable_descriptor_range.IsEmpty())
         {
             heap_reservation_opt->heap.get().ReleaseRange(mutable_descriptor_range);
@@ -146,11 +146,13 @@ void ProgramBindings::Apply(ICommandListDx& command_list_dx, const Base::Program
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
-    Rhi::ProgramArgumentAccessor::Type apply_access_mask = Rhi::ProgramArgumentAccessor::Type::Mutable;
+    Rhi::ProgramArgumentAccess apply_access_mask;
+    apply_access_mask.is_mutable = true;
+
     if (!static_cast<bool>(apply_behavior & ApplyBehavior::ConstantOnce) || !applied_program_bindings_ptr)
     {
-        apply_access_mask |= Rhi::ProgramArgumentAccessor::Type::Constant;
-        apply_access_mask |= Rhi::ProgramArgumentAccessor::Type::FrameConstant;
+        apply_access_mask.is_constant = true;
+        apply_access_mask.is_frame_constant = true;
     }
 
     // Set resource transition barriers before applying resource bindings
@@ -212,10 +214,10 @@ void ProgramBindings::ReserveDescriptorHeapRanges()
             continue;
 
         const DescriptorHeap::Type           heap_type   = static_cast<const ArgumentBinding&>(*argument_binding_ptr).GetDescriptorHeapType();
-        const Rhi::ProgramArgumentAccessor::Type access_type = binding_settings.argument.GetAccessorType();
+        const Rhi::ProgramArgumentAccess::Type access_type = binding_settings.argument.GetAccessorType();
 
         uint32_t resources_count = binding_settings.resource_count;
-        if (access_type == Rhi::ProgramArgumentAccessor::Type::FrameConstant)
+        if (access_type == Rhi::ProgramArgumentAccess::Type::FrameConstant)
         {
             // For Frame Constant bindings we reserve descriptors range for all frames at once
             resources_count *= frames_count;
@@ -239,7 +241,7 @@ void ProgramBindings::ReserveDescriptorHeapRanges()
         META_CHECK_ARG_EQUAL(heap_reservation.heap.get().GetSettings().type, heap_type);
         META_CHECK_ARG_TRUE(heap_reservation.heap.get().GetSettings().shader_visible);
 
-        for (Rhi::ProgramArgumentAccessor::Type access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccessor::Type>())
+        for (Rhi::ProgramArgumentAccess::Type access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccess::Type>())
         {
             const uint32_t accessor_descr_count = descriptors_count[access_type];
             if (!accessor_descr_count)
@@ -248,7 +250,7 @@ void ProgramBindings::ReserveDescriptorHeapRanges()
             DescriptorHeap::Range& heap_range = heap_reservation.ranges[magic_enum::enum_index(access_type).value()];
             heap_range = mutable_program.ReserveDescriptorRange(heap_reservation.heap.get(), access_type, accessor_descr_count);
 
-            if (access_type == Rhi::ProgramArgumentAccessor::Type::FrameConstant)
+            if (access_type == Rhi::ProgramArgumentAccess::Type::FrameConstant)
             {
                 // Since Frame Constant binding range was reserved for all frames at once
                 // we need to take only one sub-range related to the frame of current bindings
@@ -318,18 +320,16 @@ void ProgramBindings::AddRootParameterBindingsForArgument(ArgumentBinding& argum
     }
 }
 
-void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccessor::Type access_types_mask, ID3D12GraphicsCommandList& d3d12_command_list,
-                                                   const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const
+void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccess access, ID3D12GraphicsCommandList& d3d12_command_list,
+                                                 const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-    for(Rhi::ProgramArgumentAccessor::Type access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccessor::Type>())
+    for(Rhi::ProgramArgumentAccess::Type access_type : access.GetTypes())
     {
-        if (!static_cast<bool>(access_types_mask & access_type))
-            continue;
-
-        const bool do_program_bindings_comparing = access_type == Rhi::ProgramArgumentAccessor::Type::Mutable && apply_changes_only && applied_program_bindings_ptr;
+        using namespace magic_enum::bitwise_operators;
+        const bool do_program_bindings_comparing = access_type == Rhi::ProgramArgumentAccess::Type::Mutable && apply_changes_only && applied_program_bindings_ptr;
         const RootParameterBindings& root_parameter_bindings = m_root_parameter_bindings_by_access[magic_enum::enum_index(access_type).value()];
+
         for (const RootParameterBinding& root_parameter_binding : root_parameter_bindings)
         {
             if (do_program_bindings_comparing && root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *applied_program_bindings_ptr))
@@ -381,13 +381,13 @@ void ProgramBindings::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12De
     if (!p_heap_reservation)
         return;
 
-    using AcceessType = Rhi::ProgramArgumentAccessor::Type;
+    using AcceessType = Rhi::ProgramArgumentAccess::Type;
 
-    const auto&                               dx_descriptor_heap = static_cast<const DescriptorHeap&>(p_heap_reservation->heap.get());
+    const auto&                             dx_descriptor_heap = static_cast<const DescriptorHeap&>(p_heap_reservation->heap.get());
     const ArgumentBinding::DescriptorRange& descriptor_range   = argument_binding.GetDescriptorRange();
     const DescriptorHeap::Type              heap_type          = dx_descriptor_heap.GetSettings().type;
     const DescriptorHeap::Range&            heap_range         = p_heap_reservation->GetRange(argument_binding.GetSettings().argument.GetAccessorIndex());
-    const D3D12_DESCRIPTOR_HEAP_TYPE          native_heap_type   = dx_descriptor_heap.GetNativeDescriptorHeapType();
+    const D3D12_DESCRIPTOR_HEAP_TYPE        native_heap_type   = dx_descriptor_heap.GetNativeDescriptorHeapType();
 
     argument_binding.SetDescriptorHeapReservation(p_heap_reservation);
     META_CHECK_ARG_NOT_NULL(d3d12_device);

@@ -52,6 +52,62 @@ ProgramArgument::operator std::string() const noexcept
     return fmt::format("{} shaders argument '{}'", magic_enum::enum_name(m_shader_type), m_name);
 }
 
+ProgramArgumentAccess::ProgramArgumentAccess() noexcept
+    : mask(0U)
+{
+}
+
+ProgramArgumentAccess::ProgramArgumentAccess(uint32_t mask) noexcept
+    : mask(mask)
+{
+}
+
+ProgramArgumentAccess::ProgramArgumentAccess(const std::initializer_list<Type>& types)
+    : mask(0U)
+{
+    META_FUNCTION_TASK();
+    for(Type type : types)
+    {
+        SetType(type, true);
+    }
+}
+
+void ProgramArgumentAccess::SetType(Type type, bool value)
+{
+    switch(type)
+    {
+    case Type::Constant:      is_constant       = value; break;
+    case Type::FrameConstant: is_frame_constant = value; break;
+    case Type::Mutable:       is_mutable        = value; break;
+    default: META_UNEXPECTED_ARG(type);
+    }
+}
+
+std::vector<ProgramArgumentAccess::Type> ProgramArgumentAccess::GetTypes() const
+{
+    META_FUNCTION_TASK();
+    std::vector<Type> types;
+    if (is_constant)
+        types.push_back(Type::Constant);
+    if (is_frame_constant)
+        types.push_back(Type::FrameConstant);
+    if (is_mutable)
+        types.push_back(Type::Mutable);
+    return types;
+}
+
+std::vector<std::string> ProgramArgumentAccess::GetTypeNames() const
+{
+    META_FUNCTION_TASK();
+    const std::vector<Type> types = GetTypes();
+    std::vector<std::string> type_names;
+    for(Type type : types)
+    {
+        type_names.emplace_back(magic_enum::enum_name(type));
+    }
+    return type_names;
+}
+
 ProgramArgumentAccessor::ProgramArgumentAccessor(ShaderType shader_type, std::string_view argument_name, Type accessor_type, bool addressable) noexcept
     : ProgramArgument(shader_type, argument_name)
     , m_accessor_type(accessor_type)

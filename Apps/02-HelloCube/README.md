@@ -500,7 +500,7 @@ class HelloCubeApp final : public GraphicsApp // NOSONAR
                         ...
                         Rhi::ProgramArgumentAccessors
                         {
-                            { { ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccessor::Type::FrameConstant }
+                            { { ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccess::Type::FrameConstant }
                         },
                         ...
                     }
