@@ -179,16 +179,16 @@ vk::ColorComponentFlags BlendingColorChannelsToVulkan(Rhi::IRenderState::Blendin
     using ColorChannels = Rhi::IRenderState::Blending::ColorChannels;
 
     vk::ColorComponentFlags color_component_flags{};
-    if (static_cast<bool>(color_channels & ColorChannels::Red))
+    if (color_channels.red)
         color_component_flags |= vk::ColorComponentFlagBits::eR;
 
-    if (static_cast<bool>(color_channels & ColorChannels::Green))
+    if (color_channels.green)
         color_component_flags |= vk::ColorComponentFlagBits::eG;
 
-    if (static_cast<bool>(color_channels & ColorChannels::Blue))
+    if (color_channels.blue)
         color_component_flags |= vk::ColorComponentFlagBits::eB;
 
-    if (static_cast<bool>(color_channels & ColorChannels::Alpha))
+    if (color_channels.alpha)
         color_component_flags |= vk::ColorComponentFlagBits::eA;
 
     return color_component_flags;
@@ -365,7 +365,7 @@ void RenderState::Reset(const Settings& settings)
                 BlendingFactorToVulkan(rt_blending.source_alpha_blend_factor),
                 BlendingFactorToVulkan(rt_blending.dest_alpha_blend_factor),
                 BlendingOperationToVulkan(rt_blending.alpha_blend_op),
-                BlendingColorChannelsToVulkan(rt_blending.write_mask)
+                BlendingColorChannelsToVulkan(rt_blending.color_write)
             );
         }
     );

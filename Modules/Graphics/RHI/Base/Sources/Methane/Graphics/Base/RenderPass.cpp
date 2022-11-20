@@ -26,7 +26,6 @@ Base implementation of the render pass interface.
 #include <Methane/Graphics/Base/Texture.h>
 #include <Methane/Graphics/Base/RenderCommandList.h>
 
-#include <Methane/Data/BitMaskHelpers.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

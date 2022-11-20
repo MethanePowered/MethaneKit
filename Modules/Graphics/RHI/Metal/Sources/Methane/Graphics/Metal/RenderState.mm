@@ -182,7 +182,7 @@ static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const Rhi::IRenderS
     mtl_stencil_desc.depthStencilPassOperation  = ConvertStencilOperationToMetal(face_operations.depth_stencil_pass);
     mtl_stencil_desc.stencilCompareFunction     = TypeConverter::CompareFunctionToMetal(face_operations.compare);
     mtl_stencil_desc.readMask                   = stencil.read_mask;
-    mtl_stencil_desc.writeMask                  = stencil.write_mask;
+    mtl_stencil_desc.writeMask                  = stencil.color_write;
     
     return mtl_stencil_desc;
 }
@@ -316,7 +316,7 @@ void RenderState::Reset(const Settings& settings)
                                                         ? TypeConverter::DataFormatToMetalPixelType(attach_formats.colors[rt_index])
                                                         : MTLPixelFormatInvalid;
         mtl_color_attach.blendingEnabled                = render_target.blend_enabled && rt_index < attach_formats.colors.size();
-        mtl_color_attach.writeMask                      = ConvertRenderTargetWriteMaskToMetal(render_target.write_mask);
+        mtl_color_attach.writeMask                      = ConvertRenderTargetWriteMaskToMetal(render_target.color_write);
         mtl_color_attach.rgbBlendOperation              = ConvertBlendingOperationToMetal(render_target.rgb_blend_op);
         mtl_color_attach.alphaBlendOperation            = ConvertBlendingOperationToMetal(render_target.alpha_blend_op);
         mtl_color_attach.sourceRGBBlendFactor           = ConvertBlendingFactorToMetal(render_target.source_rgb_blend_factor);

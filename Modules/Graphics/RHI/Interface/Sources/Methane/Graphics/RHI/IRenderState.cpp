@@ -24,7 +24,6 @@ Methane render state interface: specifies configuration of the graphics pipeline
 #include <Methane/Graphics/RHI/IRenderState.h>
 
 #include <Methane/Graphics/TypeFormatters.hpp>
-#include <Methane/Data/BitMaskHelpers.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
@@ -84,13 +83,73 @@ RasterizerSettings::operator std::string() const
                        sample_count, alpha_to_coverage_enabled);
 }
 
+BlendingColorChannels::BlendingColorChannels() noexcept
+    : mask(0U)
+{
+}
+
+BlendingColorChannels::BlendingColorChannels(uint32_t mask) noexcept
+    : mask(mask)
+{
+}
+
+BlendingColorChannels::BlendingColorChannels(const std::initializer_list<Bit>& bits)
+    : mask(0U)
+{
+    META_FUNCTION_TASK();
+    for(Bit bit : bits)
+    {
+        SetBit(bit, true);
+    }
+}
+
+void BlendingColorChannels::SetBit(Bit bit, bool value)
+{
+    META_FUNCTION_TASK();
+    switch(bit)
+    {
+    case Bit::Red:   red   = value; break;
+    case Bit::Green: green = value; break;
+    case Bit::Blue:  blue  = value; break;
+    case Bit::Alpha: alpha = value; break;
+    default: META_UNEXPECTED_ARG(bit);
+    }
+}
+
+std::vector<BlendingColorChannels::Bit> BlendingColorChannels::GetBits() const
+{
+    META_FUNCTION_TASK();
+    std::vector<Bit> bits;
+    if (red)
+        bits.push_back(Bit::Red);
+    if (green)
+        bits.push_back(Bit::Green);
+    if (blue)
+        bits.push_back(Bit::Blue);
+    if (alpha)
+        bits.push_back(Bit::Alpha);
+    return bits;
+}
+
+std::vector<std::string> BlendingColorChannels::GetBitNames() const
+{
+    META_FUNCTION_TASK();
+    const std::vector<Bit> bits = GetBits();
+    std::vector<std::string> bit_names;
+    for(Bit bit : bits)
+    {
+        bit_names.emplace_back(magic_enum::enum_name(bit));
+    }
+    return bit_names;
+}
+
 bool RenderTargetSettings::operator==(const RenderTargetSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(blend_enabled, write_mask, rgb_blend_op, alpha_blend_op,
+    return std::tie(blend_enabled, color_write.mask, rgb_blend_op, alpha_blend_op,
                     source_rgb_blend_factor, source_alpha_blend_factor,
                     dest_rgb_blend_factor, dest_alpha_blend_factor) ==
-           std::tie(other.blend_enabled, other.write_mask, other.rgb_blend_op, other.alpha_blend_op,
+           std::tie(other.blend_enabled, other.color_write.mask, other.rgb_blend_op, other.alpha_blend_op,
                     other.source_rgb_blend_factor, other.source_alpha_blend_factor,
                     other.dest_rgb_blend_factor, other.dest_alpha_blend_factor);
 }
@@ -107,9 +166,9 @@ RenderTargetSettings::operator std::string() const
     if (!blend_enabled)
         return "    - Render Target blending is disabled";
 
-    return fmt::format("    - Render Target blending: write_mask={}, rgb_blend_op={}, alpha_blend_op={}, "
+    return fmt::format("    - Render Target blending: color_write={}, rgb_blend_op={}, alpha_blend_op={}, "
                        "source_rgb_blend_factor={}, source_alpha_blend_factor={}, dest_rgb_blend_factor={}, dest_alpha_blend_factor={}",
-                       Data::GetBitMaskFlagNames(write_mask),
+                       fmt::join(color_write.GetBitNames(), "|"),
                        magic_enum::enum_name(rgb_blend_op), magic_enum::enum_name(alpha_blend_op),
                        magic_enum::enum_name(source_rgb_blend_factor), magic_enum::enum_name(source_alpha_blend_factor),
                        magic_enum::enum_name(dest_rgb_blend_factor), magic_enum::enum_name(dest_alpha_blend_factor));
@@ -200,61 +259,100 @@ StencilSettings::operator std::string() const
     if (!enabled)
         return "  - Stencil is disabled";
 
-    return fmt::format("  - Stencil is enabled: read_mask={:x}, write_mask={:x}, face operations:\n    - Front {};\n    - Back {}.",
+    return fmt::format("  - Stencil is enabled: read_mask={:x}, color_write={:x}, face operations:\n    - Front {};\n    - Back {}.",
                        read_mask, write_mask, static_cast<std::string>(front_face), static_cast<std::string>(back_face));
 }
 
-RenderStateGroups RenderSettings::Compare(const RenderSettings& left, const RenderSettings& right, Groups compare_groups) noexcept
+RenderStateGroups::RenderStateGroups() noexcept
+    : mask(0U)
+{
+}
+
+RenderStateGroups::RenderStateGroups(uint32_t mask) noexcept
+    : mask(mask)
+{
+}
+
+RenderStateGroups::RenderStateGroups(const std::initializer_list<Bit>& bits)
+    : mask(0U)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
+    for(Bit bit : bits)
+    {
+        SetBit(bit, true);
+    }
+}
 
-    Groups changed_state_groups = Groups::None;
+void RenderStateGroups::SetBit(Bit bit, bool value)
+{
+    META_FUNCTION_TASK();
+    switch(bit)
+    {
+    case Bit::Program:       program        = value; break;
+    case Bit::Rasterizer:    rasterizer     = value; break;
+    case Bit::Blending:      blending       = value; break;
+    case Bit::BlendingColor: blending_color = value; break;
+    case Bit::DepthStencil:  depth_stencil  = value; break;
+    default: META_UNEXPECTED_ARG(bit);
+    }
+}
 
-    if (static_cast<bool>(compare_groups & Groups::Program) &&
-        left.program_ptr.get() != right.program_ptr.get())
-    {
-        changed_state_groups |= Groups::Program;
-    }
-    if (static_cast<bool>(compare_groups & Groups::Rasterizer) &&
-        left.rasterizer != right.rasterizer)
-    {
-        changed_state_groups |= Groups::Rasterizer;
-    }
-    if (static_cast<bool>(compare_groups & Groups::Blending) &&
-        left.blending != right.blending)
-    {
-        changed_state_groups |= Groups::Blending;
-    }
-    if (static_cast<bool>(compare_groups & Groups::BlendingColor) &&
-        left.blending_color != right.blending_color)
-    {
-        changed_state_groups |= Groups::BlendingColor;
-    }
-    if (static_cast<bool>(compare_groups & Groups::DepthStencil) &&
-        (left.depth != right.depth || left.stencil != right.stencil))
-    {
-        changed_state_groups |= Groups::DepthStencil;
-    }
+std::vector<RenderStateGroups::Bit> RenderStateGroups::GetBits() const
+{
+    META_FUNCTION_TASK();
+    std::vector<Bit> bits;
+    if (program)
+        bits.push_back(Bit::Program);
+    if (rasterizer)
+        bits.push_back(Bit::Rasterizer);
+    if (blending)
+        bits.push_back(Bit::Blending);
+    if (blending_color)
+        bits.push_back(Bit::BlendingColor);
+    if (depth_stencil)
+        bits.push_back(Bit::DepthStencil);
+    return bits;
+}
 
+std::vector<std::string> RenderStateGroups::GetBitNames() const
+{
+    META_FUNCTION_TASK();
+    const std::vector<Bit> bits = GetBits();
+    std::vector<std::string> bit_names;
+    for(Bit bit : bits)
+    {
+        bit_names.emplace_back(magic_enum::enum_name(bit));
+    }
+    return bit_names;
+}
+
+RenderStateGroups RenderStateSettings::Compare(const RenderStateSettings& left, const RenderStateSettings& right, Groups compare_groups) noexcept
+{
+    META_FUNCTION_TASK();
+    Groups changed_state_groups;
+    changed_state_groups.program        = compare_groups.program        && left.program_ptr.get() != right.program_ptr.get();
+    changed_state_groups.rasterizer     = compare_groups.rasterizer     && left.rasterizer != right.rasterizer;
+    changed_state_groups.blending       = compare_groups.blending       && left.blending != right.blending;
+    changed_state_groups.blending_color = compare_groups.blending_color && left.blending_color != right.blending_color;
+    changed_state_groups.depth_stencil  = compare_groups.depth_stencil  && (left.depth != right.depth || left.stencil != right.stencil);
     return changed_state_groups;
 }
 
-bool RenderSettings::operator==(const RenderSettings& other) const noexcept
+bool RenderStateSettings::operator==(const RenderStateSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(program_ptr, rasterizer, depth, stencil, blending, blending_color) ==
            std::tie(other.program_ptr, other.rasterizer, other.depth, other.stencil, other.blending, other.blending_color);
 }
 
-bool RenderSettings::operator!=(const RenderSettings& other) const noexcept
+bool RenderStateSettings::operator!=(const RenderStateSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
     return std::tie(program_ptr, rasterizer, depth, stencil, blending, blending_color) !=
            std::tie(other.program_ptr, other.rasterizer, other.depth, other.stencil, other.blending, other.blending_color);
 }
 
-RenderSettings::operator std::string() const
+RenderStateSettings::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("  - Program '{}';\n{};\n{};\n{}\n{}\n  - Blending color: {}.",

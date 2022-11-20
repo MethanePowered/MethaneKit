@@ -64,7 +64,7 @@ public:
         Ptr<Buffer>            index_buffer_ptr;
         Opt<Primitive>         primitive_type_opt;
         ViewState*             view_state_ptr      = nullptr;
-        Rhi::RenderStateGroups render_state_groups = Rhi::RenderStateGroups::None;
+        Rhi::RenderStateGroups render_state_groups;
         Changes                changes             = Changes::None;
     };
 
@@ -83,7 +83,7 @@ public:
     void Reset(IDebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
     void ResetWithStateOnce(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) final;
-    void SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroups state_groups = Rhi::RenderStateGroups::All) override;
+    void SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroups state_groups = Rhi::RenderStateGroups(~0U)) override;
     void SetViewState(Rhi::IViewState& view_state) override;
     bool SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers) override;
     bool SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_resource_barriers) override;

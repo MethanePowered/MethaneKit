@@ -23,7 +23,6 @@ Base implementation of the render state interface.
 
 #include <Methane/Graphics/Base/RenderState.h>
 
-#include <Methane/Data/BitMaskHelpers.hpp>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 

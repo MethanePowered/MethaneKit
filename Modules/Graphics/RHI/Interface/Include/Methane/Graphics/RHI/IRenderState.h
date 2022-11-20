@@ -31,6 +31,8 @@ Methane render state interface: specifies configuration of the graphics pipeline
 #include <Methane/Graphics/Volume.hpp>
 #include <Methane/Graphics/Color.hpp>
 
+#include <vector>
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -89,14 +91,33 @@ struct RasterizerSettings
     [[nodiscard]] explicit operator std::string() const;
 };
 
-enum class BlendingColorChannels : uint32_t
+union BlendingColorChannels
 {
-    None    = 0U,
-    Red     = 1U << 0U,
-    Green   = 1U << 1U,
-    Blue    = 1U << 2U,
-    Alpha   = 1U << 3U,
-    All     = ~0U
+    enum class Bit : uint32_t
+    {
+        Red,
+        Green,
+        Blue,
+        Alpha
+    };
+
+    struct
+    {
+        bool red   : 1;
+        bool green : 1;
+        bool blue  : 1;
+        bool alpha : 1;
+    };
+
+    uint32_t mask;
+
+    BlendingColorChannels() noexcept;
+    explicit BlendingColorChannels(uint32_t mask) noexcept;
+    explicit BlendingColorChannels(const std::initializer_list<Bit>& bits);
+
+    void SetBit(Bit bit, bool value);
+    std::vector<Bit> GetBits() const;
+    std::vector<std::string> GetBitNames() const;
 };
 
 enum class BlendingOperation : uint32_t
@@ -138,7 +159,7 @@ struct RenderTargetSettings
     using Factor        = BlendingFactor;
 
     bool          blend_enabled             = false;
-    ColorChannels write_mask                = ColorChannels::All;
+    ColorChannels color_write               { ~0U };
     Operation     rgb_blend_op              = Operation::Add;
     Operation     alpha_blend_op            = Operation::Add;
     Factor        source_rgb_blend_factor   = Factor::One;
@@ -157,10 +178,11 @@ struct BlendingSettings
     using Operation     = BlendingOperation;
     using Factor        = BlendingFactor;
     using RenderTarget  = RenderTargetSettings;
+    using RenderTargets = std::array<RenderTarget, 8>;
 
     // NOTE: If is_independent set to false, only the render_targets[0] members are used
-    bool                        is_independent = false;
-    std::array<RenderTarget, 8> render_targets;
+    bool          is_independent = false;
+    RenderTargets render_targets;
 
     [[nodiscard]] bool operator==(const BlendingSettings& other) const noexcept;
     [[nodiscard]] bool operator!=(const BlendingSettings& other) const noexcept;
@@ -207,9 +229,9 @@ struct FaceOperations
 
 struct StencilSettings
 {
-    bool           enabled           = false;
-    uint8_t        read_mask         = static_cast<uint8_t>(~0x0);
-    uint8_t        write_mask        = static_cast<uint8_t>(~0x0);
+    bool           enabled    = false;
+    uint8_t        read_mask  = static_cast<uint8_t>(~0x0);
+    uint8_t        write_mask = static_cast<uint8_t>(~0x0);
     FaceOperations front_face;
     FaceOperations back_face;
 
@@ -218,22 +240,42 @@ struct StencilSettings
     [[nodiscard]] explicit operator std::string() const;
 };
 
-enum class RenderStateGroups : uint32_t
+union RenderStateGroups
 {
-    None          = 0U,
-    Program       = 1U << 0U,
-    Rasterizer    = 1U << 1U,
-    Blending      = 1U << 2U,
-    BlendingColor = 1U << 3U,
-    DepthStencil  = 1U << 4U,
-    All           = ~0U
+    enum class Bit : uint32_t
+    {
+        Program,
+        Rasterizer,
+        Blending,
+        BlendingColor,
+        DepthStencil,
+    };
+
+    struct
+    {
+        bool program        : 1;
+        bool rasterizer     : 1;
+        bool blending       : 1;
+        bool blending_color : 1;
+        bool depth_stencil  : 1;
+    };
+
+    uint32_t mask;
+
+    RenderStateGroups() noexcept;
+    explicit RenderStateGroups(uint32_t mask) noexcept;
+    explicit RenderStateGroups(const std::initializer_list<Bit>& bits);
+
+    void SetBit(Bit bit, bool value);
+    std::vector<Bit> GetBits() const;
+    std::vector<std::string> GetBitNames() const;
 };
 
 struct IRenderContext;
 struct IProgram;
 struct IRenderPattern;
 
-struct RenderSettings
+struct RenderStateSettings
 {
     using Groups = RenderStateGroups;
 
@@ -248,9 +290,9 @@ struct RenderSettings
     BlendingSettings    blending;
     Color4F             blending_color;
 
-    [[nodiscard]] static Groups Compare(const RenderSettings& left, const RenderSettings& right, Groups compare_groups = Groups::All) noexcept;
-    [[nodiscard]] bool operator==(const RenderSettings& other) const noexcept;
-    [[nodiscard]] bool operator!=(const RenderSettings& other) const noexcept;
+    [[nodiscard]] static Groups Compare(const RenderStateSettings& left, const RenderStateSettings& right, Groups compare_groups = Groups(~0U)) noexcept;
+    [[nodiscard]] bool operator==(const RenderStateSettings& other) const noexcept;
+    [[nodiscard]] bool operator!=(const RenderStateSettings& other) const noexcept;
     [[nodiscard]] explicit operator std::string() const;
 };
 
@@ -263,7 +305,7 @@ public:
     using Depth      = DepthSettings;
     using Stencil    = StencilSettings;
     using Groups     = RenderStateGroups;
-    using Settings   = RenderSettings;
+    using Settings   = RenderStateSettings;
 
     // Create IRenderState instance
     [[nodiscard]] static Ptr<IRenderState> Create(const IRenderContext& context, const Settings& state_settings);

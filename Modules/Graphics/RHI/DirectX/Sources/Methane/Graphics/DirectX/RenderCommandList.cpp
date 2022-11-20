@@ -123,9 +123,11 @@ void RenderCommandList::ResetNative(const Ptr<RenderState>& render_state_ptr)
     using namespace magic_enum::bitwise_operators;
     DrawingState& drawing_state = GetDrawingState();
     drawing_state.render_state_ptr    = render_state_ptr;
-    drawing_state.render_state_groups = Rhi::IRenderState::Groups::Program
-                                      | Rhi::IRenderState::Groups::Rasterizer
-                                      | Rhi::IRenderState::Groups::DepthStencil;
+    drawing_state.render_state_groups = Rhi::IRenderState::Groups({
+        Rhi::RenderStateGroups::Bit::Program,
+        Rhi::RenderStateGroups::Bit::Rasterizer,
+        Rhi::RenderStateGroups::Bit::DepthStencil
+    });
 }
 
 void RenderCommandList::ResetRenderPass()

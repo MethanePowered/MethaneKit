@@ -23,7 +23,6 @@ Methane render pass interface: specifies output of the graphics pipeline.
 
 #include <Methane/Graphics/RHI/IRenderPass.h>
 
-#include <Methane/Data/BitMaskHelpers.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
@@ -39,12 +38,12 @@ struct fmt::formatter<Methane::Graphics::Rhi::RenderPassColorAttachment>
 namespace Methane::Graphics::Rhi
 {
 
-RenderPassAccess::RenderPassAccess()
+RenderPassAccess::RenderPassAccess() noexcept
     : mask(0U)
 {
 }
 
-RenderPassAccess::RenderPassAccess(uint32_t mask)
+RenderPassAccess::RenderPassAccess(uint32_t mask) noexcept
     : mask(mask)
 {
 }

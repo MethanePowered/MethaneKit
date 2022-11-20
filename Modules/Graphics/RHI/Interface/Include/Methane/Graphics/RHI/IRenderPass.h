@@ -157,9 +157,9 @@ union RenderPassAccess
 
     uint32_t mask;
 
-    RenderPassAccess();
-    RenderPassAccess(const std::initializer_list<Bit>& bits);
-    RenderPassAccess(uint32_t mask);
+    RenderPassAccess() noexcept;
+    explicit RenderPassAccess(uint32_t mask) noexcept;
+    explicit RenderPassAccess(const std::initializer_list<Bit>& bits);
 
     void SetBit(Bit bit, bool value);
     std::vector<Bit> GetBits() const;
@@ -214,8 +214,8 @@ struct IRenderPassCallback
 
 struct RenderPassSettings
 {
-    ITexture::Views attachments;
-    FrameSize       frame_size;
+    TextureViews attachments;
+    FrameSize    frame_size;
 
     [[nodiscard]] bool operator==(const RenderPassSettings& other) const;
     [[nodiscard]] bool operator!=(const RenderPassSettings& other) const;

@@ -103,22 +103,25 @@ void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::Ren
 
     VerifyEncodingState();
 
-    const bool           render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
-    Rhi::IRenderState::Groups changed_states       = m_drawing_state.render_state_ptr ? Rhi::IRenderState::Groups::None : Rhi::IRenderState::Groups::All;
+    const bool render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
+    Rhi::RenderStateGroups changed_states;
+    if (!m_drawing_state.render_state_ptr)
+        changed_states.mask = ~0U;
+
     if (m_drawing_state.render_state_ptr && render_state_changed)
     {
-        changed_states = Rhi::IRenderState::Settings::Compare(render_state.GetSettings(),
-                                                         m_drawing_state.render_state_ptr->GetSettings(),
-                                                         m_drawing_state.render_state_groups);
+        changed_states = Rhi::RenderStateSettings::Compare(render_state.GetSettings(),
+                                                           m_drawing_state.render_state_ptr->GetSettings(),
+                                                           m_drawing_state.render_state_groups);
     }
-    changed_states |= ~m_drawing_state.render_state_groups;
+    changed_states.mask |= ~m_drawing_state.render_state_groups.mask;
 
     auto& render_state_base = static_cast<RenderState&>(render_state);
-    render_state_base.Apply(*this, changed_states & state_groups);
+    render_state_base.Apply(*this, Rhi::RenderStateGroups(changed_states.mask & state_groups.mask));
 
     Ptr<Object> render_state_object_ptr = render_state_base.GetBasePtr();
     m_drawing_state.render_state_ptr = std::static_pointer_cast<RenderState>(render_state_object_ptr);
-    m_drawing_state.render_state_groups |= state_groups;
+    m_drawing_state.render_state_groups.mask |= state_groups.mask;
 
     if (render_state_changed)
     {
@@ -275,7 +278,7 @@ void RenderCommandList::ResetCommandState()
     m_drawing_state.index_buffer_ptr.reset();
     m_drawing_state.primitive_type_opt.reset();
     m_drawing_state.view_state_ptr = nullptr;
-    m_drawing_state.render_state_groups = Rhi::IRenderState::Groups::None;
+    m_drawing_state.render_state_groups.mask = 0U;
     m_drawing_state.changes = DrawingState::Changes::None;
 }
 

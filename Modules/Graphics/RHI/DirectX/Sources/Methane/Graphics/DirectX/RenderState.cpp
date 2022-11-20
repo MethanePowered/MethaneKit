@@ -104,20 +104,20 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(Rhi::IRenderState::Raste
 }
 
 [[nodiscard]]
-static UINT8 ConvertRenderTargetWriteMaskToD3D12(Rhi::IRenderState::Blending::ColorChannels rt_write_mask)
+static UINT8 ConvertRenderTargetColorWriteMaskToD3D12(Rhi::IRenderState::Blending::ColorChannels rt_color_write)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
     using ColorChannels = Rhi::IRenderState::Blending::ColorChannels;
 
     UINT8 d3d12_color_write_mask = 0;
-    if (static_cast<bool>(rt_write_mask & ColorChannels::Red))
+    if (rt_color_write.red)
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_RED;   // NOSONAR
-    if (static_cast<bool>(rt_write_mask & ColorChannels::Green))
+    if (rt_color_write.green)
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_GREEN; // NOSONAR
-    if (static_cast<bool>(rt_write_mask & ColorChannels::Blue))
+    if (rt_color_write.blue)
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_BLUE;  // NOSONAR
-    if (static_cast<bool>(rt_write_mask & ColorChannels::Alpha))
+    if (rt_color_write.alpha)
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_ALPHA; // NOSONAR
     return d3d12_color_write_mask;
 };
@@ -321,7 +321,7 @@ void RenderState::Reset(const Settings& settings)
         // Set render target blending descriptor
         D3D12_RENDER_TARGET_BLEND_DESC& rt_blend_desc = blend_desc.RenderTarget[rt_index++];
         rt_blend_desc.BlendEnable           = render_target.blend_enabled;
-        rt_blend_desc.RenderTargetWriteMask = ConvertRenderTargetWriteMaskToD3D12(render_target.write_mask);
+        rt_blend_desc.RenderTargetWriteMask = ConvertRenderTargetColorWriteMaskToD3D12(render_target.color_write);
         rt_blend_desc.BlendOp               = ConvertBlendingOperationToD3D12(render_target.rgb_blend_op);
         rt_blend_desc.BlendOpAlpha          = ConvertBlendingOperationToD3D12(render_target.alpha_blend_op);
         rt_blend_desc.SrcBlend              = ConvertBlendingFactorToD3D12(render_target.source_rgb_blend_factor);
@@ -387,17 +387,17 @@ void RenderState::Apply(Base::RenderCommandList& command_list, Groups state_grou
     const auto& dx_render_command_list = static_cast<RenderCommandList&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = dx_render_command_list.GetNativeCommandList();
 
-    if (static_cast<bool>(state_groups & Groups::Program)    ||
-        static_cast<bool>(state_groups & Groups::Rasterizer) ||
-        static_cast<bool>(state_groups & Groups::Blending)   ||
-        static_cast<bool>(state_groups & Groups::DepthStencil))
+    if (state_groups.program    ||
+        state_groups.rasterizer ||
+        state_groups.blending   ||
+        state_groups.depth_stencil)
     {
         d3d12_command_list.SetPipelineState(GetNativePipelineState().Get());
     }
 
     d3d12_command_list.SetGraphicsRootSignature(GetDirectProgram().GetNativeRootSignature().Get());
 
-    if (static_cast<bool>(state_groups & Groups::BlendingColor))
+    if (state_groups.blending_color)
     {
         d3d12_command_list.OMSetBlendFactor(m_blend_factor.data());
     }

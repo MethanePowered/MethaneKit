@@ -71,8 +71,8 @@ union ContextOptions
 
     uint32_t mask;
 
-    ContextOptions() : mask(0U) { }
-    ContextOptions(uint32_t mask) : mask(mask) { }
+    ContextOptions() noexcept;
+    explicit ContextOptions(uint32_t mask) noexcept;
 };
 
 
@@ -100,10 +100,10 @@ struct IContext
     : virtual IObject // NOSONAR
     , virtual Data::IEmitter<IContextCallback> // NOSONAR
 {
-    using Type = ContextType;
-    using WaitFor = ContextWaitFor;
-    using DeferredAction = ContextDeferredAction;
-    using Options = ContextOptions;
+    using Type                  = ContextType;
+    using WaitFor               = ContextWaitFor;
+    using DeferredAction        = ContextDeferredAction;
+    using Options               = ContextOptions;
     using IncompatibleException = ContextIncompatibleException;
 
     // IContext interface
@@ -121,7 +121,8 @@ struct IContext
     [[nodiscard]] virtual const IDevice& GetDevice() const = 0;
     [[nodiscard]] virtual ICommandKit& GetDefaultCommandKit(CommandListType type) const = 0;
     [[nodiscard]] virtual ICommandKit& GetDefaultCommandKit(ICommandQueue& cmd_queue) const = 0;
-    [[nodiscard]] inline  ICommandKit& GetUploadCommandKit() const { return GetDefaultCommandKit(CommandListType::Transfer); }
+
+    [[nodiscard]] ICommandKit& GetUploadCommandKit() const;
 };
 
 } // namespace Methane::Graphics::Rhi

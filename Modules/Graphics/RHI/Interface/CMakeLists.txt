@@ -34,6 +34,7 @@ list(APPEND HEADERS
 list(APPEND SOURCES
     ${SOURCES_DIR}/IObject.cpp
     ${SOURCES_DIR}/IDevice.cpp
+    ${SOURCES_DIR}/IContext.cpp
     ${SOURCES_DIR}/IRenderContext.cpp
     ${SOURCES_DIR}/IShader.cpp
     ${SOURCES_DIR}/IProgram.cpp

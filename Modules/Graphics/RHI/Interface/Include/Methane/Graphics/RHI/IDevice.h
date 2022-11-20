@@ -29,7 +29,6 @@ used to create graphics context for rendering.
 #include <Methane/Data/IEmitter.h>
 #include <Methane/Memory.hpp>
 
-#include <array>
 #include <functional>
 
 namespace Methane::Platform
@@ -59,8 +58,8 @@ union DeviceFeatures
 
     uint32_t mask;
 
-    DeviceFeatures() : mask(0U) { }
-    DeviceFeatures(uint32_t mask) : mask(mask) { }
+    DeviceFeatures() noexcept;
+    explicit DeviceFeatures(uint32_t mask) noexcept;
 };
 
 struct DeviceCaps
