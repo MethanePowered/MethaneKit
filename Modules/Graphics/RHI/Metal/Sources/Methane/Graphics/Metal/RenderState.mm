@@ -81,21 +81,20 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(Rhi::IRenderState::R
     }
 }
     
-static MTLColorWriteMask ConvertRenderTargetWriteMaskToMetal(Rhi::IRenderState::Blending::ColorChannels rt_write_mask)
+static MTLColorWriteMask ConvertRenderTargetColorWriteMaskToMetal(Rhi::BlendingColorChannels color_channels)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-    using ColorChannels = Rhi::IRenderState::Blending::ColorChannels;
-
     MTLColorWriteMask mtl_color_write_mask = 0U;
-    if (static_cast<bool>(rt_write_mask & ColorChannels::Red))
+
+    if (color_channels.red)
         mtl_color_write_mask |= MTLColorWriteMaskRed;
-    if (static_cast<bool>(rt_write_mask & ColorChannels::Green))
+    if (color_channels.green)
         mtl_color_write_mask |= MTLColorWriteMaskGreen;
-    if (static_cast<bool>(rt_write_mask & ColorChannels::Blue))
+    if (color_channels.blue)
         mtl_color_write_mask |= MTLColorWriteMaskBlue;
-    if (static_cast<bool>(rt_write_mask & ColorChannels::Alpha))
+    if (color_channels.alpha)
         mtl_color_write_mask |= MTLColorWriteMaskAlpha;
+
     return mtl_color_write_mask;
 };
 
@@ -182,7 +181,7 @@ static MTLStencilDescriptor* ConvertStencilDescriptorToMetal(const Rhi::IRenderS
     mtl_stencil_desc.depthStencilPassOperation  = ConvertStencilOperationToMetal(face_operations.depth_stencil_pass);
     mtl_stencil_desc.stencilCompareFunction     = TypeConverter::CompareFunctionToMetal(face_operations.compare);
     mtl_stencil_desc.readMask                   = stencil.read_mask;
-    mtl_stencil_desc.writeMask                  = stencil.color_write;
+    mtl_stencil_desc.writeMask                  = stencil.write_mask;
     
     return mtl_stencil_desc;
 }
@@ -316,7 +315,7 @@ void RenderState::Reset(const Settings& settings)
                                                         ? TypeConverter::DataFormatToMetalPixelType(attach_formats.colors[rt_index])
                                                         : MTLPixelFormatInvalid;
         mtl_color_attach.blendingEnabled                = render_target.blend_enabled && rt_index < attach_formats.colors.size();
-        mtl_color_attach.writeMask                      = ConvertRenderTargetWriteMaskToMetal(render_target.color_write);
+        mtl_color_attach.writeMask                      = ConvertRenderTargetColorWriteMaskToMetal(render_target.color_write);
         mtl_color_attach.rgbBlendOperation              = ConvertBlendingOperationToMetal(render_target.rgb_blend_op);
         mtl_color_attach.alphaBlendOperation            = ConvertBlendingOperationToMetal(render_target.alpha_blend_op);
         mtl_color_attach.sourceRGBBlendFactor           = ConvertBlendingFactorToMetal(render_target.source_rgb_blend_factor);
@@ -354,23 +353,23 @@ void RenderState::Apply(Base::RenderCommandList& command_list, Groups state_grou
     RenderCommandList& metal_command_list = static_cast<RenderCommandList&>(command_list);
     const id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
     
-    if (static_cast<bool>(state_groups & Groups::Program)    ||
-        static_cast<bool>(state_groups & Groups::Rasterizer) ||
-        static_cast<bool>(state_groups & Groups::Blending))
+    if (state_groups.program    ||
+        state_groups.rasterizer ||
+        state_groups.blending)
     {
         [mtl_cmd_encoder setRenderPipelineState: GetNativePipelineState()];
     }
-    if (static_cast<bool>(state_groups & Groups::DepthStencil))
+    if (state_groups.depth_stencil)
     {
         [mtl_cmd_encoder setDepthStencilState: GetNativeDepthStencilState()];
     }
-    if (static_cast<bool>(state_groups & Groups::Rasterizer))
+    if (state_groups.rasterizer)
     {
         [mtl_cmd_encoder setTriangleFillMode: m_mtl_fill_mode];
         [mtl_cmd_encoder setFrontFacingWinding: m_mtl_front_face_winding];
         [mtl_cmd_encoder setCullMode: m_mtl_cull_mode];
     }
-    if (static_cast<bool>(state_groups & Groups::BlendingColor))
+    if (state_groups.blending_color)
     {
         const Settings& settings = GetSettings();
         [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetRed()

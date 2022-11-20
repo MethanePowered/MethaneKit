@@ -102,9 +102,9 @@ union ProgramArgumentAccess
 {
     enum class Type : uint32_t
     {
-        Constant      = 1U << 0U,
-        FrameConstant = 1U << 1U,
-        Mutable       = 1U << 2U,
+        Constant,
+        FrameConstant,
+        Mutable
     };
 
     struct

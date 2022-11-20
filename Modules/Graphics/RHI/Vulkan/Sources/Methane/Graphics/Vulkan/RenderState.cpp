@@ -175,10 +175,8 @@ vk::BlendOp BlendingOperationToVulkan(Rhi::IRenderState::Blending::Operation ble
 vk::ColorComponentFlags BlendingColorChannelsToVulkan(Rhi::IRenderState::Blending::ColorChannels color_channels)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-    using ColorChannels = Rhi::IRenderState::Blending::ColorChannels;
-
     vk::ColorComponentFlags color_component_flags{};
+
     if (color_channels.red)
         color_component_flags |= vk::ColorComponentFlagBits::eR;
 
