@@ -149,22 +149,21 @@ void ProgramBindings::Apply(ICommandListDx& command_list_dx, const Base::Program
     Rhi::ProgramArgumentAccess apply_access_mask;
     apply_access_mask.is_mutable = true;
 
-    if (!static_cast<bool>(apply_behavior & ApplyBehavior::ConstantOnce) || !applied_program_bindings_ptr)
+    if (apply_behavior.constant_once || !applied_program_bindings_ptr)
     {
         apply_access_mask.is_constant = true;
         apply_access_mask.is_frame_constant = true;
     }
 
     // Set resource transition barriers before applying resource bindings
-    if (static_cast<bool>(apply_behavior & ApplyBehavior::StateBarriers))
+    if (apply_behavior.state_barriers)
     {
         ApplyResourceTransitionBarriers(command_list_dx, apply_access_mask);
     }
 
     // Apply root parameter bindings after resource barriers
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
-    ApplyRootParameterBindings(apply_access_mask, d3d12_command_list, applied_program_bindings_ptr,
-                               static_cast<bool>(apply_behavior & ApplyBehavior::ChangesOnly));
+    ApplyRootParameterBindings(apply_access_mask, d3d12_command_list, applied_program_bindings_ptr, apply_behavior.changes_only);
 }
 
 template<typename FuncType>

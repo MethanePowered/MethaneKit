@@ -172,15 +172,13 @@ void CommandList::SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rh
     auto& program_bindings_base = static_cast<ProgramBindings&>(program_bindings);
     ApplyProgramBindings(program_bindings_base, apply_behavior);
 
-    using namespace magic_enum::bitwise_operators;
-    if (static_cast<bool>(apply_behavior & Rhi::IProgramBindings::ApplyBehavior::ConstantOnce) ||
-        static_cast<bool>(apply_behavior & Rhi::IProgramBindings::ApplyBehavior::ChangesOnly))
+    if (apply_behavior.constant_once || apply_behavior.changes_only )
     {
         META_SCOPE_TASK("AcquireProgramBindingsPtr");
         m_command_state.program_bindings_ptr = std::addressof(program_bindings_base);
     }
 
-    if (static_cast<bool>(apply_behavior & Rhi::IProgramBindings::ApplyBehavior::RetainResources))
+    if (apply_behavior.retain_resources)
     {
         META_SCOPE_TASK("RetainResource");
         RetainResource(program_bindings_base.GetBasePtr());

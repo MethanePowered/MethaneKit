@@ -458,10 +458,9 @@ void ParallelRenderingApp::RenderCubesRange(rhi::IRenderCommandList& render_cmd_
 
         // Constant argument bindings are applied once per command list, mutables are applied always
         // Bound resources are retained by command list during its lifetime, but only for the first binding instance (since all binding instances use the same resource objects)
-        using namespace magic_enum::bitwise_operators;
-        rhi::IProgramBindings::ApplyBehavior bindings_apply_behavior = rhi::IProgramBindings::ApplyBehavior::ConstantOnce;
-        if (instance_index == begin_instance_index)
-            bindings_apply_behavior |= rhi::IProgramBindings::ApplyBehavior::RetainResources;
+        rhi::ProgramBindingsApplyBehavior bindings_apply_behavior;
+        bindings_apply_behavior.constant_once = true;
+        bindings_apply_behavior.retain_resources = instance_index == begin_instance_index;
 
         render_cmd_list.SetProgramBindings(*program_bindings_ptr, bindings_apply_behavior);
         render_cmd_list.DrawIndexed(rhi::RenderPrimitive::Triangle);

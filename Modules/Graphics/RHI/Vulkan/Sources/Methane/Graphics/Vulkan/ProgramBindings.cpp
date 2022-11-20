@@ -246,7 +246,9 @@ void ProgramBindings::Apply(ICommandListVk& command_list_vk, const Rhi::ICommand
     Rhi::ProgramArgumentAccess apply_access;
     apply_access.is_mutable = true;
     uint32_t first_descriptor_set_layout_index = 0U;
-    if (apply_behavior == ApplyBehavior::ConstantOnce && p_applied_program_bindings)
+
+    static const ApplyBehavior s_constant_once_behavior({ ApplyBehavior::Bit::ConstantOnce });
+    if (apply_behavior == s_constant_once_behavior && p_applied_program_bindings)
     {
         if (!m_has_mutable_descriptor_set)
             return;
@@ -260,7 +262,7 @@ void ProgramBindings::Apply(ICommandListVk& command_list_vk, const Rhi::ICommand
     }
 
     // Set resource transition barriers before applying resource bindings
-    if (static_cast<bool>(apply_behavior & ApplyBehavior::StateBarriers))
+    if (apply_behavior.state_barriers)
     {
         Base::ProgramBindings::ApplyResourceTransitionBarriers(command_list_vk, apply_access, &command_queue);
     }

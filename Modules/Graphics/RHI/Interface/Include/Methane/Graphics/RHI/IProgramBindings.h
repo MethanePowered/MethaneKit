@@ -74,14 +74,38 @@ struct IProgramArgumentBinding
     [[nodiscard]] virtual explicit operator std::string() const = 0;
 };
 
-enum class ProgramBindingsApplyBehavior : uint32_t
+union ProgramBindingsApplyBehavior
 {
-    Indifferent     = 0U,        // All bindings will be applied indifferently of the previous binding values
-    ConstantOnce    = 1U << 0,   // Constant program arguments will be applied only once for each command list
-    ChangesOnly     = 1U << 1,   // Only changed program argument values will be applied in command sequence
-    StateBarriers   = 1U << 2,   // Resource state barriers will be automatically evaluated and set for command list
-    RetainResources = 1U << 3,   // Retain bound resources in command list state until it is completed on GPU
-    AllIncremental  = ~0U        // All binding values will be applied incrementally along with resource state barriers
+    enum class Bit
+    {
+        ConstantOnce,
+        ChangesOnly,
+        StateBarriers,
+        RetainResources
+    };
+
+    struct
+    {
+        bool constant_once    : 1; // Constant program arguments will be applied only once for each command list
+        bool changes_only     : 1; // Only changed program argument values will be applied in command sequence
+        bool state_barriers   : 1; // Resource state barriers will be automatically evaluated and set for command list
+        bool retain_resources : 1; // Retain bound resources in command list state until it is completed on GPU
+    };
+
+    // mask =  0: All bindings will be applied indifferently of the previous binding values
+    // mask = ~0: All binding values will be applied incrementally along with resource state barriers
+    uint32_t mask;
+
+    ProgramBindingsApplyBehavior() noexcept;
+    explicit ProgramBindingsApplyBehavior(uint32_t mask) noexcept;
+    explicit ProgramBindingsApplyBehavior(const std::initializer_list<Bit>& bits);
+
+    bool operator==(const ProgramBindingsApplyBehavior& other) const noexcept;
+    bool operator!=(const ProgramBindingsApplyBehavior& other) const noexcept;
+
+    void SetBit(Bit bit, bool value);
+    std::vector<Bit> GetBits() const;
+    std::vector<std::string> GetBitNames() const;
 };
 
 class ProgramBindingsUnboundArgumentsException: public std::runtime_error

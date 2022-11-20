@@ -66,7 +66,7 @@ public:
 
     // ProgramBindings interface
     virtual void CompleteInitialization() = 0;
-    virtual void Apply(CommandList& command_list, ApplyBehavior apply_behavior = ApplyBehavior::AllIncremental) const = 0;
+    virtual void Apply(CommandList& command_list, ApplyBehavior apply_behavior = ApplyBehavior(~0U)) const = 0;
 
     Rhi::IProgram::Arguments GetUnboundArguments() const;
 

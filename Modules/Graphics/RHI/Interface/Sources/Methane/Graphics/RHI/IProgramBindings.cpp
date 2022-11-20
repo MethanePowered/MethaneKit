@@ -58,4 +58,74 @@ ProgramBindingsUnboundArgumentsException::ProgramBindingsUnboundArgumentsExcepti
     META_FUNCTION_TASK();
 }
 
+ProgramBindingsApplyBehavior::ProgramBindingsApplyBehavior() noexcept
+    : mask(0U)
+{
+}
+
+ProgramBindingsApplyBehavior::ProgramBindingsApplyBehavior(uint32_t mask) noexcept
+    : mask(mask)
+{
+}
+
+ProgramBindingsApplyBehavior::ProgramBindingsApplyBehavior(const std::initializer_list<Bit>& bits)
+    : mask(0U)
+{
+    META_FUNCTION_TASK();
+    for(Bit bit : bits)
+    {
+        SetBit(bit, true);
+    }
+}
+
+bool ProgramBindingsApplyBehavior::operator==(const ProgramBindingsApplyBehavior& other) const noexcept
+{
+    return mask == other.mask;
+}
+
+bool ProgramBindingsApplyBehavior::operator!=(const ProgramBindingsApplyBehavior& other) const noexcept
+{
+    return mask != other.mask;
+}
+
+void ProgramBindingsApplyBehavior::SetBit(Bit bit, bool value)
+{
+    META_FUNCTION_TASK();
+    switch(bit)
+    {
+    case Bit::ConstantOnce:    constant_once    = value; break;
+    case Bit::ChangesOnly:     changes_only     = value; break;
+    case Bit::StateBarriers:   state_barriers   = value; break;
+    case Bit::RetainResources: retain_resources = value; break;
+    default: META_UNEXPECTED_ARG(bit);
+    }
+}
+
+std::vector<ProgramBindingsApplyBehavior::Bit> ProgramBindingsApplyBehavior::GetBits() const
+{
+    META_FUNCTION_TASK();
+    std::vector<Bit> bits;
+    if (constant_once)
+        bits.push_back(Bit::ConstantOnce);
+    if (changes_only)
+        bits.push_back(Bit::ChangesOnly);
+    if (state_barriers)
+        bits.push_back(Bit::StateBarriers);
+    if (retain_resources)
+        bits.push_back(Bit::RetainResources);
+    return bits;
+}
+
+std::vector<std::string> ProgramBindingsApplyBehavior::GetBitNames() const
+{
+    META_FUNCTION_TASK();
+    const std::vector<Bit> bits = GetBits();
+    std::vector<std::string> bit_names;
+    for(Bit bit : bits)
+    {
+        bit_names.emplace_back(magic_enum::enum_name(bit));
+    }
+    return bit_names;
+}
+
 } // namespace Methane::Graphics::Rhi
