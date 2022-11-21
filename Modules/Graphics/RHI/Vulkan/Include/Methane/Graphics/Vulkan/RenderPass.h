@@ -90,7 +90,7 @@ private:
     vk::UniqueFramebuffer   CreateNativeFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const Settings& settings);
 
     const IContext&         m_vk_context;
-    ResourceViews           m_vk_attachments;
+    ResourceViews           m_attachment_views;
     vk::UniqueFramebuffer   m_vk_unique_frame_buffer;
     vk::RenderPassBeginInfo m_vk_pass_begin_info;
 };

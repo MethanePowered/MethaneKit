@@ -33,7 +33,6 @@ Renders text labels to the faces of cube-map texture array
 #include <Methane/UserInterface/Text.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
 #include <fmt/format.h>
 
 namespace Methane::Tutorials
@@ -84,8 +83,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
     const rhi::ITexture::Settings& rt_texture_settings = m_rt_texture.GetSettings();
     const rhi::SubResource::Count& sub_res_count       = m_rt_texture.GetSubresourceCount();
 
-    using namespace magic_enum::bitwise_operators;
-    META_CHECK_ARG_TRUE(static_cast<bool>(rt_texture_settings.usage_mask & rhi::ITexture::Usage::RenderTarget));
+    META_CHECK_ARG_TRUE(rt_texture_settings.usage_mask.render_target);
 
     m_texture_face_render_pattern_ptr = rhi::IRenderPattern::Create(m_gui_context.GetRenderContext(),
                                                                     rhi::IRenderPattern::Settings

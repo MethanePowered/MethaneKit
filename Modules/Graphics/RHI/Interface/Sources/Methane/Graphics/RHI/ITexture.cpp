@@ -85,7 +85,7 @@ TextureSettings TextureSettings::FrameBuffer(const Dimensions& dimensions, Pixel
     TextureSettings settings;
     settings.type           = TextureType::FrameBuffer;
     settings.dimension_type = TextureDimensionType::Tex2D;
-    settings.usage_mask     = ResourceUsage::RenderTarget;
+    settings.usage_mask     = ResourceUsage({ ResourceUsage::Bit::RenderTarget });
     settings.pixel_format   = pixel_format;
     settings.dimensions     = dimensions;
 

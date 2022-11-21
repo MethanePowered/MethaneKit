@@ -170,10 +170,10 @@ void ParallelRenderingApp::Init()
     m_cube_array_buffers_ptr = std::make_unique<MeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube", mesh_subsets);
 
     // Create cube-map render target texture
-    using namespace magic_enum::bitwise_operators;
-    m_texture_array_ptr = rhi::ITexture::CreateRenderTarget(GetRenderContext(),
-                                                            rhi::ITexture::Settings::Image(g_texture_size, m_settings.render_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
-                                                            rhi::ITexture::Usage::RenderTarget | rhi::ITexture::Usage::ShaderRead));
+    m_texture_array_ptr = rhi::ITexture::CreateRenderTarget(
+        GetRenderContext(),
+        rhi::ITexture::Settings::Image(g_texture_size, m_settings.render_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
+                                       rhi::ResourceUsage({ rhi::ResourceUsage::Bit::RenderTarget, rhi::ResourceUsage::Bit::ShaderRead })));
     m_texture_array_ptr->SetName("Per-Thread Texture Array");
 
     // Create sampler for image texture

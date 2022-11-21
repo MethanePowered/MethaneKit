@@ -69,7 +69,7 @@ struct TextureSettings
 {
     TextureType           type           = TextureType::Texture;
     TextureDimensionType  dimension_type = TextureDimensionType::Tex2D;
-    ResourceUsage         usage_mask     = ResourceUsage::None;
+    ResourceUsage         usage_mask;
     PixelFormat           pixel_format   = PixelFormat::Unknown;
     Dimensions            dimensions     = {};
     uint32_t              array_length   = 1U;
@@ -78,7 +78,8 @@ struct TextureSettings
     [[nodiscard]] static TextureSettings Image(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, ResourceUsage usage);
     [[nodiscard]] static TextureSettings Cube(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, ResourceUsage usage);
     [[nodiscard]] static TextureSettings FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format);
-    [[nodiscard]] static TextureSettings DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, ResourceUsage usage_mask = ResourceUsage::RenderTarget);
+    [[nodiscard]] static TextureSettings DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format,
+                                                            ResourceUsage usage_mask = ResourceUsage({ ResourceUsage::Bit::RenderTarget }));
 };
 
 struct ITexture

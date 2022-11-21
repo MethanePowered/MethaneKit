@@ -32,12 +32,12 @@ namespace Methane::Graphics::Base
 {
 
 Texture::Texture(const Context& context, const Settings& settings,
-                         State initial_state, Opt<State> auto_transition_source_state_opt)
+                 State initial_state, Opt<State> auto_transition_source_state_opt)
     : Resource(context, Rhi::IResource::Type::Texture, settings.usage_mask, initial_state, auto_transition_source_state_opt)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.usage_mask, Texture::Usage::None, "can not create texture with 'Unknown' usage mask");
+    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.usage_mask.mask, 0U, "can not create texture with 'Unknown' usage mask");
     META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.pixel_format, PixelFormat::Unknown, "can not create texture with 'Unknown' pixel format");
     META_CHECK_ARG_NOT_NULL_DESCR(m_settings.array_length, "array length should be greater than zero");
 

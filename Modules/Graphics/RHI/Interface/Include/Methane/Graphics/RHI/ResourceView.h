@@ -143,16 +143,42 @@ using SubResources = std::vector<SubResource>;
 
 struct IResource;
 
-enum class ResourceUsage : uint32_t
+union ResourceUsage
 {
-    None         = 0U,
-    // Primary usages
-    ShaderRead   = 1U << 0U,
-    ShaderWrite  = 1U << 1U,
-    RenderTarget = 1U << 2U,
-    // Secondary usages
-    ReadBack     = 1U << 3U,
-    Addressable  = 1U << 4U,
+    enum class Bit : uint32_t
+    {
+        // Primary usages
+        ShaderRead,
+        ShaderWrite,
+        RenderTarget,
+        // Secondary usages
+        ReadBack,
+        Addressable
+    };
+
+    struct
+    {
+        bool shader_read   : 1;
+        bool shader_write  : 1;
+        bool render_target : 1;
+        bool read_back     : 1;
+        bool addressable   : 1;
+    };
+
+    uint32_t mask;
+
+    ResourceUsage() noexcept;
+    explicit ResourceUsage(uint32_t mask) noexcept;
+    explicit ResourceUsage(const std::initializer_list<Bit>& bits);
+
+    bool operator==(const ResourceUsage& other) const noexcept;
+    bool operator!=(const ResourceUsage& other) const noexcept;
+    bool operator<(const ResourceUsage& other) const noexcept;
+
+    void SetBit(Bit bit, bool value);
+    bool HasBit(Bit bit) const;
+    std::vector<Bit> GetBits() const;
+    std::vector<std::string> GetBitNames() const;
 };
 
 enum class TextureDimensionType : uint32_t

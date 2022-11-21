@@ -124,11 +124,13 @@ void CubeMapArrayApp::Init()
     m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube");
 
     // Create cube-map render target texture
-    using namespace magic_enum::bitwise_operators;
     m_cube_buffers_ptr->SetTexture(
-        rhi::ITexture::CreateRenderTarget(GetRenderContext(),
-                                          rhi::ITexture::Settings::Cube(g_cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,
-                                          rhi::ITexture::Usage::RenderTarget | rhi::ITexture::Usage::ShaderRead)));
+        rhi::ITexture::CreateRenderTarget(
+            GetRenderContext(),
+            rhi::ITexture::Settings::Cube(
+                g_cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,
+                rhi::ResourceUsage({ rhi::ResourceUsage::Bit::RenderTarget, rhi::ResourceUsage::Bit::ShaderRead })
+        )));
 
     // Create sampler for image texture
     m_texture_sampler_ptr = rhi::ISampler::Create(GetRenderContext(),

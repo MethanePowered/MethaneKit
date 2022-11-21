@@ -43,6 +43,14 @@ struct fmt::formatter<Methane::Graphics::Rhi::ProgramArgumentAccessor>
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
+template<>
+struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsage& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", fmt::join(rl.GetBitNames(), "|")); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};
+
 namespace Methane::Graphics::Base
 {
 
@@ -87,7 +95,7 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
 
         const Rhi::IResource::Usage resource_usage_mask = resource_view.GetResource().GetUsage();
         using namespace magic_enum::bitwise_operators;
-        META_CHECK_ARG_DESCR(resource_usage_mask, static_cast<bool>(resource_usage_mask & Rhi::IResource::Usage::Addressable) == is_addressable_binding,
+        META_CHECK_ARG_DESCR(resource_usage_mask, resource_usage_mask.addressable == is_addressable_binding,
                              "resource addressable usage flag does not match with resource binding state");
         META_CHECK_ARG_NAME_DESCR("resource_view", is_addressable_binding || !resource_view.GetOffset(),
                                   "can not set resource view_id with non-zero offset to non-addressable resource binding");

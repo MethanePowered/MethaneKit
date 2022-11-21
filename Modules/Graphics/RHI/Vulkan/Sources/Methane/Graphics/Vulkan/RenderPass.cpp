@@ -302,7 +302,7 @@ bool RenderPass::SetName(const std::string& name)
 void RenderPass::Reset()
 {
     META_FUNCTION_TASK();
-    m_vk_attachments.clear();
+    m_attachment_views.clear();
     m_vk_unique_frame_buffer = CreateNativeFrameBuffer(GetVulkanContext().GetVulkanDevice().GetNativeDevice(), GetVulkanPattern().GetNativeRenderPass(), GetSettings());
     m_vk_pass_begin_info = CreateNativeBeginInfo(m_vk_unique_frame_buffer.get());
 
@@ -328,9 +328,9 @@ void RenderPass::OnRenderContextSwapchainChanged(RenderContext&)
 const ResourceView& RenderPass::GetVulkanAttachmentTextureView(const Attachment& attachment) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_vk_attachments.size(),
+    META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_attachment_views.size(),
                               "attachment index is out of bounds of render pass VK attachments array");
-    return m_vk_attachments[attachment.attachment_index];
+    return m_attachment_views[attachment.attachment_index];
 }
 
 vk::RenderPassBeginInfo RenderPass::CreateNativeBeginInfo(const vk::Framebuffer& vk_frame_buffer) const
@@ -349,15 +349,15 @@ vk::RenderPassBeginInfo RenderPass::CreateNativeBeginInfo(const vk::Framebuffer&
 vk::UniqueFramebuffer RenderPass::CreateNativeFrameBuffer(const vk::Device& vk_device, const vk::RenderPass& vk_render_pass, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    if (m_vk_attachments.empty())
+    if (m_attachment_views.empty())
     {
-        std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_vk_attachments),
+        std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_attachment_views),
                        [](const Rhi::TextureView& texture_location)
-                       { return Vulkan::ResourceView(texture_location, Rhi::ResourceUsage::RenderTarget); });
+                       { return Vulkan::ResourceView(texture_location, Rhi::ResourceUsage({ Rhi::ResourceUsage::Bit::RenderTarget })); });
     }
 
     std::vector<vk::ImageView> vk_attachment_views;
-    std::transform(m_vk_attachments.begin(), m_vk_attachments.end(), std::back_inserter(vk_attachment_views),
+    std::transform(m_attachment_views.begin(), m_attachment_views.end(), std::back_inserter(vk_attachment_views),
                    [](const ResourceView& resource_view)
                    { return resource_view.GetNativeImageView(); });
 

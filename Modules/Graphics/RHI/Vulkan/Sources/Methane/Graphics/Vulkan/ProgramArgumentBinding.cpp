@@ -100,7 +100,7 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
     const size_t total_resources_count = resource_views.size();
     for(const Rhi::IResource::View& resource_view : resource_views)
     {
-        const IResource::View resource_view_vk(resource_view, Rhi::ResourceUsage::ShaderRead);
+        const IResource::View resource_view_vk(resource_view, Rhi::ResourceUsage({ Rhi::ResourceUsage::Bit::ShaderRead }));
 
         if (AddDescriptor(m_vk_descriptor_images, total_resources_count, resource_view_vk.GetNativeDescriptorImageInfoPtr()))
             continue;

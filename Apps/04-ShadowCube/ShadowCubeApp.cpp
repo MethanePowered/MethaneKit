@@ -217,11 +217,10 @@ void ShadowCubeApp::Init()
 
     // ========= Per-Frame Data =========
 
-    using namespace magic_enum::bitwise_operators;
     const rhi::ITexture::Settings shadow_texture_settings = rhi::ITexture::Settings::DepthStencilBuffer(
         gfx::Dimensions(g_shadow_map_size),
         context_settings.depth_stencil_format,
-        rhi::ITexture::Usage::RenderTarget | rhi::ITexture::Usage::ShaderRead
+        rhi::ResourceUsage({ rhi::ResourceUsage::Bit::RenderTarget, rhi::ResourceUsage::Bit::ShaderRead })
     );
 
     for(ShadowCubeFrame& frame : GetFrames())

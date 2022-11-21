@@ -33,6 +33,98 @@ Methane sub-resource used for resource data transfers.
 namespace Methane::Graphics::Rhi
 {
 
+ResourceUsage::ResourceUsage() noexcept
+    : mask(0U)
+{
+}
+
+ResourceUsage::ResourceUsage(uint32_t mask) noexcept
+    : mask(mask)
+{
+}
+
+ResourceUsage::ResourceUsage(const std::initializer_list<Bit>& bits)
+    : mask(0U)
+{
+    META_FUNCTION_TASK();
+    for(Bit bit : bits)
+    {
+        SetBit(bit, true);
+    }
+}
+
+bool ResourceUsage::operator==(const ResourceUsage& other) const noexcept
+{
+    return mask == other.mask;
+}
+
+bool ResourceUsage::operator!=(const ResourceUsage& other) const noexcept
+{
+    return mask != other.mask;
+}
+
+bool ResourceUsage::operator<(const ResourceUsage& other) const noexcept
+{
+    return mask < other.mask;
+}
+
+void ResourceUsage::SetBit(Bit bit, bool value)
+{
+    META_FUNCTION_TASK();
+    switch(bit)
+    {
+    case Bit::ShaderRead:   shader_read   = value; break;
+    case Bit::ShaderWrite:  shader_write  = value; break;
+    case Bit::RenderTarget: render_target = value; break;
+    case Bit::ReadBack:     read_back     = value; break;
+    case Bit::Addressable:  addressable   = value; break;
+    default: META_UNEXPECTED_ARG(bit);
+    }
+}
+
+bool ResourceUsage::HasBit(Bit bit) const
+{
+    META_FUNCTION_TASK();
+    switch(bit)
+    {
+    case Bit::ShaderRead:   return shader_read;
+    case Bit::ShaderWrite:  return shader_write;
+    case Bit::RenderTarget: return render_target;
+    case Bit::ReadBack:     return read_back;
+    case Bit::Addressable:  return addressable;
+    default: META_UNEXPECTED_ARG(bit);
+    }
+}
+
+std::vector<ResourceUsage::Bit> ResourceUsage::GetBits() const
+{
+    META_FUNCTION_TASK();
+    std::vector<Bit> bits;
+    if (shader_read)
+        bits.push_back(Bit::ShaderRead);
+    if (shader_write)
+        bits.push_back(Bit::ShaderWrite);
+    if (render_target)
+        bits.push_back(Bit::RenderTarget);
+    if (read_back)
+        bits.push_back(Bit::ReadBack);
+    if (addressable)
+        bits.push_back(Bit::Addressable);
+    return bits;
+}
+
+std::vector<std::string> ResourceUsage::GetBitNames() const
+{
+    META_FUNCTION_TASK();
+    const std::vector<Bit> bits = GetBits();
+    std::vector<std::string> bit_names;
+    for(Bit bit : bits)
+    {
+        bit_names.emplace_back(magic_enum::enum_name(bit));
+    }
+    return bit_names;
+}
+
 SubResource::SubResource(Data::Bytes&& data, const Index& index, BytesRangeOpt data_range) noexcept
     : Data::Chunk(std::move(data))
     , m_index(index)
