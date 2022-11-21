@@ -181,21 +181,18 @@ static vk::UniqueImage CreateNativeImage(const IContext& context, const Rhi::Tex
 static vk::ImageLayout GetVulkanImageLayoutByUsage(Rhi::TextureType texture_type, Rhi::ResourceUsage usage) noexcept
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
     if (usage.shader_read)
     {
         return texture_type == Rhi::TextureType::DepthStencilBuffer
              ? vk::ImageLayout::eDepthStencilReadOnlyOptimal
              : vk::ImageLayout::eShaderReadOnlyOptimal;
     }
-
     if (usage.shader_write || usage.render_target)
     {
         return texture_type == Rhi::TextureType::DepthStencilBuffer
              ? vk::ImageLayout::eDepthStencilAttachmentOptimal
              : vk::ImageLayout::eColorAttachmentOptimal;
     }
-
     return vk::ImageLayout::eUndefined;
 }
 
@@ -223,7 +220,7 @@ static Ptr<ResourceView::ViewDescriptorVariant> CreateNativeImageViewDescriptor(
                                       view_id.subresource_count.GetBaseLayerCount())
         ));
 
-    const std::string view_name = fmt::format("{} Image View for {} usage", texture_name, fmt::join(view_id.usage.GetBitNames(), "|"));
+    const std::string view_name = fmt::format("{} Image View for {} usage", texture_name, view_id.usage.GetBitNames(), "|");
     SetVulkanObjectName(vk_device, image_view_desc.vk_view.get(), view_name.c_str());
 
     image_view_desc.vk_desc = vk::DescriptorImageInfo(

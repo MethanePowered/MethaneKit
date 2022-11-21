@@ -102,13 +102,14 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     const D3D12_DESCRIPTOR_HEAP_TYPE native_heap_type = p_dx_descriptor_heap
                                                       ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
                                                       : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    static const Rhi::ResourceUsage shader_read_usage({ Rhi::ResourceUsage::Bit::ShaderRead });
 
     uint32_t resource_index = 0;
     m_resource_views_dx.clear();
     m_resource_views_dx.reserve(resource_views.size());
     for(const Rhi::IResource::View& resource_view : resource_views)
     {
-        m_resource_views_dx.emplace_back(resource_view, Rhi::IResource::Usage::ShaderRead);
+        m_resource_views_dx.emplace_back(resource_view, shader_read_usage);
         if (!p_dx_descriptor_heap)
             continue;
 

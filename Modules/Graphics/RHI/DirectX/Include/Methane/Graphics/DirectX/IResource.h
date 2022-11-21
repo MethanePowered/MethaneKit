@@ -48,8 +48,8 @@ public:
     using View      = ResourceView;
     using Views     = ResourceViews;
 
-    [[nodiscard]] static DescriptorHeap::Type   GetDescriptorHeapTypeByUsage(const Rhi::IResource& resource, Usage resource_usage);
-    [[nodiscard]] static D3D12_RESOURCE_STATES  GetNativeResourceState(State resource_state);
+    [[nodiscard]] static DescriptorHeap::Type  GetDescriptorHeapTypeByUsage(const Rhi::IResource& resource, Usage resource_usage);
+    [[nodiscard]] static D3D12_RESOURCE_STATES GetNativeResourceState(State resource_state);
 
     [[nodiscard]] virtual ID3D12Resource&                    GetNativeResourceRef() const = 0;
     [[nodiscard]] virtual ID3D12Resource*                    GetNativeResource() const noexcept = 0;

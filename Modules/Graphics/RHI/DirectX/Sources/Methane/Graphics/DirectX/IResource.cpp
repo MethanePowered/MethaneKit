@@ -24,28 +24,38 @@ DirectX 12 specialization of the resource interface.
 #include <Methane/Graphics/DirectX/IResource.h>
 #include <Methane/Graphics/Rhi/ITexture.h>
 
+template<>
+struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsage& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", fmt::join(rl.GetBitNames(), "|")); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};
+
 namespace Methane::Graphics::DirectX
 {
+
 
 DescriptorHeap::Type IResource::GetDescriptorHeapTypeByUsage(const Rhi::IResource& resource, Usage resource_usage)
 {
     META_FUNCTION_TASK();
     const Rhi::IResource::Type resource_type = resource.GetResourceType();
-    switch (resource_usage)
+    if (resource_usage.shader_read ||
+        resource_usage.shader_write)
     {
-    case Usage::ShaderRead:
         return (resource_type == Type::Sampler)
                ? DescriptorHeap::Type::Samplers
                : DescriptorHeap::Type::ShaderResources;
-
-    case Usage::ShaderWrite:
-    case Usage::RenderTarget:
+    }
+    else if (resource_usage.render_target)
+    {
         return (resource_type == Type::Texture &&
                 dynamic_cast<const Rhi::ITexture&>(resource).GetSettings().type == Rhi::TextureType::DepthStencilBuffer)
                ? DescriptorHeap::Type::DepthStencil
                : DescriptorHeap::Type::RenderTargets;
-
-    default:
+    }
+    else
+    {
         META_UNEXPECTED_ARG_DESCR_RETURN(resource_usage, DescriptorHeap::Type::Undefined,
                                          "resource usage does not map to descriptor heap");
     }

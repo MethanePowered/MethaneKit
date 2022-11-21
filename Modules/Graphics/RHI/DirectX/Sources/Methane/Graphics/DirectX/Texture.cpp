@@ -38,6 +38,14 @@ DirectX 12 implementation of the texture interface.
 #include <magic_enum.hpp>
 #include <DirectXTex.h>
 
+template<>
+struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsage& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", fmt::join(rl.GetBitNames(), "|")); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+};
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -49,7 +57,7 @@ Ptr<ITexture> ITexture::CreateRenderTarget(const IRenderContext& render_context,
     case Rhi::ITexture::Type::Texture:            return std::make_shared<DirectX::RenderTargetTexture>(static_cast<const Base::RenderContext&>(render_context), settings);
     case Rhi::ITexture::Type::DepthStencilBuffer: return std::make_shared<DirectX::DepthStencilTexture>(static_cast<const Base::RenderContext&>(render_context), settings, render_context.GetSettings().clear_depth_stencil);
     case Rhi::ITexture::Type::FrameBuffer:        META_UNEXPECTED_ARG_DESCR(settings.type, "frame buffer texture must be created with static method Texture::CreateFrameBuffer");
-    default:                                 META_UNEXPECTED_ARG_RETURN(settings.type, nullptr);
+    default:                                      META_UNEXPECTED_ARG_RETURN(settings.type, nullptr);
     }
 }
 
@@ -72,14 +80,14 @@ Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& render_co
 Ptr<ITexture> ITexture::CreateImage(const IContext& render_context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
+    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage({ Usage::Bit::ShaderRead }));
     return std::make_shared<DirectX::ImageTexture>(dynamic_cast<const Base::Context&>(render_context), texture_settings, DirectX::ImageToken());
 }
 
 Ptr<ITexture> ITexture::CreateCube(const IContext& render_context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage::ShaderRead);
+    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage({ Usage::Bit::ShaderRead }));
     return std::make_shared<DirectX::ImageTexture>(dynamic_cast<const Base::Context&>(render_context), texture_settings, DirectX::ImageToken());
 }
 
@@ -299,7 +307,7 @@ static D3D12_RENDER_TARGET_VIEW_DESC CreateNativeRenderTargetViewDesc(const Rhi:
         META_UNEXPECTED_ARG(settings.dimension_type);
     }
 
-    rtv_desc.Format                  = TypeConverter::PixelFormatToDxgi(settings.pixel_format);
+    rtv_desc.Format = TypeConverter::PixelFormatToDxgi(settings.pixel_format);
     return rtv_desc;
 }
 
@@ -307,7 +315,7 @@ template<>
 void FrameBufferTexture::Initialize(FrameBufferIndex frame_buffer_index)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetUsage(), Usage::RenderTarget, "frame-buffer texture supports only 'RenderTarget' usage");
+    META_CHECK_ARG_TRUE_DESCR(GetUsage().render_target, "frame-buffer texture supports only 'RenderTarget' usage");
     InitializeFrameBufferResource(frame_buffer_index);
 }
 
@@ -334,12 +342,10 @@ Opt<Rhi::IResource::Descriptor> RenderTargetTexture::InitializeNativeViewDescrip
 {
     META_FUNCTION_TASK();
     const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
-    switch(view_id.usage)
-    {
-    case Rhi::ResourceUsage::ShaderRead:   CreateShaderResourceView(descriptor, view_id); break;
-    case Rhi::ResourceUsage::RenderTarget: CreateRenderTargetView(descriptor, view_id); break;
-    default: break;
-    }
+    if (view_id.usage.shader_read)
+        CreateShaderResourceView(descriptor, view_id);
+    else if (view_id.usage.render_target)
+        CreateRenderTargetView(descriptor, view_id);
     return descriptor;
 }
 
@@ -371,11 +377,11 @@ DepthStencilTexture::Texture(const Base::Context& render_context, const Settings
     );
 
     using namespace magic_enum::bitwise_operators;
-    if (static_cast<bool>(settings.usage_mask & Usage::RenderTarget))
+    if (settings.usage_mask.render_target)
     {
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
     }
-    if (!static_cast<bool>(settings.usage_mask & (Usage::ShaderRead | Usage::ShaderWrite)))
+    if (!settings.usage_mask.shader_read && !settings.usage_mask.shader_write)
     {
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
     }
@@ -426,13 +432,13 @@ Opt<Rhi::IResource::Descriptor> DepthStencilTexture::InitializeNativeViewDescrip
 {
     META_FUNCTION_TASK();
     const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
-    switch(view_id.usage)
+    if (view_id.usage.shader_read)
+        CreateShaderResourceView(descriptor);
+    else if (view_id.usage.render_target)
+        CreateDepthStencilView(descriptor);
+    else
     {
-    case Rhi::IResource::Usage::ShaderRead:   CreateShaderResourceView(descriptor); break;
-    case Rhi::IResource::Usage::RenderTarget: CreateDepthStencilView(descriptor); break;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(view_id.usage, descriptor,
-                                              "unsupported usage '{}' for Depth-Stencil buffer",
-                                              magic_enum::enum_name(view_id.usage));
+        META_UNEXPECTED_ARG_DESCR_RETURN(view_id.usage, descriptor, "unsupported usage for Depth-Stencil buffer");
     }
     return descriptor;
 }
@@ -441,7 +447,7 @@ ImageTexture::Texture(const Base::Context& render_context, const Settings& setti
     : Resource(render_context, settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetUsage(), Usage::ShaderRead, "image texture supports only 'ShaderRead' usage");
+    META_CHECK_ARG_TRUE_DESCR(GetUsage().shader_read, "image texture supports only 'ShaderRead' usage");
 
     const SubResource::Count& sub_resource_count = GetSubresourceCount();
     const CD3DX12_RESOURCE_DESC resource_desc = CreateNativeResourceDesc(settings, sub_resource_count);
