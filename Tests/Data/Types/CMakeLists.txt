@@ -5,6 +5,7 @@ add_executable(${TARGET}
     PointTest.cpp
     RectSizeTest.cpp
     RectTest.cpp
+    EnumMaskTest.cpp
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
