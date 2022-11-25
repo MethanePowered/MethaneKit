@@ -76,9 +76,15 @@ std::string GetEnumMaskName(EnumMask<E, M> mask, std::string_view separator = "|
         if (mask.HasAnyBit(bit))
             ss << magic_enum::enum_name(bit) << separator;
     }
-    ss.seekp(-separator.length(), std::ios_base::end);
-    ss << ')';
-    return ss.str();
+    if (separator.length() <= 1)
+    {
+        ss.seekp(-static_cast<int>(separator.length()), std::ios_base::end);
+        ss << ')';
+        return ss.str();
+    }
+
+    std::string s = ss.str();
+    return s.erase(s.length() - separator.length()).append(")");
 }
 
 } // namespace Methane::Data

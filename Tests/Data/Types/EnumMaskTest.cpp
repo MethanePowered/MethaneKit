@@ -266,9 +266,14 @@ TEMPLATE_TEST_CASE("EnumMask conversion operators", "[enum-mask][convert]", MASK
         CHECK(GetEnumBitNames(citrus_mask) == std::vector<std::string>{ "Orange", "Mandarin", "Mango", "Lime" });
     }
 
-    SECTION("Convert to string")
+    SECTION("Convert to string with default separator")
     {
         CHECK(GetEnumMaskName(citrus_mask) == "(Orange|Mandarin|Mango|Lime)");
+    }
+
+    SECTION("Convert to string with custom separator")
+    {
+        CHECK(GetEnumMaskName(citrus_mask, " + ") == "(Orange + Mandarin + Mango + Lime)");
     }
 }
 
