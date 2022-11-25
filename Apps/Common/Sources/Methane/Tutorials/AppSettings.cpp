@@ -24,59 +24,55 @@ Common application settings for Methane samples and tutorials.
 #include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Data/AppIconsProvider.h>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Tutorials
 {
 
 namespace rhi = Methane::Graphics::Rhi;
 
-AppOptions AppOptions::GetDefaultWithColorOnly() noexcept
+AppOptions::Mask AppOptions::GetDefaultWithColorOnly() noexcept
 {
-    AppOptions options;
-    options.clear_color = true;
+    AppOptions::Mask options;
+    options |= AppOptions::Bit::ClearColor;
 #ifdef __APPLE__
-    options.vsync = true;
+    options |= AppOptions::Bit::VSync;
 #ifndef APPLE_MACOS // iOS
-    options.full_screen = true;
-    options.hud_visible = true;
+    options |= AppOptions::Bit::FullScreen;
+    options |= AppOptions::Bit::HudVisible;
 #endif
 #endif
     return options;
 }
 
-AppOptions AppOptions::GetDefaultWithColorDepth() noexcept
+AppOptions::Mask AppOptions::GetDefaultWithColorDepth() noexcept
 {
-    AppOptions options(GetDefaultWithColorOnly());
-    options.depth_buffer = true;
-    options.clear_depth = true;
+    AppOptions::Mask options(GetDefaultWithColorOnly());
+    options |= AppOptions::Bit::DepthBuffer;
+    options |= AppOptions::Bit::ClearDepth;
     return options;
 }
 
-AppOptions AppOptions::GetDefaultWithColorDepthAndAnim() noexcept
+AppOptions::Mask AppOptions::GetDefaultWithColorDepthAndAnim() noexcept
 {
-    AppOptions options(GetDefaultWithColorDepth());
-    options.animations = true;
+    AppOptions::Mask options(GetDefaultWithColorDepth());
+    options |= AppOptions::Bit::Animations;
     return options;
 }
 
-AppOptions AppOptions::GetDefaultWithColorOnlyAndAnim() noexcept
+AppOptions::Mask AppOptions::GetDefaultWithColorOnlyAndAnim() noexcept
 {
-    AppOptions options(GetDefaultWithColorOnly());
-    options.animations = true;
+    AppOptions::Mask options(GetDefaultWithColorOnly());
+    options |= AppOptions::Bit::Animations;
     return options;
 }
 
-Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& app_name, AppOptions app_options)
+Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& app_name, AppOptions::Mask app_options)
 {
-    using DepthStencilOpt = std::optional<Graphics::DepthStencil>;
-    using ColorOpt        = std::optional<Graphics::Color4F>;
+    using namespace Methane::Graphics;
 
-    using namespace magic_enum::bitwise_operators;
     const rhi::RenderPassAccess default_screen_pass_access({ rhi::RenderPassAccess::Bit::ShaderResources, rhi::RenderPassAccess::Bit::Samplers });
-    const rhi::ContextOptions default_context_options;
-    const Graphics::DepthStencil        default_clear_depth_stencil(1.F, Graphics::Stencil(0));
-    const Graphics::Color4F             default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
+    const rhi::ContextOptions   default_context_options;
+    const DepthStencil          default_clear_depth_stencil(1.F, Graphics::Stencil(0));
+    const Color4F               default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
 
     return Graphics::CombinedAppSettings
     {                                                           // =========================
@@ -84,44 +80,46 @@ Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& 
             app_name,                                           //   - name
             { 0.8, 0.8 },                                       //   - size
             { 640U, 480U },                                     //   - min_size
-            app_options.full_screen,                            //   - is_full_screen
+            app_options.HasBit(AppOptions::Bit::FullScreen),    //   - is_full_screen
             &Data::IconProvider::Get(),                         //   - icon_resources_ptr
         },                                                      // =========================
         Graphics::AppSettings {                                 // graphics_app:
             default_screen_pass_access,                         //   - screen_pass_access
-            app_options.animations,                             //   - animations_enabled
-            !app_options.hud_visible,                           //   - show_hud_in_window_title
+            app_options.HasBit(AppOptions::Bit::Animations),    //   - animations_enabled
+            !app_options.HasBit(AppOptions::Bit::HudVisible),   //   - show_hud_in_window_title
             0                                                   //   - default_device_index
         },                                                      // =========================
         rhi::RenderContextSettings {                            // render_context:
             Graphics::FrameSize(),                              //   - frame_size
             Graphics::PixelFormat::BGRA8Unorm,                  //   - color_format
-            app_options.depth_buffer                            //   - depth_stencil_format
+            app_options.HasBit(AppOptions::Bit::DepthBuffer)    //   - depth_stencil_format
                 ? Graphics::PixelFormat::Depth32Float           //     ...
                 : Graphics::PixelFormat::Unknown,               //     ...
-            app_options.clear_color                             //   - clear_color
-                ? ColorOpt(default_clear_color)                 //     ...
-                : ColorOpt(),                                   //     ...
-            app_options.depth_buffer && app_options.clear_depth //   - clear_depth_stencil
-                ? DepthStencilOpt(default_clear_depth_stencil)  //     ...
-                : DepthStencilOpt(),                            //     ...
+            app_options.HasBit(AppOptions::Bit::ClearColor)     //   - clear_color
+                ? Opt<Color4F>(default_clear_color)             //     ...
+                : Opt<Color4F>(),                               //     ...
+            app_options.HasBits({ AppOptions::Bit::DepthBuffer, //   - clear_depth_stencil
+                                  AppOptions::Bit::ClearDepth })//     ...
+                ? Opt<DepthStencil>(default_clear_depth_stencil)//     ...
+                : Opt<DepthStencil>(),                          //     ...
             3U,                                                 //   - frame_buffers_count
-            app_options.vsync,                                  //   - vsync_enabled
-            app_options.full_screen,                            //   - is_full_screen
+            app_options.HasBit(AppOptions::Bit::VSync),         //   - vsync_enabled
+            app_options.HasBit(AppOptions::Bit::FullScreen),    //   - is_full_screen
             default_context_options,                            //   - options_mask
             1000U,                                              //   - unsync_max_fps (MacOS only)
         }                                                       // =========================
     };
 }
 
-UserInterface::IApp::Settings GetUserInterfaceTutorialAppSettings(AppOptions app_options)
+UserInterface::IApp::Settings GetUserInterfaceTutorialAppSettings(AppOptions::Mask app_options)
 {
     return UserInterface::IApp::Settings
-        {
-            app_options.hud_visible ? UserInterface::HeadsUpDisplayMode::UserInterface
-                                    : UserInterface::HeadsUpDisplayMode::WindowTitle,
-            true // badge_visible
-        };
+    {
+        app_options.HasBit(AppOptions::Bit::HudVisible)
+            ? UserInterface::HeadsUpDisplayMode::UserInterface
+            : UserInterface::HeadsUpDisplayMode::WindowTitle,
+        true // badge_visible
+    };
 }
 
 } // namespace Methane::Tutorials

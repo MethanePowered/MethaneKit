@@ -25,35 +25,33 @@ Common application settings for Methane samples and tutorials.
 
 #include <Methane/Graphics/CombinedAppSettings.h>
 #include <Methane/UserInterface/IApp.h>
+#include <Methane/Data/EnumMask.hpp>
 
 namespace Methane::Tutorials
 {
 
-union AppOptions
+namespace AppOptions
 {
-    struct
+    enum class Bit
     {
-        bool depth_buffer : 1;
-        bool clear_depth  : 1;
-        bool clear_color  : 1;
-        bool animations   : 1;
-        bool full_screen  : 1;
-        bool vsync        : 1;
-        bool hud_visible  : 1;
+        DepthBuffer,
+        ClearDepth,
+        ClearColor,
+        Animations,
+        FullScreen,
+        VSync,
+        HudVisible
     };
 
-    uint32_t mask;
+    using Mask = Data::EnumMask<Bit>;
 
-    AppOptions() : mask(0U) { }
-    AppOptions(uint32_t mask) : mask(mask) { }
-
-    static AppOptions GetDefaultWithColorOnly() noexcept;
-    static AppOptions GetDefaultWithColorDepth() noexcept;
-    static AppOptions GetDefaultWithColorDepthAndAnim() noexcept;
-    static AppOptions GetDefaultWithColorOnlyAndAnim() noexcept;
+    Mask GetDefaultWithColorOnly() noexcept;
+    Mask GetDefaultWithColorDepth() noexcept;
+    Mask GetDefaultWithColorDepthAndAnim() noexcept;
+    Mask GetDefaultWithColorOnlyAndAnim() noexcept;
 };
 
-[[nodiscard]] Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& app_name, AppOptions app_options);
-[[nodiscard]] UserInterface::AppSettings    GetUserInterfaceTutorialAppSettings(AppOptions app_options);
+[[nodiscard]] Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& app_name, AppOptions::Mask app_options);
+[[nodiscard]] UserInterface::AppSettings    GetUserInterfaceTutorialAppSettings(AppOptions::Mask app_options);
 
 } // namespace Methane::Graphics
