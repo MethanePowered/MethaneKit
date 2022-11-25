@@ -41,7 +41,7 @@ public:
                       tf::Executor& parallel_executor, const Settings& settings);
 
     // IContext interface
-    [[nodiscard]] Options GetOptions() const noexcept final { return m_settings.options_mask; }
+    [[nodiscard]] OptionsMask GetOptions() const noexcept final { return m_settings.options_mask; }
     void WaitForGpu(WaitFor wait_for) override;
 
     // IRenderContext interface

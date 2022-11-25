@@ -209,7 +209,7 @@ RenderPass::RenderPass(Base::RenderPattern& render_pattern, const Settings& sett
                    [](const Rhi::ITexture::View& texture_location)
                    { return ResourceView(texture_location, Rhi::ResourceUsage({ Rhi::ResourceUsage::Bit::RenderTarget })); });
 
-    if (render_pattern.GetRenderContext().GetSettings().options_mask.emulate_d3d12_render_pass)
+    if (render_pattern.GetRenderContext().GetSettings().options_mask.HasBit(Rhi::ContextOptions::Bit::EmulateD3D12RenderPass))
     {
         m_is_native_render_pass_available = false;
     }

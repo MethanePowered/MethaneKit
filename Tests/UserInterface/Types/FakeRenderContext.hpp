@@ -165,7 +165,7 @@ public:
 
     // IContext interface
     [[nodiscard]] Type GetType() const noexcept override                                        { return Type::Render; }
-    [[nodiscard]] Options GetOptions() const noexcept override                                  { return {}; }
+    [[nodiscard]] OptionsMask GetOptions() const noexcept override                              { return {}; }
     [[nodiscard]] tf::Executor& GetParallelExecutor() const noexcept override                   { return m_executor; }
     [[nodiscard]] Rhi::IObjectRegistry& GetObjectRegistry() noexcept override                   { return m_object_registry; }
     [[nodiscard]] const Rhi::IObjectRegistry& GetObjectRegistry() const noexcept override       { return m_object_registry; }

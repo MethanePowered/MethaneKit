@@ -26,16 +26,6 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 namespace Methane::Graphics::Rhi
 {
 
-ContextOptions::ContextOptions() noexcept
-    : mask(0U)
-{
-}
-
-ContextOptions::ContextOptions(uint32_t mask) noexcept
-    : mask(mask)
-{
-}
-
 ICommandKit& IContext::GetUploadCommandKit() const
 {
     return GetDefaultCommandKit(CommandListType::Transfer);

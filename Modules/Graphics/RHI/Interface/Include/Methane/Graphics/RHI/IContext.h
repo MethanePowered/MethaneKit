@@ -29,6 +29,7 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/IEmitter.h>
+#include <Methane/Data/EnumMask.hpp>
 
 #include <stdexcept>
 
@@ -61,18 +62,15 @@ enum class ContextDeferredAction : uint32_t
     CompleteInitialization
 };
 
-union ContextOptions
+namespace ContextOptions
 {
-    struct
+    enum class Bit
     {
-        bool transfer_with_d3d12_direct_queue : 1; // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
-        bool emulate_d3d12_render_pass        : 1; // Render passes are emulated with traditional DX API, instead of using native DX render pass API
+        TransferWithD3D12DirectQueue, // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
+        EmulateD3D12RenderPass        // Render passes are emulated with traditional DX API, instead of using native DX render pass API
     };
 
-    uint32_t mask;
-
-    ContextOptions() noexcept;
-    explicit ContextOptions(uint32_t mask) noexcept;
+    using Mask = Data::EnumMask<Bit>;
 };
 
 
@@ -103,12 +101,13 @@ struct IContext
     using Type                  = ContextType;
     using WaitFor               = ContextWaitFor;
     using DeferredAction        = ContextDeferredAction;
-    using Options               = ContextOptions;
+    using OptionsBit           = ContextOptions::Bit;
+    using OptionsMask           = ContextOptions::Mask;
     using IncompatibleException = ContextIncompatibleException;
 
     // IContext interface
     [[nodiscard]] virtual Type GetType() const noexcept = 0;
-    [[nodiscard]] virtual Options GetOptions() const noexcept = 0;
+    [[nodiscard]] virtual OptionsMask GetOptions() const noexcept = 0;
     [[nodiscard]] virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
     [[nodiscard]] virtual IObjectRegistry& GetObjectRegistry() noexcept = 0;
     [[nodiscard]] virtual const IObjectRegistry& GetObjectRegistry() const noexcept = 0;

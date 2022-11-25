@@ -63,10 +63,10 @@ AppBase::AppBase(const CombinedAppSettings& settings, Data::IProvider& textures_
 
 #ifdef _WIN32
     add_flag("-e,--emulated-render-pass",
-             [this](int64_t is_emulated) { m_initial_context_settings.options_mask.emulate_d3d12_render_pass = is_emulated; },
+             [this](int64_t is_emulated) { m_initial_context_settings.options_mask.SetBit(Rhi::ContextOptions::Bit::EmulateD3D12RenderPass, is_emulated); },
              "Render pass emulation with traditional DX API");
     add_flag("-q,--transfer-with-direct-queue",
-             [this](int64_t is_direct) { m_initial_context_settings.options_mask.transfer_with_d3d12_direct_queue = is_direct; },
+             [this](int64_t is_direct) { m_initial_context_settings.options_mask.SetBit(Rhi::ContextOptions::Bit::TransferWithD3D12DirectQueue, is_direct); },
              "Transfer command lists and queues use DIRECT instead of COPY type in DX API");
 #endif
 }

@@ -43,11 +43,11 @@ Ptr<ITransferCommandList> ITransferCommandList::Create(ICommandQueue& cmd_queue)
 namespace Methane::Graphics::DirectX
 {
 
-static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(Rhi::ContextOptions options)
+static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(Rhi::ContextOptions::Mask options)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
-    return options.transfer_with_d3d12_direct_queue
+    return options.HasBit(Rhi::ContextOptions::Bit::TransferWithD3D12DirectQueue)
          ? D3D12_COMMAND_LIST_TYPE_DIRECT
          : D3D12_COMMAND_LIST_TYPE_COPY;
 }
