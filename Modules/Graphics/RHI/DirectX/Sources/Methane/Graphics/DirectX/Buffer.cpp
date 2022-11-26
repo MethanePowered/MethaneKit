@@ -137,9 +137,8 @@ Opt<Rhi::IResource::Descriptor> ConstantBuffer::InitializeNativeViewDescriptor(c
     META_FUNCTION_TASK();
 
     // NOTE: Addressable resources are bound to pipeline using GPU Address and byte offset
-    using namespace magic_enum::bitwise_operators;
-    if (const Usage usage_mask = GetUsage();
-        !usage_mask.shader_read || usage_mask.addressable)
+    if (const UsageMask usage_mask = GetUsage();
+        !usage_mask.HasAnyBit(Usage::ShaderRead) || usage_mask.HasAnyBit(Usage::Addressable))
         return std::nullopt;
 
     const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);

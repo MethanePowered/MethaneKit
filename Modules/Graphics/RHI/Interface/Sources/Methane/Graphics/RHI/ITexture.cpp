@@ -28,7 +28,8 @@ Methane graphics interface: graphics texture.
 namespace Methane::Graphics::Rhi
 {
 
-TextureView::TextureView(ITexture& texture, const SubResource::Index& subresource_index, const SubResource::Count& subresource_count, Opt<TextureDimensionType> texture_dimension_type_opt)
+TextureView::TextureView(ITexture& texture, const SubResource::Index& subresource_index, const SubResource::Count& subresource_count,
+                         Opt<TextureDimensionType> texture_dimension_type_opt)
     : ResourceView(texture, subresource_index, subresource_count, texture_dimension_type_opt)
     , m_texture_ptr(std::dynamic_pointer_cast<ITexture>(GetResourcePtr()))
 {
@@ -41,7 +42,8 @@ Rhi::ITexture& TextureView::GetTexture() const
     return *m_texture_ptr;
 }
 
-TextureSettings TextureSettings::Image(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, ResourceUsage usage)
+TextureSettings TextureSettings::Image(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format,
+                                       bool mipmapped, ResourceUsageMask usage)
 {
     META_FUNCTION_TASK();
 
@@ -62,7 +64,8 @@ TextureSettings TextureSettings::Image(const Dimensions& dimensions, const Opt<u
     return settings;
 }
 
-TextureSettings TextureSettings::Cube(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, ResourceUsage usage)
+TextureSettings TextureSettings::Cube(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format,
+                                      bool mipmapped, ResourceUsageMask usage)
 {
     META_FUNCTION_TASK();
 
@@ -85,14 +88,14 @@ TextureSettings TextureSettings::FrameBuffer(const Dimensions& dimensions, Pixel
     TextureSettings settings;
     settings.type           = TextureType::FrameBuffer;
     settings.dimension_type = TextureDimensionType::Tex2D;
-    settings.usage_mask     = ResourceUsage({ ResourceUsage::Bit::RenderTarget });
+    settings.usage_mask     = ResourceUsageMask(ResourceUsage::RenderTarget);
     settings.pixel_format   = pixel_format;
     settings.dimensions     = dimensions;
 
     return settings;
 }
 
-TextureSettings TextureSettings::DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, ResourceUsage usage_mask)
+TextureSettings TextureSettings::DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, ResourceUsageMask usage_mask)
 {
     META_FUNCTION_TASK();
 

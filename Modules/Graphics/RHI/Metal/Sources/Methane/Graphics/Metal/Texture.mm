@@ -62,14 +62,14 @@ Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& context)
 Ptr<ITexture> ITexture::CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage({ Usage::Bit::ShaderRead }));
+    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage({ Usage::ShaderRead }));
     return std::make_shared<Metal::Texture>(dynamic_cast<const Base::Context&>(context), texture_settings);
 }
 
 Ptr<ITexture> ITexture::CreateCube(const IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage({ Usage::Bit::ShaderRead }));
+    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage({ Usage::ShaderRead }));
     return std::make_shared<Metal::Texture>(dynamic_cast<const Base::Context&>(context), texture_settings);
 }
 

@@ -51,9 +51,10 @@ public:
         using namespace magic_enum::bitwise_operators;
 
         const bool          is_private_storage  = settings.storage_mode == IBuffer::StorageMode::Private;
+        const bool          is_read_back_buffer = settings.usage_mask.HasAnyBit(Usage::ReadBack);
         const D3D12_HEAP_TYPE  normal_heap_type = is_private_storage ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
-        const D3D12_HEAP_TYPE  heap_type        = settings.usage_mask.read_back ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
-        const Rhi::ResourceState resource_state = settings.usage_mask.read_back || is_private_storage
+        const D3D12_HEAP_TYPE  heap_type        = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
+        const Rhi::ResourceState resource_state = is_read_back_buffer || is_private_storage
                                                 ? Rhi::ResourceState::CopyDest
                                                 : Rhi::ResourceState::GenericRead;
         const CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(settings.size);
@@ -134,7 +135,7 @@ public:
     SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_TRUE_DESCR(GetUsage().read_back, "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
+        META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack), "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
         ValidateSubResource(sub_resource_index, data_range);
 

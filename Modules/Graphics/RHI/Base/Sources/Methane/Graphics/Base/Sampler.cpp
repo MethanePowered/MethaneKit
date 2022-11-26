@@ -30,7 +30,7 @@ namespace Methane::Graphics::Base
 
 Sampler::Sampler(const Context& context, const Settings& settings,
                  State initial_state, Opt<State> auto_transition_source_state_opt)
-    : Resource(context, Type::Sampler, Usage({ Usage::Bit::ShaderRead }), initial_state, auto_transition_source_state_opt)
+    : Resource(context, Type::Sampler, UsageMask(Usage::ShaderRead), initial_state, auto_transition_source_state_opt)
     , m_settings(settings)
 {
     META_FUNCTION_TASK();

@@ -72,6 +72,7 @@ struct IResource
     , virtual Data::IEmitter<IResourceCallback> // NOSONAR
 {
     using Usage              = ResourceUsage;
+    using UsageMask          = ResourceUsageMask;
     using Type               = ResourceType;
     using Descriptor         = DirectX::ResourceDescriptor;
     using DescriptorByViewId = std::map<ResourceView::Id, Descriptor>;
@@ -103,9 +104,9 @@ struct IResource
     [[nodiscard]] virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;
     [[nodiscard]] virtual Type                      GetResourceType() const noexcept = 0;
     [[nodiscard]] virtual State                     GetState() const noexcept = 0;
-    [[nodiscard]] virtual Usage                     GetUsage() const noexcept = 0;
+    [[nodiscard]] virtual UsageMask                GetUsage() const noexcept = 0;
     [[nodiscard]] virtual const DescriptorByViewId& GetDescriptorByViewId() const noexcept = 0;
-    [[nodiscard]] virtual const IContext&            GetContext() const noexcept = 0;
+    [[nodiscard]] virtual const IContext&           GetContext() const noexcept = 0;
     [[nodiscard]] virtual const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept = 0;
 };
 

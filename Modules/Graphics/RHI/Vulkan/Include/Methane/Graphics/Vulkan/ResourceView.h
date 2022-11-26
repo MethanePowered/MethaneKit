@@ -52,11 +52,11 @@ public:
     using ImageViewDescriptor   = ViewDescriptor<vk::DescriptorImageInfo, vk::UniqueImageView>;
     using ViewDescriptorVariant = std::variant<BufferViewDescriptor, ImageViewDescriptor>;
 
-    ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsage usage);
+    ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsageMask usage);
 
-    [[nodiscard]] const Id&          GetId() const noexcept     { return m_id; }
-    [[nodiscard]] Rhi::ResourceUsage GetUsage() const noexcept  { return m_id.usage; }
-    [[nodiscard]] IResource&         GetVulkanResource() const;
+    [[nodiscard]] const Id&               GetId() const noexcept     { return m_id; }
+    [[nodiscard]] Rhi::ResourceUsageMask GetUsage() const noexcept  { return m_id.usage; }
+    [[nodiscard]] IResource&              GetVulkanResource() const;
 
     [[nodiscard]] const BufferViewDescriptor*  GetBufferViewDescriptorPtr() const;
     [[nodiscard]] const BufferViewDescriptor&  GetBufferViewDescriptor() const;

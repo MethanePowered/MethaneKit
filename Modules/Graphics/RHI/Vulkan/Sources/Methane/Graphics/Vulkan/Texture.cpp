@@ -27,6 +27,7 @@ Vulkan implementation of the texture interface.
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/Types.h>
 
+#include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -68,14 +69,14 @@ Ptr<ITexture> Rhi::ITexture::CreateDepthStencilBuffer(const Rhi::IRenderContext&
 Ptr<ITexture> Rhi::ITexture::CreateImage(const Rhi::IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage({ Usage::Bit::ShaderRead }));
+    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, UsageMask({ Usage::ShaderRead }));
     return std::make_shared<Vulkan::ImageTexture>(dynamic_cast<const Vulkan::RenderContext&>(context), texture_settings);
 }
 
 Ptr<ITexture> Rhi::ITexture::CreateCube(const Rhi::IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage({ Usage::Bit::ShaderRead }));
+    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, UsageMask({ Usage::ShaderRead }));
     return std::make_shared<Vulkan::ImageTexture>(dynamic_cast<const Vulkan::RenderContext&>(context), texture_settings);
 }
 
@@ -115,7 +116,7 @@ vk::ImageUsageFlags ITexture::GetNativeImageUsageFlags(const Rhi::TextureSetting
         break;
 
     case Rhi::TextureType::Texture:
-        if (settings.usage_mask.render_target)
+        if (settings.usage_mask.HasAnyBit(Rhi::ResourceUsage::RenderTarget))
             usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
         break;
 
@@ -130,7 +131,7 @@ vk::ImageUsageFlags ITexture::GetNativeImageUsageFlags(const Rhi::TextureSetting
         usage_flags |= vk::ImageUsageFlagBits::eTransferDst;
     }
 
-    if (settings.usage_mask.shader_read)
+    if (settings.usage_mask.HasAnyBit(Rhi::ResourceUsage::ShaderRead))
         usage_flags |= vk::ImageUsageFlagBits::eSampled;
 
     return usage_flags;
@@ -178,16 +179,16 @@ static vk::UniqueImage CreateNativeImage(const IContext& context, const Rhi::Tex
             vk::SharingMode::eExclusive));
 }
 
-static vk::ImageLayout GetVulkanImageLayoutByUsage(Rhi::TextureType texture_type, Rhi::ResourceUsage usage) noexcept
+static vk::ImageLayout GetVulkanImageLayoutByUsage(Rhi::TextureType texture_type, Rhi::ResourceUsageMask usage) noexcept
 {
     META_FUNCTION_TASK();
-    if (usage.shader_read)
+    if (usage.HasAnyBits({ Rhi::ResourceUsage::ShaderRead, Rhi::ResourceUsage::ShaderWrite }))
     {
         return texture_type == Rhi::TextureType::DepthStencilBuffer
              ? vk::ImageLayout::eDepthStencilReadOnlyOptimal
              : vk::ImageLayout::eShaderReadOnlyOptimal;
     }
-    if (usage.shader_write || usage.render_target)
+    if (usage.HasAnyBit(Rhi::ResourceUsage::RenderTarget))
     {
         return texture_type == Rhi::TextureType::DepthStencilBuffer
              ? vk::ImageLayout::eDepthStencilAttachmentOptimal
@@ -220,7 +221,7 @@ static Ptr<ResourceView::ViewDescriptorVariant> CreateNativeImageViewDescriptor(
                                       view_id.subresource_count.GetBaseLayerCount())
         ));
 
-    const std::string view_name = fmt::format("{} Image View for {} usage", texture_name, fmt::join(view_id.usage.GetBitNames(), "|"));
+    const std::string view_name = fmt::format("{} Image View for {} usage", texture_name, Data::GetEnumMaskName(view_id.usage));
     SetVulkanObjectName(vk_device, image_view_desc.vk_view.get(), view_name.c_str());
 
     image_view_desc.vk_desc = vk::DescriptorImageInfo(

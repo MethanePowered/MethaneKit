@@ -210,7 +210,7 @@ protected:
     }
 
 private:
-    Rhi::IResource::Descriptor CreateResourceDescriptor(Usage usage)
+    Rhi::IResource::Descriptor CreateResourceDescriptor(UsageMask usage)
     {
         META_FUNCTION_TASK();
         DescriptorManager& descriptor_manager = GetDirectContext().GetDirectDescriptorManager();

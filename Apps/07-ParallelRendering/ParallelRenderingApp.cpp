@@ -173,7 +173,7 @@ void ParallelRenderingApp::Init()
     m_texture_array_ptr = rhi::ITexture::CreateRenderTarget(
         GetRenderContext(),
         rhi::ITexture::Settings::Image(g_texture_size, m_settings.render_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
-                                       rhi::ResourceUsage({ rhi::ResourceUsage::Bit::RenderTarget, rhi::ResourceUsage::Bit::ShaderRead })));
+                                       rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })));
     m_texture_array_ptr->SetName("Per-Thread Texture Array");
 
     // Create sampler for image texture

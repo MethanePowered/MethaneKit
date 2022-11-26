@@ -353,7 +353,7 @@ vk::UniqueFramebuffer RenderPass::CreateNativeFrameBuffer(const vk::Device& vk_d
     {
         std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_attachment_views),
                        [](const Rhi::TextureView& texture_location)
-                       { return Vulkan::ResourceView(texture_location, Rhi::ResourceUsage({ Rhi::ResourceUsage::Bit::RenderTarget })); });
+                       { return Vulkan::ResourceView(texture_location, Rhi::ResourceUsageMask(Rhi::ResourceUsage::RenderTarget)); });
     }
 
     std::vector<vk::ImageView> vk_attachment_views;

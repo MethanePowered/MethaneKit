@@ -44,7 +44,7 @@ ResourceDescriptor::ResourceDescriptor(DescriptorHeap& in_heap, Data::Index in_i
     META_FUNCTION_TASK();
 }
 
-ResourceView::ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsage usage)
+ResourceView::ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsageMask usage)
     : Rhi::ResourceView(view_id)
     , m_id(usage, GetSettings())
     , m_resource_dx(dynamic_cast<IResource&>(GetResource()))

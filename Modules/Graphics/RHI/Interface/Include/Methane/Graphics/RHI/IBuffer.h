@@ -48,7 +48,7 @@ enum class BufferStorageMode
 struct BufferSettings
 {
     BufferType        type;
-    ResourceUsage     usage_mask;
+    ResourceUsageMask usage_mask;
     Data::Size        size;
     Data::Size        item_stride_size;
     PixelFormat       data_format;

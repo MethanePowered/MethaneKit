@@ -32,6 +32,7 @@ Vulkan implementation of the resource interface.
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Base/Resource.h>
 #include <Methane/Graphics/RHI/ICommandKit.h>
+#include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <vulkan/vulkan.hpp>
@@ -109,7 +110,7 @@ public:
         for(const auto& [view_id, view_desc_ptr] : m_view_descriptor_by_view_id)
         {
             META_CHECK_ARG_NOT_NULL(view_desc_ptr);
-            const std::string view_name = fmt::format("{} View for usage {}", name, fmt::join(view_id.usage.GetBitNames(), "|"));
+            const std::string view_name = fmt::format("{} View for usage {}", name, Data::GetEnumMaskName(view_id.usage));
 
             if (const auto* image_view_desc_ptr = std::get_if<ResourceView::ImageViewDescriptor>(view_desc_ptr.get());
                 image_view_desc_ptr)

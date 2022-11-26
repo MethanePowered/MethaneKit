@@ -26,6 +26,7 @@ and resource view used in program bindings.
 
 #include <Methane/Data/Chunk.hpp>
 #include <Methane/Data/Range.hpp>
+#include <Methane/Data/EnumMask.hpp>
 
 #include <optional>
 
@@ -143,43 +144,18 @@ using SubResources = std::vector<SubResource>;
 
 struct IResource;
 
-union ResourceUsage
+enum class ResourceUsage : uint32_t
 {
-    enum class Bit : uint32_t
-    {
-        // Primary usages
-        ShaderRead,
-        ShaderWrite,
-        RenderTarget,
-        // Secondary usages
-        ReadBack,
-        Addressable
-    };
-
-    struct
-    {
-        bool shader_read   : 1;
-        bool shader_write  : 1;
-        bool render_target : 1;
-        bool read_back     : 1;
-        bool addressable   : 1;
-    };
-
-    uint32_t mask;
-
-    ResourceUsage() noexcept;
-    explicit ResourceUsage(uint32_t mask) noexcept;
-    explicit ResourceUsage(const std::initializer_list<Bit>& bits);
-
-    bool operator==(const ResourceUsage& other) const noexcept;
-    bool operator!=(const ResourceUsage& other) const noexcept;
-    bool operator<(const ResourceUsage& other) const noexcept;
-
-    void SetBit(Bit bit, bool value);
-    bool HasBit(Bit bit) const;
-    std::vector<Bit> GetBits() const;
-    std::vector<std::string> GetBitNames() const;
+    // Primary usages
+    ShaderRead,
+    ShaderWrite,
+    RenderTarget,
+    // Secondary usages
+    ReadBack,
+    Addressable
 };
+
+using ResourceUsageMask = Data::EnumMask<ResourceUsage>;
 
 enum class TextureDimensionType : uint32_t
 {
@@ -208,9 +184,9 @@ struct ResourceViewSettings
 
 struct ResourceViewId : ResourceViewSettings
 {
-    ResourceUsage usage;
+    ResourceUsageMask usage;
 
-    ResourceViewId(ResourceUsage usage, const ResourceViewSettings& settings);
+    ResourceViewId(ResourceUsageMask usage, const ResourceViewSettings& settings);
 
     [[nodiscard]] bool operator<(const ResourceViewId& other) const noexcept;
     [[nodiscard]] bool operator==(const ResourceViewId& other) const noexcept;

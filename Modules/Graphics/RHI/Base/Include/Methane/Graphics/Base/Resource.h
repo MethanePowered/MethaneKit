@@ -43,7 +43,7 @@ class Resource
     , public Data::Emitter<Rhi::IResourceCallback>
 {
 public:
-    Resource(const Context& context, Type type, Usage usage_mask,
+    Resource(const Context& context, Type type, UsageMask usage_mask,
              State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
     Resource(const Resource&) = delete;
     Resource(Resource&&) = delete;
@@ -52,7 +52,7 @@ public:
     [[nodiscard]] Type                      GetResourceType() const noexcept final     { return m_type; }
     [[nodiscard]] State                     GetState() const noexcept final            { return m_state;  }
     [[nodiscard]] const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept final { return m_owner_queue_family_index_opt; }
-    [[nodiscard]] Usage                     GetUsage() const noexcept final            { return m_usage_mask; }
+    [[nodiscard]] UsageMask                 GetUsage() const noexcept final            { return m_usage_mask; }
     [[nodiscard]] const Rhi::IContext&      GetContext() const noexcept final;
     [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept final { return m_sub_resource_count; }
     [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
@@ -83,7 +83,7 @@ private:
 
     const Context&     m_context;
     const Type         m_type;
-    const Usage        m_usage_mask;
+    const UsageMask    m_usage_mask;
     State              m_state;
     const Opt<State>   m_auto_transition_source_state_opt;
     Data::Size         m_initialized_data_size       = 0U;

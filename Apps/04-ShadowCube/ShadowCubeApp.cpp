@@ -220,7 +220,7 @@ void ShadowCubeApp::Init()
     const rhi::ITexture::Settings shadow_texture_settings = rhi::ITexture::Settings::DepthStencilBuffer(
         gfx::Dimensions(g_shadow_map_size),
         context_settings.depth_stencil_format,
-        rhi::ResourceUsage({ rhi::ResourceUsage::Bit::RenderTarget, rhi::ResourceUsage::Bit::ShaderRead })
+        rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })
     );
 
     for(ShadowCubeFrame& frame : GetFrames())

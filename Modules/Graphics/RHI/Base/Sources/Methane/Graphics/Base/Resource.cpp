@@ -62,8 +62,8 @@ struct fmt::formatter<Methane::Graphics::Rhi::SubResource::Count>
 namespace Methane::Graphics::Base
 {
 
-Resource::Resource(const Context& context, Type type, Usage usage_mask,
-                           State initial_state, Opt<State> auto_transition_source_state_opt)
+Resource::Resource(const Context& context, Type type, UsageMask usage_mask,
+                   State initial_state, Opt<State> auto_transition_source_state_opt)
     : m_context(context)
     , m_type(type)
     , m_usage_mask(usage_mask)

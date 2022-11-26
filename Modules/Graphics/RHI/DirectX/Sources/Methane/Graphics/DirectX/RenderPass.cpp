@@ -208,7 +208,7 @@ RenderPass::RenderPass(Base::RenderPattern& render_pattern, const Settings& sett
     META_FUNCTION_TASK();
     std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
                    [](const Rhi::ITexture::View& texture_location)
-                   { return ResourceView(texture_location, Rhi::ResourceUsage({ Rhi::ResourceUsage::Bit::RenderTarget })); });
+                   { return ResourceView(texture_location, Rhi::ResourceUsageMask({ Rhi::ResourceUsage::RenderTarget })); });
 
     if (render_pattern.GetRenderContext().GetSettings().options_mask.HasBit(Rhi::ContextOptions::Bit::EmulateD3D12RenderPass))
     {
@@ -238,7 +238,7 @@ bool RenderPass::Update(const Settings& settings)
 
         std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
                        [](const Rhi::ITexture::View& texture_location)
-                       { return ResourceView(texture_location, Rhi::ResourceUsage({ Rhi::ResourceUsage::Bit::RenderTarget })); });
+                       { return ResourceView(texture_location, Rhi::ResourceUsageMask({ Rhi::ResourceUsage::RenderTarget })); });
     }
 
     if (!m_is_native_render_pass_available.has_value() || m_is_native_render_pass_available.value())

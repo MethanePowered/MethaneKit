@@ -43,22 +43,13 @@ class ResourceView final
     : public Rhi::ResourceView
 {
 public:
-    ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsage usage);
+    ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsageMask usage);
 
-    [[nodiscard]] const Id& GetId() const noexcept
-    { return m_id; }
-
-    [[nodiscard]] Rhi::ResourceUsage GetUsage() const noexcept
-    { return m_id.usage; }
-
-    [[nodiscard]] IResource& GetDirectResource() const noexcept
-    { return m_resource_dx; }
-
-    [[nodiscard]] bool HasDescriptor() const noexcept
-    { return m_descriptor_opt.has_value(); }
-
-    [[nodiscard]] const Opt<ResourceDescriptor>& GetDescriptor() const noexcept
-    { return m_descriptor_opt; }
+    [[nodiscard]] const Id& GetId() const noexcept                              { return m_id; }
+    [[nodiscard]] Rhi::ResourceUsageMask GetUsage() const noexcept              { return m_id.usage; }
+    [[nodiscard]] IResource& GetDirectResource() const noexcept                 { return m_resource_dx; }
+    [[nodiscard]] bool HasDescriptor() const noexcept                           { return m_descriptor_opt.has_value(); }
+    [[nodiscard]] const Opt<ResourceDescriptor>& GetDescriptor() const noexcept { return m_descriptor_opt; }
 
     [[nodiscard]] D3D12_GPU_VIRTUAL_ADDRESS   GetNativeGpuAddress() const noexcept;
     [[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCpuDescriptorHandle() const noexcept;

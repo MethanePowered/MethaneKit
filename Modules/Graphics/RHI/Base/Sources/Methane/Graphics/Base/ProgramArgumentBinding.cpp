@@ -24,6 +24,8 @@ Base implementation of the program argument binding interface.
 #include <Methane/Graphics/Base/ProgramArgumentBinding.h>
 #include <Methane/Graphics/Base/ProgramBindings.h>
 
+#include <Methane/Data/EnumMaskUtil.hpp>
+
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
@@ -93,10 +95,10 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
                                   magic_enum::enum_name(resource_view.GetResource().GetResourceType()),
                                   m_settings.argument.GetName(), magic_enum::enum_name(bound_resource_type));
 
-        const Rhi::IResource::Usage resource_usage_mask = resource_view.GetResource().GetUsage();
+        const Rhi::ResourceUsageMask resource_usage_mask = resource_view.GetResource().GetUsage();
         using namespace magic_enum::bitwise_operators;
-        META_CHECK_ARG_DESCR(resource_usage_mask, resource_usage_mask.addressable == is_addressable_binding,
-                             "resource addressable usage flag does not match with resource binding state");
+        META_CHECK_ARG_EQUAL_DESCR(resource_usage_mask.HasAnyBit(Rhi::ResourceUsage::Addressable), is_addressable_binding,
+                             "resource usage mask {} does not have addressable flag", Data::GetEnumMaskName(resource_usage_mask));
         META_CHECK_ARG_NAME_DESCR("resource_view", is_addressable_binding || !resource_view.GetOffset(),
                                   "can not set resource view_id with non-zero offset to non-addressable resource binding");
     }

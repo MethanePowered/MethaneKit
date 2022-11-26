@@ -42,7 +42,7 @@ CreateVertexBuffer(const Rhi::IContext& context, Data::Size size, Data::Size str
 {
     const Rhi::BufferSettings settings{
         Rhi::BufferType::Vertex,
-        Rhi::ResourceUsage(),
+        Rhi::ResourceUsageMask(),
         size,
         stride,
         PixelFormat::Unknown,
@@ -57,7 +57,7 @@ CreateIndexBuffer(const Rhi::IContext& context, Data::Size size, PixelFormat for
 {
     const Rhi::BufferSettings settings{
         Rhi::BufferType::Index,
-        Rhi::ResourceUsage(),
+        Rhi::ResourceUsageMask(),
         size,
         GetPixelSize(format),
         format,
@@ -70,9 +70,8 @@ template<typename NativeBufferType, typename ...ExtraConstructorArgTypes>
 std::enable_if_t<std::is_base_of_v<Rhi::IBuffer, NativeBufferType>, Ptr<NativeBufferType>>
 CreateConstantBuffer(const Rhi::IContext& context, Data::Size size, bool addressable, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
 {
-    Rhi::ResourceUsage usage_mask;
-    usage_mask.shader_read = true;
-    usage_mask.addressable = addressable;
+    Rhi::ResourceUsageMask usage_mask(Rhi::ResourceUsage::ShaderRead);
+    usage_mask.SetBit(Rhi::ResourceUsage::Addressable, addressable);
     const Rhi::BufferSettings settings{
         Rhi::BufferType::Constant,
         usage_mask,
@@ -91,7 +90,7 @@ CreateReadBackBuffer(const Rhi::IContext& context, Data::Size size, ExtraConstru
     META_FUNCTION_TASK();
     const Rhi::BufferSettings settings{
         Rhi::BufferType::ReadBack,
-        Rhi::ResourceUsage({ Rhi::ResourceUsage::Bit::ReadBack }),
+        Rhi::ResourceUsageMask(Rhi::ResourceUsage::ReadBack),
         size,
         0U,
         PixelFormat::Unknown,

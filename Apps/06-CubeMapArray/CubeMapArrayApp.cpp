@@ -129,7 +129,7 @@ void CubeMapArrayApp::Init()
             GetRenderContext(),
             rhi::ITexture::Settings::Cube(
                 g_cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,
-                rhi::ResourceUsage({ rhi::ResourceUsage::Bit::RenderTarget, rhi::ResourceUsage::Bit::ShaderRead })
+                rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })
         )));
 
     // Create sampler for image texture

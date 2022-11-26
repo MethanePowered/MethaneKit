@@ -31,6 +31,7 @@ DirectX 12 implementation of the texture interface.
 
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Graphics/TypeFormatters.hpp>
+#include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -80,14 +81,14 @@ Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& render_co
 Ptr<ITexture> ITexture::CreateImage(const IContext& render_context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage({ Usage::Bit::ShaderRead }));
+    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, UsageMask({ Usage::ShaderRead }));
     return std::make_shared<DirectX::ImageTexture>(dynamic_cast<const Base::Context&>(render_context), texture_settings, DirectX::ImageToken());
 }
 
 Ptr<ITexture> ITexture::CreateCube(const IContext& render_context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage({ Usage::Bit::ShaderRead }));
+    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, UsageMask({ Usage::ShaderRead }));
     return std::make_shared<DirectX::ImageTexture>(dynamic_cast<const Base::Context&>(render_context), texture_settings, DirectX::ImageToken());
 }
 
@@ -315,7 +316,7 @@ template<>
 void FrameBufferTexture::Initialize(FrameBufferIndex frame_buffer_index)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(GetUsage().render_target, "frame-buffer texture supports only 'RenderTarget' usage");
+    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Usage::RenderTarget), "frame-buffer texture supports only 'RenderTarget' usage");
     InitializeFrameBufferResource(frame_buffer_index);
 }
 
@@ -342,9 +343,9 @@ Opt<Rhi::IResource::Descriptor> RenderTargetTexture::InitializeNativeViewDescrip
 {
     META_FUNCTION_TASK();
     const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
-    if (view_id.usage.shader_read)
+    if (view_id.usage.HasAnyBit(Usage::ShaderRead))
         CreateShaderResourceView(descriptor, view_id);
-    else if (view_id.usage.render_target)
+    else if (view_id.usage.HasAnyBit(Usage::RenderTarget))
         CreateRenderTargetView(descriptor, view_id);
     return descriptor;
 }
@@ -377,11 +378,11 @@ DepthStencilTexture::Texture(const Base::Context& render_context, const Settings
     );
 
     using namespace magic_enum::bitwise_operators;
-    if (settings.usage_mask.render_target)
+    if (settings.usage_mask.HasAnyBit(Usage::RenderTarget))
     {
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
     }
-    if (!settings.usage_mask.shader_read && !settings.usage_mask.shader_write)
+    if (!settings.usage_mask.HasAnyBit(Usage::ShaderRead) && !settings.usage_mask.HasAnyBit(Usage::ShaderWrite))
     {
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
     }
@@ -432,13 +433,14 @@ Opt<Rhi::IResource::Descriptor> DepthStencilTexture::InitializeNativeViewDescrip
 {
     META_FUNCTION_TASK();
     const Rhi::IResource::Descriptor& descriptor = GetDescriptorByViewId(view_id);
-    if (view_id.usage.shader_read)
+    if (view_id.usage.HasAnyBit(Usage::ShaderRead))
         CreateShaderResourceView(descriptor);
-    else if (view_id.usage.render_target)
+    else if (view_id.usage.HasAnyBit(Usage::RenderTarget))
         CreateDepthStencilView(descriptor);
     else
     {
-        META_UNEXPECTED_ARG_DESCR_RETURN(view_id.usage, descriptor, "unsupported usage for Depth-Stencil buffer");
+        META_UNEXPECTED_ARG_DESCR_RETURN(view_id.usage.ToInt(), descriptor,
+                                         "unsupported usage {} for Depth-Stencil buffer", Data::GetEnumMaskName(view_id.usage));
     }
     return descriptor;
 }
@@ -447,7 +449,7 @@ ImageTexture::Texture(const Base::Context& render_context, const Settings& setti
     : Resource(render_context, settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(GetUsage().shader_read, "image texture supports only 'ShaderRead' usage");
+    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Usage::ShaderRead), "image texture supports only 'ShaderRead' usage");
 
     const SubResource::Count& sub_resource_count = GetSubresourceCount();
     const CD3DX12_RESOURCE_DESC resource_desc = CreateNativeResourceDesc(settings, sub_resource_count);

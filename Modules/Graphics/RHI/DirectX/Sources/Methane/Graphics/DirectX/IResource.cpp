@@ -23,6 +23,7 @@ DirectX 12 specialization of the resource interface.
 
 #include <Methane/Graphics/DirectX/IResource.h>
 #include <Methane/Graphics/Rhi/ITexture.h>
+#include <Methane/Data/EnumMaskUtil.hpp>
 
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
@@ -35,19 +36,17 @@ struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
 namespace Methane::Graphics::DirectX
 {
 
-
-DescriptorHeap::Type IResource::GetDescriptorHeapTypeByUsage(const Rhi::IResource& resource, Usage resource_usage)
+DescriptorHeap::Type IResource::GetDescriptorHeapTypeByUsage(const Rhi::IResource& resource, UsageMask resource_usage)
 {
     META_FUNCTION_TASK();
     const Rhi::IResource::Type resource_type = resource.GetResourceType();
-    if (resource_usage.shader_read ||
-        resource_usage.shader_write)
+    if (resource_usage.HasAnyBits({ Usage::ShaderRead, Usage::ShaderWrite }))
     {
         return (resource_type == Type::Sampler)
                ? DescriptorHeap::Type::Samplers
                : DescriptorHeap::Type::ShaderResources;
     }
-    else if (resource_usage.render_target)
+    else if (resource_usage.HasAnyBit(Usage::RenderTarget))
     {
         return (resource_type == Type::Texture &&
                 dynamic_cast<const Rhi::ITexture&>(resource).GetSettings().type == Rhi::TextureType::DepthStencilBuffer)
@@ -56,8 +55,8 @@ DescriptorHeap::Type IResource::GetDescriptorHeapTypeByUsage(const Rhi::IResourc
     }
     else
     {
-        META_UNEXPECTED_ARG_DESCR_RETURN(resource_usage, DescriptorHeap::Type::Undefined,
-                                         "resource usage does not map to descriptor heap");
+        META_UNEXPECTED_ARG_DESCR_RETURN(resource_usage.ToInt(), DescriptorHeap::Type::Undefined,
+                                         "resource usage {} does not map to descriptor heap", Data::GetEnumMaskName(resource_usage));
     }
 }
 
