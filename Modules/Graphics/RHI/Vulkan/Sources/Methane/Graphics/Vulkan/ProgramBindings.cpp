@@ -33,7 +33,6 @@ Vulkan implementation of the program interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
 #include <algorithm>
 
 namespace Methane::Graphics::Rhi
@@ -241,10 +240,9 @@ void ProgramBindings::Apply(ICommandListVk& command_list_vk, const Rhi::ICommand
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(m_descriptor_sets);
-    using namespace magic_enum::bitwise_operators;
 
-    Rhi::ProgramArgumentAccess apply_access;
-    apply_access.is_mutable = true;
+    Rhi::ProgramArgumentAccess::Mask apply_access;
+    apply_access.SetBitOn(Rhi::ProgramArgumentAccess::Type::Mutable);
     uint32_t first_descriptor_set_layout_index = 0U;
 
     static const ApplyBehavior s_constant_once_behavior({ ApplyBehavior::Bit::ConstantOnce });
@@ -257,8 +255,8 @@ void ProgramBindings::Apply(ICommandListVk& command_list_vk, const Rhi::ICommand
     }
     else
     {
-        apply_access.is_constant = true;
-        apply_access.is_frame_constant = true;
+        apply_access.SetBitOn(Rhi::ProgramArgumentAccess::Type::Constant);
+        apply_access.SetBitOn(Rhi::ProgramArgumentAccess::Type::FrameConstant);
     }
 
     // Set resource transition barriers before applying resource bindings

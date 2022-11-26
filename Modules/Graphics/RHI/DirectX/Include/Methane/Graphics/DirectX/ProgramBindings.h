@@ -75,7 +75,7 @@ private:
     void AddRootParameterBinding(const Rhi::ProgramArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBinding& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
-    void ApplyRootParameterBindings(Rhi::ProgramArgumentAccess access, ID3D12GraphicsCommandList& d3d12_command_list,
+    void ApplyRootParameterBindings(Rhi::ProgramArgumentAccess::Mask access, ID3D12GraphicsCommandList& d3d12_command_list,
                                     const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const;
     void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
     void CopyDescriptorsToGpu();

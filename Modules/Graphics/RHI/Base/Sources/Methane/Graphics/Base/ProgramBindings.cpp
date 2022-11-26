@@ -28,6 +28,7 @@ Base implementation of the program bindings interface.
 
 #include <Methane/Graphics/RHI/IBuffer.h>
 #include <Methane/Graphics/RHI/ITexture.h>
+#include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Utils.h>
@@ -329,17 +330,12 @@ void ProgramBindings::AddTransitionResourceStates(const Rhi::IProgramBindings::I
     }
 }
 
-bool ProgramBindings::ApplyResourceStates(Rhi::ProgramArgumentAccess access, const Rhi::ICommandQueue* owner_queue_ptr) const
+bool ProgramBindings::ApplyResourceStates(Rhi::ProgramArgumentAccess::Mask access, const Rhi::ICommandQueue* owner_queue_ptr) const
 {
     META_FUNCTION_TASK();
     bool resource_states_changed = false;
-
-    for(Rhi::ProgramArgumentAccess::Type access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccess::Type>())
+    Data::ForEachBitInEnumMask(access, [this, owner_queue_ptr, &resource_states_changed](Rhi::ProgramArgumentAccess::Type access_type)
     {
-        if (!access.HasType(access_type))
-            continue;
-
-        using namespace magic_enum::bitwise_operators;
         const ResourceStates& resource_states = m_transition_resource_states_by_access[magic_enum::enum_index(access_type).value()];
         for(const ResourceAndState& resource_state : resource_states)
         {
@@ -349,8 +345,7 @@ bool ProgramBindings::ApplyResourceStates(Rhi::ProgramArgumentAccess access, con
 
             resource_states_changed |= resource_state.resource_ptr->SetState(resource_state.state, m_resource_state_transition_barriers_ptr);
         }
-    }
-
+    });
     return resource_states_changed;
 }
 

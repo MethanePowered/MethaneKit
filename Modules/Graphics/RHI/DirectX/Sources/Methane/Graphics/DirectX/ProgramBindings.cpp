@@ -32,6 +32,7 @@ DirectX 12 implementation of the program bindings interface.
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Base/RenderContext.h>
 #include <Methane/Platform/Windows/Utils.h>
+#include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -146,13 +147,13 @@ void ProgramBindings::Apply(ICommandListDx& command_list_dx, const Base::Program
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
 
-    Rhi::ProgramArgumentAccess apply_access_mask;
-    apply_access_mask.is_mutable = true;
+    Rhi::ProgramArgumentAccess::Mask apply_access_mask;
+    apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccess::Type::Mutable);
 
     if (apply_behavior.constant_once || !applied_program_bindings_ptr)
     {
-        apply_access_mask.is_constant = true;
-        apply_access_mask.is_frame_constant = true;
+        apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccess::Type::Constant);
+        apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccess::Type::FrameConstant);
     }
 
     // Set resource transition barriers before applying resource bindings
@@ -319,27 +320,25 @@ void ProgramBindings::AddRootParameterBindingsForArgument(ArgumentBinding& argum
     }
 }
 
-void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccess access, ID3D12GraphicsCommandList& d3d12_command_list,
+void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccess::Mask access, ID3D12GraphicsCommandList& d3d12_command_list,
                                                  const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const
 {
     META_FUNCTION_TASK();
-    for(Rhi::ProgramArgumentAccess::Type access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccess::Type>())
-    {
-        if (!access.HasType(access_type))
-            continue;
-
-        using namespace magic_enum::bitwise_operators;
-        const bool do_program_bindings_comparing = access_type == Rhi::ProgramArgumentAccess::Type::Mutable && apply_changes_only && applied_program_bindings_ptr;
-        const RootParameterBindings& root_parameter_bindings = m_root_parameter_bindings_by_access[magic_enum::enum_index(access_type).value()];
-
-        for (const RootParameterBinding& root_parameter_binding : root_parameter_bindings)
+    Data::ForEachBitInEnumMask(access,
+        [this, &d3d12_command_list, applied_program_bindings_ptr, apply_changes_only](Rhi::ProgramArgumentAccess::Type access_type)
         {
-            if (do_program_bindings_comparing && root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *applied_program_bindings_ptr))
-                continue;
+            using namespace magic_enum::bitwise_operators;
+            const bool do_program_bindings_comparing = access_type == Rhi::ProgramArgumentAccess::Type::Mutable && apply_changes_only && applied_program_bindings_ptr;
+            const RootParameterBindings& root_parameter_bindings = m_root_parameter_bindings_by_access[magic_enum::enum_index(access_type).value()];
 
-            ApplyRootParameterBinding(root_parameter_binding, d3d12_command_list);
-        }
-    }
+            for (const RootParameterBinding& root_parameter_binding : root_parameter_bindings)
+            {
+                if (do_program_bindings_comparing && root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *applied_program_bindings_ptr))
+                    continue;
+
+                ApplyRootParameterBinding(root_parameter_binding, d3d12_command_list);
+            }
+        });
 }
 
 void ProgramBindings::ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const

@@ -36,16 +36,27 @@ EnumMask utility functions based on magic-enum.
 namespace Methane::Data
 {
 
+template<typename E, typename M, typename F>
+void ForEachBitInEnumMask(EnumMask<E, M> mask, F functor)
+{
+    for(E bit : magic_enum::enum_values<E>())
+    {
+        if (mask.HasAnyBit(bit))
+        {
+            functor(bit);
+        }
+    }
+}
+
 template<typename E, typename M>
 std::vector<E> GetEnumMaskBits(EnumMask<E, M> mask)
 {
     META_FUNCTION_TASK();
     std::vector<E> bits;
-    for(E bit : magic_enum::enum_values<E>())
+    ForEachBitInEnumMask(mask, [&bits](E bit)
     {
-        if (mask.HasAnyBit(bit))
-            bits.push_back(bit);
-    }
+        bits.push_back(bit);
+    });
     return bits;
 }
 
@@ -54,11 +65,10 @@ std::vector<std::string> GetEnumBitNames(EnumMask<E, M> mask)
 {
     META_FUNCTION_TASK();
     std::vector<std::string> bit_names;
-    for(E bit : magic_enum::enum_values<E>())
+    ForEachBitInEnumMask(mask, [&bit_names](E bit)
     {
-        if (mask.HasAnyBit(bit))
-            bit_names.emplace_back(magic_enum::enum_name(bit));
-    }
+        bit_names.emplace_back(magic_enum::enum_name(bit));
+    });
     return bit_names;
 }
 
@@ -71,11 +81,11 @@ std::string GetEnumMaskName(EnumMask<E, M> mask, std::string_view separator = "|
 
     std::stringstream ss;
     ss << "(";
-    for(E bit : magic_enum::enum_values<E>())
+    ForEachBitInEnumMask(mask, [&ss, separator](E bit)
     {
-        if (mask.HasAnyBit(bit))
-            ss << magic_enum::enum_name(bit) << separator;
-    }
+        ss << magic_enum::enum_name(bit) << separator;
+    });
+
     if (separator.length() <= 1)
     {
         ss.seekp(-static_cast<int>(separator.length()), std::ios_base::end);

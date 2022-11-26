@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX/Types.h
+FILE: Methane/Graphics/DirectX/Mask.h
 Methane graphics types converters to DirectX 12 native types.
 
 ******************************************************************************/

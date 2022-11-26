@@ -28,6 +28,7 @@ pipeline via state object and used to create resource binding objects.
 #include "IObject.h"
 
 #include <Methane/Memory.hpp>
+#include <Methane/Data/EnumMask.hpp>
 #include <Methane/Graphics/Types.h>
 
 #include <vector>
@@ -98,7 +99,7 @@ private:
     size_t           m_hash;
 };
 
-union ProgramArgumentAccess
+namespace ProgramArgumentAccess
 {
     enum class Type : uint32_t
     {
@@ -107,23 +108,7 @@ union ProgramArgumentAccess
         Mutable
     };
 
-    struct
-    {
-        bool is_constant       : 1;
-        bool is_frame_constant : 1;
-        bool is_mutable        : 1;
-    };
-
-    uint32_t mask;
-
-    ProgramArgumentAccess() noexcept;
-    explicit ProgramArgumentAccess(uint32_t mask) noexcept;
-    explicit ProgramArgumentAccess(const std::initializer_list<Type>& type);
-
-    void SetType(Type type, bool value);
-    bool HasType(Type type) const;
-    std::vector<Type> GetTypes() const;
-    std::vector<std::string> GetTypeNames() const;
+    using Mask = Data::EnumMask<Type>;
 };
 
 using ProgramArguments = std::unordered_set<ProgramArgument, ProgramArgument::Hash>;
@@ -131,8 +116,8 @@ using ProgramArguments = std::unordered_set<ProgramArgument, ProgramArgument::Ha
 class ProgramArgumentAccessor : public ProgramArgument
 {
 public:
-    using Type  = ProgramArgumentAccess::Type;
-    using Types = ProgramArgumentAccess;
+    using Type = ProgramArgumentAccess::Type;
+    using Mask = ProgramArgumentAccess::Mask;
 
     ProgramArgumentAccessor(ShaderType shader_type, std::string_view argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
     ProgramArgumentAccessor(const ProgramArgument& argument, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;

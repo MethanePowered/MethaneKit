@@ -72,7 +72,7 @@ public:
 
     template<typename CommandListType>
     void ApplyResourceTransitionBarriers(CommandListType& command_list,
-                                         Rhi::ProgramArgumentAccess apply_access = Rhi::ProgramArgumentAccess(~0U),
+                                         Rhi::ProgramArgumentAccess::Mask apply_access = Rhi::ProgramArgumentAccess::Mask{ ~0U },
                                          const Rhi::ICommandQueue* owner_queue_ptr = nullptr) const
     {
         if (ApplyResourceStates(apply_access, owner_queue_ptr) &&
@@ -114,7 +114,7 @@ private:
     using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Rhi::ProgramArgumentAccess::Type>()>;
     using ResourceRefsByAccess = std::array<Refs<Rhi::IResource>, magic_enum::enum_count<Rhi::ProgramArgumentAccess::Type>()>;
 
-    bool ApplyResourceStates(Rhi::ProgramArgumentAccess access, const Rhi::ICommandQueue* owner_queue_ptr = nullptr) const;
+    bool ApplyResourceStates(Rhi::ProgramArgumentAccess::Mask access, const Rhi::ICommandQueue* owner_queue_ptr = nullptr) const;
     void InitResourceRefsByAccess();
 
     const Ptr<Rhi::IProgram>             m_program_ptr;
