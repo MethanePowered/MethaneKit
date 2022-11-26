@@ -46,10 +46,12 @@ struct fmt::formatter<Methane::Graphics::Rhi::ProgramArgumentAccessor>
 };
 
 template<>
-struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
+struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsageMask>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsage& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", fmt::join(rl.GetBitNames(), "|")); }
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsageMask& rl, FormatContext& ctx)
+    { return format_to(ctx.out(), "{}", Methane::Data::GetEnumMaskName(rl)); }
+
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
@@ -116,8 +118,8 @@ ProgramArgumentBinding::operator std::string() const
 }
 
 bool ProgramArgumentBinding::IsAlreadyApplied(const Rhi::IProgram& program,
-                                                  const ProgramBindings& applied_program_bindings,
-                                                  bool check_binding_value_changes) const
+                                              const ProgramBindings& applied_program_bindings,
+                                              bool check_binding_value_changes) const
 {
     META_FUNCTION_TASK();
     if (std::addressof(applied_program_bindings.GetProgram()) != std::addressof(program))

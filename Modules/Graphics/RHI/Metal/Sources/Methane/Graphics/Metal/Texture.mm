@@ -31,7 +31,6 @@ Metal implementation of the texture interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
 #include <algorithm>
 
 namespace Methane::Graphics::Rhi
@@ -62,14 +61,14 @@ Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& context)
 Ptr<ITexture> ITexture::CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, Usage({ Usage::ShaderRead }));
+    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, UsageMask(Usage::ShaderRead));
     return std::make_shared<Metal::Texture>(dynamic_cast<const Base::Context&>(context), texture_settings);
 }
 
 Ptr<ITexture> ITexture::CreateCube(const IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, Usage({ Usage::ShaderRead }));
+    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, UsageMask(Usage::ShaderRead));
     return std::make_shared<Metal::Texture>(dynamic_cast<const Base::Context&>(context), texture_settings);
 }
 
@@ -223,18 +222,16 @@ const RenderContext& Texture::GetMetalRenderContext() const
 MTLTextureUsage Texture::GetNativeTextureUsage()
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
     NSUInteger texture_usage = MTLTextureUsageUnknown;
     const Settings& settings = GetSettings();
     
-    if (settings.usage_mask.shader_read)
+    if (settings.usage_mask.HasAnyBit(Usage::ShaderRead))
         texture_usage |= MTLTextureUsageShaderRead;
     
-    if (settings.usage_mask.shader_write)
+    if (settings.usage_mask.HasAnyBit(Usage::ShaderWrite))
         texture_usage |= MTLTextureUsageShaderWrite;
     
-    if (settings.usage_mask.render_target)
+    if (settings.usage_mask.HasAnyBit(Usage::RenderTarget))
         texture_usage |= MTLTextureUsageRenderTarget;
 
     return texture_usage;

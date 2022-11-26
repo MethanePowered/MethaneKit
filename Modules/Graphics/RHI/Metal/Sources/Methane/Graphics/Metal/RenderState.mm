@@ -81,18 +81,21 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(Rhi::IRenderState::R
     }
 }
     
-static MTLColorWriteMask ConvertRenderTargetColorWriteMaskToMetal(Rhi::BlendingColorChannels color_channels)
+static MTLColorWriteMask ConvertRenderTargetColorWriteMaskToMetal(Rhi::BlendingColorChannels::Mask color_channels)
 {
     META_FUNCTION_TASK();
     MTLColorWriteMask mtl_color_write_mask = 0U;
 
-    if (color_channels.red)
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Red))
         mtl_color_write_mask |= MTLColorWriteMaskRed;
-    if (color_channels.green)
+
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Green))
         mtl_color_write_mask |= MTLColorWriteMaskGreen;
-    if (color_channels.blue)
+
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Blue))
         mtl_color_write_mask |= MTLColorWriteMaskBlue;
-    if (color_channels.alpha)
+
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Alpha))
         mtl_color_write_mask |= MTLColorWriteMaskAlpha;
 
     return mtl_color_write_mask;
@@ -348,28 +351,24 @@ void RenderState::Reset(const Settings& settings)
 void RenderState::Apply(Base::RenderCommandList& command_list, Groups state_groups)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
     RenderCommandList& metal_command_list = static_cast<RenderCommandList&>(command_list);
     const id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
     
-    if (state_groups.program    ||
-        state_groups.rasterizer ||
-        state_groups.blending)
+    if (state_groups.HasAnyBits({ Group::Program, Group::Rasterizer, Group::Blending }))
     {
         [mtl_cmd_encoder setRenderPipelineState: GetNativePipelineState()];
     }
-    if (state_groups.depth_stencil)
+    if (state_groups.HasAnyBit(Group::DepthStencil))
     {
         [mtl_cmd_encoder setDepthStencilState: GetNativeDepthStencilState()];
     }
-    if (state_groups.rasterizer)
+    if (state_groups.HasAnyBit(Group::Rasterizer))
     {
         [mtl_cmd_encoder setTriangleFillMode: m_mtl_fill_mode];
         [mtl_cmd_encoder setFrontFacingWinding: m_mtl_front_face_winding];
         [mtl_cmd_encoder setCullMode: m_mtl_cull_mode];
     }
-    if (state_groups.blending_color)
+    if (state_groups.HasAnyBit(Group::BlendingColor))
     {
         const Settings& settings = GetSettings();
         [mtl_cmd_encoder setBlendColorRed:settings.blending_color.GetRed()
