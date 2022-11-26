@@ -94,7 +94,7 @@ void RenderCommandList::ResetWithStateOnce(Rhi::IRenderState& render_state, IDeb
     ResetWithState(render_state, p_debug_group);
 }
 
-void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroups::Mask state_groups)
+void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroupMask state_groups)
 {
     META_FUNCTION_TASK();
     META_LOG("{} Command list '{}' SET RENDER STATE '{}':\n{}", magic_enum::enum_name(GetType()), GetName(), render_state.GetName(), static_cast<std::string>(render_state.GetSettings()));
@@ -102,9 +102,9 @@ void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::Ren
     VerifyEncodingState();
 
     const bool render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
-    Rhi::RenderStateGroups::Mask changed_states;
+    Rhi::RenderStateGroupMask changed_states;
     if (!m_drawing_state.render_state_ptr)
-        changed_states = Rhi::RenderStateGroups::Mask(~0U);
+        changed_states = Rhi::RenderStateGroupMask(~0U);
 
     if (m_drawing_state.render_state_ptr && render_state_changed)
     {

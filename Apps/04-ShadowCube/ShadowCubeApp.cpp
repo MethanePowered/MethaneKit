@@ -181,7 +181,7 @@ void ShadowCubeApp::Init()
             context_settings.clear_depth_stencil->first
         ),
         std::nullopt, // No stencil attachment
-        rhi::RenderPassAccess::Mask(rhi::RenderPassAccess::Bit::ShaderResources),
+        rhi::RenderPassAccessMask(rhi::RenderPassAccess::ShaderResources),
         false // intermediate render pass
     });
 

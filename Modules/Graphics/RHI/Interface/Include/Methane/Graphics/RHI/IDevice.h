@@ -49,26 +49,22 @@ enum class NativeApi
 };
 
 
-namespace DeviceFeatures
+enum class DeviceFeature : uint32_t
 {
-    enum class Bit : uint32_t
-    {
-        PresentToWindow,
-        AnisotropicFiltering,
-        ImageCubeArray
-    };
+    PresentToWindow,
+    AnisotropicFiltering,
+    ImageCubeArray
+};
 
-    using Mask = Data::EnumMask<Bit>;
-
-} // namespace DeviceFeatures
+using DeviceFeatureMask = Data::EnumMask<DeviceFeature>;
 
 struct DeviceCaps
 {
-    DeviceFeatures::Mask features              { ~0U };
-    uint32_t             render_queues_count   { 1U };
-    uint32_t             transfer_queues_count { 1U };
+    DeviceFeatureMask features              { ~0U };
+    uint32_t          render_queues_count   { 1U };
+    uint32_t          transfer_queues_count { 1U };
 
-    DeviceCaps& SetFeatures(DeviceFeatures::Mask new_features) noexcept;
+    DeviceCaps& SetFeatures(DeviceFeatureMask new_features) noexcept;
     DeviceCaps& SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept;
     DeviceCaps& SetTransferQueuesCount(uint32_t new_transfer_queues_count) noexcept;
 };
@@ -87,8 +83,8 @@ struct IDevice
     : virtual IObject // NOSONAR
     , virtual Data::IEmitter<IDeviceCallback> // NOSONAR
 {
-    using FeaturesMask = DeviceFeatures::Mask;
-    using FeaturesBit  = DeviceFeatures::Bit;
+    using FeatureMask  = DeviceFeatureMask;
+    using Feature      = DeviceFeature;
     using Capabilities = DeviceCaps;
 
     [[nodiscard]] virtual const std::string&  GetAdapterName() const noexcept = 0;

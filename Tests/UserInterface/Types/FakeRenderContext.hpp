@@ -122,7 +122,7 @@ public:
     void Reset(Rhi::ICommandListDebugGroup*) override                         { META_FUNCTION_NOT_IMPLEMENTED(); }
     void ResetOnce(Rhi::ICommandListDebugGroup*) override                     { META_FUNCTION_NOT_IMPLEMENTED(); }
     void SetProgramBindings(Rhi::IProgramBindings&,
-                            Rhi::ProgramBindingsApplyBehavior::Mask) override { META_FUNCTION_NOT_IMPLEMENTED(); }
+                            Rhi::ProgramBindingsApplyBehaviorMask) override   { META_FUNCTION_NOT_IMPLEMENTED(); }
     void SetResourceBarriers(const Rhi::IResourceBarriers&) override          { META_FUNCTION_NOT_IMPLEMENTED(); }
     void Commit() override                                                    { META_FUNCTION_NOT_IMPLEMENTED(); }
     void WaitUntilCompleted(uint32_t) override                                { META_FUNCTION_NOT_IMPLEMENTED(); }
@@ -166,7 +166,7 @@ public:
 
     // IContext interface
     [[nodiscard]] Type GetType() const noexcept override                                        { return Type::Render; }
-    [[nodiscard]] OptionsMask GetOptions() const noexcept override                              { return {}; }
+    [[nodiscard]] OptionMask GetOptions() const noexcept override                               { return {}; }
     [[nodiscard]] tf::Executor& GetParallelExecutor() const noexcept override                   { return m_executor; }
     [[nodiscard]] Rhi::IObjectRegistry& GetObjectRegistry() noexcept override                   { return m_object_registry; }
     [[nodiscard]] const Rhi::IObjectRegistry& GetObjectRegistry() const noexcept override       { return m_object_registry; }

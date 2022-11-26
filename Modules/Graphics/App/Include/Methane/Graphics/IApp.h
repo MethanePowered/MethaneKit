@@ -33,13 +33,13 @@ namespace Methane::Graphics
 
 struct AppSettings
 {
-    Rhi::RenderPassAccess::Mask screen_pass_access;
-    bool                        animations_enabled       = true;
-    bool                        show_hud_in_window_title = true;
-    int32_t                     default_device_index     = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device
-    Rhi::DeviceCaps             device_capabilities;
+    Rhi::RenderPassAccessMask screen_pass_access;
+    bool                      animations_enabled       = true;
+    bool                      show_hud_in_window_title = true;
+    int32_t                   default_device_index     = 0;    // 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device
+    Rhi::DeviceCaps           device_capabilities;
 
-    AppSettings& SetScreenPassAccess(Rhi::RenderPassAccess::Mask new_screen_pass_access) noexcept;
+    AppSettings& SetScreenPassAccess(Rhi::RenderPassAccessMask new_screen_pass_access) noexcept;
     AppSettings& SetAnimationsEnabled(bool new_animations_enabled) noexcept;
     AppSettings& SetShowHudInWindowTitle(bool new_show_hud_in_window_title) noexcept;
     AppSettings& SetDefaultDeviceIndex(int32_t new_default_device_index) noexcept;

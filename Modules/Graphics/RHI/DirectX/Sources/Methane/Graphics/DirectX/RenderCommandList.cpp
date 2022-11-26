@@ -124,9 +124,9 @@ void RenderCommandList::ResetNative(const Ptr<RenderState>& render_state_ptr)
     DrawingState& drawing_state = GetDrawingState();
     drawing_state.render_state_ptr    = render_state_ptr;
     drawing_state.render_state_groups = Rhi::IRenderState::Groups({
-        Rhi::RenderStateGroups::Bit::Program,
-        Rhi::RenderStateGroups::Bit::Rasterizer,
-        Rhi::RenderStateGroups::Bit::DepthStencil
+        Rhi::RenderStateGroup::Program,
+        Rhi::RenderStateGroup::Rasterizer,
+        Rhi::RenderStateGroup::DepthStencil
     });
 }
 

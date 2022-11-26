@@ -78,7 +78,7 @@ public:
         std::vector<vk::PresentModeKHR> present_modes;
     };
 
-    static Rhi::DeviceFeatures::Mask GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device);
+    static Rhi::DeviceFeatureMask GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device);
 
     Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities);
 

@@ -104,21 +104,21 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(Rhi::IRenderState::Raste
 }
 
 [[nodiscard]]
-static UINT8 ConvertRenderTargetColorWriteMaskToD3D12(Rhi::BlendingColorChannels::Mask rt_color_write)
+static UINT8 ConvertRenderTargetColorWriteMaskToD3D12(Rhi::BlendingColorChannelMask rt_color_write)
 {
     META_FUNCTION_TASK();
     UINT8 d3d12_color_write_mask = 0;
 
-    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannels::Bit::Red))
+    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannel::Red))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_RED;   // NOSONAR
 
-    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannels::Bit::Green))
+    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannel::Green))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_GREEN; // NOSONAR
 
-    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannels::Bit::Blue))
+    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannel::Blue))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_BLUE;  // NOSONAR
 
-    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannels::Bit::Alpha))
+    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannel::Alpha))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_ALPHA; // NOSONAR
 
     return d3d12_color_write_mask;

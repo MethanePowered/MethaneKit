@@ -61,7 +61,7 @@ struct IRenderCommandList
     [[nodiscard]] virtual IRenderPass& GetRenderPass() const = 0;
     virtual void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) = 0;
     virtual void ResetWithStateOnce(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) = 0;
-    virtual void SetRenderState(IRenderState& render_state, RenderStateGroups::Mask state_groups = RenderStateGroups::Mask(~0U)) = 0;
+    virtual void SetRenderState(IRenderState& render_state, RenderStateGroupMask state_groups = RenderStateGroupMask(~0U)) = 0;
     virtual void SetViewState(IViewState& view_state) = 0;
     virtual bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers = true) = 0;
     virtual bool SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers = true) = 0;

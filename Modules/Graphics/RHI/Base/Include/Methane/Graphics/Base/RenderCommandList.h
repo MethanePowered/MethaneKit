@@ -58,14 +58,14 @@ public:
             All           = ~0U
         };
 
-        Ptrs<Texture>                render_pass_attachments_ptr;
-        Ptr<RenderState>             render_state_ptr;
-        Ptr<BufferSet>               vertex_buffer_set_ptr;
-        Ptr<Buffer>                  index_buffer_ptr;
-        Opt<Primitive>               primitive_type_opt;
-        ViewState*                   view_state_ptr      = nullptr;
-        Rhi::RenderStateGroups::Mask render_state_groups;
-        Changes                      changes             = Changes::None;
+        Ptrs<Texture>             render_pass_attachments_ptr;
+        Ptr<RenderState>          render_state_ptr;
+        Ptr<BufferSet>            vertex_buffer_set_ptr;
+        Ptr<Buffer>               index_buffer_ptr;
+        Opt<Primitive>            primitive_type_opt;
+        ViewState*                view_state_ptr      = nullptr;
+        Rhi::RenderStateGroupMask render_state_groups;
+        Changes                   changes             = Changes::None;
     };
 
     static Ptr<IRenderCommandList> CreateForSynchronization(Rhi::ICommandQueue& cmd_queue);
@@ -83,7 +83,7 @@ public:
     void Reset(IDebugGroup* p_debug_group = nullptr) override;
     void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
     void ResetWithStateOnce(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) final;
-    void SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroups::Mask state_groups = Rhi::RenderStateGroups::Mask(~0U)) override;
+    void SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroupMask state_groups = Rhi::RenderStateGroupMask(~0U)) override;
     void SetViewState(Rhi::IViewState& view_state) override;
     bool SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers) override;
     bool SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_resource_barriers) override;

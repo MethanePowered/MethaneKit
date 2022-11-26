@@ -99,26 +99,22 @@ private:
     size_t           m_hash;
 };
 
-namespace ProgramArgumentAccess
+enum class ProgramArgumentAccessType : uint32_t
 {
-    enum class Type : uint32_t
-    {
-        Constant,
-        FrameConstant,
-        Mutable
-    };
+    Constant,
+    FrameConstant,
+    Mutable
+};
 
-    using Mask = Data::EnumMask<Type>;
-
-} // namespace ProgramArgumentAccess
+using ProgramArgumentAccessMask = Data::EnumMask<ProgramArgumentAccessType>;
 
 using ProgramArguments = std::unordered_set<ProgramArgument, ProgramArgument::Hash>;
 
 class ProgramArgumentAccessor : public ProgramArgument
 {
 public:
-    using Type = ProgramArgumentAccess::Type;
-    using Mask = ProgramArgumentAccess::Mask;
+    using Type = ProgramArgumentAccessType;
+    using Mask = ProgramArgumentAccessMask;
 
     ProgramArgumentAccessor(ShaderType shader_type, std::string_view argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
     ProgramArgumentAccessor(const ProgramArgument& argument, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;

@@ -105,7 +105,7 @@ Sampler::Sampler(const Base::Context& context, const Settings& settings)
             ConvertSamplerAddressModeToVulkan(settings.address.t),
             ConvertSamplerAddressModeToVulkan(settings.address.r),
             settings.lod.bias,
-            context.GetDevice().GetCapabilities().features.HasBit(Rhi::DeviceFeatures::Bit::AnisotropicFiltering),
+            context.GetDevice().GetCapabilities().features.HasBit(Rhi::DeviceFeature::AnisotropicFiltering),
             std::min(static_cast<float>(settings.max_anisotropy),
                      GetVulkanContext().GetVulkanDevice().GetNativePhysicalDevice().getProperties().limits.maxSamplerAnisotropy),
             settings.compare_function != Compare::Never,

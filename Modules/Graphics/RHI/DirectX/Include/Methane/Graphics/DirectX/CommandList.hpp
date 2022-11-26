@@ -166,7 +166,7 @@ public:
     ID3D12GraphicsCommandList4* GetNativeCommandList4() const final { return m_cp_command_list_4.Get(); }
 
 protected:
-    void ApplyProgramBindings(Base::ProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehavior::Mask apply_behavior) final
+    void ApplyProgramBindings(Base::ProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehaviorMask apply_behavior) final
     {
         // Optimization to skip dynamic_cast required to call Apply method of the Base::ProgramBinding implementation
         static_cast<ProgramBindings&>(program_bindings).Apply(*this, Base::CommandList::GetProgramBindingsPtr(), apply_behavior);

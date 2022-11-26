@@ -44,13 +44,13 @@ ISystem& ISystem::Get()
 namespace Methane::Graphics::Metal
 {
 
-Rhi::DeviceFeatures::Mask Device::GetSupportedFeatures(const id<MTLDevice>& mtl_device)
+Rhi::DeviceFeatureMask Device::GetSupportedFeatures(const id<MTLDevice>& mtl_device)
 {
     META_FUNCTION_TASK();
-    Rhi::DeviceFeatures::Mask supported_features;
-    supported_features.SetBitOn(Rhi::DeviceFeatures::Bit::PresentToWindow);
-    supported_features.SetBitOn(Rhi::DeviceFeatures::Bit::AnisotropicFiltering);
-    supported_features.SetBit(Rhi::DeviceFeatures::Bit::ImageCubeArray,
+    Rhi::DeviceFeatureMask supported_features;
+    supported_features.SetBitOn(Rhi::DeviceFeature::PresentToWindow);
+    supported_features.SetBitOn(Rhi::DeviceFeature::AnisotropicFiltering);
+    supported_features.SetBit(Rhi::DeviceFeature::ImageCubeArray,
                               [mtl_device supportsFamily: MTLGPUFamilyCommon2] ||
                               [mtl_device supportsFamily: MTLGPUFamilyCommon3]);
     return supported_features;
@@ -131,7 +131,7 @@ void System::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificatio
 void System::AddDevice(const id<MTLDevice>& mtl_device)
 {
     META_FUNCTION_TASK();
-    const Rhi::DeviceFeatures::Mask device_supported_features = Device::GetSupportedFeatures(mtl_device);
+    const Rhi::DeviceFeatureMask device_supported_features = Device::GetSupportedFeatures(mtl_device);
     if (!(device_supported_features & GetDeviceCapabilities().features))
         return;
 

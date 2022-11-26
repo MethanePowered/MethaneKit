@@ -172,21 +172,21 @@ static vk::BlendOp BlendingOperationToVulkan(Rhi::IRenderState::Blending::Operat
 }
 
 [[nodiscard]]
-static vk::ColorComponentFlags BlendingColorChannelsToVulkan(Rhi::BlendingColorChannels::Mask color_channels)
+static vk::ColorComponentFlags BlendingColorChannelsToVulkan(Rhi::BlendingColorChannelMask color_channels)
 {
     META_FUNCTION_TASK();
     vk::ColorComponentFlags color_component_flags{};
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Red))
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Red))
         color_component_flags |= vk::ColorComponentFlagBits::eR;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Green))
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Green))
         color_component_flags |= vk::ColorComponentFlagBits::eG;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Blue))
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Blue))
         color_component_flags |= vk::ColorComponentFlagBits::eB;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Alpha))
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Alpha))
         color_component_flags |= vk::ColorComponentFlagBits::eA;
 
     return color_component_flags;

@@ -449,15 +449,15 @@ void QueueFamilyReservation::IncrementQueuesCount(uint32_t extra_queues_count) n
     m_priorities.resize(m_queues_count, 0.F);
 }
 
-Rhi::DeviceFeatures::Mask Device::GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device)
+Rhi::DeviceFeatureMask Device::GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device)
 {
     META_FUNCTION_TASK();
     vk::PhysicalDeviceFeatures vk_device_features = vk_physical_device.getFeatures();
 
-    Rhi::DeviceFeatures::Mask device_features;
-    device_features.SetBit(Rhi::DeviceFeatures::Bit::PresentToWindow, IsDeviceExtensionSupported(vk_physical_device, g_present_device_extensions));
-    device_features.SetBit(Rhi::DeviceFeatures::Bit::AnisotropicFiltering, vk_device_features.samplerAnisotropy);
-    device_features.SetBit(Rhi::DeviceFeatures::Bit::ImageCubeArray, vk_device_features.imageCubeArray);
+    Rhi::DeviceFeatureMask device_features;
+    device_features.SetBit(Rhi::DeviceFeature::PresentToWindow, IsDeviceExtensionSupported(vk_physical_device, g_present_device_extensions));
+    device_features.SetBit(Rhi::DeviceFeature::AnisotropicFiltering, vk_device_features.samplerAnisotropy);
+    device_features.SetBit(Rhi::DeviceFeature::ImageCubeArray, vk_device_features.imageCubeArray);
     return device_features;
 }
 
@@ -469,14 +469,14 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     , m_vk_queue_family_properties(vk_physical_device.getQueueFamilyProperties())
 {
     META_FUNCTION_TASK();
-    if (const Rhi::DeviceFeatures::Mask device_supported_features = Device::GetSupportedFeatures(vk_physical_device);
+    if (const Rhi::DeviceFeatureMask device_supported_features = Device::GetSupportedFeatures(vk_physical_device);
         !static_cast<bool>(device_supported_features & capabilities.features))
         throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
 
     std::vector<uint32_t> reserved_queues_count_per_family(m_vk_queue_family_properties.size(), 0U);
 
     ReserveQueueFamily(Rhi::CommandListType::Render, capabilities.render_queues_count, reserved_queues_count_per_family,
-                       capabilities.features.HasBit(Rhi::DeviceFeatures::Bit::PresentToWindow) ? vk_surface : vk::SurfaceKHR());
+                       capabilities.features.HasBit(Rhi::DeviceFeature::PresentToWindow) ? vk_surface : vk::SurfaceKHR());
 
     ReserveQueueFamily(Rhi::CommandListType::Transfer, capabilities.transfer_queues_count, reserved_queues_count_per_family);
 
@@ -492,7 +492,7 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     }
 
     std::vector<std::string_view> enabled_extension_names = g_common_device_extensions;
-    if (capabilities.features.HasBit(Rhi::DeviceFeatures::Bit::PresentToWindow))
+    if (capabilities.features.HasBit(Rhi::DeviceFeature::PresentToWindow))
     {
         enabled_extension_names.insert(enabled_extension_names.end(), g_present_device_extensions.begin(), g_present_device_extensions.end());
     }
@@ -505,8 +505,8 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
 
     // Enable physical device features:
     vk::PhysicalDeviceFeatures vk_device_features;
-    vk_device_features.samplerAnisotropy = capabilities.features.HasBit(Rhi::DeviceFeatures::Bit::AnisotropicFiltering);
-    vk_device_features.imageCubeArray    = capabilities.features.HasBit(Rhi::DeviceFeatures::Bit::ImageCubeArray);
+    vk_device_features.samplerAnisotropy = capabilities.features.HasBit(Rhi::DeviceFeature::AnisotropicFiltering);
+    vk_device_features.imageCubeArray    = capabilities.features.HasBit(Rhi::DeviceFeature::ImageCubeArray);
 
     // Add descriptions of enabled device features:
     vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_feature(true);
@@ -652,7 +652,7 @@ void System::CheckForChanges()
 const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Methane::Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
-    if (required_device_caps.features.HasAnyBit(Rhi::DeviceFeatures::Bit::PresentToWindow) && !m_vk_unique_surface)
+    if (required_device_caps.features.HasAnyBit(Rhi::DeviceFeature::PresentToWindow) && !m_vk_unique_surface)
     {
         // Temporary surface object is used only to test devices for ability to present to the window
         m_vk_unique_surface = Platform::CreateVulkanSurfaceForWindow(GetNativeInstance(), app_env);

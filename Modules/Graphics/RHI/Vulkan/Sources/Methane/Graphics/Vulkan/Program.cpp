@@ -103,7 +103,7 @@ const std::vector<vk::DescriptorSetLayout>& Program::GetNativeDescriptorSetLayou
     return m_vk_descriptor_set_layouts;
 }
 
-const vk::DescriptorSetLayout& Program::GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccess::Type argument_access_type)
+const vk::DescriptorSetLayout& Program::GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType argument_access_type)
 {
     META_FUNCTION_TASK();
     static const vk::DescriptorSetLayout s_empty_layout;
@@ -111,7 +111,7 @@ const vk::DescriptorSetLayout& Program::GetNativeDescriptorSetLayout(Rhi::Progra
     return layout_info.index_opt ? m_vk_unique_descriptor_set_layouts[*layout_info.index_opt].get() : s_empty_layout;
 }
 
-const Program::DescriptorSetLayoutInfo& Program::GetDescriptorSetLayoutInfo(Rhi::ProgramArgumentAccess::Type argument_access_type)
+const Program::DescriptorSetLayoutInfo& Program::GetDescriptorSetLayoutInfo(Rhi::ProgramArgumentAccessType argument_access_type)
 {
     META_FUNCTION_TASK();
     return m_descriptor_set_layout_info_by_access_type[*magic_enum::enum_index(argument_access_type)];
@@ -138,7 +138,7 @@ const vk::DescriptorSet& Program::GetConstantDescriptorSet()
     if (m_vk_constant_descriptor_set_opt.has_value())
         return m_vk_constant_descriptor_set_opt.value();
 
-    const vk::DescriptorSetLayout& layout = GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccess::Type::Constant);
+    const vk::DescriptorSetLayout& layout = GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType::Constant);
     m_vk_constant_descriptor_set_opt = layout
                                      ? GetVulkanContext().GetVulkanDescriptorManager().AllocDescriptorSet(layout)
                                      : vk::DescriptorSet();
@@ -162,7 +162,7 @@ const vk::DescriptorSet& Program::GetFrameConstantDescriptorSet(Data::Index fram
     m_vk_frame_constant_descriptor_sets.resize(frames_count);
     META_CHECK_ARG_LESS(frame_index, frames_count);
 
-    const vk::DescriptorSetLayout& layout = GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccess::Type::FrameConstant);
+    const vk::DescriptorSetLayout& layout = GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType::FrameConstant);
     if (!layout)
         return m_vk_frame_constant_descriptor_sets.at(frame_index);
 
@@ -274,7 +274,7 @@ void Program::UpdateDescriptorSetLayoutNames() const
     size_t layout_index = 0u;
     for (const vk::DescriptorSetLayout& descriptor_set_layout : m_vk_descriptor_set_layouts)
     {
-        Rhi::ProgramArgumentAccess::Type access_type = magic_enum::enum_value<Rhi::ProgramArgumentAccess::Type>(layout_index);
+        Rhi::ProgramArgumentAccessType access_type = magic_enum::enum_value<Rhi::ProgramArgumentAccessType>(layout_index);
         SetVulkanObjectName(GetVulkanContext().GetVulkanDevice().GetNativeDevice(), descriptor_set_layout,
                             fmt::format("{} {} Arguments Layout", program_name, magic_enum::enum_name(access_type)));
         layout_index++;

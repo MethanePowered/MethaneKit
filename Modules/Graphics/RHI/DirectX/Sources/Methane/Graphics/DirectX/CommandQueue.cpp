@@ -57,7 +57,7 @@ Ptr<ICommandQueue> Rhi::ICommandQueue::Create(const Rhi::IContext& context, Comm
 namespace Methane::Graphics::DirectX
 {
 
-static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(Rhi::CommandListType command_list_type, Rhi::ContextOptions::Mask options)
+static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(Rhi::CommandListType command_list_type, Rhi::ContextOptionMask options)
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -65,7 +65,7 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(Rhi::CommandListType com
     switch(command_list_type)
     {
     case Rhi::CommandListType::Transfer:
-        return options.HasBit(Rhi::ContextOptions::Bit::TransferWithD3D12DirectQueue)
+        return options.HasBit(Rhi::ContextOption::TransferWithD3D12DirectQueue)
              ? D3D12_COMMAND_LIST_TYPE_DIRECT
              : D3D12_COMMAND_LIST_TYPE_COPY;
 

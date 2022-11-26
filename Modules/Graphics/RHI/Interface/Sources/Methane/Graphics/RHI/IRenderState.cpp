@@ -204,10 +204,10 @@ StencilSettings::operator std::string() const
                        read_mask, write_mask, static_cast<std::string>(front_face), static_cast<std::string>(back_face));
 }
 
-RenderStateGroups::Mask RenderStateSettings::Compare(const RenderStateSettings& left, const RenderStateSettings& right, GroupsMask compare_groups) noexcept
+RenderStateGroupMask RenderStateSettings::Compare(const RenderStateSettings& left, const RenderStateSettings& right, GroupMask compare_groups) noexcept
 {
     META_FUNCTION_TASK();
-    GroupsMask changed_state_groups;
+    GroupMask changed_state_groups;
 
     if (compare_groups.HasAnyBit(Group::Program) && left.program_ptr.get() != right.program_ptr.get())
         changed_state_groups.SetBitOn(Group::Program);

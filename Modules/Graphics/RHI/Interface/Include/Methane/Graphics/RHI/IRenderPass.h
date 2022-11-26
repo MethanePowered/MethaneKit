@@ -138,26 +138,22 @@ struct RenderPassStencilAttachment final : RenderPassAttachment
     [[nodiscard]] Type GetType() const noexcept override { return Type::Stencil; }
 };
 
-namespace RenderPassAccess
+enum class RenderPassAccess : uint32_t
 {
-    enum class Bit : uint32_t
-    {
-        ShaderResources,
-        Samplers,
-        RenderTargets,
-        DepthStencil
-    };
+    ShaderResources,
+    Samplers,
+    RenderTargets,
+    DepthStencil
+};
 
-    using Mask = Data::EnumMask<Bit>;
-
-} // namespace RenderPassAccess
+using RenderPassAccessMask = Data::EnumMask<RenderPassAccess>;
 
 struct RenderPatternSettings
 {
     RenderPassColorAttachments       color_attachments;
     Opt<RenderPassDepthAttachment>   depth_attachment;
     Opt<RenderPassStencilAttachment> stencil_attachment;
-    RenderPassAccess::Mask           shader_access;
+    RenderPassAccessMask             shader_access;
     bool                             is_final_pass = true;
 
     [[nodiscard]] bool operator==(const RenderPatternSettings& other) const;
@@ -175,8 +171,8 @@ struct IRenderPattern
     using ColorAttachments  = RenderPassColorAttachments;
     using DepthAttachment   = RenderPassDepthAttachment;
     using StencilAttachment = RenderPassStencilAttachment;
-    using AccessMask        = RenderPassAccess::Mask;
-    using AccessBit         = RenderPassAccess::Bit;
+    using AccessMask        = RenderPassAccessMask;
+    using Access            = RenderPassAccess;
     using Settings          = RenderPatternSettings;
 
     // Create IRenderPattern instance
@@ -218,8 +214,8 @@ struct IRenderPass
     using ColorAttachments  = RenderPassColorAttachments;
     using DepthAttachment   = RenderPassDepthAttachment;
     using StencilAttachment = RenderPassStencilAttachment;
-    using AccessMask        = RenderPassAccess::Mask;
-    using AccessBit         = RenderPassAccess::Bit;
+    using AccessMask        = RenderPassAccessMask;
+    using Access            = RenderPassAccess;
     using Settings          = RenderPassSettings;
     using ICallback         = IRenderPassCallback;
 

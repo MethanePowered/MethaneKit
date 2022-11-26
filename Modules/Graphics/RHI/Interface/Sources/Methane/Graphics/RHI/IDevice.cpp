@@ -29,7 +29,7 @@ used to create graphics context for rendering.
 namespace Methane::Graphics::Rhi
 {
 
-DeviceCaps& DeviceCaps::SetFeatures(DeviceFeatures::Mask new_features) noexcept
+DeviceCaps& DeviceCaps::SetFeatures(DeviceFeatureMask new_features) noexcept
 {
     META_FUNCTION_TASK();
     features = new_features;

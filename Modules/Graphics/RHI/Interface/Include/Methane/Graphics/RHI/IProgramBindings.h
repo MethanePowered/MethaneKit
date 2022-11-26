@@ -75,21 +75,15 @@ struct IProgramArgumentBinding
     [[nodiscard]] virtual explicit operator std::string() const = 0;
 };
 
-namespace ProgramBindingsApplyBehavior
+enum class ProgramBindingsApplyBehavior : uint32_t
 {
-    enum class Bit : uint32_t
-    {
-        ConstantOnce,
-        ChangesOnly,
-        StateBarriers,
-        RetainResources
-    };
+    ConstantOnce,
+    ChangesOnly,
+    StateBarriers,
+    RetainResources
+};
 
-    using Mask = Data::EnumMask<Bit>;
-
-    constexpr Mask g_all = Mask(~0U);
-
-} // namespace ProgramBindingsApplyBehavior
+using ProgramBindingsApplyBehaviorMask = Data::EnumMask<ProgramBindingsApplyBehavior>;
 
 class ProgramBindingsUnboundArgumentsException: public std::runtime_error
 {
@@ -109,8 +103,8 @@ struct IProgramBindings
 {
     using IArgumentBindingCallback = IProgramArgumentBindingCallback;
     using IArgumentBinding = IProgramArgumentBinding;
-    using ApplyBehaviorBit = ProgramBindingsApplyBehavior::Bit;
-    using ApplyBehaviorMask = ProgramBindingsApplyBehavior::Mask;
+    using ApplyBehavior = ProgramBindingsApplyBehavior;
+    using ApplyBehaviorMask = ProgramBindingsApplyBehaviorMask;
     using UnboundArgumentsException = ProgramBindingsUnboundArgumentsException;
     using ResourceViewsByArgument = std::unordered_map<IProgram::Argument, IResource::Views, IProgram::Argument::Hash>;
 

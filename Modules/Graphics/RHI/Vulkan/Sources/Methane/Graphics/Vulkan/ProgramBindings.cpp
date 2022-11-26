@@ -76,7 +76,7 @@ ProgramBindings::ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr,
     if (vk_frame_constant_descriptor_set)
         m_descriptor_sets.emplace_back(vk_frame_constant_descriptor_set);
 
-    if (const vk::DescriptorSetLayout& vk_mutable_descriptor_set_layout = program.GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccess::Type::Mutable);
+    if (const vk::DescriptorSetLayout& vk_mutable_descriptor_set_layout = program.GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType::Mutable);
         vk_mutable_descriptor_set_layout)
     {
         DescriptorManager& descriptor_manager = program.GetVulkanContext().GetVulkanDescriptorManager();
@@ -85,20 +85,20 @@ ProgramBindings::ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr,
     }
 
     const auto destrictor_set_selector = [this, &vk_constant_descriptor_set, &vk_frame_constant_descriptor_set]
-                                         (const Rhi::ProgramArgumentAccess::Type access_type) -> const vk::DescriptorSet&
+                                         (const Rhi::ProgramArgumentAccessType access_type) -> const vk::DescriptorSet&
     {
         static const vk::DescriptorSet s_empty_set;
         switch (access_type)
         {
-        case Rhi::ProgramArgumentAccess::Type::Constant:
+        case Rhi::ProgramArgumentAccessType::Constant:
             META_CHECK_ARG_TRUE(!!vk_constant_descriptor_set);
             return vk_constant_descriptor_set;
 
-        case Rhi::ProgramArgumentAccess::Type::FrameConstant:
+        case Rhi::ProgramArgumentAccessType::FrameConstant:
             META_CHECK_ARG_TRUE(!!vk_frame_constant_descriptor_set);
             return vk_frame_constant_descriptor_set;
 
-        case Rhi::ProgramArgumentAccess::Type::Mutable:
+        case Rhi::ProgramArgumentAccessType::Mutable:
             META_CHECK_ARG_TRUE(m_has_mutable_descriptor_set);
             return m_descriptor_sets.back();
 
@@ -111,7 +111,7 @@ ProgramBindings::ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr,
     ForEachArgumentBinding([&program, &destrictor_set_selector](const Rhi::IProgram::Argument& program_argument, ArgumentBinding& argument_binding)
     {
         const ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetVulkanSettings();
-        const Rhi::ProgramArgumentAccess::Type access_type = argument_binding_settings.argument.GetAccessorType();
+        const Rhi::ProgramArgumentAccessType access_type = argument_binding_settings.argument.GetAccessorType();
         const Program::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(access_type);
         const auto layout_argument_it = std::find(layout_info.arguments.begin(), layout_info.arguments.end(), program_argument);
         META_CHECK_ARG_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", static_cast<std::string>(program_argument));
@@ -142,13 +142,13 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
     {
         // Allocate new mutable descriptor set
         auto& program = static_cast<Program&>(GetProgram());
-        const vk::DescriptorSetLayout& vk_mutable_desc_set_layout = program.GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccess::Type::Mutable);
+        const vk::DescriptorSetLayout& vk_mutable_desc_set_layout = program.GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType::Mutable);
         META_CHECK_ARG_NOT_NULL(vk_mutable_desc_set_layout);
         vk::DescriptorSet copy_mutable_descriptor_set = program.GetVulkanContext().GetVulkanDescriptorManager().AllocDescriptorSet(vk_mutable_desc_set_layout);
 
         // Copy descriptors from original to new mutable descriptor set
         const vk::Device& vk_device = program.GetVulkanContext().GetVulkanDevice().GetNativeDevice();
-        const Program::DescriptorSetLayoutInfo& mutable_desc_set_layout_info = program.GetDescriptorSetLayoutInfo(Rhi::ProgramArgumentAccess::Type::Mutable);
+        const Program::DescriptorSetLayoutInfo& mutable_desc_set_layout_info = program.GetDescriptorSetLayoutInfo(Rhi::ProgramArgumentAccessType::Mutable);
         vk_device.updateDescriptorSets({}, {
             vk::CopyDescriptorSet(other_program_bindings.m_descriptor_sets.back(), {}, {}, copy_mutable_descriptor_set, {}, mutable_desc_set_layout_info.descriptors_count)
         });
@@ -159,7 +159,7 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
         // Update mutable argument bindings with a pointer to the copied descriptor set
         ForEachArgumentBinding([&vk_mutable_descriptor_set](const Rhi::IProgram::Argument&, ArgumentBinding& argument_binding)
         {
-            if (argument_binding.GetVulkanSettings().argument.GetAccessorType() != Rhi::ProgramArgumentAccess::Type::Mutable)
+            if (argument_binding.GetVulkanSettings().argument.GetAccessorType() != Rhi::ProgramArgumentAccessType::Mutable)
                 return;
 
             argument_binding.SetDescriptorSet(vk_mutable_descriptor_set);
@@ -241,11 +241,11 @@ void ProgramBindings::Apply(ICommandListVk& command_list_vk, const Rhi::ICommand
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(m_descriptor_sets);
 
-    Rhi::ProgramArgumentAccess::Mask apply_access;
-    apply_access.SetBitOn(Rhi::ProgramArgumentAccess::Type::Mutable);
+    Rhi::ProgramArgumentAccessMask apply_access;
+    apply_access.SetBitOn(Rhi::ProgramArgumentAccessType::Mutable);
     uint32_t first_descriptor_set_layout_index = 0U;
 
-    if (apply_behavior == ApplyBehaviorMask(ApplyBehaviorBit::ConstantOnce) && p_applied_program_bindings)
+    if (apply_behavior == ApplyBehaviorMask(ApplyBehavior::ConstantOnce) && p_applied_program_bindings)
     {
         if (!m_has_mutable_descriptor_set)
             return;
@@ -254,12 +254,12 @@ void ProgramBindings::Apply(ICommandListVk& command_list_vk, const Rhi::ICommand
     }
     else
     {
-        apply_access.SetBitOn(Rhi::ProgramArgumentAccess::Type::Constant);
-        apply_access.SetBitOn(Rhi::ProgramArgumentAccess::Type::FrameConstant);
+        apply_access.SetBitOn(Rhi::ProgramArgumentAccessType::Constant);
+        apply_access.SetBitOn(Rhi::ProgramArgumentAccessType::FrameConstant);
     }
 
     // Set resource transition barriers before applying resource bindings
-    if (apply_behavior.HasAnyBit(ApplyBehaviorBit::StateBarriers))
+    if (apply_behavior.HasAnyBit(ApplyBehavior::StateBarriers))
     {
         Base::ProgramBindings::ApplyResourceTransitionBarriers(command_list_vk, apply_access, &command_queue);
     }

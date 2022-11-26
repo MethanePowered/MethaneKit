@@ -59,7 +59,7 @@ Various GPU events and metrics are collected by [Intel GPA](https://software.int
 
 ### Instructions for analysis
 1. Start Intel Graphics Monitor from [Intel GPA installation](https://software.intel.com/content/www/us/en/develop/tools/graphics-performance-analyzers.html) and configure Trace options:
-    - Click `OptionsMask` button, select `Trace` tab to change settings
+    - Click `OptionMask` button, select `Trace` tab to change settings
     - Set the trace duration in seconds
     - In `GPA Domains` tab either select `Methane Kit` domain (to see Methane functions instrumentation) or `WinPixEventsRuntime` domain (to see command list debug group instrumentation) but not both - otherwise trace will display incorrectly.
 2. On the `Desktop Applications` launcher screen: select `Trace` mode from combo-box in the right-bottom corner

@@ -96,7 +96,7 @@ public:
             []() {
                 Graphics::CombinedAppSettings settings = Tutorials::GetGraphicsTutorialAppSettings(g_app_name, Tutorials::AppOptions::GetDefaultWithColorOnlyAndAnim());
 #ifdef UNIFORMS_BUFFER_ENABLED
-                settings.graphics_app.SetScreenPassAccess(Rhi::RenderPassAccess::Mask(RenderPassAccess::Bit::ShaderResources));
+                settings.graphics_app.SetScreenPassAccess(Rhi::RenderPassAccessMask(RenderPassAccess::ShaderResources));
 #else
                 settings.graphics_app.SetScreenPassAccess({});
 #endif
@@ -158,7 +158,7 @@ public:
 #ifdef UNIFORMS_BUFFER_ENABLED
                         Rhi::ProgramArgumentAccessors
                         {
-                            { { ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccess::Type::FrameConstant }
+                            { { ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccessType::FrameConstant }
                         },
 #else
                         Rhi::ProgramArgumentAccessors{ },

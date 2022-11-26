@@ -81,21 +81,21 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(Rhi::IRenderState::R
     }
 }
     
-static MTLColorWriteMask ConvertRenderTargetColorWriteMaskToMetal(Rhi::BlendingColorChannels::Mask color_channels)
+static MTLColorWriteMask ConvertRenderTargetColorWriteMaskToMetal(Rhi::BlendingColorChannelMask color_channels)
 {
     META_FUNCTION_TASK();
     MTLColorWriteMask mtl_color_write_mask = 0U;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Red))
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Red))
         mtl_color_write_mask |= MTLColorWriteMaskRed;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Green))
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Green))
         mtl_color_write_mask |= MTLColorWriteMaskGreen;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Blue))
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Blue))
         mtl_color_write_mask |= MTLColorWriteMaskBlue;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannels::Bit::Alpha))
+    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Alpha))
         mtl_color_write_mask |= MTLColorWriteMaskAlpha;
 
     return mtl_color_write_mask;

@@ -85,7 +85,7 @@ RenderContextSettings& RenderContextSettings::SetFullscreen(bool new_full_screen
     return *this;
 }
 
-RenderContextSettings& RenderContextSettings::SetOptionsMask(ContextOptions::Mask new_options_mask) noexcept
+RenderContextSettings& RenderContextSettings::SetOptionMask(ContextOptionMask new_options_mask) noexcept
 {
     META_FUNCTION_TASK();
     options_mask = new_options_mask;

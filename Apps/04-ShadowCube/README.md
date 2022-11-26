@@ -282,7 +282,7 @@ The pattern also defines render pass access to shader resources and is marked wi
             context_settings.clear_depth_stencil->first
         ),
         gfx::IRenderPass::StencilAttachment(),
-        rhi::RenderPassAccess::Mask(rhi::RenderPassAccess::Bit::ShaderResources),
+        rhi::RenderPassAccessMask(rhi::RenderPassAccess::ShaderResources),
         false // intermediate render pass
     });
 ```

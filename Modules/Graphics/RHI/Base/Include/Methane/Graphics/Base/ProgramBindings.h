@@ -72,7 +72,7 @@ public:
 
     template<typename CommandListType>
     void ApplyResourceTransitionBarriers(CommandListType& command_list,
-                                         Rhi::ProgramArgumentAccess::Mask apply_access = Rhi::ProgramArgumentAccess::Mask{ ~0U },
+                                         Rhi::ProgramArgumentAccessMask apply_access = Rhi::ProgramArgumentAccessMask{ ~0U },
                                          const Rhi::ICommandQueue* owner_queue_ptr = nullptr) const
     {
         if (ApplyResourceStates(apply_access, owner_queue_ptr) &&
@@ -94,7 +94,7 @@ protected:
                                                  const ResourceViewsByArgument& replace_resource_views) const;
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
-    const Refs<Rhi::IResource>& GetResourceRefsByAccess(Rhi::ProgramArgumentAccess::Type access_type) const;
+    const Refs<Rhi::IResource>& GetResourceRefsByAccess(Rhi::ProgramArgumentAccessType access_type) const;
 
     void ClearTransitionResourceStates();
     void RemoveTransitionResourceStates(const Rhi::IProgramBindings::IArgumentBinding& argument_binding, const Rhi::IResource& resource);
@@ -111,10 +111,10 @@ private:
     };
 
     using ResourceStates = std::vector<ResourceAndState>;
-    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Rhi::ProgramArgumentAccess::Type>()>;
-    using ResourceRefsByAccess = std::array<Refs<Rhi::IResource>, magic_enum::enum_count<Rhi::ProgramArgumentAccess::Type>()>;
+    using ResourceStatesByAccess = std::array<ResourceStates, magic_enum::enum_count<Rhi::ProgramArgumentAccessType>()>;
+    using ResourceRefsByAccess = std::array<Refs<Rhi::IResource>, magic_enum::enum_count<Rhi::ProgramArgumentAccessType>()>;
 
-    bool ApplyResourceStates(Rhi::ProgramArgumentAccess::Mask access, const Rhi::ICommandQueue* owner_queue_ptr = nullptr) const;
+    bool ApplyResourceStates(Rhi::ProgramArgumentAccessMask access, const Rhi::ICommandQueue* owner_queue_ptr = nullptr) const;
     void InitResourceRefsByAccess();
 
     const Ptr<Rhi::IProgram>             m_program_ptr;

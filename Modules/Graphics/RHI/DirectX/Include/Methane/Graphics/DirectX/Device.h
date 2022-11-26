@@ -43,7 +43,7 @@ namespace wrl = Microsoft::WRL;
 class Device final : public Base::Device
 {
 public:
-    static Rhi::DeviceFeatures::Mask GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
+    static Rhi::DeviceFeatureMask GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
 
     Device(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities);
 

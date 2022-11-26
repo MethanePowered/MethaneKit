@@ -159,7 +159,7 @@ void CommandList::ResetOnce(IDebugGroup* p_debug_group)
     Reset(p_debug_group);
 }
 
-void CommandList::SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehavior::Mask apply_behavior)
+void CommandList::SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehaviorMask apply_behavior)
 {
     META_FUNCTION_TASK();
     if (m_command_state.program_bindings_ptr == std::addressof(program_bindings))
@@ -172,16 +172,16 @@ void CommandList::SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rh
     auto& program_bindings_base = static_cast<ProgramBindings&>(program_bindings);
     ApplyProgramBindings(program_bindings_base, apply_behavior);
 
-    constexpr Rhi::ProgramBindingsApplyBehavior::Mask constant_once_and_changes_only({
-        Rhi::ProgramBindingsApplyBehavior::Bit::ConstantOnce,
-        Rhi::ProgramBindingsApplyBehavior::Bit::ChangesOnly
+    constexpr Rhi::ProgramBindingsApplyBehaviorMask constant_once_and_changes_only({
+        Rhi::ProgramBindingsApplyBehavior::ConstantOnce,
+        Rhi::ProgramBindingsApplyBehavior::ChangesOnly
     });
     if (apply_behavior.HasAnyBits(constant_once_and_changes_only))
     {
         m_command_state.program_bindings_ptr = std::addressof(program_bindings_base);
     }
 
-    if (apply_behavior.HasAnyBit(Rhi::ProgramBindingsApplyBehavior::Bit::RetainResources))
+    if (apply_behavior.HasAnyBit(Rhi::ProgramBindingsApplyBehavior::RetainResources))
     {
         RetainResource(program_bindings_base.GetBasePtr());
     }
@@ -383,7 +383,7 @@ void CommandList::ResetCommandState()
     m_command_state.program_bindings_ptr = nullptr;
 }
 
-void CommandList::ApplyProgramBindings(ProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehavior::Mask apply_behavior)
+void CommandList::ApplyProgramBindings(ProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehaviorMask apply_behavior)
 {
     program_bindings.Apply(*this, apply_behavior);
 }

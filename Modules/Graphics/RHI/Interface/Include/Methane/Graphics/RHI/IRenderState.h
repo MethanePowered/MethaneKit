@@ -91,19 +91,15 @@ struct RasterizerSettings
     [[nodiscard]] explicit operator std::string() const;
 };
 
-namespace BlendingColorChannels
+enum class BlendingColorChannel : uint32_t
 {
-    enum class Bit : uint32_t
-    {
-        Red,
-        Green,
-        Blue,
-        Alpha
-    };
+    Red,
+    Green,
+    Blue,
+    Alpha
+};
 
-    using Mask = Data::EnumMask<Bit>;
-
-} // namespace BlendingColorChannels
+using BlendingColorChannelMask = Data::EnumMask<BlendingColorChannel>;
 
 enum class BlendingOperation : uint32_t
 {
@@ -139,19 +135,19 @@ enum class BlendingFactor : uint32_t
 
 struct RenderTargetSettings
 {
-    using ColorChannelsMask = BlendingColorChannels::Mask;
-    using ColorChannel      = BlendingColorChannels::Bit;
-    using Operation         = BlendingOperation;
-    using Factor            = BlendingFactor;
+    using ColorChannelMask = BlendingColorChannelMask;
+    using ColorChannel     = BlendingColorChannel;
+    using Operation        = BlendingOperation;
+    using Factor           = BlendingFactor;
 
-    bool              blend_enabled             = false;
-    ColorChannelsMask color_write               { ~0U };
-    Operation         rgb_blend_op              = Operation::Add;
-    Operation         alpha_blend_op            = Operation::Add;
-    Factor            source_rgb_blend_factor   = Factor::One;
-    Factor            source_alpha_blend_factor = Factor::One;
-    Factor            dest_rgb_blend_factor     = Factor::Zero;
-    Factor            dest_alpha_blend_factor   = Factor::Zero;
+    bool             blend_enabled             = false;
+    ColorChannelMask color_write               { ~0U };
+    Operation        rgb_blend_op              = Operation::Add;
+    Operation        alpha_blend_op            = Operation::Add;
+    Factor           source_rgb_blend_factor   = Factor::One;
+    Factor           source_alpha_blend_factor = Factor::One;
+    Factor           dest_rgb_blend_factor     = Factor::Zero;
+    Factor           dest_alpha_blend_factor   = Factor::Zero;
 
     bool operator==(const RenderTargetSettings& other) const noexcept;
     bool operator!=(const RenderTargetSettings& other) const noexcept;
@@ -160,12 +156,12 @@ struct RenderTargetSettings
 
 struct BlendingSettings
 {
-    using ColorChannelsMask = BlendingColorChannels::Mask;
-    using ColorChannel      = BlendingColorChannels::Bit;
-    using Operation         = BlendingOperation;
-    using Factor            = BlendingFactor;
-    using RenderTarget      = RenderTargetSettings;
-    using RenderTargets     = std::array<RenderTarget, 8>;
+    using ColorChannelMask = BlendingColorChannelMask;
+    using ColorChannel     = BlendingColorChannel;
+    using Operation        = BlendingOperation;
+    using Factor           = BlendingFactor;
+    using RenderTarget     = RenderTargetSettings;
+    using RenderTargets    = std::array<RenderTarget, 8>;
 
     // NOTE: If is_independent set to false, only the render_targets[0] members are used
     bool          is_independent = false;
@@ -227,20 +223,16 @@ struct StencilSettings
     [[nodiscard]] explicit operator std::string() const;
 };
 
-namespace RenderStateGroups
+enum class RenderStateGroup : uint32_t
 {
-    enum class Bit : uint32_t
-    {
-        Program,
-        Rasterizer,
-        Blending,
-        BlendingColor,
-        DepthStencil,
-    };
+    Program,
+    Rasterizer,
+    Blending,
+    BlendingColor,
+    DepthStencil,
+};
 
-    using Mask = Data::EnumMask<Bit>;
-
-} // namespace RenderStateGroups
+using RenderStateGroupMask = Data::EnumMask<RenderStateGroup>;
 
 struct IRenderContext;
 struct IProgram;
@@ -248,8 +240,8 @@ struct IRenderPattern;
 
 struct RenderStateSettings
 {
-    using GroupsMask = RenderStateGroups::Mask;
-    using Group      = RenderStateGroups::Bit;
+    using GroupMask = RenderStateGroupMask;
+    using Group     = RenderStateGroup;
 
     // NOTE: members are ordered by the usage frequency,
     //       for convenient setup with initializer lists
@@ -262,7 +254,7 @@ struct RenderStateSettings
     BlendingSettings    blending;
     Color4F             blending_color;
 
-    [[nodiscard]] static GroupsMask Compare(const RenderStateSettings& left, const RenderStateSettings& right, GroupsMask compare_groups = GroupsMask(~0U)) noexcept;
+    [[nodiscard]] static GroupMask Compare(const RenderStateSettings& left, const RenderStateSettings& right, GroupMask compare_groups = GroupMask(~0U)) noexcept;
     [[nodiscard]] bool operator==(const RenderStateSettings& other) const noexcept;
     [[nodiscard]] bool operator!=(const RenderStateSettings& other) const noexcept;
     [[nodiscard]] explicit operator std::string() const;
@@ -276,8 +268,8 @@ public:
     using Blending   = BlendingSettings;
     using Depth      = DepthSettings;
     using Stencil    = StencilSettings;
-    using Groups     = RenderStateGroups::Mask;
-    using Group      = RenderStateGroups::Bit;
+    using Groups     = RenderStateGroupMask;
+    using Group      = RenderStateGroup;
     using Settings   = RenderStateSettings;
 
     // Create IRenderState instance

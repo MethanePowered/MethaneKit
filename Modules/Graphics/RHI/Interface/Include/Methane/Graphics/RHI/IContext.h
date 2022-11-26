@@ -62,17 +62,13 @@ enum class ContextDeferredAction : uint32_t
     CompleteInitialization
 };
 
-namespace ContextOptions
+enum class ContextOption : uint32_t
 {
-    enum class Bit : uint32_t
-    {
-        TransferWithD3D12DirectQueue, // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
-        EmulateD3D12RenderPass        // Render passes are emulated with traditional DX API, instead of using native DX render pass API
-    };
+    TransferWithD3D12DirectQueue, // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
+    EmulateD3D12RenderPass        // Render passes are emulated with traditional DX API, instead of using native DX render pass API
+};
 
-    using Mask = Data::EnumMask<Bit>;
-
-} // namespace ContextOptions
+using ContextOptionMask = Data::EnumMask<ContextOption>;
 
 class ContextIncompatibleException
     : public std::runtime_error
@@ -101,13 +97,13 @@ struct IContext
     using Type                  = ContextType;
     using WaitFor               = ContextWaitFor;
     using DeferredAction        = ContextDeferredAction;
-    using OptionsBit           = ContextOptions::Bit;
-    using OptionsMask           = ContextOptions::Mask;
+    using Option                = ContextOption;
+    using OptionMask            = ContextOptionMask;
     using IncompatibleException = ContextIncompatibleException;
 
     // IContext interface
     [[nodiscard]] virtual Type GetType() const noexcept = 0;
-    [[nodiscard]] virtual OptionsMask GetOptions() const noexcept = 0;
+    [[nodiscard]] virtual OptionMask GetOptions() const noexcept = 0;
     [[nodiscard]] virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
     [[nodiscard]] virtual IObjectRegistry& GetObjectRegistry() noexcept = 0;
     [[nodiscard]] virtual const IObjectRegistry& GetObjectRegistry() const noexcept = 0;

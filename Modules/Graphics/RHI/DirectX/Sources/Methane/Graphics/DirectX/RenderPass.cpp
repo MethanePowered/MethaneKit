@@ -187,16 +187,16 @@ RenderPass::DSClearInfo::DSClearInfo(const Opt<DepthAttachment>& depth_attach_op
     }
 }
 
-static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(Rhi::RenderPassAccess::Bit access)
+static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(Rhi::RenderPassAccess access)
 {
     META_FUNCTION_TASK();
-    using AccessBit = Rhi::RenderPassAccess::Bit;
+    using Access = Rhi::RenderPassAccess;
     switch (access)
     {
-    case AccessBit::ShaderResources: return DescriptorHeap::Type::ShaderResources;
-    case AccessBit::Samplers:        return DescriptorHeap::Type::Samplers;
-    case AccessBit::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
-    case AccessBit::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
+    case Access::ShaderResources: return DescriptorHeap::Type::ShaderResources;
+    case Access::Samplers:        return DescriptorHeap::Type::Samplers;
+    case Access::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
+    case Access::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
     default: META_UNEXPECTED_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
     }
 }
@@ -210,7 +210,7 @@ RenderPass::RenderPass(Base::RenderPattern& render_pattern, const Settings& sett
                    [](const Rhi::ITexture::View& texture_location)
                    { return ResourceView(texture_location, Rhi::ResourceUsageMask({ Rhi::ResourceUsage::RenderTarget })); });
 
-    if (render_pattern.GetRenderContext().GetSettings().options_mask.HasBit(Rhi::ContextOptions::Bit::EmulateD3D12RenderPass))
+    if (render_pattern.GetRenderContext().GetSettings().options_mask.HasBit(Rhi::ContextOption::EmulateD3D12RenderPass))
     {
         m_is_native_render_pass_available = false;
     }
@@ -348,7 +348,7 @@ void RenderPass::ForEachAccessibleDescriptorHeap(const FuncType& do_action) cons
 {
     META_FUNCTION_TASK();
     const Pattern::Settings& settings = GetBasePattern().GetSettings();
-    Data::ForEachBitInEnumMask(settings.shader_access, [this, &do_action](AccessBit access_bit)
+    Data::ForEachBitInEnumMask(settings.shader_access, [this, &do_action](Access access_bit)
     {
         const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access_bit);
         do_action(m_dx_context.GetDirectDescriptorManager().GetDefaultShaderVisibleDescriptorHeap(heap_type));

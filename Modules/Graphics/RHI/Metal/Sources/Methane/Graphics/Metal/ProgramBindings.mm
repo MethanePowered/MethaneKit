@@ -197,8 +197,8 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
     RenderCommandList& metal_command_list = static_cast<RenderCommandList&>(command_list);
     const id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
     constexpr ApplyBehaviorMask constant_once_and_changes_only({
-        ApplyBehaviorBit::ConstantOnce,
-        ApplyBehaviorBit::ChangesOnly
+        ApplyBehavior::ConstantOnce,
+        ApplyBehavior::ChangesOnly
     });
     
     for(const auto& binding_by_argument : GetArgumentBindings())
@@ -209,7 +209,7 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
         if (apply_behavior.HasAnyBits(constant_once_and_changes_only) &&
             metal_command_list.GetProgramBindingsPtr() &&
             metal_argument_binding.IsAlreadyApplied(GetProgram(), *metal_command_list.GetProgramBindingsPtr(),
-                                                    apply_behavior.HasAnyBit(ApplyBehaviorBit::ChangesOnly)))
+                                                    apply_behavior.HasAnyBit(ApplyBehavior::ChangesOnly)))
             continue;
 
         const uint32_t arg_index = metal_argument_binding.GetMetalSettings().argument_index;
