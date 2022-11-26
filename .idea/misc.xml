@@ -7,6 +7,21 @@
       <file path="$PROJECT_DIR$/Modules" />
     </sourceRoots>
     <libraryRoots>
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/boostnowide/4aa8e7c9b820f5d6ff7907b805df0f438b5b288f" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/catch2/039c037d160cae99acd7a3cbc33467d19202ff4a" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/cli11/a85d58726f43b2bffa5abdafd4e6f1f0f367382f" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/cmrc/55577ef29372edfd7a28997e1b4562261298c3f6" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/directxheaders/500eb89899a0d13301232ffef0812b790a0b058c" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/directxshadercompilerbinary/971179da0f7c0065f406274dc7442792d301d016" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/directxtex/ead26efdeec9a388f21941430815178c508e9c08" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/fmt/3f95e8522109478ce722897b329e7229543d148b" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/freetype2/ec918ddee77638d31c82a66f60532dd57459425b" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/ittapi/6610938c1ec81e5686bec68c5f143645728c5114" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/magicenum/175a5deef9f66f32404fb1d3ded32d13c888746b" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/spirvcross/854c638bc20ea32d5bc602f9a8582824bfe9a297" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/taskflow/a3a7f54e7ff8f17110e0de988f18ae970d82962d" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/tracy/30d006d5fd26c8d21ed1da987b3badbd872a14c6" />
+      <file path="$PROJECT_DIR$/../CPM.SourceCache/vulkanheaders/d154a0b370b1d723ad22e1b04252df5f29772b84" />
       <file path="$PROJECT_DIR$/Externals/BoostNowide" />
       <file path="$PROJECT_DIR$/Externals/CLI11" />
       <file path="$PROJECT_DIR$/Externals/CML" />

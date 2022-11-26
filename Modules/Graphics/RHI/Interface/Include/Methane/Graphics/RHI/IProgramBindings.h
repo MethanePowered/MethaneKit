@@ -28,6 +28,7 @@ Methane program bindings interface for resources binding to program arguments.
 #include "IObject.h"
 
 #include <Methane/Data/IEmitter.h>
+#include <Methane/Data/EnumMask.hpp>
 #include <Methane/Memory.hpp>
 
 #include <string>
@@ -74,9 +75,9 @@ struct IProgramArgumentBinding
     [[nodiscard]] virtual explicit operator std::string() const = 0;
 };
 
-union ProgramBindingsApplyBehavior
+namespace ProgramBindingsApplyBehavior
 {
-    enum class Bit
+    enum class Bit : uint32_t
     {
         ConstantOnce,
         ChangesOnly,
@@ -84,29 +85,9 @@ union ProgramBindingsApplyBehavior
         RetainResources
     };
 
-    struct
-    {
-        bool constant_once    : 1; // Constant program arguments will be applied only once for each command list
-        bool changes_only     : 1; // Only changed program argument values will be applied in command sequence
-        bool state_barriers   : 1; // Resource state barriers will be automatically evaluated and set for command list
-        bool retain_resources : 1; // Retain bound resources in command list state until it is completed on GPU
-    };
+    using Mask = Data::EnumMask<Bit>;
 
-    // mask =  0: All bindings will be applied indifferently of the previous binding values
-    // mask = ~0: All binding values will be applied incrementally along with resource state barriers
-    uint32_t mask;
-
-    ProgramBindingsApplyBehavior() noexcept;
-    explicit ProgramBindingsApplyBehavior(uint32_t mask) noexcept;
-    explicit ProgramBindingsApplyBehavior(const std::initializer_list<Bit>& bits);
-
-    bool operator==(const ProgramBindingsApplyBehavior& other) const noexcept;
-    bool operator!=(const ProgramBindingsApplyBehavior& other) const noexcept;
-
-    void SetBit(Bit bit, bool value);
-    bool HasBit(Bit bit) const;
-    std::vector<Bit> GetBits() const;
-    std::vector<std::string> GetBitNames() const;
+    constexpr Mask g_all = Mask(~0U);
 };
 
 class ProgramBindingsUnboundArgumentsException: public std::runtime_error
@@ -127,7 +108,8 @@ struct IProgramBindings
 {
     using IArgumentBindingCallback = IProgramArgumentBindingCallback;
     using IArgumentBinding = IProgramArgumentBinding;
-    using ApplyBehavior = ProgramBindingsApplyBehavior;
+    using ApplyBehaviorBit = ProgramBindingsApplyBehavior::Bit;
+    using ApplyBehaviorMask = ProgramBindingsApplyBehavior::Mask;
     using UnboundArgumentsException = ProgramBindingsUnboundArgumentsException;
     using ResourceViewsByArgument = std::unordered_map<IProgram::Argument, IResource::Views, IProgram::Argument::Hash>;
 

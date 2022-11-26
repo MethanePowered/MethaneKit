@@ -30,8 +30,6 @@ Metal implementation of the program bindings interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Graphics::Rhi
 {
 
@@ -193,22 +191,25 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, 
     META_FUNCTION_TASK();
 }
 
-void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehavior apply_behavior) const
+void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
     RenderCommandList& metal_command_list = static_cast<RenderCommandList&>(command_list);
     const id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
+    constexpr Rhi::ApplyBehaviorMask constant_once_and_changes_only({
+        Rhi::ApplyBehaviorBit::ConstantOnce,
+        Rhi::ApplyBehaviorBit::ChangesOnly
+    });
     
     for(const auto& binding_by_argument : GetArgumentBindings())
     {
         const Rhi::IProgram::Argument& program_argument = binding_by_argument.first;
         const ArgumentBinding& metal_argument_binding = static_cast<const ArgumentBinding&>(*binding_by_argument.second);
 
-        if ((apply_behavior.constant_once || apply_behavior.changes_only) &&
+        if (apply_behavior.HasAnyBits(constant_once_and_changes_only) &&
             metal_command_list.GetProgramBindingsPtr() &&
-            metal_argument_binding.IsAlreadyApplied(GetProgram(), *metal_command_list.GetProgramBindingsPtr(), apply_behavior.changes_only))
+            metal_argument_binding.IsAlreadyApplied(GetProgram(), *metal_command_list.GetProgramBindingsPtr(),
+                                                    apply_behavior.HasAnyBit(ApplyBehaviorBit::ChangesOnly)))
             continue;
 
         const uint32_t arg_index = metal_argument_binding.GetMetalSettings().argument_index;

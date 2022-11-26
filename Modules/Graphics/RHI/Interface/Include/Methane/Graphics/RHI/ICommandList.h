@@ -93,7 +93,7 @@ struct ICommandList
     virtual void  Reset(IDebugGroup* p_debug_group = nullptr) = 0;
     virtual void  ResetOnce(IDebugGroup* p_debug_group = nullptr) = 0;
     virtual void  SetProgramBindings(IProgramBindings& program_bindings,
-                                     ProgramBindingsApplyBehavior apply_behavior = ProgramBindingsApplyBehavior(~0U)) = 0;
+                                     ProgramBindingsApplyBehavior::Mask apply_behavior = ProgramBindingsApplyBehavior::g_all) = 0;
     virtual void  SetResourceBarriers(const IResourceBarriers& resource_barriers) = 0;
     virtual void  Commit() = 0;
     virtual void  WaitUntilCompleted(uint32_t timeout_ms = 0U) = 0;

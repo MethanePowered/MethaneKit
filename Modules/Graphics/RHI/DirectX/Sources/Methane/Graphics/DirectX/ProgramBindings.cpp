@@ -137,12 +137,12 @@ void ProgramBindings::CompleteInitialization()
     UpdateRootParameterBindings();
 }
 
-void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehavior apply_behavior) const
+void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const
 {
     Apply(dynamic_cast<ICommandListDx&>(command_list), command_list.GetProgramBindingsPtr(), apply_behavior);
 }
 
-void ProgramBindings::Apply(ICommandListDx& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehavior apply_behavior) const
+void ProgramBindings::Apply(ICommandListDx& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
     using namespace magic_enum::bitwise_operators;
@@ -150,21 +150,22 @@ void ProgramBindings::Apply(ICommandListDx& command_list_dx, const Base::Program
     Rhi::ProgramArgumentAccess::Mask apply_access_mask;
     apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccess::Type::Mutable);
 
-    if (apply_behavior.constant_once || !applied_program_bindings_ptr)
+    if (apply_behavior.HasAnyBit(ApplyBehaviorBit::ConstantOnce) || !applied_program_bindings_ptr)
     {
         apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccess::Type::Constant);
         apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccess::Type::FrameConstant);
     }
 
     // Set resource transition barriers before applying resource bindings
-    if (apply_behavior.state_barriers)
+    if (apply_behavior.HasAnyBit(ApplyBehaviorBit::StateBarriers))
     {
         ApplyResourceTransitionBarriers(command_list_dx, apply_access_mask);
     }
 
     // Apply root parameter bindings after resource barriers
     ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
-    ApplyRootParameterBindings(apply_access_mask, d3d12_command_list, applied_program_bindings_ptr, apply_behavior.changes_only);
+    ApplyRootParameterBindings(apply_access_mask, d3d12_command_list, applied_program_bindings_ptr,
+                               apply_behavior.HasAnyBit(ApplyBehaviorBit::ChangesOnly));
 }
 
 template<typename FuncType>
@@ -327,7 +328,6 @@ void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccess::Mas
     Data::ForEachBitInEnumMask(access,
         [this, &d3d12_command_list, applied_program_bindings_ptr, apply_changes_only](Rhi::ProgramArgumentAccess::Type access_type)
         {
-            using namespace magic_enum::bitwise_operators;
             const bool do_program_bindings_comparing = access_type == Rhi::ProgramArgumentAccess::Type::Mutable && apply_changes_only && applied_program_bindings_ptr;
             const RootParameterBindings& root_parameter_bindings = m_root_parameter_bindings_by_access[magic_enum::enum_index(access_type).value()];
 

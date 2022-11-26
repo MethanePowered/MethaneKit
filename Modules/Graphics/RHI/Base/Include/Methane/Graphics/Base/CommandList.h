@@ -93,7 +93,7 @@ public:
     void  PopDebugGroup() override;
     void  Reset(IDebugGroup* p_debug_group = nullptr) override;
     void  ResetOnce(IDebugGroup* p_debug_group = nullptr) final;
-    void  SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rhi::IProgramBindings::ApplyBehavior apply_behavior) override;
+    void  SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehavior::Mask apply_behavior) override;
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
     Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const override;
@@ -125,7 +125,7 @@ public:
 
 protected:
     virtual void ResetCommandState();
-    virtual void ApplyProgramBindings(ProgramBindings& program_bindings, Rhi::IProgramBindings::ApplyBehavior apply_behavior);
+    virtual void ApplyProgramBindings(ProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehavior::Mask apply_behavior);
 
     CommandState&       GetCommandState()               { return m_command_state; }
     const CommandState& GetCommandState() const         { return m_command_state; }

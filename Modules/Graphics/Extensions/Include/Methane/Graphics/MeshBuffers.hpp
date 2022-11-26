@@ -146,7 +146,7 @@ public:
     }
 
     void Draw(Rhi::IRenderCommandList& cmd_list, const Ptrs<Rhi::IProgramBindings>& instance_program_bindings,
-              Rhi::ProgramBindingsApplyBehavior bindings_apply_behavior = Rhi::ProgramBindingsApplyBehavior(~0U),
+              Rhi::ProgramBindingsApplyBehavior::Mask bindings_apply_behavior = Rhi::ProgramBindingsApplyBehavior::g_all,
               uint32_t first_instance_index = 0, bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         Draw(cmd_list, instance_program_bindings.begin(), instance_program_bindings.end(),
@@ -156,7 +156,7 @@ public:
     void Draw(Rhi::IRenderCommandList& cmd_list,
               const Ptrs<Rhi::IProgramBindings>::const_iterator& instance_program_bindings_begin,
               const Ptrs<Rhi::IProgramBindings>::const_iterator& instance_program_bindings_end,
-              Rhi::ProgramBindingsApplyBehavior bindings_apply_behavior = Rhi::ProgramBindingsApplyBehavior(~0U),
+              Rhi::ProgramBindingsApplyBehavior::Mask bindings_apply_behavior = Rhi::ProgramBindingsApplyBehavior::g_all,
               uint32_t first_instance_index = 0, bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         META_FUNCTION_TASK();
@@ -189,7 +189,7 @@ public:
     }
 
     void DrawParallel(const Rhi::IParallelRenderCommandList& parallel_cmd_list, const Ptrs<Rhi::IProgramBindings>& instance_program_bindings,
-                      Rhi::ProgramBindingsApplyBehavior bindings_apply_behavior = Rhi::ProgramBindingsApplyBehavior(~0U),
+                      Rhi::ProgramBindingsApplyBehavior::Mask bindings_apply_behavior = Rhi::ProgramBindingsApplyBehavior::g_all,
                       bool retain_bindings_once = false, bool set_resource_barriers = true)
     {
         META_FUNCTION_TASK();

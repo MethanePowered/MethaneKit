@@ -271,7 +271,7 @@ protected:
         m_vk_command_buffer_encoding_flags[cmd_buffer_index] = false;
     }
 
-    void ApplyProgramBindings(Base::ProgramBindings& program_bindings, Rhi::IProgramBindings::ApplyBehavior apply_behavior) final
+    void ApplyProgramBindings(Base::ProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehavior::Mask apply_behavior) final
     {
         // Optimization to skip dynamic_cast required to call Apply method of the Base::ProgramBinding implementation
         static_cast<ProgramBindings&>(program_bindings).Apply(*this, Base::CommandList::GetCommandQueue(),

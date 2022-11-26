@@ -228,7 +228,7 @@ void ProgramBindings::CompleteInitialization()
     });
 }
 
-void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehavior apply_behavior) const
+void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
     Apply(dynamic_cast<ICommandListVk&>(command_list), command_list.GetCommandQueue(),
@@ -236,7 +236,7 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehavior apply
 }
 
 void ProgramBindings::Apply(ICommandListVk& command_list_vk, const Rhi::ICommandQueue& command_queue,
-                            const Base::ProgramBindings* p_applied_program_bindings, ApplyBehavior apply_behavior) const
+                            const Base::ProgramBindings* p_applied_program_bindings, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(m_descriptor_sets);
@@ -245,8 +245,7 @@ void ProgramBindings::Apply(ICommandListVk& command_list_vk, const Rhi::ICommand
     apply_access.SetBitOn(Rhi::ProgramArgumentAccess::Type::Mutable);
     uint32_t first_descriptor_set_layout_index = 0U;
 
-    static const ApplyBehavior s_constant_once_behavior({ ApplyBehavior::Bit::ConstantOnce });
-    if (apply_behavior == s_constant_once_behavior && p_applied_program_bindings)
+    if (apply_behavior == ApplyBehaviorMask(ApplyBehaviorBit::ConstantOnce) && p_applied_program_bindings)
     {
         if (!m_has_mutable_descriptor_set)
             return;
@@ -260,7 +259,7 @@ void ProgramBindings::Apply(ICommandListVk& command_list_vk, const Rhi::ICommand
     }
 
     // Set resource transition barriers before applying resource bindings
-    if (apply_behavior.state_barriers)
+    if (apply_behavior.HasAnyBit(ApplyBehaviorBit::StateBarriers))
     {
         Base::ProgramBindings::ApplyResourceTransitionBarriers(command_list_vk, apply_access, &command_queue);
     }

@@ -115,23 +115,24 @@ public:
     { }
 
     // ICommandList interface
-    [[nodiscard]] Rhi::CommandListType  GetType() const noexcept override                           { return command_list_type; }
-    [[nodiscard]] Rhi::CommandListState GetState() const noexcept override                          { return Rhi::CommandListState::Pending; }
-    void PopDebugGroup() override                                                                   { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void PushDebugGroup(Rhi::ICommandListDebugGroup&) override                                      { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Reset(Rhi::ICommandListDebugGroup*) override                                               { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void ResetOnce(Rhi::ICommandListDebugGroup*) override                                           { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void SetProgramBindings(Rhi::IProgramBindings&, Rhi::IProgramBindings::ApplyBehavior) override  { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void SetResourceBarriers(const Rhi::IResourceBarriers&) override                                { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void Commit() override                                                                          { META_FUNCTION_NOT_IMPLEMENTED(); }
-    void WaitUntilCompleted(uint32_t) override                                                      { META_FUNCTION_NOT_IMPLEMENTED(); }
-    [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool) const override                              { throw Data::TimeRange{ }; }
-    [[nodiscard]] Rhi::ICommandQueue& GetCommandQueue() override                                    { return m_command_queue; }
+    [[nodiscard]] Rhi::CommandListType  GetType() const noexcept override     { return command_list_type; }
+    [[nodiscard]] Rhi::CommandListState GetState() const noexcept override    { return Rhi::CommandListState::Pending; }
+    void PopDebugGroup() override                                             { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void PushDebugGroup(Rhi::ICommandListDebugGroup&) override                { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Reset(Rhi::ICommandListDebugGroup*) override                         { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void ResetOnce(Rhi::ICommandListDebugGroup*) override                     { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void SetProgramBindings(Rhi::IProgramBindings&,
+                            Rhi::ProgramBindingsApplyBehavior::Mask) override { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void SetResourceBarriers(const Rhi::IResourceBarriers&) override          { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void Commit() override                                                    { META_FUNCTION_NOT_IMPLEMENTED(); }
+    void WaitUntilCompleted(uint32_t) override                                { META_FUNCTION_NOT_IMPLEMENTED(); }
+    [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool) const override        { throw Data::TimeRange{ }; }
+    [[nodiscard]] Rhi::ICommandQueue& GetCommandQueue() override              { return m_command_queue; }
 
     // IObject interface
-    bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
-    [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
-    [[nodiscard]] Ptr<Rhi::IObject>  GetPtr() override                 { return std::enable_shared_from_this<FakeCommandList<CommandListT, command_list_type>>::shared_from_this(); }
+    bool SetName(const std::string&) override                                 { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
+    [[nodiscard]] const std::string& GetName() const noexcept override        { static std::string name; return name; }
+    [[nodiscard]] Ptr<Rhi::IObject>  GetPtr() override                        { return std::enable_shared_from_this<FakeCommandList<CommandListT, command_list_type>>::shared_from_this(); }
 
 private:
     Rhi::ICommandQueue& m_command_queue;

@@ -652,7 +652,7 @@ void System::CheckForChanges()
 const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Methane::Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
-    if (required_device_caps.features.HasBit(Rhi::DeviceFeatures::Bit::PresentToWindow) && !m_vk_unique_surface)
+    if (required_device_caps.features.HasAnyBit(Rhi::DeviceFeatures::Bit::PresentToWindow) && !m_vk_unique_surface)
     {
         // Temporary surface object is used only to test devices for ability to present to the window
         m_vk_unique_surface = Platform::CreateVulkanSurfaceForWindow(GetNativeInstance(), app_env);

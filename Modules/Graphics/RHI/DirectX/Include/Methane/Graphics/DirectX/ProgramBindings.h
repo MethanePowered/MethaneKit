@@ -56,9 +56,9 @@ public:
 
     // IProgramBindings interface
     void CompleteInitialization() override;
-    void Apply(Base::CommandList& command_list, ApplyBehavior apply_behavior) const override;
+    void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 
-    void Apply(ICommandListDx& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehavior apply_behavior) const;
+    void Apply(ICommandListDx& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const;
 
 private:
     struct RootParameterBinding

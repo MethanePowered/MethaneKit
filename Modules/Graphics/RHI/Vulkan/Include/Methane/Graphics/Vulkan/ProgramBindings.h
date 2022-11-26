@@ -49,13 +49,13 @@ public:
     void Initialize();
 
     // IProgramBindings interface
-    void Apply(Base::CommandList& command_list, ApplyBehavior apply_behavior) const override;
+    void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 
     // Base::ProgramBindings interface
     void CompleteInitialization() override;
 
     void Apply(ICommandListVk& command_list, const Rhi::ICommandQueue& command_queue,
-               const Base::ProgramBindings* p_applied_program_bindings, ApplyBehavior apply_behavior) const;
+               const Base::ProgramBindings* p_applied_program_bindings, ApplyBehaviorMask apply_behavior) const;
 
 private:
     // IObjectCallback interface
