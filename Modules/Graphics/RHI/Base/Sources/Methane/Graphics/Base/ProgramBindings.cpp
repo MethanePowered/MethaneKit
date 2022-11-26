@@ -352,13 +352,13 @@ bool ProgramBindings::ApplyResourceStates(Rhi::ProgramArgumentAccess::Mask acces
 void ProgramBindings::InitResourceRefsByAccess()
 {
     META_FUNCTION_TASK();
-    constexpr size_t                               access_count = magic_enum::enum_count<Rhi::ProgramArgumentAccess::Type>();
+    constexpr size_t access_count = magic_enum::enum_count<Rhi::ProgramArgumentAccess::Type>();
     std::array<std::set<Rhi::IResource*>, access_count> unique_resources_by_access;
 
     for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
         META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
-        std::set<Rhi::IResource*>      & unique_resources = unique_resources_by_access[argument_binding_ptr->GetSettings().argument.GetAccessorIndex()];
+        std::set<Rhi::IResource*>& unique_resources = unique_resources_by_access[argument_binding_ptr->GetSettings().argument.GetAccessorIndex()];
         for (const Rhi::IResource::View& resource_view : argument_binding_ptr->GetResourceViews())
         {
             unique_resources.emplace(resource_view.GetResourcePtr().get());

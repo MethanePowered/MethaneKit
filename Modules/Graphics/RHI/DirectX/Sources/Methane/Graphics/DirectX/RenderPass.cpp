@@ -31,6 +31,7 @@ DirectX 12 implementation of the render pass interface.
 #include <Methane/Graphics/Base/RenderContext.h>
 #include <Methane/Graphics/Base/Texture.h>
 #include <Methane/Graphics/Windows/DirectXErrorHandling.h>
+#include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -343,15 +344,15 @@ void RenderPass::UpdateNativeClearDesc()
 }
 
 template<typename FuncType>
-void RenderPass::ForEachAccessibleDescriptorHeap(FuncType do_action) const
+void RenderPass::ForEachAccessibleDescriptorHeap(const FuncType& do_action) const
 {
     META_FUNCTION_TASK();
     const Pattern::Settings& settings = GetBasePattern().GetSettings();
-    for (Access::Bit access_bit : settings.shader_access.GetBits())
+    Data::ForEachBitInEnumMask(settings.shader_access, [this, &do_action](Access::Bit access_bit)
     {
         const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access_bit);
         do_action(m_dx_context.GetDirectDescriptorManager().GetDefaultShaderVisibleDescriptorHeap(heap_type));
-    }
+    });
 }
 
 void RenderPass::OnDescriptorHeapAllocated(DescriptorHeap&)

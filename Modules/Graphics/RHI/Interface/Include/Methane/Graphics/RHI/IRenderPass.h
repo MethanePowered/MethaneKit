@@ -28,6 +28,7 @@ Methane render pass interface: specifies output of the graphics pipeline.
 
 #include <Methane/Memory.hpp>
 #include <Methane/Data/IEmitter.h>
+#include <Methane/Data/EnumMask.hpp>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Color.hpp>
 
@@ -147,24 +148,7 @@ union RenderPassAccess
         DepthStencil
     };
 
-    struct
-    {
-        bool shader_resources : 1;
-        bool samplers         : 1;
-        bool render_targets   : 1;
-        bool depth_stencil    : 1;
-    };
-
-    uint32_t mask;
-
-    RenderPassAccess() noexcept;
-    explicit RenderPassAccess(uint32_t mask) noexcept;
-    explicit RenderPassAccess(const std::initializer_list<Bit>& bits);
-
-    void SetBit(Bit bit, bool value);
-    bool HasBit(Bit bit) const;
-    std::vector<Bit> GetBits() const;
-    std::vector<std::string> GetBitNames() const;
+    using Mask = Data::EnumMask<Bit>;
 };
 
 struct RenderPatternSettings
@@ -172,7 +156,7 @@ struct RenderPatternSettings
     RenderPassColorAttachments       color_attachments;
     Opt<RenderPassDepthAttachment>   depth_attachment;
     Opt<RenderPassStencilAttachment> stencil_attachment;
-    RenderPassAccess                 shader_access;
+    RenderPassAccess::Mask           shader_access;
     bool                             is_final_pass = true;
 
     [[nodiscard]] bool operator==(const RenderPatternSettings& other) const;
@@ -190,7 +174,8 @@ struct IRenderPattern
     using ColorAttachments  = RenderPassColorAttachments;
     using DepthAttachment   = RenderPassDepthAttachment;
     using StencilAttachment = RenderPassStencilAttachment;
-    using Access            = RenderPassAccess;
+    using AccessMask        = RenderPassAccess::Mask;
+    using AccessBit         = RenderPassAccess::Bit;
     using Settings          = RenderPatternSettings;
 
     // Create IRenderPattern instance

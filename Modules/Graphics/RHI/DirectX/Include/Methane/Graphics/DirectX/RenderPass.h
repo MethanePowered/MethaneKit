@@ -112,7 +112,7 @@ private:
     void UpdateNativeClearDesc();
 
     template<typename FuncType> // function void(DescriptorHeap& descriptor_heap)
-    void ForEachAccessibleDescriptorHeap(FuncType do_action) const;
+    void ForEachAccessibleDescriptorHeap(const FuncType& do_action) const;
 
     // IDescriptorHeapCallback implementation
     void OnDescriptorHeapAllocated(DescriptorHeap& descriptor_heap) override;

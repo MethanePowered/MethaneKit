@@ -26,7 +26,7 @@ Interface of the graphics application base template class defined in App.hpp
 namespace Methane::Graphics
 {
 
-AppSettings& AppSettings::SetScreenPassAccess(Rhi::RenderPassAccess new_screen_pass_access) noexcept
+AppSettings& AppSettings::SetScreenPassAccess(Rhi::RenderPassAccess::Mask new_screen_pass_access) noexcept
 {
     META_FUNCTION_TASK();
     screen_pass_access = new_screen_pass_access;

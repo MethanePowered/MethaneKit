@@ -37,7 +37,7 @@ namespace Methane::Data
 {
 
 template<typename E, typename M, typename F>
-void ForEachBitInEnumMask(EnumMask<E, M> mask, F functor)
+void ForEachBitInEnumMask(EnumMask<E, M> mask, const F& functor)
 {
     for(E bit : magic_enum::enum_values<E>())
     {
