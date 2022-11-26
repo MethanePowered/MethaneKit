@@ -32,7 +32,7 @@ namespace Methane::Tutorials
 
 namespace AppOptions
 {
-    enum class Bit
+    enum class Bit : uint32_t
     {
         DepthBuffer,
         ClearDepth,

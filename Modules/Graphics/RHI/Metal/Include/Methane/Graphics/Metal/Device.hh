@@ -33,7 +33,7 @@ namespace Methane::Graphics::Metal
 class Device final : public Base::Device
 {
 public:
-    static Rhi::DeviceFeatures GetSupportedFeatures(const id<MTLDevice>& mtl_device);
+    static Rhi::DeviceFeatures::Mask GetSupportedFeatures(const id<MTLDevice>& mtl_device);
     
     Device(const id<MTLDevice>& mtl_device, const Capabilities& capabilities);
 

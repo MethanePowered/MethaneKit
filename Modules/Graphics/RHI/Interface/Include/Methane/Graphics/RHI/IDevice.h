@@ -27,6 +27,7 @@ used to create graphics context for rendering.
 #include "IObject.h"
 
 #include <Methane/Data/IEmitter.h>
+#include <Methane/Data/EnumMask.hpp>
 #include <Methane/Memory.hpp>
 
 #include <functional>
@@ -47,28 +48,26 @@ enum class NativeApi
     Vulkan
 };
 
-union DeviceFeatures
+
+namespace DeviceFeatures
 {
-    struct
+    enum class Bit : uint32_t
     {
-        bool present_to_window     : 1;
-        bool anisotropic_filtering : 1;
-        bool image_cube_array      : 1;
+        PresentToWindow,
+        AnisotropicFiltering,
+        ImageCubeArray
     };
 
-    uint32_t mask;
-
-    DeviceFeatures() noexcept;
-    explicit DeviceFeatures(uint32_t mask) noexcept;
+    using Mask = Data::EnumMask<Bit>;
 };
 
 struct DeviceCaps
 {
-    DeviceFeatures features              { ~0U };
-    uint32_t       render_queues_count   { 1U };
-    uint32_t       transfer_queues_count { 1U };
+    DeviceFeatures::Mask features              { ~0U };
+    uint32_t             render_queues_count   { 1U };
+    uint32_t             transfer_queues_count { 1U };
 
-    DeviceCaps& SetFeatures(DeviceFeatures new_features) noexcept;
+    DeviceCaps& SetFeatures(DeviceFeatures::Mask new_features) noexcept;
     DeviceCaps& SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept;
     DeviceCaps& SetTransferQueuesCount(uint32_t new_transfer_queues_count) noexcept;
 };
@@ -87,7 +86,8 @@ struct IDevice
     : virtual IObject // NOSONAR
     , virtual Data::IEmitter<IDeviceCallback> // NOSONAR
 {
-    using Features = DeviceFeatures;
+    using FeaturesMask = DeviceFeatures::Mask;
+    using FeaturesBit  = DeviceFeatures::Bit;
     using Capabilities = DeviceCaps;
 
     [[nodiscard]] virtual const std::string&  GetAdapterName() const noexcept = 0;

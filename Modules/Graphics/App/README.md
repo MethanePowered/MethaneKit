@@ -49,12 +49,12 @@ and extended with other frame-dependent resources in final applications.
 
 Some parameters of the render context settings can be also changed with command line flags:
 
-| Render Context Setting                                                | Type     | Default Value | Cmd-Line Option                 | Description                                                                 |
-|-----------------------------------------------------------------------|----------|---------------|---------------------------------|-----------------------------------------------------------------------------|
-| vsync_enabled                                                         | bool     | true          | -v,--vsync                      | Vertical synchronization                                                    |
-| frame_buffers_count                                                   | uint32_t | 3             | -b,--frame-buffers              | Frame buffers count in swap-chain                                           |
-| options_mask & ContextOptions::Mask::EmulatedRenderPassOnWindows      | bool     | false         | -e,--emulated-render-pass       | Render pass emulation on Windows                                            |
-| options_mask & ContextOptions::Mask::TransferWithDirectQueueOnWindows | bool     | false         | -q,--transfer-with-direct-queue | Transfer command lists and queues use DIRECT instead of COPY type in DX API |
+| Render Context Setting                                               | Type     | Default Value | Cmd-Line Option                 | Description                                                                 |
+|----------------------------------------------------------------------|----------|---------------|---------------------------------|-----------------------------------------------------------------------------|
+| vsync_enabled                                                        | bool     | true          | -v,--vsync                      | Vertical synchronization                                                    |
+| frame_buffers_count                                                  | uint32_t | 3             | -b,--frame-buffers              | Frame buffers count in swap-chain                                           |
+| options_mask & ContextOptions::Bit::EmulatedRenderPassOnWindows      | bool     | false         | -e,--emulated-render-pass       | Render pass emulation on Windows                                            |
+| options_mask & ContextOptions::Bit::TransferWithDirectQueueOnWindows | bool     | false         | -q,--transfer-with-direct-queue | Transfer command lists and queues use DIRECT instead of COPY type in DX API |
 
 ## Graphics Application Controllers
 

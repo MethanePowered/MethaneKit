@@ -141,13 +141,14 @@ static void ConfigureDeviceDebugFeature(const wrl::ComPtr<ID3D12Device>& device_
 
 #endif
 
-Rhi::DeviceFeatures Device::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
+Rhi::DeviceFeatures::Mask Device::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
 {
     META_FUNCTION_TASK();
-    Rhi::DeviceFeatures supported_features;
-    supported_features.present_to_window = true;
-    supported_features.anisotropic_filtering = true;
-    supported_features.image_cube_array = true;
+    Rhi::DeviceFeatures::Mask supported_features;
+    // TODO: implement adapter features detection for DirectX
+    supported_features.SetBitOn(Rhi::DeviceFeatures::Bit::PresentToWindow);
+    supported_features.SetBitOn(Rhi::DeviceFeatures::Bit::AnisotropicFiltering);
+    supported_features.SetBitOn(Rhi::DeviceFeatures::Bit::ImageCubeArray);
     return supported_features;
 }
 
@@ -376,8 +377,8 @@ void System::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_
     if (!SUCCEEDED(D3D12CreateDevice(cp_adapter.Get(), feature_level, _uuidof(ID3D12Device), nullptr)))
         return;
 
-    const Rhi::DeviceFeatures device_supported_features = Device::GetSupportedFeatures(cp_adapter, feature_level);
-    if (!(device_supported_features.mask & GetDeviceCapabilities().features.mask))
+    const Rhi::DeviceFeatures::Mask device_supported_features = Device::GetSupportedFeatures(cp_adapter, feature_level);
+    if (!(device_supported_features & GetDeviceCapabilities().features))
         return;
 
     Base::System::AddDevice(std::make_shared<Device>(cp_adapter, feature_level, GetDeviceCapabilities()));

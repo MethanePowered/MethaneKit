@@ -64,7 +64,7 @@ enum class ContextDeferredAction : uint32_t
 
 namespace ContextOptions
 {
-    enum class Bit
+    enum class Bit : uint32_t
     {
         TransferWithD3D12DirectQueue, // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
         EmulateD3D12RenderPass        // Render passes are emulated with traditional DX API, instead of using native DX render pass API
