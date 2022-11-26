@@ -71,8 +71,8 @@ namespace ContextOptions
     };
 
     using Mask = Data::EnumMask<Bit>;
-};
 
+} // namespace ContextOptions
 
 class ContextIncompatibleException
     : public std::runtime_error

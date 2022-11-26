@@ -88,7 +88,8 @@ namespace ProgramBindingsApplyBehavior
     using Mask = Data::EnumMask<Bit>;
 
     constexpr Mask g_all = Mask(~0U);
-};
+
+} // namespace ProgramBindingsApplyBehavior
 
 class ProgramBindingsUnboundArgumentsException: public std::runtime_error
 {

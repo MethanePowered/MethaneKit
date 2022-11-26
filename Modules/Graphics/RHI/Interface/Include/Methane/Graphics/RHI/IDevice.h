@@ -59,7 +59,8 @@ namespace DeviceFeatures
     };
 
     using Mask = Data::EnumMask<Bit>;
-};
+
+} // namespace DeviceFeatures
 
 struct DeviceCaps
 {

@@ -96,7 +96,7 @@ public:
             []() {
                 Graphics::CombinedAppSettings settings = Tutorials::GetGraphicsTutorialAppSettings(g_app_name, Tutorials::AppOptions::GetDefaultWithColorOnlyAndAnim());
 #ifdef UNIFORMS_BUFFER_ENABLED
-                settings.graphics_app.SetScreenPassAccess(Rhi::RenderPassAccess({ RenderPassAccess::Bit::ShaderResources }));
+                settings.graphics_app.SetScreenPassAccess(Rhi::RenderPassAccess::Mask(RenderPassAccess::Bit::ShaderResources));
 #else
                 settings.graphics_app.SetScreenPassAccess({});
 #endif

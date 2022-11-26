@@ -86,7 +86,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
     META_CHECK_ARG_TRUE(rt_texture_settings.usage_mask.render_target);
 
     m_texture_face_render_pattern_ptr = rhi::IRenderPattern::Create(m_gui_context.GetRenderContext(),
-                                                                    rhi::IRenderPattern::Settings
+        rhi::IRenderPattern::Settings
         {
             rhi::IRenderPattern::ColorAttachments
             {
@@ -98,7 +98,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
             },
             std::nullopt, // No depth attachment
             std::nullopt, // No stencil attachment
-            rhi::RenderPassAccess({ rhi::RenderPassAccess::Bit::ShaderResources, rhi::RenderPassAccess::Bit::Samplers }),
+            rhi::RenderPassAccess::Mask({ rhi::RenderPassAccess::Bit::ShaderResources, rhi::RenderPassAccess::Bit::Samplers }),
             false // intermediate render pass
         });
 
@@ -170,7 +170,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
         m_ending_render_pattern_ptr = rhi::IRenderPattern::Create(m_gui_context.GetRenderContext(), {
             rhi::IRenderPattern::ColorAttachments{ },
             std::nullopt, std::nullopt,
-            rhi::RenderPassAccess({ rhi::RenderPassAccess::Bit::ShaderResources }),
+            rhi::RenderPassAccess::Mask(rhi::RenderPassAccess::Bit::ShaderResources),
             false
         });
         m_ending_render_pass_ptr = rhi::IRenderPass::Create(*m_ending_render_pattern_ptr, { { }, rt_texture_settings.dimensions.AsRectSize() });

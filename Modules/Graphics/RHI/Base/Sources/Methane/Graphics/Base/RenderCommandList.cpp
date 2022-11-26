@@ -94,19 +94,17 @@ void RenderCommandList::ResetWithStateOnce(Rhi::IRenderState& render_state, IDeb
     ResetWithState(render_state, p_debug_group);
 }
 
-void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroups state_groups)
+void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroups::Mask state_groups)
 {
     META_FUNCTION_TASK();
     META_LOG("{} Command list '{}' SET RENDER STATE '{}':\n{}", magic_enum::enum_name(GetType()), GetName(), render_state.GetName(), static_cast<std::string>(render_state.GetSettings()));
 
-    using namespace magic_enum::bitwise_operators;
-
     VerifyEncodingState();
 
     const bool render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
-    Rhi::RenderStateGroups changed_states;
+    Rhi::RenderStateGroups::Mask changed_states;
     if (!m_drawing_state.render_state_ptr)
-        changed_states.mask = ~0U;
+        changed_states = Rhi::RenderStateGroups::Mask(~0U);
 
     if (m_drawing_state.render_state_ptr && render_state_changed)
     {
@@ -114,14 +112,14 @@ void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::Ren
                                                            m_drawing_state.render_state_ptr->GetSettings(),
                                                            m_drawing_state.render_state_groups);
     }
-    changed_states.mask |= ~m_drawing_state.render_state_groups.mask;
+    changed_states |= ~m_drawing_state.render_state_groups;
 
     auto& render_state_base = static_cast<RenderState&>(render_state);
-    render_state_base.Apply(*this, Rhi::RenderStateGroups(changed_states.mask & state_groups.mask));
+    render_state_base.Apply(*this, changed_states & state_groups);
 
     Ptr<Object> render_state_object_ptr = render_state_base.GetBasePtr();
     m_drawing_state.render_state_ptr = std::static_pointer_cast<RenderState>(render_state_object_ptr);
-    m_drawing_state.render_state_groups.mask |= state_groups.mask;
+    m_drawing_state.render_state_groups |= state_groups;
 
     if (render_state_changed)
     {
@@ -278,7 +276,7 @@ void RenderCommandList::ResetCommandState()
     m_drawing_state.index_buffer_ptr.reset();
     m_drawing_state.primitive_type_opt.reset();
     m_drawing_state.view_state_ptr = nullptr;
-    m_drawing_state.render_state_groups.mask = 0U;
+    m_drawing_state.render_state_groups = {};
     m_drawing_state.changes = DrawingState::Changes::None;
 }
 

@@ -348,7 +348,7 @@ void RenderPass::ForEachAccessibleDescriptorHeap(const FuncType& do_action) cons
 {
     META_FUNCTION_TASK();
     const Pattern::Settings& settings = GetBasePattern().GetSettings();
-    Data::ForEachBitInEnumMask(settings.shader_access, [this, &do_action](Access::Bit access_bit)
+    Data::ForEachBitInEnumMask(settings.shader_access, [this, &do_action](AccessBit access_bit)
     {
         const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access_bit);
         do_action(m_dx_context.GetDirectDescriptorManager().GetDefaultShaderVisibleDescriptorHeap(heap_type));

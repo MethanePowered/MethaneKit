@@ -49,7 +49,8 @@ namespace AppOptions
     Mask GetDefaultWithColorDepth() noexcept;
     Mask GetDefaultWithColorDepthAndAnim() noexcept;
     Mask GetDefaultWithColorOnlyAndAnim() noexcept;
-};
+
+} // namespace AppOptions
 
 [[nodiscard]] Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& app_name, AppOptions::Mask app_options);
 [[nodiscard]] UserInterface::AppSettings    GetUserInterfaceTutorialAppSettings(AppOptions::Mask app_options);

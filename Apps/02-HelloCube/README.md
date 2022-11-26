@@ -91,7 +91,7 @@ HelloCubeApp()
     : GraphicsApp(
         []() {
             Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Cube", Tutorials::g_default_app_options_color_only_and_anim);
-            settings.graphics_app.SetScreenPassAccess(IRenderPass::Access::None);
+            settings.graphics_app.SetScreenPassAccess({});
             return settings;
         }())
     , m_proj_vertices(m_cube_mesh.GetVertices())

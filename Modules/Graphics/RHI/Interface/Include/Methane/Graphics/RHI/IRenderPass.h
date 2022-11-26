@@ -138,7 +138,7 @@ struct RenderPassStencilAttachment final : RenderPassAttachment
     [[nodiscard]] Type GetType() const noexcept override { return Type::Stencil; }
 };
 
-union RenderPassAccess
+namespace RenderPassAccess
 {
     enum class Bit : uint32_t
     {
@@ -149,7 +149,8 @@ union RenderPassAccess
     };
 
     using Mask = Data::EnumMask<Bit>;
-};
+
+} // namespace RenderPassAccess
 
 struct RenderPatternSettings
 {
@@ -217,7 +218,8 @@ struct IRenderPass
     using ColorAttachments  = RenderPassColorAttachments;
     using DepthAttachment   = RenderPassDepthAttachment;
     using StencilAttachment = RenderPassStencilAttachment;
-    using Access            = RenderPassAccess;
+    using AccessMask        = RenderPassAccess::Mask;
+    using AccessBit         = RenderPassAccess::Bit;
     using Settings          = RenderPassSettings;
     using ICallback         = IRenderPassCallback;
 

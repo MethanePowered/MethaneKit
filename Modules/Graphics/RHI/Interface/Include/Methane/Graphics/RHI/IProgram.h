@@ -109,7 +109,8 @@ namespace ProgramArgumentAccess
     };
 
     using Mask = Data::EnumMask<Type>;
-};
+
+} // namespace ProgramArgumentAccess
 
 using ProgramArguments = std::unordered_set<ProgramArgument, ProgramArgument::Hash>;
 

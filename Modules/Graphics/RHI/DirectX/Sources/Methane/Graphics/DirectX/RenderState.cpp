@@ -104,21 +104,23 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(Rhi::IRenderState::Raste
 }
 
 [[nodiscard]]
-static UINT8 ConvertRenderTargetColorWriteMaskToD3D12(Rhi::IRenderState::Blending::ColorChannels rt_color_write)
+static UINT8 ConvertRenderTargetColorWriteMaskToD3D12(Rhi::BlendingColorChannels::Mask rt_color_write)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-    using ColorChannels = Rhi::IRenderState::Blending::ColorChannels;
-
     UINT8 d3d12_color_write_mask = 0;
-    if (rt_color_write.red)
+
+    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannels::Bit::Red))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_RED;   // NOSONAR
-    if (rt_color_write.green)
+
+    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannels::Bit::Green))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_GREEN; // NOSONAR
-    if (rt_color_write.blue)
+
+    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannels::Bit::Blue))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_BLUE;  // NOSONAR
-    if (rt_color_write.alpha)
+
+    if (rt_color_write.HasAnyBit(Rhi::BlendingColorChannels::Bit::Alpha))
         d3d12_color_write_mask |= D3D12_COLOR_WRITE_ENABLE_ALPHA; // NOSONAR
+
     return d3d12_color_write_mask;
 };
 
@@ -382,22 +384,17 @@ void RenderState::Reset(const Settings& settings)
 void RenderState::Apply(Base::RenderCommandList& command_list, Groups state_groups)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
     const auto& dx_render_command_list = static_cast<RenderCommandList&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = dx_render_command_list.GetNativeCommandList();
 
-    if (state_groups.program    ||
-        state_groups.rasterizer ||
-        state_groups.blending   ||
-        state_groups.depth_stencil)
+    if (state_groups.HasAnyBits({Group::Program, Group::Rasterizer, Group::Blending, Group::DepthStencil}))
     {
         d3d12_command_list.SetPipelineState(GetNativePipelineState().Get());
     }
 
     d3d12_command_list.SetGraphicsRootSignature(GetDirectProgram().GetNativeRootSignature().Get());
 
-    if (state_groups.blending_color)
+    if (state_groups.HasAnyBit(Group::BlendingColor))
     {
         d3d12_command_list.OMSetBlendFactor(m_blend_factor.data());
     }
