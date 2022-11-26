@@ -196,9 +196,9 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
     META_FUNCTION_TASK();
     RenderCommandList& metal_command_list = static_cast<RenderCommandList&>(command_list);
     const id<MTLRenderCommandEncoder>& mtl_cmd_encoder = metal_command_list.GetNativeCommandEncoder();
-    constexpr Rhi::ApplyBehaviorMask constant_once_and_changes_only({
-        Rhi::ApplyBehaviorBit::ConstantOnce,
-        Rhi::ApplyBehaviorBit::ChangesOnly
+    constexpr ApplyBehaviorMask constant_once_and_changes_only({
+        ApplyBehaviorBit::ConstantOnce,
+        ApplyBehaviorBit::ChangesOnly
     });
     
     for(const auto& binding_by_argument : GetArgumentBindings())

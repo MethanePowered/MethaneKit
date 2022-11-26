@@ -176,9 +176,9 @@ public:
             META_CHECK_ARG_LESS(subset_index, m_mesh_subsets.size());
             const Mesh::Subset& mesh_subset = m_mesh_subsets[subset_index];
 
-            using namespace magic_enum::bitwise_operators;
-            Rhi::IProgramBindings::ApplyBehavior apply_behavior = bindings_apply_behavior;
-            apply_behavior.retain_resources = !retain_bindings_once || instance_program_bindings_it == instance_program_bindings_begin;
+            Rhi::ProgramBindingsApplyBehavior::Mask apply_behavior = bindings_apply_behavior;
+            apply_behavior.SetBit(Rhi::ProgramBindingsApplyBehavior::Bit::RetainResources,
+                                  !retain_bindings_once || instance_program_bindings_it == instance_program_bindings_begin);
 
             cmd_list.SetProgramBindings(*program_bindings_ptr, apply_behavior);
             cmd_list.DrawIndexed(Rhi::RenderPrimitive::Triangle,
