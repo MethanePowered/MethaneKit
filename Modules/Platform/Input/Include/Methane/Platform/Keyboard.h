@@ -147,13 +147,13 @@ public:
     [[nodiscard]] std::string      ToString() const;
     
     // NOTE: Platform dependent functions: see MacOS, Windows subdirs for implementation
-    [[nodiscard]] static Key           GetKeyByNativeCode(const NativeKey& native_key) noexcept;
-    [[nodiscard]] static Opt<Modifier> GetModifiersByNativeCode(const NativeKey& native_key) noexcept;
+    [[nodiscard]] static Key          GetKeyByNativeCode(const NativeKey& native_key) noexcept;
+    [[nodiscard]] static ModifierMask GetModifiersByNativeCode(const NativeKey& native_key) noexcept;
     
 private:
     [[nodiscard]] static Key GetControlKey(const NativeKey& native_key);
 
-    const Key       m_key;
+    const Key          m_key;
     const ModifierMask m_modifiers;
 };
 

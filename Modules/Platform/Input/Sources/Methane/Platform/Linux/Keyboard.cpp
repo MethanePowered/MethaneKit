@@ -162,18 +162,24 @@ ModifierMask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
 {
     META_FUNCTION_TASK();
     ModifierMask modifiers_mask;
+
     if (native_key.flags & XCB_MOD_MASK_SHIFT)
-        modifiers_mask |= Keyboard::Modifier::Shift;
+        modifiers_mask.SetBitOn(Keyboard::Modifier::Shift);
+
     if (native_key.flags & XCB_MOD_MASK_CONTROL)
-        modifiers_mask |= Keyboard::Modifier::Control;
+        modifiers_mask.SetBitOn(Keyboard::Modifier::Control);
+
     if (native_key.flags & XCB_MOD_MASK_1)
-        modifiers_mask |= Keyboard::Modifier::Alt;
+        modifiers_mask.SetBitOn(Keyboard::Modifier::Alt);
+
     if (native_key.flags & XCB_MOD_MASK_4)
-        modifiers_mask |= Keyboard::Modifier::Super;
+        modifiers_mask.SetBitOn(Keyboard::Modifier::Super);
+
     if (native_key.flags & XCB_MOD_MASK_2)
-        modifiers_mask |= Keyboard::Modifier::NumLock;
+        modifiers_mask.SetBitOn(Keyboard::Modifier::NumLock);
+
     if (native_key.flags & XCB_MOD_MASK_LOCK)
-        modifiers_mask |= Keyboard::Modifier::CapsLock;
+        modifiers_mask.SetBitOn(Keyboard::Modifier::CapsLock);
 
     return modifiers_mask;
 }
