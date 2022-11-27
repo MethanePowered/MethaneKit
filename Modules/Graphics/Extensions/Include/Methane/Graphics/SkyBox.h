@@ -27,6 +27,7 @@ SkyBox rendering primitive
 #include "MeshBuffers.hpp"
 
 #include <Methane/Graphics/Types.h>
+#include <Methane/Data/EnumMask.hpp>
 
 #include <hlsl++_matrix_float.h>
 
@@ -58,7 +59,7 @@ class Camera;
 class SkyBox
 {
 public:
-    enum class Options : uint32_t
+    enum class Option : uint32_t
     {
         None            = 0U,
         DepthEnabled    = 1U << 0U,
@@ -66,12 +67,14 @@ public:
         All             = ~0U,
     };
 
+    using OptionMask = Data::EnumMask<Option>;
+
     struct Settings
     {
         const Camera& view_camera;
-        float         scale;
-        Options       render_options = Options::None;
-        float         lod_bias       = 0.F;
+        float         scale = 1.F;
+        OptionMask    render_options;
+        float         lod_bias = 0.F;
     };
 
     struct META_UNIFORM_ALIGN Uniforms

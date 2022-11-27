@@ -66,8 +66,8 @@ public:
     struct DescriptorRange
     {
         DescriptorHeapType heap_type = DescriptorHeapType::Undefined;
-        uint32_t             offset    = 0;
-        uint32_t             count     = 0;
+        uint32_t           offset    = 0;
+        uint32_t           count     = 0;
     };
 
     ProgramArgumentBinding(const Base::Context& context, const Settings& settings);

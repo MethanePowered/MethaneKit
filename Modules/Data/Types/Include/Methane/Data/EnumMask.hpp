@@ -25,6 +25,7 @@ Enum-based mask data type with common mask operations.
 
 #include <cstdint>
 #include <initializer_list>
+#include <type_traits>
 
 namespace Methane::Data
 {

@@ -26,8 +26,6 @@ MacOS platform specific types and implementation of Keyboard abstractions.
 
 #import <AppKit/NSEvent.h>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Platform::Keyboard
 {
 
@@ -156,30 +154,28 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key) noexcept
     }
 }
 
-Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key) noexcept
+ModifierMask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key) noexcept
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
-    Modifiers modifiers_mask = Modifiers::None;
+    ModifierMask modifiers_mask;
     
     if (native_key.flags & NSEventModifierFlagShift)
-        modifiers_mask |= Modifiers::Shift;
+        modifiers_mask.SetBitOn(Modifier::Shift);
     
     if (native_key.flags & NSEventModifierFlagControl)
-        modifiers_mask |= Modifiers::Control;
+        modifiers_mask.SetBitOn(Modifier::Control);
     
     if (native_key.flags & NSEventModifierFlagOption)
-        modifiers_mask |= Modifiers::Alt;
+        modifiers_mask.SetBitOn(Modifier::Alt);
     
     if (native_key.flags & NSEventModifierFlagCommand)
-        modifiers_mask |= Modifiers::Super;
+        modifiers_mask.SetBitOn(Modifier::Super);
     
     if (native_key.flags & NSEventModifierFlagCapsLock)
-        modifiers_mask |= Modifiers::CapsLock;
+        modifiers_mask.SetBitOn(Modifier::CapsLock);
     
     if (native_key.flags & NSEventModifierFlagNumericPad)
-        modifiers_mask |= Modifiers::NumLock;
+        modifiers_mask.SetBitOn(Modifier::NumLock);
     
     return modifiers_mask;
 }

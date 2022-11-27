@@ -277,7 +277,7 @@ void RenderCommandList::ResetCommandState()
     m_drawing_state.primitive_type_opt.reset();
     m_drawing_state.view_state_ptr = nullptr;
     m_drawing_state.render_state_groups = {};
-    m_drawing_state.changes = DrawingState::Changes::None;
+    m_drawing_state.changes = DrawingState::ChangeMask{};
 }
 
 void RenderCommandList::UpdateDrawingState(Primitive primitive_type)
@@ -287,8 +287,7 @@ void RenderCommandList::UpdateDrawingState(Primitive primitive_type)
     if (drawing_state.primitive_type_opt && *drawing_state.primitive_type_opt == primitive_type)
         return;
 
-    using namespace magic_enum::bitwise_operators;
-    drawing_state.changes |= DrawingState::Changes::PrimitiveType;
+    drawing_state.changes |= DrawingState::Change::PrimitiveType;
     drawing_state.primitive_type_opt = primitive_type;
 }
 

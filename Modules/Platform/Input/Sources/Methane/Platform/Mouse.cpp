@@ -25,7 +25,6 @@ Platform abstraction of mouse events.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
 #include <map>
 #include <sstream>
 
@@ -76,24 +75,22 @@ bool State::operator==(const State& other) const
            m_in_window     == other.m_in_window;
 }
 
-State::Properties State::GetDiff(const State& other) const
+State::PropertyMask State::GetDiff(const State& other) const
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
-    State::Properties properties_diff_mask = State::Properties::None;
+    State::PropertyMask properties_diff_mask;
 
     if (m_button_states != other.m_button_states)
-        properties_diff_mask |= State::Properties::Buttons;
+        properties_diff_mask.SetBitOn(State::Property::Buttons);
     
     if (m_position != other.m_position)
-        properties_diff_mask |= State::Properties::Position;
+        properties_diff_mask.SetBitOn(State::Property::Position);
 
     if (m_scroll != other.m_scroll)
-        properties_diff_mask |= State::Properties::Scroll;
+        properties_diff_mask.SetBitOn(State::Property::Scroll);
 
     if (m_in_window != other.m_in_window)
-        properties_diff_mask |= State::Properties::InWindow;
+        properties_diff_mask.SetBitOn(State::Property::InWindow);
 
     return properties_diff_mask;
 }

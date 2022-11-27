@@ -27,8 +27,8 @@ Font atlas textures generation and fonts library management classes.
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Data/IProvider.h>
 #include <Methane/Data/Emitter.hpp>
+#include <Methane/Data/EnumMask.hpp>
 
-#include <magic_enum.hpp>
 #include <map>
 #include <string>
 #include <cctype>
@@ -139,22 +139,21 @@ public:
 
         enum class Type : uint8_t
         {
-            Unknown    = 0U,
-            Whitespace = 1U << 0U,
-            LineBreak  = 1U << 1U
+            Whitespace,
+            LineBreak
         };
 
-        static Type GetType(Code code);
+        using TypeMask = Data::EnumMask<Type>;
+
+        static TypeMask GetTypeMask(Code code);
 
         Char() = default;
         explicit Char(Code code);
         Char(Code code, gfx::FrameRect rect, gfx::Point2I offset, gfx::Point2I advance, UniquePtr<Glyph>&& glyph_ptr);
 
         [[nodiscard]] Code                  GetCode() const noexcept        { return m_code; }
-        [[nodiscard]] bool                  IsLineBreak() const noexcept    { using namespace magic_enum::bitwise_operators;
-                                                                              return static_cast<bool>(m_type_mask & Type::LineBreak); }
-        [[nodiscard]] bool                  IsWhiteSpace() const noexcept   { using namespace magic_enum::bitwise_operators;
-                                                                              return static_cast<bool>(m_type_mask & Type::Whitespace); }
+        [[nodiscard]] bool                  IsLineBreak() const noexcept    { return m_type_mask.HasAnyBit(Type::LineBreak); }
+        [[nodiscard]] bool                  IsWhiteSpace() const noexcept   { return m_type_mask.HasAnyBit(Type::Whitespace); }
         [[nodiscard]] const gfx::FrameRect& GetRect() const noexcept        { return m_rect; }
         [[nodiscard]] const gfx::Point2I&   GetOffset() const noexcept      { return m_offset; }
         [[nodiscard]] const gfx::Point2I&   GetAdvance() const noexcept     { return m_advance; }
@@ -169,7 +168,7 @@ public:
 
     private:
         const Code       m_code = 0U;
-        const Type       m_type_mask = Type::Unknown;
+        const TypeMask   m_type_mask{};
         gfx::FrameRect   m_rect;
         gfx::Point2I     m_offset;
         gfx::Point2I     m_advance;

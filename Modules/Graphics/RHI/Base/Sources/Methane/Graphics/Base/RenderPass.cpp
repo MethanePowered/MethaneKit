@@ -29,8 +29,6 @@ Base implementation of the render pass interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Graphics::Base
 {
 

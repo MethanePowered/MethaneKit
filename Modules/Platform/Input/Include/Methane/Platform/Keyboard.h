@@ -37,7 +37,9 @@ Platform abstraction of keyboard events.
 
 #endif
 
-#include <magic_enum.hpp>
+#include <Methane/Data/EnumMask.hpp>
+#include <Methane/Memory.hpp>
+
 #include <array>
 #include <set>
 #include <string>
@@ -90,7 +92,8 @@ enum class Key : uint32_t
     KeyPadEnter,    KeyPadEqual,
 
     // Always keep at the end
-    Unknown
+    Unknown,
+    Count
 };
 
 namespace OS
@@ -110,17 +113,17 @@ constexpr Key g_key_right_ctrl = Key::RightControl;
 
 using Keys = std::set<Key>;
 
-enum class Modifiers : uint32_t
+enum class Modifier : uint32_t
 {
-    None     = 0U,
-    Alt      = 1U << 0U,
-    Control  = 1U << 1U,
-    Shift    = 1U << 2U,
-    Super    = 1U << 3U,
-    CapsLock = 1U << 4U,
-    NumLock  = 1U << 5U,
-    All      = ~0U
+    Alt,
+    Control,
+    Shift,
+    Super,
+    CapsLock,
+    NumLock
 };
+
+using ModifierMask = Data::EnumMask<Modifier>;
 
 enum class KeyType : uint32_t
 {
@@ -134,47 +137,47 @@ class KeyConverter
 {
 public:
     explicit KeyConverter(Key key);
-    KeyConverter(Key key, Modifiers modifiers);
+    KeyConverter(Key key, ModifierMask modifiers);
     explicit KeyConverter(const NativeKey& native_key);
     
     [[nodiscard]] Key              GetKey() const noexcept         { return m_key; }
-    [[nodiscard]] Modifiers        GetModifiers() const noexcept   { return m_modifiers; }
-    [[nodiscard]] Modifiers        GetModifierKey() const noexcept;
+    [[nodiscard]] ModifierMask     GetModifiers() const noexcept   { return m_modifiers; }
+    [[nodiscard]] Opt<Modifier>    GetModifierKey() const noexcept;
     [[nodiscard]] std::string_view GetKeyName() const;
     [[nodiscard]] std::string      ToString() const;
     
     // NOTE: Platform dependent functions: see MacOS, Windows subdirs for implementation
-    [[nodiscard]] static Key       GetKeyByNativeCode(const NativeKey& native_key) noexcept;
-    [[nodiscard]] static Modifiers GetModifiersByNativeCode(const NativeKey& native_key) noexcept;
+    [[nodiscard]] static Key          GetKeyByNativeCode(const NativeKey& native_key) noexcept;
+    [[nodiscard]] static ModifierMask GetModifiersByNativeCode(const NativeKey& native_key) noexcept;
     
 private:
     [[nodiscard]] static Key GetControlKey(const NativeKey& native_key);
 
     const Key       m_key;
-    const Modifiers m_modifiers;
+    const ModifierMask m_modifiers;
 };
 
 enum class KeyState : uint8_t
 {
-    Released = 0U,
-    Pressed,
+    Released,
+    Pressed
 };
 
-using KeyStates = std::array<KeyState, magic_enum::enum_count<Key>() - 1>;
+using KeyStates = std::array<KeyState, static_cast<size_t>(Key::Count) - 1>;
 
 class State
 {
 public:
-    enum class Properties : uint32_t
+    enum class Property : uint32_t
     {
-        None      = 0U,
-        KeyStates = 1U << 0U,
-        Modifiers = 1U << 1U,
-        All       = ~0U
+        KeyStates,
+        Modifiers,
     };
 
+    using PropertyMask = Data::EnumMask<Property>;
+
     State() = default;
-    State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask = Modifiers::None);
+    State(std::initializer_list<Key> pressed_keys, ModifierMask modifiers_mask = {});
     virtual ~State() = default;
 
     [[nodiscard]] bool operator<(const State& other) const noexcept;
@@ -186,22 +189,22 @@ public:
 
     virtual KeyType SetKey(Key key, KeyState key_state);
 
-    void SetModifiersMask(Modifiers mask) noexcept { m_modifiers_mask = mask; }
+    void SetModifiersMask(ModifierMask mask) noexcept { m_modifiers_mask = mask; }
     void PressKey(Key key)                         { SetKey(key, KeyState::Pressed); }
     void ReleaseKey(Key key)                       { SetKey(key, KeyState::Released); }
 
     [[nodiscard]] Keys             GetPressedKeys() const noexcept;
     [[nodiscard]] const KeyStates& GetKeyStates() const noexcept     { return m_key_states; }
-    [[nodiscard]] Modifiers        GetModifiersMask() const noexcept { return m_modifiers_mask; }
-    [[nodiscard]] Properties       GetDiff(const State& other) const noexcept;
+    [[nodiscard]] ModifierMask        GetModifiersMask() const noexcept { return m_modifiers_mask; }
+    [[nodiscard]] PropertyMask     GetDiff(const State& other) const noexcept;
     [[nodiscard]] std::string      ToString() const;
 
 private:
     KeyType SetKeyImpl(Key key, KeyState key_state);
-    void UpdateModifiersMask(Modifiers modifier_value, bool add_modifier) noexcept;
+    void UpdateModifiersMask(ModifierMask modifier_value, bool add_modifier) noexcept;
 
-    KeyStates m_key_states{};
-    Modifiers m_modifiers_mask = Modifiers::None;
+    KeyStates    m_key_states{};
+    ModifierMask m_modifiers_mask;
 };
 
 inline std::ostream& operator<<(std::ostream& os, State const& keyboard_state)
@@ -216,7 +219,7 @@ class StateExt : public State
 {
 public:
     StateExt() = default;
-    StateExt(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask = Modifiers::None);
+    StateExt(std::initializer_list<Key> pressed_keys, ModifierMask modifiers_mask = {});
 
     KeyType SetKey(Key key, KeyState key_state) override;
 
@@ -231,7 +234,7 @@ private:
 
 struct StateChange
 {
-    StateChange(const State& in_current, const State& in_previous, State::Properties in_changed_properties)
+    StateChange(const State& in_current, const State& in_previous, State::PropertyMask in_changed_properties)
         : current(in_current)
         , previous(in_previous)
         , changed_properties(in_changed_properties)
@@ -239,7 +242,7 @@ struct StateChange
 
     const State& current;
     const State& previous;
-    const State::Properties changed_properties;
+    const State::PropertyMask changed_properties;
 };
 
 } // namespace Methane::Platform::Keyboard

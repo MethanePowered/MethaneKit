@@ -28,8 +28,6 @@ Base implementation of the buffer interface.
 
 #include <Methane/Graphics/RHI/IBuffer.h>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Graphics::Base
 {
 

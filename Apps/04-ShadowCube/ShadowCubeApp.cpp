@@ -27,8 +27,6 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Tutorials
 {
 
@@ -83,9 +81,7 @@ void ShadowCubeApp::Init()
     const gfx::QuadMesh<Vertex>   floor_mesh(mesh_layout, 7.F, 7.F, 0.F, 0, gfx::QuadMesh<Vertex>::FaceType::XZ);
 
     // Load textures, vertex and index buffers for cube and floor meshes
-    using namespace magic_enum::bitwise_operators;
-    const gfx::ImageLoader::Options image_options = gfx::ImageLoader::Options::Mipmapped
-                                                  | gfx::ImageLoader::Options::SrgbColorSpace;
+    constexpr gfx::ImageOptionMask image_options({ gfx::ImageOption::Mipmapped, gfx::ImageOption::SrgbColorSpace });
 
     m_cube_buffers_ptr  = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, cube_mesh, "Cube");
     m_cube_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MethaneBubbles.jpg", image_options, "Cube Face Texture"));

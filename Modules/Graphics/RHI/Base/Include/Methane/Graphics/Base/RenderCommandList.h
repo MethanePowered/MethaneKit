@@ -30,6 +30,8 @@ Base implementation of the render command list interface.
 
 #include <Methane/Graphics/RHI/IRenderCommandList.h>
 
+#include <Methane/Data/EnumMask.hpp>
+
 #include <optional>
 
 namespace Methane::Graphics::Rhi
@@ -51,12 +53,12 @@ class RenderCommandList
 public:
     struct DrawingState
     {
-        enum class Changes : uint32_t
+        enum class Change : uint32_t
         {
-            None          = 0U,
-            PrimitiveType = 1U << 0U,
-            All           = ~0U
+            PrimitiveType
         };
+
+        using ChangeMask = Methane::Data::EnumMask<Change>;
 
         Ptrs<Texture>             render_pass_attachments_ptr;
         Ptr<RenderState>          render_state_ptr;
@@ -65,7 +67,7 @@ public:
         Opt<Primitive>            primitive_type_opt;
         ViewState*                view_state_ptr      = nullptr;
         Rhi::RenderStateGroupMask render_state_groups;
-        Changes                   changes             = Changes::None;
+        ChangeMask                changes;
     };
 
     static Ptr<IRenderCommandList> CreateForSynchronization(Rhi::ICommandQueue& cmd_queue);

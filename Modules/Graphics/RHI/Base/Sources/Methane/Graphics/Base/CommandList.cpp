@@ -312,6 +312,13 @@ void CommandList::SetCommandListStateNoLock(State state)
     Data::Emitter<Rhi::ICommandListCallback>::Emit(&Rhi::ICommandListCallback::OnCommandListStateChanged, *this);
 }
 
+void CommandList::VerifyEncodingState() const
+{
+    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
+                               "{} command list '{}' encoding is not possible in '{}' state",
+                               magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
+}
+
 void CommandList::InitializeTimestampQueries() // NOSONAR - function is not const when instrumentation enabled
 {
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED

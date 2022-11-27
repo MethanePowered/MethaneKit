@@ -28,8 +28,6 @@ Vulkan implementation of the sampler interface.
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Graphics::Rhi
 {
 

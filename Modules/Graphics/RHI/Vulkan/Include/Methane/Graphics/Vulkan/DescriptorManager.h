@@ -26,7 +26,6 @@ Vulkan descriptor manager with descriptor sets allocator.
 #include <Methane/Graphics/Base/DescriptorManager.h>
 
 #include <Tracy.hpp>
-#include <magic_enum.hpp>
 #include <vulkan/vulkan.hpp>
 
 #include <map>

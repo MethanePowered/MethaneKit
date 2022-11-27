@@ -54,7 +54,6 @@ AppBase::AppBase(const CombinedAppSettings& settings, Data::IProvider& textures_
     , m_image_loader(textures_provider)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
 
     add_option("-a,--animations", m_settings.animations_enabled, "Enable animations");
     add_option("-d,--device", m_settings.default_device_index, "Render at adapter index, use -1 for software adapter");

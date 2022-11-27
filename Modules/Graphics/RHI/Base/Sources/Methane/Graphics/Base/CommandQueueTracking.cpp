@@ -32,7 +32,6 @@ Base implementation of the command queue with execution tracking.
 #include <Methane/Checks.hpp>
 
 #include <nowide/convert.hpp>
-#include <magic_enum.hpp>
 #include <stdexcept>
 #include <cassert>
 

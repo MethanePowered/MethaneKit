@@ -66,6 +66,11 @@ Program::Program(const Context& context, const Settings& settings)
     META_FUNCTION_TASK();
 }
 
+const Ptr<Rhi::IShader>& Program::GetShader(Rhi::ShaderType shader_type) const
+{
+    return m_shaders_by_type[magic_enum::enum_index(shader_type).value()];
+}
+
 void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
 {
     META_FUNCTION_TASK();

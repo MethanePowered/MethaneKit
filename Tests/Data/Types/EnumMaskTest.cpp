@@ -26,8 +26,6 @@ Unit-tests of the EnumMask data type.
 
 #include <catch2/catch_template_test_macros.hpp>
 
-#include <magic_enum.hpp>
-
 using namespace Methane::Data;
 
 template<typename E, typename M>

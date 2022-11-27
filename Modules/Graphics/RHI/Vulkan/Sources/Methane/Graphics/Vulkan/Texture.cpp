@@ -102,9 +102,8 @@ vk::ImageAspectFlags ITexture::GetNativeImageAspectFlags(const Rhi::TextureSetti
 vk::ImageUsageFlags ITexture::GetNativeImageUsageFlags(const Rhi::TextureSettings& settings, vk::ImageUsageFlags initial_usage_flags)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-    
     vk::ImageUsageFlags usage_flags = initial_usage_flags;
+
     switch (settings.type)
     {
     case Rhi::TextureType::FrameBuffer:

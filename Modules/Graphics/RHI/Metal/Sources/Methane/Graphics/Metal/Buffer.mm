@@ -34,8 +34,6 @@ Metal implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Graphics::Rhi
 {
 

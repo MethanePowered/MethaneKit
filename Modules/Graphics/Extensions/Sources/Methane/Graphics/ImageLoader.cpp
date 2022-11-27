@@ -30,7 +30,6 @@ by decoding them from popular image formats.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
 #include <taskflow/taskflow.hpp>
 
 #ifdef USE_OPEN_IMAGE_IO
@@ -55,7 +54,7 @@ static PixelFormat GetDefaultImageFormat(bool srgb)
     return srgb ? PixelFormat::RGBA8Unorm_sRGB : PixelFormat::RGBA8Unorm;
 }
 
-ImageLoader::ImageData::ImageData(const Dimensions& dimensions, uint32_t channels_count, Data::Chunk&& pixels) noexcept
+ImageData::ImageData(const Dimensions& dimensions, uint32_t channels_count, Data::Chunk&& pixels) noexcept
     : m_dimensions(dimensions)
     , m_channels_count(channels_count)
     , m_pixels(std::move(pixels))
@@ -64,7 +63,7 @@ ImageLoader::ImageData::ImageData(const Dimensions& dimensions, uint32_t channel
     META_FUNCTION_TASK();
 }
 
-ImageLoader::ImageData::ImageData(ImageData&& other) noexcept
+ImageData::ImageData(ImageData&& other) noexcept
     : m_dimensions(other.m_dimensions)
     , m_channels_count(other.m_channels_count)
     , m_pixels(std::move(other.m_pixels))
@@ -73,7 +72,7 @@ ImageLoader::ImageData::ImageData(ImageData&& other) noexcept
     META_FUNCTION_TASK();
 }
 
-ImageLoader::ImageData::~ImageData()
+ImageData::~ImageData()
 {
     META_FUNCTION_TASK();
 
@@ -92,7 +91,7 @@ ImageLoader::ImageLoader(Data::IProvider& data_provider)
     META_FUNCTION_TASK();
 }
 
-ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const
+ImageData ImageLoader::LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const
 {
     META_FUNCTION_TASK();
 
@@ -165,21 +164,22 @@ ImageLoader::ImageData ImageLoader::LoadImage(const std::string& image_path, Dat
 #endif
 }
 
-Ptr<Rhi::ITexture> ImageLoader::LoadImageToTexture2D(Rhi::ICommandQueue& target_cmd_queue, const std::string& image_path, Options options, const std::string& texture_name) const
+Ptr<Rhi::ITexture> ImageLoader::LoadImageToTexture2D(Rhi::ICommandQueue& target_cmd_queue, const std::string& image_path,
+                                                     ImageOptionMask options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
     const ImageData    image_data   = LoadImage(image_path, 4, false);
-    const PixelFormat  image_format = GetDefaultImageFormat(static_cast<bool>(options & Options::SrgbColorSpace));
-    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::CreateImage(target_cmd_queue.GetContext(), image_data.GetDimensions(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
+    const PixelFormat  image_format = GetDefaultImageFormat(options.HasAnyBit(ImageOption::SrgbColorSpace));
+    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::CreateImage(target_cmd_queue.GetContext(), image_data.GetDimensions(), std::nullopt, image_format,
+                                                                 options.HasAnyBit(ImageOption::Mipmapped));
     texture_ptr->SetName(texture_name);
     texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } }, target_cmd_queue);
 
     return texture_ptr;
 }
 
-Ptr<Rhi::ITexture> ImageLoader::LoadImagesToTextureCube(Rhi::ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options, const std::string& texture_name) const
+Ptr<Rhi::ITexture> ImageLoader::LoadImagesToTextureCube(Rhi::ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths,
+                                                        ImageOptionMask options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
 
@@ -196,7 +196,7 @@ Ptr<Rhi::ITexture> ImageLoader::LoadImagesToTextureCube(Rhi::ICommandQueue& targ
             // We create a copy of the loaded image data (via 3-rd argument of LoadImage)
             // to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
             constexpr uint32_t desired_channels_count = 4;
-            ImageLoader::ImageData image_data = LoadImage(image_paths[face_index], desired_channels_count, true);
+            ImageData image_data = LoadImage(image_paths[face_index], desired_channels_count, true);
 
             std::scoped_lock data_lock(data_mutex);
             face_images_data.emplace_back(face_index, std::move(image_data));
@@ -220,9 +220,9 @@ Ptr<Rhi::ITexture> ImageLoader::LoadImagesToTextureCube(Rhi::ICommandQueue& targ
     }
 
     // Load face images to cube texture
-    using namespace magic_enum::bitwise_operators;
-    const PixelFormat  image_format = GetDefaultImageFormat(static_cast<bool>(options & Options::SrgbColorSpace));
-    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::CreateCube(target_cmd_queue.GetContext(), face_dimensions.GetWidth(), std::nullopt, image_format, static_cast<bool>(options & Options::Mipmapped));
+    const PixelFormat  image_format = GetDefaultImageFormat(options.HasAnyBit(ImageOption::SrgbColorSpace));
+    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::CreateCube(target_cmd_queue.GetContext(), face_dimensions.GetWidth(), std::nullopt,
+                                                                image_format, options.HasAnyBit(Option::Mipmapped));
     texture_ptr->SetName(texture_name);
     texture_ptr->SetData(face_resources, target_cmd_queue);
 

@@ -29,7 +29,6 @@ Vulkan implementation of the buffer interface.
 #include <Methane/Graphics/Base/BufferFactory.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
 #include <iterator>
 
 namespace Methane::Graphics::Rhi

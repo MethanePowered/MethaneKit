@@ -28,8 +28,6 @@ Methane resource barriers base implementation.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Graphics::Base
 {
 

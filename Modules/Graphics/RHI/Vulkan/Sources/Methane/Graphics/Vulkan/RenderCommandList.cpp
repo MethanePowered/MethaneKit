@@ -32,8 +32,6 @@ Vulkan implementation of the render command list interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Graphics::Rhi
 {
 
@@ -230,7 +228,6 @@ void RenderCommandList::OnRenderPassUpdated(const Rhi::IRenderPass& render_pass)
 void RenderCommandList::UpdatePrimitiveTopology(Primitive primitive)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
     if (DrawingState& drawing_state = GetDrawingState();
         static_cast<bool>(drawing_state.changes & DrawingState::Changes::PrimitiveType))
     {

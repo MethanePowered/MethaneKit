@@ -33,7 +33,10 @@ Metal implementation of the shader interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#ifndef NDEBUG
 #include <magic_enum.hpp>
+#endif
+
 #include <regex>
 
 namespace Methane::Graphics::Rhi

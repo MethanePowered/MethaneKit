@@ -29,6 +29,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Data/Receiver.hpp>
+#include <Methane/Data/EnumMask.hpp>
 
 #include <string_view>
 
@@ -171,23 +172,23 @@ private:
     class FrameResources
     {
     public:
-        enum class DirtyFlags : uint32_t
+        enum class DirtyResource : uint32_t
         {
-            None     = 0U,
-            Mesh     = 1U << 0U,
-            Uniforms = 1U << 1U,
-            Atlas    = 1U << 2U,
-            All      = Mesh | Uniforms | Atlas
+            Mesh,
+            Uniforms,
+            Atlas,
         };
+
+        using DirtyResourceMask = Data::EnumMask<DirtyResource>;
 
         FrameResources(uint32_t frame_index, const CommonResourceRefs& common_resources);
 
-        void SetDirty(DirtyFlags dirty_flags) noexcept;
+        void SetDirty(DirtyResourceMask dirty_mask) noexcept;
 
-        [[nodiscard]] bool IsDirty(DirtyFlags dirty_flags) const noexcept;
-        [[nodiscard]] bool IsDirty() const noexcept                           { return m_dirty_mask != DirtyFlags::None; }
-        [[nodiscard]] bool IsInitialized() const noexcept                     { return m_program_bindings_ptr && m_vertex_buffer_set_ptr && m_index_buffer_ptr; }
-        [[nodiscard]] bool IsAtlasInitialized() const noexcept                { return !!m_atlas_texture_ptr; }
+        [[nodiscard]] bool IsDirty(DirtyResource resource) const noexcept;
+        [[nodiscard]] bool IsDirty() const noexcept;
+        [[nodiscard]] bool IsInitialized() const noexcept      { return m_program_bindings_ptr && m_vertex_buffer_set_ptr && m_index_buffer_ptr; }
+        [[nodiscard]] bool IsAtlasInitialized() const noexcept { return !!m_atlas_texture_ptr; }
 
         [[nodiscard]] rhi::IBufferSet&       GetVertexBufferSet() const;
         [[nodiscard]] rhi::IBuffer&          GetIndexBuffer() const;
@@ -201,7 +202,7 @@ private:
 
     private:
         uint32_t                   m_frame_index;
-        DirtyFlags                 m_dirty_mask = DirtyFlags::All;
+        DirtyResourceMask          m_dirty_mask { ~0U };
         Ptr<rhi::IBufferSet>       m_vertex_buffer_set_ptr;
         Ptr<rhi::IBuffer>          m_index_buffer_ptr;
         Ptr<rhi::IBuffer>          m_uniforms_buffer_ptr;
@@ -210,7 +211,7 @@ private:
     };
 
     void InitializeFrameResources();
-    void MakeFrameResourcesDirty(FrameResources::DirtyFlags dirty_flags);
+    void MakeFrameResourcesDirty(FrameResources::DirtyResourceMask resource);
     FrameResources& GetCurrentFrameResources();
 
     void UpdateTextMesh();

@@ -24,6 +24,7 @@ Platform abstraction of mouse events.
 #pragma once
 
 #include <Methane/Data/Point.hpp>
+#include <Methane/Data/EnumMask.hpp>
 
 #include <cmath>
 #include <array>
@@ -90,15 +91,15 @@ using MouseButtonAndDelta = std::pair<Mouse::Button, float>;
 class State
 {
 public:
-    enum class Properties : uint32_t
+    enum class Property : uint32_t
     {
-        None        = 0U,
-        Buttons     = 1U << 0U,
-        Position    = 1U << 1U,
-        Scroll      = 1U << 2U,
-        InWindow    = 1U << 3U,
-        All         = ~0U
+        Buttons,
+        Position,
+        Scroll,
+        InWindow
     };
+
+    using PropertyMask = Data::EnumMask<Property>;
 
     State() = default;
     State(std::initializer_list<Button> pressed_buttons, const Position& position = Position(), const Scroll& scroll = Scroll(), bool in_window = false);
@@ -121,7 +122,7 @@ public:
     [[nodiscard]] bool                IsInWindow() const                      { return m_in_window; }
     [[nodiscard]] const ButtonStates& GetButtonStates() const                 { return m_button_states; }
     [[nodiscard]] Buttons             GetPressedButtons() const;
-    [[nodiscard]] Properties          GetDiff(const State& other) const;
+    [[nodiscard]] PropertyMask          GetDiff(const State& other) const;
     [[nodiscard]] std::string         ToString() const;
 
 private:
@@ -139,7 +140,7 @@ inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
 
 struct StateChange
 {
-    StateChange(const State& in_current, const State& in_previous, State::Properties in_changed_properties)
+    StateChange(const State& in_current, const State& in_previous, State::PropertyMask in_changed_properties)
         : current(in_current)
         , previous(in_previous)
         , changed_properties(in_changed_properties)
@@ -147,7 +148,7 @@ struct StateChange
 
     const State& current;
     const State& previous;
-    const State::Properties changed_properties;
+    const State::PropertyMask changed_properties;
 };
 
 } // namespace Methane::Platform::Mouse

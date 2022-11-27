@@ -32,7 +32,6 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
 #include <fmt/format.h>
 #include <directx/d3dx12.h>
 
@@ -48,8 +47,6 @@ public:
         : Resource(context, settings)
     {
         META_FUNCTION_TASK();
-        using namespace magic_enum::bitwise_operators;
-
         const bool          is_private_storage  = settings.storage_mode == IBuffer::StorageMode::Private;
         const bool          is_read_back_buffer = settings.usage_mask.HasAnyBit(Usage::ReadBack);
         const D3D12_HEAP_TYPE  normal_heap_type = is_private_storage ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;

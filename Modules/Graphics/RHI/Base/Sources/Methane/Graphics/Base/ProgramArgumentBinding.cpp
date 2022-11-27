@@ -98,7 +98,6 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
                                   m_settings.argument.GetName(), magic_enum::enum_name(bound_resource_type));
 
         const Rhi::ResourceUsageMask resource_usage_mask = resource_view.GetResource().GetUsage();
-        using namespace magic_enum::bitwise_operators;
         META_CHECK_ARG_EQUAL_DESCR(resource_usage_mask.HasAnyBit(Rhi::ResourceUsage::Addressable), is_addressable_binding,
                              "resource usage mask {} does not have addressable flag", Data::GetEnumMaskName(resource_usage_mask));
         META_CHECK_ARG_NAME_DESCR("resource_view", is_addressable_binding || !resource_view.GetOffset(),

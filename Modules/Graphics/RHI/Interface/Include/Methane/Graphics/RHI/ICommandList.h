@@ -43,6 +43,8 @@ enum class CommandListType
     Transfer,
     Render,
     ParallelRender,
+
+    Count
 };
 
 enum class CommandListState

@@ -28,7 +28,6 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
-#include <magic_enum.hpp>
 #include <cmath>
 
 namespace Methane::Tutorials
@@ -152,18 +151,17 @@ void CubeMapArrayApp::Init()
             "SkyBox/Clouds/PositiveZ.jpg",
             "SkyBox/Clouds/NegativeZ.jpg"
         },
-        gfx::ImageLoader::Options::Mipmapped,
+        gfx::ImageOptionMask(gfx::ImageOption::Mipmapped),
         "Sky-Box Texture"
     );
 
     // Create sky-box
-    using namespace magic_enum::bitwise_operators;
     m_sky_box_ptr = std::make_shared<gfx::SkyBox>(render_cmd_queue, GetScreenRenderPattern(), *sky_box_texture_ptr,
         gfx::SkyBox::Settings
         {
             m_camera,
             g_model_scale * 100.F,
-            gfx::SkyBox::Options::DepthEnabled | gfx::SkyBox::Options::DepthReversed
+            gfx::SkyBox::OptionMask({ gfx::SkyBox::Option::DepthEnabled, gfx::SkyBox::Option::DepthReversed })
         });
 
     // Create frame buffer resources

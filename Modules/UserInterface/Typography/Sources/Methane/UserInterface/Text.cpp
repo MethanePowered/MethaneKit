@@ -49,8 +49,6 @@ namespace hlslpp // NOSONAR
 #pragma pack(pop)
 }
 
-#include <magic_enum.hpp>
-
 namespace Methane::UserInterface
 {
 
@@ -335,15 +333,15 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     {
         UpdateConstantsBuffer();
     }
-    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Mesh) && m_text_mesh_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyResource::Mesh) && m_text_mesh_ptr)
     {
         frame_resources.UpdateMeshBuffers(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier);
     }
-    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Atlas) && m_font_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyResource::Atlas) && m_font_ptr)
     {
         frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexturePtr(GetUIContext().GetRenderContext()));
     }
-    if (frame_resources.IsDirty(FrameResources::DirtyFlags::Uniforms) && m_text_mesh_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyResource::Uniforms) && m_text_mesh_ptr)
     {
         frame_resources.UpdateUniformsBuffer(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name);
     }
@@ -380,7 +378,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const Ptr<rhi::ITexture>& old_atl
         (new_atlas_texture_ptr && std::addressof(GetUIContext().GetRenderContext()) != std::addressof(new_atlas_texture_ptr->GetContext())))
         return;
 
-    MakeFrameResourcesDirty(FrameResources::DirtyFlags::Atlas);
+    MakeFrameResourcesDirty(FrameResources::DirtyResourceMask(FrameResources::DirtyResource::Atlas));
 
     if (m_text_mesh_ptr)
     {
@@ -404,16 +402,26 @@ Text::FrameResources::FrameResources(uint32_t frame_index, const CommonResourceR
     META_FUNCTION_TASK();
 }
 
-void Text::FrameResources::SetDirty(DirtyFlags dirty_flags) noexcept
+void Text::FrameResources::SetDirty(DirtyResourceMask dirty_mask) noexcept
 {
-    using namespace magic_enum::bitwise_operators;
-    m_dirty_mask |= dirty_flags;
+    META_FUNCTION_TASK();
+    m_dirty_mask |= dirty_mask;
 }
 
-bool Text::FrameResources::IsDirty(DirtyFlags dirty_flags) const noexcept
+bool Text::FrameResources::IsDirty(DirtyResource resource) const noexcept
 {
-    using namespace magic_enum::bitwise_operators;
-    return static_cast<bool>(m_dirty_mask & dirty_flags);
+    META_FUNCTION_TASK();
+    return m_dirty_mask.HasAnyBit(resource);
+}
+
+bool Text::FrameResources::IsDirty() const noexcept
+{
+    META_FUNCTION_TASK();
+    return m_dirty_mask.HasAnyBits({
+        DirtyResource::Mesh,
+        DirtyResource::Uniforms,
+        DirtyResource::Atlas
+    });
 }
 
 void Text::FrameResources::InitializeProgramBindings(const rhi::IRenderState& state, const Ptr<rhi::IBuffer>& const_buffer_ptr,
@@ -461,8 +469,7 @@ rhi::IProgramBindings& Text::FrameResources::GetProgramBindings() const
 bool Text::FrameResources::UpdateAtlasTexture(const Ptr<rhi::ITexture>& new_atlas_texture_ptr)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-    m_dirty_mask &= ~DirtyFlags::Atlas;
+    m_dirty_mask.SetBitOff(DirtyResource::Atlas);
 
     if (m_atlas_texture_ptr.get() == new_atlas_texture_ptr.get())
         return true;
@@ -523,8 +530,7 @@ void Text::FrameResources::UpdateMeshBuffers(const rhi::IRenderContext& render_c
         )
     }, render_context.GetRenderCommandKit().GetQueue());
 
-    using namespace magic_enum::bitwise_operators;
-    m_dirty_mask &= ~DirtyFlags::Mesh;
+    m_dirty_mask.SetBitOff(DirtyResource::Mesh);
 }
 
 void Text::FrameResources::UpdateUniformsBuffer(const rhi::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name)
@@ -562,8 +568,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const rhi::IRenderContext& rende
         render_context.GetRenderCommandKit().GetQueue()
     );
 
-    using namespace magic_enum::bitwise_operators;
-    m_dirty_mask &= ~DirtyFlags::Uniforms;
+    m_dirty_mask.SetBitOff(DirtyResource::Uniforms);
 }
 
 void Text::InitializeFrameResources()
@@ -609,12 +614,12 @@ Text::FrameResources& Text::GetCurrentFrameResources()
     return m_frame_resources[frame_index];
 }
 
-void Text::MakeFrameResourcesDirty(FrameResources::DirtyFlags dirty_flags)
+void Text::MakeFrameResourcesDirty(FrameResources::DirtyResourceMask resource)
 {
     META_FUNCTION_TASK();
     for(FrameResources& frame_resources : m_frame_resources)
     {
-        frame_resources.SetDirty(dirty_flags);
+        frame_resources.SetDirty(resource);
     }
 }
 
@@ -650,8 +655,10 @@ void Text::UpdateTextMesh()
         return;
     }
 
-    using namespace magic_enum::bitwise_operators;
-    MakeFrameResourcesDirty(FrameResources::DirtyFlags::Mesh | FrameResources::DirtyFlags::Uniforms);
+    MakeFrameResourcesDirty(FrameResources::DirtyResourceMask({
+        FrameResources::DirtyResource::Mesh,
+        FrameResources::DirtyResource::Uniforms
+    }));
 }
 
 void Text::UpdateConstantsBuffer()

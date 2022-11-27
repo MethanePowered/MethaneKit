@@ -192,15 +192,15 @@ Key KeyConverter::GetControlKey(const NativeKey& native_key)
     return Key::LeftControl;
 }
 
-Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key) noexcept
+ModifierMask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key) noexcept
 {
     META_FUNCTION_TASK();
     switch (native_key.w_param)
     {
-    case VK_CONTROL: return Modifiers::Control;
-    case VK_SHIFT:   return Modifiers::Shift;
-    case VK_CAPITAL: return Modifiers::CapsLock;
-    default:         return Modifiers::None;
+    case VK_CONTROL: return Modifier::Control;
+    case VK_SHIFT:   return Modifier::Shift;
+    case VK_CAPITAL: return Modifier::CapsLock;
+    default:         return Modifier::None;
     }
 }
 

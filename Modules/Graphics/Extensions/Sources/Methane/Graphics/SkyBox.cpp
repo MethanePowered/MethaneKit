@@ -34,8 +34,6 @@ SkyBox rendering primitive
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Graphics
 {
 
@@ -81,12 +79,11 @@ SkyBox::SkyBox(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern& render
         }
     );
 
-    using namespace magic_enum::bitwise_operators;
     state_settings.program_ptr->SetName("Sky-box shading");
     state_settings.render_pattern_ptr   = std::dynamic_pointer_cast<Rhi::IRenderPattern>(render_pattern.GetPtr());
-    state_settings.depth.enabled        = static_cast<bool>(m_settings.render_options & Options::DepthEnabled);
+    state_settings.depth.enabled        = m_settings.render_options.HasAnyBit(Option::DepthEnabled);
     state_settings.depth.write_enabled  = false;
-    state_settings.depth.compare        = static_cast<bool>(m_settings.render_options & Options::DepthReversed) ? Compare::GreaterEqual : Compare::Less;
+    state_settings.depth.compare        = m_settings.render_options.HasAnyBit(Option::DepthReversed) ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
     m_render_state_ptr = Rhi::IRenderState::Create(m_context, state_settings);

@@ -38,7 +38,9 @@ void State::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button
     if (m_mouse_state == prev_mouse_state)
         return;
 
-    m_controllers.OnMouseButtonChanged(button, button_state, Mouse::StateChange(m_mouse_state, prev_mouse_state, Mouse::State::Properties::Buttons));
+    m_controllers.OnMouseButtonChanged(button, button_state,
+                                       Mouse::StateChange(m_mouse_state, prev_mouse_state,
+                                                          Mouse::State::PropertyMask(Mouse::State::Property::Buttons)));
 }
 
 void State::OnMousePositionChanged(const Mouse::Position& mouse_position)
@@ -51,7 +53,9 @@ void State::OnMousePositionChanged(const Mouse::Position& mouse_position)
     if (m_mouse_state == prev_mouse_state)
         return;
 
-    m_controllers.OnMousePositionChanged(mouse_position, Mouse::StateChange(m_mouse_state, prev_mouse_state, Mouse::State::Properties::Position));
+    m_controllers.OnMousePositionChanged(mouse_position,
+                                         Mouse::StateChange(m_mouse_state, prev_mouse_state,
+                                                            Mouse::State::PropertyMask(Mouse::State::Property::Position)));
 }
 
 void State::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta)
@@ -64,7 +68,9 @@ void State::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta)
     if (m_mouse_state == prev_mouse_state)
         return;
 
-    m_controllers.OnMouseScrollChanged(mouse_scroll_delta, Mouse::StateChange(m_mouse_state, prev_mouse_state, Mouse::State::Properties::Scroll));
+    m_controllers.OnMouseScrollChanged(mouse_scroll_delta,
+                                       Mouse::StateChange(m_mouse_state, prev_mouse_state,
+                                                          Mouse::State::PropertyMask(Mouse::State::Property::Scroll)));
 }
 
 void State::OnMouseInWindowChanged(bool is_mouse_in_window)
@@ -77,7 +83,9 @@ void State::OnMouseInWindowChanged(bool is_mouse_in_window)
     if (m_mouse_state == prev_mouse_state)
         return;
 
-    m_controllers.OnMouseInWindowChanged(is_mouse_in_window, Mouse::StateChange(m_mouse_state, prev_mouse_state, Mouse::State::Properties::InWindow));
+    m_controllers.OnMouseInWindowChanged(is_mouse_in_window,
+                                         Mouse::StateChange(m_mouse_state, prev_mouse_state,
+                                                            Mouse::State::PropertyMask(Mouse::State::Property::InWindow)));
 }
 
 void State::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
@@ -86,23 +94,23 @@ void State::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state)
 
     Keyboard::State prev_keyboard_state(static_cast<const Keyboard::State&>(m_keyboard_state));
     m_keyboard_state.SetKey(key, key_state);
-    Keyboard::State::Properties state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
+    Keyboard::State::PropertyMask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
 
-    if (state_changes_mask == Keyboard::State::Properties::None)
+    if (state_changes_mask == Keyboard::State::PropertyMask{})
         return;
 
     m_controllers.OnKeyboardChanged(key, key_state, Keyboard::StateChange(m_keyboard_state, prev_keyboard_state, state_changes_mask));
 }
 
-void State::OnModifiersChanged(Keyboard::Modifiers modifiers_mask)
+void State::OnModifiersChanged(Keyboard::ModifierMask modifiers_mask)
 {
     META_FUNCTION_TASK();
 
     Keyboard::State prev_keyboard_state(static_cast<const Keyboard::State&>(m_keyboard_state));
     m_keyboard_state.SetModifiersMask(modifiers_mask);
-    Keyboard::State::Properties state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
+    Keyboard::State::PropertyMask state_changes_mask = m_keyboard_state.GetDiff(prev_keyboard_state);
     
-    if (state_changes_mask == Keyboard::State::Properties::None)
+    if (state_changes_mask == Keyboard::State::PropertyMask{})
         return;
     
     m_controllers.OnModifiersChanged(modifiers_mask, Keyboard::StateChange(m_keyboard_state, prev_keyboard_state, state_changes_mask));

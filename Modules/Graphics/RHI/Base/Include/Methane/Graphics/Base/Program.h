@@ -29,7 +29,6 @@ Base implementation of the program interface.
 #include <Methane/Graphics/RHI/IProgram.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
 #include <memory>
 #include <array>
 #include <optional>
@@ -54,7 +53,7 @@ public:
     // IProgram interface
     const Settings&          GetSettings() const noexcept final                 { return m_settings; }
     const Rhi::ShaderTypes&  GetShaderTypes() const noexcept final              { return m_shader_types; }
-    const Ptr<Rhi::IShader>& GetShader(Rhi::ShaderType shader_type) const final { return m_shaders_by_type[magic_enum::enum_index(shader_type).value()]; }
+    const Ptr<Rhi::IShader>& GetShader(Rhi::ShaderType shader_type) const final;
     bool                     HasShader(Rhi::ShaderType shader_type) const       { return !!GetShader(shader_type); }
     Data::Size               GetBindingsCount() const noexcept final            { return m_bindings_count; }
 

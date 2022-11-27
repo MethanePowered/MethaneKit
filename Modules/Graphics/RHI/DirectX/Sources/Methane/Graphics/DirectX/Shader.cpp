@@ -38,9 +38,12 @@ DirectX 12 implementation of the shader interface.
 
 #include <nowide/convert.hpp>
 #include <fmt/format.h>
-#include <magic_enum.hpp>
 #include <sstream>
 #include <set>
+
+#ifdef METHANE_LOGGING_ENABLED
+#include <magic_enum.hpp>
+#endif
 
 namespace Methane::Graphics::Rhi
 {

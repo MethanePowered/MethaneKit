@@ -32,7 +32,6 @@ Tutorial demonstrating parallel rendering with Methane graphics API
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/algorithm/sort.hpp>
-#include <magic_enum.hpp>
 #include <cmath>
 #include <random>
 #include <algorithm>

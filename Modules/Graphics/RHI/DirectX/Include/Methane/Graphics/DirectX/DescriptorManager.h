@@ -29,7 +29,6 @@ Descriptor manager is a central place for creating and accessing descriptor heap
 #include <Methane/Graphics/Base/Program.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
 #include <array>
 #include <mutex>
 
@@ -46,7 +45,7 @@ namespace Methane::Graphics::DirectX
 class DescriptorManager : public Base::DescriptorManager
 {
 public:
-    using DescriptorHeapSizeByType = std::array<uint32_t, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
+    using DescriptorHeapSizeByType = std::array<uint32_t, static_cast<size_t>(DescriptorHeap::Type::Undefined)>;
 
     struct Settings
     {
@@ -75,7 +74,7 @@ private:
     template<typename FuncType> // function void(DescriptorHeap& descriptor_heap)
     void ForEachDescriptorHeap(FuncType process_heap) const;
 
-    using DescriptorHeapTypes = std::array<UniquePtrs<DescriptorHeap>, magic_enum::enum_count<DescriptorHeap::Type>() - 1>;
+    using DescriptorHeapTypes = std::array<UniquePtrs<DescriptorHeap>, static_cast<size_t>(DescriptorHeap::Type::Undefined)>;
 
     bool                      m_deferred_heap_allocation = false;
     DescriptorHeapTypes       m_descriptor_heap_types;

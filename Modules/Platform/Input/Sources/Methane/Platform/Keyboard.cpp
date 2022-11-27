@@ -22,6 +22,7 @@ Platform abstraction of keyboard events.
 ******************************************************************************/
 
 #include <Methane/Platform/Keyboard.h>
+#include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -36,14 +37,20 @@ namespace Methane::Platform::Keyboard
 static const std::string g_keys_separator       = "+";
 static const std::string g_properties_separator = "+";
 
+static ModifierMask GetModifierMask(Opt<Modifier> modifier_opt)
+{
+    META_FUNCTION_TASK();
+    return modifier_opt ? ModifierMask(*modifier_opt) : ModifierMask();
+}
+
 KeyConverter::KeyConverter(Key key)
     : m_key(key)
-    , m_modifiers(GetModifierKey())
+    , m_modifiers(GetModifierMask(GetModifierKey()))
 {
     META_FUNCTION_TASK();
 }
 
-KeyConverter::KeyConverter(Key key, Modifiers modifiers)
+KeyConverter::KeyConverter(Key key, ModifierMask modifiers)
     : m_key(key)
     , m_modifiers(modifiers)
 {
@@ -57,34 +64,34 @@ KeyConverter::KeyConverter(const NativeKey& native_key)
     META_FUNCTION_TASK();
 }
 
-Modifiers KeyConverter::GetModifierKey() const noexcept
+Opt<Modifier> KeyConverter::GetModifierKey() const noexcept
 {
     META_FUNCTION_TASK();
     switch (m_key)
     {
     case Key::LeftShift:
     case Key::RightShift:
-        return Modifiers::Shift;
+        return Modifier::Shift;
 
     case Key::LeftControl:
     case Key::RightControl:
-        return Modifiers::Control;
+        return Modifier::Control;
 
     case Key::LeftAlt:
     case Key::RightAlt:
-        return Modifiers::Alt;
+        return Modifier::Alt;
 
     case Key::LeftSuper:
     case Key::RightSuper:
-        return Modifiers::Super;
+        return Modifier::Super;
 
     case Key::CapsLock:
-        return Modifiers::CapsLock;
+        return Modifier::CapsLock;
     case Key::NumLock:
-        return Modifiers::NumLock;
+        return Modifier::NumLock;
 
     default:
-        return Modifiers::None;
+        return std::nullopt;
     }
 }
 
@@ -233,12 +240,12 @@ std::string_view KeyConverter::GetKeyName() const
 std::string KeyConverter::ToString() const
 {
     META_FUNCTION_TASK();
-    return m_modifiers == Modifiers::None
+    return m_modifiers == ModifierMask{}
            ? std::string(GetKeyName())
-           : fmt::format("{}{}{}", magic_enum::enum_flags_name(m_modifiers), g_keys_separator, GetKeyName());
+           : fmt::format("{}{}{}", Data::GetEnumMaskName(m_modifiers), g_keys_separator, GetKeyName());
 };
 
-State::State(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask)
+State::State(std::initializer_list<Key> pressed_keys, ModifierMask modifiers_mask)
     : m_modifiers_mask(modifiers_mask)
 {
     META_FUNCTION_TASK();
@@ -272,18 +279,16 @@ State::operator bool() const noexcept
     return operator!=(s_empty_state);
 }
 
-State::Properties State::GetDiff(const State& other) const noexcept
+State::PropertyMask State::GetDiff(const State& other) const noexcept
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
-    State::Properties properties_diff_mask = State::Properties::None;
+    State::PropertyMask properties_diff_mask;
 
     if (m_key_states != other.m_key_states)
-        properties_diff_mask |= State::Properties::KeyStates;
+        properties_diff_mask.SetBitOn(State::Property::KeyStates);
 
     if (m_modifiers_mask != other.m_modifiers_mask)
-        properties_diff_mask |= State::Properties::Modifiers;
+        properties_diff_mask.SetBitOn(State::Property::Modifiers);
 
     return properties_diff_mask;
 }
@@ -299,10 +304,10 @@ KeyType State::SetKeyImpl(Key key, KeyState key_state)
     if (key == Key::Unknown)
         return KeyType::Common;
 
-    if (const Modifiers key_modifier = KeyConverter(key).GetModifierKey();
-        key_modifier != Modifiers::None)
+    if (const Opt<Modifier> key_modifier_opt = KeyConverter(key).GetModifierKey();
+        key_modifier_opt)
     {
-        UpdateModifiersMask(key_modifier, key_state == KeyState::Pressed);
+        UpdateModifiersMask(ModifierMask(*key_modifier_opt), key_state == KeyState::Pressed);
         return KeyType::Modifier;
     }
 
@@ -312,11 +317,9 @@ KeyType State::SetKeyImpl(Key key, KeyState key_state)
     return KeyType::Common;
 }
 
-void State::UpdateModifiersMask(Modifiers modifier, bool add_modifier) noexcept
+void State::UpdateModifiersMask(ModifierMask modifier, bool add_modifier) noexcept
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
     if (add_modifier)
         m_modifiers_mask |= modifier;
     else
@@ -338,13 +341,13 @@ Keys State::GetPressedKeys() const noexcept
     return pressed_keys;
 }
 
-StateExt::StateExt(std::initializer_list<Key> pressed_keys, Modifiers modifiers_mask)
+StateExt::StateExt(std::initializer_list<Key> pressed_keys, ModifierMask modifiers_mask)
     : State(pressed_keys, modifiers_mask)
 {
     META_FUNCTION_TASK();
     for (Key pressed_key : pressed_keys)
     {
-        if (KeyConverter(pressed_key).GetModifierKey() != Modifiers::None)
+        if (KeyConverter(pressed_key).GetModifierKey().has_value())
             SetModifierKey(pressed_key, KeyState::Pressed);
     }
 }
@@ -387,21 +390,17 @@ std::string State::ToString() const
     std::stringstream ss;
     bool is_first_key = true;
 
-    if (m_modifiers_mask != Modifiers::None)
+    if (m_modifiers_mask != ModifierMask{})
     {
         // Serialize modifiers
-        for(Modifiers modifier : magic_enum::enum_values<Modifiers>())
+        Data::ForEachBitInEnumMask(m_modifiers_mask, [&ss, &is_first_key](Modifier modifier)
         {
-            using namespace magic_enum::bitwise_operators;
-            if (!static_cast<bool>(m_modifiers_mask & modifier))
-                continue;
-
             if (!is_first_key)
                 ss << g_keys_separator;
 
             ss << magic_enum::enum_name(modifier);
             is_first_key = false;
-        }
+        });
     }
 
     // Serialize regular keys

@@ -32,7 +32,6 @@ Base implementation of the context interface.
 
 #include <array>
 #include <string>
-#include <magic_enum.hpp>
 
 namespace tf
 {
@@ -106,7 +105,7 @@ protected:
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:
-    using CommandKitPtrByType = std::array<Ptr<Rhi::ICommandKit>, magic_enum::enum_count<Rhi::CommandListType>()>;
+    using CommandKitPtrByType = std::array<Ptr<Rhi::ICommandKit>, static_cast<size_t>(Rhi::CommandListType::Count)>;
     using CommandKitByQueue   = std::map<Rhi::ICommandQueue*, Ptr<Rhi::ICommandKit>>;
 
     template<Rhi::CommandListPurpose cmd_list_purpose>

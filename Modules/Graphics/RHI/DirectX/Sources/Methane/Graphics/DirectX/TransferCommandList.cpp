@@ -27,8 +27,6 @@ DirectX 12 implementation of the transfer command list interface.
 #include <Methane/Graphics/Base/CommandQueue.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Graphics::Rhi
 {
 
@@ -46,7 +44,6 @@ namespace Methane::Graphics::DirectX
 static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(Rhi::ContextOptionMask options)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
     return options.HasBit(Rhi::ContextOption::TransferWithD3D12DirectQueue)
          ? D3D12_COMMAND_LIST_TYPE_DIRECT
          : D3D12_COMMAND_LIST_TYPE_COPY;

@@ -26,8 +26,6 @@ Base implementation of the render state interface.
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Graphics::Base
 {
 

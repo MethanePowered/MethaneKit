@@ -31,7 +31,6 @@ Font atlas textures generation and fonts library management classes.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
 #include <set>
 #include <locale>
 #include <codecvt>
@@ -795,34 +794,32 @@ void Font::OnContextCompletingInitialization(rhi::IContext& context)
 
 static constexpr Font::Char::Code g_line_break_code = static_cast<Font::Char::Code>('\n');
 
-Font::Char::Type Font::Char::GetType(Font::Char::Code char_code)
+Font::Char::TypeMask Font::Char::GetTypeMask(Font::Char::Code char_code)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
-    Font::Char::Type type_mask = Font::Char::Type::Unknown;
+    Font::Char::TypeMask type_mask;
     if (char_code > 255)
         return type_mask;
 
     if (char_code == g_line_break_code)
-        type_mask |= Font::Char::Type::LineBreak;
+        type_mask.SetBitOn(Font::Char::Type::LineBreak);
 
     if (std::isspace(static_cast<int>(char_code)))
-        type_mask |= Font::Char::Type::Whitespace;
+        type_mask.SetBitOn(Font::Char::Type::Whitespace);
 
     return type_mask;
 }
 
 Font::Char::Char(Code code)
     : m_code(code)
-    , m_type_mask(GetType(code))
+    , m_type_mask(GetTypeMask(code))
 {
     META_FUNCTION_TASK();
 }
 
 Font::Char::Char(Code code, gfx::FrameRect rect, gfx::Point2I offset, gfx::Point2I advance, UniquePtr<Glyph>&& glyph_ptr)
     : m_code(code)
-    , m_type_mask(GetType(code))
+    , m_type_mask(GetTypeMask(code))
     , m_rect(std::move(rect))
     , m_offset(std::move(offset))
     , m_advance(std::move(advance))

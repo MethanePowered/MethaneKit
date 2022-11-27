@@ -36,7 +36,6 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
 #include <DirectXTex.h>
 
 template<>
@@ -377,7 +376,6 @@ DepthStencilTexture::Texture(const Base::Context& render_context, const Settings
         1  // mip levels
     );
 
-    using namespace magic_enum::bitwise_operators;
     if (settings.usage_mask.HasAnyBit(Usage::RenderTarget))
     {
         tex_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;

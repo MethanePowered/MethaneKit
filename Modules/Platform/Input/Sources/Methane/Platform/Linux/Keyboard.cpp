@@ -24,8 +24,6 @@ Linux platform specific types and implementation of Keyboard abstractions.
 #include <Methane/Platform/Keyboard.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
-
 #include <xcb/xcb.h>
 #include <X11/keysym.h>
 
@@ -160,24 +158,22 @@ Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key) noexcept
     }
 }
 
-Modifiers KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key) noexcept
+ModifierMask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key) noexcept
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
-    Modifiers modifiers_mask = Modifiers::None;
+    ModifierMask modifiers_mask;
     if (native_key.flags & XCB_MOD_MASK_SHIFT)
-        modifiers_mask |= Keyboard::Modifiers::Shift;
+        modifiers_mask |= Keyboard::Modifier::Shift;
     if (native_key.flags & XCB_MOD_MASK_CONTROL)
-        modifiers_mask |= Keyboard::Modifiers::Control;
+        modifiers_mask |= Keyboard::Modifier::Control;
     if (native_key.flags & XCB_MOD_MASK_1)
-        modifiers_mask |= Keyboard::Modifiers::Alt;
+        modifiers_mask |= Keyboard::Modifier::Alt;
     if (native_key.flags & XCB_MOD_MASK_4)
-        modifiers_mask |= Keyboard::Modifiers::Super;
+        modifiers_mask |= Keyboard::Modifier::Super;
     if (native_key.flags & XCB_MOD_MASK_2)
-        modifiers_mask |= Keyboard::Modifiers::NumLock;
+        modifiers_mask |= Keyboard::Modifier::NumLock;
     if (native_key.flags & XCB_MOD_MASK_LOCK)
-        modifiers_mask |= Keyboard::Modifiers::CapsLock;
+        modifiers_mask |= Keyboard::Modifier::CapsLock;
 
     return modifiers_mask;
 }

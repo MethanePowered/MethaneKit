@@ -27,43 +27,46 @@ by decoding them from popular image formats.
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/RHI/ITexture.h>
 #include <Methane/Data/IProvider.h>
+#include <Methane/Data/EnumMask.hpp>
 
-#include <magic_enum.hpp>
 #include <string>
 #include <array>
 
 namespace Methane::Graphics
 {
 
+class ImageData // NOSONAR
+{
+public:
+    ImageData(const Dimensions& dimensions, uint32_t channels_count, Data::Chunk&& pixels) noexcept;
+    ImageData(ImageData&& other) noexcept;
+    ImageData(const ImageData& other) noexcept = delete;
+    ~ImageData();
+
+    [[nodiscard]] const Dimensions&  GetDimensions() const noexcept    { return m_dimensions; }
+    [[nodiscard]] uint32_t           GetChannelsCount() const noexcept { return m_channels_count; }
+    [[nodiscard]] const Data::Chunk& GetPixels() const noexcept        { return m_pixels; }
+
+private:
+    Dimensions  m_dimensions;
+    uint32_t    m_channels_count;
+    Data::Chunk m_pixels;
+    const bool  m_pixels_release_required;
+};
+
+enum class ImageOption : uint32_t
+{
+    Mipmapped,
+    SrgbColorSpace,
+};
+
+using ImageOptionMask = Data::EnumMask<ImageOption>;
+
 class ImageLoader final
 {
 public:
-    enum class Options : uint32_t
-    {
-        None            = 0U,
-        Mipmapped       = 1U << 0U,
-        SrgbColorSpace  = 1U << 1U,
-        All             = ~0U
-    };
-
-    class ImageData // NOSONAR
-    {
-    public:
-        ImageData(const Dimensions& dimensions, uint32_t channels_count, Data::Chunk&& pixels) noexcept;
-        ImageData(ImageData&& other) noexcept;
-        ImageData(const ImageData& other) noexcept = delete;
-        ~ImageData();
-
-        [[nodiscard]] const Dimensions&  GetDimensions() const noexcept    { return m_dimensions; }
-        [[nodiscard]] uint32_t           GetChannelsCount() const noexcept { return m_channels_count; }
-        [[nodiscard]] const Data::Chunk& GetPixels() const noexcept        { return m_pixels; }
-
-    private:
-        Dimensions  m_dimensions;
-        uint32_t    m_channels_count;
-        Data::Chunk m_pixels;
-        const bool  m_pixels_release_required;
-    };
+    using Option     = ImageOption;
+    using OptionMask = ImageOptionMask;
 
     enum class CubeFace : size_t
     {
@@ -72,16 +75,18 @@ public:
         PositiveY,
         NegativeY,
         PositiveZ,
-        NegativeZ
+        NegativeZ,
+
+        Count
     };
 
-    using CubeFaceResources = std::array<std::string, magic_enum::enum_count<CubeFace>()>;
+    using CubeFaceResources = std::array<std::string, static_cast<size_t>(CubeFace::Count)>;
 
     explicit ImageLoader(Data::IProvider& data_provider);
 
     [[nodiscard]] ImageData          LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const;
-    [[nodiscard]] Ptr<Rhi::ITexture> LoadImageToTexture2D(Rhi::ICommandQueue& target_cmd_queue, const std::string& image_path, Options options = Options::None, const std::string& texture_name = "") const;
-    [[nodiscard]] Ptr<Rhi::ITexture> LoadImagesToTextureCube(Rhi::ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, Options options = Options::None, const std::string& texture_name = "") const;
+    [[nodiscard]] Ptr<Rhi::ITexture> LoadImageToTexture2D(Rhi::ICommandQueue& target_cmd_queue, const std::string& image_path, ImageOptionMask options = {}, const std::string& texture_name = "") const;
+    [[nodiscard]] Ptr<Rhi::ITexture> LoadImagesToTextureCube(Rhi::ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, ImageOptionMask options = {}, const std::string& texture_name = "") const;
 
 private:
     Data::IProvider& m_data_provider;

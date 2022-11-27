@@ -37,6 +37,7 @@ target_link_libraries(${TARGET}
         MethaneGraphicsRhi
         MethaneGraphicsMesh
         MethaneDataPrimitives
+        MethaneDataTypes
         MethaneInstrumentation
         TaskFlow
     PRIVATE

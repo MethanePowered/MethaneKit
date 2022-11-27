@@ -145,8 +145,6 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
 void ProgramBindings::Apply(ICommandListDx& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
     Rhi::ProgramArgumentAccessMask apply_access_mask;
     apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccessType::Mutable);
 

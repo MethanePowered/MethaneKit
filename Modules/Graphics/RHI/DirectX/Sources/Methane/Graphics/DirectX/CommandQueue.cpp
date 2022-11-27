@@ -60,8 +60,6 @@ namespace Methane::Graphics::DirectX
 static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(Rhi::CommandListType command_list_type, Rhi::ContextOptionMask options)
 {
     META_FUNCTION_TASK();
-    using namespace magic_enum::bitwise_operators;
-
     switch(command_list_type)
     {
     case Rhi::CommandListType::Transfer:

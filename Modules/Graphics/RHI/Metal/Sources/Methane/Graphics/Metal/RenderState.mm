@@ -32,8 +32,6 @@ Metal implementation of the render state interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
-
 namespace Methane::Graphics::Rhi
 {
 

@@ -34,7 +34,6 @@ Base implementation of the command list interface.
 #include <Methane/TracyGpu.hpp>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
 #include <stack>
 #include <mutex>
 #include <atomic>
@@ -141,12 +140,7 @@ protected:
     void BeginGpuZone();
     void EndGpuZone();
 
-    inline void VerifyEncodingState() const
-    {
-        META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
-                                   "{} command list '{}' encoding is not possible in '{}' state",
-                                   magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
-    }
+    void VerifyEncodingState() const;
 
 private:
     using DebugGroupStack  = std::stack<Ptr<DebugGroup>>;

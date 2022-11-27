@@ -35,7 +35,6 @@ Vulkan implementation of the render state interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
 #include <algorithm>
 
 namespace Methane::Graphics::Rhi
