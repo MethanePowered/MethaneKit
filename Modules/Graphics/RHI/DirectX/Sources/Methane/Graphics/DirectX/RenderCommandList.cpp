@@ -216,11 +216,11 @@ void RenderCommandList::DrawIndexed(Primitive primitive, uint32_t index_count, u
     Base::RenderCommandList::DrawIndexed(primitive, index_count, start_index, start_vertex, instance_count, start_instance);
 
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
-    if (static_cast<bool>(drawing_state.changes & DrawingState::Changes::PrimitiveType))
+    if (drawing_state.changes.HasAnyBit(DrawingState::Change::PrimitiveType))
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);
-        drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
+        drawing_state.changes.SetBitOff(DrawingState::Change::PrimitiveType);
     }
 
     dx_command_list.DrawIndexedInstanced(index_count, instance_count, start_index, start_vertex, start_instance);
@@ -232,14 +232,13 @@ void RenderCommandList::Draw(Primitive primitive, uint32_t vertex_count, uint32_
     META_FUNCTION_TASK();
     Base::RenderCommandList::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);
 
-    using namespace magic_enumbitwise_operators;
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
     if (DrawingState& drawing_state = GetDrawingState();
-        static_cast<bool>(drawing_state.changes & DrawingState::Changes::PrimitiveType))
+        drawing_state.changes.HasAnyBit(DrawingState::Change::PrimitiveType))
     {
         const D3D12_PRIMITIVE_TOPOLOGY primitive_topology = PrimitiveToDXTopology(primitive);
         dx_command_list.IASetPrimitiveTopology(primitive_topology);
-        drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
+        drawing_state.changes.SetBitOff(DrawingState::Change::PrimitiveType);
     }
     dx_command_list.DrawInstanced(vertex_count, instance_count, start_vertex, start_instance);
 }

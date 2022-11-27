@@ -229,11 +229,11 @@ void RenderCommandList::UpdatePrimitiveTopology(Primitive primitive)
 {
     META_FUNCTION_TASK();
     if (DrawingState& drawing_state = GetDrawingState();
-        static_cast<bool>(drawing_state.changes & DrawingState::Changes::PrimitiveType))
+        drawing_state.changes.HasAnyBit(DrawingState::Change::PrimitiveType))
     {
         const vk::PrimitiveTopology vk_primitive_topology = GetVulkanPrimitiveTopology(primitive);
         GetNativeCommandBufferDefault().setPrimitiveTopologyEXT(vk_primitive_topology);
-        drawing_state.changes &= ~DrawingState::Changes::PrimitiveType;
+        drawing_state.changes.SetBitOff(DrawingState::Change::PrimitiveType);
     }
 }
 

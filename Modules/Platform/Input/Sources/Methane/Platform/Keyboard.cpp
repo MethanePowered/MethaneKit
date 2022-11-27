@@ -59,7 +59,7 @@ KeyConverter::KeyConverter(Key key, ModifierMask modifiers)
 
 KeyConverter::KeyConverter(const NativeKey& native_key)
     : m_key(GetKeyByNativeCode(native_key))
-    , m_modifiers(GetModifiersByNativeCode(native_key))
+    , m_modifiers(GetModifierMask(GetModifiersByNativeCode(native_key)))
 {
     META_FUNCTION_TASK();
 }
