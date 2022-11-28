@@ -72,25 +72,31 @@ TEMPLATE_TEST_CASE("EnumMask Initialization", "[enum-mask][init]", MASK_TYPES)
     SECTION("Default constructor")
     {
         constexpr EnumMaskType mask;
-        CHECK(mask.ToInt() == TestType{});
+        CHECK(mask.GetValue() == TestType{});
     }
 
     SECTION("Mask value constructor")
     {
         constexpr EnumMaskType mask{ 3 };
-        CHECK(mask.ToInt() == TestType{ 3 });
+        CHECK(mask.GetValue() == TestType{ 3 });
     }
 
     SECTION("Enum bit constructor")
     {
         constexpr EnumMaskType mask(Fruit::Mandarin);
-        CHECK(mask.ToInt() == AsBit<TestType>(Fruit::Mandarin));
+        CHECK(mask.GetValue() == AsBit<TestType>(Fruit::Mandarin));
+    }
+
+    SECTION("Enum indexed bit constructor")
+    {
+        constexpr EnumMaskType mask(EnumMaskType::Bit(uint8_t(2)));
+        CHECK(mask.GetValue() == AsBit<TestType>(Fruit::Peach));
     }
 
     SECTION("Enum bits list constructor")
     {
         constexpr EnumMaskType mask({ Fruit::Apple, Fruit::Peach, Fruit::Mandarin });
-        CHECK(mask.ToInt() == AsMask<TestType>({ Fruit::Apple, Fruit::Peach, Fruit::Mandarin }));
+        CHECK(mask.GetValue() == AsMask<TestType>({ Fruit::Apple, Fruit::Peach, Fruit::Mandarin }));
     }
 }
 

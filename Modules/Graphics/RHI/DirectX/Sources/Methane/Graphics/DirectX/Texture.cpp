@@ -437,7 +437,7 @@ Opt<Rhi::IResource::Descriptor> DepthStencilTexture::InitializeNativeViewDescrip
         CreateDepthStencilView(descriptor);
     else
     {
-        META_UNEXPECTED_ARG_DESCR_RETURN(view_id.usage.ToInt(), descriptor,
+        META_UNEXPECTED_ARG_DESCR_RETURN(view_id.usage.GetValue(), descriptor,
                                          "unsupported usage {} for Depth-Stencil buffer", Data::GetEnumMaskName(view_id.usage));
     }
     return descriptor;

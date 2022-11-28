@@ -37,7 +37,7 @@ Texture::Texture(const Context& context, const Settings& settings,
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.usage_mask.ToInt(), 0U, "can not create texture with 'Unknown' usage mask");
+    META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.usage_mask.GetValue(), 0U, "can not create texture with 'Unknown' usage mask");
     META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.pixel_format, PixelFormat::Unknown, "can not create texture with 'Unknown' pixel format");
     META_CHECK_ARG_NOT_NULL_DESCR(m_settings.array_length, "array length should be greater than zero");
 

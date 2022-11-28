@@ -41,57 +41,68 @@ public:
     using EnumType = E;
     using MaskType = M;
 
-    constexpr static M AsInt(E e) noexcept { return M{ 1 } << static_cast<M>(e); }
+    class Bit
+    {
+    public:
+        explicit constexpr Bit(uint8_t i) noexcept : m_value(M{ 1 } << static_cast<M>(i)) { }
+        constexpr Bit(E e) noexcept : m_value(M{ 1 } << static_cast<M>(e)) { }
+
+        constexpr M GetValue() const noexcept { return m_value; }
+        constexpr operator M() const noexcept { return m_value; }
+
+    private:
+        const M m_value;
+    };
 
     constexpr EnumMask() noexcept = default;
     constexpr explicit EnumMask(M value) noexcept : m_value(value) { }
-    constexpr explicit EnumMask(E bit) noexcept : m_value(AsInt(bit)) { }
-    constexpr EnumMask(std::initializer_list<E> bits) : m_value(AsInt(bits.begin(), bits.end())) { }
+    constexpr explicit EnumMask(Bit bit) noexcept : m_value(bit.GetValue()) { }
+    constexpr EnumMask(std::initializer_list<Bit> bits) noexcept : m_value(BitsToInt(bits.begin(), bits.end())) { }
 
-    constexpr M ToInt() const noexcept { return m_value; }
+    constexpr M GetValue() const noexcept { return m_value; }
 
     constexpr bool operator==(const EnumMask& other) const noexcept { return m_value == other.m_value; }
     constexpr bool operator!=(const EnumMask& other) const noexcept { return m_value != other.m_value; }
-    constexpr bool operator<(const EnumMask& other) const noexcept  { return m_value < other.m_value;  }
+    constexpr bool operator<(const EnumMask& other) const noexcept  { return m_value <  other.m_value; }
     constexpr bool operator<=(const EnumMask& other) const noexcept { return m_value <= other.m_value; }
-    constexpr bool operator>(const EnumMask& other) const noexcept  { return m_value > other.m_value;  }
+    constexpr bool operator>(const EnumMask& other) const noexcept  { return m_value >  other.m_value; }
     constexpr bool operator>=(const EnumMask& other) const noexcept { return m_value >= other.m_value; }
     constexpr bool operator!() const noexcept                       { return !m_value; }
 
-    constexpr EnumMask operator|(E bit) const noexcept          { return EnumMask(m_value | AsInt(bit)); }
-    constexpr EnumMask operator|(EnumMask mask) const noexcept  { return EnumMask(m_value | mask.ToInt()); }
-    constexpr EnumMask operator&(E bit) const noexcept          { return EnumMask(m_value & AsInt(bit)); }
-    constexpr EnumMask operator&(EnumMask mask) const noexcept  { return EnumMask(m_value & mask.ToInt()); }
-    constexpr EnumMask operator^(E bit) const noexcept          { return EnumMask(m_value ^ AsInt(bit)); }
-    constexpr EnumMask operator^(EnumMask mask) const noexcept  { return EnumMask(m_value ^ mask.ToInt()); }
+    constexpr EnumMask operator|(Bit bit) const noexcept        { return EnumMask(m_value | bit.GetValue());  }
+    constexpr EnumMask operator|(EnumMask mask) const noexcept  { return EnumMask(m_value | mask.GetValue()); }
+    constexpr EnumMask operator&(Bit bit) const noexcept        { return EnumMask(m_value & bit.GetValue());  }
+    constexpr EnumMask operator&(EnumMask mask) const noexcept  { return EnumMask(m_value & mask.GetValue()); }
+    constexpr EnumMask operator^(Bit bit) const noexcept        { return EnumMask(m_value ^ bit.GetValue());  }
+    constexpr EnumMask operator^(EnumMask mask) const noexcept  { return EnumMask(m_value ^ mask.GetValue()); }
     constexpr EnumMask operator~() const noexcept               { return EnumMask(~m_value); }
 
-    constexpr EnumMask& operator|=(E bit) noexcept          { m_value |= AsInt(bit); return *this; }
-    constexpr EnumMask& operator|=(EnumMask mask) noexcept  { m_value |= mask.ToInt(); return *this; }
-    constexpr EnumMask& operator&=(E bit) noexcept          { m_value &= AsInt(bit); return *this; }
-    constexpr EnumMask& operator&=(EnumMask mask) noexcept  { m_value &= mask.ToInt(); return *this; }
-    constexpr EnumMask& operator^=(E bit) noexcept          { m_value ^= AsInt(bit); return *this; }
-    constexpr EnumMask& operator^=(EnumMask mask) noexcept  { m_value ^= mask.ToInt(); return *this; }
+    constexpr EnumMask& operator|=(Bit bit) noexcept        { m_value |= bit.GetValue();  return *this; }
+    constexpr EnumMask& operator|=(EnumMask mask) noexcept  { m_value |= mask.GetValue(); return *this; }
+    constexpr EnumMask& operator&=(Bit bit) noexcept        { m_value &= bit.GetValue();  return *this; }
+    constexpr EnumMask& operator&=(EnumMask mask) noexcept  { m_value &= mask.GetValue(); return *this; }
+    constexpr EnumMask& operator^=(Bit bit) noexcept        { m_value ^= bit.GetValue();  return *this; }
+    constexpr EnumMask& operator^=(EnumMask mask) noexcept  { m_value ^= mask.GetValue(); return *this; }
 
-    constexpr operator bool() const noexcept { return m_value != M{ 0 }; }
+    constexpr operator bool() const noexcept { return m_value != M{}; }
     constexpr operator M() const noexcept    { return m_value; }
 
     constexpr EnumMask& SetBitOn(E bit) noexcept            { return *this |= bit; }
     constexpr EnumMask& SetBitOff(E bit) noexcept           { return *this &= ~EnumMask(bit); }
     constexpr EnumMask& SetBit(E bit, bool on) noexcept     { return on ? SetBitOn(bit) : SetBitOff(bit); }
-    constexpr bool HasBits(EnumMask mask) const noexcept    { return mask.m_value ? ((m_value & mask.m_value) == mask.m_value) : !m_value; }
+    constexpr bool HasBits(EnumMask mask) const noexcept    { return mask.m_value ? ((m_value & mask.GetValue()) == mask.GetValue()) : !m_value; }
     constexpr bool HasBit(E bit) const noexcept             { return HasBits(EnumMask(bit)); }
-    constexpr bool HasAnyBits(EnumMask mask) const noexcept { return (m_value & mask.m_value) != M{ 0 }; }
+    constexpr bool HasAnyBits(EnumMask mask) const noexcept { return (m_value & mask.GetValue()) != M{}; }
     constexpr bool HasAnyBit(E bit) const noexcept          { return HasAnyBits(EnumMask(bit)); }
 
 private:
-    constexpr static M AsInt(typename std::initializer_list<E>::const_iterator it,
-                                    typename std::initializer_list<E>::const_iterator end) noexcept
+    constexpr static M BitsToInt(typename std::initializer_list<Bit>::const_iterator it,
+                                 typename std::initializer_list<Bit>::const_iterator end) noexcept
     {
-        return it == end ? M{ 0 } : AsInt(*it) | AsInt(it + 1, end);
+        return it == end ? M{ 0 } : it->GetValue() | BitsToInt(it + 1, end);
     }
 
-    M m_value{ 0 };
+    M m_value{ };
 };
 
 } // namespace Methane::Data
