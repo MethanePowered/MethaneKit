@@ -68,6 +68,7 @@ constexpr MaskType AsMask(std::initializer_list<EnumType> bits) noexcept
 TEMPLATE_TEST_CASE("EnumMask Initialization", "[enum-mask][init]", MASK_TYPES)
 {
     using EnumMaskType = EnumMask<Fruit, TestType>;
+    using EnumBitType = typename EnumMaskType::Bit;
 
     SECTION("Default constructor")
     {
@@ -89,7 +90,7 @@ TEMPLATE_TEST_CASE("EnumMask Initialization", "[enum-mask][init]", MASK_TYPES)
 
     SECTION("Enum indexed bit constructor")
     {
-        constexpr EnumMaskType mask(EnumMaskType::Bit(uint8_t(2)));
+        constexpr EnumMaskType mask(EnumBitType(uint8_t(2)));
         CHECK(mask.GetValue() == AsBit<TestType>(Fruit::Peach));
     }
 
@@ -97,6 +98,21 @@ TEMPLATE_TEST_CASE("EnumMask Initialization", "[enum-mask][init]", MASK_TYPES)
     {
         constexpr EnumMaskType mask({ Fruit::Apple, Fruit::Peach, Fruit::Mandarin });
         CHECK(mask.GetValue() == AsMask<TestType>({ Fruit::Apple, Fruit::Peach, Fruit::Mandarin }));
+    }
+
+    SECTION("Mask copy constructor")
+    {
+        constexpr EnumMaskType orig_mask{ 3 };
+        constexpr EnumMaskType copy_mask(orig_mask);
+        CHECK(copy_mask.GetValue() == orig_mask.GetValue());
+    }
+
+    SECTION("Mask assignment operator")
+    {
+        constexpr EnumMaskType source_mask{ 5 };
+        EnumMaskType target_mask{ 3 };
+        target_mask = source_mask;
+        CHECK(target_mask.GetValue() == source_mask.GetValue());
     }
 }
 
