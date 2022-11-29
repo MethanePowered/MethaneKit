@@ -1,6 +1,6 @@
 # Static code analysis workflow with CodeQL
 
-name: "CI CodeQL Scan"
+name: ":crystal_ball: CI CodeQL Scan"
 
 on:
   push:

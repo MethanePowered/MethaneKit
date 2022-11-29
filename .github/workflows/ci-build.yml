@@ -1,6 +1,6 @@
 # Cross-platform and multi-configuration build of the Methane Kit
 
-name: 'CI Build'
+name: ':building_construction: CI Build'
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
     - '.github/workflows/ci-build.yml'
     - 'Apps/**'
     - 'Modules/**'
+    - 'Tests/**'
     - 'Externals/**'
     - 'CMake/**'
     - 'CMakeLists.txt'
@@ -19,6 +20,7 @@ on:
     - '.github/workflows/ci-build.yml'
     - 'Apps/**'
     - 'Modules/**'
+    - 'Tests/**'
     - 'Externals/**'
     - 'CMake/**'
     - 'CMakeLists.txt'

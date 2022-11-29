@@ -1,7 +1,7 @@
 # Tests report generator using test results published by CI Build workflow
 # https://github.com/marketplace/actions/test-reporter
 
-name: 'CI Tests Report'
+name: ':memo: CI Tests Report'
 
 on:
   workflow_run:
@@ -32,7 +32,7 @@ jobs:
         uses: dorny/test-reporter@v1
         with:
           artifact:  /MethaneKit_${{ matrix.name }}_TestResults_(.*)/
-          name: Tests ${{ matrix.name }} v$1
+          name: ${{ matrix.name }} Tests
           path: '*_result.xml'
           reporter: java-junit
           fail-on-error: 'true'

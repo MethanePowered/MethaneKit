@@ -3,7 +3,7 @@
 #   - Linux:   https://sonarcloud.io/project/overview?id=methane-powered-kit-linux
 #   - MacOS:   https://sonarcloud.io/project/overview?id=methane-powered-kit-macos
 
-name: 'CI Sonar Scan'
+name: ':dart: CI Sonar Scan'
 
 on:
   push:
@@ -13,6 +13,7 @@ on:
       - 'sonar-project.properties'
       - 'Apps/**'
       - 'Modules/**'
+      - 'Tests/**'
       - 'Externals/**'
       - 'CMake/**'
       - 'CMakeLists.txt'
@@ -26,6 +27,7 @@ on:
       - 'sonar-project.properties'
       - 'Apps/**'
       - 'Modules/**'
+      - 'Tests/**'
       - 'Externals/**'
       - 'CMake/**'
       - 'CMakeLists.txt'
