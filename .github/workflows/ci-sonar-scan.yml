@@ -3,7 +3,7 @@
 #   - Linux:   https://sonarcloud.io/project/overview?id=methane-powered-kit-linux
 #   - MacOS:   https://sonarcloud.io/project/overview?id=methane-powered-kit-macos
 
-name: ':dart: CI Sonar Scan'
+name: '🎯 CI Sonar Scan'
 
 on:
   push:

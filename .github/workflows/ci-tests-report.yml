@@ -1,7 +1,7 @@
 # Tests report generator using test results published by CI Build workflow
 # https://github.com/marketplace/actions/test-reporter
 
-name: ':memo: CI Tests Report'
+name: '📝 CI Tests Report'
 
 on:
   workflow_run:

@@ -1,6 +1,6 @@
 # Cross-platform and multi-configuration build of the Methane Kit
 
-name: ':building_construction: CI Build'
+name: '🏗️ CI Build'
 
 on:
   push:
