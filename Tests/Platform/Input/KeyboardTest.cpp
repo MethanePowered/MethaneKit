@@ -23,7 +23,7 @@ Unit tests of the Keyboard data types
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <Methane/Platform/Keyboard.h>
+#include <Methane/Platform/Input/Keyboard.h>
 #include <Methane/Data/EnumMaskUtil.hpp>
 
 using namespace Methane::Platform::Keyboard;

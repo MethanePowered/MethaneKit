@@ -24,8 +24,8 @@ X11/XCB utility functions.
 #pragma once
 
 #include <Methane/Platform/Linux/AppEnvironment.h>
-#include <Methane/Platform/Mouse.h>
-#include <Methane/Platform/Keyboard.h>
+#include <Methane/Platform/Input/Mouse.h>
+#include <Methane/Platform/Input/Keyboard.h>
 
 #include <string_view>
 #include <stdexcept>

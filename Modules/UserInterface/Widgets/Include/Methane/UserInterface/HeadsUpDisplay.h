@@ -28,7 +28,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/UserInterface/Font.h>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Graphics/RHI/IRenderCommandList.h>
-#include <Methane/Platform/Keyboard.h>
+#include <Methane/Platform/Input/Keyboard.h>
 #include <Methane/Timer.hpp>
 #include <Methane/Memory.hpp>
 

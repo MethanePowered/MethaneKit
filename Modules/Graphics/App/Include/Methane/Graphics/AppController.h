@@ -26,7 +26,7 @@ Base graphics application controller.
 #include "IApp.h"
 
 #include <Methane/Platform/AppController.h>
-#include <Methane/Platform/KeyboardActionControllerBase.hpp>
+#include <Methane/Platform/Input/KeyboardActionControllerBase.hpp>
 
 namespace Methane::Graphics
 {

@@ -24,7 +24,7 @@ Graphics context controller for switching parameters in runtime.
 #pragma once
 
 #include <Methane/Platform/Input/Controller.h>
-#include <Methane/Platform/KeyboardActionControllerBase.hpp>
+#include <Methane/Platform/Input/KeyboardActionControllerBase.hpp>
 
 #include <map>
 

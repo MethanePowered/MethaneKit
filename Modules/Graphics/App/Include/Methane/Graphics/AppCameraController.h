@@ -24,8 +24,8 @@ Action camera controller with keyboard and mouse interactions handling.
 #pragma once
 
 #include <Methane/Platform/Input/Controller.h>
-#include <Methane/Platform/KeyboardActionControllerBase.hpp>
-#include <Methane/Platform/MouseActionControllerBase.hpp>
+#include <Methane/Platform/Input/KeyboardActionControllerBase.hpp>
+#include <Methane/Platform/Input/MouseActionControllerBase.hpp>
 #include <Methane/Graphics/ActionCamera.h>
 
 namespace Methane::Graphics

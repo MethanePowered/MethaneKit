@@ -14,7 +14,6 @@ target_link_libraries(${TARGET}
         MethanePrecompiledHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2WithMain
-        magic_enum
 )
 
 set_target_properties(${TARGET}

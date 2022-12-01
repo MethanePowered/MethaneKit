@@ -25,7 +25,7 @@ Linux application implementation.
 
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/AppEnvironment.h>
-#include <Methane/Platform/Mouse.h>
+#include <Methane/Platform/Input/Mouse.h>
 #include <Methane/Memory.hpp>
 
 #include <vector>

@@ -25,7 +25,7 @@ Linux message box implementation with X11/XCB.
 
 #include <Methane/Platform/IApp.h>
 #include <Methane/Platform/AppEnvironment.h>
-#include <Methane/Platform/Mouse.h>
+#include <Methane/Platform/Input/Mouse.h>
 
 #include <xcb/xcb.h>
 

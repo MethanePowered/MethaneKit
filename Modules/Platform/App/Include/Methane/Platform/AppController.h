@@ -24,7 +24,7 @@ Base application controller providing commands like app close and help.
 #pragma once
 
 #include <Methane/Platform/AppBase.h>
-#include <Methane/Platform/KeyboardActionControllerBase.hpp>
+#include <Methane/Platform/Input/KeyboardActionControllerBase.hpp>
 
 namespace Methane::Platform
 {

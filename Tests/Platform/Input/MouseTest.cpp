@@ -23,7 +23,7 @@ Unit tests of the Mouse data types
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <Methane/Platform/Mouse.h>
+#include <Methane/Platform/Input/Mouse.h>
 #include <Methane/Data/EnumMaskUtil.hpp>
 
 using namespace Methane::Platform::Mouse;

@@ -24,7 +24,7 @@ Parallel Rendering application controller.
 #pragma once
 
 #include <Methane/Platform/Input/Controller.h>
-#include <Methane/Platform/KeyboardActionControllerBase.hpp>
+#include <Methane/Platform/Input/KeyboardActionControllerBase.hpp>
 
 namespace Methane::Tutorials
 {

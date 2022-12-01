@@ -27,7 +27,7 @@ target_link_libraries(${TARGET}
         MethaneUserInterfaceTypes
         MethaneUserInterfaceTypography
         MethaneGraphicsExtensions
-        MethanePlatformInput
+        MethanePlatformInputKeyboard
     PRIVATE
         MethaneBuildOptions
         MethanePrecompiledExtraHeaders

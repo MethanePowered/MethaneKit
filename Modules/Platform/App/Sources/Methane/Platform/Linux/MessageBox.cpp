@@ -24,7 +24,7 @@ Linux message box implementation with X11/XCB.
 #include "XcbUtils.h"
 
 #include <Methane/Platform/Linux/MessageBox.h>
-#include <Methane/Platform/Keyboard.h>
+#include <Methane/Platform/Input/Keyboard.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
