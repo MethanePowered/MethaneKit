@@ -71,7 +71,7 @@ enum class ButtonState : uint8_t
     Pressed,
 };
 
-using ButtonStates = std::array<ButtonState, magic_enum::enum_count<Button>() - 1>;
+using ButtonStates = std::array<ButtonState, static_cast<size_t>(Button::Unknown)>;
 
 using Position = Data::Point2I;
 using Scroll = Data::Point2F;

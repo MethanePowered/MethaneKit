@@ -51,7 +51,6 @@ target_link_libraries(${TARGET}
         MethanePrecompiledExtraHeaders
         MethaneDataPrimitives
         freetype
-        magic_enum
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)

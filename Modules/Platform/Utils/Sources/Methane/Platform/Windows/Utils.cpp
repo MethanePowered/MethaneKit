@@ -30,6 +30,7 @@ Windows platform utility functions.
 
 #include <nowide/convert.hpp>
 #include <string_view>
+#include <array>
 
 namespace Methane::Platform
 {

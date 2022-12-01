@@ -47,7 +47,6 @@ target_link_libraries(${TARGET}
         MethaneGraphicsPrimitives
         MethaneGraphicsCamera
         MethaneDataProvider
-        magic_enum
 )
 
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)

@@ -48,12 +48,12 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataTypes
         MethaneInstrumentation
+        magic_enum # TODO: to be removed
     PRIVATE
         MethaneBuildOptions
         MethanePrecompiledHeaders
         MethanePrimitives
         MethanePlatformUtils
-        magic_enum
         ${PLATFORM_LIBRARIES}
 )
 

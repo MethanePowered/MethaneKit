@@ -26,6 +26,8 @@ pipeline via state object and used to create resource binding objects.
 
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics::Rhi
 {
 

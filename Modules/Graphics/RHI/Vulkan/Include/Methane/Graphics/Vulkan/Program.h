@@ -31,7 +31,6 @@ Vulkan implementation of the program interface.
 #include <magic_enum.hpp>
 #include <vulkan/vulkan.hpp>
 
-#include <magic_enum.hpp>
 #include <array>
 
 namespace Methane::Graphics::Vulkan

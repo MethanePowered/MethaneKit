@@ -26,6 +26,8 @@ Methane resource barriers for manual or automatic resource state synchronization
 
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics::Rhi
 {
 

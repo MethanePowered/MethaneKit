@@ -33,7 +33,6 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
 target_link_libraries(${TARGET}
     PUBLIC
         fmt
-        magic_enum
     PRIVATE
         MethaneBuildOptions
         MethanePrecompiledHeaders

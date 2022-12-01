@@ -90,14 +90,14 @@ TEMPLATE_TEST_CASE("Unit Type Conversions", "[unit][type][convert]", ALL_BASE_TY
     SECTION("Convert Pixels type to string")
     {
         const UnitType<TestType> unit_item = CreateUnitItem<TestType>(Units::Pixels);
-        const std::string unit_str = static_cast<std::string>(unit_item.AsBase()) + " in Pixels";
+        const std::string unit_str = static_cast<std::string>(unit_item.AsBase()) + " in pixels";
         CHECK(static_cast<std::string>(unit_item) == unit_str);
     }
 
     SECTION("Convert Dots type to string")
     {
         const UnitType<TestType> unit_item = CreateUnitItem<TestType>(Units::Dots);
-        const std::string unit_str = static_cast<std::string>(unit_item.AsBase()) + " in Dots";
+        const std::string unit_str = static_cast<std::string>(unit_item.AsBase()) + " in dots";
         CHECK(static_cast<std::string>(unit_item) == unit_str);
     }
 

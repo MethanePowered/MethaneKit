@@ -36,19 +36,20 @@ target_include_directories(${TARGET}
 target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 
 target_link_libraries(${TARGET}
-PUBLIC
-    MethaneDataProvider
-    MethanePlatformApp
-    MethanePlatformUtils
-    MethanePlatformInput
-    MethaneGraphicsRhi
-    MethaneGraphicsExtensions
-    MethaneGraphicsPrimitives
-    MethaneGraphicsCamera
-    MethaneInstrumentation
-PRIVATE
-    MethaneBuildOptions
-    MethanePrecompiledExtraHeaders
+    PUBLIC
+        MethaneDataProvider
+        MethanePlatformApp
+        MethanePlatformUtils
+        MethanePlatformInput
+        MethaneGraphicsRhi
+        MethaneGraphicsExtensions
+        MethaneGraphicsPrimitives
+        MethaneGraphicsCamera
+        MethaneInstrumentation
+    PRIVATE
+        MethaneBuildOptions
+        MethanePrecompiledExtraHeaders
+        magic_enum
 )
 
 set_target_properties(${TARGET}

@@ -27,7 +27,6 @@ Platform abstraction of keyboard events.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
 #include <map>
 #include <sstream>
 

@@ -31,7 +31,6 @@ Methane common exception types
 #pragma once
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -99,7 +98,11 @@ private:
     [[nodiscard]] static std::string GetMessage(const V& value) noexcept
     {
         if constexpr (std::is_enum_v<V>)
+#ifdef NEARGYE_MAGIC_ENUM_HPP
             return fmt::format("{}::{}({}) is not valid", magic_enum::enum_type_name<V>(), magic_enum::enum_name(value), magic_enum::enum_integer(value));
+#else
+            return fmt::format("{}({}) is not valid", typeid(V).name(), static_cast<std::underlying_type_t<V>>(value));
+#endif
         else if constexpr (std::is_pointer_v<V>)
             return fmt::format("{}*({}) is not valid", typeid(V).name(), fmt::ptr(value));
         else if constexpr (IsStaticCastable<V, std::string>::value)
@@ -176,7 +179,12 @@ private:
     static std::string GetMessage(const V& value)
     {
         if constexpr (std::is_enum_v<V>)
+#ifdef NEARGYE_MAGIC_ENUM_HPP
             return fmt::format("{}::{}({}) is unexpected", magic_enum::enum_type_name<V>(), magic_enum::enum_name(value), magic_enum::enum_integer(value));
+#else
+            return fmt::format("{}({}) is unexpected", typeid(V).name(), static_cast<std::underlying_type_t<V>>(value));
+#endif
+
         else
             return fmt::format("{}({}) is unexpected", typeid(V).name(), value);
     }

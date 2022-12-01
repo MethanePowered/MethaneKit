@@ -53,6 +53,7 @@ PRIVATE
     MethaneBuildOptions
     MethanePrecompiledExtraHeaders
     MethaneUserInterfaceTypes
+    magic_enum
 )
 
 set_target_properties(${TARGET}

@@ -24,7 +24,6 @@ set(PRECOMPILED_HEADERS ${PRECOMPILED_HEADERS}
     # Common External headers
     <fmt/format.h>
     <nowide/convert.hpp>
-    <magic_enum.hpp>
 
     # types
     <limits>
@@ -66,7 +65,6 @@ target_link_libraries(${TARGET}
         MethaneInstrumentation
         fmt
         nowide
-        magic_enum
 )
 
 target_precompile_headers(${TARGET}
@@ -132,7 +130,6 @@ target_link_libraries(${EXTRA_TARGET}
         HLSLpp
         fmt
         nowide
-        magic_enum
         ${PLATFORM_LIBRARIES}
 )
 

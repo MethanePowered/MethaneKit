@@ -32,6 +32,8 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
+
 namespace Methane::Graphics::DirectX
 {
 

@@ -41,7 +41,10 @@ DirectX 12 base template implementation of the command list interface.
 #include <pix.h>
 #include <nowide/convert.hpp>
 #include <fmt/format.h>
+
+#ifdef METHANE_LOGGING_ENABLED
 #include <magic_enum.hpp>
+#endif
 
 namespace Methane::Graphics::DirectX
 {
@@ -110,7 +113,8 @@ public:
         if (resource_barriers.IsEmpty())
             return;
 
-        META_LOG("{} Command list '{}' SET RESOURCE BARRIERS:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(resource_barriers));
+        META_LOG("{} Command list '{}' SET RESOURCE BARRIERS:\n{}",
+                 magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(resource_barriers));
         META_CHECK_ARG_NOT_NULL(m_cp_command_list);
 
         const auto& dx_resource_barriers = static_cast<const IResource::Barriers&>(resource_barriers);
