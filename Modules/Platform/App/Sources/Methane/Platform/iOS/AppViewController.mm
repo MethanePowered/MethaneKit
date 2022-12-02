@@ -30,35 +30,36 @@ iOS application view controller implementation.
 
 #include <string>
 
-using namespace Methane;
-using namespace Methane::Platform;
-
-namespace Methane::Platform
+namespace Methane::Platform::Input
 {
 
-static Input::Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
+static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
 {
     META_FUNCTION_TASK();
     switch(touches_cout)
     {
-    case 1U: return Input::Mouse::Button::Left;
-    case 2U: return Input::Mouse::Button::Right;
-    case 3U: return Input::Mouse::Button::Middle;
+    case 1U: return Mouse::Button::Left;
+    case 2U: return Mouse::Button::Right;
+    case 3U: return Mouse::Button::Middle;
     default: META_UNEXPECTED_ARG_DESCR(touches_cout, "Methane iOS application supports from 1 to 3 touches handling only");
     }
 }
 
 } // namespace Methane::Platform
 
+namespace data = Methane::Data;
+namespace pal = Methane::Platform;
+namespace pin = Methane::Platform::Input;
+
 @implementation AppViewController
 {
-    AppIOS*     m_p_app;
-    CGRect      m_frame_rect;
-    bool        m_is_initialized;
-    std::string m_error;
+    pal::AppIOS* m_p_app;
+    CGRect       m_frame_rect;
+    bool         m_is_initialized;
+    std::string  m_error;
 }
 
-- (id)initWithApp : (Methane::Platform::AppIOS*) p_app andFrameRect : (CGRect) frame_rect
+- (id)initWithApp : (pal::AppIOS*) p_app andFrameRect : (CGRect) frame_rect
 {
     META_FUNCTION_TASK();
 
@@ -79,7 +80,7 @@ static Input::Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
     return m_p_app ? m_p_app->GetWindow() : nil;
 }
 
-- (Methane::Platform::AppIOS*) getApp
+- (pal::AppIOS*) getApp
 {
     return m_p_app;
 }
@@ -88,7 +89,7 @@ static Input::Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
-    m_p_app->InitContextWithErrorHandling({ self }, Data::FrameSize(m_frame_rect.size.width, m_frame_rect.size.height));
+    m_p_app->InitContextWithErrorHandling({ self }, data::FrameSize(m_frame_rect.size.width, m_frame_rect.size.height));
 }
 
 - (void)viewDidLoad
@@ -110,7 +111,7 @@ static Input::Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
         m_is_initialized = m_p_app->InitWithErrorHandling();
     }
     m_frame_rect = [view frame];
-    m_p_app->Resize( Data::FrameSize(size.width, size.height), false);
+    m_p_app->Resize( data::FrameSize(size.width, size.height), false);
 }
 
 - (void) drawInView: (nonnull AppViewMetal*) view
@@ -139,7 +140,7 @@ static Input::Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
     }
 
     [self handleTouchPosition:[touches anyObject]];
-    [self handeTouches:touches withMouseButtonChange:Mouse::ButtonState::Pressed];
+    [self handeTouches:touches withMouseButtonChange: pin::Mouse::ButtonState::Pressed];
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches
@@ -155,7 +156,7 @@ static Input::Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
     }
 
     [self handleTouchPosition:[touches anyObject]];
-    [self handeTouches:touches withMouseButtonChange:Mouse::ButtonState::Released];
+    [self handeTouches:touches withMouseButtonChange: pin::Mouse::ButtonState::Released];
 }
 
 - (void)touchesCancelled:(NSSet<UITouch *> *)touches
@@ -170,7 +171,7 @@ static Input::Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
         return;
     }
 
-    [self handeTouches:touches withMouseButtonChange:Mouse::ButtonState::Released];
+    [self handeTouches:touches withMouseButtonChange: pin::Mouse::ButtonState::Released];
 }
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches
@@ -198,15 +199,15 @@ static Input::Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
     pos.x *= ns_main_screen.nativeScale;
     pos.y *= ns_main_screen.nativeScale;
 
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, Input::Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
+    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMousePositionChanged, pin::Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
 }
 
-- (void) handeTouches:(NSSet<UITouch *> *)touches withMouseButtonChange:(Mouse::ButtonState) mouse_button_state
+- (void) handeTouches:(NSSet<UITouch *> *)touches withMouseButtonChange:(pin::Mouse::ButtonState) mouse_button_state
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
-    const Input::Mouse::Button mouse_button = GetMouseButtonByTouchesCount(static_cast<uint32_t>(touches.count));
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, mouse_button, mouse_button_state);
+    const pin::Mouse::Button mouse_button = pin::GetMouseButtonByTouchesCount(static_cast<uint32_t>(touches.count));
+    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged, mouse_button, mouse_button_state);
 }
 
 @end
