@@ -40,7 +40,7 @@ target_link_libraries(${TARGET}
         MethaneDataProvider
         MethanePlatformApp
         MethanePlatformUtils
-        MethanePlatformInput
+        MethanePlatformInputActionControllers
         MethaneGraphicsRhi
         MethaneGraphicsExtensions
         MethaneGraphicsPrimitives

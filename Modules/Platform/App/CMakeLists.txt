@@ -95,7 +95,7 @@ target_link_libraries(${TARGET}
         MethaneInstrumentation
         MethaneDataTypes
         MethanePlatformAppView
-        MethanePlatformInput
+        MethanePlatformInputActionControllers
     PRIVATE
         MethaneBuildOptions
         MethanePrecompiledHeaders
