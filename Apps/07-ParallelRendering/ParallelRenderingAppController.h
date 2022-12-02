@@ -41,20 +41,22 @@ enum class ParallelRenderingAppAction
     DecreaseRenderThreadsCount,
 };
 
+namespace pin = Methane::Platform::Input;
+
 class ParallelRenderingAppController final
-    : public Platform::Input::Controller
-    , public Platform::Keyboard::ActionControllerBase<ParallelRenderingAppAction>
+    : public pin::Controller
+    , public pin::Keyboard::ActionControllerBase<ParallelRenderingAppAction>
 {
 public:
     ParallelRenderingAppController(ParallelRenderingApp& app, const ActionByKeyboardState& action_by_keyboard_state);
 
     // Input::Controller implementation
-    void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
+    void OnKeyboardChanged(pin::Keyboard::Key, pin::Keyboard::KeyState, const pin::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
     
 protected:
-    // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(ParallelRenderingAppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
+    // Input::Keyboard::ActionControllerBase interface
+    void        OnKeyboardKeyAction(ParallelRenderingAppAction, pin::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(ParallelRenderingAppAction action) override;
     std::string GetKeyboardActionName(ParallelRenderingAppAction action) const override;
 

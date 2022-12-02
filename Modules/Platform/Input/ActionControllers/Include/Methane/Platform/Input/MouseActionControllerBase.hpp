@@ -29,7 +29,7 @@
 #include <magic_enum.hpp>
 #include <map>
 
-namespace Methane::Platform::Mouse
+namespace Methane::Platform::Input::Mouse
 {
 
 template<typename ActionEnum>
@@ -94,4 +94,4 @@ private:
     ActionByMouseButton m_action_by_mouse_button;
 };
 
-} // namespace Methane::Platform::Mouse
+} // namespace Methane::Platform::Input::Mouse

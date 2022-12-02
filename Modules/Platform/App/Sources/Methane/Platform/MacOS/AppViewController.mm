@@ -114,7 +114,8 @@ using namespace Methane::Platform;
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
 
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Pressed);
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged,
+        Input::Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Input::Keyboard::KeyState::Pressed);
 }
 
 - (void) keyUp:(NSEvent *)event
@@ -122,7 +123,8 @@ using namespace Methane::Platform;
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
 
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Keyboard::KeyState::Released);
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged,
+        Input::Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), Input::Keyboard::KeyState::Released);
 }
 
 - (void) flagsChanged:(NSEvent *)event
@@ -130,7 +132,7 @@ using namespace Methane::Platform;
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
 
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnModifiersChanged, Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetModifiers());
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnModifiersChanged, Input::Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetModifiers());
 }
 
 // ====== Mouse event handlers ======
@@ -143,7 +145,8 @@ using namespace Methane::Platform;
     NSPoint pos = [event locationInWindow];
     pos.x *= self.view.window.backingScaleFactor;
     pos.y = (m_frame_rect.size.height - pos.y) * self.view.window.backingScaleFactor;
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged,
+                                           Input::Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
 }
 
 - (void)mouseDown:(NSEvent *)event
@@ -152,7 +155,8 @@ using namespace Methane::Platform;
     META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(event)
 
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Left, Mouse::ButtonState::Pressed);
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged,
+                                           Input::Mouse::Button::Left, Input::Mouse::ButtonState::Pressed);
 }
 
 - (void)mouseUp:(NSEvent *)event
@@ -161,7 +165,8 @@ using namespace Methane::Platform;
     META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(event)
 
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Left, Mouse::ButtonState::Released);
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged,
+                                           Input::Mouse::Button::Left, Input::Mouse::ButtonState::Released);
 }
 
 - (void)mouseDragged:(NSEvent *)event
@@ -176,7 +181,8 @@ using namespace Methane::Platform;
     META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(event)
 
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Right, Mouse::ButtonState::Pressed);
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged,
+                                           Input::Mouse::Button::Right, Input::Mouse::ButtonState::Pressed);
 }
 
 - (void)rightMouseUp:(NSEvent *)event
@@ -185,7 +191,8 @@ using namespace Methane::Platform;
     META_CHECK_ARG_NOT_NULL(m_p_app);
     #pragma unused(event)
 
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, Mouse::Button::Right, Mouse::ButtonState::Released);
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged,
+                                           Input::Mouse::Button::Right, Input::Mouse::ButtonState::Released);
 }
 
 - (void)rightMouseDragged:(NSEvent *)event
@@ -199,7 +206,8 @@ using namespace Methane::Platform;
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
 
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Pressed);
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged,
+                                           static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Input::Mouse::ButtonState::Pressed);
 }
 
 - (void)otherMouseUp:(NSEvent *)event
@@ -207,7 +215,8 @@ using namespace Methane::Platform;
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
 
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Mouse::ButtonState::Released);
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged,
+                                           static_cast<Mouse::Button>(static_cast<int>([event buttonNumber])), Input::Mouse::ButtonState::Released);
 }
 
 - (void)otherMouseDragged:(NSEvent *)event
@@ -239,7 +248,7 @@ using namespace Methane::Platform;
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
 
-    Mouse::Scroll scroll([event scrollingDeltaX], -[event scrollingDeltaY]);
+    Input::Mouse::Scroll scroll([event scrollingDeltaX], -[event scrollingDeltaY]);
     if ([event hasPreciseScrollingDeltas])
         scroll *= 0.1F;
     

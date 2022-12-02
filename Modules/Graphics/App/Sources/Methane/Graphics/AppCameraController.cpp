@@ -33,35 +33,35 @@ AppCameraController::AppCameraController(ActionCamera& action_camera, const std:
                                          const ActionByKeyboardState& keyboard_actions_by_state,
                                          const ActionByKeyboardKey&   keyboard_actions_by_key)
     : Controller(camera_name)
-    , Platform::Mouse::ActionControllerBase<ActionCamera::MouseAction>(mouse_actions_by_button)
-    , Platform::Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>(keyboard_actions_by_state, keyboard_actions_by_key)
+    , pin::Mouse::ActionControllerBase<ActionCamera::MouseAction>(mouse_actions_by_button)
+    , pin::Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>(keyboard_actions_by_state, keyboard_actions_by_key)
     , m_action_camera(action_camera)
 {
     META_FUNCTION_TASK();
 }
 
-void AppCameraController::OnMouseButtonChanged(Platform::Mouse::Button button, Platform::Mouse::ButtonState button_state, const Platform::Mouse::StateChange& state_change)
+void AppCameraController::OnMouseButtonChanged(pin::Mouse::Button button, pin::Mouse::ButtonState button_state, const pin::Mouse::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     const ActionCamera::MouseAction action = GetMouseActionByButton(button);
     switch (button_state)
     {
-    case Platform::Mouse::ButtonState::Pressed:  m_action_camera.OnMousePressed(state_change.current.GetPosition(), action); break;
-    case Platform::Mouse::ButtonState::Released: m_action_camera.OnMouseReleased(state_change.current.GetPosition()); break;
+    case pin::Mouse::ButtonState::Pressed:  m_action_camera.OnMousePressed(state_change.current.GetPosition(), action); break;
+    case pin::Mouse::ButtonState::Released: m_action_camera.OnMouseReleased(state_change.current.GetPosition()); break;
     default: META_UNEXPECTED_ARG(button_state);
     }
 }
 
-void AppCameraController::OnMousePositionChanged(const Platform::Mouse::Position& mouse_position, const Platform::Mouse::StateChange&)
+void AppCameraController::OnMousePositionChanged(const pin::Mouse::Position& mouse_position, const pin::Mouse::StateChange&)
 {
     META_FUNCTION_TASK();
     m_action_camera.OnMouseDragged(mouse_position);
 }
 
-void AppCameraController::OnMouseScrollChanged(const Platform::Mouse::Scroll& mouse_scroll_delta, const Platform::Mouse::StateChange&)
+void AppCameraController::OnMouseScrollChanged(const pin::Mouse::Scroll& mouse_scroll_delta, const pin::Mouse::StateChange&)
 {
     META_FUNCTION_TASK();
-    const auto [mouse_button, scroll_delta] = Platform::Mouse::GetScrollButtonAndDelta(mouse_scroll_delta);
+    const auto [mouse_button, scroll_delta] = pin::Mouse::GetScrollButtonAndDelta(mouse_scroll_delta);
     if (const ActionCamera::MouseAction action = GetMouseActionByButton(mouse_button);
         action == ActionCamera::MouseAction::Zoom)
     {
@@ -69,10 +69,10 @@ void AppCameraController::OnMouseScrollChanged(const Platform::Mouse::Scroll& mo
     }
 }
 
-void AppCameraController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange& state_change)
+void AppCameraController::OnKeyboardChanged(pin::Keyboard::Key key, pin::Keyboard::KeyState key_state, const pin::Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    Platform::Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>::OnKeyboardChanged(key, key_state, state_change);
+    pin::Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 AppCameraController::HelpLines AppCameraController::GetHelp() const
@@ -98,13 +98,13 @@ AppCameraController::HelpLines AppCameraController::GetHelp() const
     return help_lines;
 }
 
-void AppCameraController::OnKeyboardKeyAction(ActionCamera::KeyboardAction action, Platform::Keyboard::KeyState key_state)
+void AppCameraController::OnKeyboardKeyAction(ActionCamera::KeyboardAction action, pin::Keyboard::KeyState key_state)
 {
     META_FUNCTION_TASK();
     switch (key_state)
     {
-    case Platform::Keyboard::KeyState::Pressed:  m_action_camera.OnKeyPressed(action); break;
-    case Platform::Keyboard::KeyState::Released: m_action_camera.OnKeyReleased(action); break;
+    case pin::Keyboard::KeyState::Pressed:  m_action_camera.OnKeyPressed(action); break;
+    case pin::Keyboard::KeyState::Released: m_action_camera.OnKeyReleased(action); break;
     default: META_UNEXPECTED_ARG(key_state);
     }
 }

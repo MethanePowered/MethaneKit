@@ -29,7 +29,7 @@ A pool of input controllers for user actions handling in separate application co
 namespace Methane::Platform::Input
 {
 
-void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonState button_state, const Mouse::StateChange& state_change)
+void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Input::Mouse::ButtonState button_state, const Input::Mouse::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
@@ -46,7 +46,7 @@ void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Mouse::ButtonSt
     }
 }
 
-void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_position, const Mouse::StateChange& state_change)
+void ControllersPool::OnMousePositionChanged(const Input::Mouse::Position& mouse_position, const Input::Mouse::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
@@ -63,7 +63,7 @@ void ControllersPool::OnMousePositionChanged(const Mouse::Position& mouse_positi
     }
 }
 
-void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_delta, const Mouse::StateChange& state_change)
+void ControllersPool::OnMouseScrollChanged(const Input::Mouse::Scroll& mouse_scroll_delta, const Input::Mouse::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
@@ -80,7 +80,7 @@ void ControllersPool::OnMouseScrollChanged(const Mouse::Scroll& mouse_scroll_del
     }
 }
 
-void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mouse::StateChange& state_change)
+void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Input::Mouse::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
@@ -97,7 +97,7 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Mous
     }
 }
 
-void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
+void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Input::Keyboard::KeyState key_state, const Input::Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();
@@ -114,7 +114,7 @@ void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Keyboard::KeyState ke
     }
 }
 
-void ControllersPool::OnModifiersChanged(Keyboard::ModifierMask modifiers, const Keyboard::StateChange& state_change)
+void ControllersPool::OnModifiersChanged(Keyboard::ModifierMask modifiers, const Input::Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     META_FUNCTION_THREAD_MARKER();

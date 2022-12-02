@@ -26,7 +26,7 @@ Unit tests of the Keyboard data types
 #include <Methane/Platform/Input/Keyboard.h>
 #include <Methane/Data/EnumMaskUtil.hpp>
 
-using namespace Methane::Platform::Keyboard;
+using namespace Methane::Platform::Input::Keyboard;
 
 template<typename E, typename M>
 struct Catch::StringMaker<Methane::Data::EnumMask<E, M>>

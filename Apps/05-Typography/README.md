@@ -17,7 +17,7 @@ rectangular areas with wrapping by characters and words. Right-to-left and Arabi
 ## Application Controls
 
 Keyboard actions are enabled with [TypographyAppController](TypographyAppController.h) class
-derived from [Platform::Keyboard::ActionControllerBase](/Modules/Platform/Input/Include/Methane/Platform/KeyboardActionControllerBase.hpp):
+derived from [Platform::Input::Keyboard::ActionControllerBase](/Modules/Platform/Input/ActionControllers/Include/Methane/Platform/Input/KeyboardActionControllerBase.hpp):
 
 | Typography App Action                                           | Keyboard Shortcut |
 |-----------------------------------------------------------------|-------------------|

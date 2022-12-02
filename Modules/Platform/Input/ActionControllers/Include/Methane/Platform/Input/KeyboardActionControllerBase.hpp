@@ -31,7 +31,7 @@
 #include <magic_enum.hpp>
 #include <map>
 
-namespace Methane::Platform::Keyboard
+namespace Methane::Platform::Input::Keyboard
 {
 
 template<typename ActionEnum>
@@ -177,4 +177,4 @@ private:
     ActionByKeyboardState m_action_by_keyboard_state;
 };
 
-} // namespace Methane::Platform::Keyboard
+} // namespace Methane::Platform::Input::Keyboard

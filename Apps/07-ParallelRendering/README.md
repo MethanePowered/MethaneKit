@@ -30,7 +30,7 @@ Tutorial demonstrates the following techniques:
 ## Application Controls
 
 Keyboard actions are enabled with [ParallelRenderingAppController](ParallelRenderingAppController.h) class
-derived from [Platform::Keyboard::ActionControllerBase](/Modules/Platform/Input/Include/Methane/Platform/KeyboardActionControllerBase.hpp):
+derived from [Platform::Input::Keyboard::ActionControllerBase](/Modules/Platform/Input/ActionControllers/Include/Methane/Platform/Input/KeyboardActionControllerBase.hpp):
 
 | Parallel Rendering App Action | Keyboard Shortcut |
 |-------------------------------|-------------------|

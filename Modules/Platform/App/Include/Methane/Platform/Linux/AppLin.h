@@ -64,9 +64,9 @@ private:
     void HandleEvent(const xcb_generic_event_t& event);
     void OnWindowResized(const xcb_configure_notify_event_t& cfg_event);
     void OnPropertyChanged(const xcb_property_notify_event_t& prop_event);
-    void OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Keyboard::KeyState key_state);
+    void OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Input::Keyboard::KeyState key_state);
     void OnKeyboardMappingChanged(const xcb_mapping_notify_event_t& mapping_event);
-    void OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, Mouse::ButtonState button_state);
+    void OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, Input::Mouse::ButtonState button_state);
     void OnMouseMoved(const xcb_motion_notify_event_t& motion_event);
     void OnMouseInWindowChanged(const xcb_enter_notify_event_t& enter_event, bool mouse_in_window);
 

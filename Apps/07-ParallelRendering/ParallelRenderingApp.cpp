@@ -57,13 +57,13 @@ struct CubeVertex
 static const gfx::Dimensions g_texture_size{ 320U, 320U };
 static const float           g_scene_scale  = 22.F;
 
-namespace pal = Methane::Platform;
-static const std::map<pal::Keyboard::State, ParallelRenderingAppAction> g_parallel_rendering_action_by_keyboard_state{
-    { { pal::Keyboard::Key::P            }, ParallelRenderingAppAction::SwitchParallelRendering },
-    { { pal::Keyboard::Key::Equal        }, ParallelRenderingAppAction::IncreaseCubesGridSize },
-    { { pal::Keyboard::Key::Minus        }, ParallelRenderingAppAction::DecreaseCubesGridSize },
-    { { pal::Keyboard::Key::RightBracket }, ParallelRenderingAppAction::IncreaseRenderThreadsCount },
-    { { pal::Keyboard::Key::LeftBracket  }, ParallelRenderingAppAction::DecreaseRenderThreadsCount },
+namespace pin = Methane::Platform::Input;
+static const std::map<pin::Keyboard::State, ParallelRenderingAppAction> g_parallel_rendering_action_by_keyboard_state{
+    { { pin::Keyboard::Key::P            }, ParallelRenderingAppAction::SwitchParallelRendering },
+    { { pin::Keyboard::Key::Equal        }, ParallelRenderingAppAction::IncreaseCubesGridSize },
+    { { pin::Keyboard::Key::Minus        }, ParallelRenderingAppAction::DecreaseCubesGridSize },
+    { { pin::Keyboard::Key::RightBracket }, ParallelRenderingAppAction::IncreaseRenderThreadsCount },
+    { { pin::Keyboard::Key::LeftBracket  }, ParallelRenderingAppAction::DecreaseRenderThreadsCount },
 };
 
 bool ParallelRenderingApp::Settings::operator==(const Settings& other) const noexcept

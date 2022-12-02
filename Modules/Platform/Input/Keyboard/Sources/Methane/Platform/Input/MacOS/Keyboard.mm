@@ -27,7 +27,7 @@ MacOS platform specific types and implementation of Keyboard abstractions.
 
 #import <AppKit/NSEvent.h>
 
-namespace Methane::Platform::Keyboard
+namespace Methane::Platform::Input::Keyboard
 {
 
 Key KeyConverter::GetKeyByNativeCode(const NativeKey& native_key) noexcept
@@ -181,4 +181,4 @@ ModifierMask KeyConverter::GetModifiersByNativeCode(const NativeKey& native_key)
     return modifiers_mask;
 }
 
-} // namespace Methane::Platform::Keyboard
+} // namespace Methane::Platform::Input::Keyboard

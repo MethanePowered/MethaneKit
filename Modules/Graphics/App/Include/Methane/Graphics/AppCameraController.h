@@ -31,44 +31,46 @@ Action camera controller with keyboard and mouse interactions handling.
 namespace Methane::Graphics
 {
 
+namespace pin = Methane::Platform::Input;
+
 class AppCameraController final
-    : public Platform::Input::Controller
-    , public Platform::Mouse::ActionControllerBase<ActionCamera::MouseAction>
-    , public Platform::Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>
+    : public pin::Controller
+    , public pin::Mouse::ActionControllerBase<ActionCamera::MouseAction>
+    , public pin::Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>
 {
 public:
     inline static const ActionByMouseButton default_actions_by_mouse_button{
-        { Platform::Mouse::Button::Left,            ActionCamera::MouseAction::Rotate },
-        { Platform::Mouse::Button::VScroll,         ActionCamera::MouseAction::Zoom   },
-        { Platform::Mouse::Button::Middle,          ActionCamera::MouseAction::Move   },
+        { pin::Mouse::Button::Left,            ActionCamera::MouseAction::Rotate },
+        { pin::Mouse::Button::VScroll,         ActionCamera::MouseAction::Zoom   },
+        { pin::Mouse::Button::Middle,          ActionCamera::MouseAction::Move   },
     };
     
     inline static const ActionByKeyboardKey default_actions_by_keyboard_key{
         // Move
-        { Platform::Keyboard::Key::W,               ActionCamera::KeyboardAction::MoveForward },
-        { Platform::Keyboard::Key::S,               ActionCamera::KeyboardAction::MoveBack    },
-        { Platform::Keyboard::Key::A,               ActionCamera::KeyboardAction::MoveLeft    },
-        { Platform::Keyboard::Key::D,               ActionCamera::KeyboardAction::MoveRight   },
-        { Platform::Keyboard::Key::PageUp,          ActionCamera::KeyboardAction::MoveUp      },
-        { Platform::Keyboard::Key::PageDown,        ActionCamera::KeyboardAction::MoveDown    },
+        { pin::Keyboard::Key::W,               ActionCamera::KeyboardAction::MoveForward },
+        { pin::Keyboard::Key::S,               ActionCamera::KeyboardAction::MoveBack    },
+        { pin::Keyboard::Key::A,               ActionCamera::KeyboardAction::MoveLeft    },
+        { pin::Keyboard::Key::D,               ActionCamera::KeyboardAction::MoveRight   },
+        { pin::Keyboard::Key::PageUp,          ActionCamera::KeyboardAction::MoveUp      },
+        { pin::Keyboard::Key::PageDown,        ActionCamera::KeyboardAction::MoveDown    },
         // Rotate
-        { Platform::Keyboard::Key::Comma,           ActionCamera::KeyboardAction::RollLeft    },
-        { Platform::Keyboard::Key::Period,          ActionCamera::KeyboardAction::RollRight   },
-        { Platform::Keyboard::Key::Left,            ActionCamera::KeyboardAction::YawLeft     },
-        { Platform::Keyboard::Key::Right,           ActionCamera::KeyboardAction::YawRight    },
-        { Platform::Keyboard::Key::Up,              ActionCamera::KeyboardAction::PitchUp     },
-        { Platform::Keyboard::Key::Down,            ActionCamera::KeyboardAction::PitchDown   },
+        { pin::Keyboard::Key::Comma,           ActionCamera::KeyboardAction::RollLeft    },
+        { pin::Keyboard::Key::Period,          ActionCamera::KeyboardAction::RollRight   },
+        { pin::Keyboard::Key::Left,            ActionCamera::KeyboardAction::YawLeft     },
+        { pin::Keyboard::Key::Right,           ActionCamera::KeyboardAction::YawRight    },
+        { pin::Keyboard::Key::Up,              ActionCamera::KeyboardAction::PitchUp     },
+        { pin::Keyboard::Key::Down,            ActionCamera::KeyboardAction::PitchDown   },
         // Zoom
-        { Platform::Keyboard::Key::Minus,           ActionCamera::KeyboardAction::ZoomOut     },
-        { Platform::Keyboard::Key::KeyPadSubtract,  ActionCamera::KeyboardAction::ZoomOut     },
-        { Platform::Keyboard::Key::Equal,           ActionCamera::KeyboardAction::ZoomIn      },
-        { Platform::Keyboard::Key::KeyPadEqual,     ActionCamera::KeyboardAction::ZoomIn      },
+        { pin::Keyboard::Key::Minus,           ActionCamera::KeyboardAction::ZoomOut     },
+        { pin::Keyboard::Key::KeyPadSubtract,  ActionCamera::KeyboardAction::ZoomOut     },
+        { pin::Keyboard::Key::Equal,           ActionCamera::KeyboardAction::ZoomIn      },
+        { pin::Keyboard::Key::KeyPadEqual,     ActionCamera::KeyboardAction::ZoomIn      },
     };
 
     inline static const ActionByKeyboardState default_actions_by_keyboard_state{
         // Other
-        { { Platform::Keyboard::Key::LeftAlt, Platform::Keyboard::Key::R }, ActionCamera::KeyboardAction::Reset       },
-        { { Platform::Keyboard::Key::LeftAlt, Platform::Keyboard::Key::P }, ActionCamera::KeyboardAction::ChangePivot },
+        { { pin::Keyboard::Key::LeftAlt, pin::Keyboard::Key::R }, ActionCamera::KeyboardAction::Reset       },
+        { { pin::Keyboard::Key::LeftAlt, pin::Keyboard::Key::P }, ActionCamera::KeyboardAction::ChangePivot },
     };
 
     AppCameraController(ActionCamera& action_camera, const std::string& camera_name,
@@ -76,20 +78,20 @@ public:
                         const ActionByKeyboardState& keyboard_actions_by_state = default_actions_by_keyboard_state,
                         const ActionByKeyboardKey&   keyboard_actions_by_key   = default_actions_by_keyboard_key);
 
-    // Platform::Input::Controller overrides
-    void OnMouseButtonChanged(Platform::Mouse::Button button, Platform::Mouse::ButtonState button_state, const Platform::Mouse::StateChange& state_change) override;
-    void OnMousePositionChanged(const Platform::Mouse::Position& mouse_position, const Platform::Mouse::StateChange&) override;
-    void OnMouseScrollChanged(const Platform::Mouse::Scroll& mouse_scroll_delta, const Platform::Mouse::StateChange&) override;
-    void OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange&) override;
+    // pin::Controller overrides
+    void OnMouseButtonChanged(pin::Mouse::Button button, pin::Mouse::ButtonState button_state, const pin::Mouse::StateChange& state_change) override;
+    void OnMousePositionChanged(const pin::Mouse::Position& mouse_position, const pin::Mouse::StateChange&) override;
+    void OnMouseScrollChanged(const pin::Mouse::Scroll& mouse_scroll_delta, const pin::Mouse::StateChange&) override;
+    void OnKeyboardChanged(pin::Keyboard::Key key, pin::Keyboard::KeyState key_state, const pin::Keyboard::StateChange&) override;
     HelpLines GetHelp() const override;
 
 private:
-    // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(ActionCamera::KeyboardAction, Platform::Keyboard::KeyState) override;
+    // Input::Keyboard::ActionControllerBase interface
+    void        OnKeyboardKeyAction(ActionCamera::KeyboardAction, pin::Keyboard::KeyState) override;
     void        OnKeyboardStateAction(ActionCamera::KeyboardAction action) override;
     std::string GetKeyboardActionName(ActionCamera::KeyboardAction action) const override;
     
-    // Mouse::ActionControllerBase interface
+    // Input::Mouse::ActionControllerBase interface
     std::string GetMouseActionName(ActionCamera::MouseAction action) const override;
 
     ActionCamera& m_action_camera;

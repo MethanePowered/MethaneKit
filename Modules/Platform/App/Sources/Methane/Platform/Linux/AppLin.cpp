@@ -414,19 +414,19 @@ void AppLin::HandleEvent(const xcb_generic_event_t& event)
         break;
 
     case XCB_KEY_PRESS:
-        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Keyboard::KeyState::Pressed); // NOSONAR
+        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Input::Keyboard::KeyState::Pressed); // NOSONAR
         break;
 
     case XCB_KEY_RELEASE:
-        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Keyboard::KeyState::Released); // NOSONAR
+        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Input::Keyboard::KeyState::Released); // NOSONAR
         break;
 
     case XCB_BUTTON_PRESS:
-        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Mouse::ButtonState::Pressed); // NOSONAR
+        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Input::Mouse::ButtonState::Pressed); // NOSONAR
         break;
 
     case XCB_BUTTON_RELEASE:
-        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Mouse::ButtonState::Released); // NOSONAR
+        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Input::Mouse::ButtonState::Released); // NOSONAR
         break;
 
     case XCB_MOTION_NOTIFY:
@@ -487,10 +487,10 @@ void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& prop_event)
     }
 }
 
-void AppLin::OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Keyboard::KeyState key_state)
+void AppLin::OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Input::Keyboard::KeyState key_state)
 {
     META_FUNCTION_TASK();
-    const Keyboard::Key key = Linux::ConvertXcbKey(m_env.display, m_env.window, key_press_event.detail, key_press_event.state);
+    const Input::Keyboard::Key key = Linux::ConvertXcbKey(m_env.display, m_env.window, key_press_event.detail, key_press_event.state);
     ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, key_state);
 }
 
@@ -509,23 +509,23 @@ void AppLin::OnKeyboardMappingChanged(const xcb_mapping_notify_event_t& mapping_
     XRefreshKeyboardMapping(&x_mapping_event);
 }
 
-void AppLin::OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, Mouse::ButtonState button_state)
+void AppLin::OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, Input::Mouse::ButtonState button_state)
 {
     META_FUNCTION_TASK();
-    Mouse::Button button = Mouse::Button::Unknown;
+    Input::Mouse::Button button = Input::Mouse::Button::Unknown;
     int delta_sign = -1;
     std::tie(button, delta_sign) = Linux::ConvertXcbMouseButton(button_press_event.detail);
 
     ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, button, button_state);
 
-    if ((button == Mouse::Button::HScroll || button == Mouse::Button::VScroll) && button_state == Mouse::ButtonState::Released)
+    if ((button == Input::Mouse::Button::HScroll || button == Input::Mouse::Button::VScroll) && button_state == Input::Mouse::ButtonState::Released)
     {
         const float scroll_value = button_press_event.state
                                  ? static_cast<float>(delta_sign * button_press_event.state / 1024)
                                  : static_cast<float>(delta_sign);
-        const Mouse::Scroll mouse_scroll(
-            button == Mouse::Button::HScroll ? scroll_value : 0.F,
-            button == Mouse::Button::VScroll ? scroll_value : 0.F
+        const Input::Mouse::Scroll mouse_scroll(
+            button == Input::Mouse::Button::HScroll ? scroll_value : 0.F,
+            button == Input::Mouse::Button::VScroll ? scroll_value : 0.F
         );
         ProcessInputWithErrorHandling(&Input::IActionController::OnMouseScrollChanged, mouse_scroll);
     }
@@ -534,7 +534,7 @@ void AppLin::OnMouseButtonChanged(const xcb_button_press_event_t& button_press_e
 void AppLin::OnMouseMoved(const xcb_motion_notify_event_t& motion_event)
 {
     META_FUNCTION_TASK();
-    const Mouse::Position mouse_pos(motion_event.event_x, motion_event.event_y);
+    const Input::Mouse::Position mouse_pos(motion_event.event_x, motion_event.event_y);
     ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, mouse_pos);
 }
 

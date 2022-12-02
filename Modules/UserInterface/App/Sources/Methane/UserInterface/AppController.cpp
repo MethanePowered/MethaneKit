@@ -36,16 +36,16 @@ AppController::AppController(IApp& application, const std::string& application_h
                              const Graphics::AppController::ActionByKeyboardState& graphics_action_by_keyboard_state,
                              const UserInterface::AppController::ActionByKeyboardState& ui_action_by_keyboard_state)
     : Graphics::AppController(application, application_help, platform_action_by_keyboard_state, graphics_action_by_keyboard_state)
-    , Platform::Keyboard::ActionControllerBase<AppAction>(ui_action_by_keyboard_state, {})
+    , pin::Keyboard::ActionControllerBase<AppAction>(ui_action_by_keyboard_state, {})
     , m_application(application)
 {
     META_FUNCTION_TASK();
 }
 
-void AppController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange& state_change)
+void AppController::OnKeyboardChanged(pin::Keyboard::Key key, pin::Keyboard::KeyState key_state, const pin::Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    Platform::Keyboard::ActionControllerBase<AppAction>::OnKeyboardChanged(key, key_state, state_change);
+    pin::Keyboard::ActionControllerBase<AppAction>::OnKeyboardChanged(key, key_state, state_change);
     Graphics::AppController::OnKeyboardChanged(key, key_state, state_change);
 }
 
@@ -75,11 +75,11 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     }
 }
 
-Platform::Input::IHelpProvider::HelpLines AppController::GetHelp() const
+pin::IHelpProvider::HelpLines AppController::GetHelp() const
 {
     META_FUNCTION_TASK();
     HelpLines help_lines = Graphics::AppController::GetHelp();
-    const HelpLines gui_help_lines = Platform::Keyboard::ActionControllerBase<AppAction>::GetKeyboardHelp();
+    const HelpLines gui_help_lines = pin::Keyboard::ActionControllerBase<AppAction>::GetKeyboardHelp();
     help_lines.insert(help_lines.end(), std::make_move_iterator(gui_help_lines.begin()), std::make_move_iterator(gui_help_lines.end()));
     return help_lines;
 }

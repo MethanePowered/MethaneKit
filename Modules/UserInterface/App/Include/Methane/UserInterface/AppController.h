@@ -36,14 +36,16 @@ enum class AppAction : uint32_t
     SwitchHeadsUpDisplayMode
 };
 
+namespace pin = Methane::Platform::Input;
+
 class AppController
     : public Graphics::AppController
-    , public Platform::Keyboard::ActionControllerBase<AppAction>
+    , public pin::Keyboard::ActionControllerBase<AppAction>
 {
 public:
-    using ActionByKeyboardState = Platform::Keyboard::ActionControllerBase<AppAction>::ActionByKeyboardState;
+    using ActionByKeyboardState = pin::Keyboard::ActionControllerBase<AppAction>::ActionByKeyboardState;
     inline static const ActionByKeyboardState default_action_by_keyboard_state{
-        { { Platform::Keyboard::Key::F4 }, AppAction::SwitchHeadsUpDisplayMode },
+        { { pin::Keyboard::Key::F4 }, AppAction::SwitchHeadsUpDisplayMode },
     };
     
     AppController(IApp& application, const std::string& application_help,
@@ -52,7 +54,7 @@ public:
                   const UserInterface::AppController::ActionByKeyboardState& ui_action_by_keyboard_state  = UserInterface::AppController::default_action_by_keyboard_state);
     
     // Input::Controller implementation
-    void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
+    void OnKeyboardChanged(pin::Keyboard::Key, pin::Keyboard::KeyState, const pin::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
 
 protected:
@@ -60,8 +62,8 @@ protected:
     using Graphics::AppController::OnKeyboardStateAction;
     using Graphics::AppController::GetKeyboardActionName;
 
-    // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
+    // Input::Keyboard::ActionControllerBase interface
+    void        OnKeyboardKeyAction(AppAction, pin::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(AppAction action) override;
     std::string GetKeyboardActionName(AppAction action) const override;
 

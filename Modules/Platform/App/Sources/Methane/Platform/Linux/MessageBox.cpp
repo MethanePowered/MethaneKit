@@ -331,10 +331,10 @@ void MessageBox::OnKeyboardChanged(const xcb_key_press_event_t& key_press_event,
 {
     META_FUNCTION_TASK();
     META_UNUSED(is_key_pressed);
-    const Keyboard::Key key = Linux::ConvertXcbKey(m_app_env.display, m_app_env.window, key_press_event.detail, key_press_event.state);
+    const Input::Keyboard::Key key = Linux::ConvertXcbKey(m_app_env.display, m_app_env.window, key_press_event.detail, key_press_event.state);
 
     // Close message box when Enter or Escape key is released
-    if (!is_key_pressed && (key == Keyboard::Key::Enter || key == Keyboard::Key::KeyPadEnter || key == Keyboard::Key::Escape))
+    if (!is_key_pressed && (key == Input::Keyboard::Key::Enter || key == Input::Keyboard::Key::KeyPadEnter || key == Input::Keyboard::Key::Escape))
         m_is_event_processing = false;
 }
 
@@ -357,7 +357,7 @@ void MessageBox::OnMouseButtonChanged(const xcb_button_press_event_t& button_pre
     const bool mouse_was_pressing_ok_button = m_mouse_pressed_ok_button;
 
     m_mouse_state.SetButton(Linux::ConvertXcbMouseButton(button_press_event.detail).first,
-                            is_button_pressed ? Mouse::ButtonState::Pressed : Mouse::ButtonState::Released);
+                            is_button_pressed ? Input::Mouse::ButtonState::Pressed : Input::Mouse::ButtonState::Released);
     m_mouse_pressed_ok_button = m_mouse_over_ok_button && m_mouse_state.GetPressedButtons().count(Mouse::Button::Left);
 
     if (m_mouse_pressed_ok_button != mouse_was_pressing_ok_button)

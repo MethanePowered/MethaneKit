@@ -31,7 +31,7 @@ Platform abstraction of keyboard events.
 #include <map>
 #include <sstream>
 
-namespace Methane::Platform::Keyboard
+namespace Methane::Platform::Input::Keyboard
 {
 
 static const std::string g_keys_separator       = "+";
@@ -420,4 +420,4 @@ std::string State::ToString() const
     return ss.str();
 }
 
-} // namespace Methane::Platform::Keyboard
+} // namespace Methane::Platform::Input::Keyboard

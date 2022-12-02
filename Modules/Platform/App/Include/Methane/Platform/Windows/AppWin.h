@@ -75,7 +75,7 @@ protected:
 
 private:
     AppEnvironment            m_env;
-    Mouse::State              m_mouse_state;
+    Input::Mouse::State       m_mouse_state;
     RECT                      m_window_rect {};
     bool                      m_is_message_processing = true;
     UniquePtr<ConsoleStreams> m_console_streams_ptr;

@@ -82,15 +82,14 @@ static const std::array<std::u32string, g_text_blocks_count> g_text_blocks = { {
         "you can wave your towel in emergencies as a distress signal, and of course dry yourself off with it if it still seems to be clean enough.")
 }};
 
-namespace pal = Methane::Platform;
-static const std::map<pal::Keyboard::State, TypographyAppAction> g_typography_action_by_keyboard_state{
-    { { pal::Keyboard::Key::W       }, TypographyAppAction::SwitchTextWrapMode            },
-    { { pal::Keyboard::Key::H       }, TypographyAppAction::SwitchTextHorizontalAlignment },
-    { { pal::Keyboard::Key::V       }, TypographyAppAction::SwitchTextVerticalAlignment   },
-    { { pal::Keyboard::Key::U       }, TypographyAppAction::SwitchIncrementalTextUpdate   },
-    { { pal::Keyboard::Key::D       }, TypographyAppAction::SwitchTypingDirection         },
-    { { pal::Keyboard::Key::Equal   }, TypographyAppAction::SpeedupTyping                 },
-    { { pal::Keyboard::Key::Minus   }, TypographyAppAction::SlowdownTyping                },
+static const std::map<pin::Keyboard::State, TypographyAppAction> g_typography_action_by_keyboard_state{
+    { { pin::Keyboard::Key::W       }, TypographyAppAction::SwitchTextWrapMode            },
+    { { pin::Keyboard::Key::H       }, TypographyAppAction::SwitchTextHorizontalAlignment },
+    { { pin::Keyboard::Key::V       }, TypographyAppAction::SwitchTextVerticalAlignment   },
+    { { pin::Keyboard::Key::U       }, TypographyAppAction::SwitchIncrementalTextUpdate   },
+    { { pin::Keyboard::Key::D       }, TypographyAppAction::SwitchTypingDirection         },
+    { { pin::Keyboard::Key::Equal   }, TypographyAppAction::SpeedupTyping                 },
+    { { pin::Keyboard::Key::Minus   }, TypographyAppAction::SlowdownTyping                },
 };
 
 [[nodiscard]]

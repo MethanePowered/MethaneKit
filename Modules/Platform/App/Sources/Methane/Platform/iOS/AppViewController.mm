@@ -36,14 +36,14 @@ using namespace Methane::Platform;
 namespace Methane::Platform
 {
 
-static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
+static Input::Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
 {
     META_FUNCTION_TASK();
     switch(touches_cout)
     {
-    case 1U: return Mouse::Button::Left;
-    case 2U: return Mouse::Button::Right;
-    case 3U: return Mouse::Button::Middle;
+    case 1U: return Input::Mouse::Button::Left;
+    case 2U: return Input::Mouse::Button::Right;
+    case 3U: return Input::Mouse::Button::Middle;
     default: META_UNEXPECTED_ARG_DESCR(touches_cout, "Methane iOS application supports from 1 to 3 touches handling only");
     }
 }
@@ -198,14 +198,14 @@ static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
     pos.x *= ns_main_screen.nativeScale;
     pos.y *= ns_main_screen.nativeScale;
 
-    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
+    m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, Input::Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
 }
 
 - (void) handeTouches:(NSSet<UITouch *> *)touches withMouseButtonChange:(Mouse::ButtonState) mouse_button_state
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_p_app);
-    const Mouse::Button mouse_button = GetMouseButtonByTouchesCount(static_cast<uint32_t>(touches.count));
+    const Input::Mouse::Button mouse_button = GetMouseButtonByTouchesCount(static_cast<uint32_t>(touches.count));
     m_p_app->ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, mouse_button, mouse_button_state);
 }
 

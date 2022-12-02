@@ -63,7 +63,7 @@ private:
     xcb_gcontext_t       m_gfx_context = 0U;
     xcb_atom_t           m_window_delete_atom = XCB_ATOM_NONE;
     xcb_rectangle_t      m_ok_button_rect;
-    Mouse::State         m_mouse_state;
+    Input::Mouse::State  m_mouse_state;
     bool                 m_mouse_over_ok_button = false;
     bool                 m_mouse_pressed_ok_button = false;
     bool                 m_is_event_processing = false;

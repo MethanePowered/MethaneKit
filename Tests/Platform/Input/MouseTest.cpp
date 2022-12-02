@@ -26,7 +26,7 @@ Unit tests of the Mouse data types
 #include <Methane/Platform/Input/Mouse.h>
 #include <Methane/Data/EnumMaskUtil.hpp>
 
-using namespace Methane::Platform::Mouse;
+using namespace Methane::Platform::Input::Mouse;
 
 template<typename E, typename M>
 struct Catch::StringMaker<Methane::Data::EnumMask<E, M>>

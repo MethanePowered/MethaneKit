@@ -37,22 +37,24 @@ namespace Methane::UserInterface
 
 class Font;
 
+namespace pin = Methane::Platform::Input;
+
 class HeadsUpDisplay final : public Panel
 {
 public:
     struct Settings
     {
-        Font::Description         major_font          { "Major", "Fonts/RobotoMono/RobotoMono-Bold.ttf",    24U };
-        Font::Description         minor_font          { "Minor", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 9U };
-        UnitPoint                 position            { Units::Dots, 20, 20 };
-        UnitSize                  text_margins        { Units::Dots, 16, 8  };
-        Color4F                   text_color          { 1.F,  1.F,  1.F,  1.F   };
-        Color4F                   on_color            { 0.3F, 1.F,  0.3F, 1.F   };
-        Color4F                   off_color           { 1.F,  0.3F, 0.3F, 1.F   };
-        Color4F                   help_color          { 1.F,  1.F,  0.0F, 1.F   };
-        Color4F                   background_color    { 0.F,  0.F,  0.F,  0.66F };
-        Platform::Keyboard::State help_shortcut       { Platform::Keyboard::Key::F1 };
-        double                    update_interval_sec = 0.33;
+        Font::Description    major_font          { "Major", "Fonts/RobotoMono/RobotoMono-Bold.ttf",    24U };
+        Font::Description    minor_font          { "Minor", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 9U };
+        UnitPoint            position            { Units::Dots, 20, 20 };
+        UnitSize             text_margins        { Units::Dots, 16, 8  };
+        Color4F              text_color          { 1.F,  1.F,  1.F,  1.F   };
+        Color4F              on_color            { 0.3F, 1.F,  0.3F, 1.F   };
+        Color4F              off_color           { 1.F,  0.3F, 0.3F, 1.F   };
+        Color4F              help_color          { 1.F,  1.F,  0.0F, 1.F   };
+        Color4F              background_color    { 0.F,  0.F,  0.F,  0.66F };
+        pin::Keyboard::State help_shortcut       { pin::Keyboard::Key::F1 };
+        double               update_interval_sec = 0.33;
 
         Settings& SetMajorFont(const Font::Description& new_major_font) noexcept;
         Settings& SetMinorFont(const Font::Description& new_minor_font) noexcept;
@@ -63,7 +65,7 @@ public:
         Settings& SetOffColor(const Color4F& new_off_color) noexcept;
         Settings& SetHelpColor(const Color4F& new_help_color) noexcept;
         Settings& SetBackgroundColor(const Color4F& new_background_color) noexcept;
-        Settings& SetHelpShortcut(const Platform::Keyboard::State& new_help_shortcut) noexcept;
+        Settings& SetHelpShortcut(const pin::Keyboard::State& new_help_shortcut) noexcept;
         Settings& SetUpdateIntervalSec(double new_update_interval_sec) noexcept;
     };
 

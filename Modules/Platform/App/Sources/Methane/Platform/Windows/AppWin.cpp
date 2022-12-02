@@ -286,24 +286,24 @@ void AppWin::OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param)
 {
     META_FUNCTION_TASK();
 
-    const Keyboard::Key      key = Keyboard::KeyConverter({ w_param, l_param }).GetKey();
-    const Keyboard::KeyState key_state = ((l_param >> 31) & 1) ? Keyboard::KeyState::Released : Keyboard::KeyState::Pressed;
+    const Input::Keyboard::Key      key = Input::Keyboard::KeyConverter({ w_param, l_param }).GetKey();
+    const Input::Keyboard::KeyState key_state = ((l_param >> 31) & 1) ? Input::Keyboard::KeyState::Released : Input::Keyboard::KeyState::Pressed;
 
-    if (key == Keyboard::Key::Unknown)
+    if (key == Input::Keyboard::Key::Unknown)
         return;
 
-    if (key_state == Keyboard::KeyState::Released && w_param == VK_SHIFT)
+    if (key_state == Input::Keyboard::KeyState::Released && w_param == VK_SHIFT)
     {
         // HACK: Release both Shift keys on Shift up event, as when both
         //       are pressed the first release does not emit any event
-        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, Keyboard::Key::LeftShift, key_state);
-        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, Keyboard::Key::RightShift, key_state);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, Input::Keyboard::Key::LeftShift, key_state);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, Input::Keyboard::Key::RightShift, key_state);
     }
     else if (w_param == VK_SNAPSHOT)
     {
         // HACK: Key down is not reported for the Print Screen key
-        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, Keyboard::KeyState::Pressed);
-        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, Keyboard::KeyState::Released);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, Input::Keyboard::KeyState::Pressed);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, Input::Keyboard::KeyState::Released);
     }
     else
     {
@@ -316,21 +316,21 @@ LRESULT AppWin::OnWindowMouseButtonEvent(UINT msg_id, WPARAM w_param, LPARAM l_p
     META_FUNCTION_TASK();
     META_UNUSED(l_param);
 
-    Mouse::Button button = Mouse::Button::Unknown;
+    Input::Mouse::Button button = Input::Mouse::Button::Unknown;
     if (msg_id == WM_LBUTTONDOWN || msg_id == WM_LBUTTONUP)
-        button = Mouse::Button::Left;
+        button = Input::Mouse::Button::Left;
     else if (msg_id == WM_RBUTTONDOWN || msg_id == WM_RBUTTONUP)
-        button = Mouse::Button::Right;
+        button = Input::Mouse::Button::Right;
     else if (msg_id == WM_MBUTTONDOWN || msg_id == WM_MBUTTONUP)
-        button = Mouse::Button::Middle;
+        button = Input::Mouse::Button::Middle;
     else if (GET_XBUTTON_WPARAM(w_param) == XBUTTON1)
-        button = Mouse::Button::Button4;
+        button = Input::Mouse::Button::Button4;
     else
-        button = Mouse::Button::Button5;
+        button = Input::Mouse::Button::Button5;
 
-    const Mouse::ButtonState button_state = (msg_id == WM_LBUTTONDOWN || msg_id == WM_RBUTTONDOWN ||
+    const Input::Mouse::ButtonState button_state = (msg_id == WM_LBUTTONDOWN || msg_id == WM_RBUTTONDOWN ||
         msg_id == WM_MBUTTONDOWN || msg_id == WM_XBUTTONDOWN)
-        ? Mouse::ButtonState::Pressed : Mouse::ButtonState::Released;
+        ? Input::Mouse::ButtonState::Pressed : Input::Mouse::ButtonState::Released;
 
     if (m_mouse_state.GetPressedButtons().empty())
     {
@@ -356,7 +356,7 @@ LRESULT AppWin::OnWindowMouseMoveEvent(WPARAM w_param, LPARAM l_param)
     META_FUNCTION_TASK();
     META_UNUSED(w_param);
 
-    const Mouse::Position mouse_pos(GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param));
+    const Input::Mouse::Position mouse_pos(GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param));
 
     ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, mouse_pos);
 
@@ -385,13 +385,13 @@ LRESULT AppWin::OnWindowMouseWheelEvent(bool is_vertical_scroll, WPARAM w_param,
     if (is_vertical_scroll)
     {
         const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-        ProcessInputWithErrorHandling(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ 0.F, wheel_delta });
+        ProcessInputWithErrorHandling(&Input::IActionController::OnMouseScrollChanged, Input::Mouse::Scroll{ 0.F, wheel_delta });
     }
     else
     {
         // NOTE: The X-axis is inverted for consistency with macOS and X11
         const float wheel_delta = static_cast<float>(GET_WHEEL_DELTA_WPARAM(w_param)) / WHEEL_DELTA;
-        ProcessInputWithErrorHandling(&Input::IActionController::OnMouseScrollChanged, Mouse::Scroll{ -wheel_delta, 0.F });
+        ProcessInputWithErrorHandling(&Input::IActionController::OnMouseScrollChanged, Input::Mouse::Scroll{ -wheel_delta, 0.F });
     }
 
     return 0;

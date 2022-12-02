@@ -68,13 +68,13 @@ std::pair<Mouse::Button, int> ConvertXcbMouseButton(xcb_button_t button)
     META_FUNCTION_TASK();
     switch(button)
     {
-    case XCB_BUTTON_INDEX_1: return { Mouse::Button::Left, 0 };
-    case XCB_BUTTON_INDEX_2: return { Mouse::Button::Middle, 0 };
-    case XCB_BUTTON_INDEX_3: return { Mouse::Button::Right, 0 };
-    case XCB_BUTTON_INDEX_4: return { Mouse::Button::VScroll, 1 };
-    case XCB_BUTTON_INDEX_5: return { Mouse::Button::VScroll, -1 };
-    case XCB_BUTTON_INDEX_5 + 1: return { Mouse::Button::HScroll, 1 };
-    case XCB_BUTTON_INDEX_5 + 2: return { Mouse::Button::HScroll, -1 };
+    case XCB_BUTTON_INDEX_1:     return { Input::Mouse::Button::Left, 0 };
+    case XCB_BUTTON_INDEX_2:     return { Input::Mouse::Button::Middle, 0 };
+    case XCB_BUTTON_INDEX_3:     return { Input::Mouse::Button::Right, 0 };
+    case XCB_BUTTON_INDEX_4:     return { Input::Mouse::Button::VScroll, 1 };
+    case XCB_BUTTON_INDEX_5:     return { Input::Mouse::Button::VScroll, -1 };
+    case XCB_BUTTON_INDEX_5 + 1: return { Input::Mouse::Button::HScroll, 1 };
+    case XCB_BUTTON_INDEX_5 + 2: return { Input::Mouse::Button::HScroll, -1 };
     default: META_UNEXPECTED_ARG_DESCR(button, "XCB mouse button is not supported");
     }
 }
@@ -91,12 +91,12 @@ Keyboard::Key ConvertXcbKey(_XDisplay* display, xcb_window_t window, xcb_keycode
     for (int i = 0; i < 4; ++i)
     {
         const KeySym key_sym = XLookupKeysym(&x_key_event, i);
-        const Keyboard::Key key = Keyboard::KeyConverter({ key_sym, key_state }).GetKey();
-        if (key != Keyboard::Key::Unknown)
+        const Input::Keyboard::Key key = Input::Keyboard::KeyConverter({ key_sym, key_state }).GetKey();
+        if (key != Input::Keyboard::Key::Unknown)
             return key;
     }
 
-    return Keyboard::Key::Unknown;
+    return Input::Keyboard::Key::Unknown;
 }
 
 void XcbCheck(xcb_void_cookie_t cookie, xcb_connection_t* connection, std::string_view error_message)

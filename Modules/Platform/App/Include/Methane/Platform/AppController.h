@@ -41,27 +41,27 @@ enum class AppAction
 
 class AppController
     : public Input::Controller
-    , public Platform::Keyboard::ActionControllerBase<AppAction>
+    , public Input::Keyboard::ActionControllerBase<AppAction>
 {
 public:
     inline static const ActionByKeyboardState default_action_by_keyboard_state {
-        { { Platform::Keyboard::Key::F1 },                                         AppAction::ShowControlsHelp    },
-        { { Platform::Keyboard::Key::F2 },                                         AppAction::ShowCommandLineHelp },
-        { { Platform::Keyboard::Key::F3 },                                         AppAction::ShowParameters      },
-        { { Platform::Keyboard::Key::LeftControl,    Platform::Keyboard::Key::F }, AppAction::SwitchFullScreen    },
-        { { Platform::Keyboard::OS::g_key_left_ctrl, Platform::Keyboard::Key::Q }, AppAction::CloseApp            },
+        { { Input::Keyboard::Key::F1 },                                      AppAction::ShowControlsHelp    },
+        { { Input::Keyboard::Key::F2 },                                      AppAction::ShowCommandLineHelp },
+        { { Input::Keyboard::Key::F3 },                                      AppAction::ShowParameters      },
+        { { Input::Keyboard::Key::LeftControl,    Input::Keyboard::Key::F }, AppAction::SwitchFullScreen    },
+        { { Input::Keyboard::OS::g_key_left_ctrl, Input::Keyboard::Key::Q }, AppAction::CloseApp            },
     };
     
     AppController(AppBase& application, const std::string& application_help,
                   const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
     
     // Input::Controller implementation
-    void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
+    void OnKeyboardChanged(Input::Keyboard::Key, Input::Keyboard::KeyState, const Input::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
 
 protected:
-    // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
+    // Input::Keyboard::ActionControllerBase interface
+    void        OnKeyboardKeyAction(AppAction, Input::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(AppAction action) override;
     std::string GetKeyboardActionName(AppAction action) const override;
 

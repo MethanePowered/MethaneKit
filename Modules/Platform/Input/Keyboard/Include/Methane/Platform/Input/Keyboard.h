@@ -46,7 +46,7 @@ Platform abstraction of keyboard events.
 #include <string_view>
 #include <ostream>
 
-namespace Methane::Platform::Keyboard
+namespace Methane::Platform::Input::Keyboard
 {
 
 enum class Key : uint32_t
@@ -245,4 +245,4 @@ struct StateChange
     const State::PropertyMask changed_properties;
 };
 
-} // namespace Methane::Platform::Keyboard
+} // namespace Methane::Platform::Input::Keyboard

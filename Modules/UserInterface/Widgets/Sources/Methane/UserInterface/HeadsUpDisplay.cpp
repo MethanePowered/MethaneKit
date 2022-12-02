@@ -126,7 +126,7 @@ HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetBackgroundColor(const Col
     return *this;
 }
 
-HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetHelpShortcut(const Platform::Keyboard::State& new_help_shortcut) noexcept
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetHelpShortcut(const pin::Keyboard::State& new_help_shortcut) noexcept
 {
     META_FUNCTION_TASK();
     help_shortcut = new_help_shortcut;
