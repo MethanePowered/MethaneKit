@@ -343,7 +343,7 @@ void MessageBox::OnMouseMoved(const xcb_motion_notify_event_t& motion_event)
     META_FUNCTION_TASK();
     const bool mouse_was_over_ok_button = m_mouse_over_ok_button;
 
-    m_mouse_state.SetPosition(Mouse::Position(motion_event.event_x, motion_event.event_y));
+    m_mouse_state.SetPosition(Input::Mouse::Position(motion_event.event_x, motion_event.event_y));
     m_mouse_over_ok_button = m_ok_button_rect.x <= motion_event.event_x && motion_event.event_x <= m_ok_button_rect.x + static_cast<int16_t>(m_ok_button_rect.width) &&
                              m_ok_button_rect.y <= motion_event.event_y && motion_event.event_y <= m_ok_button_rect.y + static_cast<int16_t>(m_ok_button_rect.height);
 
@@ -358,7 +358,7 @@ void MessageBox::OnMouseButtonChanged(const xcb_button_press_event_t& button_pre
 
     m_mouse_state.SetButton(Linux::ConvertXcbMouseButton(button_press_event.detail).first,
                             is_button_pressed ? Input::Mouse::ButtonState::Pressed : Input::Mouse::ButtonState::Released);
-    m_mouse_pressed_ok_button = m_mouse_over_ok_button && m_mouse_state.GetPressedButtons().count(Mouse::Button::Left);
+    m_mouse_pressed_ok_button = m_mouse_over_ok_button && m_mouse_state.GetPressedButtons().count(Input::Mouse::Button::Left);
 
     if (m_mouse_pressed_ok_button != mouse_was_pressing_ok_button)
     {

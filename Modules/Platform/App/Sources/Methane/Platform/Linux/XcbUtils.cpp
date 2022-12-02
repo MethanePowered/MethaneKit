@@ -63,7 +63,7 @@ uint32_t GetXcbSystemColor(SystemColor color_type)
     return PackXcbColor(s_system_colors[static_cast<size_t>(color_type)]);
 }
 
-std::pair<Mouse::Button, int> ConvertXcbMouseButton(xcb_button_t button)
+std::pair<Input::Mouse::Button, int> ConvertXcbMouseButton(xcb_button_t button)
 {
     META_FUNCTION_TASK();
     switch(button)
@@ -79,7 +79,7 @@ std::pair<Mouse::Button, int> ConvertXcbMouseButton(xcb_button_t button)
     }
 }
 
-Keyboard::Key ConvertXcbKey(_XDisplay* display, xcb_window_t window, xcb_keycode_t key_detail, uint16_t key_state)
+Input::Keyboard::Key ConvertXcbKey(_XDisplay* display, xcb_window_t window, xcb_keycode_t key_detail, uint16_t key_state)
 {
     META_FUNCTION_TASK();
     XKeyEvent x_key_event{ 0 };

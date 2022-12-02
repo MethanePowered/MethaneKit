@@ -106,8 +106,8 @@ private:
 
 uint32_t PackXcbColor(const RgbColor& color);
 uint32_t GetXcbSystemColor(SystemColor color_type);
-std::pair<Mouse::Button, int> ConvertXcbMouseButton(xcb_button_t button);
-Keyboard::Key ConvertXcbKey(_XDisplay* display, xcb_window_t window, xcb_keycode_t key_detail, uint16_t key_state);
+std::pair<Input::Mouse::Button, int> ConvertXcbMouseButton(xcb_button_t button);
+Input::Keyboard::Key ConvertXcbKey(_XDisplay* display, xcb_window_t window, xcb_keycode_t key_detail, uint16_t key_state);
 void XcbCheck(xcb_void_cookie_t cookie, xcb_connection_t *connection, std::string_view error_message);
 void XcbMeasureText(xcb_connection_t* connection, xcb_font_t font, std::string_view text, uint32_t& width, uint32_t& height, uint32_t& ascent);
 xcb_intern_atom_reply_t* GetXcbInternAtomReply(xcb_connection_t* connection, std::string_view name) noexcept;
