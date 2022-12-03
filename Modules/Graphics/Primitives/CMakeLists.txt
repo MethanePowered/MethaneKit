@@ -12,15 +12,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/FpsCounter.cpp
 )
 
-if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
-    list(APPEND HEADERS
-        ${INCLUDE_PLATFORM_DIR}/DirectXErrorHandling.h
-    )
-    list(APPEND SOURCES
-        ${SOURCES_PLATFORM_DIR}/DirectXErrorHandling.cpp
-    )
-endif()
-
 add_library(${TARGET} STATIC
     ${HEADERS}
     ${SOURCES}

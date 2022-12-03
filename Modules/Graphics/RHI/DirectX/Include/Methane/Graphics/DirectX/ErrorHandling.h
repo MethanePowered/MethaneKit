@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Windows/Primitives.h
-Windows platform graphics primitives.
+FILE: Methane/Graphics/DirectX/ErrorHandling.h
+DirectX error handling: runtime exception and HResult checks.
 
 ******************************************************************************/
 
@@ -30,7 +30,7 @@ Windows platform graphics primitives.
 #include <string>
 #include <stdexcept>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::DirectX
 {
 
 namespace wrl = Microsoft::WRL;

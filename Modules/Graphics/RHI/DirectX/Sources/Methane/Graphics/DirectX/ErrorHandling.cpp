@@ -16,18 +16,18 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Windows/Primitives.cpp
-Windows platform graphics primitives.
+FILE: Methane/Graphics/DirectX/ErrorHandling.cpp
+DirectX error handling: runtime exception and HResult checks.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
+#include <Methane/Graphics/DirectX/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 
 #include <system_error>
 #include <sstream>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::DirectX
 {
 
 static std::string GetErrorMessage(HRESULT hr, ID3D12Device* device = nullptr)

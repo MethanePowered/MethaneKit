@@ -29,7 +29,7 @@ DirectX 12 GPU query pool implementation.
 
 #include <Methane/Graphics/Base/QueryPool.h>
 #include <Methane/Graphics/RHI/IRenderContext.h>
-#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
+#include <Methane/Graphics/DirectX/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

@@ -24,11 +24,11 @@ DirectX 12 implementation of the texture interface.
 #pragma once
 
 #include "Resource.hpp"
+#include "ErrorHandling.h"
 
 #include <Methane/Graphics/Base/Texture.h>
 #include <Methane/Graphics/Base/CommandList.h>
 #include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

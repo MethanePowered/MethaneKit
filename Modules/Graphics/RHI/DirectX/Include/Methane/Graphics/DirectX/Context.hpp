@@ -28,10 +28,10 @@ DirectX 12 base template implementation of the context interface.
 #include "IContext.h"
 #include "CommandQueue.h"
 #include "DescriptorManager.h"
+#include "ErrorHandling.h"
 
 #include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Graphics/Base/Context.h>
-#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

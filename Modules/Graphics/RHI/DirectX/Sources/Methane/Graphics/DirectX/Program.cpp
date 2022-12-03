@@ -29,7 +29,7 @@ DirectX 12 implementation of the program interface.
 
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
+#include <Methane/Graphics/DirectX/ErrorHandling.h>
 
 #include <directx/d3dx12.h>
 #include <d3dcompiler.h>

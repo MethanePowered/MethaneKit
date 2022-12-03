@@ -28,10 +28,10 @@ DirectX 12 implementation of the resource interface.
 #include "RenderContext.h"
 #include "TransferCommandList.h"
 #include "Device.h"
+#include "ErrorHandling.h"
 
 #include <Methane/Graphics/Base/Texture.h>
 #include <Methane/Graphics/RHI/ICommandKit.h>
-#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

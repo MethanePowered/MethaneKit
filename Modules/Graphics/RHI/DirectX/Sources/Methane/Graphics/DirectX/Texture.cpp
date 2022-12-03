@@ -29,7 +29,7 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Graphics/DirectX/TransferCommandList.h>
 #include <Methane/Graphics/DirectX/Types.h>
 
-#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
+#include <Methane/Graphics/DirectX/ErrorHandling.h>
 #include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>

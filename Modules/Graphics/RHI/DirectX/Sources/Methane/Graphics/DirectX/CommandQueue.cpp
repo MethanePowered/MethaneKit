@@ -29,7 +29,7 @@ DirectX 12 implementation of the command queue interface.
 #include <Methane/Graphics/DirectX/ParallelRenderCommandList.h>
 
 #include <Methane/Graphics/Base/Context.h>
-#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
+#include <Methane/Graphics/DirectX/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

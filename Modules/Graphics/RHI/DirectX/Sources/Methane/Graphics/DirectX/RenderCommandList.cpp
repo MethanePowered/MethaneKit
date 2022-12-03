@@ -32,7 +32,7 @@ DirectX 12 implementation of the render command list interface.
 
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
+#include <Methane/Graphics/DirectX/ErrorHandling.h>
 
 #include <magic_enum.hpp>
 #include <directx/d3dx12.h>

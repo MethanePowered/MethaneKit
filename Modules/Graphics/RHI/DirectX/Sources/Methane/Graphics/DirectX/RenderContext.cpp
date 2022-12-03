@@ -26,7 +26,7 @@ DirectX 12 implementation of the render context interface.
 #include <Methane/Graphics/DirectX/CommandQueue.h>
 #include <Methane/Graphics/DirectX/Types.h>
 
-#include <Methane/Graphics/Windows/DirectXErrorHandling.h>
+#include <Methane/Graphics/DirectX/ErrorHandling.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
