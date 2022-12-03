@@ -38,7 +38,7 @@ namespace Methane::Graphics::DirectX
 {
 
 class RenderCommandList;
-struct ICommandListDx;
+struct ICommandList;
 
 namespace wrl = Microsoft::WRL;
 
@@ -58,7 +58,7 @@ public:
     void CompleteInitialization() override;
     void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 
-    void Apply(ICommandListDx& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const;
+    void Apply(ICommandList& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const;
 
 private:
     struct RootParameterBinding

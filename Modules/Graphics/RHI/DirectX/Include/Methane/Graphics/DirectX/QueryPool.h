@@ -39,7 +39,7 @@ namespace Methane::Graphics::DirectX
 {
 
 struct IContext;
-struct ICommandListDx;
+struct ICommandList;
 struct IResource;
 class  CommandQueue;
 class  QueryPool;

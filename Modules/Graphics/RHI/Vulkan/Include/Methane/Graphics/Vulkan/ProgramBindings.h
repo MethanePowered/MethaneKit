@@ -34,7 +34,7 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics::Vulkan
 {
 
-struct ICommandListVk;
+struct ICommandList;
 
 class ProgramBindings final
     : public Base::ProgramBindings
@@ -54,7 +54,7 @@ public:
     // Base::ProgramBindings interface
     void CompleteInitialization() override;
 
-    void Apply(ICommandListVk& command_list, const Rhi::ICommandQueue& command_queue,
+    void Apply(ICommandList& command_list, const Rhi::ICommandQueue& command_queue,
                const Base::ProgramBindings* p_applied_program_bindings, ApplyBehaviorMask apply_behavior) const;
 
 private:

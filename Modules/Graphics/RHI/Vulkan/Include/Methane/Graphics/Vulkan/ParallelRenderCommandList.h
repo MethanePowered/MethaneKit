@@ -59,7 +59,7 @@ public:
     // IObject interface
     bool SetName(const std::string& label) override;
 
-    const ICommandListVk& GetVulkanPrimaryCommandList() const noexcept { return m_beginning_command_list; }
+    const Vulkan::ICommandList& GetVulkanPrimaryCommandList() const noexcept { return m_beginning_command_list; }
     CommandQueue& GetVulkanCommandQueue() noexcept;
     RenderPass& GetVulkanPass() noexcept;
 

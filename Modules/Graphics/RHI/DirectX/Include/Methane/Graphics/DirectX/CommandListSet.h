@@ -23,14 +23,11 @@ DirectX 12 command list accessor interface for template class CommandList<Comman
 
 #pragma once
 
+#include "ICommandList.h"
 #include "Fence.h"
-
-#include <Methane/Graphics/Base/CommandList.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>
-
-#include <mutex>
 
 namespace Methane::Graphics::DirectX
 {
@@ -38,30 +35,6 @@ namespace Methane::Graphics::DirectX
 namespace wrl = Microsoft::WRL;
 
 class CommandQueue;
-
-class CommandListDebugGroup final
-    : public Base::CommandListDebugGroup
-{
-public:
-    explicit CommandListDebugGroup(const std::string& name);
-
-    const std::wstring& GetWideName() const noexcept { return m_wide_name; }
-
-private:
-    const std::wstring m_wide_name;
-};
-
-struct ICommandListDx
-{
-    using DebugGroup = CommandListDebugGroup;
-
-    virtual CommandQueue&               GetDirectCommandQueue() = 0;
-    virtual ID3D12GraphicsCommandList&  GetNativeCommandList() const = 0;
-    virtual ID3D12GraphicsCommandList4* GetNativeCommandList4() const = 0;
-    virtual void SetResourceBarriers(const Rhi::IResourceBarriers& resource_barriers) = 0;
-
-    virtual ~ICommandListDx() = default;
-};
 
 class CommandListSet final
     : public Base::CommandListSet

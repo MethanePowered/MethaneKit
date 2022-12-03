@@ -25,7 +25,7 @@ Vulkan implementation of the program interface.
 #include <Methane/Graphics/Vulkan/Program.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
-#include <Methane/Graphics/Vulkan/CommandList.h>
+#include <Methane/Graphics/Vulkan/ICommandList.h>
 #include <Methane/Graphics/Vulkan/DescriptorManager.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>
 
@@ -231,11 +231,11 @@ void ProgramBindings::CompleteInitialization()
 void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
-    Apply(dynamic_cast<ICommandListVk&>(command_list), command_list.GetCommandQueue(),
+    Apply(dynamic_cast<ICommandList&>(command_list), command_list.GetCommandQueue(),
           command_list.GetProgramBindingsPtr(), apply_behavior);
 }
 
-void ProgramBindings::Apply(ICommandListVk& command_list_vk, const Rhi::ICommandQueue& command_queue,
+void ProgramBindings::Apply(ICommandList& command_list_vk, const Rhi::ICommandQueue& command_queue,
                             const Base::ProgramBindings* p_applied_program_bindings, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();

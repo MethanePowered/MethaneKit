@@ -16,12 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/CommandList.cpp
-Vulkan command lists sequence implementation
+FILE: Methane/Graphics/Vulkan/CommandListSet.cpp
+Vulkan command list set implementation.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Vulkan/CommandList.h>
+#include <Methane/Graphics/Vulkan/CommandListSet.h>
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/RenderContext.h>
@@ -38,12 +38,6 @@ Vulkan command lists sequence implementation
 
 namespace Methane::Graphics::Rhi
 {
-
-Ptr<ICommandListDebugGroup> Rhi::ICommandListDebugGroup::Create(const std::string& name)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::CommandListDebugGroup>(name);
-}
 
 Ptr<ICommandListSet> Rhi::ICommandListSet::Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
 {
@@ -81,13 +75,6 @@ static vk::PipelineStageFlags GetFrameBufferRenderingWaitStages(const Refs<Rhi::
     return wait_stages;
 }
 
-CommandListDebugGroup::CommandListDebugGroup(const std::string& name)
-    : Base::CommandList::DebugGroup(name)
-    , m_vk_debug_label(Base::Object::GetName().c_str())
-{
-    META_FUNCTION_TASK();
-}
-
 CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
     : Base::CommandListSet(command_list_refs, frame_index_opt)
     , m_vk_wait_frame_buffer_rendering_on_stages(GetFrameBufferRenderingWaitStages(command_list_refs))
@@ -104,7 +91,7 @@ CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs,
         const Base::CommandList& command_list = command_list_ref.get();
         const auto& vulkan_command_list = command_list.GetType() == Rhi::CommandListType::ParallelRender
                                         ? static_cast<const ParallelRenderCommandList&>(command_list).GetVulkanPrimaryCommandList()
-                                        : dynamic_cast<const ICommandListVk&>(command_list_ref.get());
+                                        : dynamic_cast<const Vulkan::ICommandList&>(command_list_ref.get());
         m_vk_command_buffers.emplace_back(vulkan_command_list.GetNativeCommandBuffer());
     }
 

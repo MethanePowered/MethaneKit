@@ -22,7 +22,7 @@ DirectX 12 implementation of the command queue interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/DirectX/CommandQueue.h>
-#include <Methane/Graphics/DirectX/CommandListSet.h>
+#include <Methane/Graphics/DirectX/ICommandList.h>
 #include <Methane/Graphics/DirectX/Device.h>
 #include <Methane/Graphics/DirectX/TransferCommandList.h>
 #include <Methane/Graphics/DirectX/RenderCommandList.h>

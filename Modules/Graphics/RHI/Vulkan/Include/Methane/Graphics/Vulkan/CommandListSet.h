@@ -16,17 +16,20 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/CommandList.h
-Vulkan command lists sequence implementation.
+FILE: Methane/Graphics/Vulkan/CommandListSet.h
+Vulkan command list set implementation.
 
 ******************************************************************************/
 
 #pragma once
 
+#include "ICommandList.h"
+
 #include <Methane/Graphics/Base/CommandList.h>
 #include <Methane/Data/Receiver.hpp>
 
 #include <Tracy.hpp>
+
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 
@@ -34,38 +37,6 @@ namespace Methane::Graphics::Vulkan
 {
 
 class CommandQueue;
-
-class CommandListDebugGroup final
-    : public Base::CommandList::DebugGroup
-{
-public:
-    explicit CommandListDebugGroup(const std::string& name);
-
-    const vk::DebugUtilsLabelEXT& GetNativeDebugLabel() const noexcept { return m_vk_debug_label; }
-
-private:
-    vk::DebugUtilsLabelEXT m_vk_debug_label;
-};
-
-struct ICommandListVk
-{
-    using DebugGroup = CommandListDebugGroup;
-
-    enum class CommandBufferType : uint32_t
-    {
-        Primary,             // Primary command buffer with no-render commands, like pipeline barriers, executed before render pass begin
-        SecondaryRenderPass, // Secondary command buffer with render pass only commands, excluding pipeline barriers
-    };
-
-    virtual CommandQueue&            GetVulkanCommandQueue() = 0;
-    virtual const CommandQueue&      GetVulkanCommandQueue() const = 0;
-    virtual const vk::CommandBuffer& GetNativeCommandBufferDefault() const = 0;
-    virtual const vk::CommandBuffer& GetNativeCommandBuffer(CommandBufferType cmd_buffer_type = CommandBufferType::Primary) const = 0;
-    virtual vk::PipelineBindPoint    GetNativePipelineBindPoint() const = 0;
-    virtual void SetResourceBarriers(const Rhi::IResourceBarriers& resource_barriers) = 0;
-
-    virtual ~ICommandListVk() = default;
-};
 
 class CommandListSet final
     : public Base::CommandListSet

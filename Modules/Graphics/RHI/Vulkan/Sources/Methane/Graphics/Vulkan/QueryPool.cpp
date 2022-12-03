@@ -23,7 +23,7 @@ Vulkan GPU query pool implementation.
 
 #include <Methane/Graphics/Vulkan/QueryPool.h>
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
-#include <Methane/Graphics/Vulkan/CommandList.h>
+#include <Methane/Graphics/Vulkan/ICommandList.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 
@@ -83,7 +83,7 @@ static Data::Size GetMaxTimestampsCount(const Rhi::IContext& context, uint32_t m
 Query::Query(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range)
     : Base::Query(buffer, command_list, index, data_range)
     , m_vk_device(GetVulkanQueryPool().GetVulkanContext().GetVulkanDevice().GetNativeDevice())
-    , m_vk_command_buffer(dynamic_cast<ICommandListVk&>(command_list).GetNativeCommandBuffer(ICommandListVk::CommandBufferType::Primary))
+    , m_vk_command_buffer(dynamic_cast<ICommandList&>(command_list).GetNativeCommandBuffer(CommandBufferType::Primary))
     , m_query_results(buffer.GetSlotsCountPerQuery(), 0U)
     , m_query_results_byte_size(m_query_results.size() * sizeof(QueryResults::value_type))
 {

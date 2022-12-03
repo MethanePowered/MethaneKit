@@ -23,7 +23,7 @@ DirectX 12 GPU query pool implementation.
 
 #include <Methane/Graphics/DirectX/QueryPool.h>
 #include <Methane/Graphics/DirectX/CommandQueue.h>
-#include <Methane/Graphics/DirectX/CommandListSet.h>
+#include <Methane/Graphics/DirectX/ICommandList.h>
 #include <Methane/Graphics/DirectX/Buffer.h>
 #include <Methane/Graphics/DirectX/IContext.h>
 
@@ -115,7 +115,7 @@ static Data::Size GetMaxTimestampsCount(const Rhi::IContext& context, uint32_t m
 
 Query::Query(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range)
     : Base::Query(buffer, command_list, index, data_range)
-    , m_native_command_list(dynamic_cast<ICommandListDx&>(command_list).GetNativeCommandList())
+    , m_native_command_list(dynamic_cast<ICommandList&>(command_list).GetNativeCommandList())
     , m_native_query_type(GetQueryTypeDx(buffer.GetType()))
 {
     META_FUNCTION_TASK();

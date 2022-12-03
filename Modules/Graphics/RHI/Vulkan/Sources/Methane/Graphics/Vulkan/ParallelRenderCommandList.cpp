@@ -24,6 +24,7 @@ Vulkan implementation of the render command list interface.
 #include <Methane/Graphics/Vulkan/ParallelRenderCommandList.h>
 #include <Methane/Graphics/Vulkan/RenderPass.h>
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
+#include <Methane/Graphics/Vulkan/ICommandList.h>
 #include <Methane/Graphics/Vulkan/RenderCommandList.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 
@@ -131,8 +132,8 @@ void ParallelRenderCommandList::SetParallelCommandListsCount(uint32_t count)
     for(const Ref<Rhi::IRenderCommandList>& parallel_cmd_list_ref : parallel_cmd_list_refs)
     {
         const auto& parallel_cmd_list_vk = static_cast<const RenderCommandList&>(parallel_cmd_list_ref.get());
-        m_vk_parallel_sync_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(ICommandListVk::CommandBufferType::Primary));
-        m_vk_parallel_pass_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(ICommandListVk::CommandBufferType::SecondaryRenderPass));
+        m_vk_parallel_sync_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(Vulkan::CommandBufferType::Primary));
+        m_vk_parallel_pass_cmd_buffers.emplace_back(parallel_cmd_list_vk.GetNativeCommandBuffer(Vulkan::CommandBufferType::SecondaryRenderPass));
     }
 }
 
@@ -142,7 +143,7 @@ void ParallelRenderCommandList::Commit()
     META_CHECK_ARG_FALSE(IsCommitted());
     Base::ParallelRenderCommandList::Commit();
 
-    const vk::CommandBuffer& vk_beginning_primary_cmd_buffer = m_beginning_command_list.GetNativeCommandBuffer(ICommandListVk::CommandBufferType::Primary);
+    const vk::CommandBuffer& vk_beginning_primary_cmd_buffer = m_beginning_command_list.GetNativeCommandBuffer(CommandBufferType::Primary);
     vk_beginning_primary_cmd_buffer.executeCommands(m_vk_parallel_sync_cmd_buffers);
 
     RenderPass& render_pass = GetVulkanPass();
@@ -155,7 +156,7 @@ void ParallelRenderCommandList::Commit()
     if (m_ending_command_list.GetState() == Rhi::CommandListState::Encoding)
     {
         m_ending_command_list.Commit();
-        const vk::CommandBuffer& vk_ending_secondary_cmd_buffer = m_ending_command_list.GetNativeCommandBuffer(ICommandListVk::CommandBufferType::Primary);
+        const vk::CommandBuffer& vk_ending_secondary_cmd_buffer = m_ending_command_list.GetNativeCommandBuffer(CommandBufferType::Primary);
         vk_beginning_primary_cmd_buffer.executeCommands(vk_ending_secondary_cmd_buffer);
     }
 

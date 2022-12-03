@@ -23,7 +23,7 @@ Vulkan base template implementation of the command list interface.
 
 #pragma once
 
-#include "CommandList.h"
+#include "ICommandList.h"
 #include "CommandQueue.h"
 #include "Device.h"
 #include "IContext.h"
@@ -50,11 +50,11 @@ namespace Methane::Graphics::Vulkan
 class ParallelRenderCommandList;
 
 template<class CommandListBaseT, vk::PipelineBindPoint pipeline_bind_point, uint32_t command_buffers_count = 1U,
-         ICommandListVk::CommandBufferType default_command_buffer_type = ICommandListVk::CommandBufferType::Primary,
+         CommandBufferType default_command_buffer_type = CommandBufferType::Primary,
          typename = std::enable_if_t<std::is_base_of_v<Base::CommandList, CommandListBaseT> && command_buffers_count != 0U>>
 class CommandList
     : public CommandListBaseT
-    , public ICommandListVk
+    , public ICommandList
 {
 public:
     template<typename... ConstructArgs, uint32_t buffers_count = command_buffers_count,
@@ -82,7 +82,7 @@ public:
         : CommandListBaseT(parallel_render_command_list)
         , m_vk_device(GetVulkanCommandQueue().GetVulkanContext().GetVulkanDevice().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetVulkanCommandQueue().GetFamilyIndex()))
-        , m_debug_group_command_buffer_type(is_beginning_cmd_list ? ICommandListVk::CommandBufferType::Primary : default_command_buffer_type)
+        , m_debug_group_command_buffer_type(is_beginning_cmd_list ? CommandBufferType::Primary : default_command_buffer_type)
     {
         META_FUNCTION_TASK();
         std::fill(m_vk_command_buffer_encoding_flags.begin(), m_vk_command_buffer_encoding_flags.end(), false);
@@ -137,7 +137,7 @@ public:
     {
         META_FUNCTION_TASK();
         Base::CommandList::PushDebugGroup(debug_group);
-        GetNativeCommandBuffer(m_debug_group_command_buffer_type).beginDebugUtilsLabelEXT(static_cast<const ICommandListVk::DebugGroup&>(debug_group).GetNativeDebugLabel());
+        GetNativeCommandBuffer(m_debug_group_command_buffer_type).beginDebugUtilsLabelEXT(static_cast<const ICommandList::DebugGroup&>(debug_group).GetNativeDebugLabel());
     }
 
     void PopDebugGroup() final
@@ -237,7 +237,7 @@ public:
                 continue;
 
             SetVulkanObjectName(m_vk_device, vk_unique_command_buffer.get(),
-                                fmt::format("{} ({})", name.c_str(), magic_enum::enum_name(static_cast<ICommandListVk::CommandBufferType>(cmd_buffer_index))));
+                                fmt::format("{} ({})", name.c_str(), magic_enum::enum_name(static_cast<CommandBufferType>(cmd_buffer_index))));
         }
         return true;
     }
@@ -351,13 +351,13 @@ private:
     vk::UniqueCommandPool m_vk_unique_command_pool;
     bool                  m_is_native_committed = false;
 
-    // Unique command buffers and corresponding begin flags are indexed by the value of ICommandList::CommandBufferType enum
+    // Unique command buffers and corresponding begin flags are indexed by the value of CommandBufferType enum
     std::array<vk::UniqueCommandBuffer, command_buffers_count>    m_vk_unique_command_buffers;
     std::array<bool, command_buffers_count>                       m_vk_command_buffer_primary_flags;
     std::array<bool, command_buffers_count>                       m_vk_command_buffer_encoding_flags;
     std::array<vk::CommandBufferBeginInfo, command_buffers_count> m_vk_command_buffer_begin_infos;
-    std::optional<vk::CommandBufferInheritanceInfo>               m_vk_secondary_render_buffer_inherit_info_opt;
-    const ICommandListVk::CommandBufferType                       m_debug_group_command_buffer_type = default_command_buffer_type;
+    std::optional<vk::CommandBufferInheritanceInfo> m_vk_secondary_render_buffer_inherit_info_opt;
+    const CommandBufferType           m_debug_group_command_buffer_type = default_command_buffer_type;
 };
 
 } // namespace Methane::Graphics::Vulkan

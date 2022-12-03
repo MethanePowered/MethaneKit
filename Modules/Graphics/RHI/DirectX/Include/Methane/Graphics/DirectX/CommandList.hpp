@@ -23,7 +23,7 @@ DirectX 12 base template implementation of the command list interface.
 
 #pragma once
 
-#include "CommandListSet.h"
+#include "ICommandList.h"
 #include "CommandQueue.h"
 #include "Device.h"
 #include "IContext.h"
@@ -54,7 +54,7 @@ namespace wrl = Microsoft::WRL;
 template<class CommandListBaseT, typename = std::enable_if_t<std::is_base_of_v<Base::CommandList, CommandListBaseT>>>
 class CommandList
     : public CommandListBaseT
-    , public ICommandListDx
+    , public ICommandList
 {
 public:
     template<typename... ConstructArgs>

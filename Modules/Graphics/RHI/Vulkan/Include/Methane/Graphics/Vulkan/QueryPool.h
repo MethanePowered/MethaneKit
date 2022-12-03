@@ -32,7 +32,7 @@ namespace Methane::Graphics::Vulkan
 {
 
 struct IContext;
-struct ICommandListVk;
+struct ICommandList;
 class  CommandQueue;
 class  QueryPool;
 class  TimestampQueryPool;

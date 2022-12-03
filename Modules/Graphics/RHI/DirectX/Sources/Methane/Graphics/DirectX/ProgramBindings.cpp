@@ -24,7 +24,7 @@ DirectX 12 implementation of the program bindings interface.
 #include <Methane/Graphics/DirectX/ProgramBindings.h>
 #include <Methane/Graphics/DirectX/Device.h>
 #include <Methane/Graphics/DirectX/Program.h>
-#include <Methane/Graphics/DirectX/CommandListSet.h>
+#include <Methane/Graphics/DirectX/ICommandList.h>
 #include <Methane/Graphics/DirectX/DescriptorHeap.h>
 #include <Methane/Graphics/DirectX/DescriptorManager.h>
 
@@ -139,10 +139,10 @@ void ProgramBindings::CompleteInitialization()
 
 void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const
 {
-    Apply(dynamic_cast<ICommandListDx&>(command_list), command_list.GetProgramBindingsPtr(), apply_behavior);
+    Apply(dynamic_cast<ICommandList&>(command_list), command_list.GetProgramBindingsPtr(), apply_behavior);
 }
 
-void ProgramBindings::Apply(ICommandListDx& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const
+void ProgramBindings::Apply(ICommandList& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
     Rhi::ProgramArgumentAccessMask apply_access_mask;

@@ -22,7 +22,7 @@ Vulkan implementation of the command queue interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
-#include <Methane/Graphics/Vulkan/CommandList.h>
+#include <Methane/Graphics/Vulkan/CommandListSet.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>

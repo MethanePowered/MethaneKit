@@ -276,14 +276,14 @@ void RenderPass::Begin(Base::RenderCommandList& command_list)
     META_FUNCTION_TASK();
     Base::RenderPass::Begin(command_list);
 
-    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandList&>(command_list).GetNativeCommandBuffer(ICommandListVk::CommandBufferType::Primary);
+    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandList&>(command_list).GetNativeCommandBuffer(CommandBufferType::Primary);
     vk_command_buffer.beginRenderPass(m_vk_pass_begin_info, vk::SubpassContents::eSecondaryCommandBuffers);
 }
 
 void RenderPass::End(Base::RenderCommandList& command_list)
 {
     META_FUNCTION_TASK();
-    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandList&>(command_list).GetNativeCommandBuffer(ICommandListVk::CommandBufferType::Primary);
+    const vk::CommandBuffer& vk_command_buffer = static_cast<const RenderCommandList&>(command_list).GetNativeCommandBuffer(CommandBufferType::Primary);
     vk_command_buffer.endRenderPass();
 
     Base::RenderPass::End(command_list);
