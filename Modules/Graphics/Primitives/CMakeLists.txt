@@ -1,4 +1,4 @@
-set(TARGET MethaneGraphicsExtensions)
+set(TARGET MethaneGraphicsPrimitives)
 
 include(MethaneShaders)
 

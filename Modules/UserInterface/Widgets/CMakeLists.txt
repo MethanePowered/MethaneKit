@@ -26,7 +26,7 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethaneUserInterfaceTypes
         MethaneUserInterfaceTypography
-        MethaneGraphicsExtensions
+        MethaneGraphicsPrimitives
         MethanePlatformInputKeyboard
     PRIVATE
         MethaneBuildOptions
