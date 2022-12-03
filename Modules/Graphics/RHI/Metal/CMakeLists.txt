@@ -8,7 +8,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/Types.hh
     ${INCLUDE_DIR}/Device.hh
     ${INCLUDE_DIR}/Fence.hh
-    ${INCLUDE_DIR}/Context.h
+    ${INCLUDE_DIR}/IContext.h
     ${INCLUDE_DIR}/Context.hpp
     ${INCLUDE_DIR}/RenderContext.hh
     ${INCLUDE_DIR}/RenderContextAppView.hh

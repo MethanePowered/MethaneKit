@@ -22,7 +22,7 @@ Metal implementation of the sampler interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/Sampler.hh>
-#include <Methane/Graphics/Metal/Context.h>
+#include <Methane/Graphics/Metal/IContext.h>
 #include <Methane/Graphics/Metal/Device.hh>
 #include <Methane/Graphics/Metal/Types.hh>
 

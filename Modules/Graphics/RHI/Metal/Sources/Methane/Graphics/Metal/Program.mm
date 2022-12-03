@@ -23,7 +23,7 @@ Metal implementation of the program interface.
 
 #include <Methane/Graphics/Metal/Program.hh>
 #include <Methane/Graphics/Metal/Shader.hh>
-#include <Methane/Graphics/Metal/Context.h>
+#include <Methane/Graphics/Metal/IContext.h>
 #include <Methane/Graphics/Metal/Device.hh>
 #include <Methane/Graphics/Metal/Types.hh>
 

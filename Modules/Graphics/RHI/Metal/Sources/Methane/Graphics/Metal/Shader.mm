@@ -25,7 +25,7 @@ Metal implementation of the shader interface.
 #include <Methane/Graphics/Metal/Program.hh>
 #include <Methane/Graphics/Metal/ProgramLibrary.hh>
 #include <Methane/Graphics/Metal/ProgramBindings.hh>
-#include <Methane/Graphics/Metal/Context.h>
+#include <Methane/Graphics/Metal/IContext.h>
 #include <Methane/Graphics/Metal/Types.hh>
 
 #include <Methane/Graphics/Base/Context.h>

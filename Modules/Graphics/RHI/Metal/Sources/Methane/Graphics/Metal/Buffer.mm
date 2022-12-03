@@ -23,7 +23,7 @@ Metal implementation of the buffer interface.
 
 #include <Methane/Graphics/Metal/Buffer.hh>
 #include <Methane/Graphics/Metal/Device.hh>
-#include <Methane/Graphics/Metal/Context.h>
+#include <Methane/Graphics/Metal/IContext.h>
 #include <Methane/Graphics/Metal/Types.hh>
 #include <Methane/Graphics/Metal/TransferCommandList.hh>
 

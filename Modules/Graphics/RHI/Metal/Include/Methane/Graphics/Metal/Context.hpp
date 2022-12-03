@@ -23,7 +23,7 @@ Metal template implementation of the base context interface.
 
 #pragma once
 
-#include "Context.h"
+#include "IContext.h"
 #include "Device.hh"
 #include "ProgramLibrary.hh"
 #include "DescriptorManager.h"

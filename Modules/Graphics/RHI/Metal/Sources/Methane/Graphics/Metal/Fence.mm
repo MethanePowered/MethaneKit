@@ -24,7 +24,7 @@ Metal fence implementation.
 #include <Methane/Graphics/Metal/Fence.hh>
 #include <Methane/Graphics/Metal/CommandQueue.hh>
 #include <Methane/Graphics/Metal/Device.hh>
-#include <Methane/Graphics/Metal/Context.h>
+#include <Methane/Graphics/Metal/IContext.h>
 
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Platform/Apple/Types.hh>
