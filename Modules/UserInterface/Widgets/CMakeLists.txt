@@ -31,7 +31,6 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethanePrecompiledExtraHeaders
-        MethaneGraphicsPrimitives
         MethaneInstrumentation
         magic_enum
 )

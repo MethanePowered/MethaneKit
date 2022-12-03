@@ -29,7 +29,6 @@ Base implementation of the Methane graphics application.
 #include <Methane/Graphics/RHI/IRenderState.h>
 #include <Methane/Graphics/RHI/IRenderPass.h>
 #include <Methane/Graphics/RHI/IRenderContext.h>
-#include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Data/IProvider.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -349,10 +348,10 @@ void AppBase::UpdateWindowTitle()
         return;
     }
 
-    const Rhi::RenderContextSettings& context_settings      = m_context_ptr->GetSettings();
-    const FpsCounter&                 fps_counter           = m_context_ptr->GetFpsCounter();
-    const uint32_t                    average_fps           = fps_counter.GetFramesPerSecond();
-    const FpsCounter::FrameTiming     average_frame_timing  = fps_counter.GetAverageFrameTiming();
+    const Rhi::RenderContextSettings&  context_settings      = m_context_ptr->GetSettings();
+    const Rhi::FpsCounter&             fps_counter           = m_context_ptr->GetFpsCounter();
+    const uint32_t                     average_fps           = fps_counter.GetFramesPerSecond();
+    const Rhi::FpsCounter::FrameTiming average_frame_timing  = fps_counter.GetAverageFrameTiming();
     const std::string title = fmt::format("{:s}        {:d} FPS, {:.2f} ms, {:.2f}% CPU |  {:d} x {:d}  |  {:d} FB  |  VSync {:s}  |  {:s}  |  {:s}  |  F1 - help",
                                           GetPlatformAppSettings().name,
                                           average_fps, average_frame_timing.GetTotalTimeMSec(), average_frame_timing.GetCpuTimePercent(),

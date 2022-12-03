@@ -21,10 +21,11 @@ FPS counter calculates frame time duration with moving average window algorithm.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/FpsCounter.h>
+#include <Methane/Graphics/RHI/FpsCounter.h>
+
 #include <Methane/Instrumentation.h>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 FpsCounter::FrameTiming::FrameTiming(double total_time_sec, double present_time_sec, double gpu_wait_time_sec) noexcept
@@ -116,4 +117,4 @@ uint32_t FpsCounter::GetFramesPerSecond() const noexcept
     return average_frame_time_sec > 0.0 ? static_cast<uint32_t>(std::round(1.0 / average_frame_time_sec)) : 0U;
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi

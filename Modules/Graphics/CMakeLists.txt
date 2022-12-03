@@ -1,7 +1,6 @@
 add_subdirectory(App)
 add_subdirectory(RHI)
 add_subdirectory(Extensions)
-add_subdirectory(Primitives)
 add_subdirectory(Mesh)
 add_subdirectory(Camera)
 add_subdirectory(Types)

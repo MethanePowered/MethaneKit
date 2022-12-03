@@ -44,7 +44,6 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethanePrecompiledExtraHeaders
         MethanePlatformUtils
-        MethaneGraphicsPrimitives
         MethaneGraphicsCamera
         MethaneDataProvider
 )

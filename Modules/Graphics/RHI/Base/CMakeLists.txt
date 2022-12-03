@@ -69,7 +69,6 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethaneDataPrimitives
-        MethaneGraphicsPrimitives
         MethanePlatformUtils
         MethaneInstrumentation
         MethanePrecompiledExtraHeaders

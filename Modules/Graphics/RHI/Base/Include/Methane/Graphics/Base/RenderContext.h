@@ -27,7 +27,6 @@ Base implementation of the render context interface.
 #include "Fence.h"
 
 #include <Methane/Graphics/RHI/IRenderContext.h>
-#include <Methane/Graphics/FpsCounter.h>
 
 namespace Methane::Graphics::Base
 {
@@ -45,15 +44,15 @@ public:
     void WaitForGpu(WaitFor wait_for) override;
 
     // IRenderContext interface
-    void              Resize(const FrameSize& frame_size) override;
-    void              Present() override;
-    const Settings&   GetSettings() const noexcept final            { return m_settings; }
-    uint32_t          GetFrameBufferIndex() const noexcept final    { return m_frame_buffer_index;  }
-    uint32_t          GetFrameIndex() const noexcept final          { return m_frame_index; }
-    const FpsCounter& GetFpsCounter() const noexcept final          { return m_fps_counter; }
-    bool              SetVSyncEnabled(bool vsync_enabled) override;
-    bool              SetFrameBuffersCount(uint32_t frame_buffers_count) override;
-    bool              SetFullScreen(bool is_full_screen) override;
+    void                   Resize(const FrameSize& frame_size) override;
+    void                   Present() override;
+    const Settings&        GetSettings() const noexcept final            { return m_settings; }
+    uint32_t               GetFrameBufferIndex() const noexcept final    { return m_frame_buffer_index;  }
+    uint32_t               GetFrameIndex() const noexcept final          { return m_frame_index; }
+    const Rhi::FpsCounter& GetFpsCounter() const noexcept final          { return m_fps_counter; }
+    bool                   SetVSyncEnabled(bool vsync_enabled) override;
+    bool                   SetFrameBuffersCount(uint32_t frame_buffers_count) override;
+    bool                   SetFullScreen(bool is_full_screen) override;
 
     // Context interface
     void Initialize(Device& device, bool is_callback_emitted = true) override;
@@ -85,11 +84,11 @@ private:
     void WaitForGpuRenderComplete();
     void WaitForGpuFramePresented();
 
-    Settings   m_settings;
-    uint32_t   m_frame_buffer_index = 0U;
-    uint32_t   m_frame_index = 0U;
-    bool       m_is_frame_buffer_in_use = true;
-    FpsCounter m_fps_counter;
+    Settings        m_settings;
+    uint32_t        m_frame_buffer_index = 0U;
+    uint32_t        m_frame_index = 0U;
+    bool            m_is_frame_buffer_in_use = true;
+    Rhi::FpsCounter m_fps_counter;
 };
 
 } // namespace Methane::Graphics::Base

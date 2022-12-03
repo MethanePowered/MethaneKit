@@ -30,7 +30,6 @@ Fake render context used for UI types testing
 #include <Methane/Graphics/RHI/IRenderCommandList.h>
 #include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Graphics/RHI/ICommandQueue.h>
-#include <Methane/Graphics/FpsCounter.h>
 #include <Methane/Data/Emitter.hpp>
 
 namespace Methane::Graphics
@@ -159,7 +158,7 @@ public:
     [[nodiscard]] const Settings&   GetSettings() const noexcept override         { return m_settings; }
     [[nodiscard]] uint32_t          GetFrameBufferIndex() const noexcept override { return 0U; }
     [[nodiscard]] uint32_t          GetFrameIndex() const noexcept override       { return 0U; }
-    [[nodiscard]] const FpsCounter& GetFpsCounter() const noexcept override       { return m_fps_counter; }
+    [[nodiscard]] const Rhi::FpsCounter& GetFpsCounter() const noexcept override  { return m_fps_counter; }
     bool SetVSyncEnabled(bool vsync_enabled) override                             { m_settings.vsync_enabled = vsync_enabled; return true; }
     bool SetFrameBuffersCount(uint32_t frame_buffers_count) override              { m_settings.frame_buffers_count = frame_buffers_count; return true; }
     bool SetFullScreen(bool is_full_screen) override                              { m_settings.is_full_screen = is_full_screen; return true; }
@@ -189,7 +188,7 @@ public:
 private:
     Settings               m_settings;
     FakeDevice             m_fake_device;
-    FpsCounter             m_fps_counter;
+    Rhi::FpsCounter        m_fps_counter;
     FakeObjectRegistry     m_object_registry;
     mutable tf::Executor   m_executor;
 };

@@ -43,7 +43,6 @@ target_link_libraries(${TARGET}
         MethanePlatformInputActionControllers
         MethaneGraphicsRhi
         MethaneGraphicsExtensions
-        MethaneGraphicsPrimitives
         MethaneGraphicsCamera
         MethaneInstrumentation
     PRIVATE

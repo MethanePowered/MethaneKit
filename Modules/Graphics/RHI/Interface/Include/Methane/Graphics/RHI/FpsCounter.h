@@ -28,7 +28,7 @@ FPS counter calculates frame time duration with moving average window algorithm.
 #include <cmath>
 #include <queue>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
 class FpsCounter
@@ -89,4 +89,4 @@ private:
     std::queue<FrameTiming> m_frame_timings;
 };
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::Rhi

@@ -25,6 +25,7 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 #pragma once
 
 #include "IContext.h"
+#include "FpsCounter.h"
 
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Rect.hpp>
@@ -34,14 +35,6 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 #include <Methane/Memory.hpp>
 
 #include <optional>
-
-namespace Methane::Graphics
-{
-
-// TODO: replace FpsCounter class forward declaration with interface IFpsCounter
-class FpsCounter;
-
-} // namespace Methane::Graphics
 
 namespace Methane::Graphics::Rhi
 {
