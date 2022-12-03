@@ -25,7 +25,7 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 #pragma once
 
 #include "IContext.h"
-#include "FpsCounter.h"
+#include "IFpsCounter.h"
 
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Rect.hpp>
@@ -82,7 +82,7 @@ struct IRenderContext : virtual IContext // NOSONAR
     [[nodiscard]] virtual const Settings&   GetSettings() const noexcept = 0;
     [[nodiscard]] virtual uint32_t          GetFrameBufferIndex() const noexcept = 0;
     [[nodiscard]] virtual uint32_t          GetFrameIndex() const noexcept = 0;
-    [[nodiscard]] virtual const FpsCounter& GetFpsCounter() const noexcept = 0;
+    [[nodiscard]] virtual const IFpsCounter& GetFpsCounter() const noexcept = 0;
 
     virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;
     virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;
