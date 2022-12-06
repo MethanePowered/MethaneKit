@@ -32,6 +32,8 @@ Methane command queue interface: queues are used to execute command lists.
 namespace Methane::Graphics::Rhi
 {
 
+struct ITimestampQueryPool;
+
 struct ICommandQueue
     : virtual IObject // NOSONAR
 {
@@ -39,10 +41,13 @@ struct ICommandQueue
     [[nodiscard]] static Ptr<ICommandQueue> Create(const IContext& context, CommandListType command_lists_type);
 
     // ICommandQueue interface
-    [[nodiscard]] virtual const IContext&   GetContext() const noexcept = 0;
-    [[nodiscard]] virtual CommandListType   GetCommandListType() const noexcept = 0;
-    [[nodiscard]] virtual uint32_t          GetFamilyIndex() const noexcept = 0;
+    [[nodiscard]] virtual const IContext&           GetContext() const noexcept = 0;
+    [[nodiscard]] virtual CommandListType           GetCommandListType() const noexcept = 0;
+    [[nodiscard]] virtual uint32_t                  GetFamilyIndex() const noexcept = 0;
+    [[nodiscard]] virtual Rhi::ITimestampQueryPool* GetTimestampQueryPool() const noexcept = 0;
     virtual void Execute(ICommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) = 0;
+
+
 };
 
 } // namespace Methane::Graphics::Rhi

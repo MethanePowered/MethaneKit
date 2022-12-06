@@ -40,6 +40,7 @@ public:
 
     // ICommandQueue interface
     uint32_t GetFamilyIndex() const noexcept override { return 0U; }
+    Rhi::ITimestampQueryPool* GetTimestampQueryPool() const noexcept override { return nullptr; }
 
     // IObject interface
     bool SetName(const std::string& name) override;

@@ -77,9 +77,10 @@ public:
     { }
 
     // ICommandQueue interface
-    [[nodiscard]] const Rhi::IContext& GetContext() const noexcept override          { return m_context; }
-    [[nodiscard]] Rhi::CommandListType GetCommandListType() const noexcept override  { return m_type; }
-    [[nodiscard]] uint32_t             GetFamilyIndex() const noexcept override      { return 0U; }
+    [[nodiscard]] const Rhi::IContext&      GetContext() const noexcept override              { return m_context; }
+    [[nodiscard]] Rhi::CommandListType      GetCommandListType() const noexcept override      { return m_type; }
+    [[nodiscard]] uint32_t                  GetFamilyIndex() const noexcept override          { return 0U; }
+    [[nodiscard]] Rhi::ITimestampQueryPool* GetTimestampQueryPool() const noexcept override   { return nullptr; }
     void Execute(Rhi::ICommandListSet&, const Rhi::ICommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
 
     // IObject interface

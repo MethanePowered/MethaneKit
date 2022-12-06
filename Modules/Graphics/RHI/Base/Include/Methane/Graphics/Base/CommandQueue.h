@@ -57,9 +57,6 @@ public:
     Rhi::CommandListType GetCommandListType() const noexcept final { return m_command_lists_type; }
     void Execute(Rhi::ICommandListSet& command_lists, const Rhi::ICommandList::CompletedCallback& completed_callback = {}) override;
 
-    // CommandQueue interface
-    virtual Rhi::ITimestampQueryPool* GetTimestampQueryPool() const noexcept { return nullptr; }
-
     const Context&     GetBaseContext() const noexcept     { return m_context; }
     Device&            GetBaseDevice() const noexcept      { return *m_device_ptr; }
     bool               HasTracyContext() const noexcept    { return !!m_tracy_gpu_context_ptr; }
