@@ -26,7 +26,7 @@ Base descriptor manager implementation.
 #include <Methane/Graphics/RHI/IDescriptorManager.h>
 
 #include <Methane/Memory.hpp>
-#include <Tracy.hpp>
+#include <tracy/Tracy.hpp>
 
 #include <mutex>
 
@@ -73,7 +73,7 @@ private:
     Context&                        m_context;
     const bool                      m_is_parallel_bindings_processing_enabled;
     WeakPtrs<Rhi::IProgramBindings> m_program_bindings;
-    TracyLockable(std::mutex,       m_program_bindings_mutex)
+    TracyLockable(std::mutex,       m_program_bindings_mutex);
 };
 
 } // namespace Methane::Graphics::Base

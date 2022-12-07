@@ -25,7 +25,7 @@ Methane resource barriers base implementation.
 
 #include <Methane/Graphics/RHI/IResourceBarriers.h>
 
-#include <Tracy.hpp>
+#include <tracy/Tracy.hpp>
 
 #include <mutex>
 

@@ -8,14 +8,14 @@ get_module_dirs("Methane")
 
 if (WIN32)
 
-    set(PRECOMPILED_HEADERS
+    list(APPEND PRECOMPILED_HEADERS
         <windows.h>
         <wrl.h>
     )
 
 endif()
 
-set(PRECOMPILED_HEADERS ${PRECOMPILED_HEADERS}
+list(APPEND PRECOMPILED_HEADERS
     # Common Methane headers
     $<TARGET_PROPERTY:MethanePrimitives,SOURCE_DIR>/Include/Methane/Memory.hpp
     $<TARGET_PROPERTY:MethanePrimitives,SOURCE_DIR>/Include/Methane/Checks.hpp
@@ -81,19 +81,20 @@ set_target_properties(${TARGET}
 
 set(EXTRA_TARGET MethanePrecompiledExtraHeaders)
 
-set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_HEADERS}
+list(APPEND PRECOMPILED_EXTRA_HEADERS
+    ${PRECOMPILED_HEADERS}
     <hlsl++.h>
     <taskflow/taskflow.hpp>
 )
 
 if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
 
-    set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_EXTRA_HEADERS}
+    list(APPEND PRECOMPILED_EXTRA_HEADERS
         <directx/d3d12.h>
         <directx/d3dx12.h>
     )
 
-    set(PLATFORM_LIBRARIES
+    list(APPEND PLATFORM_LIBRARIES
         DirectX-Headers
     )
 
@@ -101,15 +102,15 @@ endif()
 
 if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
 
-    set(PRECOMPILED_EXTRA_HEADERS ${PRECOMPILED_EXTRA_HEADERS}
+    list(APPEND PRECOMPILED_EXTRA_HEADERS
         <vulkan/vulkan.hpp>
     )
 
-    set(PLATFORM_LIBRARIES
+    list(APPEND PLATFORM_LIBRARIES
         Vulkan-Headers
     )
 
-    set(PRECOMPILED_EXTRA_DEFINITIONS
+    list(APPEND PRECOMPILED_EXTRA_DEFINITIONS
         VK_NO_PROTOTYPES
         $<$<BOOL:${WIN32}>:VK_USE_PLATFORM_WIN32_KHR>
         $<$<BOOL:${APPLE}>:VK_USE_PLATFORM_METAL_EXT>

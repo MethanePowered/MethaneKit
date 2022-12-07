@@ -154,8 +154,8 @@ private:
     CompletedCallback m_completed_callback;
     State             m_state = State::Pending;
 
-    mutable TracyLockable(std::recursive_mutex, m_state_mutex)
-    TracyLockable(std::mutex,   m_state_change_mutex)
+    mutable TracyLockable(std::recursive_mutex, m_state_mutex);
+    TracyLockable(std::mutex,   m_state_change_mutex);
     std::condition_variable_any m_state_change_condition_var;
     TRACY_GPU_SCOPE_TYPE        m_tracy_gpu_scope;
 
@@ -204,7 +204,7 @@ private:
     Opt<Data::Index>        m_frame_index_opt;
     std::string             m_combined_name;
 
-    mutable TracyLockable(std::mutex, m_command_lists_mutex)
+    mutable TracyLockable(std::mutex, m_command_lists_mutex);
     mutable std::atomic<bool> m_is_executing = false;
 };
 

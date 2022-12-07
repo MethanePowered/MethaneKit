@@ -25,7 +25,7 @@ Vulkan implementation of the command queue interface.
 
 #include <Methane/Graphics/Base/CommandQueueTracking.h>
 
-#include <Tracy.hpp>
+#include <tracy/Tracy.hpp>
 #include <vulkan/vulkan.hpp>
 
 #include <mutex>
@@ -102,7 +102,7 @@ private:
     WaitInfo               m_wait_before_executing;
     mutable WaitInfo       m_wait_execution_completed;
     FrameWaitInfos         m_wait_frame_execution_completed;
-    mutable TracyLockable(std::mutex, m_wait_frame_execution_completed_mutex)
+    mutable TracyLockable(std::mutex, m_wait_frame_execution_completed_mutex);
 };
 
 } // namespace Methane::Graphics::Vulkan

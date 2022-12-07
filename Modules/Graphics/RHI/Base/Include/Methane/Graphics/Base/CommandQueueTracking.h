@@ -101,8 +101,8 @@ private:
     const Ptr<CommandListSet>& GetNextExecutingCommandListSet() const;
 
     CommandListSetsQueue                m_executing_command_lists;
-    mutable TracyLockable(std::mutex,   m_executing_command_lists_mutex)
-    TracyLockable(std::mutex,           m_execution_waiting_mutex)
+    mutable TracyLockable(std::mutex,   m_executing_command_lists_mutex);
+    TracyLockable(std::mutex,           m_execution_waiting_mutex);
     std::condition_variable_any         m_execution_waiting_condition_var;
     std::atomic<bool>                   m_execution_waiting{ true };
     std::thread                         m_execution_waiting_thread;

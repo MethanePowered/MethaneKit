@@ -33,8 +33,7 @@ env:
   product_ver_minor: 7
   product_ver_patch: 0
   product_ver_build: ${{ github.run_number }}
-  tracy_release_version: "0.8.2.1"
-  TRACY_NO_INVARIANT_CHECK: 1
+  tracy_release_version: "0.9"
 
 jobs:
   build:

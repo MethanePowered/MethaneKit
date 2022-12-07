@@ -77,7 +77,7 @@ private:
     mutable std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_vertex_input_layout;
 
     DescriptorRangeByHeapAndAccessType m_constant_descriptor_range_by_heap_and_access_type;
-    TracyLockable(std::mutex,          m_constant_descriptor_ranges_reservation_mutex)
+    TracyLockable(std::mutex,          m_constant_descriptor_ranges_reservation_mutex);
 };
 
 } // namespace Methane::Graphics::DirectX

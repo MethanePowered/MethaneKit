@@ -28,7 +28,7 @@ Tracy GPU instrumentation helpers
 #endif
 
 #ifdef METHANE_TRACY_GPU_ENABLED
-#include <Tracy.hpp>
+#include <tracy/Tracy.hpp>
 #include <client/TracyProfiler.hpp>
 #include <client/TracyCallstack.hpp>
 #include <common/TracyAlloc.hpp>
@@ -211,7 +211,7 @@ private:
     const QueryId               m_query_count = std::numeric_limits<QueryId>::max();
     int64_t                     m_prev_calibration_cpu_timestamp = 0;
     QueryId                     m_query_id    = 0U;
-    TracyLockable(std::mutex,   m_query_mutex)
+    TracyLockable(std::mutex,   m_query_mutex);
 
 #else // METHANE_TRACY_GPU_ENABLED
 

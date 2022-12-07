@@ -28,7 +28,7 @@ Vulkan command list set implementation.
 #include <Methane/Graphics/Base/CommandList.h>
 #include <Methane/Data/Receiver.hpp>
 
-#include <Tracy.hpp>
+#include <tracy/Tracy.hpp>
 
 #include <vulkan/vulkan.hpp>
 #include <mutex>
@@ -73,7 +73,7 @@ private:
     std::vector<uint64_t>               m_vk_wait_values;
     vk::UniqueSemaphore                 m_vk_unique_execution_completed_semaphore;
     vk::UniqueFence                     m_vk_unique_execution_completed_fence;
-    TracyLockable(std::mutex,           m_vk_unique_execution_completed_fence_mutex)
+    TracyLockable(std::mutex,           m_vk_unique_execution_completed_fence_mutex);
 };
 
 } // namespace Methane::Graphics::Vulkan

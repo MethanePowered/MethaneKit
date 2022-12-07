@@ -143,7 +143,7 @@ private:
     Data::Size                        m_allocated_size = 0;
     ResourcePtrs                      m_resources;
     RangeSet                          m_free_ranges;
-    TracyLockable(std::mutex,         m_modification_mutex)
+    TracyLockable(std::mutex,         m_modification_mutex);
     D3D12_DESCRIPTOR_HEAP_TYPE        m_descriptor_heap_type;
     uint32_t                          m_descriptor_size;
     wrl::ComPtr<ID3D12DescriptorHeap> m_cp_descriptor_heap;

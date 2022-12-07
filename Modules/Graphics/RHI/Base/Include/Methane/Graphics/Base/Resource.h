@@ -93,7 +93,7 @@ private:
     Ptr<IBarriers>     m_setup_transition_barriers_ptr;
     Opt<uint32_t>      m_owner_queue_family_index_opt;
     bool               m_is_state_change_updates_barriers = true;
-    TracyLockable(std::mutex, m_state_mutex)
+    TracyLockable(std::mutex, m_state_mutex);
 };
 
 } // namespace Methane::Graphics::Base

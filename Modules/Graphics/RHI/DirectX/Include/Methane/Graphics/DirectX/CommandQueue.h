@@ -27,7 +27,7 @@ DirectX 12 implementation of the command queue interface.
 
 #pragma warning(push)
 #pragma warning(disable: 4189)
-#include <TracyD3D12.hpp>
+#include <tracy/TracyD3D12.hpp>
 #pragma warning(pop)
 
 #include <wrl.h>

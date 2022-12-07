@@ -41,8 +41,8 @@ NOTE:
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
-#include <Tracy.hpp>
-#include <TracyC.h>
+#include <tracy/Tracy.hpp>
+#include <tracy/TracyC.h>
 
 #ifdef __GCC_COMPILER__
 #pragma GCC diagnostic pop
@@ -88,7 +88,7 @@ ITT_DOMAIN_EXTERN();
 #ifdef META_INSTRUMENTATION_ENABLED
 
 #define META_CPU_FRAME_DELIMITER(/* uint32_t */ frame_buffer_index, /* uint32_t */ frame_index) \
-    FrameMark \
+    FrameMark; \
     ITT_PROCESS_MARKER("Methane-Frame-Delimiter"); \
     ITT_MARKER_ARG("Frame-Buffer-Index", static_cast<int64_t>(frame_buffer_index)); \
     ITT_MARKER_ARG("Frame-Index", static_cast<int64_t>(frame_index))
@@ -100,11 +100,11 @@ ITT_DOMAIN_EXTERN();
     TracyCFrameMarkEnd(name)
 
 #define META_SCOPE_TASK(/*const char* */name) \
-    TRACY_ZONE_SCOPED_NAME(name) \
+    TRACY_ZONE_SCOPED_NAME(name); \
     ITT_SCOPE_TASK(name)
 
 #define META_FUNCTION_TASK() \
-    TRACY_ZONE_SCOPED() \
+    TRACY_ZONE_SCOPED(); \
     ITT_FUNCTION_TASK()
 
 #define META_GLOBAL_MARKER(/*const char* */name) \

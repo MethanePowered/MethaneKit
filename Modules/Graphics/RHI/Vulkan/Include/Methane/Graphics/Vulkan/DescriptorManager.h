@@ -25,7 +25,7 @@ Vulkan descriptor manager with descriptor sets allocator.
 
 #include <Methane/Graphics/Base/DescriptorManager.h>
 
-#include <Tracy.hpp>
+#include <tracy/Tracy.hpp>
 #include <vulkan/vulkan.hpp>
 
 #include <map>
@@ -96,7 +96,7 @@ private:
     std::vector<vk::DescriptorPool>       m_vk_used_pools;
     std::vector<vk::DescriptorPool>       m_vk_free_pools;
     vk::DescriptorPool                    m_vk_current_pool;
-    TracyLockable(std::mutex,             m_descriptor_pool_mutex)
+    TracyLockable(std::mutex,             m_descriptor_pool_mutex);
 };
 
 } // namespace Methane::Graphics::Vulkan
