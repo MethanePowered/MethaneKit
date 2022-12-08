@@ -36,7 +36,7 @@ on:
 env:
   product_ver_major: 0
   product_ver_minor: 7
-  product_ver_patch: 0
+  product_ver_patch: 1
   product_ver_build: ${{ github.run_number }}
   # Find the latest sonar-scanner version here: https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
   sonar_scanner_version: 4.7.0.2747

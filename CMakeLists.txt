@@ -25,7 +25,7 @@ endif()
 # Methane version, build & product info
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
 set(METHANE_VERSION_MINOR 7 CACHE STRING "Methane minor version")
-set(METHANE_VERSION_PATCH 0 CACHE STRING "Methane patch version")
+set(METHANE_VERSION_PATCH 1 CACHE STRING "Methane patch version")
 set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 
 project(METHANE_KIT

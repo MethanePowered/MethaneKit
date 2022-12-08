@@ -31,7 +31,7 @@ on:
 env:
   product_ver_major: 0
   product_ver_minor: 7
-  product_ver_patch: 0
+  product_ver_patch: 1
   product_ver_build: ${{ github.run_number }}
   tracy_release_version: "0.9"
   # TSC Invariant check is disabled to allow running Catch test executables only for tests list query by CTest
