@@ -29,6 +29,7 @@ EnumMask utility functions based on magic-enum.
 
 #include <magic_enum.hpp>
 #include <vector>
+#include <array>
 #include <string>
 #include <string_view>
 #include <sstream>
@@ -36,20 +37,54 @@ EnumMask utility functions based on magic-enum.
 namespace Methane::Data
 {
 
-template<typename E, typename M, typename F>
-void ForEachBitInEnumMask(EnumMask<E, M> mask, const F& functor)
+namespace Impl
 {
-    for(E bit : magic_enum::enum_values<E>())
+
+template<typename E, typename M, std::size_t N, std::size_t... I>
+constexpr std::array<typename EnumMask<E, M>::Bit, N> GetEnumMaskBitsArray(M, const std::array<E, N>& enums, std::index_sequence<I...>)
+{
+    return { { typename EnumMask<E, M>::Bit(enums[I])... } };
+}
+
+template<size_t Start, size_t End, typename T, size_t N, typename F>
+constexpr void ConstexprForEach(const std::array<T, N>& values, F&& functor)
+{
+    if constexpr (Start < End)
     {
-        if (mask.HasAnyBit(bit))
-        {
-            functor(bit);
-        }
+        functor(values[Start]);
+        ConstexprForEach<Start + 1, End>(values, functor);
     }
 }
 
+} // namespace Impl
+
+template <typename E, typename M, size_t N = magic_enum::enum_count<E>()>
+constexpr auto GetEnumMaskBitsArray()
+{
+    return Impl::GetEnumMaskBitsArray(M{}, magic_enum::enum_values<E>(), std::make_index_sequence<N>{});
+}
+
+template<typename T, size_t N, typename F>
+constexpr void ConstexprForEach(const std::array<T, N>& values, F&& functor)
+{
+    Impl::ConstexprForEach<0, N, T, N, F>(values, std::move(functor));
+}
+
+template<typename E, typename M, typename F>
+constexpr void ForEachBitInEnumMask(EnumMask<E, M> mask, F&& functor)
+{
+    constexpr auto enum_bits = GetEnumMaskBitsArray<E, M>();
+    ConstexprForEach(enum_bits, [mask, functor](auto bit) constexpr
+    {
+        if (mask.HasAnyBit(bit))
+        {
+            functor(bit.GetEnum());
+        }
+    });
+}
+
 template<typename E, typename M>
-std::vector<E> GetEnumMaskBits(EnumMask<E, M> mask)
+constexpr std::vector<E> GetEnumMaskBits(EnumMask<E, M> mask)
 {
     META_FUNCTION_TASK();
     std::vector<E> bits;

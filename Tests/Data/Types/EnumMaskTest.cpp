@@ -26,6 +26,12 @@ Unit-tests of the EnumMask data type.
 
 #include <catch2/catch_template_test_macros.hpp>
 
+//#define BENCHMARK_ENABLED
+
+#ifdef BENCHMARK_ENABLED
+#include <catch2/benchmark/catch_benchmark.hpp>
+#endif
+
 using namespace Methane::Data;
 
 template<typename E, typename M>
@@ -360,4 +366,69 @@ TEMPLATE_TEST_CASE("EnumMask bit operations", "[enum-mask][bit]", MASK_TYPES)
         CHECK(mask.HasBits({ Fruit::Apple, Fruit::Mandarin, Fruit::Lime, Fruit::Mango }));
         CHECK_FALSE(mask.HasBits({ Fruit::Peach, Fruit::Banana, Fruit::Orange }));
     }
+}
+
+TEMPLATE_TEST_CASE("EnumMask Bit type", "[enum-mask][bit]", MASK_TYPES)
+{
+    using EnumMaskType = EnumMask<Fruit, TestType>;
+    using EnumMaskBitType = typename EnumMaskType::Bit;
+
+    SECTION("Bit constructor by index")
+    {
+        for(uint8_t i = 0; i < magic_enum::enum_count<Fruit>(); ++i)
+        {
+            const EnumMaskBitType bit(i);
+            CHECK(bit.GetValue() == TestType(1) << i);
+            CHECK(bit.GetIndex() == i);
+            CHECK(bit.GetEnum() == magic_enum::enum_value<Fruit>(i));
+        }
+    }
+
+    SECTION("Bit constructor by enum")
+    {
+        for(Fruit fruit : magic_enum::enum_values<Fruit>())
+        {
+            const EnumMaskBitType bit(fruit);
+            CHECK(bit.GetValue() == TestType(1) << static_cast<TestType>(fruit));
+            CHECK(bit.GetIndex() == static_cast<TestType>(fruit));
+            CHECK(bit.GetEnum() == fruit);
+        }
+    }
+
+    SECTION("Bit constexpr constructor for Apple")
+    {
+        constexpr EnumMaskBitType apple_bit(Fruit::Apple);
+        constexpr bool is_apple = apple_bit.GetEnum() == Fruit::Apple;
+        CHECK(is_apple);
+    }
+
+    SECTION("Bit constexpr constructor for Banana")
+    {
+        constexpr EnumMaskBitType banana_bit(Fruit::Banana);
+        constexpr bool is_banana = banana_bit.GetEnum() == Fruit::Banana;
+        CHECK(is_banana);
+    }
+
+    SECTION("Bit constexpr constructor for Apple")
+    {
+        constexpr EnumMaskBitType mango_bit(Fruit::Mango);
+        constexpr bool is_mango = mango_bit.GetEnum() == Fruit::Mango;
+        CHECK(is_mango);
+    }
+
+#ifdef BENCHMARK_ENABLED
+    BENCHMARK("ForEachBitInEnumMask benchmark")
+    {
+        constexpr EnumMaskType citrus_mask({ Fruit::Mandarin, Fruit::Lime, Fruit::Mango, Fruit::Orange });
+        size_t wrong_bits_count = 0;
+        size_t bits_count = 0;
+        ForEachBitInEnumMask(citrus_mask, [&bits_count, &wrong_bits_count](Fruit f)
+        {
+            bits_count++;
+            if (f != Fruit::Mandarin && f != Fruit::Lime && f != Fruit::Mango && f != Fruit::Orange)
+                wrong_bits_count++;
+        });
+        return bits_count + wrong_bits_count;
+    };
+#endif
 }

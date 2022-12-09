@@ -24,6 +24,7 @@ Enum-based mask data type with common mask operations.
 #pragma once
 
 #include <cstdint>
+#include <cmath>
 #include <initializer_list>
 #include <type_traits>
 
@@ -44,13 +45,21 @@ public:
     class Bit
     {
     public:
-        explicit constexpr Bit(uint8_t i) noexcept : m_value(M{ 1 } << static_cast<M>(i)) { }
-        constexpr Bit(E e) noexcept : m_value(M{ 1 } << static_cast<M>(e)) { }
+        explicit constexpr Bit(M i) noexcept : m_value(M{ 1 } << i) { }
+        constexpr Bit(E e) noexcept : Bit(static_cast<M>(e)) { }
 
         constexpr M GetValue() const noexcept { return m_value; }
         constexpr operator M() const noexcept { return m_value; }
 
+        constexpr M GetIndex() const noexcept { return floorLog2(m_value); }
+        constexpr E GetEnum() const noexcept  { return static_cast<E>(GetIndex()); }
+
     private:
+        static constexpr M floorLog2(M x)
+        {
+            return x == 1 ? 0 : 1 + floorLog2(x >> 1);
+        }
+
         const M m_value;
     };
 
@@ -87,13 +96,13 @@ public:
     constexpr operator bool() const noexcept { return m_value != M{}; }
     constexpr operator M() const noexcept    { return m_value; }
 
-    constexpr EnumMask& SetBitOn(E bit) noexcept            { return *this |= bit; }
-    constexpr EnumMask& SetBitOff(E bit) noexcept           { return *this &= ~EnumMask(bit); }
-    constexpr EnumMask& SetBit(E bit, bool on) noexcept     { return on ? SetBitOn(bit) : SetBitOff(bit); }
+    constexpr EnumMask& SetBitOn(Bit bit) noexcept          { return *this |= bit; }
+    constexpr EnumMask& SetBitOff(Bit bit) noexcept         { return *this &= ~EnumMask(bit); }
+    constexpr EnumMask& SetBit(Bit bit, bool on) noexcept   { return on ? SetBitOn(bit) : SetBitOff(bit); }
     constexpr bool HasBits(EnumMask mask) const noexcept    { return mask.m_value ? ((m_value & mask.GetValue()) == mask.GetValue()) : !m_value; }
-    constexpr bool HasBit(E bit) const noexcept             { return HasBits(EnumMask(bit)); }
+    constexpr bool HasBit(Bit bit) const noexcept           { return HasBits(EnumMask(bit)); }
     constexpr bool HasAnyBits(EnumMask mask) const noexcept { return (m_value & mask.GetValue()) != M{}; }
-    constexpr bool HasAnyBit(E bit) const noexcept          { return HasAnyBits(EnumMask(bit)); }
+    constexpr bool HasAnyBit(Bit bit) const noexcept        { return HasAnyBits(EnumMask(bit)); }
 
 private:
     constexpr static M BitsToInt(typename std::initializer_list<Bit>::const_iterator it,
