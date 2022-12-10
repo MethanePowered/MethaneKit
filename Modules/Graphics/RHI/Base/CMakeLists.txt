@@ -68,6 +68,7 @@ add_library(${TARGET} STATIC
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsRhiInterface
+        magic_enum
     PRIVATE
         MethaneBuildOptions
         MethaneDataPrimitives
@@ -76,7 +77,6 @@ target_link_libraries(${TARGET}
         MethanePrecompiledExtraHeaders
         TaskFlow
         nowide
-        magic_enum
 )
 
 target_compile_definitions(${TARGET}

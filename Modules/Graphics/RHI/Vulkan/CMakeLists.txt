@@ -102,7 +102,6 @@ target_link_libraries(${TARGET}
         MethanePrecompiledExtraHeaders
         TaskFlow
         nowide
-        magic_enum
         # Vulkan Libs
         $<$<NOT:$<BOOL:${APPLE}>>:Vulkan-Headers> # Lin/Win: Dynamic linking with Vulkan, only Vulkan headers are needed
         $<$<BOOL:${LINUX}>:dl>                    # Linux: Link with dynamic linker for vk::DynamicLoader on Linux

@@ -67,7 +67,7 @@ struct IObject
 
     virtual bool SetName(const std::string& name) = 0;
     [[nodiscard]] virtual const std::string& GetName() const noexcept = 0;
-    [[nodiscard]] virtual Ptr<IObject>        GetPtr() = 0;
+    [[nodiscard]] virtual Ptr<IObject>       GetPtr() = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

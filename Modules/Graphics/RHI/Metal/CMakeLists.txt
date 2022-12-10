@@ -72,7 +72,6 @@ target_link_libraries(${TARGET}
         MethanePrecompiledExtraHeaders
         TaskFlow
         nowide
-        magic_enum
         "-framework Metal"
 )
 

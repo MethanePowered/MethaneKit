@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,22 +16,13 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Kit.h
-Methane kit interfaces: all headers under one umbrella.
+FILE: Methane/Graphics/RHI/Implementations.h
+Methane graphics RHI PIMPL implementations.
 
 ******************************************************************************/
 
 #pragma once
 
-// Methane Graphics Headers
-
-#include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/RHI/Interfaces.h>
-#include <Methane/Graphics/Extensions.h>
-#include <Methane/Graphics/ActionCamera.h>
-
-// Methane User Interface Headers
-
-#include <Methane/UserInterface/Types.hpp>
-#include <Methane/UserInterface/Typography.h>
-#include <Methane/UserInterface/Widgets.h>
+#include "Device.h"
+#include "CommandQueue.h"
+#include "RenderContext.h"

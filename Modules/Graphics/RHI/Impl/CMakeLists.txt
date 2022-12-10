@@ -5,12 +5,21 @@ include(MethaneModules)
 get_module_dirs("Methane/Graphics/RHI")
 
 list(APPEND HEADERS
+    ${INCLUDE_DIR}/Implementations.h
     ${INCLUDE_DIR}/Device.h
+    ${INCLUDE_DIR}/CommandQueue.h
+    ${INCLUDE_DIR}/RenderPass.h
+    ${INCLUDE_DIR}/RenderCommandList.h
+    ${INCLUDE_DIR}/RenderContext.h
 )
 
 list(APPEND SOURCES
     ${SOURCES_DIR}/ImplWrapper.hpp
     ${SOURCES_DIR}/Device.cpp
+    ${SOURCES_DIR}/CommandQueue.cpp
+    ${SOURCES_DIR}/RenderPass.cpp
+    ${SOURCES_DIR}/RenderCommandList.cpp
+    ${SOURCES_DIR}/RenderContext.cpp
 )
 
 add_library(${TARGET} STATIC

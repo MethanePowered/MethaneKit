@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/Device.h
-Methane System and Device PIMP wrappers for direct calls to final implementation.
+FILE: Methane/Graphics/RHI/Device.cpp
+Methane System and Device PIMPL wrappers for direct calls to final implementation.
 
 ******************************************************************************/
 
@@ -62,9 +62,14 @@ public:
     using ImplWrapper::ImplWrapper;
 };
 
-Device::Device(const Ptr<IDevice>& device_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(device_ptr))
+Device::Device(const Ptr <IDevice>& interface_ptr)
+    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
 {
+}
+
+IDevice& Device::GetInterface() const noexcept
+{
+    return m_impl_ptr->GetInterface();
 }
 
 const std::string& Device::GetAdapterName() const noexcept
@@ -87,9 +92,14 @@ std::string Device::ToString() const
     return m_impl_ptr->Get().ToString();
 }
 
-IDevice& Device::GetInterface() const noexcept
+bool Device::SetName(const std::string& name) const
 {
-    return m_impl_ptr->GetInterface();
+    return m_impl_ptr->Get().SetName(name);
+}
+
+const std::string& Device::GetName() const noexcept
+{
+    return m_impl_ptr->Get().GetName();
 }
 
 class System::Impl : public ImplWrapper<ISystem, SystemImpl>
@@ -104,9 +114,14 @@ System& System::Get()
     return s_system;
 }
 
-System::System(const Ptr<ISystem>& system_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(system_ptr))
+System::System(const Ptr<ISystem>& interface_ptr)
+    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
 {
+}
+
+ISystem& System::GetInterface() const noexcept
+{
+    return m_impl_ptr->GetInterface();
 }
 
 void System::CheckForChanges() const
@@ -148,11 +163,6 @@ const DeviceCaps& System::GetDeviceCapabilities() const noexcept
 std::string System::ToString() const
 {
     return m_impl_ptr->Get().ToString();
-}
-
-ISystem& System::GetInterface() const noexcept
-{
-    return m_impl_ptr->GetInterface();
 }
 
 const Devices& System::UpdateDevices(const Ptrs<Rhi::IDevice>& devices) const

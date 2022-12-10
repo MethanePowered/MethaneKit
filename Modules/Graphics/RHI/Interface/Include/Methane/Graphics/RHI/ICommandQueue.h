@@ -46,8 +46,6 @@ struct ICommandQueue
     [[nodiscard]] virtual uint32_t                  GetFamilyIndex() const noexcept = 0;
     [[nodiscard]] virtual Rhi::ITimestampQueryPool* GetTimestampQueryPool() const noexcept = 0;
     virtual void Execute(ICommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) = 0;
-
-
 };
 
 } // namespace Methane::Graphics::Rhi

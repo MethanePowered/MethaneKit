@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/RHI/Device.h
-Methane System and Device PIMP wrappers for direct calls to final implementation.
+Methane System and Device PIMPL wrappers for direct calls to final implementation.
 
 ******************************************************************************/
 
@@ -37,15 +37,18 @@ public:
     using Feature      = DeviceFeature;
     using Capabilities = DeviceCaps;
 
+    IDevice& GetInterface() const noexcept;
+
     const std::string&  GetAdapterName() const noexcept;
     bool                IsSoftwareAdapter() const noexcept;
     const Capabilities& GetCapabilities() const noexcept;
     std::string         ToString() const;
 
-    IDevice& GetInterface() const noexcept;
+    bool SetName(const std::string& name) const;
+    const std::string& GetName() const noexcept;
 
 private:
-    Device(const Ptr<IDevice>& device_ptr);
+    Device(const Ptr<IDevice>& interface_ptr);
 
     class Impl;
 
@@ -59,6 +62,8 @@ class System
 public:
     [[nodiscard]] static System& Get();
 
+    ISystem& GetInterface() const noexcept;
+
     void CheckForChanges() const;
     [[nodiscard]] const Devices&    UpdateGpuDevices(const DeviceCaps& required_device_caps = {}) const;
     [[nodiscard]] const Devices&    UpdateGpuDevices(const Platform::AppEnvironment& app_env,
@@ -69,10 +74,8 @@ public:
     [[nodiscard]] const DeviceCaps& GetDeviceCapabilities() const noexcept;
     [[nodiscard]] std::string       ToString() const;
 
-    ISystem& GetInterface() const noexcept;
-
 private:
-    System(const Ptr<ISystem>& system_ptr);
+    System(const Ptr<ISystem>& interface_ptr);
 
     const Devices& UpdateDevices(const Ptrs<Rhi::IDevice>& devices) const;
 
