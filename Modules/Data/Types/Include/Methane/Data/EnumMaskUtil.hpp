@@ -89,11 +89,11 @@ constexpr void ConstexprForEach(const std::array<T, N>& values, F&& functor)
 template<typename E, typename M, typename F>
 constexpr void ForEachBitInEnumMask(EnumMask<E, M> mask, F&& functor)
 {
-    constexpr auto enum_bits = GetEnumMaskBitsArray<E, M>();
-    Impl::ConstexprForEachIndex<0, enum_bits.size()>(
-        [mask, &enum_bits, functor](auto index) constexpr
+    static constexpr auto s_enum_bits = GetEnumMaskBitsArray<E, M>();
+    Impl::ConstexprForEachIndex<0, s_enum_bits.size()>(
+        [mask, functor](auto index) constexpr
         {
-            constexpr auto bit = std::get<index>(enum_bits);
+            constexpr auto bit = std::get<index>(s_enum_bits);
             // It would be nice to use 'if constexpr' here in some cases, but 'mask' parameter can not be treated as constexpr
             if (mask.HasAnyBit(bit))
             {
