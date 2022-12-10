@@ -148,7 +148,7 @@ void ProgramBindings::Apply(ICommandList& command_list_dx, const Base::ProgramBi
     Rhi::ProgramArgumentAccessMask apply_access_mask;
     apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccessType::Mutable);
 
-    if (apply_behavior.HasAnyBit(ApplyBehavior::ConstantOnce) || !applied_program_bindings_ptr)
+    if (!apply_behavior.HasAnyBit(ApplyBehavior::ConstantOnce) || !applied_program_bindings_ptr)
     {
         apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccessType::Constant);
         apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccessType::FrameConstant);
