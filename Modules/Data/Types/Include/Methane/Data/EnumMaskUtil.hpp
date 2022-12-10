@@ -84,7 +84,7 @@ constexpr void ForEachBitInEnumMask(EnumMask<E, M> mask, F&& functor)
 }
 
 template<typename E, typename M>
-constexpr std::vector<E> GetEnumMaskBits(EnumMask<E, M> mask)
+std::vector<E> GetEnumMaskBits(EnumMask<E, M> mask)
 {
     META_FUNCTION_TASK();
     std::vector<E> bits;
