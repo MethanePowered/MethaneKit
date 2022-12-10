@@ -32,6 +32,8 @@ Unit-tests of the EnumMask data type.
 #include <catch2/benchmark/catch_benchmark.hpp>
 #endif
 
+#include <set>
+
 using namespace Methane::Data;
 
 template<typename E, typename M>
@@ -281,26 +283,6 @@ TEMPLATE_TEST_CASE("EnumMask conversion operators", "[enum-mask][convert]", MASK
     {
         CHECK(static_cast<TestType>(citrus_mask) == AsMask<TestType>({ Fruit::Mandarin, Fruit::Lime, Fruit::Mango, Fruit::Orange }));
     }
-
-    SECTION("Convert to vector of bits")
-    {
-        CHECK(GetEnumMaskBits(citrus_mask) == std::vector<Fruit>{ Fruit::Orange, Fruit::Mandarin, Fruit::Mango, Fruit::Lime });
-    }
-
-    SECTION("Convert to vector of bit names")
-    {
-        CHECK(GetEnumBitNames(citrus_mask) == std::vector<std::string>{ "Orange", "Mandarin", "Mango", "Lime" });
-    }
-
-    SECTION("Convert to string with default separator")
-    {
-        CHECK(GetEnumMaskName(citrus_mask) == "(Orange|Mandarin|Mango|Lime)");
-    }
-
-    SECTION("Convert to string with custom separator")
-    {
-        CHECK(GetEnumMaskName(citrus_mask, " + ") == "(Orange + Mandarin + Mango + Lime)");
-    }
 }
 
 TEMPLATE_TEST_CASE("EnumMask bit operations", "[enum-mask][bit]", MASK_TYPES)
@@ -431,4 +413,56 @@ TEMPLATE_TEST_CASE("EnumMask Bit type", "[enum-mask][bit]", MASK_TYPES)
         return bits_count + wrong_bits_count;
     };
 #endif
+}
+
+TEMPLATE_TEST_CASE("EnumMask Utils", "[enum-mask][util]", MASK_TYPES)
+{
+    using EnumMaskType = EnumMask<Fruit, TestType>;
+    using EnumMaskBitType = typename EnumMaskType::Bit;
+
+    constexpr EnumMaskType citrus_mask({ Fruit::Mandarin, Fruit::Lime, Fruit::Mango, Fruit::Orange });
+
+    SECTION("GetEnumMaskBitsArray and ConstexprForEach")
+    {
+        constexpr auto all_bits = GetEnumMaskBitsArray<EnumMaskType>();
+        std::set<Fruit> all_fruits;
+        ConstexprForEach(all_bits,
+            [&all_fruits](EnumMaskBitType bit) constexpr
+            {
+                all_fruits.insert(bit.GetEnum());
+            });
+        CHECK(all_fruits.size() == magic_enum::enum_count<Fruit>());
+    }
+
+    SECTION("ForEachBitInEnumMask")
+    {
+        std::set<Fruit> citrus_fruits;
+        ForEachBitInEnumMask(citrus_mask, [&citrus_fruits](auto enum_bit) constexpr
+        {
+            citrus_fruits.insert(enum_bit);
+        });
+        CHECK(citrus_fruits.size() == 4);
+    }
+
+    SECTION("GetEnumMaskBits")
+    {
+        const std::vector<Fruit> citrus_fruits = GetEnumMaskBits(citrus_mask);
+        CHECK(citrus_fruits == std::vector<Fruit>{ Fruit::Orange, Fruit::Mandarin, Fruit::Mango, Fruit::Lime });
+    }
+
+    SECTION("GetEnumMaskBitNames")
+    {
+        const std::vector<std::string> citrus_names = GetEnumMaskBitNames(citrus_mask);
+        CHECK(citrus_names == std::vector<std::string>{ "Orange", "Mandarin", "Mango", "Lime" });
+    }
+
+    SECTION("GetEnumMaskName with default separator")
+    {
+        CHECK(GetEnumMaskName(citrus_mask) == "(Orange|Mandarin|Mango|Lime)");
+    }
+
+    SECTION("GetEnumMaskName with custom separator")
+    {
+        CHECK(GetEnumMaskName(citrus_mask, " + ") == "(Orange + Mandarin + Mango + Lime)");
+    }
 }

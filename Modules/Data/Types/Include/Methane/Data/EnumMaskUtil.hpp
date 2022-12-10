@@ -56,12 +56,28 @@ constexpr void ConstexprForEach(const std::array<T, N>& values, F&& functor)
     }
 }
 
+template<size_t Start, size_t End, typename F>
+constexpr void ConstexprForEachIndex(F&& functor)
+{
+    if constexpr (Start < End)
+    {
+        functor(std::integral_constant<size_t, Start>());
+        ConstexprForEachIndex<Start + 1, End>(functor);
+    }
+}
+
 } // namespace Impl
 
 template <typename E, typename M, size_t N = magic_enum::enum_count<E>()>
 constexpr auto GetEnumMaskBitsArray()
 {
     return Impl::GetEnumMaskBitsArray(M{}, magic_enum::enum_values<E>(), std::make_index_sequence<N>{});
+}
+
+template <typename EnumMaskType>
+constexpr auto GetEnumMaskBitsArray()
+{
+    return GetEnumMaskBitsArray<typename EnumMaskType::EnumType, typename EnumMaskType::MaskType>();
 }
 
 template<typename T, size_t N, typename F>
@@ -74,13 +90,16 @@ template<typename E, typename M, typename F>
 constexpr void ForEachBitInEnumMask(EnumMask<E, M> mask, F&& functor)
 {
     constexpr auto enum_bits = GetEnumMaskBitsArray<E, M>();
-    ConstexprForEach(enum_bits, [mask, functor](auto bit) constexpr
-    {
-        if (mask.HasAnyBit(bit))
+    Impl::ConstexprForEachIndex<0, enum_bits.size()>(
+        [mask, &enum_bits, functor](auto index) constexpr
         {
-            functor(bit.GetEnum());
-        }
-    });
+            constexpr auto bit = std::get<index>(enum_bits);
+            // It would be nice to use 'if constexpr' here in some cases, but 'mask' parameter can not be treated as constexpr
+            if (mask.HasAnyBit(bit))
+            {
+                functor(bit.GetEnum());
+            }
+        });
 }
 
 template<typename E, typename M>
@@ -96,7 +115,7 @@ std::vector<E> GetEnumMaskBits(EnumMask<E, M> mask)
 }
 
 template<typename E, typename M>
-std::vector<std::string> GetEnumBitNames(EnumMask<E, M> mask)
+std::vector<std::string> GetEnumMaskBitNames(EnumMask<E, M> mask)
 {
     META_FUNCTION_TASK();
     std::vector<std::string> bit_names;
