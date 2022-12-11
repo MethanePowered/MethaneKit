@@ -45,7 +45,7 @@ static Data::TimeRange GetNormalTimeRange(Timestamp start, Timestamp end)
 }
 #endif
 
-CommandListDebugGroup::CommandListDebugGroup(const std::string& name)
+CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
     : Object(name)
 {
     META_FUNCTION_TASK();
@@ -121,19 +121,19 @@ void CommandList::PopDebugGroup()
     m_open_debug_groups.pop();
 }
 
-void CommandList::Reset(IDebugGroup* p_debug_group)
+void CommandList::Reset(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_state_mutex);
 
     META_CHECK_ARG_DESCR(m_state, m_state != State::Committed && m_state != State::Executing, "can not reset command list in committed or executing state");
     META_LOG("{} Command list '{}' RESET commands encoding{}", magic_enum::enum_name(m_type), GetName(),
-             p_debug_group ? fmt::format("with debug group '{}'", p_debug_group->GetName()) : "");
+             debug_group_ptr ? fmt::format("with debug group '{}'", debug_group_ptr->GetName()) : "");
 
     ResetCommandState();
     SetCommandListStateNoLock(State::Encoding);
 
-    const bool debug_group_changed = GetTopOpenDebugGroup() != p_debug_group;
+    const bool debug_group_changed = GetTopOpenDebugGroup() != debug_group_ptr;
     if (!m_open_debug_groups.empty() && debug_group_changed)
     {
         PopDebugGroup();
@@ -141,13 +141,13 @@ void CommandList::Reset(IDebugGroup* p_debug_group)
 
     TRACY_GPU_SCOPE_TRY_BEGIN_NAMED(m_tracy_gpu_scope, GetName());
 
-    if (p_debug_group && debug_group_changed)
+    if (debug_group_ptr && debug_group_changed)
     {
-        PushDebugGroup(*p_debug_group);
+        PushDebugGroup(*debug_group_ptr);
     }
 }
 
-void CommandList::ResetOnce(IDebugGroup* p_debug_group)
+void CommandList::ResetOnce(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     if (m_state == State::Encoding)
@@ -156,7 +156,7 @@ void CommandList::ResetOnce(IDebugGroup* p_debug_group)
         return;
     }
 
-    Reset(p_debug_group);
+    Reset(debug_group_ptr);
 }
 
 void CommandList::SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehaviorMask apply_behavior)

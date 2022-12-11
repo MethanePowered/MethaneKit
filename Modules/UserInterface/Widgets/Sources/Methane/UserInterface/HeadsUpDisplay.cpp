@@ -297,14 +297,14 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     m_update_timer.Reset();
 }
 
-void HeadsUpDisplay::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group) const
+void HeadsUpDisplay::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* debug_group_ptr) const
 {
     META_FUNCTION_TASK();
-    Panel::Draw(cmd_list, p_debug_group);
+    Panel::Draw(cmd_list, debug_group_ptr);
 
     for(const Ptr<Text>& text_ptr : m_text_blocks)
     {
-        text_ptr->Draw(cmd_list, p_debug_group);
+        text_ptr->Draw(cmd_list, debug_group_ptr);
     }
 }
 

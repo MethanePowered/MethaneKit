@@ -45,18 +45,18 @@ TransferCommandList::TransferCommandList(Base::CommandQueue& command_queue)
     META_FUNCTION_TASK();
 }
 
-void TransferCommandList::Reset(Rhi::ICommandListDebugGroup* p_debug_group)
+void TransferCommandList::Reset(Rhi::ICommandListDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     if (IsCommandEncoderInitialized())
     {
-        Base::CommandList::Reset(p_debug_group);
+        Base::CommandList::Reset(debug_group_ptr);
         return;
     }
 
     const id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
     InitializeCommandEncoder([mtl_cmd_buffer blitCommandEncoder]);
-    Base::CommandList::Reset(p_debug_group);
+    Base::CommandList::Reset(debug_group_ptr);
 }
 
 } // namespace Methane::Graphics::Metal

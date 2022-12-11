@@ -55,14 +55,22 @@ static_assert(false, "Static graphics API macro-definition is missing.");
 namespace Methane::Graphics::Rhi
 {
 
-class RenderPattern::Impl : public ImplWrapper<IRenderPattern, RenderPatternImpl>
+class RenderPattern::Impl
+    : public ImplWrapper<IRenderPattern, RenderPatternImpl>
 {
 public:
     using ImplWrapper::ImplWrapper;
 };
 
+META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderPattern);
+
 RenderPattern::RenderPattern(const Ptr<IRenderPattern>& interface_ptr)
     : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+{
+}
+
+RenderPattern::RenderPattern(IRenderPattern& interface)
+    : RenderPattern(std::dynamic_pointer_cast<IRenderPattern>(interface.GetPtr()))
 {
 }
 
@@ -81,24 +89,24 @@ void RenderPattern::Release()
     m_impl_ptr.release();
 }
 
-bool RenderPattern::IsInitialized() const noexcept
+bool RenderPattern::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);
 }
 
-IRenderPattern& RenderPattern::GetInterface() const noexcept
+IRenderPattern& RenderPattern::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return m_impl_ptr->GetInterface();
+    return GetPublicInterface(m_impl_ptr);
 }
 
 bool RenderPattern::SetName(const std::string& name) const
 {
-    return m_impl_ptr->Get().SetName(name);
+    return GetPrivateImpl(m_impl_ptr).SetName(name);
 }
 
-const std::string& RenderPattern::GetName() const noexcept
+const std::string& RenderPattern::GetName() const META_PIMPL_NOEXCEPT
 {
-    return m_impl_ptr->Get().GetName();
+    return GetPrivateImpl(m_impl_ptr).GetName();
 }
 
 class RenderPass::Impl : public ImplWrapper<IRenderPass, RenderPassImpl>
@@ -107,8 +115,15 @@ public:
     using ImplWrapper::ImplWrapper;
 };
 
+META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderPass);
+
 RenderPass::RenderPass(const Ptr<IRenderPass>& interface_ptr)
     : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+{
+}
+
+RenderPass::RenderPass(IRenderPass& interface)
+    : RenderPass(std::dynamic_pointer_cast<IRenderPass>(interface.GetPtr()))
 {
 }
 
@@ -127,24 +142,24 @@ void RenderPass::Release()
     m_impl_ptr.release();
 }
 
-bool RenderPass::IsInitialized() const noexcept
+bool RenderPass::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);
 }
 
-IRenderPass& RenderPass::GetInterface() const noexcept
+IRenderPass& RenderPass::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return m_impl_ptr->GetInterface();
+    return GetPublicInterface(m_impl_ptr);
 }
 
 bool RenderPass::SetName(const std::string& name) const
 {
-    return m_impl_ptr->Get().SetName(name);
+    return GetPrivateImpl(m_impl_ptr).SetName(name);
 }
 
-const std::string& RenderPass::GetName() const noexcept
+const std::string& RenderPass::GetName() const META_PIMPL_NOEXCEPT
 {
-    return m_impl_ptr->Get().GetName();
+    return GetPrivateImpl(m_impl_ptr).GetName();
 }
 
 } // namespace Methane::Graphics::Rhi

@@ -30,7 +30,7 @@ Vulkan command lists sequence implementation
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ICommandListDebugGroup> Rhi::ICommandListDebugGroup::Create(const std::string& name)
+Ptr<ICommandListDebugGroup> Rhi::ICommandListDebugGroup::Create(std::string_view name)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::CommandListDebugGroup>(name);
@@ -41,7 +41,7 @@ Ptr<ICommandListDebugGroup> Rhi::ICommandListDebugGroup::Create(const std::strin
 namespace Methane::Graphics::Vulkan
 {
 
-CommandListDebugGroup::CommandListDebugGroup(const std::string& name)
+CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
     : Base::CommandList::DebugGroup(name)
     , m_vk_debug_label(Base::Object::GetName().c_str())
 {

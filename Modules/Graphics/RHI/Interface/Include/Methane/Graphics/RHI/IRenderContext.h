@@ -78,10 +78,10 @@ struct IRenderContext : virtual IContext // NOSONAR
     virtual void Resize(const FrameSize& frame_size) = 0;
     virtual void Present() = 0;
 
-    [[nodiscard]] virtual Platform::AppView GetAppView() const = 0;
-    [[nodiscard]] virtual const Settings&   GetSettings() const noexcept = 0;
-    [[nodiscard]] virtual uint32_t          GetFrameBufferIndex() const noexcept = 0;
-    [[nodiscard]] virtual uint32_t          GetFrameIndex() const noexcept = 0;
+    [[nodiscard]] virtual Platform::AppView  GetAppView() const = 0;
+    [[nodiscard]] virtual const Settings&    GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual uint32_t           GetFrameBufferIndex() const noexcept = 0;
+    [[nodiscard]] virtual uint32_t           GetFrameIndex() const noexcept = 0;
     [[nodiscard]] virtual const IFpsCounter& GetFpsCounter() const noexcept = 0;
 
     virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;

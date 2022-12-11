@@ -48,21 +48,21 @@ ParallelRenderCommandList::ParallelRenderCommandList(Base::CommandQueue& command
     META_FUNCTION_TASK();
 }
 
-void ParallelRenderCommandList::Reset(IDebugGroup* p_debug_group)
+void ParallelRenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     ResetCommandEncoder();
-    Base::ParallelRenderCommandList::Reset(p_debug_group);
+    Base::ParallelRenderCommandList::Reset(debug_group_ptr);
 }
 
-void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
+void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     if (ResetCommandEncoder())
     {
         static_cast<RenderState&>(render_state).InitializeNativeStates();
     }
-    Base::ParallelRenderCommandList::ResetWithState(render_state, p_debug_group);
+    Base::ParallelRenderCommandList::ResetWithState(render_state, debug_group_ptr);
 }
 
 bool ParallelRenderCommandList::ResetCommandEncoder()

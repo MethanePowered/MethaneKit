@@ -99,18 +99,18 @@ RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_
     META_FUNCTION_TASK();
 }
 
-void RenderCommandList::Reset(IDebugGroup* p_debug_group)
+void RenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     ResetCommandEncoder();
-    Base::RenderCommandList::Reset(p_debug_group);
+    Base::RenderCommandList::Reset(debug_group_ptr);
 }
 
-void RenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
+void RenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     ResetCommandEncoder();
-    Base::RenderCommandList::ResetWithState(render_state, p_debug_group);
+    Base::RenderCommandList::ResetWithState(render_state, debug_group_ptr);
 }
 
 void RenderCommandList::ResetCommandEncoder()

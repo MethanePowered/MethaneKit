@@ -45,8 +45,8 @@ public:
     void Commit() override;
 
     // IRenderCommandList interface
-    void Reset(IDebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
+    void Reset(IDebugGroup* debug_group_ptr = nullptr) override;
+    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) override;
     bool SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers) override;
     bool SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_resource_barriers) override;
     void DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,

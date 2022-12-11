@@ -23,12 +23,17 @@ Methane RenderContext PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
+#include "Pimpl.h"
+
 #include <Methane/Graphics/RHI/IRenderContext.h>
 
 namespace Methane::Graphics::Rhi
 {
 
 class Device;
+class CommandKit;
+class CommandQueue;
+class ObjectRegistry;
 
 class RenderContext
 {
@@ -41,18 +46,49 @@ public:
     using OptionMask            = ContextOptionMask;
     using IncompatibleException = ContextIncompatibleException;
 
-    RenderContext() = default;
+    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderContext);
+
     RenderContext(const Ptr<IRenderContext>& render_context_ptr);
+    RenderContext(IRenderContext& render_context);
     RenderContext(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings);
 
     void Init(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings);
     void Release();
 
-    bool IsInitialized() const noexcept;
-    IRenderContext& GetInterface() const noexcept;
+    bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    IRenderContext& GetInterface() const META_PIMPL_NOEXCEPT;
 
     bool SetName(const std::string& name) const;
-    const std::string& GetName() const noexcept;
+    const std::string& GetName() const META_PIMPL_NOEXCEPT;
+
+    [[nodiscard]] OptionMask GetOptions() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] tf::Executor& GetParallelExecutor() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] ObjectRegistry GetObjectRegistry() const META_PIMPL_NOEXCEPT;
+    void RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT;
+    void CompleteInitialization();
+    [[nodiscard]] bool IsCompletingInitialization() const META_PIMPL_NOEXCEPT;
+    void WaitForGpu(WaitFor wait_for);
+    void Reset(const Device& device);
+    void Reset();
+    [[nodiscard]] Device GetDevice() const;
+    [[nodiscard]] CommandKit GetDefaultCommandKit(CommandListType type) const;
+    [[nodiscard]] CommandKit GetDefaultCommandKit(const CommandQueue& cmd_queue) const;
+    [[nodiscard]] CommandKit GetUploadCommandKit() const;
+    [[nodiscard]] CommandKit GetRenderCommandKit() const;
+
+    [[nodiscard]] bool ReadyToRender() const;
+    void Resize(const FrameSize& frame_size);
+    void Present();
+
+    [[nodiscard]] Platform::AppView  GetAppView() const;
+    [[nodiscard]] const Settings&    GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] uint32_t           GetFrameBufferIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] uint32_t           GetFrameIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] const IFpsCounter& GetFpsCounter() const META_PIMPL_NOEXCEPT;
+
+    bool SetVSyncEnabled(bool vsync_enabled);
+    bool SetFrameBuffersCount(uint32_t frame_buffers_count);
+    bool SetFullScreen(bool is_full_screen);
 
 private:
     class Impl;

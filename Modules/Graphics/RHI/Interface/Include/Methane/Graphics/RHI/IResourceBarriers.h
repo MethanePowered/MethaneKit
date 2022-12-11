@@ -182,6 +182,7 @@ struct IResourceBarriers
                                                                   const Opt<Barrier::StateChange>& state_change,
                                                                   const Opt<Barrier::OwnerChange>& owner_change);
 
+    [[nodiscard]] virtual Ptr<IResourceBarriers> GetPtr() = 0;
     [[nodiscard]] virtual bool  IsEmpty() const noexcept = 0;
     [[nodiscard]] virtual Set   GetSet() const noexcept = 0;
     [[nodiscard]] virtual const Map& GetMap() const noexcept = 0;

@@ -103,7 +103,7 @@ void ObjectRegistry::OnObjectDestroyed(Rhi::IObject& object)
     RemoveGraphicsObject(object);
 }
 
-Object::Object(const std::string& name)
+Object::Object(std::string_view name)
     : m_name(name)
 {
     META_FUNCTION_TASK();

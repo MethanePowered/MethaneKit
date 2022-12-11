@@ -68,39 +68,39 @@ bool ParallelRenderCommandList::SetName(const std::string& name)
     return true;
 }
 
-void ParallelRenderCommandList::Reset(IDebugGroup* p_debug_group)
+void ParallelRenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
-    m_beginning_command_list.Reset(p_debug_group);
+    m_beginning_command_list.Reset(debug_group_ptr);
 
-    if (p_debug_group)
+    if (debug_group_ptr)
     {
         // Instead of closing debug group in beginning CL commit, we force to close it in ending CL
         m_beginning_command_list.ClearOpenDebugGroups();
 
         m_ending_command_list.ResetOnce();
-        m_ending_command_list.PushOpenDebugGroup(*p_debug_group);
+        m_ending_command_list.PushOpenDebugGroup(*debug_group_ptr);
     }
 
-    Base::ParallelRenderCommandList::Reset(p_debug_group);
+    Base::ParallelRenderCommandList::Reset(debug_group_ptr);
 }
 
-void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
+void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
 
-    m_beginning_command_list.Reset(p_debug_group);
+    m_beginning_command_list.Reset(debug_group_ptr);
 
-    if (p_debug_group)
+    if (debug_group_ptr)
     {
         // Instead of closing debug group in beginning CL commit, we force to close it in ending CL
         m_beginning_command_list.ClearOpenDebugGroups();
 
         m_ending_command_list.ResetOnce();
-        m_ending_command_list.PushOpenDebugGroup(*p_debug_group);
+        m_ending_command_list.PushOpenDebugGroup(*debug_group_ptr);
     }
 
-    Base::ParallelRenderCommandList::ResetWithState(render_state, p_debug_group);
+    Base::ParallelRenderCommandList::ResetWithState(render_state, debug_group_ptr);
 }
 
 void ParallelRenderCommandList::SetBeginningResourceBarriers(const Rhi::IResourceBarriers& resource_barriers)

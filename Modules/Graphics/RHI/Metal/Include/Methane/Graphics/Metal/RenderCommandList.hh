@@ -45,8 +45,8 @@ public:
     explicit RenderCommandList(ParallelRenderCommandList& parallel_render_command_list);
 
     // IRenderCommandList interface
-    void Reset(IDebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
+    void Reset(IDebugGroup* debug_group_ptr = nullptr) override;
+    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) override;
     bool SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers) override;
     void DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
                      uint32_t instance_count, uint32_t start_instance) override;

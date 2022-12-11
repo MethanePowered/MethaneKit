@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/CommandQueue.h
-Methane CommandQueue PIMPL wrappers for direct calls to final implementation.
+FILE: Methane/Graphics/RHI/CommandListDebugGroup.h
+Methane CommandListDebugGroup PIMPL wrappers for direct calls to final implementation.
 
 ******************************************************************************/
 
@@ -25,37 +25,35 @@ Methane CommandQueue PIMPL wrappers for direct calls to final implementation.
 
 #include "Pimpl.h"
 
-#include <Methane/Graphics/RHI/ICommandQueue.h>
+#include <Methane/Graphics/RHI/ICommandList.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-class RenderContext;
-class CommandListSet;
+class CommandQueue;
+class RenderPass;
 
-class CommandQueue
+class CommandListDebugGroup
 {
 public:
-    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandQueue);
+    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandListDebugGroup);
 
-    CommandQueue(const Ptr<ICommandQueue>& interface_ptr);
-    CommandQueue(ICommandQueue& interface);
-    CommandQueue(const RenderContext& context, CommandListType command_lists_type);
+    CommandListDebugGroup(const Ptr<ICommandListDebugGroup>& interface_ptr);
+    CommandListDebugGroup(ICommandListDebugGroup& interface);
+    CommandListDebugGroup(std::string_view name);
 
-    void Init(const RenderContext& context, CommandListType command_lists_type);
+    void Init(std::string_view name);
     void Release();
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    ICommandQueue& GetInterface() const META_PIMPL_NOEXCEPT;
+    ICommandListDebugGroup& GetInterface() const META_PIMPL_NOEXCEPT;
 
     bool SetName(const std::string& name) const;
     const std::string& GetName() const META_PIMPL_NOEXCEPT;
 
-    [[nodiscard]] const IContext&      GetContext() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] CommandListType      GetCommandListType() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] uint32_t             GetFamilyIndex() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] ITimestampQueryPool* GetTimestampQueryPool() const META_PIMPL_NOEXCEPT;
-    void Execute(const CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) const;
+    CommandListDebugGroup AddSubGroup(Data::Index id, const std::string& name);
+    [[nodiscard]] Opt<CommandListDebugGroup> GetSubGroup(Data::Index id) const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] bool HasSubGroups() const META_PIMPL_NOEXCEPT;
 
 private:
     class Impl;

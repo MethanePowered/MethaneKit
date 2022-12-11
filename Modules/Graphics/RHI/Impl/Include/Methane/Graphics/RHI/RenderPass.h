@@ -23,6 +23,8 @@ Methane RenderPass PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
+#include "Pimpl.h"
+
 #include <Methane/Graphics/RHI/IRenderPass.h>
 
 namespace Methane::Graphics::Rhi
@@ -42,18 +44,20 @@ public:
     using Access            = RenderPassAccess;
     using Settings          = RenderPatternSettings;
 
-    RenderPattern() = default;
+    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderPattern);
+
     RenderPattern(const Ptr<IRenderPattern>& interface_ptr);
+    RenderPattern(IRenderPattern& interface);
     RenderPattern(const RenderContext& render_context, const Settings& settings);
 
     void Init(const RenderContext& render_context, const Settings& settings);
     void Release();
 
-    bool IsInitialized() const noexcept;
-    IRenderPattern& GetInterface() const noexcept;
+    bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    IRenderPattern& GetInterface() const META_PIMPL_NOEXCEPT;
 
     bool SetName(const std::string& name) const;
-    const std::string& GetName() const noexcept;
+    const std::string& GetName() const META_PIMPL_NOEXCEPT;
 
 private:
     class Impl;
@@ -75,18 +79,20 @@ public:
     using Settings          = RenderPassSettings;
     using ICallback         = IRenderPassCallback;
 
-    RenderPass() = default;
+    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderPass);
+
     RenderPass(const Ptr<IRenderPass>& interface_ptr);
+    RenderPass(IRenderPass& interface);
     RenderPass(const Pattern& render_pattern, const Settings& settings);
 
     void Init(const Pattern& render_pattern, const Settings& settings);
     void Release();
 
-    bool IsInitialized() const noexcept;
-    IRenderPass& GetInterface() const noexcept;
+    bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    IRenderPass& GetInterface() const META_PIMPL_NOEXCEPT;
 
     bool SetName(const std::string& name) const;
-    const std::string& GetName() const noexcept;
+    const std::string& GetName() const META_PIMPL_NOEXCEPT;
 
 private:
     class Impl;

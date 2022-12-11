@@ -43,7 +43,7 @@ public:
     TransferCommandList(Base::CommandQueue& command_queue);
 
     // ICommandList interface
-    void Reset(Rhi::ICommandListDebugGroup* p_debug_group = nullptr) override;
+    void Reset(Rhi::ICommandListDebugGroup* debug_group_ptr = nullptr) override;
 };
 
 } // namespace Methane::Graphics::Metal

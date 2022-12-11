@@ -43,8 +43,8 @@ public:
     ParallelRenderCommandList(CommandQueue& command_queue, RenderPass& render_pass);
 
     // IParallelRenderCommandList interface
-    void Reset(IDebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
+    void Reset(IDebugGroup* debug_group_ptr = nullptr) override;
+    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) override;
     void SetBeginningResourceBarriers(const Rhi::IResourceBarriers& resource_barriers) override;
     void SetEndingResourceBarriers(const Rhi::IResourceBarriers& resource_barriers) override;
     void SetParallelCommandListsCount(uint32_t count) override;

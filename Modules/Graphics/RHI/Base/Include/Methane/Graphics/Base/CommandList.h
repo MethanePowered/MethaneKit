@@ -47,7 +47,7 @@ class CommandListDebugGroup
     , public Object
 {
 public:
-    explicit CommandListDebugGroup(const std::string& name);
+    explicit CommandListDebugGroup(std::string_view name);
 
     // IObject overrides
     bool SetName(const std::string&) override;
@@ -90,8 +90,8 @@ public:
     State GetState() const noexcept override                        { return m_state; }
     void  PushDebugGroup(IDebugGroup& debug_group) override;
     void  PopDebugGroup() override;
-    void  Reset(IDebugGroup* p_debug_group = nullptr) override;
-    void  ResetOnce(IDebugGroup* p_debug_group = nullptr) final;
+    void  Reset(IDebugGroup* debug_group_ptr = nullptr) override;
+    void  ResetOnce(IDebugGroup* debug_group_ptr = nullptr) final;
     void  SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehaviorMask apply_behavior) override;
     void  Commit() override;
     void  WaitUntilCompleted(uint32_t timeout_ms = 0U) override;
@@ -177,7 +177,8 @@ public:
     Data::Size                     GetCount() const noexcept final       { return static_cast<Data::Size>(m_refs.size()); }
     const Refs<Rhi::ICommandList>& GetRefs() const noexcept final        { return m_refs; }
     Rhi::ICommandList&             operator[](Data::Index index) const final;
-    const Opt<Data::Index>&  GetFrameIndex() const noexcept final        { return m_frame_index_opt; }
+    const Opt<Data::Index>&        GetFrameIndex() const noexcept final  { return m_frame_index_opt; }
+    Ptr<ICommandListSet>           GetPtr() final                        { return shared_from_this(); }
 
     // CommandListSet interface
     virtual void Execute(const Rhi::ICommandList::CompletedCallback& completed_callback);
@@ -186,7 +187,7 @@ public:
     bool IsExecuting() const noexcept { return m_is_executing; }
     void Complete() const;
 
-    [[nodiscard]] Ptr<CommandListSet>      GetPtr()                     { return shared_from_this(); }
+    [[nodiscard]] Ptr<CommandListSet>      GetBasePtr()                 { return shared_from_this(); }
     [[nodiscard]] const Refs<CommandList>& GetBaseRefs() const noexcept { return m_base_refs; }
     [[nodiscard]] const CommandList&       GetBaseCommandList(Data::Index index) const;
     [[nodiscard]] CommandQueue&            GetBaseCommandQueue()        { return m_base_refs.back().get().GetBaseCommandQueue(); }

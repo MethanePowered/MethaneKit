@@ -82,9 +82,9 @@ public:
     bool IsValidationEnabled() const noexcept final             { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) final { m_is_validation_enabled = is_validation_enabled; }
     Rhi::IRenderPass& GetRenderPass() const final;
-    void Reset(IDebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
-    void ResetWithStateOnce(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) final;
+    void Reset(IDebugGroup* debug_group_ptr = nullptr) override;
+    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) override;
+    void ResetWithStateOnce(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) final;
     void SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroupMask state_groups = Rhi::RenderStateGroupMask(~0U)) override;
     void SetViewState(Rhi::IViewState& view_state) override;
     bool SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers) override;

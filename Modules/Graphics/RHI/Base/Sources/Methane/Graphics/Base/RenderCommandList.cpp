@@ -65,10 +65,10 @@ Rhi::IRenderPass& RenderCommandList::GetRenderPass() const
     return *m_render_pass_ptr;
 }
 
-void RenderCommandList::Reset(IDebugGroup* p_debug_group)
+void RenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
-    CommandList::Reset(p_debug_group);
+    CommandList::Reset(debug_group_ptr);
     if (m_render_pass_ptr)
     {
         META_LOG("{}", static_cast<std::string>(m_render_pass_ptr->GetPattern().GetSettings()));
@@ -76,14 +76,14 @@ void RenderCommandList::Reset(IDebugGroup* p_debug_group)
     }
 }
 
-void RenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
+void RenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
-    RenderCommandList::Reset(p_debug_group);
+    RenderCommandList::Reset(debug_group_ptr);
     SetRenderState(render_state);
 }
 
-void RenderCommandList::ResetWithStateOnce(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
+void RenderCommandList::ResetWithStateOnce(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     if (GetState() == State::Encoding && GetDrawingState().render_state_ptr.get() == std::addressof(render_state))
@@ -91,7 +91,7 @@ void RenderCommandList::ResetWithStateOnce(Rhi::IRenderState& render_state, IDeb
         META_LOG("{} Command list '{}' was already RESET with the same render state '{}'", magic_enum::enum_name(GetType()), GetName(), render_state.GetName());
         return;
     }
-    ResetWithState(render_state, p_debug_group);
+    ResetWithState(render_state, debug_group_ptr);
 }
 
 void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroupMask state_groups)

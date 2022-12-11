@@ -197,7 +197,7 @@ public:
 
     // ICommandList interface
 
-    void Reset(Rhi::ICommandListDebugGroup* p_debug_group) override
+    void Reset(Rhi::ICommandListDebugGroup* debug_group_ptr) override
     {
         META_FUNCTION_TASK();
         const auto state_lock = Base::CommandList::LockStateMutex();
@@ -218,7 +218,7 @@ public:
 
         CommandListBaseT::BeginGpuZone();
 
-        Base::CommandList::Reset(p_debug_group);
+        Base::CommandList::Reset(debug_group_ptr);
     }
 
     // IObject interface

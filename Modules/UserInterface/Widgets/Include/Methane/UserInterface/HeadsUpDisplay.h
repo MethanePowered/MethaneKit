@@ -77,7 +77,7 @@ public:
     void SetUpdateInterval(double update_interval_sec);
 
     void Update(const FrameSize& render_attachment_size);
-    void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group = nullptr) const override;
+    void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* debug_group_ptr = nullptr) const override;
 
 private:
     enum class TextBlock : size_t

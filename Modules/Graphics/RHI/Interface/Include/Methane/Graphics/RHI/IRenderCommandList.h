@@ -59,8 +59,8 @@ struct IRenderCommandList
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;
     virtual void SetValidationEnabled(bool is_validation_enabled) = 0;
     [[nodiscard]] virtual IRenderPass& GetRenderPass() const = 0;
-    virtual void ResetWithState(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) = 0;
-    virtual void ResetWithStateOnce(IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) = 0;
+    virtual void ResetWithState(IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) = 0;
+    virtual void ResetWithStateOnce(IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) = 0;
     virtual void SetRenderState(IRenderState& render_state, RenderStateGroupMask state_groups = RenderStateGroupMask(~0U)) = 0;
     virtual void SetViewState(IViewState& view_state) = 0;
     virtual bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers = true) = 0;

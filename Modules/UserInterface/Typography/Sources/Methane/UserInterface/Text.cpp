@@ -352,7 +352,7 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     assert(!frame_resources.IsDirty() || !m_text_mesh_ptr || !m_font_ptr);
 }
 
-void Text::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group)
+void Text::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     if (m_frame_resources.empty())
@@ -362,7 +362,7 @@ void Text::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* 
     if (!frame_resources.IsInitialized())
         return;
 
-    cmd_list.ResetWithStateOnce(*m_render_state_ptr, p_debug_group);
+    cmd_list.ResetWithStateOnce(*m_render_state_ptr, debug_group_ptr);
     cmd_list.SetViewState(*m_view_state_ptr);
     cmd_list.SetProgramBindings(frame_resources.GetProgramBindings());
     cmd_list.SetVertexBuffers(frame_resources.GetVertexBufferSet());

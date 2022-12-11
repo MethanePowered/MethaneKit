@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/RenderCommandList.h
-Methane RenderCommandList PIMPL wrappers for direct calls to final implementation.
+FILE: Methane/Graphics/RHI/TransferCommandList.h
+Methane TransferCommandList PIMPL wrappers for direct calls to final implementation.
 
 ******************************************************************************/
 
@@ -25,36 +25,33 @@ Methane RenderCommandList PIMPL wrappers for direct calls to final implementatio
 
 #include "Pimpl.h"
 
-#include <Methane/Graphics/RHI/IRenderCommandList.h>
+#include <Methane/Graphics/RHI/ITransferCommandList.h>
 
 namespace Methane::Graphics::Rhi
 {
 
 class CommandQueue;
-class RenderPass;
 class CommandListDebugGroup;
-class ResourceBarriers;
 
-class RenderCommandList
+class TransferCommandList
 {
 public:
-    using Primitive   = RenderPrimitive;
     using Type        = CommandListType;
     using State       = CommandListState;
     using DebugGroup  = CommandListDebugGroup;
     using ICallback   = ICommandListCallback;
 
-    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderCommandList);
+    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(TransferCommandList);
 
-    RenderCommandList(const Ptr<IRenderCommandList>& interface_ptr);
-    RenderCommandList(IRenderCommandList& interface);
-    RenderCommandList(const CommandQueue& command_queue, const RenderPass& render_pass);
+    TransferCommandList(const Ptr<ITransferCommandList>& interface_ptr);
+    TransferCommandList(ITransferCommandList& interface);
+    TransferCommandList(const CommandQueue& command_queue);
 
-    void Init(const CommandQueue& command_queue, const RenderPass& render_pass);
+    void Init(const CommandQueue& command_queue);
     void Release();
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    IRenderCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
+    ITransferCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
 
     bool SetName(const std::string& name) const;
     const std::string& GetName() const META_PIMPL_NOEXCEPT;
@@ -65,26 +62,12 @@ public:
     void  ResetOnce(DebugGroup* debug_group_ptr = nullptr);
     void  SetProgramBindings(IProgramBindings& program_bindings,
                              ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U));
-    void  SetResourceBarriers(const ResourceBarriers& resource_barriers);
+    void  SetResourceBarriers(const IResourceBarriers& resource_barriers);
     void  Commit();
     void  WaitUntilCompleted(uint32_t timeout_ms = 0U);
     [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const;
     [[nodiscard]] State GetState() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] CommandQueue GetCommandQueue();
-
-    [[nodiscard]] bool IsValidationEnabled() const META_PIMPL_NOEXCEPT;
-    void SetValidationEnabled(bool is_validation_enabled);
-    [[nodiscard]] RenderPass GetRenderPass() const;
-    void ResetWithState(IRenderState& render_state, DebugGroup* debug_group_ptr = nullptr);
-    void ResetWithStateOnce(IRenderState& render_state, DebugGroup* debug_group_ptr = nullptr);
-    void SetRenderState(IRenderState& render_state, RenderStateGroupMask state_groups = RenderStateGroupMask(~0U));
-    void SetViewState(IViewState& view_state);
-    bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers = true);
-    bool SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers = true);
-    void DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
-                     uint32_t instance_count = 1U, uint32_t start_instance = 0U);
-    void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
-              uint32_t instance_count = 1U, uint32_t start_instance = 0U);
 
 private:
     class Impl;

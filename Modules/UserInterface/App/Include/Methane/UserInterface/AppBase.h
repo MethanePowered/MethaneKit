@@ -93,7 +93,7 @@ private:
         Ptr<Text>   text_ptr;
 
         void Update(const FrameSize& frame_size) const;
-        void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group) const;
+        void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* debug_group_ptr) const;
         void Reset(bool forget_text_string);
     };
 

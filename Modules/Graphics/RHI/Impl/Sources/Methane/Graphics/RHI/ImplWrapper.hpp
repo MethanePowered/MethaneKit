@@ -25,6 +25,8 @@ calling them through the pointer of final implementation (final classes or final
 
 #pragma once
 
+#include <Methane/Graphics/RHI/Pimpl.h>
+
 #include <Methane/Memory.hpp>
 #include <Methane/Checks.hpp>
 
@@ -39,6 +41,9 @@ class ImplWrapper
     static_assert(std::is_base_of_v<PublicInterfaceType, PrivateImplType>, "Implementation type should be based on Interface type");
 
 public:
+    using InterfaceType = PublicInterfaceType;
+    using ImplType = PrivateImplType;
+
     ImplWrapper(const Ptr<PublicInterfaceType>& interface_ptr)
         : m_impl_ptr(std::dynamic_pointer_cast<PrivateImplType>(interface_ptr))
         , m_interface(*interface_ptr)
@@ -46,11 +51,11 @@ public:
         META_CHECK_ARG_NOT_NULL_DESCR(m_impl_ptr, "Implementation pointer can not be null.");
     }
 
-    PrivateImplType&       Get() noexcept       { return *m_impl_ptr; }
-    const PrivateImplType& Get() const noexcept { return *m_impl_ptr; }
+    PrivateImplType&       Get() META_PIMPL_NOEXCEPT       { return *m_impl_ptr; }
+    const PrivateImplType& Get() const META_PIMPL_NOEXCEPT { return *m_impl_ptr; }
 
-    const Ptr<PrivateImplType>& GetPtr() const noexcept { return m_impl_ptr; }
-    PublicInterfaceType& GetInterface() const noexcept  { return m_interface; }
+    const Ptr<PrivateImplType>& GetPtr() const META_PIMPL_NOEXCEPT { return m_impl_ptr; }
+    PublicInterfaceType&  GetInterface() const META_PIMPL_NOEXCEPT { return m_interface; }
 
 private:
     // Hold reference to public interface type along with shared pointer to private implementation,
@@ -58,5 +63,23 @@ private:
     const Ptr<PrivateImplType> m_impl_ptr;
     PublicInterfaceType&       m_interface;
 };
+
+template<typename ImplWrapperType>
+typename ImplWrapperType::ImplType& GetPrivateImpl(const UniquePtr<ImplWrapperType>& impl_ptr) META_PIMPL_NOEXCEPT
+{
+#ifdef PIMPL_NULL_CHECK_ENABLED
+    META_CHECK_ARG_NOT_NULL_DESCR(impl_ptr, "{} PIMPL is not initialized", typeid(typename ImplWrapperType::InterfaceType).name());
+#endif
+    return impl_ptr->Get();
+}
+
+template<typename ImplWrapperType>
+typename ImplWrapperType::InterfaceType& GetPublicInterface(const UniquePtr<ImplWrapperType>& impl_ptr) META_PIMPL_NOEXCEPT
+{
+#ifdef PIMPL_NULL_CHECK_ENABLED
+    META_CHECK_ARG_NOT_NULL_DESCR(impl_ptr, "{} PIMPL is not initialized", typeid(typename ImplWrapperType::InterfaceType).name());
+#endif
+    return impl_ptr->GetInterface();
+}
 
 } // namespace Methane::Graphics::Rhi

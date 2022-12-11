@@ -59,7 +59,7 @@ public:
     using Registry = ObjectRegistry;
 
     Object() = default;
-    explicit Object(const std::string& name);
+    explicit Object(std::string_view name);
     ~Object() override;
 
     Object(const Object&) = default;

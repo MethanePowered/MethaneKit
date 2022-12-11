@@ -98,7 +98,7 @@ void CommandQueueTracking::Execute(Rhi::ICommandListSet& command_lists, const Rh
 
     auto& command_lists_base = static_cast<CommandListSet&>(command_lists);
     std::scoped_lock lock_guard(m_executing_command_lists_mutex);
-    m_executing_command_lists.push(command_lists_base.GetPtr());
+    m_executing_command_lists.push(command_lists_base.GetBasePtr());
     m_execution_waiting_condition_var.notify_one();
 }
 

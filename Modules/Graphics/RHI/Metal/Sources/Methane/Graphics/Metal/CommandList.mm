@@ -29,7 +29,7 @@ Metal command lists sequence implementation
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& name)
+Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(std::string_view name)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Metal::CommandListDebugGroup>(name);
@@ -46,8 +46,8 @@ Ptr<ICommandListSet> ICommandListSet::Create(const Refs<ICommandList>& command_l
 namespace Methane::Graphics::Metal
 {
 
-CommandListDebugGroup::CommandListDebugGroup(const std::string& name)
-    : Base::CommandListDebugGroup(std::move(name))
+CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
+    : Base::CommandListDebugGroup(name)
     , m_ns_name(MacOS::ConvertToNsType<std::string, NSString*>(Base::Object::GetName()))
 {
     META_FUNCTION_TASK();

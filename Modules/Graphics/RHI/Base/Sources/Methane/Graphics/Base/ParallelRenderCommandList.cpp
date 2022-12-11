@@ -58,41 +58,41 @@ void ParallelRenderCommandList::SetValidationEnabled(bool is_validation_enabled)
     }
 }
 
-void ParallelRenderCommandList::Reset(IDebugGroup* p_debug_group)
+void ParallelRenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
-    ResetImpl(p_debug_group, [this, p_debug_group](const Data::Index command_list_index)
+    ResetImpl(debug_group_ptr, [this, debug_group_ptr](const Data::Index command_list_index)
     {
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        render_command_list_ptr->Reset(p_debug_group ? p_debug_group->GetSubGroup(command_list_index) : nullptr);
+        render_command_list_ptr->Reset(debug_group_ptr ? debug_group_ptr->GetSubGroup(command_list_index) : nullptr);
     });
 }
 
-void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
+void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
-    ResetImpl(p_debug_group, [this, &render_state, p_debug_group](Data::Index command_list_index)
+    ResetImpl(debug_group_ptr, [this, &render_state, debug_group_ptr](Data::Index command_list_index)
     {
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
         META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
-        render_command_list_ptr->ResetWithState(render_state, p_debug_group ? p_debug_group->GetSubGroup(command_list_index) : nullptr);
+        render_command_list_ptr->ResetWithState(render_state, debug_group_ptr ? debug_group_ptr->GetSubGroup(command_list_index) : nullptr);
     });
 }
 
 template<typename ResetCommandListFn>
-void ParallelRenderCommandList::ResetImpl(IDebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn) // NOSONAR - function can not be const
+void ParallelRenderCommandList::ResetImpl(IDebugGroup* debug_group_ptr, const ResetCommandListFn& reset_command_list_fn) // NOSONAR - function can not be const
 {
     CommandList::Reset();
 
     // Create per-thread debug sub-group:
-    if (p_debug_group && !p_debug_group->HasSubGroups())
+    if (debug_group_ptr && !debug_group_ptr->HasSubGroups())
     {
         for(Data::Index render_command_list_index = 0; render_command_list_index < m_parallel_command_lists.size(); ++render_command_list_index)
         {
-            p_debug_group->AddSubGroup(render_command_list_index, GetThreadCommandListName(p_debug_group->GetName(), render_command_list_index));
+            debug_group_ptr->AddSubGroup(render_command_list_index, GetThreadCommandListName(debug_group_ptr->GetName(), render_command_list_index));
         }
     }
 

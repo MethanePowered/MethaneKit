@@ -185,16 +185,16 @@ void AppBase::TextItem::Update(const FrameSize& frame_size) const
     }
 }
 
-void AppBase::TextItem::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group) const
+void AppBase::TextItem::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* debug_group_ptr) const
 {
     META_FUNCTION_TASK();
     if (panel_ptr)
     {
-        panel_ptr->Draw(cmd_list, p_debug_group);
+        panel_ptr->Draw(cmd_list, debug_group_ptr);
     }
     if (text_ptr)
     {
-        text_ptr->Draw(cmd_list, p_debug_group);
+        text_ptr->Draw(cmd_list, debug_group_ptr);
     }
 }
 

@@ -34,7 +34,7 @@ class CommandListDebugGroup final
     : public Base::CommandList::DebugGroup
 {
 public:
-    explicit CommandListDebugGroup(const std::string& name);
+    explicit CommandListDebugGroup(std::string_view name);
 
     NSString* _Nonnull GetNSName() const noexcept { return m_ns_name; }
 

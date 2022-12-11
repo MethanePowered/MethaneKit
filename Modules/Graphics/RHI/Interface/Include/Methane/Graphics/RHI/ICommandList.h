@@ -55,9 +55,10 @@ enum class CommandListState
     Executing,
 };
 
-struct ICommandListDebugGroup : virtual IObject // NOSONAR
+struct ICommandListDebugGroup
+    : virtual IObject // NOSONAR
 {
-    [[nodiscard]] static Ptr<ICommandListDebugGroup> Create(const std::string& name);
+    [[nodiscard]] static Ptr<ICommandListDebugGroup> Create(std::string_view name);
 
     virtual ICommandListDebugGroup& AddSubGroup(Data::Index id, const std::string& name) = 0;
     [[nodiscard]] virtual ICommandListDebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
@@ -92,8 +93,8 @@ struct ICommandList
     [[nodiscard]] virtual State GetState() const noexcept = 0;
     virtual void  PushDebugGroup(IDebugGroup& debug_group) = 0;
     virtual void  PopDebugGroup() = 0;
-    virtual void  Reset(IDebugGroup* p_debug_group = nullptr) = 0;
-    virtual void  ResetOnce(IDebugGroup* p_debug_group = nullptr) = 0;
+    virtual void  Reset(IDebugGroup* debug_group_ptr = nullptr) = 0;
+    virtual void  ResetOnce(IDebugGroup* debug_group_ptr = nullptr) = 0;
     virtual void  SetProgramBindings(IProgramBindings& program_bindings,
                                      ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) = 0;
     virtual void  SetResourceBarriers(const IResourceBarriers& resource_barriers) = 0;
@@ -111,6 +112,7 @@ struct ICommandListSet
     [[nodiscard]] virtual const Refs<ICommandList>& GetRefs() const noexcept = 0;
     [[nodiscard]] virtual ICommandList&             operator[](Data::Index index) const = 0;
     [[nodiscard]] virtual const Opt<Data::Index>&   GetFrameIndex() const noexcept = 0;
+    [[nodiscard]] virtual Ptr<ICommandListSet>      GetPtr() = 0;
 
     virtual ~ICommandListSet() = default;
 };

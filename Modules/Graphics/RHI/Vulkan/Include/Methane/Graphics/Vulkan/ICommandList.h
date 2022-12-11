@@ -34,7 +34,7 @@ class CommandListDebugGroup final
     : public Base::CommandListDebugGroup
 {
 public:
-    explicit CommandListDebugGroup(const std::string& name);
+    explicit CommandListDebugGroup(std::string_view name);
 
     const vk::DebugUtilsLabelEXT& GetNativeDebugLabel() const noexcept;
 

@@ -34,31 +34,33 @@ namespace Methane::Graphics::Base
 
 class ResourceBarriers
     : public Rhi::IResourceBarriers
+    , public std::enable_shared_from_this<ResourceBarriers>
 {
 public:
     explicit ResourceBarriers(const Set& barriers);
 
     // IResourceBarriers overrides
-    [[nodiscard]] bool       IsEmpty() const noexcept override { return m_barriers_map.empty(); }
-    [[nodiscard]] Set        GetSet() const noexcept override;
-    [[nodiscard]] const Map& GetMap() const noexcept override { return m_barriers_map; }
-    [[nodiscard]] explicit operator std::string() const noexcept override;
+    [[nodiscard]] Ptr<IResourceBarriers> GetPtr() final     { return shared_from_this(); }
+    [[nodiscard]] bool       IsEmpty() const noexcept final { return m_barriers_map.empty(); }
+    [[nodiscard]] Set        GetSet() const noexcept final;
+    [[nodiscard]] const Map& GetMap() const noexcept final  { return m_barriers_map; }
+    [[nodiscard]] explicit operator std::string() const noexcept final;
 
-    [[nodiscard]] const Barrier* GetBarrier(const Barrier::Id& id) const noexcept override;
-    [[nodiscard]] bool HasStateTransition(Rhi::IResource& resource, State before, State after) override;
-    [[nodiscard]] bool HasOwnerTransition(Rhi::IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) override;
+    [[nodiscard]] const Barrier* GetBarrier(const Barrier::Id& id) const noexcept final;
+    [[nodiscard]] bool HasStateTransition(Rhi::IResource& resource, State before, State after) final;
+    [[nodiscard]] bool HasOwnerTransition(Rhi::IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) final;
 
-    bool Remove(Rhi::ResourceBarrier::Type type, Rhi::IResource& resource) override;
-    bool RemoveStateTransition(Rhi::IResource& resource) override;
-    bool RemoveOwnerTransition(Rhi::IResource& resource) override;
+    bool Remove(Rhi::ResourceBarrier::Type type, Rhi::IResource& resource) final;
+    bool RemoveStateTransition(Rhi::IResource& resource) final;
+    bool RemoveOwnerTransition(Rhi::IResource& resource) final;
 
-    AddResult AddStateTransition(Rhi::IResource& resource, State before, State after) override;
-    AddResult AddOwnerTransition(Rhi::IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) override;
+    AddResult AddStateTransition(Rhi::IResource& resource, State before, State after) final;
+    AddResult AddOwnerTransition(Rhi::IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) final;
 
     AddResult Add(const Barrier::Id& id, const Barrier& barrier) override;
     bool Remove(const Barrier::Id& id) override;
 
-    void ApplyTransitions() const override;
+    void ApplyTransitions() const final;
 
     auto Lock() const { return std::scoped_lock<LockableBase(std::recursive_mutex)>(m_barriers_mutex); }
 

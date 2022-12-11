@@ -249,8 +249,8 @@ void ResourceBarrier::ApplyTransition() const
 }
 
 Ptr<IResourceBarriers> Rhi::IResourceBarriers::CreateTransitions(const Refs<IResource>& resources,
-                                                            const Opt<ResourceStateChange>& state_change,
-                                                            const Opt<ResourceOwnerChange>& owner_change)
+                                                                 const Opt<ResourceStateChange>& state_change,
+                                                                 const Opt<ResourceOwnerChange>& owner_change)
 {
     META_FUNCTION_TASK();
     Set resource_barriers;

@@ -23,6 +23,7 @@ Methane CommandQueue PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/CommandListSet.h>
 
 #if defined METHANE_GFX_DIRECTX
 
@@ -52,14 +53,22 @@ static_assert(false, "Static graphics API macro-definition is missing.");
 namespace Methane::Graphics::Rhi
 {
 
-class CommandQueue::Impl : public ImplWrapper<ICommandQueue, CommandQueueImpl>
+class CommandQueue::Impl
+    : public ImplWrapper<ICommandQueue, CommandQueueImpl>
 {
 public:
     using ImplWrapper::ImplWrapper;
 };
 
+META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandQueue);
+
 CommandQueue::CommandQueue(const Ptr<ICommandQueue>& interface_ptr)
     : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+{
+}
+
+CommandQueue::CommandQueue(ICommandQueue& interface)
+    : CommandQueue(std::dynamic_pointer_cast<ICommandQueue>(interface.GetPtr()))
 {
 }
 
@@ -78,24 +87,49 @@ void CommandQueue::Release()
     m_impl_ptr.release();
 }
 
-bool CommandQueue::IsInitialized() const noexcept
+bool CommandQueue::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);
 }
 
-ICommandQueue& CommandQueue::GetInterface() const noexcept
+ICommandQueue& CommandQueue::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return m_impl_ptr->GetInterface();
+    return GetPublicInterface(m_impl_ptr);
 }
 
 bool CommandQueue::SetName(const std::string& name) const
 {
-    return m_impl_ptr->Get().SetName(name);
+    return GetPrivateImpl(m_impl_ptr).SetName(name);
 }
 
-const std::string& CommandQueue::GetName() const noexcept
+const std::string& CommandQueue::GetName() const META_PIMPL_NOEXCEPT
 {
-    return m_impl_ptr->Get().GetName();
+    return GetPrivateImpl(m_impl_ptr).GetName();
+}
+
+[[nodiscard]] const IContext& CommandQueue::GetContext() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetContext();
+}
+
+[[nodiscard]] CommandListType CommandQueue::GetCommandListType() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetCommandListType();
+}
+
+[[nodiscard]] uint32_t CommandQueue::GetFamilyIndex() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetFamilyIndex();
+}
+
+[[nodiscard]] ITimestampQueryPool* CommandQueue::GetTimestampQueryPool() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetTimestampQueryPool();
+}
+
+void CommandQueue::Execute(const CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback) const
+{
+    return GetPrivateImpl(m_impl_ptr).Execute(command_lists.GetInterface(), completed_callback);
 }
 
 } // namespace Methane::Graphics::Rhi

@@ -36,7 +36,7 @@ class CommandListDebugGroup final
     : public Base::CommandListDebugGroup
 {
 public:
-    explicit CommandListDebugGroup(const std::string& name);
+    explicit CommandListDebugGroup(std::string_view name);
 
     const std::wstring& GetWideName() const noexcept;
 

@@ -30,7 +30,7 @@ DirectX 12 command list interface and debug group implementation.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& name)
+Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(std::string_view name)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::CommandListDebugGroup>(name);
@@ -41,7 +41,7 @@ Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(const std::string& na
 namespace Methane::Graphics::DirectX
 {
 
-CommandListDebugGroup::CommandListDebugGroup(const std::string& name)
+CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
     : Base::CommandListDebugGroup(name)
     , m_wide_name(nowide::widen(Base::Object::GetName()))
 {

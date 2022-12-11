@@ -120,18 +120,18 @@ RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_
     static_cast<Data::IEmitter<IRenderPassCallback>&>(parallel_render_command_list.GetVulkanPass()).Connect(*this);
 }
 
-void RenderCommandList::Reset(IDebugGroup* p_debug_group)
+void RenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     CommandList::ResetCommandState();
-    CommandList::Reset(p_debug_group);
+    CommandList::Reset(debug_group_ptr);
 }
 
-void RenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group)
+void RenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     CommandList::ResetCommandState();
-    CommandList::Reset(p_debug_group);
+    CommandList::Reset(debug_group_ptr);
     CommandList::SetRenderState(render_state);
 }
 

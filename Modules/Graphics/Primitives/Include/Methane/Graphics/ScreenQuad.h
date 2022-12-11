@@ -81,7 +81,7 @@ public:
     [[nodiscard]] const Settings& GetQuadSettings() const noexcept     { return m_settings; }
     [[nodiscard]] const Rhi::ITexture&  GetTexture() const;
 
-    virtual void Draw(Rhi::IRenderCommandList& cmd_list, Rhi::ICommandListDebugGroup* p_debug_group = nullptr) const;
+    virtual void Draw(Rhi::IRenderCommandList& cmd_list, Rhi::ICommandListDebugGroup* debug_group_ptr = nullptr) const;
 
 protected:
     Rhi::IRenderPattern& GetRenderPattern() const noexcept { return *m_render_pattern_ptr; }

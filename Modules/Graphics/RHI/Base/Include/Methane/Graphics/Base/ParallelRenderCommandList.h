@@ -54,8 +54,8 @@ public:
     // IParallelRenderCommandList interface
     bool IsValidationEnabled() const noexcept override { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) override;
-    void Reset(IDebugGroup* p_debug_group = nullptr) override;
-    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* p_debug_group = nullptr) override;
+    void Reset(IDebugGroup* debug_group_ptr = nullptr) override;
+    void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) override;
     void SetViewState(Rhi::IViewState& view_state) override;
     void SetParallelCommandListsCount(uint32_t count) override;
     const Refs<Rhi::IRenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists_refs; }
@@ -82,7 +82,7 @@ protected:
 
 private:
     template<typename ResetCommandListFn>
-    void ResetImpl(IDebugGroup* p_debug_group, const ResetCommandListFn& reset_command_list_fn);
+    void ResetImpl(IDebugGroup* debug_group_ptr, const ResetCommandListFn& reset_command_list_fn);
 
     const Ptr<RenderPass>         m_render_pass_ptr;
     Ptrs<RenderCommandList>       m_parallel_command_lists;

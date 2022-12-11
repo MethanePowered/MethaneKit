@@ -23,6 +23,8 @@ Methane System and Device PIMPL wrappers for direct calls to final implementatio
 
 #pragma once
 
+#include "Pimpl.h"
+
 #include <Methane/Graphics/RHI/IDevice.h>
 
 namespace Methane::Graphics::Rhi
@@ -37,19 +39,22 @@ public:
     using Feature      = DeviceFeature;
     using Capabilities = DeviceCaps;
 
-    IDevice& GetInterface() const noexcept;
+    META_PIMPL_METHODS_DECLARE(Device);
 
-    const std::string&  GetAdapterName() const noexcept;
-    bool                IsSoftwareAdapter() const noexcept;
-    const Capabilities& GetCapabilities() const noexcept;
+    Device(const Ptr<IDevice>& interface_ptr);
+    Device(IDevice& interface);
+
+    IDevice& GetInterface() const META_PIMPL_NOEXCEPT;
+
+    const std::string&  GetAdapterName() const META_PIMPL_NOEXCEPT;
+    bool                IsSoftwareAdapter() const META_PIMPL_NOEXCEPT;
+    const Capabilities& GetCapabilities() const META_PIMPL_NOEXCEPT;
     std::string         ToString() const;
 
     bool SetName(const std::string& name) const;
-    const std::string& GetName() const noexcept;
+    const std::string& GetName() const META_PIMPL_NOEXCEPT;
 
 private:
-    Device(const Ptr<IDevice>& interface_ptr);
-
     class Impl;
 
     UniquePtr<Impl> m_impl_ptr;
@@ -62,21 +67,23 @@ class System
 public:
     [[nodiscard]] static System& Get();
 
-    ISystem& GetInterface() const noexcept;
+    META_PIMPL_METHODS_DECLARE(System);
+
+    System(const Ptr<ISystem>& interface_ptr);
+
+    ISystem& GetInterface() const META_PIMPL_NOEXCEPT;
 
     void CheckForChanges() const;
     [[nodiscard]] const Devices&    UpdateGpuDevices(const DeviceCaps& required_device_caps = {}) const;
     [[nodiscard]] const Devices&    UpdateGpuDevices(const Platform::AppEnvironment& app_env,
                                                      const DeviceCaps& required_device_caps = {}) const;
-    [[nodiscard]] const Devices&    GetGpuDevices() const noexcept;
-    [[nodiscard]] Device            GetNextGpuDevice(const Device& device) const noexcept;
-    [[nodiscard]] Device            GetSoftwareGpuDevice() const noexcept;
-    [[nodiscard]] const DeviceCaps& GetDeviceCapabilities() const noexcept;
+    [[nodiscard]] const Devices&    GetGpuDevices() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] Device            GetNextGpuDevice(const Device& device) const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] Device            GetSoftwareGpuDevice() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] const DeviceCaps& GetDeviceCapabilities() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] std::string       ToString() const;
 
 private:
-    System(const Ptr<ISystem>& interface_ptr);
-
     const Devices& UpdateDevices(const Ptrs<Rhi::IDevice>& devices) const;
 
     class Impl;

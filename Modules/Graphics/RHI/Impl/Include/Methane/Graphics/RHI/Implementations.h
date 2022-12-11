@@ -24,5 +24,12 @@ Methane graphics RHI PIMPL implementations.
 #pragma once
 
 #include "Device.h"
+#include "CommandListSet.h"
 #include "CommandQueue.h"
+#include "CommandListDebugGroup.h"
+#include "CommandKit.h"
+#include "ResourceBarriers.h"
+#include "RenderPass.h"
 #include "RenderContext.h"
+#include "RenderCommandList.h"
+#include "TransferCommandList.h"

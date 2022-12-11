@@ -151,7 +151,7 @@ public:
     bool SetRect(const UnitRect& ui_rect) override;
 
     void Update(const gfx::FrameSize& render_attachment_size);
-    void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* p_debug_group = nullptr);
+    void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* debug_group_ptr = nullptr);
 
 protected:
     // IFontCallback interface
