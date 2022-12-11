@@ -41,7 +41,7 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandKit);
 
     CommandKit(const Ptr<ICommandKit>& interface_ptr);
-    CommandKit(ICommandKit& interface);
+    CommandKit(ICommandKit& interface_ref);
     CommandKit(const CommandQueue& command_queue);
     CommandKit(const RenderContext& context, CommandListType command_lists_type);
 

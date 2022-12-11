@@ -36,7 +36,7 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ObjectRegistry);
 
     ObjectRegistry(const Ptr<IObjectRegistry>& interface_ptr);
-    ObjectRegistry(IObjectRegistry& interface);
+    ObjectRegistry(IObjectRegistry& interface_ref);
     ObjectRegistry(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     void Init(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);

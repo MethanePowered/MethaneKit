@@ -67,8 +67,8 @@ TransferCommandList::TransferCommandList(const Ptr<ITransferCommandList>& interf
 {
 }
 
-TransferCommandList::TransferCommandList(ITransferCommandList& interface)
-    : TransferCommandList(std::dynamic_pointer_cast<ITransferCommandList>(interface.GetPtr()))
+TransferCommandList::TransferCommandList(ITransferCommandList& interface_ref)
+    : TransferCommandList(std::dynamic_pointer_cast<ITransferCommandList>(interface_ref.GetPtr()))
 {
 }
 

@@ -47,7 +47,7 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderPattern);
 
     RenderPattern(const Ptr<IRenderPattern>& interface_ptr);
-    RenderPattern(IRenderPattern& interface);
+    RenderPattern(IRenderPattern& interface_ref);
     RenderPattern(const RenderContext& render_context, const Settings& settings);
 
     void Init(const RenderContext& render_context, const Settings& settings);
@@ -82,7 +82,7 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderPass);
 
     RenderPass(const Ptr<IRenderPass>& interface_ptr);
-    RenderPass(IRenderPass& interface);
+    RenderPass(IRenderPass& interface_ref);
     RenderPass(const Pattern& render_pattern, const Settings& settings);
 
     void Init(const Pattern& render_pattern, const Settings& settings);

@@ -69,8 +69,8 @@ RenderCommandList::RenderCommandList(const Ptr<IRenderCommandList>& interface_pt
 {
 }
 
-RenderCommandList::RenderCommandList(IRenderCommandList& interface)
-    : RenderCommandList(std::dynamic_pointer_cast<IRenderCommandList>(interface.GetPtr()))
+RenderCommandList::RenderCommandList(IRenderCommandList& interface_ref)
+    : RenderCommandList(std::dynamic_pointer_cast<IRenderCommandList>(interface_ref.GetPtr()))
 {
 }
 

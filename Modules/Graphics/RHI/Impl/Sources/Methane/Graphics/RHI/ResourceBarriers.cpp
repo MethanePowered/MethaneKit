@@ -67,8 +67,8 @@ ResourceBarriers::ResourceBarriers(const Ptr<IResourceBarriers>& interface_ptr)
 {
 }
 
-ResourceBarriers::ResourceBarriers(IResourceBarriers& interface)
-    : ResourceBarriers(std::dynamic_pointer_cast<IResourceBarriers>(interface.GetPtr()))
+ResourceBarriers::ResourceBarriers(IResourceBarriers& interface_ref)
+    : ResourceBarriers(std::dynamic_pointer_cast<IResourceBarriers>(interface_ref.GetPtr()))
 {
 }
 

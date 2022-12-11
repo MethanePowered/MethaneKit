@@ -44,7 +44,7 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(TransferCommandList);
 
     TransferCommandList(const Ptr<ITransferCommandList>& interface_ptr);
-    TransferCommandList(ITransferCommandList& interface);
+    TransferCommandList(ITransferCommandList& interface_ref);
     TransferCommandList(const CommandQueue& command_queue);
 
     void Init(const CommandQueue& command_queue);

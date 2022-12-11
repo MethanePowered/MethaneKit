@@ -39,7 +39,7 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandQueue);
 
     CommandQueue(const Ptr<ICommandQueue>& interface_ptr);
-    CommandQueue(ICommandQueue& interface);
+    CommandQueue(ICommandQueue& interface_ref);
     CommandQueue(const RenderContext& context, CommandListType command_lists_type);
 
     void Init(const RenderContext& context, CommandListType command_lists_type);

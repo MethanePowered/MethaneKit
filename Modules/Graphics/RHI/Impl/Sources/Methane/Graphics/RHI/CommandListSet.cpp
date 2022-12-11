@@ -68,8 +68,8 @@ CommandListSet::CommandListSet(const Ptr<ICommandListSet>& interface_ptr)
 {
 }
 
-CommandListSet::CommandListSet(ICommandListSet& interface)
-    : CommandListSet(interface.GetPtr())
+CommandListSet::CommandListSet(ICommandListSet& interface_ref)
+    : CommandListSet(interface_ref.GetPtr())
 {
 }
 

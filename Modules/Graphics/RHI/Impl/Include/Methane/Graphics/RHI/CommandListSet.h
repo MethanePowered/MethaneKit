@@ -36,7 +36,7 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandListSet);
 
     CommandListSet(const Ptr<ICommandListSet>& interface_ptr);
-    CommandListSet(ICommandListSet& interface);
+    CommandListSet(ICommandListSet& interface_ref);
     CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     void Init(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);

@@ -49,8 +49,8 @@ ObjectRegistry::ObjectRegistry(const Ptr<IObjectRegistry>& interface_ptr)
 {
 }
 
-ObjectRegistry::ObjectRegistry(IObjectRegistry& interface)
-    : ObjectRegistry(interface.GetPtr())
+ObjectRegistry::ObjectRegistry(IObjectRegistry& interface_ref)
+    : ObjectRegistry(interface_ref.GetPtr())
 {
 }
 

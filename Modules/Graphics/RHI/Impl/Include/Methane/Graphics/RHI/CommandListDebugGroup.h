@@ -39,7 +39,7 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandListDebugGroup);
 
     CommandListDebugGroup(const Ptr<ICommandListDebugGroup>& interface_ptr);
-    CommandListDebugGroup(ICommandListDebugGroup& interface);
+    CommandListDebugGroup(ICommandListDebugGroup& interface_ref);
     CommandListDebugGroup(std::string_view name);
 
     void Init(std::string_view name);

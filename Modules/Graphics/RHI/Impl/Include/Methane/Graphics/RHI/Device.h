@@ -42,7 +42,7 @@ public:
     META_PIMPL_METHODS_DECLARE(Device);
 
     Device(const Ptr<IDevice>& interface_ptr);
-    Device(IDevice& interface);
+    Device(IDevice& interface_ref);
 
     IDevice& GetInterface() const META_PIMPL_NOEXCEPT;
 

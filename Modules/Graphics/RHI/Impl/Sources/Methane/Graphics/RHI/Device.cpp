@@ -70,8 +70,8 @@ Device::Device(const Ptr <IDevice>& interface_ptr)
 {
 }
 
-Device::Device(IDevice& interface)
-    : Device(std::dynamic_pointer_cast<IDevice>(interface.GetPtr()))
+Device::Device(IDevice& interface_ref)
+    : Device(std::dynamic_pointer_cast<IDevice>(interface_ref.GetPtr()))
 {
 }
 
