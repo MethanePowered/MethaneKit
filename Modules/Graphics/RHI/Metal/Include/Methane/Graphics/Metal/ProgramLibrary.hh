@@ -25,7 +25,7 @@ Wrapper of the Metal program library.
 
 #import <Metal/Metal.h>
 
-#include <string>
+#include <string_view>
 
 namespace Methane::Graphics::Metal
 {
@@ -35,7 +35,7 @@ class Device;
 class ProgramLibrary final
 {
 public:
-    ProgramLibrary(const Device& metal_device, const std::string& library_name = "");
+    ProgramLibrary(const Device& metal_device, std::string_view library_name = {});
 
     id<MTLLibrary> GetNativeLibrary() noexcept { return m_mtl_library; }
 

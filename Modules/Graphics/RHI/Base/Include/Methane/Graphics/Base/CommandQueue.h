@@ -50,7 +50,7 @@ public:
     CommandQueue(const Context& context, Rhi::CommandListType command_lists_type);
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     // ICommandQueue overrides
     [[nodiscard]] const Rhi::IContext& GetContext() const noexcept final;

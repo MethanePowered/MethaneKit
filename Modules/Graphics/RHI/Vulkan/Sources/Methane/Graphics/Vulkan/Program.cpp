@@ -59,7 +59,7 @@ Program::Program(const Base::Context& context, const Settings& settings)
     InitializeDescriptorSetLayouts();
 }
 
-bool Program::SetName(const std::string& name)
+bool Program::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::Program::SetName(name))
@@ -256,7 +256,7 @@ void Program::UpdatePipelineName()
     if (!m_vk_unique_pipeline_layout)
         return;
 
-    const std::string& program_name = GetName();
+    const std::string_view program_name = GetName();
     if (program_name.empty())
         return;
 
@@ -267,7 +267,7 @@ void Program::UpdatePipelineName()
 void Program::UpdateDescriptorSetLayoutNames() const
 {
     META_FUNCTION_TASK();
-    const std::string& program_name = GetName();
+    const std::string_view program_name = GetName();
     if (program_name.empty())
         return;
 
@@ -288,7 +288,7 @@ void Program::UpdateConstantDescriptorSetName()
         !m_vk_constant_descriptor_set_opt.value())
         return;
 
-    const std::string& program_name = GetName();
+    const std::string_view program_name = GetName();
     if (program_name.empty())
         return;
 
@@ -302,7 +302,7 @@ void Program::UpdateFrameConstantDescriptorSetNames() const
     if (m_vk_frame_constant_descriptor_sets.empty())
         return;
 
-    const std::string& program_name = GetName();
+    const std::string_view program_name = GetName();
     if (program_name.empty())
         return;
 

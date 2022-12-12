@@ -43,7 +43,7 @@ namespace Methane::Graphics::Vulkan
 
 CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
     : Base::CommandList::DebugGroup(name)
-    , m_vk_debug_label(Base::Object::GetName().c_str())
+    , m_vk_debug_label(Base::Object::GetName().data())
 {
 }
 

@@ -105,13 +105,13 @@ void Fence::WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue)
     [mtl_command_buffer commit];
 }
 
-bool Fence::SetName(const std::string& name)
+bool Fence::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::Object::SetName(name))
         return false;
 
-    m_mtl_event.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
+    m_mtl_event.label = MacOS::ConvertToNsString(name);
     return true;
 }
 

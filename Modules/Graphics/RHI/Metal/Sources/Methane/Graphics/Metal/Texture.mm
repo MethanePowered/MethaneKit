@@ -125,7 +125,7 @@ Texture::Texture(const Base::Context& context, const Settings& settings)
     META_FUNCTION_TASK();
 }
 
-bool Texture::SetName(const std::string& name)
+bool Texture::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Resource::SetName(name))
@@ -243,7 +243,7 @@ MTLTextureDescriptor* Texture::GetNativeTextureDescriptor()
 
     const Settings& settings = GetSettings();
     const MTLPixelFormat mtl_pixel_format = TypeConverter::DataFormatToMetalPixelType(settings.pixel_format);
-    const BOOL is_tex_mipmapped = MacOS::ConvertToNsType<bool, BOOL>(settings.mipmapped);
+    const BOOL is_tex_mipmapped = MacOS::ConvertToNsBool(settings.mipmapped);
 
     MTLTextureDescriptor* mtl_tex_desc = nil;
     switch(settings.dimension_type)

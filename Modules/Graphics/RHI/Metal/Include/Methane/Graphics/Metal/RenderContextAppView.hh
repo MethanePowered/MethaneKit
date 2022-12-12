@@ -46,7 +46,7 @@ inline AppViewMetal* CreateRenderContextAppView(const Platform::AppEnvironment& 
                                                        appWindow: env.ns_app_delegate.window
                                                      pixelFormat: TypeConverter::DataFormatToMetalPixelType(settings.color_format)
                                                    drawableCount: settings.frame_buffers_count
-                                                    vsyncEnabled: Methane::MacOS::ConvertToNsType<bool, BOOL>(settings.vsync_enabled)
+                                                    vsyncEnabled: MacOS::ConvertToNsBool(settings.vsync_enabled)
 #ifdef APPLE_MACOS
                                            unsyncRefreshInterval: 1.0 / settings.unsync_max_fps
 #endif

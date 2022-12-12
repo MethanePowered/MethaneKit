@@ -100,12 +100,12 @@ std::string Device::ToString() const
     return GetPrivateImpl(m_impl_ptr).ToString();
 }
 
-bool Device::SetName(const std::string& name) const
+bool Device::SetName(std::string_view name) const
 {
     return GetPrivateImpl(m_impl_ptr).SetName(name);
 }
 
-const std::string& Device::GetName() const META_PIMPL_NOEXCEPT
+std::string_view Device::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetName();
 }

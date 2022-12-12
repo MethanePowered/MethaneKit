@@ -144,7 +144,7 @@ public:
 
     // IObject interface
 
-    bool SetName(const std::string& name) final
+    bool SetName(std::string_view name) final
     {
         META_FUNCTION_TASK();
         if (!CommandListBaseT::SetName(name))

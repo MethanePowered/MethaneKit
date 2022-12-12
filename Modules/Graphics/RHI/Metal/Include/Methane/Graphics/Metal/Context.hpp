@@ -78,13 +78,13 @@ public:
 
     // IObject overrides
 
-    bool SetName(const std::string& name) override
+    bool SetName(std::string_view name) override
     {
         META_FUNCTION_TASK();
         if (!Base::Context::SetName(name))
             return false;
 
-        m_ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
+        m_ns_name = MacOS::ConvertToNsString(name);
         return true;
     }
 

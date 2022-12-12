@@ -248,7 +248,7 @@ void CommandQueue::CompleteCommandListSetExecution(Base::CommandListSet& executi
     Base::CommandQueueTracking::CompleteCommandListSetExecution(executing_command_list_set);
 }
 
-bool CommandQueue::SetName(const std::string& name)
+bool CommandQueue::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::CommandQueueTracking::SetName(name))

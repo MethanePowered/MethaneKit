@@ -57,7 +57,7 @@ public:
     void Complete() override;
 
     // IObject interface
-    bool SetName(const std::string& label) override;
+    bool SetName(std::string_view name) override;
 
     const Vulkan::ICommandList& GetVulkanPrimaryCommandList() const noexcept { return m_beginning_command_list; }
     CommandQueue& GetVulkanCommandQueue() noexcept;

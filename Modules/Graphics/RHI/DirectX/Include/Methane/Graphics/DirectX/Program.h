@@ -50,7 +50,7 @@ public:
     ~Program() override;
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     Shader& GetDirectVertexShader() const;
     Shader& GetDirectPixelShader() const;

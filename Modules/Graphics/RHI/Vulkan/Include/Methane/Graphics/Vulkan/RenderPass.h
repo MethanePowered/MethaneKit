@@ -43,7 +43,7 @@ public:
     RenderPattern(RenderContext& render_context, const Settings& settings);
 
     // Base::Object overrides
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     [[nodiscard]] const RenderContext& GetVulkanRenderContext() const noexcept;
     [[nodiscard]] RenderContext&       GetVulkanRenderContext() noexcept;
@@ -72,7 +72,7 @@ public:
     void End(Base::RenderCommandList& command_list) override;
 
     // Base::Object overrides
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
     
     void Reset();
 

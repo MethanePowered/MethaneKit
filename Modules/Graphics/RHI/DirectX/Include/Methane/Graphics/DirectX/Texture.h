@@ -119,7 +119,7 @@ public:
     Texture(const Base::Context& context, const Settings& settings, ImageToken);
 
     // IObject overrides
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     // IResource overrides
     void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override;

@@ -83,7 +83,7 @@ public:
     Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities);
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     [[nodiscard]] const QueueFamilyReservation* GetQueueFamilyReservationPtr(Rhi::CommandListType cmd_queue_type) const noexcept;
     [[nodiscard]] const QueueFamilyReservation& GetQueueFamilyReservation(Rhi::CommandListType cmd_queue_type) const;

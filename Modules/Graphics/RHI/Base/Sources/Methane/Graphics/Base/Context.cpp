@@ -154,7 +154,7 @@ void Context::Initialize(Device& device, bool is_callback_emitted)
     META_LOG("Context '{}' INITIALIZE", GetName());
 
     m_device_ptr = device.GetPtr<Device>();
-    if (const std::string& context_name = GetName();
+    if (const std::string_view context_name = GetName();
         !context_name.empty())
     {
         m_device_ptr->SetName(fmt::format("{} Device", context_name));
@@ -219,7 +219,7 @@ Rhi::IDescriptorManager& Context::GetDescriptorManager() const
     return *m_descriptor_manager_ptr;
 }
 
-bool Context::SetName(const std::string& name)
+bool Context::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Object::SetName(name))

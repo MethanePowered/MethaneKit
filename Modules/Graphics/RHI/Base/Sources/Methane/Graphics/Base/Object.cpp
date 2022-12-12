@@ -36,7 +36,8 @@ void ObjectRegistry::AddGraphicsObject(Rhi::IObject& object)
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY_DESCR(object.GetName(), "Can not add graphics object without name to the objects registry.");
 
-    const auto [name_and_object_it, object_added] = m_object_by_name.try_emplace(object.GetName(), object.GetPtr());
+    auto& obj = dynamic_cast<Object&>(object);
+    const auto [name_and_object_it, object_added] = m_object_by_name.try_emplace(obj.GetNameRef(), object.GetPtr());
     if (!object_added &&
         !name_and_object_it->second.expired() &&
          name_and_object_it->second.lock().get() != std::addressof(object))
@@ -50,7 +51,8 @@ void ObjectRegistry::RemoveGraphicsObject(Rhi::IObject& object)
 {
     META_FUNCTION_TASK();
 
-    const std::string& object_name = object.GetName();
+    auto& obj = dynamic_cast<Object&>(object);
+    const std::string& object_name = obj.GetNameRef();
     META_CHECK_ARG_NOT_EMPTY_DESCR(object_name, "Can not remove graphics object without name to the objects registry.");
 
     if (m_object_by_name.erase(object_name))
@@ -84,7 +86,7 @@ void ObjectRegistry::OnObjectNameChanged(Rhi::IObject& object, const std::string
     META_CHECK_ARG_TRUE_DESCR(std::addressof(*object_by_name_it->second.lock()) == std::addressof(object),
                               "object stored in the registry by old name '{}' differs from the renamed object", old_name);
 
-    const std::string& new_name = object.GetName();
+    const std::string_view new_name = object.GetName();
     if (new_name.empty())
     {
         m_object_by_name.erase(object_by_name_it);
@@ -130,7 +132,7 @@ Ptr<Rhi::IObject> Object::GetPtr()
     return std::dynamic_pointer_cast<IObject>(shared_from_this());
 }
 
-bool Object::SetName(const std::string& name)
+bool Object::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (m_name == name)

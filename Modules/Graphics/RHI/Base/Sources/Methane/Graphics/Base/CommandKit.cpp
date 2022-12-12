@@ -71,7 +71,7 @@ CommandKit::CommandKit(Rhi::ICommandQueue& cmd_queue)
     META_FUNCTION_TASK();
 }
 
-bool CommandKit::SetName(const std::string& name)
+bool CommandKit::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Object::SetName(name))

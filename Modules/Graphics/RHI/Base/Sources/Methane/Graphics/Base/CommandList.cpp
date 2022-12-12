@@ -51,7 +51,7 @@ CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
     META_FUNCTION_TASK();
 }
 
-bool CommandListDebugGroup::SetName(const std::string&)
+bool CommandListDebugGroup::SetName(std::string_view)
 {
     META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(false, "Debug Group can not be renamed");
 }
@@ -98,7 +98,7 @@ void CommandList::PushDebugGroup(IDebugGroup& debug_group)
     VerifyEncodingState();
 
 #ifdef METHANE_DEBUG_GROUP_FRAMES_ENABLED
-    META_CPU_FRAME_START(debug_group.GetName().c_str());
+    META_CPU_FRAME_START(debug_group.GetName().data());
 #endif
     META_LOG("{} Command list '{}' PUSH debug group '{}'", magic_enum::enum_name(m_type), GetName(), debug_group.GetName());
 
@@ -115,7 +115,7 @@ void CommandList::PopDebugGroup()
 
     META_LOG("{} Command list '{}' POP debug group '{}'", magic_enum::enum_name(m_type), GetName(), GetTopOpenDebugGroup()->GetName());
 #ifdef METHANE_DEBUG_GROUP_FRAMES_ENABLED
-    META_CPU_FRAME_END(GetTopOpenDebugGroup()->GetName().c_str());
+    META_CPU_FRAME_END(GetTopOpenDebugGroup()->GetName().data());
 #endif
 
     m_open_debug_groups.pop();
@@ -490,7 +490,7 @@ const std::string& CommandListSet::GetCombinedName()
 
     for (size_t list_index = 0u; list_index < list_count; ++list_index)
     {
-        if (const std::string& list_name = m_refs[list_index].get().GetName();
+        if (const std::string_view list_name = m_refs[list_index].get().GetName();
             list_name.empty())
             name_ss << "<unnamed>";
         else

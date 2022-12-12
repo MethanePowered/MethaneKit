@@ -41,7 +41,7 @@ public:
     explicit CommandKit(Rhi::ICommandQueue& cmd_queue);
 
     // IObject overrides
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     // ICommandKit interface
     [[nodiscard]] const Rhi::IContext&  GetContext() const noexcept override  { return m_context; }

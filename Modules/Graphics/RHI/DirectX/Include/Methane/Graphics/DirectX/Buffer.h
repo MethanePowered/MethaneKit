@@ -70,7 +70,7 @@ public:
     }
 
     // IObject overrides
-    bool SetName(const std::string& name) override
+    bool SetName(std::string_view name) override
     {
         META_FUNCTION_TASK();
         if (!Resource::SetName(name))

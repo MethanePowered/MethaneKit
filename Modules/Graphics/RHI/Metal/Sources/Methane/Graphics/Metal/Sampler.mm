@@ -132,14 +132,14 @@ Sampler::Sampler(const Base::Context& context, const Settings& settings)
     ResetSamplerState();
 }
 
-bool Sampler::SetName(const std::string& name)
+bool Sampler::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Resource::SetName(name))
         return false;
 
     META_CHECK_ARG_NOT_NULL(m_mtl_sampler_desc);
-    m_mtl_sampler_desc.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);
+    m_mtl_sampler_desc.label = MacOS::ConvertToNsString(name);
 
     ResetSamplerState();
     return true;

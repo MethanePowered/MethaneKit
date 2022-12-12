@@ -219,13 +219,13 @@ RenderPattern::RenderPattern(RenderContext& render_context, const Settings& sett
     }
 }
 
-bool RenderPattern::SetName(const std::string& name)
+bool RenderPattern::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::RenderPattern::SetName(name))
         return false;
 
-    SetVulkanObjectName(GetVulkanRenderContext().GetVulkanDevice().GetNativeDevice(), m_vk_unique_render_pass.get(), name.c_str());
+    SetVulkanObjectName(GetVulkanRenderContext().GetVulkanDevice().GetNativeDevice(), m_vk_unique_render_pass.get(), name);
     return true;
 }
 
@@ -289,13 +289,13 @@ void RenderPass::End(Base::RenderCommandList& command_list)
     Base::RenderPass::End(command_list);
 }
 
-bool RenderPass::SetName(const std::string& name)
+bool RenderPass::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::RenderPass::SetName(name))
         return false;
 
-    SetVulkanObjectName(GetVulkanContext().GetVulkanDevice().GetNativeDevice(), m_vk_unique_frame_buffer.get(), name.c_str());
+    SetVulkanObjectName(GetVulkanContext().GetVulkanDevice().GetNativeDevice(), m_vk_unique_frame_buffer.get(), name);
     return true;
 }
 

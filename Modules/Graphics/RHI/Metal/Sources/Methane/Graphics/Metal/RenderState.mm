@@ -376,13 +376,13 @@ void RenderState::Apply(Base::RenderCommandList& command_list, Groups state_grou
     }
 }
 
-bool RenderState::SetName(const std::string& name)
+bool RenderState::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::RenderState::SetName(name))
         return false;
     
-    NSString* ns_name = Methane::MacOS::ConvertToNsType<std::string, NSString*>(name);
+    NSString* ns_name = MacOS::ConvertToNsString(name);
     m_mtl_pipeline_state_desc.label      = ns_name;
     m_mtl_depth_stencil_state_desc.label = ns_name;
     
@@ -407,7 +407,7 @@ void RenderState::InitializeNativePipelineState()
     m_mtl_pipeline_state = [GetMetalRenderContext().GetMetalDevice().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_pipeline_state,
                                   "failed to create Metal pipeline state: {}",
-                                  MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]));
+                                  MacOS::ConvertFromNsString([ns_error localizedDescription]));
 }
 
 void RenderState::InitializeNativeDepthStencilState()

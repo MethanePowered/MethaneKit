@@ -399,7 +399,7 @@ void RenderState::Apply(Base::RenderCommandList& command_list, Groups state_grou
     }
 }
 
-bool RenderState::SetName(const std::string& name)
+bool RenderState::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::RenderState::SetName(name))

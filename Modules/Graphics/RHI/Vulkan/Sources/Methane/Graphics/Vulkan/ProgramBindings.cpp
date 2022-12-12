@@ -302,7 +302,7 @@ void ProgramBindings::UpdateMutableDescriptorSetName()
     if (!m_has_mutable_descriptor_set)
         return;
 
-    const std::string& program_name = GetProgram().GetName();
+    const std::string_view program_name = GetProgram().GetName();
     if (program_name.empty())
         return;
 

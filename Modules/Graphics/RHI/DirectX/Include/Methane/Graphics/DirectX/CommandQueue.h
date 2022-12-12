@@ -52,7 +52,7 @@ public:
     uint32_t GetFamilyIndex() const noexcept override { return 0U; }
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
     // Base::CommandQueueTracking override

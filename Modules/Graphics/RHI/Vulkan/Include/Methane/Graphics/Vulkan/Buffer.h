@@ -43,7 +43,7 @@ public:
     void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override;
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
 protected:
     // Resource override

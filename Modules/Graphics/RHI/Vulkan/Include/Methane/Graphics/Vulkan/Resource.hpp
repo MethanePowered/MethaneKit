@@ -95,7 +95,7 @@ public:
     bool operator=(Resource&&) = delete;
 
     // Base::Object override
-    bool SetName(const std::string& name) override
+    bool SetName(std::string_view name) override
     {
         META_FUNCTION_TASK();
         if (!ResourceBaseType::SetName(name))
@@ -104,7 +104,7 @@ public:
         if (const auto& vk_resource = GetNativeResource();
             vk_resource)
         {
-            SetVulkanObjectName(m_vk_device, vk_resource, name.c_str());
+            SetVulkanObjectName(m_vk_device, vk_resource, name);
         }
 
         for(const auto& [view_id, view_desc_ptr] : m_view_descriptor_by_view_id)

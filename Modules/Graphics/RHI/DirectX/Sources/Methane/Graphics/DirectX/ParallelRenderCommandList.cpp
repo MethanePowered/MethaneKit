@@ -97,7 +97,7 @@ void ParallelRenderCommandList::SetEndingResourceBarriers(const Rhi::IResourceBa
     m_ending_command_list.SetResourceBarriers(resource_barriers);
 }
 
-bool ParallelRenderCommandList::SetName(const std::string& name)
+bool ParallelRenderCommandList::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::ParallelRenderCommandList::SetName(name))

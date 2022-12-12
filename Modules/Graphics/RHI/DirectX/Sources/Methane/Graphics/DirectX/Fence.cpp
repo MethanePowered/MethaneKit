@@ -113,7 +113,7 @@ void Fence::WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue)
                   dx_wait_on_command_queue.GetDirectContext().GetDirectDevice().GetNativeDevice().Get());
 }
 
-bool Fence::SetName(const std::string& name)
+bool Fence::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::Fence::SetName(name))

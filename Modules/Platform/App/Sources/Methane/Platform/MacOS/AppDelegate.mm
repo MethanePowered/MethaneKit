@@ -70,7 +70,7 @@ using namespace Methane::Platform;
 
     m_window = [[NSWindow alloc] initWithContentRect:frame styleMask:style_mask backing:backing defer:YES];
     m_window.contentMinSize = NSMakeSize(static_cast<CGFloat>(min_frame_size.GetWidth()), static_cast<CGFloat>(min_frame_size.GetHeight()));
-    m_window.title    = MacOS::ConvertToNsType<std::string, NSString*>(p_settings->name);
+    m_window.title    = MacOS::ConvertToNsString(p_settings->name);
 
     m_window_delegate = [[WindowDelegate alloc] initWithApp:p_app];
     m_window.delegate = m_window_delegate;

@@ -467,7 +467,7 @@ Opt<Rhi::IResource::Descriptor> ImageTexture::InitializeNativeViewDescriptor(con
     return descriptor;
 }
 
-bool ImageTexture::SetName(const std::string& name)
+bool ImageTexture::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Resource::SetName(name))

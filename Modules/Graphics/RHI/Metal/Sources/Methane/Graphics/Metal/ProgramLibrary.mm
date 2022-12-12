@@ -29,15 +29,18 @@ Wrapper of the Metal program library.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <fmt/format.h>
+
 namespace Methane::Graphics::Metal
 {
 
-static NSString* GetLibraryFullPath(const std::string& library_name)
+static NSString* GetLibraryFullPath(std::string_view library_name)
 {
-    return MacOS::ConvertToNsType<std::string, NSString*>(Platform::GetResourceDir() + "/" + library_name + ".metallib");
+    const std::string library_path = fmt::format("{}/{}.metallib", Platform::GetResourceDir(), library_name);
+    return MacOS::ConvertToNsString(library_path);
 }
 
-ProgramLibrary::ProgramLibrary(const Device& metal_device, const std::string& library_name)
+ProgramLibrary::ProgramLibrary(const Device& metal_device, std::string_view library_name)
 {
     META_FUNCTION_TASK();
     if (library_name.empty())
@@ -50,8 +53,8 @@ ProgramLibrary::ProgramLibrary(const Device& metal_device, const std::string& li
         m_mtl_library = [metal_device.GetNativeDevice() newLibraryWithFile:GetLibraryFullPath(library_name) error:&ns_error];
         META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_library,
                                       "Failed to create {} Metal library: {}",
-                                      library_name.empty() ? std::string("default") : library_name,
-                                      MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]));
+                                      library_name.empty() ? std::string_view("default") : library_name,
+                                      MacOS::ConvertFromNsString([ns_error localizedDescription]));
     }
 }
 

@@ -223,7 +223,7 @@ public:
 
     // IObject interface
 
-    bool SetName(const std::string& name) final
+    bool SetName(std::string_view name) final
     {
         META_FUNCTION_TASK();
         if (!CommandListBaseT::SetName(name))
@@ -237,7 +237,7 @@ public:
                 continue;
 
             SetVulkanObjectName(m_vk_device, vk_unique_command_buffer.get(),
-                                fmt::format("{} ({})", name.c_str(), magic_enum::enum_name(static_cast<CommandBufferType>(cmd_buffer_index))));
+                                fmt::format("{} ({})", name.data(), magic_enum::enum_name(static_cast<CommandBufferType>(cmd_buffer_index))));
         }
         return true;
     }

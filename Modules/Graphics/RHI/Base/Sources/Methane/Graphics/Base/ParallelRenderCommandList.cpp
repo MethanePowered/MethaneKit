@@ -143,7 +143,7 @@ void ParallelRenderCommandList::SetParallelCommandListsCount(uint32_t count)
         return;
     }
 
-    const std::string& name = GetName();
+    const std::string_view name = GetName();
     m_parallel_command_lists.reserve(count);
     m_parallel_command_lists_refs.reserve(count);
 
@@ -183,7 +183,7 @@ void ParallelRenderCommandList::Complete()
     CommandList::Complete();
 }
 
-bool ParallelRenderCommandList::SetName(const std::string& name)
+bool ParallelRenderCommandList::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!CommandList::SetName(name) || name.empty())

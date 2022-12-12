@@ -57,7 +57,7 @@ public:
     void Execute(Rhi::ICommandListSet& command_list_set, const Rhi::ICommandList::CompletedCallback& completed_callback = {}) override;
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     const IContext& GetVulkanContext() const noexcept { return m_vk_context; }
     Device& GetVulkanDevice() const noexcept;

@@ -142,7 +142,7 @@ public:
 
     // IObject interface
 
-    bool SetName(const std::string& name) override
+    bool SetName(std::string_view name) override
     {
         META_FUNCTION_TASK();
         std::scoped_lock lock_guard(m_cmd_buffer_mutex);
@@ -150,7 +150,7 @@ public:
         if (!CommandListBaseT::SetName(name))
             return false;
 
-        m_ns_name = MacOS::ConvertToNsType<std::string, NSString*>(name);
+        m_ns_name = MacOS::ConvertToNsString(name);
 
         if (m_mtl_cmd_encoder != nil)
         {

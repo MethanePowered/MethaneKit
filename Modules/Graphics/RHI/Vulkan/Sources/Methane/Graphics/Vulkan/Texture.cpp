@@ -199,7 +199,7 @@ static vk::ImageLayout GetVulkanImageLayoutByUsage(Rhi::TextureType texture_type
 static Ptr<ResourceView::ViewDescriptorVariant> CreateNativeImageViewDescriptor(const ResourceView::Id& view_id,
                                                                                 const Rhi::TextureSettings& texture_settings,
                                                                                 const Rhi::SubResource::Count& texture_subresource_count,
-                                                                                const std::string& texture_name,
+                                                                                std::string_view texture_name,
                                                                                 const vk::Device& vk_device,
                                                                                 const vk::Image& vk_image)
 {
@@ -460,7 +460,7 @@ void ImageTexture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue
     GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
 }
 
-bool ImageTexture::SetName(const std::string& name)
+bool ImageTexture::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Resource::SetName(name))

@@ -76,7 +76,7 @@ public:
     void Release() override;
 
     // Base::Object overrides
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     const vk::SurfaceKHR&   GetNativeSurface() const noexcept     { return m_vk_unique_surface.get(); }
     const vk::SwapchainKHR& GetNativeSwapchain() const noexcept   { return m_vk_unique_swapchain.get(); }

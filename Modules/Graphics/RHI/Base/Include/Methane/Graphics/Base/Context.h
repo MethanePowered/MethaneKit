@@ -87,7 +87,7 @@ public:
     virtual void Release();
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     DeferredAction      GetRequestedAction() const noexcept { return m_requested_action; }
     Ptr<Device>         GetBaseDevicePtr() const noexcept   { return m_device_ptr; }

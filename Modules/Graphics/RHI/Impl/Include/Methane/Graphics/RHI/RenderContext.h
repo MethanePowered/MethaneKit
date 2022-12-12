@@ -58,8 +58,8 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IRenderContext& GetInterface() const META_PIMPL_NOEXCEPT;
 
-    bool SetName(const std::string& name) const;
-    const std::string& GetName() const META_PIMPL_NOEXCEPT;
+    bool SetName(std::string_view name) const;
+    std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     [[nodiscard]] OptionMask GetOptions() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] tf::Executor& GetParallelExecutor() const META_PIMPL_NOEXCEPT;

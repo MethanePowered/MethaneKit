@@ -50,7 +50,7 @@ public:
     explicit CommandListDebugGroup(std::string_view name);
 
     // IObject overrides
-    bool SetName(const std::string&) override;
+    bool SetName(std::string_view) override;
 
     // IDebugGroup interface
     Rhi::ICommandListDebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;

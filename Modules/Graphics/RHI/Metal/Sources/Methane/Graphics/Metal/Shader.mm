@@ -115,7 +115,7 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
 Shader::Shader(Rhi::ShaderType shader_type, const Base::Context& context, const Settings& settings)
     : Base::Shader(shader_type, context, settings)
     , m_mtl_function([dynamic_cast<const IContext&>(context).GetMetalLibrary(settings.entry_function.file_name)->GetNativeLibrary()
-                         newFunctionWithName: Methane::MacOS::ConvertToNsType<std::string, NSString*>(GetCompiledEntryFunctionName())])
+                         newFunctionWithName: Methane::MacOS::ConvertToNsString(GetCompiledEntryFunctionName())])
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_function, "failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName());
@@ -137,7 +137,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         if (!mtl_arg.active)
             continue;
 
-        std::string argument_name = Methane::MacOS::ConvertFromNsType<NSString, std::string>(mtl_arg.name);
+        const std::string argument_name = MacOS::ConvertFromNsString(mtl_arg.name);
         if (argument_name.find("vertexBuffer.") == 0)
         {
             // Skip input vertex buffers, since they are set with a separate IRenderCommandList call, not through resource bindings
@@ -197,7 +197,7 @@ MTLVertexDescriptor* Shader::GetNativeVertexDescriptor(const Program& program) c
             continue;
         
         const MTLVertexFormat mtl_vertex_format = TypeConverter::MetalDataTypeToVertexFormat(mtl_vertex_attrib.attributeType);
-        const std::string attrib_name = std::regex_replace(Methane::MacOS::ConvertFromNsType<NSString, std::string>(mtl_vertex_attrib.name), s_attr_suffix_regex, "");
+        const std::string attrib_name = std::regex_replace(MacOS::ConvertFromNsString(mtl_vertex_attrib.name), s_attr_suffix_regex, "");
         const uint32_t    attrib_size = TypeConverter::ByteSizeOfVertexFormat(mtl_vertex_format);
         const uint32_t    attrib_slot = GetProgramInputBufferIndexByArgumentSemantic(program, attrib_name);
         

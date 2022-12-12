@@ -48,7 +48,7 @@ namespace Methane::Graphics::Metal
 
 CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
     : Base::CommandListDebugGroup(name)
-    , m_ns_name(MacOS::ConvertToNsType<std::string, NSString*>(Base::Object::GetName()))
+    , m_ns_name(MacOS::ConvertToNsString(Base::Object::GetName()))
 {
     META_FUNCTION_TASK();
 }

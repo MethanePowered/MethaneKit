@@ -99,12 +99,12 @@ IRenderPattern& RenderPattern::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
-bool RenderPattern::SetName(const std::string& name) const
+bool RenderPattern::SetName(std::string_view name) const
 {
     return GetPrivateImpl(m_impl_ptr).SetName(name);
 }
 
-const std::string& RenderPattern::GetName() const META_PIMPL_NOEXCEPT
+std::string_view RenderPattern::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetName();
 }
@@ -152,12 +152,12 @@ IRenderPass& RenderPass::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
-bool RenderPass::SetName(const std::string& name) const
+bool RenderPass::SetName(std::string_view name) const
 {
     return GetPrivateImpl(m_impl_ptr).SetName(name);
 }
 
-const std::string& RenderPass::GetName() const META_PIMPL_NOEXCEPT
+std::string_view RenderPass::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetName();
 }

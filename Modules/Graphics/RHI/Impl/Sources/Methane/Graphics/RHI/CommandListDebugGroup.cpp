@@ -97,12 +97,12 @@ ICommandListDebugGroup& CommandListDebugGroup::GetInterface() const META_PIMPL_N
     return GetPublicInterface(m_impl_ptr);
 }
 
-bool CommandListDebugGroup::SetName(const std::string& name) const
+bool CommandListDebugGroup::SetName(std::string_view name) const
 {
     return GetPrivateImpl(m_impl_ptr).SetName(name);
 }
 
-const std::string& CommandListDebugGroup::GetName() const META_PIMPL_NOEXCEPT
+std::string_view CommandListDebugGroup::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetName();
 }

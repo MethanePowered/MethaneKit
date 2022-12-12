@@ -23,10 +23,9 @@ MacOS platform type converters.
 
 #pragma once
 
-#include <string>
-#include <vector>
+#import <Foundation/NSString.h>
 
-#include <Foundation/NSString.h>
+#include <string>
 
 namespace Methane::MacOS
 {
@@ -35,58 +34,26 @@ namespace Methane::MacOS
 // Conversion from STL to NS types
 // ===============================
 
-template<class STDType, class NSType>
-inline NSType ConvertToNsType(const STDType&);
-
-template<>
-inline BOOL ConvertToNsType<bool, BOOL>(const bool& flag)
+inline BOOL ConvertToNsBool(bool flag)
 {
     return flag ? YES : NO;
 }
 
-template<>
-inline NSString* ConvertToNsType<std::string, NSString*>(const std::string& str)
+inline NSString* ConvertToNsString(std::string_view str)
 {
     return [[NSString alloc] initWithUTF8String:str.data()];
-}
-
-template<typename STDItemType, typename NSItemType>
-inline NSMutableArray<NSItemType>* ConvertToNsList(const std::vector<STDItemType>& std_vector)
-{
-    NSMutableArray<NSItemType>* p_mutable_array = [[NSMutableArray<NSItemType> alloc] init];
-    if (!p_mutable_array)
-        return nil;
-
-    for(const STDItemType& std_item : std_vector)
-    {
-        NSItemType p_ns_item = ConvertToNsType<STDItemType, NSItemType>(std_item);
-        if (!p_ns_item)
-            continue;
-
-        [p_mutable_array addObject:p_ns_item];
-    }
-
-    return p_mutable_array;
 }
 
 // ===============================
 // Conversion from NS to QT types
 // ===============================
 
-template<class NSType, class STDType>
-inline STDType ConvertFromNsType(const BOOL& value);
-
-template<class NSType, class STDType>
-inline STDType ConvertFromNsType(const NSString* p_ns_str);
-
-template<>
-inline bool ConvertFromNsType<BOOL, bool>(const BOOL& value)
+inline bool ConvertFromNsBool(BOOL value)
 {
     return value == YES;
 }
 
-template<>
-inline std::string ConvertFromNsType<NSString, std::string>(const NSString* p_ns_str)
+inline std::string ConvertFromNsString(const NSString* p_ns_str)
 {
     return p_ns_str ? std::string([p_ns_str UTF8String]) : std::string();
 }

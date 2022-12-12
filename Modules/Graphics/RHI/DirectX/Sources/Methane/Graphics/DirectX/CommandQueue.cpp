@@ -111,7 +111,7 @@ CommandQueue::~CommandQueue()
 #endif
 }
 
-bool CommandQueue::SetName(const std::string& name)
+bool CommandQueue::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (name == GetName())
@@ -121,7 +121,7 @@ bool CommandQueue::SetName(const std::string& name)
     m_cp_command_queue->SetName(nowide::widen(name).c_str());
 
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
-    TracyD3D12ContextName(m_tracy_context, GetName().c_str(), static_cast<uint16_t>(name.length()));
+    TracyD3D12ContextName(m_tracy_context, GetName().data(), static_cast<uint16_t>(name.length()));
 #endif
 
     return true;

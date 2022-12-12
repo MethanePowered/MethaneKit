@@ -48,8 +48,8 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     ICommandListDebugGroup& GetInterface() const META_PIMPL_NOEXCEPT;
 
-    bool SetName(const std::string& name) const;
-    const std::string& GetName() const META_PIMPL_NOEXCEPT;
+    bool SetName(std::string_view name) const;
+    std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     CommandListDebugGroup AddSubGroup(Data::Index id, const std::string& name);
     [[nodiscard]] Opt<CommandListDebugGroup> GetSubGroup(Data::Index id) const META_PIMPL_NOEXCEPT;

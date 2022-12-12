@@ -40,7 +40,7 @@ public:
     Sampler(const Base::Context& context, const Settings& settings);
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
     
     const id<MTLSamplerState>& GetNativeSamplerState() const noexcept { return m_mtl_sampler_state; }
 

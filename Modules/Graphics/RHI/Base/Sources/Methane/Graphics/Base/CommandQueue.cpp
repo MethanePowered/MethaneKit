@@ -37,7 +37,7 @@ CommandQueue::CommandQueue(const Context& context, Rhi::CommandListType command_
     META_FUNCTION_TASK();
 }
 
-bool CommandQueue::SetName(const std::string& name)
+bool CommandQueue::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Object::SetName(name))

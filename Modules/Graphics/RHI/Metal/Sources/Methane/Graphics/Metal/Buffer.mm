@@ -98,13 +98,13 @@ Buffer::Buffer(const Base::Context& context, const Settings& settings)
     META_FUNCTION_TASK();
 }
 
-bool Buffer::SetName(const std::string& name)
+bool Buffer::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Resource::SetName(name))
         return false;
 
-    m_mtl_buffer.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
+    m_mtl_buffer.label = MacOS::ConvertToNsString(name);
     return true;
 }
 

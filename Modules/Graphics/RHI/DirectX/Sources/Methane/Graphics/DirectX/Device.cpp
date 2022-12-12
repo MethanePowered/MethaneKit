@@ -162,7 +162,7 @@ Device::Device(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL fe
     META_FUNCTION_TASK();
 }
 
-bool Device::SetName(const std::string& name)
+bool Device::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::Device::SetName(name))

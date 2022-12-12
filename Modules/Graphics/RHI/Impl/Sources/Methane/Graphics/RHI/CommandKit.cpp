@@ -91,12 +91,12 @@ ICommandKit& CommandKit::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
-bool CommandKit::SetName(const std::string& name) const
+bool CommandKit::SetName(std::string_view name) const
 {
     return GetPrivateImpl(m_impl_ptr).SetName(name);
 }
 
-const std::string& CommandKit::GetName() const META_PIMPL_NOEXCEPT
+std::string_view CommandKit::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetName();
 }

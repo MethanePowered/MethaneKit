@@ -115,8 +115,8 @@ void AppIOS::ShowAlert(const Message& msg)
     AppDelegate* app_delegate = static_cast<AppDelegate*>([UIApplication sharedApplication].delegate);
     META_CHECK_ARG_NOT_NULL(app_delegate);
 
-    [app_delegate alert: MacOS::ConvertToNsType<std::string, NSString*>(msg.title)
-        withInformation: MacOS::ConvertToNsType<std::string, NSString*>(msg.information)
+    [app_delegate alert: MacOS::ConvertToNsString(msg.title)
+        withInformation: MacOS::ConvertToNsString(msg.information)
                andStyle: ConvertMessageTypeToNsAlertStyle(msg.type)];
 
     AppBase::ShowAlert(msg);

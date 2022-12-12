@@ -37,7 +37,7 @@ struct IObject;
 class NameConflictException : public std::invalid_argument
 {
 public:
-    explicit NameConflictException(const std::string& name);
+    explicit NameConflictException(std::string_view name);
 };
 
 struct IObjectRegistry
@@ -65,9 +65,9 @@ struct IObject
 {
     using IRegistry = IObjectRegistry;
 
-    virtual bool SetName(const std::string& name) = 0;
-    [[nodiscard]] virtual const std::string& GetName() const noexcept = 0;
-    [[nodiscard]] virtual Ptr<IObject>       GetPtr() = 0;
+    virtual bool SetName(std::string_view name) = 0;
+    [[nodiscard]] virtual std::string_view GetName() const noexcept = 0;
+    [[nodiscard]] virtual Ptr<IObject>     GetPtr() = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

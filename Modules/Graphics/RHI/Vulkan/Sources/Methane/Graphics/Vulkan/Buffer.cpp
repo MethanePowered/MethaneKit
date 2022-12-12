@@ -196,7 +196,7 @@ void Buffer::SetData(const Rhi::SubResources& sub_resources, Rhi::ICommandQueue&
     GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources);
 }
 
-bool Buffer::SetName(const std::string& name)
+bool Buffer::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Resource::SetName(name))

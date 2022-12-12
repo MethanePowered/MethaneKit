@@ -59,14 +59,14 @@ CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType co
     );
 }
 
-bool CommandQueue::SetName(const std::string& name)
+bool CommandQueue::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::CommandQueue::SetName(name))
         return false;
 
     META_CHECK_ARG_NOT_NULL(m_mtl_command_queue);
-    m_mtl_command_queue.label = MacOS::ConvertToNsType<std::string, NSString*>(name);
+    m_mtl_command_queue.label = MacOS::ConvertToNsString(name);
     return true;
 }
 

@@ -89,7 +89,7 @@ void RenderContext::Release()
     Context<Base::RenderContext>::Release();
 }
 
-bool RenderContext::SetName(const std::string& name)
+bool RenderContext::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Context::SetName(name))
@@ -375,11 +375,11 @@ void RenderContext::ResetNativeSwapchain()
 void RenderContext::ResetNativeObjectNames() const
 {
     META_FUNCTION_TASK();
-    const std::string& context_name = GetName();
+    const std::string_view context_name = GetName();
     if (context_name.empty())
         return;
 
-    SetVulkanObjectName(m_vk_device, m_vk_unique_surface.get(), context_name.c_str());
+    SetVulkanObjectName(m_vk_device, m_vk_unique_surface.get(), context_name.data());
 
     uint32_t frame_index = 0u;
     for (const vk::UniqueSemaphore& vk_unique_frame_semaphore : m_vk_frame_semaphores_pool)

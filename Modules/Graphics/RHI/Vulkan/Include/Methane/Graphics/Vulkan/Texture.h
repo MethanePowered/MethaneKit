@@ -126,7 +126,7 @@ public:
     void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
 
     // IObject overide
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     // ITexture overrides
     const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }

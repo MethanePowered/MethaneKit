@@ -47,7 +47,7 @@ public:
     void WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue) override;
 
     // IObject override
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
 private:
     CommandQueue& GetMetalCommandQueue();

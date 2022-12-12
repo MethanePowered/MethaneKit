@@ -102,7 +102,7 @@ void CommandQueueTracking::Execute(Rhi::ICommandListSet& command_lists, const Rh
     m_execution_waiting_condition_var.notify_one();
 }
 
-bool CommandQueueTracking::SetName(const std::string& name)
+bool CommandQueueTracking::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!CommandQueue::SetName(name))

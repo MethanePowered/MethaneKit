@@ -152,7 +152,7 @@ Program::~Program()
     }
 }
 
-bool Program::SetName(const std::string& name)
+bool Program::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::Program::SetName(name))

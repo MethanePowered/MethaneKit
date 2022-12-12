@@ -60,8 +60,8 @@ public:
     [[nodiscard]] std::string ToString() const override { return { }; }
 
     // IObject interface
-    bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
-    [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
+    bool SetName(std::string_view) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
+    [[nodiscard]] std::string_view GetName() const noexcept override { static std::string name; return name; }
     [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return shared_from_this(); }
 };
 
@@ -84,8 +84,8 @@ public:
     void Execute(Rhi::ICommandListSet&, const Rhi::ICommandList::CompletedCallback&) override { META_FUNCTION_NOT_IMPLEMENTED(); }
 
     // IObject interface
-    bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
-    [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
+    bool SetName(std::string_view) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
+    [[nodiscard]] std::string_view GetName() const noexcept override { static std::string name; return name; }
     [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return shared_from_this(); }
 
 private:
@@ -131,9 +131,9 @@ public:
     [[nodiscard]] Rhi::ICommandQueue& GetCommandQueue() override              { return m_command_queue; }
 
     // IObject interface
-    bool SetName(const std::string&) override                                 { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
-    [[nodiscard]] const std::string& GetName() const noexcept override        { static std::string name; return name; }
-    [[nodiscard]] Ptr<Rhi::IObject>  GetPtr() override                        { return std::enable_shared_from_this<FakeCommandList<CommandListT, command_list_type>>::shared_from_this(); }
+    bool SetName(std::string_view) override                                   { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
+    [[nodiscard]] std::string_view  GetName() const noexcept override         { return {}; }
+    [[nodiscard]] Ptr<Rhi::IObject> GetPtr() override                         { return std::enable_shared_from_this<FakeCommandList<CommandListT, command_list_type>>::shared_from_this(); }
 
 private:
     Rhi::ICommandQueue& m_command_queue;
@@ -183,9 +183,9 @@ public:
     [[nodiscard]] Rhi::ICommandKit& GetDefaultCommandKit(Rhi::ICommandQueue&) const override    { throw Methane::NotImplementedException("GetDefaultCommandKit"); }
 
     // IObject interface
-    bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
-    [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
-    [[nodiscard]] Ptr<IObject>       GetPtr() override                 { return shared_from_this(); }
+    bool SetName(std::string_view) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
+    [[nodiscard]] std::string_view GetName() const noexcept override { static std::string name; return name; }
+    [[nodiscard]] Ptr<IObject>     GetPtr() override                 { return shared_from_this(); }
 
 private:
     Settings             m_settings;
@@ -211,8 +211,8 @@ public:
     AttachmentFormats          GetAttachmentFormats() const noexcept override { return {}; }
 
     // IObject interface
-    bool SetName(const std::string&) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
-    [[nodiscard]] const std::string& GetName() const noexcept override { static std::string name; return name; }
+    bool SetName(std::string_view) override                          { META_FUNCTION_NOT_IMPLEMENTED_RETURN(false); }
+    [[nodiscard]] std::string_view GetName() const noexcept override { static std::string name; return name; }
     [[nodiscard]] Ptr<Rhi::IObject>  GetPtr() override                 { return shared_from_this(); }
 
 private:

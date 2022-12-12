@@ -51,7 +51,7 @@ public:
     void Complete() override;
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     using D3D12CommandLists = std::vector<ID3D12CommandList*>;
     D3D12CommandLists GetNativeCommandLists() const;

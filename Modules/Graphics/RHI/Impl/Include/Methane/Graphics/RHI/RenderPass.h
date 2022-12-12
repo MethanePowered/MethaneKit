@@ -56,8 +56,8 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IRenderPattern& GetInterface() const META_PIMPL_NOEXCEPT;
 
-    bool SetName(const std::string& name) const;
-    const std::string& GetName() const META_PIMPL_NOEXCEPT;
+    bool SetName(std::string_view name) const;
+    std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
 private:
     class Impl;
@@ -91,8 +91,8 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IRenderPass& GetInterface() const META_PIMPL_NOEXCEPT;
 
-    bool SetName(const std::string& name) const;
-    const std::string& GetName() const META_PIMPL_NOEXCEPT;
+    bool SetName(std::string_view name) const;
+    std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
 private:
     class Impl;

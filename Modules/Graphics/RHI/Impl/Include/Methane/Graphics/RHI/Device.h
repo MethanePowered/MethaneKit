@@ -51,8 +51,8 @@ public:
     const Capabilities& GetCapabilities() const META_PIMPL_NOEXCEPT;
     std::string         ToString() const;
 
-    bool SetName(const std::string& name) const;
-    const std::string& GetName() const META_PIMPL_NOEXCEPT;
+    bool SetName(std::string_view name) const;
+    std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
 private:
     class Impl;

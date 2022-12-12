@@ -66,7 +66,7 @@ public:
     void Apply(Base::RenderCommandList& render_command_list, Groups state_groups) override;
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     const vk::Pipeline& GetNativePipeline() const noexcept { return m_vk_unique_pipeline.get(); }
 

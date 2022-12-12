@@ -46,9 +46,9 @@ void SetVulkanObjectName(const vk::Device& vk_device, const VulkanObjectType& vk
 }
 
 template<typename VulkanObjectType>
-void SetVulkanObjectName(const vk::Device& vk_device, const VulkanObjectType& vk_object, const std::string& name)
+void SetVulkanObjectName(const vk::Device& vk_device, const VulkanObjectType& vk_object, std::string_view name)
 {
-    SetVulkanObjectName<VulkanObjectType>(vk_device, vk_object, name.c_str());
+    SetVulkanObjectName<VulkanObjectType>(vk_device, vk_object, name.data());
 }
 
 } // namespace Methane::Graphics

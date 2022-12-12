@@ -432,13 +432,13 @@ void RenderState::Apply(Base::RenderCommandList& render_command_list, Groups /*s
     vulkan_render_command_list.GetNativeCommandBufferDefault().bindPipeline(vk::PipelineBindPoint::eGraphics, GetNativePipeline());
 }
 
-bool RenderState::SetName(const std::string& name)
+bool RenderState::SetName(std::string_view name)
 {
     META_FUNCTION_TASK();
     if (!Base::RenderState::SetName(name))
         return false;
 
-    SetVulkanObjectName(m_vk_context.GetVulkanDevice().GetNativeDevice(), m_vk_unique_pipeline.get(), name.c_str());
+    SetVulkanObjectName(m_vk_context.GetVulkanDevice().GetNativeDevice(), m_vk_unique_pipeline.get(), name);
     return true;
 }
 

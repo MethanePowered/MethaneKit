@@ -57,7 +57,7 @@ public:
     Program(const Base::Context& context, const Settings& settings);
 
     // Base::Object overrides
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     Shader& GetVulkanShader(Rhi::ShaderType shader_type) const;
     const IContext& GetVulkanContext() const noexcept { return m_vk_context; }

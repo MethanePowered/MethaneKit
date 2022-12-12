@@ -43,7 +43,7 @@ public:
     void WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue) override;
 
     // IObject override
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     const vk::Semaphore& GetNativeSemaphore() const noexcept { return m_vk_unique_semaphore.get(); }
 

@@ -43,7 +43,7 @@ public:
     Rhi::ITimestampQueryPool* GetTimestampQueryPool() const noexcept override { return nullptr; }
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
     
     const IContext& GetMetalContext() const noexcept;
     const RenderContext& GetMetalRenderContext() const;

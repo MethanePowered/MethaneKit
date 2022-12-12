@@ -71,7 +71,7 @@ public:
     void Commit() override;
 
     // IObject interface
-    bool SetName(const std::string& name) override;
+    bool SetName(std::string_view name) override;
 
     RenderPass& GetPass();
 

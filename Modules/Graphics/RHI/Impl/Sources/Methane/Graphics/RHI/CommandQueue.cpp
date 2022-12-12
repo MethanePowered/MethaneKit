@@ -97,12 +97,12 @@ ICommandQueue& CommandQueue::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
-bool CommandQueue::SetName(const std::string& name) const
+bool CommandQueue::SetName(std::string_view name) const
 {
     return GetPrivateImpl(m_impl_ptr).SetName(name);
 }
 
-const std::string& CommandQueue::GetName() const META_PIMPL_NOEXCEPT
+std::string_view CommandQueue::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetName();
 }

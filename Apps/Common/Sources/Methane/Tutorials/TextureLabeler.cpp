@@ -102,7 +102,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
             false // intermediate render pass
         });
 
-    const std::string& rt_texture_name = m_rt_texture.GetName();
+    const std::string_view rt_texture_name = m_rt_texture.GetName();
     m_texture_face_render_pattern_ptr->SetName(fmt::format("Texture '{}' Face Render Pattern", rt_texture_name));
 
     gui::Text::SettingsUtf32 slice_text_settings

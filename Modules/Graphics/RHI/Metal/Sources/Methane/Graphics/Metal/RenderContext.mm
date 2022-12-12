@@ -67,7 +67,7 @@ RenderContext::RenderContext(const Platform::AppEnvironment& env, Base::Device& 
     META_FUNCTION_TASK();
     META_UNUSED(m_dispatch_semaphore);
 
-    m_frame_capture_scope.label = Methane::MacOS::ConvertToNsType<std::string, NSString*>(device.GetName() + " Frame Scope");
+    m_frame_capture_scope.label = MacOS::ConvertToNsString(fmt::format("{} Frame Scope", device.GetName()));
     [MTLCaptureManager sharedCaptureManager].defaultCaptureScope = m_frame_capture_scope;
 
 #ifdef CAPTURE_INITIALIZATION_SCOPE
@@ -234,8 +234,8 @@ void RenderContext::Capture(const id<MTLCaptureScope>& mtl_capture_scope)
     NSError* ns_error = nil;
     const bool capture_success = [mtl_capture_manager startCaptureWithDescriptor:mtl_capture_desc error:&ns_error];
     META_CHECK_ARG_TRUE_DESCR(capture_success, "failed to capture Metal scope '{}', error: {}",
-                              MacOS::ConvertFromNsType<NSString, std::string>(mtl_capture_scope.label),
-                              MacOS::ConvertFromNsType<NSString, std::string>([ns_error localizedDescription]));
+                              MacOS::ConvertFromNsString(mtl_capture_scope.label),
+                              MacOS::ConvertFromNsString([ns_error localizedDescription]));
 }
 
 } // namespace Methane::Graphics::Metal
