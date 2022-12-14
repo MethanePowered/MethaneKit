@@ -287,7 +287,7 @@ void RenderPass::UpdateNativeRenderPassDesc(bool settings_changed)
         m_depth_stencil_desc.reset();
     }
 
-    const Pattern::Settings& pattern_settings = GetBasePattern().GetSettings();
+    const RenderPatternSettings& pattern_settings = GetBasePattern().GetSettings();
 
     uint32_t color_attachment_index = 0;
     for (const Base::RenderPass::ColorAttachment& color_attachment : pattern_settings.color_attachments)
@@ -331,7 +331,7 @@ void RenderPass::UpdateNativeClearDesc()
     META_FUNCTION_TASK();
 
     m_rt_clear_infos.clear();
-    const Pattern::Settings& settings = GetBasePattern().GetSettings();
+    const RenderPatternSettings& settings = GetBasePattern().GetSettings();
     for (const Base::RenderPass::ColorAttachment& color_attach : settings.color_attachments)
     {
         if (color_attach.load_action != Base::RenderPass::Attachment::LoadAction::Clear)
@@ -347,7 +347,7 @@ template<typename FuncType>
 void RenderPass::ForEachAccessibleDescriptorHeap(const FuncType& do_action) const
 {
     META_FUNCTION_TASK();
-    const Pattern::Settings& settings = GetBasePattern().GetSettings();
+    const RenderPatternSettings& settings = GetBasePattern().GetSettings();
     Data::ForEachBitInEnumMask(settings.shader_access, [this, &do_action](Access access_bit)
     {
         const DescriptorHeap::Type heap_type = GetDescriptorHeapTypeByAccess(access_bit);
@@ -490,7 +490,7 @@ const D3D12_CPU_DESCRIPTOR_HANDLE* RenderPass::GetNativeDepthStencilCPUHandle() 
     if (m_native_ds_cpu_handle.ptr)
         return &m_native_ds_cpu_handle;
 
-    const Pattern::Settings& settings = GetBasePattern().GetSettings();
+    const RenderPatternSettings& settings = GetBasePattern().GetSettings();
     if (!settings.depth_attachment)
         return nullptr;
 
