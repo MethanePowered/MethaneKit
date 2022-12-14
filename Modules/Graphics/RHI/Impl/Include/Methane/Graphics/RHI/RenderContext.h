@@ -58,12 +58,14 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IRenderContext& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // IObject interface methods
     bool SetName(std::string_view name) const;
     std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
+    // IContext interface methods
     [[nodiscard]] OptionMask GetOptions() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] tf::Executor& GetParallelExecutor() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] ObjectRegistry GetObjectRegistry() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] IObjectRegistry& GetObjectRegistry() const META_PIMPL_NOEXCEPT;
     void RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT;
     void CompleteInitialization();
     [[nodiscard]] bool IsCompletingInitialization() const META_PIMPL_NOEXCEPT;
@@ -76,16 +78,15 @@ public:
     [[nodiscard]] CommandKit GetUploadCommandKit() const;
     [[nodiscard]] CommandKit GetRenderCommandKit() const;
 
+    // IRenderContext interface methods
     [[nodiscard]] bool ReadyToRender() const;
     void Resize(const FrameSize& frame_size);
     void Present();
-
     [[nodiscard]] Platform::AppView  GetAppView() const;
     [[nodiscard]] const Settings&    GetSettings() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] uint32_t           GetFrameBufferIndex() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] uint32_t           GetFrameIndex() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] const IFpsCounter& GetFpsCounter() const META_PIMPL_NOEXCEPT;
-
     bool SetVSyncEnabled(bool vsync_enabled);
     bool SetFrameBuffersCount(uint32_t frame_buffers_count);
     bool SetFullScreen(bool is_full_screen);

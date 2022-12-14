@@ -53,9 +53,11 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     ITransferCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // IObject interface methods
     bool SetName(std::string_view name) const;
     std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
+    // ICommandList interface methods
     void  PushDebugGroup(DebugGroup& debug_group);
     void  PopDebugGroup();
     void  Reset(DebugGroup* debug_group_ptr = nullptr);

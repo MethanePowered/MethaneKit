@@ -15,6 +15,8 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ResourceBarriers.h
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/Shader.h
+    ${INCLUDE_DIR}/Program.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/TransferCommandList.h
 )
@@ -29,6 +31,8 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/RenderPass.cpp
     ${SOURCES_DIR}/RenderContext.cpp
+    ${SOURCES_DIR}/Shader.cpp
+    ${SOURCES_DIR}/Program.cpp
     ${SOURCES_DIR}/RenderCommandList.cpp
     ${SOURCES_DIR}/TransferCommandList.cpp
 )

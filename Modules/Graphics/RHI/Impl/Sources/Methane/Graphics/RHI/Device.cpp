@@ -80,6 +80,16 @@ IDevice& Device::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
+bool Device::SetName(std::string_view name) const
+{
+    return GetPrivateImpl(m_impl_ptr).SetName(name);
+}
+
+std::string_view Device::GetName() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetName();
+}
+
 const std::string& Device::GetAdapterName() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetAdapterName();
@@ -98,16 +108,6 @@ const DeviceCaps& Device::GetCapabilities() const META_PIMPL_NOEXCEPT
 std::string Device::ToString() const
 {
     return GetPrivateImpl(m_impl_ptr).ToString();
-}
-
-bool Device::SetName(std::string_view name) const
-{
-    return GetPrivateImpl(m_impl_ptr).SetName(name);
-}
-
-std::string_view Device::GetName() const META_PIMPL_NOEXCEPT
-{
-    return GetPrivateImpl(m_impl_ptr).GetName();
 }
 
 class System::Impl : public ImplWrapper<ISystem, SystemImpl>

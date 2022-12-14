@@ -32,15 +32,15 @@ Base implementation of the named object interface.
 namespace Methane::Graphics::Base
 {
 
-class ObjectRegistry
+class ObjectRegistry final
     : public Rhi::IObjectRegistry
     , private Data::Receiver<Rhi::IObjectCallback>
 {
 public:
-    void              AddGraphicsObject(Rhi::IObject& object) override;
-    void              RemoveGraphicsObject(Rhi::IObject& object) override;
-    Ptr<Rhi::IObject> GetGraphicsObject(const std::string& object_name) const noexcept override;
-    bool              HasGraphicsObject(const std::string& object_name) const noexcept override;
+    void                 AddGraphicsObject(Rhi::IObject& object) override;
+    void                 RemoveGraphicsObject(Rhi::IObject& object) override;
+    Ptr<Rhi::IObject>    GetGraphicsObject(const std::string& object_name) const noexcept override;
+    bool                 HasGraphicsObject(const std::string& object_name) const noexcept override;
 
 private:
     // IObjectCallback callback

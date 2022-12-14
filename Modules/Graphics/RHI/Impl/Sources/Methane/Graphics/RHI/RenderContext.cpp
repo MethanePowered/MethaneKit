@@ -21,7 +21,6 @@ Methane RenderContext PIMPL wrappers for direct calls to final implementation.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/Device.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
@@ -119,9 +118,9 @@ tf::Executor& RenderContext::GetParallelExecutor() const META_PIMPL_NOEXCEPT
     return GetPrivateImpl(m_impl_ptr).GetParallelExecutor();
 }
 
-ObjectRegistry RenderContext::GetObjectRegistry() const META_PIMPL_NOEXCEPT
+IObjectRegistry& RenderContext::GetObjectRegistry() const META_PIMPL_NOEXCEPT
 {
-    return ObjectRegistry(GetPrivateImpl(m_impl_ptr).GetObjectRegistry());
+    return GetPrivateImpl(m_impl_ptr).GetObjectRegistry();
 }
 
 void RenderContext::RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT

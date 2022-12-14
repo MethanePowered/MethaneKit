@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/ObjectRegistry.h
-Methane ObjectRegistry PIMPL wrappers for direct calls to final implementation.
+FILE: Methane/Graphics/RHI/Shader.h
+Methane Shader PIMPL wrappers for direct calls to final implementation.
 
 ******************************************************************************/
 
@@ -25,25 +25,38 @@ Methane ObjectRegistry PIMPL wrappers for direct calls to final implementation.
 
 #include "Pimpl.h"
 
-#include <Methane/Graphics/RHI/ICommandList.h>
+#include <Methane/Graphics/RHI/IShader.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-class ObjectRegistry
+class RenderContext;
+
+class Shader
 {
 public:
-    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ObjectRegistry);
+    using Type = ShaderType;
+    using Types = ShaderTypes;
+    using MacroDefinition = ShaderMacroDefinition;
+    using MacroDefinitions = ShaderMacroDefinitions;
+    using EntryFunction = ShaderEntryFunction;
+    using Settings = ShaderSettings;
 
-    ObjectRegistry(const Ptr<IObjectRegistry>& interface_ptr);
-    ObjectRegistry(IObjectRegistry& interface_ref);
-    ObjectRegistry(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
+    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Shader);
 
-    void Init(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
+    Shader(const Ptr<IShader>& interface_ptr);
+    Shader(IShader& interface_ref);
+    Shader(Type type, const RenderContext& context, const Settings& settings);
+
+    void Init(Type type, const RenderContext& context, const Settings& settings);
     void Release();
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    IObjectRegistry& GetInterface() const META_PIMPL_NOEXCEPT;
+    IShader& GetInterface() const META_PIMPL_NOEXCEPT;
+
+    // IShader interface methods
+    [[nodiscard]] Type            GetType() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
 
 private:
     class Impl;

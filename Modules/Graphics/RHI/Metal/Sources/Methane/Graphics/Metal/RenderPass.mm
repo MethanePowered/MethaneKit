@@ -124,7 +124,7 @@ void RenderPass::Reset()
     META_FUNCTION_TASK();
 
     m_mtl_pass_descriptor = [MTLRenderPassDescriptor renderPassDescriptor];
-    const Pattern::Settings& pattern_settings = GetBasePattern().GetSettings();
+    const IPattern::Settings& pattern_settings = GetBasePattern().GetSettings();
 
     uint32_t color_attach_index = 0;
     for(const ColorAttachment& color_attach : pattern_settings.color_attachments)

@@ -159,7 +159,7 @@ CommandListState TransferCommandList::GetState() const META_PIMPL_NOEXCEPT
 
 CommandQueue TransferCommandList::GetCommandQueue()
 {
-    return GetPrivateImpl(m_impl_ptr).GetCommandQueue();
+    return CommandQueue(GetPrivateImpl(m_impl_ptr).GetCommandQueue());
 }
 
 } // namespace Methane::Graphics::Rhi

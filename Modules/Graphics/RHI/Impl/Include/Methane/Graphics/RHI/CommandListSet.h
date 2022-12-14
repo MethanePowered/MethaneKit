@@ -45,6 +45,7 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     ICommandListSet& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // ICommandListSet interface methods
     [[nodiscard]] Data::Size                GetCount() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] const Refs<ICommandList>& GetRefs() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] ICommandList&             operator[](Data::Index index) const;

@@ -109,6 +109,26 @@ std::string_view RenderPattern::GetName() const META_PIMPL_NOEXCEPT
     return GetPrivateImpl(m_impl_ptr).GetName();
 }
 
+RenderContext RenderPattern::GetRenderContext() const META_PIMPL_NOEXCEPT
+{
+    return RenderContext(GetPrivateImpl(m_impl_ptr).GetRenderContext());
+}
+
+const RenderPatternSettings& RenderPattern::GetSettings() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetSettings();
+}
+
+Data::Size RenderPattern::GetAttachmentCount() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetAttachmentCount();
+}
+
+AttachmentFormats RenderPattern::GetAttachmentFormats() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetAttachmentFormats();
+}
+
 class RenderPass::Impl : public ImplWrapper<IRenderPass, RenderPassImpl>
 {
 public:
@@ -160,6 +180,26 @@ bool RenderPass::SetName(std::string_view name) const
 std::string_view RenderPass::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetName();
+}
+
+RenderPattern RenderPass::GetPattern() const META_PIMPL_NOEXCEPT
+{
+    return RenderPattern(GetPrivateImpl(m_impl_ptr).GetPattern());
+}
+
+const RenderPassSettings& RenderPass::GetSettings() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetSettings();
+}
+
+bool RenderPass::Update(const Settings& settings) const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).Update(settings);
+}
+
+void RenderPass::ReleaseAttachmentTextures() const META_PIMPL_NOEXCEPT
+{
+    GetPrivateImpl(m_impl_ptr).ReleaseAttachmentTextures();
 }
 
 } // namespace Methane::Graphics::Rhi

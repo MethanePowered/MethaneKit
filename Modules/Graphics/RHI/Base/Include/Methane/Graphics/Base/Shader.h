@@ -52,6 +52,7 @@ public:
     Shader(Type type, const Context& context, const Settings& settings);
 
     // IShader interface
+    Ptr<IShader>     GetPtr() final                     { return shared_from_this(); }
     Type             GetType() const noexcept final     { return m_type; }
     const Settings&  GetSettings() const noexcept final { return m_settings; }
 
@@ -60,7 +61,7 @@ public:
 
     const Context&   GetContext() const noexcept { return m_context; }
     std::string_view GetCachedArgName(std::string_view arg_name) const;
-    Ptr<Shader>      GetPtr() { return shared_from_this(); }
+
 
 protected:
     uint32_t    GetProgramInputBufferIndexByArgumentSemantic(const Program& program, const std::string& argument_semantic) const;

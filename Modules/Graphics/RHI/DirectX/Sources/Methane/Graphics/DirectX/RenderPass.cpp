@@ -46,7 +46,7 @@ Ptr<IRenderPattern> Rhi::IRenderPattern::Create(IRenderContext& render_context, 
     return std::make_shared<Base::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
 }
 
-Ptr<IRenderPass> Rhi::IRenderPass::Create(Pattern& render_pattern, const Settings& settings)
+Ptr<IRenderPass> Rhi::IRenderPass::Create(IPattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<DirectX::RenderPass>(dynamic_cast<Base::RenderPattern&>(render_pattern), settings);

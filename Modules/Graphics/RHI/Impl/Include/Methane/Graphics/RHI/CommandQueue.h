@@ -48,9 +48,11 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     ICommandQueue& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // IObject interface methods
     bool SetName(std::string_view name) const;
     std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
+    // ICommandQueue interface methods
     [[nodiscard]] const IContext&      GetContext() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] CommandListType      GetCommandListType() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] uint32_t             GetFamilyIndex() const META_PIMPL_NOEXCEPT;

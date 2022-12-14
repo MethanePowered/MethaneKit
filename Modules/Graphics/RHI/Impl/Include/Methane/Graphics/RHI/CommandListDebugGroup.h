@@ -48,9 +48,11 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     ICommandListDebugGroup& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // IObject interface methods
     bool SetName(std::string_view name) const;
     std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
+    // ICommandListDebugGroup interface methods
     CommandListDebugGroup AddSubGroup(Data::Index id, const std::string& name);
     [[nodiscard]] Opt<CommandListDebugGroup> GetSubGroup(Data::Index id) const META_PIMPL_NOEXCEPT;
     [[nodiscard]] bool HasSubGroups() const META_PIMPL_NOEXCEPT;

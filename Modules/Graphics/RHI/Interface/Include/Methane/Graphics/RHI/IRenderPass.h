@@ -208,7 +208,7 @@ struct IRenderPass
     : virtual IObject // NOSONAR
     , virtual Data::IEmitter<IRenderPassCallback> // NOSONAR
 {
-    using Pattern           = IRenderPattern;
+    using IPattern          = IRenderPattern;
     using Attachment        = RenderPassAttachment;
     using ColorAttachment   = RenderPassColorAttachment;
     using ColorAttachments  = RenderPassColorAttachments;
@@ -224,6 +224,7 @@ struct IRenderPass
 
     // IRenderPass interface
     virtual const IRenderPattern& GetPattern() const noexcept = 0;
+    virtual IRenderPattern& GetPattern() noexcept = 0;
     virtual const Settings& GetSettings() const noexcept = 0;
     virtual bool Update(const Settings& settings) = 0;
     virtual void ReleaseAttachmentTextures() = 0;

@@ -101,6 +101,7 @@ struct IShader
     [[nodiscard]] static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, std::string_view splitter = ", ") noexcept;
 
     // IShader interface
+    [[nodiscard]] virtual Ptr<IShader>    GetPtr() = 0;
     [[nodiscard]] virtual Type            GetType() const noexcept = 0;
     [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;
 

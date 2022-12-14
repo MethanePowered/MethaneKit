@@ -46,13 +46,15 @@ public:
 
     IDevice& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // IObject interface methods
+    bool SetName(std::string_view name) const;
+    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
+    // IDevice interface methods
     const std::string&  GetAdapterName() const META_PIMPL_NOEXCEPT;
     bool                IsSoftwareAdapter() const META_PIMPL_NOEXCEPT;
     const Capabilities& GetCapabilities() const META_PIMPL_NOEXCEPT;
     std::string         ToString() const;
-
-    bool SetName(std::string_view name) const;
-    std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
 private:
     class Impl;
@@ -73,6 +75,7 @@ public:
 
     ISystem& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // ISystem interface methods
     void CheckForChanges() const;
     [[nodiscard]] const Devices&    UpdateGpuDevices(const DeviceCaps& required_device_caps = {}) const;
     [[nodiscard]] const Devices&    UpdateGpuDevices(const Platform::AppEnvironment& app_env,

@@ -67,7 +67,8 @@ public:
                bool update_attachment_states = true);
 
     // IRenderPass interface
-    const Pattern&  GetPattern() const noexcept final  { return *m_pattern_base_ptr; }
+    const IPattern&  GetPattern() const noexcept final { return *m_pattern_base_ptr; }
+    IPattern& GetPattern() noexcept final              { return *m_pattern_base_ptr; }
     const Settings& GetSettings() const noexcept final { return m_settings; }
     bool Update(const Settings& settings) override;
     void ReleaseAttachmentTextures() override;

@@ -56,8 +56,15 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IRenderPattern& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // IObject interface methods
     bool SetName(std::string_view name) const;
     std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
+    // IRenderPattern interface methods
+    [[nodiscard]] RenderContext     GetRenderContext() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] const Settings&   GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] Data::Size        GetAttachmentCount() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] AttachmentFormats GetAttachmentFormats() const META_PIMPL_NOEXCEPT;
 
 private:
     class Impl;
@@ -91,8 +98,15 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IRenderPass& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // IObject interface methods
     bool SetName(std::string_view name) const;
     std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
+    // IRenderPass interface methods
+    RenderPattern GetPattern() const META_PIMPL_NOEXCEPT;
+    const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
+    bool Update(const Settings& settings) const META_PIMPL_NOEXCEPT;
+    void ReleaseAttachmentTextures() const META_PIMPL_NOEXCEPT;
 
 private:
     class Impl;
