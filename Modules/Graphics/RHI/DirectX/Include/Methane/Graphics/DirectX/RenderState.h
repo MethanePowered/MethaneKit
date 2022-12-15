@@ -44,25 +44,8 @@ namespace wrl = Microsoft::WRL;
 class RenderContext;
 class Program;
 
-class ViewState final : public Base::ViewState
-{
-public:
-    explicit ViewState(const Settings& settings);
-
-    // IViewState overrides
-    bool Reset(const Settings& settings) override;
-    bool SetViewports(const Viewports& viewports) override;
-    bool SetScissorRects(const ScissorRects& scissor_rects) override;
-
-    // Base::ViewState interface
-    void Apply(Base::RenderCommandList& command_list) override;
-
-private:
-    std::vector<CD3DX12_VIEWPORT> m_dx_viewports;
-    std::vector<CD3DX12_RECT>     m_dx_scissor_rects;
-};
-
-class RenderState final : public Base::RenderState
+class RenderState final
+    : public Base::RenderState
 {
 public:
     RenderState(const Base::RenderContext& context, const Settings& settings);

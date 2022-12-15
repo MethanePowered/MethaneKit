@@ -16,41 +16,43 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/RenderState.h
-Vulkan implementation of the render state interface.
+FILE: Methane/Graphics/Vulkan/ViewState.h
+Vulkan implementation of the view state interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/Base/RenderState.h>
+#include <Methane/Graphics/Base/ViewState.h>
 
 #include <vulkan/vulkan.hpp>
+#include <vector>
 
 namespace Methane::Graphics::Vulkan
 {
 
 struct IContext;
 
-class RenderState final : public Base::RenderState
+class ViewState final
+    : public Base::ViewState
 {
 public:
-    RenderState(const Base::RenderContext& context, const Settings& settings);
-    
-    // IRenderState interface
-    void Reset(const Settings& settings) override;
+    explicit ViewState(const Settings& settings);
 
-    // Base::RenderState interface
-    void Apply(Base::RenderCommandList& render_command_list, Groups state_groups) override;
+    // IViewState overrides
+    bool Reset(const Settings& settings) override;
+    bool SetViewports(const Viewports& viewports) override;
+    bool SetScissorRects(const ScissorRects& scissor_rects) override;
 
-    // IObject interface
-    bool SetName(std::string_view name) override;
+    // Base::ViewState interface
+    void Apply(Base::RenderCommandList& command_list) override;
 
-    const vk::Pipeline& GetNativePipeline() const noexcept { return m_vk_unique_pipeline.get(); }
+    const std::vector<vk::Viewport>& GetNativeViewports() const noexcept    { return m_vk_viewports; }
+    const std::vector<vk::Rect2D>&   GetNativeScissorRects() const noexcept { return m_vk_scissor_rects; }
 
 private:
-    const IContext&    m_vk_context;
-    vk::UniquePipeline m_vk_unique_pipeline;
+    std::vector<vk::Viewport> m_vk_viewports;
+    std::vector<vk::Rect2D>   m_vk_scissor_rects;
 };
 
 } // namespace Methane::Graphics::Vulkan

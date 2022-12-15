@@ -26,6 +26,7 @@ Methane render command list interface.
 #include "ICommandList.h"
 #include "IBuffer.h"
 #include "IRenderState.h"
+#include "IViewState.h"
 
 #include <Methane/Memory.hpp>
 

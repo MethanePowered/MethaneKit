@@ -45,6 +45,7 @@ namespace Methane::Graphics::Base
 {
 
 class ParallelRenderCommandList;
+class ViewState;
 
 class RenderCommandList
     : public Rhi::IRenderCommandList

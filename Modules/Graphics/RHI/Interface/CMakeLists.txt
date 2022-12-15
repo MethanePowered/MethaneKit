@@ -14,6 +14,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/IProgram.h
     ${INCLUDE_DIR}/IProgramBindings.h
     ${INCLUDE_DIR}/IRenderState.h
+    ${INCLUDE_DIR}/IViewState.h
     ${INCLUDE_DIR}/IResource.h
     ${INCLUDE_DIR}/IResourceBarriers.h
     ${INCLUDE_DIR}/ResourceView.h
@@ -41,6 +42,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/IProgram.cpp
     ${SOURCES_DIR}/IProgramBindings.cpp
     ${SOURCES_DIR}/IRenderState.cpp
+    ${SOURCES_DIR}/IViewState.cpp
     ${SOURCES_DIR}/IResource.cpp
     ${SOURCES_DIR}/IResourceBarriers.cpp
     ${SOURCES_DIR}/ITexture.cpp

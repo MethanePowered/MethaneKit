@@ -32,7 +32,8 @@ namespace Methane::Graphics::Rhi
 
 struct ICommandQueue;
 
-struct IFence : virtual IObject // NOSONAR
+struct IFence
+    : virtual IObject // NOSONAR
 {
     [[nodiscard]] static Ptr<IFence> Create(ICommandQueue& command_queue);
 

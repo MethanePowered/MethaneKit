@@ -23,12 +23,10 @@ Methane render state interface: specifies configuration of the graphics pipeline
 
 #include <Methane/Graphics/RHI/IRenderState.h>
 
-#include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
-#include <fmt/ranges.h>
 
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::RenderTargetSettings>
@@ -42,25 +40,6 @@ struct fmt::formatter<Methane::Graphics::Rhi::RenderTargetSettings>
 
 namespace Methane::Graphics::Rhi
 {
-
-bool ViewSettings::operator==(const ViewSettings& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return viewports == other.viewports &&
-           scissor_rects == other.scissor_rects;
-}
-
-bool ViewSettings::operator!=(const ViewSettings& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return !operator==(other);
-}
-
-ViewSettings::operator std::string() const
-{
-    META_FUNCTION_TASK();
-    return fmt::format("  - Viewports: {};\n  - Scissor Rects: {}.", fmt::join(viewports, ", "), fmt::join(scissor_rects, ", "));
-}
 
 bool RasterizerSettings::operator==(const RasterizerSettings& other) const noexcept
 {

@@ -16,45 +16,41 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Base/RenderState.h
-Base implementation of the render state interface.
+FILE: Methane/Graphics/Metal/ViewState.hh
+Metal implementation of the view state interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "Object.h"
+#include <Methane/Graphics/Base/ViewState.h>
 
-#include <Methane/Graphics/RHI/IRenderState.h>
+#import <Metal/Metal.h>
 
-namespace Methane::Graphics::Base
+#include <vector>
+
+namespace Methane::Graphics::Metal
 {
 
 class RenderContext;
-class RenderCommandList;
 
-class RenderState
-    : public Object
-    , public Rhi::IRenderState
+class ViewState final
+    : public Base::ViewState
 {
 public:
-    RenderState(const RenderContext& context, const Settings& settings);
+    explicit ViewState(const Settings& settings);
 
-    // IRenderState overrides
-    const Settings& GetSettings() const noexcept override { return m_settings; }
-    void Reset(const Settings& settings) override;
+    // IViewState overrides
+    bool Reset(const Settings& settings) override;
+    bool SetViewports(const Viewports& viewports) override;
+    bool SetScissorRects(const ScissorRects& scissor_rects) override;
 
-    // RenderState interface
-    virtual void Apply(RenderCommandList& command_list, Groups apply_groups) = 0;
-
-    const RenderContext& GetRenderContext() const noexcept { return m_context; }
-
-protected:
-    Rhi::IProgram& GetProgram();
+    // Base::ViewState interface
+    void Apply(Base::RenderCommandList& command_list) override;
 
 private:
-    const RenderContext& m_context;
-    Settings             m_settings;
+    std::vector<MTLViewport>    m_mtl_viewports;
+    std::vector<MTLScissorRect> m_mtl_scissor_rects;
 };
 
-} // namespace Methane::Graphics::Base
+} // namespace Methane::Graphics::Metal

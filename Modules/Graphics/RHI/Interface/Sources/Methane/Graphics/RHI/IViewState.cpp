@@ -16,40 +16,37 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Base/RenderState.cpp
-Base implementation of the render state interface.
+FILE: Methane/Graphics/RHI/IViewState.cpp
+Methane view state interface: viewports and clipping rects setup.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Base/RenderState.h>
+#include <Methane/Graphics/RHI/IViewState.h>
+#include <Methane/Graphics/TypeFormatters.hpp>
 
-#include <Methane/Checks.hpp>
-#include <Methane/Instrumentation.h>
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 
-namespace Methane::Graphics::Base
+namespace Methane::Graphics::Rhi
 {
 
-RenderState::RenderState(const RenderContext& context, const Settings& settings)
-    : m_context(context)
-    , m_settings(settings)
-{
-    META_FUNCTION_TASK();
-}
-
-void RenderState::Reset(const Settings& settings)
+bool ViewSettings::operator==(const ViewSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "program is not initialized in render state settings");
-    META_CHECK_ARG_NOT_NULL_DESCR(settings.render_pattern_ptr, "render pass pattern is not initialized in render state settings");
-
-    m_settings = settings;
+    return viewports == other.viewports &&
+           scissor_rects == other.scissor_rects;
 }
 
-Rhi::IProgram& RenderState::GetProgram()
+bool ViewSettings::operator!=(const ViewSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_settings.program_ptr);
-    return *m_settings.program_ptr;
+    return !operator==(other);
 }
 
-} // namespace Methane::Graphics::Base
+ViewSettings::operator std::string() const
+{
+    META_FUNCTION_TASK();
+    return fmt::format("  - Viewports: {};\n  - Scissor Rects: {}.", fmt::join(viewports, ", "), fmt::join(scissor_rects, ", "));
+}
+
+} // namespace Methane::Graphics::Rhi

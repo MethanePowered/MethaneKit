@@ -26,6 +26,7 @@ Base implementation of the render command list interface.
 #include <Methane/Graphics/Base/CommandQueue.h>
 #include <Methane/Graphics/Base/RenderPass.h>
 #include <Methane/Graphics/Base/RenderState.h>
+#include <Methane/Graphics/Base/ViewState.h>
 #include <Methane/Graphics/Base/Buffer.h>
 #include <Methane/Graphics/Base/Program.h>
 #include <Methane/Graphics/Base/Texture.h>

@@ -16,6 +16,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ProgramBindings.h
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/RenderState.h
+    ${INCLUDE_DIR}/ViewState.h
     ${INCLUDE_DIR}/ResourceBarriers.h
     ${INCLUDE_DIR}/Resource.h
     ${INCLUDE_DIR}/Buffer.h
@@ -43,6 +44,7 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/ProgramArgumentBinding.cpp
     ${SOURCES_DIR}/ProgramBindings.cpp
     ${SOURCES_DIR}/RenderState.cpp
+    ${SOURCES_DIR}/ViewState.cpp
     ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/Resource.cpp
     ${SOURCES_DIR}/Buffer.cpp

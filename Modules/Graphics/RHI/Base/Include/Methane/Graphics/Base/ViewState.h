@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Base/RenderState.h
-Base implementation of the render state interface.
+FILE: Methane/Graphics/Base/ViewState.h
+Base implementation of the view state interface.
 
 ******************************************************************************/
 
@@ -25,36 +25,32 @@ Base implementation of the render state interface.
 
 #include "Object.h"
 
-#include <Methane/Graphics/RHI/IRenderState.h>
+#include <Methane/Graphics/RHI/IViewState.h>
 
 namespace Methane::Graphics::Base
 {
 
-class RenderContext;
 class RenderCommandList;
 
-class RenderState
-    : public Object
-    , public Rhi::IRenderState
+class ViewState
+    : public Rhi::IViewState
+    , public std::enable_shared_from_this<ViewState>
 {
 public:
-    RenderState(const RenderContext& context, const Settings& settings);
+    explicit ViewState(const Settings& settings);
 
-    // IRenderState overrides
-    const Settings& GetSettings() const noexcept override { return m_settings; }
-    void Reset(const Settings& settings) override;
+    // IViewState overrides
+    Ptr<Rhi::IViewState> GetPtr() final                  { return shared_from_this(); }
+    const Settings& GetSettings() const noexcept final   { return m_settings; }
+    bool Reset(const Settings& settings) override;
+    bool SetViewports(const Viewports& viewports) override;
+    bool SetScissorRects(const ScissorRects& scissor_rects) override;
 
-    // RenderState interface
-    virtual void Apply(RenderCommandList& command_list, Groups apply_groups) = 0;
-
-    const RenderContext& GetRenderContext() const noexcept { return m_context; }
-
-protected:
-    Rhi::IProgram& GetProgram();
+    // ViewState interface
+    virtual void Apply(RenderCommandList& command_list) = 0;
 
 private:
-    const RenderContext& m_context;
-    Settings             m_settings;
+    Settings m_settings;
 };
 
 } // namespace Methane::Graphics::Base

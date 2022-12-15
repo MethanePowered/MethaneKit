@@ -18,6 +18,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ProgramArgumentBinding.hh
     ${INCLUDE_DIR}/ProgramBindings.hh
     ${INCLUDE_DIR}/RenderState.hh
+    ${INCLUDE_DIR}/ViewState.hh
     ${INCLUDE_DIR}/Resource.hh
     ${INCLUDE_DIR}/DescriptorManager.h
     ${INCLUDE_DIR}/Buffer.hh
@@ -43,6 +44,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/ProgramArgumentBinding.mm
     ${SOURCES_DIR}/ProgramBindings.mm
     ${SOURCES_DIR}/RenderState.mm
+    ${SOURCES_DIR}/ViewState.mm
     ${SOURCES_DIR}/Resource.mm
     ${SOURCES_DIR}/QueryPool.mm
     ${SOURCES_DIR}/Buffer.mm

@@ -27,6 +27,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Graphics/RHI/IDevice.h>
 #include <Methane/Graphics/RHI/ITexture.h>
 #include <Methane/Graphics/RHI/IRenderState.h>
+#include <Methane/Graphics/RHI/IViewState.h>
 #include <Methane/Graphics/RHI/IRenderPass.h>
 #include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Data/IProvider.h>

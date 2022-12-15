@@ -12,12 +12,16 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandListDebugGroup.h
     ${INCLUDE_DIR}/CommandKit.h
-    ${INCLUDE_DIR}/ResourceBarriers.h
-    ${INCLUDE_DIR}/RenderPass.h
-    ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/Fence.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
+    ${INCLUDE_DIR}/RenderPass.h
+    ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/RenderState.h
+    ${INCLUDE_DIR}/ViewState.h
+    ${INCLUDE_DIR}/ResourceBarriers.h
     ${INCLUDE_DIR}/RenderCommandList.h
+    ${INCLUDE_DIR}/ParallelRenderCommandList.h
     ${INCLUDE_DIR}/TransferCommandList.h
 )
 
@@ -28,12 +32,16 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/CommandQueue.cpp
     ${SOURCES_DIR}/CommandListDebugGroup.cpp
     ${SOURCES_DIR}/CommandKit.cpp
-    ${SOURCES_DIR}/ResourceBarriers.cpp
-    ${SOURCES_DIR}/RenderPass.cpp
-    ${SOURCES_DIR}/RenderContext.cpp
+    ${SOURCES_DIR}/Fence.cpp
     ${SOURCES_DIR}/Shader.cpp
     ${SOURCES_DIR}/Program.cpp
+    ${SOURCES_DIR}/RenderPass.cpp
+    ${SOURCES_DIR}/RenderContext.cpp
+    ${SOURCES_DIR}/RenderState.cpp
+    ${SOURCES_DIR}/ViewState.cpp
+    ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/RenderCommandList.cpp
+    ${SOURCES_DIR}/ParallelRenderCommandList.cpp
     ${SOURCES_DIR}/TransferCommandList.cpp
 )
 

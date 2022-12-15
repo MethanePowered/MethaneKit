@@ -36,32 +36,6 @@ Methane render state interface: specifies configuration of the graphics pipeline
 namespace Methane::Graphics::Rhi
 {
 
-struct ViewSettings
-{
-    Viewports    viewports;
-    ScissorRects scissor_rects;
-
-    [[nodiscard]] bool operator==(const ViewSettings& other) const noexcept;
-    [[nodiscard]] bool operator!=(const ViewSettings& other) const noexcept;
-    [[nodiscard]] explicit operator std::string() const;
-};
-
-struct IViewState
-{
-    using Settings = ViewSettings;
-
-    // Create IViewState instance
-    [[nodiscard]] static Ptr<IViewState> Create(const Settings& state_settings);
-
-    // IViewState interface
-    [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;
-    virtual bool Reset(const Settings& settings) = 0;
-    virtual bool SetViewports(const Viewports& viewports) = 0;
-    virtual bool SetScissorRects(const ScissorRects& scissor_rects) = 0;
-
-    virtual ~IViewState() = default;
-};
-
 enum class RasterizerCullMode : uint32_t
 {
     None = 0,

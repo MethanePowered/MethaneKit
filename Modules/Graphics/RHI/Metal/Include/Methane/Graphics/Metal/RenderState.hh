@@ -34,25 +34,8 @@ namespace Methane::Graphics::Metal
 
 class RenderContext;
 
-class ViewState final : public Base::ViewState
-{
-public:
-    explicit ViewState(const Settings& settings);
-
-    // IViewState overrides
-    bool Reset(const Settings& settings) override;
-    bool SetViewports(const Viewports& viewports) override;
-    bool SetScissorRects(const ScissorRects& scissor_rects) override;
-
-    // Base::ViewState interface
-    void Apply(Base::RenderCommandList& command_list) override;
-
-private:
-    std::vector<MTLViewport>    m_mtl_viewports;
-    std::vector<MTLScissorRect> m_mtl_scissor_rects;
-};
-
-class RenderState final : public Base::RenderState
+class RenderState final
+    : public Base::RenderState
 {
 public:
     RenderState(const Base::RenderContext& context, const Settings& settings);
