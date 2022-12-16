@@ -64,7 +64,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/CommandQueue.cpp
     ${SOURCES_DIR}/CommandListSet.cpp
     ${SOURCES_DIR}/CommandListDebugGroup.cpp
-    ${SOURCES_DIR}/ICommandList.cpp
     ${SOURCES_DIR}/TransferCommandList.cpp
     ${SOURCES_DIR}/RenderCommandList.cpp
     ${SOURCES_DIR}/ParallelRenderCommandList.cpp

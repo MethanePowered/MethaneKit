@@ -24,6 +24,7 @@ DirectX 12 base template implementation of the command list interface.
 #pragma once
 
 #include "ICommandList.h"
+#include "CommandListDebugGroup.h"
 #include "CommandQueue.h"
 #include "Device.h"
 #include "IContext.h"
