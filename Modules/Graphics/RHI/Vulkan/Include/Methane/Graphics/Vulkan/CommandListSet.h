@@ -23,13 +23,9 @@ Vulkan command list set implementation.
 
 #pragma once
 
-#include "ICommandList.h"
-
-#include <Methane/Graphics/Base/CommandList.h>
-#include <Methane/Data/Receiver.hpp>
+#include <Methane/Graphics/Base/CommandListSet.h>
 
 #include <tracy/Tracy.hpp>
-
 #include <vulkan/vulkan.hpp>
 #include <mutex>
 

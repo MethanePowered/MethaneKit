@@ -45,6 +45,8 @@ struct ITimestampQueryPool;
 namespace Methane::Graphics::Base
 {
 
+class CommandListSet;
+
 class CommandQueueTracking // NOSONAR - destructor is required
     : public CommandQueue
 {

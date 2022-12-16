@@ -27,17 +27,17 @@ Methane CommandListDebugGroup PIMPL wrappers for direct calls to final implement
 
 #if defined METHANE_GFX_DIRECTX
 
-#include <Methane/Graphics/DirectX/ICommandList.h>
+#include <Methane/Graphics/DirectX/CommandListDebugGroup.h>
 using CommandListDebugGroupImpl = Methane::Graphics::DirectX::CommandListDebugGroup;
 
 #elif defined METHANE_GFX_VULKAN
 
-#include <Methane/Graphics/Vulkan/ICommandList.h>
+#include <Methane/Graphics/Vulkan/CommandListDebugGroup.h>
 using CommandListDebugGroupImpl = Methane::Graphics::Vulkan::CommandListDebugGroup;
 
 #elif defined METHANE_GFX_METAL
 
-#include <Methane/Graphics/Metal/CommandList.hh>
+#include <Methane/Graphics/Metal/CommandListDebugGroup.hh>
 using CommandListDebugGroupImpl = Methane::Graphics::Metal::CommandListDebugGroup;
 
 #else // METHAN_GFX_[API] is undefined

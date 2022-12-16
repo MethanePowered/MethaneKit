@@ -26,7 +26,6 @@ to create instance refer to IRenderCommandList, etc. for specific derived interf
 
 #include "IObject.h"
 #include "IProgramBindings.h"
-#include "IResource.h"
 
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/TimeRange.hpp>
@@ -55,16 +54,6 @@ enum class CommandListState
     Executing,
 };
 
-struct ICommandListDebugGroup
-    : virtual IObject // NOSONAR
-{
-    [[nodiscard]] static Ptr<ICommandListDebugGroup> Create(std::string_view name);
-
-    virtual ICommandListDebugGroup& AddSubGroup(Data::Index id, const std::string& name) = 0;
-    [[nodiscard]] virtual ICommandListDebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
-    [[nodiscard]] virtual bool HasSubGroups() const noexcept = 0;
-};
-
 struct ICommandList;
 
 struct ICommandListCallback
@@ -76,6 +65,8 @@ struct ICommandListCallback
 };
 
 struct ICommandQueue;
+struct IResourceBarriers;
+struct ICommandListDebugGroup;
 
 struct ICommandList
     : virtual IObject // NOSONAR
@@ -104,48 +95,4 @@ struct ICommandList
     [[nodiscard]] virtual ICommandQueue& GetCommandQueue() = 0;
 };
 
-struct ICommandListSet
-{
-    [[nodiscard]] static Ptr<ICommandListSet> Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt = {});
-
-    [[nodiscard]] virtual Data::Size                GetCount() const noexcept = 0;
-    [[nodiscard]] virtual const Refs<ICommandList>& GetRefs() const noexcept = 0;
-    [[nodiscard]] virtual ICommandList&             operator[](Data::Index index) const = 0;
-    [[nodiscard]] virtual const Opt<Data::Index>&   GetFrameIndex() const noexcept = 0;
-    [[nodiscard]] virtual Ptr<ICommandListSet>      GetPtr() = 0;
-
-    virtual ~ICommandListSet() = default;
-};
-
 } // namespace Methane::Graphics::Rhi
-
-#ifdef METHANE_COMMAND_DEBUG_GROUPS_ENABLED
-
-#define META_DEBUG_GROUP_CREATE(/*const std::string& */group_name) \
-    Methane::Graphics::Rhi::ICommandListDebugGroup::Create(group_name)
-
-#define META_DEBUG_GROUP_PUSH(/*ICommandList& */cmd_list, /*const std::string& */group_name) \
-    { \
-        const auto s_local_debug_group = META_DEBUG_GROUP_CREATE(group_name); \
-        (cmd_list).PushDebugGroup(*s_local_debug_group); \
-    }
-
-#define META_DEBUG_GROUP_POP(/*ICommandList& */cmd_list) \
-    (cmd_list).PopDebugGroup()
-
-#else
-
-#define META_DEBUG_GROUP_CREATE(/*const std::string& */group_name) \
-    nullptr
-
-#define META_DEBUG_GROUP_PUSH(/*ICommandList& */cmd_list, /*const std::string& */group_name) \
-    META_UNUSED(cmd_list); META_UNUSED(group_name)
-
-#define META_DEBUG_GROUP_POP(/*ICommandList& */cmd_list) \
-    META_UNUSED(cmd_list)
-
-#endif
-
-#define META_DEBUG_GROUP_CREATE_VAR(variable, /*const std::string& */group_name) \
-    META_UNUSED(group_name); \
-    static const Methane::Ptr<Methane::Graphics::Rhi::ICommandListDebugGroup> variable = META_DEBUG_GROUP_CREATE(group_name)

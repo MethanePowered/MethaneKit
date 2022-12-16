@@ -16,41 +16,30 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX/ICommandList.cpp
-DirectX 12 command list interface and debug group implementation.
+FILE: Methane/Graphics/DirectX/CommandListDebugGroup.h
+DirectX 12 command list debug group implementation.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/DirectX/ICommandList.h>
+#pragma once
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Graphics/Base/CommandListDebugGroup.h>
 
-#include <nowide/convert.hpp>
-
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(std::string_view name)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::CommandListDebugGroup>(name);
-}
-
-} // namespace Methane::Graphics::Rhi
+#include <string>
 
 namespace Methane::Graphics::DirectX
 {
 
-CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
-    : Base::CommandListDebugGroup(name)
-    , m_wide_name(nowide::widen(Base::Object::GetName()))
+class CommandListDebugGroup final
+    : public Base::CommandListDebugGroup
 {
-    META_FUNCTION_TASK();
-}
+public:
+    explicit CommandListDebugGroup(std::string_view name);
 
-const std::wstring& CommandListDebugGroup::GetWideName() const noexcept
-{
-    return m_wide_name;
-}
+    const std::wstring& GetWideName() const noexcept;
+
+private:
+    const std::wstring m_wide_name;
+};
 
 } // namespace Methane::Graphics::DirectX

@@ -25,7 +25,6 @@ Base implementation of the command list interface.
 
 #include "Object.h"
 
-#include <Methane/Graphics/RHI/IQueryPool.h>
 #include <Methane/Graphics/RHI/IProgram.h>
 #include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Graphics/RHI/ICommandQueue.h>
@@ -34,35 +33,20 @@ Base implementation of the command list interface.
 #include <Methane/TracyGpu.hpp>
 #include <Methane/Checks.hpp>
 
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+#include <Methane/Graphics/RHI/IQueryPool.h>
+#endif
+
 #include <stack>
 #include <mutex>
-#include <atomic>
 #include <condition_variable>
 
 namespace Methane::Graphics::Base
 {
 
-class CommandListDebugGroup
-    : public Rhi::ICommandListDebugGroup
-    , public Object
-{
-public:
-    explicit CommandListDebugGroup(std::string_view name);
-
-    // IObject overrides
-    bool SetName(std::string_view) override;
-
-    // IDebugGroup interface
-    Rhi::ICommandListDebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
-    Rhi::ICommandListDebugGroup* GetSubGroup(Data::Index id) const noexcept final;
-    bool                         HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
-
-private:
-    Ptrs<Rhi::ICommandListDebugGroup> m_sub_groups;
-};
-
 class CommandQueue;
 class ProgramBindings;
+class CommandListDebugGroup;
 
 class CommandList // NOSONAR - custom destructor is used for logging, class has more than 35 methods
     : public Object
@@ -163,50 +147,6 @@ private:
     Ptr<Rhi::ITimestampQuery> m_begin_timestamp_query_ptr;
     Ptr<Rhi::ITimestampQuery> m_end_timestamp_query_ptr;
 #endif
-};
-
-class CommandListSet
-    : public Rhi::ICommandListSet
-    , protected Data::Receiver<Rhi::IObjectCallback>
-    , public std::enable_shared_from_this<CommandListSet>
-{
-public:
-    explicit CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
-
-    // ICommandListSet overrides
-    Data::Size                     GetCount() const noexcept final       { return static_cast<Data::Size>(m_refs.size()); }
-    const Refs<Rhi::ICommandList>& GetRefs() const noexcept final        { return m_refs; }
-    Rhi::ICommandList&             operator[](Data::Index index) const final;
-    const Opt<Data::Index>&        GetFrameIndex() const noexcept final  { return m_frame_index_opt; }
-    Ptr<ICommandListSet>           GetPtr() final                        { return shared_from_this(); }
-
-    // CommandListSet interface
-    virtual void Execute(const Rhi::ICommandList::CompletedCallback& completed_callback);
-    virtual void WaitUntilCompleted() = 0;
-
-    bool IsExecuting() const noexcept { return m_is_executing; }
-    void Complete() const;
-
-    [[nodiscard]] Ptr<CommandListSet>      GetBasePtr()                 { return shared_from_this(); }
-    [[nodiscard]] const Refs<CommandList>& GetBaseRefs() const noexcept { return m_base_refs; }
-    [[nodiscard]] const CommandList&       GetBaseCommandList(Data::Index index) const;
-    [[nodiscard]] CommandQueue&            GetBaseCommandQueue()        { return m_base_refs.back().get().GetBaseCommandQueue(); }
-    [[nodiscard]] const CommandQueue&      GetBaseCommandQueue() const  { return m_base_refs.back().get().GetBaseCommandQueue(); }
-    [[nodiscard]] const std::string&       GetCombinedName();
-
-protected:
-    // IObjectCallback interface
-    void OnObjectNameChanged(Rhi::IObject&, const std::string&) override;
-
-private:
-    Refs<Rhi::ICommandList> m_refs;
-    Refs<CommandList>       m_base_refs;
-    Ptrs<CommandList>       m_base_ptrs;
-    Opt<Data::Index>        m_frame_index_opt;
-    std::string             m_combined_name;
-
-    mutable TracyLockable(std::mutex, m_command_lists_mutex);
-    mutable std::atomic<bool> m_is_executing = false;
 };
 
 } // namespace Methane::Graphics::Base

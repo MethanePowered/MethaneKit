@@ -16,12 +16,12 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/CommandList.cpp
-Vulkan command lists sequence implementation
+FILE: Methane/Graphics/Vulkan/CommandListDebugGroup.cpp
+Vulkan command list debug group implementation.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Vulkan/ICommandList.h>
+#include <Methane/Graphics/Vulkan/CommandListDebugGroup.h>
 
 #include <Methane/Instrumentation.h>
 

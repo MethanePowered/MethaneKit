@@ -25,7 +25,6 @@ Methane CommandListSet PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
 
-
 #if defined METHANE_GFX_DIRECTX
 
 #include <Methane/Graphics/DirectX/CommandListSet.h>
@@ -38,7 +37,7 @@ using CommandListSetImpl = Methane::Graphics::Vulkan::CommandListSet;
 
 #elif defined METHANE_GFX_METAL
 
-#include <Methane/Graphics/Metal/CommandList.hh>
+#include <Methane/Graphics/Metal/CommandListSet.hh>
 using CommandListSetImpl = Methane::Graphics::Metal::CommandListSet;
 
 #else // METHAN_GFX_[API] is undefined

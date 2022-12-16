@@ -21,6 +21,8 @@ Base implementation of the command list interface.
 
 ******************************************************************************/
 
+#include <Methane/Graphics/Base/CommandList.h>
+#include <Methane/Graphics/Base/CommandListDebugGroup.h>
 #include <Methane/Graphics/Base/Device.h>
 #include <Methane/Graphics/Base/CommandQueue.h>
 #include <Methane/Graphics/Base/ProgramBindings.h>
@@ -44,36 +46,6 @@ static Data::TimeRange GetNormalTimeRange(Timestamp start, Timestamp end)
     return Data::TimeRange(std::min(start, end), std::max(start, end));
 }
 #endif
-
-CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
-    : Object(name)
-{
-    META_FUNCTION_TASK();
-}
-
-bool CommandListDebugGroup::SetName(std::string_view)
-{
-    META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(false, "Debug Group can not be renamed");
-}
-
-Rhi::ICommandListDebugGroup& CommandListDebugGroup::AddSubGroup(Data::Index id, const std::string& name)
-{
-    META_FUNCTION_TASK();
-    if (id >= m_sub_groups.size())
-    {
-        m_sub_groups.resize(id + 1);
-    }
-
-    Ptr<ICommandListDebugGroup> sub_group_ptr = Rhi::ICommandListDebugGroup::Create(name);
-    m_sub_groups[id] = sub_group_ptr;
-    return *sub_group_ptr;
-}
-
-Rhi::ICommandListDebugGroup* CommandListDebugGroup::GetSubGroup(Data::Index id) const noexcept
-{
-    META_FUNCTION_TASK();
-    return id < m_sub_groups.size() ? m_sub_groups[id].get() : nullptr;
-}
 
 CommandList::CommandList(CommandQueue& command_queue, Type type)
     : m_type(type)
@@ -407,107 +379,6 @@ const CommandQueue& CommandList::GetBaseCommandQueue() const
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
     return *m_command_queue_ptr;
-}
-
-CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
-    : m_refs(command_list_refs)
-    , m_frame_index_opt(frame_index_opt)
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EMPTY_DESCR(command_list_refs, "creating of empty command lists set is not allowed.");
-
-    m_base_refs.reserve(m_refs.size());
-    m_base_ptrs.reserve(m_refs.size());
-
-    for(const Ref<Rhi::ICommandList>& command_list_ref : m_refs)
-    {
-        auto& command_list_base = dynamic_cast<CommandList&>(command_list_ref.get());
-        META_CHECK_ARG_NAME_DESCR("command_list_refs",
-                                  std::addressof(command_list_base.GetCommandQueue()) == std::addressof(m_refs.front().get().GetCommandQueue()),
-                                  "all command lists in set must be created in one command queue");
-
-        static_cast<Data::IEmitter<IObjectCallback>&>(command_list_base).Connect(*this);
-
-        m_base_refs.emplace_back(command_list_base);
-        m_base_ptrs.emplace_back(command_list_base.GetCommandListPtr());
-    }
-}
-
-Rhi::ICommandList& CommandListSet::operator[](Data::Index index) const
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(index, m_refs.size());
-
-    return m_refs[index].get();
-}
-
-void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& completed_callback)
-{
-    META_FUNCTION_TASK();
-    std::scoped_lock lock_guard(m_command_lists_mutex);
-
-    m_is_executing = true;
-
-    for (const Ref<CommandList>& command_list_ref : m_base_refs)
-    {
-        command_list_ref.get().Execute(completed_callback);
-    }
-}
-
-void CommandListSet::Complete() const
-{
-    META_FUNCTION_TASK();
-    std::scoped_lock lock_guard(m_command_lists_mutex);
-
-    for (const Ref<CommandList>& command_list_ref : m_base_refs)
-    {
-        CommandList& command_list = command_list_ref.get();
-        if (command_list.GetState() != CommandList::State::Executing)
-            continue;
-
-        command_list.Complete();
-    }
-
-    m_is_executing = false;
-}
-
-const CommandList& CommandListSet::GetBaseCommandList(Data::Index index) const
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(index, m_base_refs.size());
-    return m_base_refs[index].get();
-}
-
-const std::string& CommandListSet::GetCombinedName()
-{
-    META_FUNCTION_TASK();
-    if (!m_combined_name.empty())
-        return m_combined_name;
-
-    std::stringstream name_ss;
-    const size_t list_count = m_refs.size();
-    name_ss << list_count << " Command List" << (list_count > 1 ? "s: " : ": ");
-
-    for (size_t list_index = 0u; list_index < list_count; ++list_index)
-    {
-        if (const std::string_view list_name = m_refs[list_index].get().GetName();
-            list_name.empty())
-            name_ss << "<unnamed>";
-        else
-            name_ss << "'" << list_name << "'";
-
-        if (list_index < list_count - 1)
-            name_ss << ", ";
-    }
-
-    m_combined_name = name_ss.str();
-    return m_combined_name;
-}
-
-void CommandListSet::OnObjectNameChanged(Rhi::IObject&, const std::string&)
-{
-    META_FUNCTION_TASK();
-    m_combined_name.clear();
 }
 
 } // namespace Methane::Graphics::Base

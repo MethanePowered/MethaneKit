@@ -25,6 +25,8 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ICommandKit.h
     ${INCLUDE_DIR}/ICommandQueue.h
     ${INCLUDE_DIR}/ICommandList.h
+    ${INCLUDE_DIR}/ICommandListDebugGroup.h
+    ${INCLUDE_DIR}/ICommandListSet.h
     ${INCLUDE_DIR}/ITransferCommandList.h
     ${INCLUDE_DIR}/IRenderCommandList.h
     ${INCLUDE_DIR}/IParallelRenderCommandList.h

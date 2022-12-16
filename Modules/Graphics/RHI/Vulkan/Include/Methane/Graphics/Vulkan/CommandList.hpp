@@ -24,6 +24,7 @@ Vulkan base template implementation of the command list interface.
 #pragma once
 
 #include "ICommandList.h"
+#include "CommandListDebugGroup.h"
 #include "CommandQueue.h"
 #include "Device.h"
 #include "IContext.h"
@@ -137,7 +138,7 @@ public:
     {
         META_FUNCTION_TASK();
         Base::CommandList::PushDebugGroup(debug_group);
-        GetNativeCommandBuffer(m_debug_group_command_buffer_type).beginDebugUtilsLabelEXT(static_cast<const ICommandList::DebugGroup&>(debug_group).GetNativeDebugLabel());
+        GetNativeCommandBuffer(m_debug_group_command_buffer_type).beginDebugUtilsLabelEXT(static_cast<const CommandListDebugGroup&>(debug_group).GetNativeDebugLabel());
     }
 
     void PopDebugGroup() final

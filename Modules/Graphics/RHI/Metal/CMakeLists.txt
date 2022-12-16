@@ -26,7 +26,8 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/Sampler.hh
     ${INCLUDE_DIR}/RenderPass.hh
     ${INCLUDE_DIR}/CommandQueue.hh
-    ${INCLUDE_DIR}/CommandList.hh
+    ${INCLUDE_DIR}/CommandListSet.hh
+    ${INCLUDE_DIR}/CommandListDebugGroup.hh
     ${INCLUDE_DIR}/CommandList.hpp
     ${INCLUDE_DIR}/TransferCommandList.hh
     ${INCLUDE_DIR}/RenderCommandList.hh
@@ -52,7 +53,8 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/Sampler.mm
     ${SOURCES_DIR}/RenderPass.mm
     ${SOURCES_DIR}/CommandQueue.mm
-    ${SOURCES_DIR}/CommandList.mm
+    ${SOURCES_DIR}/CommandListSet.mm
+    ${SOURCES_DIR}/CommandListDebugGroup.mm
     ${SOURCES_DIR}/TransferCommandList.mm
     ${SOURCES_DIR}/RenderCommandList.mm
     ${SOURCES_DIR}/ParallelRenderCommandList.mm

@@ -31,6 +31,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandListSet.h
+    ${INCLUDE_DIR}/CommandListDebugGroup.h
     ${INCLUDE_DIR}/ICommandList.h
     ${INCLUDE_DIR}/CommandList.hpp
     ${INCLUDE_DIR}/TransferCommandList.h
@@ -62,6 +63,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderPass.cpp
     ${SOURCES_DIR}/CommandQueue.cpp
     ${SOURCES_DIR}/CommandListSet.cpp
+    ${SOURCES_DIR}/CommandListDebugGroup.cpp
     ${SOURCES_DIR}/ICommandList.cpp
     ${SOURCES_DIR}/TransferCommandList.cpp
     ${SOURCES_DIR}/RenderCommandList.cpp

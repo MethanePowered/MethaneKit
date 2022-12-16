@@ -16,31 +16,17 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/CommandList.h
-Metal command lists sequence implementation.
+FILE: Methane/Graphics/DirectX12/CommandListSet.h
+Metal command list set implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/Base/CommandList.h>
-
-#import <Foundation/NSString.h>
+#include <Methane/Graphics/Base/CommandListSet.h>
 
 namespace Methane::Graphics::Metal
 {
-
-class CommandListDebugGroup final
-    : public Base::CommandList::DebugGroup
-{
-public:
-    explicit CommandListDebugGroup(std::string_view name);
-
-    NSString* _Nonnull GetNSName() const noexcept { return m_ns_name; }
-
-private:
-    NSString* _Nonnull m_ns_name;
-};
 
 class CommandListSet final
     : public Base::CommandListSet

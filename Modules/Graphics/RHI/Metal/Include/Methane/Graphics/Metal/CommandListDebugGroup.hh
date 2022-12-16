@@ -16,29 +16,30 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/Interfaces.h
-Methane graphics RHI interfaces: all headers under one umbrella.
+FILE: Methane/Graphics/DirectX12/CommandListDebugGroup.hh
+Metal command list debug group implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "IDevice.h"
-#include "IRenderContext.h"
-#include "IShader.h"
-#include "IProgram.h"
-#include "IProgramBindings.h"
-#include "IRenderPass.h"
-#include "IRenderState.h"
-#include "IViewState.h"
-#include "IResource.h"
-#include "IBuffer.h"
-#include "ITexture.h"
-#include "ISampler.h"
-#include "ICommandKit.h"
-#include "ICommandListSet.h"
-#include "ICommandListDebugGroup.h"
-#include "ICommandQueue.h"
-#include "ITransferCommandList.h"
-#include "IRenderCommandList.h"
-#include "IParallelRenderCommandList.h"
+#include <Methane/Graphics/Base/CommandListDebugGroup.h>
+
+#import <Foundation/NSString.h>
+
+namespace Methane::Graphics::Metal
+{
+
+class CommandListDebugGroup final
+    : public Base::CommandListDebugGroup
+{
+public:
+    explicit CommandListDebugGroup(std::string_view name);
+
+    NSString* _Nonnull GetNSName() const noexcept { return m_ns_name; }
+
+private:
+    NSString* _Nonnull m_ns_name;
+};
+
+} // namespace Methane::Graphics::Metal

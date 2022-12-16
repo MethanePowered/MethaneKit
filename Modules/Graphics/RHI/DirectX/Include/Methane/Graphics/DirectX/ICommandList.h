@@ -23,7 +23,7 @@ DirectX 12 command list interface and debug group implementation.
 
 #pragma once
 
-#include <Methane/Graphics/Base/CommandList.h>
+#include <Methane/Graphics/RHI/IResourceBarriers.h>
 
 #include <directx/d3d12.h>
 
@@ -31,18 +31,7 @@ namespace Methane::Graphics::DirectX
 {
 
 class CommandQueue;
-
-class CommandListDebugGroup final
-    : public Base::CommandListDebugGroup
-{
-public:
-    explicit CommandListDebugGroup(std::string_view name);
-
-    const std::wstring& GetWideName() const noexcept;
-
-private:
-    const std::wstring m_wide_name;
-};
+class CommandListDebugGroup;
 
 struct ICommandList
 {

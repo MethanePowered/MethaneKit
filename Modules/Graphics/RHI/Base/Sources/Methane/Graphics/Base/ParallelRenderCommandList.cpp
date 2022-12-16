@@ -30,6 +30,8 @@ Base implementation of the parallel render command list interface.
 #include <Methane/Graphics/Base/CommandQueue.h>
 #include <Methane/Graphics/Base/Context.h>
 
+#include <Methane/Graphics/RHI/ICommandListDebugGroup.h>
+
 #include <Methane/Instrumentation.h>
 
 #include <taskflow/taskflow.hpp>

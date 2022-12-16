@@ -16,15 +16,16 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/CommandList.mm
-Metal command lists sequence implementation
+FILE: Methane/Graphics/DirectX/CommandListDebugGroup.cpp
+DirectX 12 command list debug group implementation.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Metal/CommandList.hh>
+#include <Methane/Graphics/DirectX/CommandListDebugGroup.h>
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Platform/Apple/Types.hh>
+
+#include <nowide/convert.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -32,31 +33,24 @@ namespace Methane::Graphics::Rhi
 Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(std::string_view name)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<Metal::CommandListDebugGroup>(name);
-}
-
-Ptr<ICommandListSet> ICommandListSet::Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::CommandListSet>(command_list_refs, frame_index_opt);
+    return std::make_shared<DirectX::CommandListDebugGroup>(name);
 }
 
 } // namespace Methane::Graphics::Rhi
 
-namespace Methane::Graphics::Metal
+namespace Methane::Graphics::DirectX
 {
 
 CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
     : Base::CommandListDebugGroup(name)
-    , m_ns_name(MacOS::ConvertToNsString(Base::Object::GetName()))
+    , m_wide_name(nowide::widen(Base::Object::GetName()))
 {
     META_FUNCTION_TASK();
 }
 
-CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
-    : Base::CommandListSet(command_list_refs, frame_index_opt)
+const std::wstring& CommandListDebugGroup::GetWideName() const noexcept
 {
-    META_FUNCTION_TASK();
+    return m_wide_name;
 }
 
-} // namespace Methane::Graphics::Metal
+} // namespace Methane::Graphics::DirectX

@@ -16,29 +16,33 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/Interfaces.h
-Methane graphics RHI interfaces: all headers under one umbrella.
+FILE: Methane/Graphics/DirectX12/CommandList.mm
+Metal command lists sequence implementation
 
 ******************************************************************************/
 
-#pragma once
+#include <Methane/Graphics/Metal/CommandListSet.hh>
 
-#include "IDevice.h"
-#include "IRenderContext.h"
-#include "IShader.h"
-#include "IProgram.h"
-#include "IProgramBindings.h"
-#include "IRenderPass.h"
-#include "IRenderState.h"
-#include "IViewState.h"
-#include "IResource.h"
-#include "IBuffer.h"
-#include "ITexture.h"
-#include "ISampler.h"
-#include "ICommandKit.h"
-#include "ICommandListSet.h"
-#include "ICommandListDebugGroup.h"
-#include "ICommandQueue.h"
-#include "ITransferCommandList.h"
-#include "IRenderCommandList.h"
-#include "IParallelRenderCommandList.h"
+#include <Methane/Instrumentation.h>
+
+namespace Methane::Graphics::Rhi
+{
+
+Ptr<ICommandListSet> ICommandListSet::Create(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Metal::CommandListSet>(command_list_refs, frame_index_opt);
+}
+
+} // namespace Methane::Graphics::Rhi
+
+namespace Methane::Graphics::Metal
+{
+
+CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
+    : Base::CommandListSet(command_list_refs, frame_index_opt)
+{
+    META_FUNCTION_TASK();
+}
+
+} // namespace Methane::Graphics::Metal

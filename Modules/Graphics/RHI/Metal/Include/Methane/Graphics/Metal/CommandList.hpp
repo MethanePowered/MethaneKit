@@ -24,7 +24,7 @@ Metal base template implementation of the command list interface.
 #pragma once
 
 #include "CommandQueue.hh"
-#include "CommandList.hh"
+#include "CommandListDebugGroup.hh"
 
 #include <Methane/Graphics/Base/CommandList.h>
 #include <Methane/Platform/Apple/Types.hh>

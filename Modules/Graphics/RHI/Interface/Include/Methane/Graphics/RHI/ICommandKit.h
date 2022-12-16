@@ -36,6 +36,7 @@ namespace Methane::Graphics::Rhi
 
 struct IContext;
 struct ICommandQueue;
+struct ICommandListSet;
 struct IFence;
 
 using CommandListId = uint32_t;

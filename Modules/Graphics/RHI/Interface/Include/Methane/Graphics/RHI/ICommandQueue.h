@@ -25,14 +25,15 @@ Methane command queue interface: queues are used to execute command lists.
 
 #include "IObject.h"
 #include "ICommandList.h"
-#include "IContext.h"
 
 #include <Methane/Memory.hpp>
 
 namespace Methane::Graphics::Rhi
 {
 
+struct IContext;
 struct ITimestampQueryPool;
+struct ICommandListSet;
 
 struct ICommandQueue
     : virtual IObject // NOSONAR

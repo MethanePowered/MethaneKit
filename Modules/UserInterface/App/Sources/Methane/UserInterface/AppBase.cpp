@@ -27,6 +27,7 @@ Base implementation of the Methane user interface application.
 #include <Methane/UserInterface/Panel.h>
 #include <Methane/UserInterface/Badge.h>
 #include <Methane/Graphics/RHI/ICommandList.h>
+#include <Methane/Graphics/RHI/ICommandListDebugGroup.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>

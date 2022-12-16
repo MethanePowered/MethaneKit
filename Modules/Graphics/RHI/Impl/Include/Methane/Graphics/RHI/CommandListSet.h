@@ -25,7 +25,7 @@ Methane CommandListSet PIMPL wrappers for direct calls to final implementation.
 
 #include "Pimpl.h"
 
-#include <Methane/Graphics/RHI/ICommandList.h>
+#include <Methane/Graphics/RHI/ICommandListSet.h>
 
 namespace Methane::Graphics::Rhi
 {

@@ -16,29 +16,35 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/Interfaces.h
-Methane graphics RHI interfaces: all headers under one umbrella.
+FILE: Methane/Graphics/DirectX12/CommandListDebugGroup.mm
+Metal command list debug group implementation.
 
 ******************************************************************************/
 
-#pragma once
+#include <Methane/Graphics/Metal/CommandListDebugGroup.hh>
 
-#include "IDevice.h"
-#include "IRenderContext.h"
-#include "IShader.h"
-#include "IProgram.h"
-#include "IProgramBindings.h"
-#include "IRenderPass.h"
-#include "IRenderState.h"
-#include "IViewState.h"
-#include "IResource.h"
-#include "IBuffer.h"
-#include "ITexture.h"
-#include "ISampler.h"
-#include "ICommandKit.h"
-#include "ICommandListSet.h"
-#include "ICommandListDebugGroup.h"
-#include "ICommandQueue.h"
-#include "ITransferCommandList.h"
-#include "IRenderCommandList.h"
-#include "IParallelRenderCommandList.h"
+#include <Methane/Instrumentation.h>
+#include <Methane/Platform/Apple/Types.hh>
+
+namespace Methane::Graphics::Rhi
+{
+
+Ptr<ICommandListDebugGroup> ICommandListDebugGroup::Create(std::string_view name)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Metal::CommandListDebugGroup>(name);
+}
+
+} // namespace Methane::Graphics::Rhi
+
+namespace Methane::Graphics::Metal
+{
+
+CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
+    : Base::CommandListDebugGroup(name)
+    , m_ns_name(MacOS::ConvertToNsString(Base::Object::GetName()))
+{
+    META_FUNCTION_TASK();
+}
+
+} // namespace Methane::Graphics::Metal

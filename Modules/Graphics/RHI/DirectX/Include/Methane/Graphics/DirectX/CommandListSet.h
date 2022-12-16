@@ -23,8 +23,9 @@ DirectX 12 command list accessor interface for template class CommandList<Comman
 
 #pragma once
 
-#include "ICommandList.h"
 #include "Fence.h"
+
+#include <Methane/Graphics/Base/CommandListSet.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>

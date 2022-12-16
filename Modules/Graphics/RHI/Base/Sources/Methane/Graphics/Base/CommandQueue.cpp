@@ -22,6 +22,7 @@ Base implementation of the command queue interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Base/CommandQueue.h>
+#include <Methane/Graphics/Base/CommandListSet.h>
 #include <Methane/Graphics/Base/RenderContext.h>
 
 #include <Methane/Instrumentation.h>

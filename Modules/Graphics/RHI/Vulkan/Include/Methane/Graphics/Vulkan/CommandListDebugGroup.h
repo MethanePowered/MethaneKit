@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,29 +16,30 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/Interfaces.h
-Methane graphics RHI interfaces: all headers under one umbrella.
+FILE: Methane/Graphics/Vulkan/CommandListDebugGroup.h
+Vulkan command list debug group implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "IDevice.h"
-#include "IRenderContext.h"
-#include "IShader.h"
-#include "IProgram.h"
-#include "IProgramBindings.h"
-#include "IRenderPass.h"
-#include "IRenderState.h"
-#include "IViewState.h"
-#include "IResource.h"
-#include "IBuffer.h"
-#include "ITexture.h"
-#include "ISampler.h"
-#include "ICommandKit.h"
-#include "ICommandListSet.h"
-#include "ICommandListDebugGroup.h"
-#include "ICommandQueue.h"
-#include "ITransferCommandList.h"
-#include "IRenderCommandList.h"
-#include "IParallelRenderCommandList.h"
+#include <Methane/Graphics/Base/CommandListDebugGroup.h>
+
+#include <vulkan/vulkan.hpp>
+
+namespace Methane::Graphics::Vulkan
+{
+
+class CommandListDebugGroup final
+    : public Base::CommandListDebugGroup
+{
+public:
+    explicit CommandListDebugGroup(std::string_view name);
+
+    const vk::DebugUtilsLabelEXT& GetNativeDebugLabel() const noexcept;
+
+private:
+    vk::DebugUtilsLabelEXT m_vk_debug_label;
+};
+
+} // namespace Methane::Graphics::Vulkan

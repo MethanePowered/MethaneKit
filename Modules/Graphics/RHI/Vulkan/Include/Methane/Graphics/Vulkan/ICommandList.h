@@ -17,30 +17,18 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Vulkan/ICommandList.h
-Vulkan command list interface and debug group implementation.
+Vulkan command list interface implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/Base/CommandList.h>
+#include <Methane/Graphics/RHI/IResourceBarriers.h>
 
 #include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics::Vulkan
 {
-
-class CommandListDebugGroup final
-    : public Base::CommandListDebugGroup
-{
-public:
-    explicit CommandListDebugGroup(std::string_view name);
-
-    const vk::DebugUtilsLabelEXT& GetNativeDebugLabel() const noexcept;
-
-private:
-    vk::DebugUtilsLabelEXT m_vk_debug_label;
-};
 
 enum class CommandBufferType : uint32_t
 {
@@ -49,6 +37,7 @@ enum class CommandBufferType : uint32_t
 };
 
 class CommandQueue;
+class CommandListDebugGroup;
 
 struct ICommandList
 {

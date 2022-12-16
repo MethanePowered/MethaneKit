@@ -22,11 +22,13 @@ Methane command kit implementation.
 ******************************************************************************/
 
 #include <Methane/Graphics/Base/CommandKit.h>
+#include <Methane/Graphics/Base/CommandListSet.h>
 #include <Methane/Graphics/Base/RenderCommandList.h>
 #include <Methane/Graphics/Base/CommandQueue.h>
 
 #include <Methane/Graphics/RHI/IFence.h>
 #include <Methane/Graphics/RHI/ICommandKit.h>
+#include <Methane/Graphics/RHI/ICommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/ITransferCommandList.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>

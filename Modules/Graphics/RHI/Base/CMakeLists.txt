@@ -26,6 +26,8 @@ set(HEADERS
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandQueueTracking.h
     ${INCLUDE_DIR}/CommandList.h
+    ${INCLUDE_DIR}/CommandListSet.h
+    ${INCLUDE_DIR}/CommandListDebugGroup.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
     ${INCLUDE_DIR}/DescriptorManager.h
@@ -55,6 +57,8 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/CommandQueue.cpp
     ${SOURCES_DIR}/CommandQueueTracking.cpp
     ${SOURCES_DIR}/CommandList.cpp
+    ${SOURCES_DIR}/CommandListSet.cpp
+    ${SOURCES_DIR}/CommandListDebugGroup.cpp
     ${SOURCES_DIR}/RenderCommandList.cpp
     ${SOURCES_DIR}/ParallelRenderCommandList.cpp
     ${SOURCES_DIR}/DescriptorManager.cpp
