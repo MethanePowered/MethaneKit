@@ -191,14 +191,15 @@ bool RenderCommandList::SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_reso
     if (!Base::RenderCommandList::SetIndexBuffer(index_buffer, set_resource_barriers))
         return false;
 
-    auto& dx_index_buffer = static_cast<IndexBuffer&>(index_buffer);
+    auto& dx_index_buffer = static_cast<Buffer&>(index_buffer);
     if (Ptr<Rhi::IResourceBarriers>& buffer_setup_barriers_ptr = dx_index_buffer.GetSetupTransitionBarriers();
         set_resource_barriers && dx_index_buffer.SetState(Rhi::ResourceState::IndexBuffer, buffer_setup_barriers_ptr) && buffer_setup_barriers_ptr)
     {
         SetResourceBarriers(*buffer_setup_barriers_ptr);
     }
 
-    GetNativeCommandListRef().IASetIndexBuffer(&dx_index_buffer.GetNativeView());
+    const D3D12_INDEX_BUFFER_VIEW dx_index_buffer_view = dx_index_buffer.GetNativeIndexBufferView();
+    GetNativeCommandListRef().IASetIndexBuffer(&dx_index_buffer_view);
     return true;
 }
 

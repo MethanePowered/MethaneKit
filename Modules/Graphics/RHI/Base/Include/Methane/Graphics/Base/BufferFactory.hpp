@@ -36,9 +36,9 @@ inline Rhi::BufferStorageMode GetBufferStorageMode(bool is_volatile_data) noexce
                             : Rhi::BufferStorageMode::Private;
 }
 
-template<typename NativeBufferType, typename ...ExtraConstructorArgTypes>
+template<typename NativeBufferType>
 std::enable_if_t<std::is_base_of_v<Rhi::IBuffer, NativeBufferType>, Ptr<NativeBufferType>>
-CreateVertexBuffer(const Rhi::IContext& context, Data::Size size, Data::Size stride, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
+CreateVertexBuffer(const Rhi::IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     const Rhi::BufferSettings settings{
         Rhi::BufferType::Vertex,
@@ -48,12 +48,12 @@ CreateVertexBuffer(const Rhi::IContext& context, Data::Size size, Data::Size str
         PixelFormat::Unknown,
         GetBufferStorageMode(is_volatile)
     };
-    return std::make_shared<NativeBufferType>(dynamic_cast<const Context&>(context), settings, extra_construct_args...);
+    return std::make_shared<NativeBufferType>(dynamic_cast<const Context&>(context), settings);
 }
 
-template<typename NativeBufferType, typename ...ExtraConstructorArgTypes>
+template<typename NativeBufferType>
 std::enable_if_t<std::is_base_of_v<Rhi::IBuffer, NativeBufferType>, Ptr<NativeBufferType>>
-CreateIndexBuffer(const Rhi::IContext& context, Data::Size size, PixelFormat format, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
+CreateIndexBuffer(const Rhi::IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     const Rhi::BufferSettings settings{
         Rhi::BufferType::Index,
@@ -63,12 +63,12 @@ CreateIndexBuffer(const Rhi::IContext& context, Data::Size size, PixelFormat for
         format,
         GetBufferStorageMode(is_volatile)
     };
-    return std::make_shared<NativeBufferType>(dynamic_cast<const Context&>(context), settings, extra_construct_args...);
+    return std::make_shared<NativeBufferType>(dynamic_cast<const Context&>(context), settings);
 }
 
-template<typename NativeBufferType, typename ...ExtraConstructorArgTypes>
+template<typename NativeBufferType>
 std::enable_if_t<std::is_base_of_v<Rhi::IBuffer, NativeBufferType>, Ptr<NativeBufferType>>
-CreateConstantBuffer(const Rhi::IContext& context, Data::Size size, bool addressable, bool is_volatile, ExtraConstructorArgTypes... extra_construct_args)
+CreateConstantBuffer(const Rhi::IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     Rhi::ResourceUsageMask usage_mask(Rhi::ResourceUsage::ShaderRead);
     usage_mask.SetBit(Rhi::ResourceUsage::Addressable, addressable);
@@ -80,12 +80,12 @@ CreateConstantBuffer(const Rhi::IContext& context, Data::Size size, bool address
         PixelFormat::Unknown,
         GetBufferStorageMode(is_volatile)
     };
-    return std::make_shared<NativeBufferType>(dynamic_cast<const Context&>(context), settings, extra_construct_args...);
+    return std::make_shared<NativeBufferType>(dynamic_cast<const Context&>(context), settings);
 }
 
-template<typename NativeBufferType, typename ...ExtraConstructorArgTypes>
+template<typename NativeBufferType>
 std::enable_if_t<std::is_base_of_v<Rhi::IBuffer, NativeBufferType>, Ptr<NativeBufferType>>
-CreateReadBackBuffer(const Rhi::IContext& context, Data::Size size, ExtraConstructorArgTypes... extra_construct_args)
+CreateReadBackBuffer(const Rhi::IContext& context, Data::Size size)
 {
     META_FUNCTION_TASK();
     const Rhi::BufferSettings settings{
@@ -96,7 +96,7 @@ CreateReadBackBuffer(const Rhi::IContext& context, Data::Size size, ExtraConstru
         PixelFormat::Unknown,
         Rhi::BufferStorageMode::Managed
     };
-    return std::make_shared<NativeBufferType>(dynamic_cast<const Context&>(context), settings, extra_construct_args...);
+    return std::make_shared<NativeBufferType>(dynamic_cast<const Context&>(context), settings);
 }
 
 } // namespace Methane::Graphics::Base

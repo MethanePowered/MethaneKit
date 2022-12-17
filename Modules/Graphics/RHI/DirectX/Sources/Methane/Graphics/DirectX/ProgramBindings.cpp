@@ -42,7 +42,7 @@ DirectX 12 implementation of the program bindings interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IProgramBindings> IProgramBindings::Create(*IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<IProgramBindings> IProgramBindings::Create(IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
     const auto dx_program_bindings_ptr = std::make_shared<DirectX::ProgramBindings>(static_cast<DirectX::Program&>(program), resource_views_by_argument, frame_index);
