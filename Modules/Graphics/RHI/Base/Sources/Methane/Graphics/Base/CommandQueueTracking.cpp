@@ -22,6 +22,7 @@ Base implementation of the command queue with execution tracking.
 ******************************************************************************/
 
 #include <Methane/Graphics/Base/CommandQueueTracking.h>
+#include <Methane/Graphics/Base/CommandListSet.h>
 #include <Methane/Graphics/Base/Context.h>
 
 #include <Methane/Graphics/RHI/IQueryPool.h>
