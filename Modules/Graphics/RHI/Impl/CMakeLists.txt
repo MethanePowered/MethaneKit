@@ -19,6 +19,9 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderContext.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
+    ${INCLUDE_DIR}/Buffer.h
+    ${INCLUDE_DIR}/Texture.h
+    ${INCLUDE_DIR}/Sampler.h
     ${INCLUDE_DIR}/ResourceBarriers.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
@@ -39,6 +42,9 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderContext.cpp
     ${SOURCES_DIR}/RenderState.cpp
     ${SOURCES_DIR}/ViewState.cpp
+    ${SOURCES_DIR}/Buffer.cpp
+    ${SOURCES_DIR}/Texture.cpp
+    ${SOURCES_DIR}/Sampler.cpp
     ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/RenderCommandList.cpp
     ${SOURCES_DIR}/ParallelRenderCommandList.cpp

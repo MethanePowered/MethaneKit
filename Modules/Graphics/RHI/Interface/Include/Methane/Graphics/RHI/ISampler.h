@@ -122,7 +122,7 @@ struct ISampler
     using Settings = SamplerSettings;
 
     // Create ISampler instance
-    [[nodiscard]] static Ptr<ISampler> Create(const IContext& context, const Settings& state_settings);
+    [[nodiscard]] static Ptr<ISampler> Create(const IContext& context, const Settings& settings);
 
     // ISampler interface
     [[nodiscard]] virtual const Settings& GetSettings() const = 0;
