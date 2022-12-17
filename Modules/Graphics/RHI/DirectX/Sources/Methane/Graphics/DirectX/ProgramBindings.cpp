@@ -42,10 +42,10 @@ DirectX 12 implementation of the program bindings interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IProgramBindings> IProgramBindings::Create(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<IProgramBindings> IProgramBindings::Create(*IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    const auto dx_program_bindings_ptr = std::make_shared<DirectX::ProgramBindings>(program_ptr, resource_views_by_argument, frame_index);
+    const auto dx_program_bindings_ptr = std::make_shared<DirectX::ProgramBindings>(static_cast<DirectX::Program&>(program), resource_views_by_argument, frame_index);
     dx_program_bindings_ptr->Initialize(); // NOTE: Initialize is called externally (not from constructor) to enable using shared_from_this from its code
     return dx_program_bindings_ptr;
 }
@@ -78,8 +78,8 @@ uint32_t DescriptorsCountByAccess::operator[](Rhi::ProgramArgumentAccessType acc
     return m_count_by_access_type[magic_enum::enum_index(access_type).value()];
 }
 
-ProgramBindings::ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
-    : Base::ProgramBindings(program_ptr, resource_views_by_argument, frame_index)
+ProgramBindings::ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+    : Base::ProgramBindings(program, resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
     ReserveDescriptorHeapRanges();

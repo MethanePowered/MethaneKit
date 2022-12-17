@@ -22,6 +22,7 @@ Metal implementation of the program bindings interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/ProgramBindings.hh>
+#include <Methane/Graphics/Metal/Program.hh>
 #include <Methane/Graphics/Metal/Buffer.hh>
 #include <Methane/Graphics/Metal/Texture.hh>
 #include <Methane/Graphics/Metal/Sampler.hh>
@@ -33,10 +34,10 @@ Metal implementation of the program bindings interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IProgramBindings> IProgramBindings::Create(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<IProgramBindings> IProgramBindings::Create(IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<Metal::ProgramBindings>(program_ptr, resource_views_by_argument, frame_index);
+    return std::make_shared<Metal::ProgramBindings>(static_cast<Metal::Program&>(program), resource_views_by_argument, frame_index);
 }
 
 Ptr<IProgramBindings> IProgramBindings::CreateCopy(const IProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
@@ -179,8 +180,8 @@ void SetMetalResourcesForAll(Rhi::ShaderType shader_type, const Rhi::IProgram& p
     }
 }
 
-ProgramBindings::ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
-    : Base::ProgramBindings(program_ptr, resource_views_by_argument, frame_index)
+ProgramBindings::ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+    : Base::ProgramBindings(program, resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
 }

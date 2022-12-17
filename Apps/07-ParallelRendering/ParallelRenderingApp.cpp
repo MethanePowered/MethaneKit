@@ -196,7 +196,7 @@ void ParallelRenderingApp::Init()
 
         // Configure program resource bindings
         frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
-        frame.cubes_array.program_bindings_per_instance[0] = rhi::IProgramBindings::Create(render_state_settings.program_ptr, {
+        frame.cubes_array.program_bindings_per_instance[0] = rhi::IProgramBindings::Create(*render_state_settings.program_ptr, {
             { { rhi::ShaderType::All,   "g_uniforms"      }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size } } },
             { { rhi::ShaderType::Pixel, "g_texture_array" }, { { *m_texture_array_ptr   } } },
             { { rhi::ShaderType::Pixel, "g_sampler"       }, { { *m_texture_sampler_ptr } } },

@@ -202,7 +202,7 @@ public:
             frame.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
 
             // Configure program resource bindings
-            frame.program_bindings_ptr = IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
+            frame.program_bindings_ptr = IProgramBindings::Create(*m_render_state_ptr->GetSettings().program_ptr, {
                 { { ShaderType::Vertex, "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } }
             }, frame.index);
             frame.program_bindings_ptr->SetName(IndexedName("Cube Bindings {}", frame.index));

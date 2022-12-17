@@ -105,7 +105,7 @@ Ptr<Rhi::IProgramBindings> SkyBox::CreateProgramBindings(const Ptr<Rhi::IBuffer>
     META_CHECK_ARG_NOT_NULL(m_texture_sampler_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr);
     META_CHECK_ARG_NOT_NULL(m_render_state_ptr->GetSettings().program_ptr);
-    return Rhi::IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
+    return Rhi::IProgramBindings::Create(*m_render_state_ptr->GetSettings().program_ptr, {
         { { Rhi::ShaderType::Vertex, "g_skybox_uniforms" }, { { *uniforms_buffer_ptr         } } },
         { { Rhi::ShaderType::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexture() } } },
         { { Rhi::ShaderType::Pixel,  "g_texture_sampler" }, { { *m_texture_sampler_ptr       } } },

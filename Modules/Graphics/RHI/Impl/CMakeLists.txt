@@ -15,6 +15,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/Fence.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
+    ${INCLUDE_DIR}/ProgramBindings.h
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/RenderContext.h
     ${INCLUDE_DIR}/RenderState.h
@@ -38,6 +39,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/Fence.cpp
     ${SOURCES_DIR}/Shader.cpp
     ${SOURCES_DIR}/Program.cpp
+    ${SOURCES_DIR}/ProgramBindings.cpp
     ${SOURCES_DIR}/RenderPass.cpp
     ${SOURCES_DIR}/RenderContext.cpp
     ${SOURCES_DIR}/RenderState.cpp

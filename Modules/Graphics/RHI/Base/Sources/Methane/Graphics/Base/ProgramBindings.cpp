@@ -73,8 +73,17 @@ ProgramBindings::ResourceAndState::ResourceAndState(Ptr<Resource> resource_ptr, 
     META_FUNCTION_TASK();
 }
 
-ProgramBindings::ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
-    : ProgramBindings(program_ptr, frame_index)
+ProgramBindings::ProgramBindings(Program& program, Data::Index frame_index)
+    : m_program_ptr(std::dynamic_pointer_cast<Rhi::IProgram>(program.GetPtr()))
+    , m_frame_index(frame_index)
+    , m_bindings_index(static_cast<Program&>(*m_program_ptr).GetBindingsCountAndIncrement())
+{
+    META_FUNCTION_TASK();
+    InitializeArgumentBindings();
+}
+
+ProgramBindings::ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+    : ProgramBindings(program, frame_index)
 {
     META_FUNCTION_TASK();
     SetResourcesForArguments(resource_views_by_argument);
@@ -87,16 +96,6 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, 
     META_FUNCTION_TASK();
     SetResourcesForArguments(ReplaceResourceViews(other_program_bindings.GetArgumentBindings(), replace_resource_views_by_argument));
     VerifyAllArgumentsAreBoundToResources();
-}
-
-ProgramBindings::ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, Data::Index frame_index)
-    : m_program_ptr(program_ptr)
-    , m_frame_index(frame_index)
-    , m_bindings_index(static_cast<Program&>(*m_program_ptr).GetBindingsCountAndIncrement())
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_ZERO(program_ptr);
-    InitializeArgumentBindings();
 }
 
 ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, const Opt<Data::Index>& frame_index)
@@ -112,13 +111,6 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, 
 }
 
 Rhi::IProgram& ProgramBindings::GetProgram() const
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_program_ptr);
-    return *m_program_ptr;
-}
-
-Rhi::IProgram& ProgramBindings::GetProgram()
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_program_ptr);

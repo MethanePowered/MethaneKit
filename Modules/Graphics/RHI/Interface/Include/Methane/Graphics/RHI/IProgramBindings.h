@@ -109,7 +109,7 @@ struct IProgramBindings
     using ResourceViewsByArgument = std::unordered_map<IProgram::Argument, IResource::Views, IProgram::Argument::Hash>;
 
     // Create IProgramBindings instance
-    [[nodiscard]] static Ptr<IProgramBindings> Create(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);
+    [[nodiscard]] static Ptr<IProgramBindings> Create(IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);
     [[nodiscard]] static Ptr<IProgramBindings> CreateCopy(const IProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument = {}, const Opt<Data::Index>& frame_index = {});
 
     // IProgramBindings interface

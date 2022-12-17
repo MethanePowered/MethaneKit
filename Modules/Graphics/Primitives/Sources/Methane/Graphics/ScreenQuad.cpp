@@ -217,7 +217,7 @@ ScreenQuad::ScreenQuad(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern
         program_binding_resource_views.try_emplace(Rhi::IProgram::Argument(Rhi::ShaderType::Pixel, "g_sampler"), Rhi::IResource::Views{ { *m_texture_sampler_ptr } });
     }
 
-    m_const_program_bindings_ptr = Rhi::IProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_views);
+    m_const_program_bindings_ptr = Rhi::IProgramBindings::Create(*m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_views);
     m_const_program_bindings_ptr->SetName(fmt::format("{} Screen-Quad Constant Bindings", m_settings.name));
 
     UpdateConstantsBuffer();

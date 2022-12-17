@@ -37,6 +37,7 @@ namespace Methane::Graphics::Base
 
 class CommandList;
 class Resource;
+class Program;
 
 class ProgramBindings
     : public Rhi::IProgramBindings
@@ -47,9 +48,9 @@ public:
     using ArgumentBinding  = ProgramArgumentBinding;
     using ArgumentBindings = std::unordered_map<Rhi::IProgram::Argument, Ptr<ArgumentBinding>, Rhi::IProgram::Argument::Hash>;
 
-    ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindings(Program& program, Data::Index frame_index);
+    ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
-    ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, Data::Index frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const Opt<Data::Index>& frame_index);
     ProgramBindings(ProgramBindings&&) noexcept = default;
 
@@ -88,7 +89,6 @@ protected:
 
     void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
 
-    Rhi::IProgram& GetProgram();
     void InitializeArgumentBindings(const ProgramBindings* other_program_bindings_ptr = nullptr);
     ResourceViewsByArgument ReplaceResourceViews(const ArgumentBindings& argument_bindings,
                                                  const ResourceViewsByArgument& replace_resource_views) const;

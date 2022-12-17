@@ -436,7 +436,7 @@ void Text::FrameResources::InitializeProgramBindings(const rhi::IRenderState& st
     META_CHECK_ARG_NOT_NULL(m_atlas_texture_ptr);
     META_CHECK_ARG_NOT_NULL(m_uniforms_buffer_ptr);
 
-    m_program_bindings_ptr = rhi::IProgramBindings::Create(state.GetSettings().program_ptr, {
+    m_program_bindings_ptr = rhi::IProgramBindings::Create(*state.GetSettings().program_ptr, {
         { { rhi::ShaderType::Vertex, "g_uniforms"  }, { { *m_uniforms_buffer_ptr } } },
         { { rhi::ShaderType::Pixel,  "g_constants" }, { { *const_buffer_ptr      } } },
         { { rhi::ShaderType::Pixel,  "g_texture"   }, { { *m_atlas_texture_ptr   } } },

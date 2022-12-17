@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/Program.h
-Vulkan implementation of the program interface.
+FILE: Methane/Graphics/Vulkan/ProgramBindings.h
+Vulkan implementation of the program bindings interface.
 
 ******************************************************************************/
 
@@ -38,10 +38,10 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IProgramBindings> Rhi::IProgramBindings::Create(const Ptr<IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<IProgramBindings> Rhi::IProgramBindings::Create(IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    auto program_bindings_ptr = std::make_shared<Vulkan::ProgramBindings>(program_ptr, resource_views_by_argument, frame_index);
+    auto program_bindings_ptr = std::make_shared<Vulkan::ProgramBindings>(static_cast<Vulkan::Program&>(program), resource_views_by_argument, frame_index);
     program_bindings_ptr->Initialize();
     return program_bindings_ptr;
 }
@@ -59,13 +59,12 @@ Ptr<IProgramBindings> Rhi::IProgramBindings::CreateCopy(const Rhi::IProgramBindi
 namespace Methane::Graphics::Vulkan
 {
 
-ProgramBindings::ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr,
+ProgramBindings::ProgramBindings(Program& program,
                                  const ResourceViewsByArgument& resource_views_by_argument,
                                  Data::Index frame_index)
-    : Base::ProgramBindings(program_ptr, frame_index)
+    : Base::ProgramBindings(program, frame_index)
 {
     META_FUNCTION_TASK();
-    auto& program = static_cast<Program&>(GetProgram());
     program.Connect(*this);
 
     const vk::DescriptorSet& vk_constant_descriptor_set = program.GetConstantDescriptorSet();
@@ -128,8 +127,8 @@ ProgramBindings::ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr,
 }
 
 ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
-                                     const ResourceViewsByArgument& replace_resource_view_by_argument,
-                                     const Opt<Data::Index>& frame_index)
+                                 const ResourceViewsByArgument& replace_resource_view_by_argument,
+                                 const Opt<Data::Index>& frame_index)
     : Base::ProgramBindings(other_program_bindings, frame_index)
     , m_descriptor_sets(other_program_bindings.m_descriptor_sets)
     , m_has_mutable_descriptor_set(other_program_bindings.m_has_mutable_descriptor_set)

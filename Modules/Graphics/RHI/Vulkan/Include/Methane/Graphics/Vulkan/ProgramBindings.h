@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/Program.h
-Vulkan implementation of the program interface.
+FILE: Methane/Graphics/Vulkan/ProgramBindings.h
+Vulkan implementation of the program bindings interface.
 
 ******************************************************************************/
 
@@ -35,6 +35,7 @@ namespace Methane::Graphics::Vulkan
 {
 
 struct ICommandList;
+class Program;
 
 class ProgramBindings final
     : public Base::ProgramBindings
@@ -43,7 +44,7 @@ class ProgramBindings final
 public:
     using ArgumentBinding = ProgramArgumentBinding;
 
-    ProgramBindings(const Ptr<Rhi::IProgram>& program_ptr, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
+    ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
 
     void Initialize();

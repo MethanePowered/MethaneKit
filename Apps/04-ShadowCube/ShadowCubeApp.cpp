@@ -236,13 +236,13 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.floor.uniforms_buffer_ptr->SetName(IndexedName("Floor Uniforms Buffer for Shadow Pass", frame.index));
 
         // Shadow-pass resource bindings for cube rendering
-        frame.shadow_pass.cube.program_bindings_ptr = rhi::IProgramBindings::Create(shadow_state_settings.program_ptr, {
+        frame.shadow_pass.cube.program_bindings_ptr = rhi::IProgramBindings::Create(*shadow_state_settings.program_ptr, {
             { { rhi::ShaderType::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.cube.uniforms_buffer_ptr } } },
         }, frame.index);
         frame.shadow_pass.cube.program_bindings_ptr->SetName(IndexedName("Cube Shadow-Pass Bindings {}", frame.index));
 
         // Shadow-pass resource bindings for floor rendering
-        frame.shadow_pass.floor.program_bindings_ptr = rhi::IProgramBindings::Create(shadow_state_settings.program_ptr, {
+        frame.shadow_pass.floor.program_bindings_ptr = rhi::IProgramBindings::Create(*shadow_state_settings.program_ptr, {
             { { rhi::ShaderType::All, "g_mesh_uniforms"  }, { { *frame.shadow_pass.floor.uniforms_buffer_ptr } } },
         }, frame.index);
         frame.shadow_pass.floor.program_bindings_ptr->SetName(IndexedName("Floor Shadow-Pass Bindings {}", frame.index));
@@ -272,7 +272,7 @@ void ShadowCubeApp::Init()
         frame.final_pass.floor.uniforms_buffer_ptr->SetName(IndexedName("Floor Uniforms Buffer for Final Pass", frame.index));
 
         // Final-pass resource bindings for cube rendering
-        frame.final_pass.cube.program_bindings_ptr = rhi::IProgramBindings::Create(final_state_settings.program_ptr, {
+        frame.final_pass.cube.program_bindings_ptr = rhi::IProgramBindings::Create(*final_state_settings.program_ptr, {
             { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { *frame.final_pass.cube.uniforms_buffer_ptr  } } },
             { { rhi::ShaderType::Pixel,  "g_scene_uniforms" }, { { *frame.scene_uniforms_buffer_ptr            } } },
             { { rhi::ShaderType::Pixel,  "g_constants"      }, { { *m_const_buffer_ptr                         } } },
