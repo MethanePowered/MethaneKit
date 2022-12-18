@@ -36,17 +36,17 @@ Metal implementation of the texture interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITexture> ITexture::CreateRenderTarget(const IRenderContext& context, const Settings& settings)
+Ptr<ITexture> ITexture::Create(const IRenderContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Metal::Texture>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex /*frame_buffer_index*/)
+Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex frame_index)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
-    const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
+    const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format, frame_index);
     return std::make_shared<Metal::Texture>(dynamic_cast<const Base::RenderContext&>(context), texture_settings);
 }
 
@@ -54,7 +54,7 @@ Ptr<ITexture> ITexture::CreateDepthStencil(const IRenderContext& context)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
-    const Settings texture_settings = Settings::DepthStencil(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
+    const Settings texture_settings = Settings::DepthStencil(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format, context_settings.clear_depth_stencil);
     return std::make_shared<Metal::Texture>(dynamic_cast<const Base::RenderContext&>(context), texture_settings);
 }
 

@@ -29,6 +29,7 @@ Mesh buffers with texture extension structure.
 #include <Methane/Graphics/RHI/ITexture.h>
 #include <Methane/Graphics/RHI/IProgram.h>
 #include <Methane/Graphics/RHI/ICommandQueue.h>
+#include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/IRenderCommandList.h>
 #include <Methane/Graphics/RHI/IParallelRenderCommandList.h>
 #include <Methane/Graphics/UberMesh.hpp>
