@@ -26,6 +26,7 @@ Methane TransferCommandList PIMPL wrappers for direct calls to final implementat
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/ITransferCommandList.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -34,6 +35,8 @@ class CommandQueue;
 class CommandListDebugGroup;
 
 class TransferCommandList
+    : public Data::Transmitter<Rhi::ICommandListCallback>
+    , public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
     using Type        = CommandListType;
@@ -73,6 +76,8 @@ public:
 
 private:
     class Impl;
+
+    TransferCommandList(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

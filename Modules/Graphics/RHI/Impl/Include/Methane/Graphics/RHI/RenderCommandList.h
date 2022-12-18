@@ -26,6 +26,7 @@ Methane RenderCommandList PIMPL wrappers for direct calls to final implementatio
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IRenderCommandList.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -36,6 +37,8 @@ class CommandListDebugGroup;
 class ResourceBarriers;
 
 class RenderCommandList
+    : public Data::Transmitter<Rhi::ICommandListCallback>
+    , public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
     using Primitive   = RenderPrimitive;
@@ -91,6 +94,8 @@ public:
 
 private:
     class Impl;
+
+    RenderCommandList(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

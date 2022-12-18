@@ -62,8 +62,15 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(TransferCommandList);
 
+TransferCommandList::TransferCommandList(UniquePtr<Impl>&& impl_ptr)
+    : Transmitter<Rhi::ICommandListCallback>(impl_ptr->GetInterface())
+    , Transmitter<Rhi::IObjectCallback>(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 TransferCommandList::TransferCommandList(const Ptr<ITransferCommandList>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : TransferCommandList(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -80,10 +87,14 @@ TransferCommandList::TransferCommandList(const CommandQueue& command_queue)
 void TransferCommandList::Init(const CommandQueue& command_queue)
 {
     m_impl_ptr = std::make_unique<Impl>(ITransferCommandList::Create(command_queue.GetInterface()));
+    Transmitter<Rhi::ICommandListCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<Rhi::IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void TransferCommandList::Release()
 {
+    Transmitter<Rhi::ICommandListCallback>::Reset();
+    Transmitter<Rhi::IObjectCallback>::Reset();
     m_impl_ptr.release();
 }
 

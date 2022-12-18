@@ -64,8 +64,15 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderCommandList);
 
+RenderCommandList::RenderCommandList(UniquePtr<Impl>&& impl_ptr)
+    : Transmitter<Rhi::ICommandListCallback>(impl_ptr->GetInterface())
+    , Transmitter<Rhi::IObjectCallback>(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 RenderCommandList::RenderCommandList(const Ptr<IRenderCommandList>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : RenderCommandList(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -82,10 +89,14 @@ RenderCommandList::RenderCommandList(const CommandQueue& command_queue, const Re
 void RenderCommandList::Init(const CommandQueue& command_queue, const RenderPass& render_pass)
 {
     m_impl_ptr = std::make_unique<Impl>(IRenderCommandList::Create(command_queue.GetInterface(), render_pass.GetInterface()));
+    Transmitter<Rhi::ICommandListCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<Rhi::IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void RenderCommandList::Release()
 {
+    Transmitter<Rhi::ICommandListCallback>::Reset();
+    Transmitter<Rhi::IObjectCallback>::Reset();
     m_impl_ptr.release();
 }
 

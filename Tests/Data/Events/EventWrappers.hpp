@@ -63,7 +63,7 @@ public:
 };
 
 class TestReceiver
-    : protected Receiver<ITestEvents> //NOSONAR
+    : public Receiver<ITestEvents>
 {
 public:
     TestReceiver() = default;

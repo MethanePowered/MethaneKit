@@ -82,7 +82,7 @@ public:
         return *this;
     }
 
-    void Connect(Receiver<EventType>& receiver) noexcept override
+    void Connect(Receiver<EventType>& receiver) noexcept final
     {
         META_FUNCTION_TASK();
         std::lock_guard lock(m_connected_receivers_mutex);
@@ -101,7 +101,7 @@ public:
         receiver.OnConnected(*this);
     }
 
-    void Disconnect(Receiver<EventType>& receiver) noexcept override
+    void Disconnect(Receiver<EventType>& receiver) noexcept final
     {
         META_FUNCTION_TASK();
         std::lock_guard lock(m_connected_receivers_mutex);
