@@ -116,6 +116,7 @@ vk::ImageUsageFlags ITexture::GetNativeImageUsageFlags(const Rhi::TextureSetting
         usage_flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
         break;
 
+    case Rhi::TextureType::Image:
     case Rhi::TextureType::RenderTarget:
         if (settings.usage_mask.HasAnyBit(Rhi::ResourceUsage::RenderTarget))
             usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
