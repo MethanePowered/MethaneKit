@@ -319,7 +319,7 @@ void RenderPass::OnRenderContextSwapchainChanged(RenderContext&)
     for (const Rhi::TextureView& texture_location : attachment_texture_locations)
     {
         if (texture_location.GetTexture().GetSettings().type == Rhi::TextureType::FrameBuffer)
-            dynamic_cast<FrameBufferTexture&>(texture_location.GetTexture()).ResetNativeImage();
+            static_cast<Texture&>(texture_location.GetTexture()).ResetNativeFrameImage();
     }
 
     Reset();

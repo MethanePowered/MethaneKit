@@ -51,10 +51,10 @@ struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITexture> ITexture::Create(const IRenderContext& render_context, const Settings& settings)
+Ptr<ITexture> ITexture::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<DirectX::Texture>(static_cast<const Base::RenderContext&>(render_context), settings);
+    return std::make_shared<DirectX::Texture>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
 Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& render_context, FrameBufferIndex frame_index)
@@ -311,7 +311,6 @@ Texture::Texture(const Base::Context& context, const Settings& settings)
     : Resource<Base::Texture>(context, settings)
 {
     META_FUNCTION_TASK();
-
     switch(settings.type)
     {
     case Rhi::TextureType::Image:        InitializeAsImage(); break;

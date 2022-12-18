@@ -117,7 +117,7 @@ bool ResourceBarriers::Remove(const Rhi::ResourceBarrier::Id& id)
             resource_type)
     {
     case Rhi::ResourceType::Buffer:  RemoveBufferMemoryBarrier(dynamic_cast<const Buffer&>(resource).GetNativeResource(), barrier_type); break;
-    case Rhi::ResourceType::Texture: RemoveImageMemoryBarrier(dynamic_cast<const ITexture&>(resource).GetNativeImage(), barrier_type); break;
+    case Rhi::ResourceType::Texture: RemoveImageMemoryBarrier(dynamic_cast<const Texture&>(resource).GetNativeImage(), barrier_type); break;
     default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
     }
 
@@ -177,7 +177,7 @@ void ResourceBarriers::SetResourceBarrier(const Rhi::ResourceBarrier::Id& id, co
             resource_type)
     {
     case Rhi::IResource::Type::Buffer:  SetBufferMemoryBarrier(dynamic_cast<const Buffer&>(resource), barrier); break;
-    case Rhi::IResource::Type::Texture: SetImageMemoryBarrier(dynamic_cast<const ITexture&>(resource), barrier); break;
+    case Rhi::IResource::Type::Texture: SetImageMemoryBarrier(dynamic_cast<const Texture&>(resource), barrier); break;
     default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
     }
 
@@ -221,7 +221,7 @@ void ResourceBarriers::SetBufferMemoryBarrier(const Buffer& buffer, const Rhi::R
     }
 }
 
-void ResourceBarriers::SetImageMemoryBarrier(const ITexture& texture, const Rhi::ResourceBarrier& barrier)
+void ResourceBarriers::SetImageMemoryBarrier(const Texture& texture, const Rhi::ResourceBarrier& barrier)
 {
     META_FUNCTION_TASK();
     const vk::Image& vk_image = texture.GetNativeImage();
@@ -281,7 +281,7 @@ void ResourceBarriers::AddBufferMemoryOwnerChangeBarrier(const Buffer& buffer, c
     );
 }
 
-void ResourceBarriers::AddImageMemoryStateChangeBarrier(const ITexture& texture, const Rhi::ResourceBarrier::StateChange& state_change)
+void ResourceBarriers::AddImageMemoryStateChangeBarrier(const Texture& texture, const Rhi::ResourceBarrier::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     m_vk_default_barrier.vk_image_memory_barriers.emplace_back(
@@ -296,7 +296,7 @@ void ResourceBarriers::AddImageMemoryStateChangeBarrier(const ITexture& texture,
     );
 }
 
-void ResourceBarriers::AddImageMemoryOwnerChangeBarrier(const ITexture& texture, const Rhi::ResourceBarrier::OwnerChange& owner_change)
+void ResourceBarriers::AddImageMemoryOwnerChangeBarrier(const Texture& texture, const Rhi::ResourceBarrier::OwnerChange& owner_change)
 {
     META_FUNCTION_TASK();
     const uint32_t family_index_before = owner_change.GetQueueFamilyBefore();

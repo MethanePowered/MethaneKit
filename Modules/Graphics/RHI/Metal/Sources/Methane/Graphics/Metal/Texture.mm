@@ -36,7 +36,7 @@ Metal implementation of the texture interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITexture> ITexture::Create(const IRenderContext& context, const Settings& settings)
+Ptr<ITexture> ITexture::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Metal::Texture>(dynamic_cast<const Base::Context&>(context), settings);

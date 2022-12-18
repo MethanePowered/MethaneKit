@@ -34,7 +34,7 @@ namespace Methane::Graphics::Vulkan
 
 class CommandQueue;
 class Buffer;
-struct ITexture;
+class Texture;
 
 class ResourceBarriers
     : public Base::ResourceBarriers
@@ -64,12 +64,12 @@ private:
 
     void SetResourceBarrier(const Barrier::Id& id, const Barrier& barrier, bool is_new_barrier);
     void SetBufferMemoryBarrier(const Buffer& buffer, const Barrier& barrier);
-    void SetImageMemoryBarrier(const ITexture& texture, const Barrier& barrier);
+    void SetImageMemoryBarrier(const Texture& texture, const Barrier& barrier);
 
     void AddBufferMemoryStateChangeBarrier(const Buffer& buffer, const Barrier::StateChange& state_change);
     void AddBufferMemoryOwnerChangeBarrier(const Buffer& buffer, const Barrier::OwnerChange& owner_change);
-    void AddImageMemoryStateChangeBarrier(const ITexture& texture, const Barrier::StateChange& state_change);
-    void AddImageMemoryOwnerChangeBarrier(const ITexture& texture, const Barrier::OwnerChange& owner_change);
+    void AddImageMemoryStateChangeBarrier(const Texture& texture, const Barrier::StateChange& state_change);
+    void AddImageMemoryOwnerChangeBarrier(const Texture& texture, const Barrier::OwnerChange& owner_change);
 
     void RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer, Barrier::Type barrier_type);
     void RemoveImageMemoryBarrier(const vk::Image& vk_image, Barrier::Type barrier_type);

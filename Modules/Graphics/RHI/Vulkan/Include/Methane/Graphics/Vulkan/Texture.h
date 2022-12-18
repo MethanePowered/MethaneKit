@@ -34,93 +34,20 @@ namespace Methane::Graphics::Vulkan
 
 class RenderContext;
 
-struct ITexture
+class Texture final // NOSONAR - inheritance hierarchy is greater than 5
+    : public Resource<Base::Texture, vk::Image, false>
 {
+public:
     [[nodiscard]] static vk::ImageType        DimensionTypeToImageType(Rhi::TextureDimensionType dimension_type);
     [[nodiscard]] static vk::ImageViewType    DimensionTypeToImageViewType(Rhi::TextureDimensionType dimension_type);
     [[nodiscard]] static vk::ImageAspectFlags GetNativeImageAspectFlags(const Rhi::TextureSettings& settings);
     [[nodiscard]] static vk::ImageUsageFlags  GetNativeImageUsageFlags(const Rhi::TextureSettings& settings,
                                                                        vk::ImageUsageFlags initial_usage_flags = {});
 
-    [[nodiscard]] virtual const vk::Image& GetNativeImage() const noexcept = 0;
-    [[nodiscard]] virtual vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept = 0;
+    Texture(const Base::Context& context, const Settings& settings);
+    Texture(const RenderContext& render_context, const Settings& settings, Data::Index frame_index);
 
-    virtual ~ITexture() = default;
-};
-
-class FrameBufferTexture final // NOSONAR - inheritance hierarchy is greater than 5
-    : public Resource<Base::Texture, vk::Image, false>
-    , public ITexture
-{
-public:
-    FrameBufferTexture(const RenderContext& render_context, const Settings& settings, FrameBufferIndex frame_buffer_index);
-
-    [[nodiscard]] FrameBufferIndex GetFrameBufferIndex() const noexcept { return m_frame_buffer_index; }
-
-    // ITexture interface
-    const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
-    vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
-
-    void ResetNativeImage();
-
-private:
-    // Resource override
-    Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const ResourceView::Id& view_id) override;
-
-    // IResource interface
-    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
-
-    const RenderContext& m_render_context;
-    const FrameBufferIndex m_frame_buffer_index;
-};
-
-class DepthStencilTexture final // NOSONAR - inheritance hierarchy is greater than 5
-    : public Resource<Base::Texture, vk::Image, true>
-    , public ITexture
-{
-public:
-    DepthStencilTexture(const RenderContext& render_context, const Settings& settings,
-                        const Opt<DepthStencilValues>& depth_stencil_opt);
-
-    // IResource interface
-    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
-
-    // ITexture interface
-    const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
-    vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
-
-private:
-    // Resource override
-    Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const ResourceView::Id& view_id) override;
-
-    Opt<DepthStencilValues> m_depth_stencil_opt;
-};
-
-class RenderTargetTexture final // NOSONAR - inheritance hierarchy is greater than 5
-    : public Resource<Base::Texture, vk::Image, true>
-    , public ITexture
-{
-public:
-    RenderTargetTexture(const RenderContext& context, const Settings& settings);
-
-    // IResource interface
-    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
-
-    // ITexture interface
-    const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
-    vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
-
-private:
-    // Resource override
-    Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const ResourceView::Id& view_id) override;
-};
-
-class ImageTexture final // NOSONAR - inheritance hierarchy is greater than 5
-    : public Resource<Base::Texture, vk::Image, true>
-    , public ITexture
-{
-public:
-    ImageTexture(const Base::Context& context, const Settings& settings);
+    void ResetNativeFrameImage();
 
     // IResource interface
     void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
@@ -129,15 +56,22 @@ public:
     bool SetName(std::string_view name) override;
 
     // ITexture overrides
-    const vk::Image& GetNativeImage() const noexcept override { return GetNativeResource(); }
-    vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept override;
+    const vk::Image& GetNativeImage() const noexcept { return GetNativeResource(); }
+    vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept;
 
 private:
+    Texture(const Base::Context& context, const Settings& settings, vk::UniqueImage&& vk_unique_image);
+
+    void InitializeAsImage();
+    void InitializeAsRenderTarget();
+    void InitializeAsDepthStencil();
+
     // Resource override
     Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const ResourceView::Id& view_id) override;
 
     void GenerateMipLevels(Rhi::ICommandQueue& target_cmd_queue, State target_resource_state);
 
+    vk::UniqueImage                  m_vk_unique_image;
     vk::UniqueBuffer                 m_vk_unique_staging_buffer;
     vk::UniqueDeviceMemory           m_vk_unique_staging_memory;
     std::vector<vk::BufferImageCopy> m_vk_copy_regions;

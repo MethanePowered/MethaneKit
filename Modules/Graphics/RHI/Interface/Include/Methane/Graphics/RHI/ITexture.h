@@ -100,7 +100,7 @@ struct ITexture
     using FrameBufferIndex = uint32_t;
 
     // Create ITexture instance
-    [[nodiscard]] static Ptr<ITexture> Create(const IRenderContext& context, const Settings& settings);
+    [[nodiscard]] static Ptr<ITexture> Create(const IContext& context, const Settings& settings);
     [[nodiscard]] static Ptr<ITexture> CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex frame_buffer_index);
     [[nodiscard]] static Ptr<ITexture> CreateDepthStencil(const IRenderContext& context);
     [[nodiscard]] static Ptr<ITexture> CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
