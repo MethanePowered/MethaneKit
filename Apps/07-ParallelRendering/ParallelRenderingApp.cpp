@@ -169,7 +169,7 @@ void ParallelRenderingApp::Init()
     m_cube_array_buffers_ptr = std::make_unique<MeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube", mesh_subsets);
 
     // Create cube-map render target texture
-    m_texture_array_ptr = rhi::ITexture::CreateRenderTarget(
+    m_texture_array_ptr = rhi::ITexture::Create(
         GetRenderContext(),
         rhi::ITexture::Settings::Image(g_texture_size, m_settings.render_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
                                        rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })));

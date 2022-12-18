@@ -36,16 +36,17 @@ Vulkan implementation of the texture interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITexture> Rhi::ITexture::CreateRenderTarget(const Rhi::IRenderContext& render_context, const Settings& settings)
+Ptr<ITexture> Rhi::ITexture::Create(const Rhi::IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     switch (settings.type)
     {
-    case TextureType::Texture:            return std::make_shared<Vulkan::RenderTargetTexture>(dynamic_cast<const Vulkan::RenderContext&>(render_context), settings);
-    case TextureType::DepthStencilBuffer: return std::make_shared<Vulkan::DepthStencilTexture>(dynamic_cast<const Vulkan::RenderContext&>(render_context), settings,
-                                                                                            render_context.GetSettings().clear_depth_stencil);
+    case TextureType::Image:        return std::make_shared<Vulkan::ImageTexture>(dynamic_cast<const Vulkan::RenderContext&>(render_context), settings);
+    case TextureType::RenderTarget: return std::make_shared<Vulkan::RenderTargetTexture>(dynamic_cast<const Vulkan::RenderContext&>(render_context), settings);
+    case TextureType::DepthStencil: return std::make_shared<Vulkan::DepthStencilTexture>(dynamic_cast<const Vulkan::RenderContext&>(render_context), settings,
+                                                                                         render_context.GetSettings().clear_depth_stencil);
     case TextureType::FrameBuffer: META_UNEXPECTED_ARG_DESCR(settings.type, "frame buffer texture must be created with static method Texture::CreateFrameBuffer");
-    default:                         META_UNEXPECTED_ARG_RETURN(settings.type, nullptr);
+    default:                       META_UNEXPECTED_ARG_RETURN(settings.type, nullptr);
     }
 
 }
@@ -54,15 +55,15 @@ Ptr<ITexture> Rhi::ITexture::CreateFrameBuffer(const Rhi::IRenderContext& contex
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
-    const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format);
+    const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format, frame_buffer_index);
     return std::make_shared<Vulkan::FrameBufferTexture>(dynamic_cast<const Vulkan::RenderContext&>(context), texture_settings, frame_buffer_index);
 }
 
-Ptr<ITexture> Rhi::ITexture::CreateDepthStencilBuffer(const Rhi::IRenderContext& context)
+Ptr<ITexture> Rhi::ITexture::CreateDepthStencil(const Rhi::IRenderContext& context)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
-    const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
+    const Settings texture_settings = Settings::DepthStencil(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format, context_settings.clear_depth_stencil);
     return std::make_shared<Vulkan::DepthStencilTexture>(dynamic_cast<const Vulkan::RenderContext&>(context), texture_settings, context_settings.clear_depth_stencil);
 }
 
@@ -90,9 +91,10 @@ vk::ImageAspectFlags ITexture::GetNativeImageAspectFlags(const Rhi::TextureSetti
     META_FUNCTION_TASK();
     switch(settings.type)
     {
-    case Rhi::TextureType::Texture:
-    case Rhi::TextureType::FrameBuffer:        return vk::ImageAspectFlagBits::eColor;
-    case Rhi::TextureType::DepthStencilBuffer: return IsDepthFormat(settings.pixel_format)
+    case Rhi::TextureType::Image:
+    case Rhi::TextureType::RenderTarget:
+    case Rhi::TextureType::FrameBuffer:  return vk::ImageAspectFlagBits::eColor;
+    case Rhi::TextureType::DepthStencil: return IsDepthFormat(settings.pixel_format)
                                                     ? vk::ImageAspectFlagBits::eDepth
                                                     : vk::ImageAspectFlagBits::eStencil;
     default: META_UNEXPECTED_ARG_DESCR_RETURN(settings.type, vk::ImageAspectFlagBits::eColor, "Unsupported texture type");
@@ -110,17 +112,14 @@ vk::ImageUsageFlags ITexture::GetNativeImageUsageFlags(const Rhi::TextureSetting
         usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
         break;
 
-    case Rhi::TextureType::DepthStencilBuffer:
+    case Rhi::TextureType::DepthStencil:
         usage_flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
         break;
 
-    case Rhi::TextureType::Texture:
+    case Rhi::TextureType::RenderTarget:
         if (settings.usage_mask.HasAnyBit(Rhi::ResourceUsage::RenderTarget))
             usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
         break;
-
-    default:
-        META_UNEXPECTED_ARG(settings.type);
     }
     
     if (settings.mipmapped)
@@ -183,13 +182,13 @@ static vk::ImageLayout GetVulkanImageLayoutByUsage(Rhi::TextureType texture_type
     META_FUNCTION_TASK();
     if (usage.HasAnyBits({ Rhi::ResourceUsage::ShaderRead, Rhi::ResourceUsage::ShaderWrite }))
     {
-        return texture_type == Rhi::TextureType::DepthStencilBuffer
+        return texture_type == Rhi::TextureType::DepthStencil
              ? vk::ImageLayout::eDepthStencilReadOnlyOptimal
              : vk::ImageLayout::eShaderReadOnlyOptimal;
     }
     if (usage.HasAnyBit(Rhi::ResourceUsage::RenderTarget))
     {
-        return texture_type == Rhi::TextureType::DepthStencilBuffer
+        return texture_type == Rhi::TextureType::DepthStencil
              ? vk::ImageLayout::eDepthStencilAttachmentOptimal
              : vk::ImageLayout::eColorAttachmentOptimal;
     }
@@ -309,7 +308,7 @@ void FrameBufferTexture::ResetNativeImage()
 }
 
 DepthStencilTexture::DepthStencilTexture(const RenderContext& render_context, const Settings& settings,
-                                         const Opt<DepthStencil>& depth_stencil_opt)
+                                         const Opt<DepthStencilValues>& depth_stencil_opt)
     : Resource(render_context, settings, CreateNativeImage(render_context, settings))
     , m_depth_stencil_opt(depth_stencil_opt)
 {

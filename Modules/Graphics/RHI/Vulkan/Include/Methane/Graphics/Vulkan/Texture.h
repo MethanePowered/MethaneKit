@@ -80,7 +80,7 @@ class DepthStencilTexture final // NOSONAR - inheritance hierarchy is greater th
 {
 public:
     DepthStencilTexture(const RenderContext& render_context, const Settings& settings,
-                        const Opt<DepthStencil>& depth_stencil_opt);
+                        const Opt<DepthStencilValues>& depth_stencil_opt);
 
     // IResource interface
     void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
@@ -93,7 +93,7 @@ private:
     // Resource override
     Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const ResourceView::Id& view_id) override;
 
-    Opt<DepthStencil>      m_depth_stencil_opt;
+    Opt<DepthStencilValues> m_depth_stencil_opt;
 };
 
 class RenderTargetTexture final // NOSONAR - inheritance hierarchy is greater than 5

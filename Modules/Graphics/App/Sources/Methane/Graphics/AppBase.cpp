@@ -124,7 +124,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     // Create frame depth texture and attachment description
     if (m_initial_context_settings.depth_stencil_format != PixelFormat::Unknown)
     {
-        static constexpr DepthStencil s_default_depth_stencil{ Depth(1.F), Stencil(0) };
+        static constexpr DepthStencilValues s_default_depth_stencil{ Depth(1.F), Stencil(0) };
         m_screen_pass_pattern_settings.depth_attachment = Rhi::IRenderPass::DepthAttachment(
             attachment_index++,
             m_initial_context_settings.depth_stencil_format, 1U,
@@ -158,7 +158,7 @@ void AppBase::Init()
     // Create frame depth texture and attachment description
     if (context_settings.depth_stencil_format != PixelFormat::Unknown)
     {
-        m_depth_texture_ptr = Rhi::ITexture::CreateDepthStencilBuffer(*m_context_ptr);
+        m_depth_texture_ptr = Rhi::ITexture::CreateDepthStencil(*m_context_ptr);
         m_depth_texture_ptr->SetName("Depth Texture");
     }
 
@@ -335,7 +335,7 @@ void AppBase::RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_
     if (!depth_restore_info_opt)
         return;
 
-    m_depth_texture_ptr = Rhi::ITexture::CreateDepthStencilBuffer(GetRenderContext());
+    m_depth_texture_ptr = Rhi::ITexture::CreateDepthStencil(GetRenderContext());
     m_depth_texture_ptr->RestoreDescriptorViews(depth_restore_info_opt->descriptor_by_view_id);
     m_depth_texture_ptr->SetName(depth_restore_info_opt->name);
 }

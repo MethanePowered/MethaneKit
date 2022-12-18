@@ -24,16 +24,10 @@ DirectX 12 implementation of the texture interface.
 #pragma once
 
 #include "Resource.hpp"
-#include "ErrorHandling.h"
 
 #include <Methane/Graphics/Base/Texture.h>
-#include <Methane/Graphics/Base/CommandList.h>
-#include <Methane/Graphics/Types.h>
-#include <Methane/Instrumentation.h>
-#include <Methane/Checks.hpp>
 
 #include <directx/d3dx12.h>
-#include <optional>
 
 namespace DirectX
 {
@@ -52,84 +46,37 @@ class Context;
 namespace Methane::Graphics::DirectX
 {
 
-template<typename... ExtraArgs>
 class Texture final // NOSONAR - inheritance hierarchy is greater than 5
     : public Resource<Base::Texture>
 {
 public:
-    Texture(const Base::Context& context, const Settings& settings, ExtraArgs... extra_args)
-        : Resource<Base::Texture>(context, settings)
-    {
-        META_FUNCTION_TASK();
-        Initialize(extra_args...);
-    }
+    using View = ResourceView;
 
-    // IResource override
-    void SetData(const SubResources&, Rhi::ICommandQueue&) override
-    {
-        META_FUNCTION_NOT_IMPLEMENTED_DESCR("Texture data upload is allowed for image textures only");
-    }
-
-    // IResource override
-    Opt<Descriptor> InitializeNativeViewDescriptor(const View::Id& view_id) override;
-
-private:
-    void Initialize(ExtraArgs...);
-};
-
-using FrameBufferTexture = Texture<Rhi::ITexture::FrameBufferIndex>;
-
-using RenderTargetTexture = Texture<>;
-template<> class Texture<> final // NOSONAR - inheritance hierarchy is greater than 5
-    : public Resource<Base::Texture>
-{
-public:
     Texture(const Base::Context& context, const Settings& settings);
-
-    // IResource override
-    Opt<Descriptor> InitializeNativeViewDescriptor(const View::Id& view_id) override;
-
-private:
-    void CreateShaderResourceView(const Descriptor& descriptor, const View::Id& view_id) const;
-    void CreateRenderTargetView(const Descriptor& descriptor, const View::Id& view_id) const;
-};
-
-using DepthStencilTexture = Texture<const Opt<DepthStencil>&>;
-
-template<> class Texture<const Opt<DepthStencil>&> final // NOSONAR - inheritance hierarchy is greater than 5
-    : public Resource<Base::Texture>
-{
-public:
-    Texture(const Base::Context& context, const Settings& settings, const Opt<DepthStencil>& clear_depth_stencil);
-
-    // IResource override
-    Opt<Descriptor> InitializeNativeViewDescriptor(const View::Id& view_id) override;
-
-private:
-    void CreateShaderResourceView(const Descriptor& descriptor) const;
-    void CreateDepthStencilView(const Descriptor& descriptor) const;
-};
-
-struct ImageToken { };
-using ImageTexture = Texture<ImageToken>;
-template<> class Texture<ImageToken> final // NOSONAR - inheritance hierarchy is greater than 5
-    : public Resource<Base::Texture>
-{
-public:
-    Texture(const Base::Context& context, const Settings& settings, ImageToken);
 
     // IObject overrides
     bool SetName(std::string_view name) override;
 
-    // IResource overrides
-    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override;
+    // IResource override
+    void SetData(const SubResources&, Rhi::ICommandQueue&) override;
 
     // IResource override
     Opt<Descriptor> InitializeNativeViewDescriptor(const View::Id& view_id) override;
 
 private:
+    void InitializeAsImage();
+    void InitializeAsRenderTarget();
+    void InitializeAsFrameBuffer();
+    void InitializeAsDepthStencil();
+
+    void CreateShaderResourceView(const Descriptor& descriptor) const;
+    void CreateShaderResourceView(const Descriptor& descriptor, const View::Id& view_id) const;
+    void CreateRenderTargetView(const Descriptor& descriptor) const;
+    void CreateRenderTargetView(const Descriptor& descriptor, const View::Id& view_id) const;
+    void CreateDepthStencilView(const Descriptor& descriptor) const;
     void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, ::DirectX::ScratchImage& scratch_image) const;
 
+    // Upload resource is created for TextureType::Image only
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
 };
 

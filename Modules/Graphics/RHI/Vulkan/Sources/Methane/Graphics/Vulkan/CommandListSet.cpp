@@ -68,7 +68,7 @@ static vk::PipelineStageFlags GetFrameBufferRenderingWaitStages(const Refs<Rhi::
             const Rhi::TextureType attach_texture_type = attach_location.GetTexture().GetSettings().type;
             if (attach_texture_type == Rhi::TextureType::FrameBuffer)
                 wait_stages |= vk::PipelineStageFlagBits::eColorAttachmentOutput;
-            if (attach_texture_type == Rhi::TextureType::DepthStencilBuffer)
+            if (attach_texture_type == Rhi::TextureType::DepthStencil)
                 wait_stages |= vk::PipelineStageFlagBits::eVertexShader;
         }
     }

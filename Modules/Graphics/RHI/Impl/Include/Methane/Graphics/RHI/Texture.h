@@ -92,61 +92,6 @@ private:
     UniquePtr<Impl> m_impl_ptr;
 };
 
-class RenderTargetTexture
-{
-public:
-    using AllocationError  = ResourceAllocationError;
-    using State            = ResourceState;
-    using Barrier          = ResourceBarrier;
-    using Barriers         = ResourceBarriers;
-    using Type             = TextureType;
-    using DimensionType    = TextureDimensionType;
-    using View             = TextureView;
-    using Views            = TextureViews;
-    using Settings         = TextureSettings;
-
-    using Descriptor         = DirectX::ResourceDescriptor;
-    using DescriptorByViewId = std::map<ResourceView::Id, Descriptor>;
-
-    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderTargetTexture);
-
-    RenderTargetTexture(const Ptr<ITexture>& interface_ptr);
-    RenderTargetTexture(ITexture& interface_ref);
-    RenderTargetTexture(const RenderContext& context, const Settings& settings);
-
-    void Init(const RenderContext& context, const Settings& settings);
-    void Release();
-
-    bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    ITexture& GetInterface() const META_PIMPL_NOEXCEPT;
-
-    // IResource interface methods
-    bool SetState(State state) const;
-    bool SetState(State state, Barriers& out_barriers) const;
-    bool SetOwnerQueueFamily(uint32_t family_index) const;
-    bool SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers) const;
-    void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const;
-
-    [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) const;
-    [[nodiscard]] Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const;
-    [[nodiscard]] const SubResource::Count& GetSubresourceCount() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] ResourceType              GetResourceType() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] State                     GetState() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] ResourceUsageMask         GetUsage() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] const DescriptorByViewId& GetDescriptorByViewId() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] RenderContext             GetRenderContext() const;
-    [[nodiscard]] const Opt<uint32_t>&      GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT;
-
-    // ITexture interface methods
-    [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
-
-private:
-    class Impl;
-
-    UniquePtr<Impl> m_impl_ptr;
-};
-
 class FrameBufferTexture
 {
 public:

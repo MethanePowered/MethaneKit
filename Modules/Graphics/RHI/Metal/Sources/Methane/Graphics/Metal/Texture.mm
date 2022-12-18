@@ -50,11 +50,11 @@ Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& context, FrameBu
     return std::make_shared<Metal::Texture>(dynamic_cast<const Base::RenderContext&>(context), texture_settings);
 }
 
-Ptr<ITexture> ITexture::CreateDepthStencilBuffer(const IRenderContext& context)
+Ptr<ITexture> ITexture::CreateDepthStencil(const IRenderContext& context)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
-    const Settings texture_settings = Settings::DepthStencilBuffer(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
+    const Settings texture_settings = Settings::DepthStencil(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format);
     return std::make_shared<Metal::Texture>(dynamic_cast<const Base::RenderContext&>(context), texture_settings);
 }
 

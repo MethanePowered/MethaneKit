@@ -49,7 +49,7 @@ DescriptorHeap::Type IResource::GetDescriptorHeapTypeByUsage(const Rhi::IResourc
     else if (resource_usage.HasAnyBit(Usage::RenderTarget))
     {
         return (resource_type == Type::Texture &&
-                dynamic_cast<const Rhi::ITexture&>(resource).GetSettings().type == Rhi::TextureType::DepthStencilBuffer)
+                dynamic_cast<const Rhi::ITexture&>(resource).GetSettings().type == Rhi::TextureType::DepthStencil)
                ? DescriptorHeap::Type::DepthStencil
                : DescriptorHeap::Type::RenderTargets;
     }

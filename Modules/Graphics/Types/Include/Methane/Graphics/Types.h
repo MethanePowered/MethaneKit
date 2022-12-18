@@ -39,7 +39,7 @@ constexpr size_t g_uniform_alignment = 256;
 
 using Depth = float;
 using Stencil = uint8_t;
-using DepthStencil = std::pair<Depth, Stencil>;
+using DepthStencilValues = std::pair<Depth, Stencil>;
 
 using Timestamp = Data::Timestamp;
 using TimeDelta = Data::TimeDelta;

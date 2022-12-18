@@ -213,9 +213,9 @@ void ShadowCubeApp::Init()
 
     // ========= Per-Frame Data =========
 
-    const rhi::ITexture::Settings shadow_texture_settings = rhi::ITexture::Settings::DepthStencilBuffer(
+    const rhi::ITexture::Settings shadow_texture_settings = rhi::ITexture::Settings::DepthStencil(
         gfx::Dimensions(g_shadow_map_size),
-        context_settings.depth_stencil_format,
+        context_settings.depth_stencil_format, context_settings.clear_depth_stencil,
         rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })
     );
 
@@ -248,7 +248,7 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.floor.program_bindings_ptr->SetName(IndexedName("Floor Shadow-Pass Bindings {}", frame.index));
 
         // Create depth texture for shadow map rendering
-        frame.shadow_pass.rt_texture_ptr = rhi::ITexture::CreateRenderTarget(GetRenderContext(), shadow_texture_settings);
+        frame.shadow_pass.rt_texture_ptr = rhi::ITexture::Create(GetRenderContext(), shadow_texture_settings);
         frame.shadow_pass.rt_texture_ptr->SetName(IndexedName("Shadow Map", frame.index));
         
         // Create shadow pass configuration with depth attachment

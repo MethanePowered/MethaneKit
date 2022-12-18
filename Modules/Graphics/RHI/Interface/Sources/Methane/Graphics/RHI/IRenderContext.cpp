@@ -57,7 +57,7 @@ RenderContextSettings& RenderContextSettings::SetClearColor(Opt<Color4F>&& new_c
     return *this;
 }
 
-RenderContextSettings& RenderContextSettings::SetClearDepthStencil(Opt<DepthStencil>&& new_clear_ds) noexcept
+RenderContextSettings& RenderContextSettings::SetClearDepthStencil(Opt<DepthStencilValues>&& new_clear_ds) noexcept
 {
     META_FUNCTION_TASK();
     clear_depth_stencil = std::move(new_clear_ds);

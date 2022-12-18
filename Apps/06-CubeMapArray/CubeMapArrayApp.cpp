@@ -52,7 +52,7 @@ CubeMapArrayApp::CubeMapArrayApp()
         []() {
             Graphics::CombinedAppSettings settings = GetGraphicsTutorialAppSettings("Methane Cube Map Array", AppOptions::GetDefaultWithColorDepthAndAnim());
             settings.graphics_app.device_capabilities.features.SetBitOn(rhi::DeviceFeature::ImageCubeArray);
-            settings.render_context.clear_depth_stencil = gfx::DepthStencil(0.F, {}); // Clear depth with 0.F to support reversed depth rendering
+            settings.render_context.clear_depth_stencil = gfx::DepthStencilValues(0.F, {}); // Clear depth with 0.F to support reversed depth rendering
             settings.render_context.clear_color = {}; // Disable color clearing, use sky-box instead
             return settings;
         }(),
@@ -124,7 +124,7 @@ void CubeMapArrayApp::Init()
 
     // Create cube-map render target texture
     m_cube_buffers_ptr->SetTexture(
-        rhi::ITexture::CreateRenderTarget(
+        rhi::ITexture::Create(
             GetRenderContext(),
             rhi::ITexture::Settings::Cube(
                 g_cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,

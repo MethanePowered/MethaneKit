@@ -43,22 +43,22 @@ struct IRenderCommandList;
 
 struct RenderContextSettings
 {
-    FrameSize         frame_size;
-    PixelFormat       color_format         = PixelFormat::BGRA8Unorm;
-    PixelFormat       depth_stencil_format = PixelFormat::Unknown;
-    Opt<Color4F>      clear_color;
-    Opt<DepthStencil> clear_depth_stencil;
-    uint32_t          frame_buffers_count  = 3U;
-    bool              vsync_enabled        = true;
-    bool              is_full_screen       = false;
-    ContextOptionMask options_mask;
-    uint32_t          unsync_max_fps       = 1000U; // MacOS only
+    FrameSize               frame_size;
+    PixelFormat             color_format         = PixelFormat::BGRA8Unorm;
+    PixelFormat             depth_stencil_format = PixelFormat::Unknown;
+    Opt<Color4F>            clear_color;
+    Opt<DepthStencilValues> clear_depth_stencil;
+    uint32_t                frame_buffers_count  = 3U;
+    bool                    vsync_enabled        = true;
+    bool                    is_full_screen       = false;
+    ContextOptionMask       options_mask;
+    uint32_t                unsync_max_fps       = 1000U; // MacOS only
 
     RenderContextSettings& SetFrameSize(FrameSize&& new_frame_size) noexcept;
     RenderContextSettings& SetColorFormat(PixelFormat new_color_format) noexcept;
     RenderContextSettings& SetDepthStencilFormat(PixelFormat new_ds_format) noexcept;
     RenderContextSettings& SetClearColor(Opt<Color4F>&& new_clear_color) noexcept;
-    RenderContextSettings& SetClearDepthStencil(Opt<DepthStencil>&& new_clear_ds) noexcept;
+    RenderContextSettings& SetClearDepthStencil(Opt<DepthStencilValues>&& new_clear_ds) noexcept;
     RenderContextSettings& SetFrameBuffersCount(uint32_t new_fb_count) noexcept;
     RenderContextSettings& SetVSyncEnabled(bool new_vsync_enabled) noexcept;
     RenderContextSettings& SetFullscreen(bool new_full_screen) noexcept;

@@ -70,9 +70,9 @@ Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& 
     using namespace Methane::Graphics;
 
     constexpr rhi::RenderPassAccessMask default_screen_pass_access({ rhi::RenderPassAccess::ShaderResources, rhi::RenderPassAccess::Samplers });
-    constexpr rhi::ContextOptionMask    default_context_options;
-    const DepthStencil                  default_clear_depth_stencil(1.F, Graphics::Stencil(0));
-    const Color4F                       default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
+    constexpr rhi::ContextOptionMask default_context_options;
+    const DepthStencilValues         default_clear_depth_stencil(1.F, Graphics::Stencil(0));
+    const Color4F                    default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
 
     return Graphics::CombinedAppSettings
     {                                                           // =========================
@@ -100,8 +100,8 @@ Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& 
                 : Opt<Color4F>(),                               //     ...
             app_options.HasBits({ AppOptions::Bit::DepthBuffer, //   - clear_depth_stencil
                                   AppOptions::Bit::ClearDepth })//     ...
-                ? Opt<DepthStencil>(default_clear_depth_stencil)//     ...
-                : Opt<DepthStencil>(),                          //     ...
+                ? Opt<DepthStencilValues>(default_clear_depth_stencil)//     ...
+                : Opt<DepthStencilValues>(),                          //     ...
             3U,                                                 //   - frame_buffers_count
             app_options.HasBit(AppOptions::Bit::VSync),         //   - vsync_enabled
             app_options.HasBit(AppOptions::Bit::FullScreen),    //   - is_full_screen

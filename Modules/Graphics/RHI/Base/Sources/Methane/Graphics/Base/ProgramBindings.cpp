@@ -56,7 +56,7 @@ static Rhi::ResourceState GetBoundResourceTargetState(const Rhi::IResource& reso
         break;
 
     case Rhi::IResource::Type::Texture:
-        if (dynamic_cast<const Rhi::ITexture&>(resource).GetSettings().type == Rhi::ITexture::Type::DepthStencilBuffer)
+        if (dynamic_cast<const Rhi::ITexture&>(resource).GetSettings().type == Rhi::ITexture::Type::DepthStencil)
             return Rhi::ResourceState::DepthRead;
         break;
 

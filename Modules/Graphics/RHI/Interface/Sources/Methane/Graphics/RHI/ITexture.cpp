@@ -54,7 +54,7 @@ TextureSettings TextureSettings::Image(const Dimensions& dimensions, const Opt<u
         settings.dimension_type = array_length_opt ? TextureDimensionType::Tex2DArray : TextureDimensionType::Tex2D;
     else
         settings.dimension_type = TextureDimensionType::Tex3D;
-    settings.type         = TextureType::Texture;
+    settings.type         = usage.HasAnyBit(ResourceUsage::RenderTarget) ? TextureType::RenderTarget : TextureType::Image;
     settings.dimensions   = dimensions;
     settings.array_length = array_length_opt.value_or(1U);
     settings.pixel_format = pixel_format;
@@ -70,7 +70,7 @@ TextureSettings TextureSettings::Cube(uint32_t dimension_size, const Opt<uint32_
     META_FUNCTION_TASK();
 
     TextureSettings settings;
-    settings.type           = TextureType::Texture;
+    settings.type           = usage.HasAnyBit(ResourceUsage::RenderTarget) ? TextureType::RenderTarget : TextureType::Image;
     settings.dimension_type = array_length_opt ? TextureDimensionType::CubeArray : TextureDimensionType::Cube;
     settings.dimensions     = Dimensions(dimension_size, dimension_size, 6U);
     settings.array_length   = array_length_opt.value_or(1U);
@@ -81,30 +81,34 @@ TextureSettings TextureSettings::Cube(uint32_t dimension_size, const Opt<uint32_
     return settings;
 }
 
-TextureSettings TextureSettings::FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format)
+TextureSettings TextureSettings::FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
 
     TextureSettings settings;
-    settings.type           = TextureType::FrameBuffer;
-    settings.dimension_type = TextureDimensionType::Tex2D;
-    settings.usage_mask     = ResourceUsageMask(ResourceUsage::RenderTarget);
-    settings.pixel_format   = pixel_format;
-    settings.dimensions     = dimensions;
+    settings.type            = TextureType::FrameBuffer;
+    settings.dimension_type  = TextureDimensionType::Tex2D;
+    settings.usage_mask      = ResourceUsageMask(ResourceUsage::RenderTarget);
+    settings.pixel_format    = pixel_format;
+    settings.dimensions      = dimensions;
+    settings.frame_index_opt = frame_index;
 
     return settings;
 }
 
-TextureSettings TextureSettings::DepthStencilBuffer(const Dimensions& dimensions, PixelFormat pixel_format, ResourceUsageMask usage_mask)
+TextureSettings TextureSettings::DepthStencil(const Dimensions& dimensions, PixelFormat pixel_format,
+                                              const Opt<DepthStencilValues>& depth_stencil_clear,
+                                              ResourceUsageMask usage_mask)
 {
     META_FUNCTION_TASK();
 
     TextureSettings settings;
-    settings.type           = TextureType::DepthStencilBuffer;
-    settings.dimension_type = TextureDimensionType::Tex2D;
-    settings.usage_mask     = usage_mask;
-    settings.pixel_format   = pixel_format;
-    settings.dimensions     = dimensions;
+    settings.type                    = TextureType::DepthStencil;
+    settings.dimension_type          = TextureDimensionType::Tex2D;
+    settings.usage_mask              = usage_mask;
+    settings.pixel_format            = pixel_format;
+    settings.dimensions              = dimensions;
+    settings.depth_stencil_clear_opt = std::move(depth_stencil_clear);
 
     return settings;
 }

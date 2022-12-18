@@ -29,16 +29,14 @@ Methane Texture PIMPL wrappers for direct calls to final implementation.
 #if defined METHANE_GFX_DIRECTX
 
 #include <Methane/Graphics/DirectX/Texture.h>
-using ImageTextureImpl        = Methane::Graphics::DirectX::ImageTexture;
-using RenderTargetTextureImpl = Methane::Graphics::DirectX::RenderTargetTexture;
-using FrameBufferTextureImpl  = Methane::Graphics::DirectX::FrameBufferTexture;
-using DepthStencilTextureImpl = Methane::Graphics::DirectX::DepthStencilTexture;
+using ImageTextureImpl        = Methane::Graphics::DirectX::Texture;
+using FrameBufferTextureImpl  = Methane::Graphics::DirectX::Texture;
+using DepthStencilTextureImpl = Methane::Graphics::DirectX::Texture;
 
 #elif defined METHANE_GFX_VULKAN
 
 #include <Methane/Graphics/Vulkan/Texture.h>
 using ImageTextureImpl        = Methane::Graphics::Vulkan::ImageTexture;
-using RenderTargetTextureImpl = Methane::Graphics::Vulkan::RenderTargetTexture;
 using FrameBufferTextureImpl  = Methane::Graphics::Vulkan::FrameBufferTexture;
 using DepthStencilTextureImpl = Methane::Graphics::Vulkan::DepthStencilTexture;
 
@@ -46,7 +44,6 @@ using DepthStencilTextureImpl = Methane::Graphics::Vulkan::DepthStencilTexture;
 
 #include <Methane/Graphics/Metal/Texture.hh>
 using ImageTextureImpl        = Methane::Graphics::Metal::Texture;
-using RenderTargetTextureImpl = Methane::Graphics::Metal::Texture;
 using FrameBufferTextureImpl  = Methane::Graphics::Metal::Texture;
 using DepthStencilTextureImpl = Methane::Graphics::Metal::Texture;
 
@@ -220,134 +217,6 @@ const ImageTexture::Settings& ImageTexture::GetSettings() const META_PIMPL_NOEXC
     return GetPrivateImpl(m_impl_ptr).GetSettings();
 }
 
-//************ RenderTargetTexture ************
-
-class RenderTargetTexture::Impl
-    : public ImplWrapper<ITexture, RenderTargetTextureImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
-META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderTargetTexture);
-
-RenderTargetTexture::RenderTargetTexture(const Ptr<ITexture>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
-{
-}
-
-RenderTargetTexture::RenderTargetTexture(ITexture& interface_ref)
-    : RenderTargetTexture(std::dynamic_pointer_cast<ITexture>(interface_ref.GetPtr()))
-{
-}
-
-RenderTargetTexture::RenderTargetTexture(const RenderContext& context, const Settings& settings)
-    : RenderTargetTexture(ITexture::CreateRenderTarget(context.GetInterface(), settings))
-{
-}
-
-void RenderTargetTexture::Init(const RenderContext& context, const Settings& settings)
-{
-    m_impl_ptr = std::make_unique<Impl>(ITexture::CreateRenderTarget(context.GetInterface(), settings));
-}
-
-void RenderTargetTexture::Release()
-{
-    m_impl_ptr.release();
-}
-
-bool RenderTargetTexture::IsInitialized() const META_PIMPL_NOEXCEPT
-{
-    return static_cast<bool>(m_impl_ptr);
-}
-
-ITexture& RenderTargetTexture::GetInterface() const META_PIMPL_NOEXCEPT
-{
-    return GetPublicInterface(m_impl_ptr);
-}
-
-bool RenderTargetTexture::SetState(State state) const
-{
-    return GetPrivateImpl(m_impl_ptr).SetState(state);
-}
-
-bool RenderTargetTexture::SetState(State state, Barriers& out_barriers) const
-{
-    return SetResourceState(m_impl_ptr, state, out_barriers);
-}
-
-bool RenderTargetTexture::SetOwnerQueueFamily(uint32_t family_index) const
-{
-    return GetPrivateImpl(m_impl_ptr).SetOwnerQueueFamily(family_index);
-}
-
-bool RenderTargetTexture::SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers) const
-{
-    return SetResourceOwnerQueueFamily(m_impl_ptr, family_index, out_barriers);
-}
-
-void RenderTargetTexture::RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const
-{
-    GetPrivateImpl(m_impl_ptr).RestoreDescriptorViews(descriptor_by_view_id);
-}
-
-SubResource RenderTargetTexture::GetData(const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range) const
-{
-    return GetPrivateImpl(m_impl_ptr).GetData(sub_resource_index, data_range);
-}
-
-Data::Size RenderTargetTexture::GetDataSize(Data::MemoryState size_type) const META_PIMPL_NOEXCEPT
-{
-    return GetPrivateImpl(m_impl_ptr).GetDataSize(size_type);
-}
-
-Data::Size RenderTargetTexture::GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const
-{
-    return GetPrivateImpl(m_impl_ptr).GetSubResourceDataSize(sub_resource_index);
-}
-
-const SubResource::Count& RenderTargetTexture::GetSubresourceCount() const META_PIMPL_NOEXCEPT
-{
-    return GetPrivateImpl(m_impl_ptr).GetSubresourceCount();
-}
-
-ResourceType RenderTargetTexture::GetResourceType() const META_PIMPL_NOEXCEPT
-{
-    return GetPrivateImpl(m_impl_ptr).GetResourceType();
-}
-
-ResourceState RenderTargetTexture::GetState() const META_PIMPL_NOEXCEPT
-{
-    return GetPrivateImpl(m_impl_ptr).GetState();
-}
-
-ResourceUsageMask RenderTargetTexture::GetUsage() const META_PIMPL_NOEXCEPT
-{
-    return GetPrivateImpl(m_impl_ptr).GetUsage();
-}
-
-const RenderTargetTexture::DescriptorByViewId& RenderTargetTexture::GetDescriptorByViewId() const META_PIMPL_NOEXCEPT
-{
-    return GetPrivateImpl(m_impl_ptr).GetDescriptorByViewId();
-}
-
-RenderContext RenderTargetTexture::GetRenderContext() const
-{
-    IContext& context = const_cast<IContext&>(GetPrivateImpl(m_impl_ptr).GetContext()); // NOSONAR
-    META_CHECK_ARG_EQUAL(context.GetType(), ContextType::Render);
-    return RenderContext(dynamic_cast<IRenderContext&>(context));
-}
-
-const Opt<uint32_t>& RenderTargetTexture::GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT
-{
-    return GetPrivateImpl(m_impl_ptr).GetOwnerQueueFamily();
-}
-
-const RenderTargetTexture::Settings& RenderTargetTexture::GetSettings() const META_PIMPL_NOEXCEPT
-{
-    return GetPrivateImpl(m_impl_ptr).GetSettings();
-}
-
 //************ FrameBufferTexture ************
 
 class FrameBufferTexture::Impl
@@ -498,13 +367,13 @@ DepthStencilTexture::DepthStencilTexture(ITexture& interface_ref)
 }
 
 DepthStencilTexture::DepthStencilTexture(const RenderContext& context)
-    : DepthStencilTexture(ITexture::CreateDepthStencilBuffer(context.GetInterface()))
+    : DepthStencilTexture(ITexture::CreateDepthStencil(context.GetInterface()))
 {
 }
 
 void DepthStencilTexture::Init(const RenderContext& context)
 {
-    m_impl_ptr = std::make_unique<Impl>(ITexture::CreateDepthStencilBuffer(context.GetInterface()));
+    m_impl_ptr = std::make_unique<Impl>(ITexture::CreateDepthStencil(context.GetInterface()));
 }
 
 void DepthStencilTexture::Release()
