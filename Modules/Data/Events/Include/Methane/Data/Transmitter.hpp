@@ -28,6 +28,8 @@ Event transmitter implementation, which passes connected receivers to other emit
 
 #include <Methane/Instrumentation.h>
 
+#include <stdexcept>
+
 namespace Methane::Data
 {
 
@@ -36,6 +38,24 @@ class Transmitter
     : public IEmitter<EventType>
 {
 public:
+    class NoTargetError
+        : public std::logic_error
+    {
+    public:
+        NoTargetError(const Transmitter& transmitter)
+            : std::logic_error("Transmitter is disconnected: connect via Reset call with target emitter.")
+            , m_transmitter(transmitter)
+        { }
+
+        Transmitter& GetTransmitter() const noexcept
+        {
+            return m_transmitter;
+        }
+
+    private:
+        const Transmitter& m_transmitter;
+    };
+
     Transmitter() = default;
     Transmitter(IEmitter<EventType>& target_emitter)
         : m_target_emitter_ptr(&target_emitter)
@@ -43,19 +63,28 @@ public:
 
     void Connect(Receiver<EventType>& receiver) final
     {
-        if (m_target_emitter_ptr)
-            m_target_emitter_ptr->Connect(receiver);
+        if (!m_target_emitter_ptr)
+            throw NoTargetError(*this);
+
+        m_target_emitter_ptr->Connect(receiver);
     }
 
     void Disconnect(Receiver<EventType>& receiver) final
     {
-        if (m_target_emitter_ptr)
-            m_target_emitter_ptr->Disconnect(receiver);
+        if (!m_target_emitter_ptr)
+            throw NoTargetError(*this);
+
+        m_target_emitter_ptr->Disconnect(receiver);
     }
 
-    void Reset(IEmitter<EventType>* target_emitter_ptr = nullptr)
+    void Reset(IEmitter<EventType>* target_emitter_ptr = nullptr) noexcept
     {
         m_target_emitter_ptr = target_emitter_ptr;
+    }
+
+    bool IsTargeted() const noexcept
+    {
+        return !!m_target_emitter_ptr;
     }
 
 private:

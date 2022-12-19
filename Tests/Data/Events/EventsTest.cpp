@@ -422,24 +422,10 @@ TEST_CASE("Connect emitter to receiver through the transmitter", "[events]")
     TestEmitter  emitter;
     TestReceiver receiver;
 
-    SECTION("Emit Foo through default constructed transmitter does not work")
-    {
-        Transmitter<ITestEvents> transmitter;
-        transmitter.Connect(receiver);
-
-        CHECK_FALSE(receiver.IsFooCalled());
-        CHECK_FALSE(receiver.IsBarCalled());
-
-        CHECK_NOTHROW(emitter.EmitFoo());
-
-        CHECK_FALSE(receiver.IsFooCalled());
-        CHECK_FALSE(receiver.IsBarCalled());
-    }
-
     SECTION("Emit Foo through transmitter connection")
     {
         Transmitter transmitter(emitter);
-        transmitter.Connect(receiver);
+        CHECK_NOTHROW(transmitter.Connect(receiver));
 
         CHECK_FALSE(receiver.IsFooCalled());
         CHECK_FALSE(receiver.IsBarCalled());
@@ -453,7 +439,7 @@ TEST_CASE("Connect emitter to receiver through the transmitter", "[events]")
     SECTION("Emit Bar through transmitter connection")
     {
         Transmitter transmitter(emitter);
-        transmitter.Connect(receiver);
+        CHECK_NOTHROW(transmitter.Connect(receiver));
 
         CHECK_FALSE(receiver.IsFooCalled());
         CHECK_FALSE(receiver.IsBarCalled());
@@ -470,23 +456,44 @@ TEST_CASE("Connect emitter to receiver through the transmitter", "[events]")
         CHECK(receiver.GetBarC() == g_bar_c);
     }
 
+    SECTION("Transmitter can disconnect from receiver")
+    {
+        Transmitter transmitter(emitter);
+        CHECK_NOTHROW(transmitter.Connect(receiver));
+        CHECK_NOTHROW(transmitter.Disconnect(receiver));
+        CHECK_NOTHROW(emitter.EmitFoo());
+        CHECK_FALSE(receiver.IsFooCalled());
+    }
+
     SECTION("Transmitter can be reset to other emitter")
     {
         Transmitter transmitter(emitter);
-
         TestEmitter other_emitter;
         transmitter.Reset(&other_emitter);
 
-        transmitter.Connect(receiver);
-
+        CHECK_NOTHROW(transmitter.Connect(receiver));
         CHECK_FALSE(receiver.IsFooCalled());
-
         CHECK_NOTHROW(emitter.EmitFoo());
-
         CHECK_FALSE(receiver.IsFooCalled());
-
         CHECK_NOTHROW(other_emitter.EmitFoo());
-
         CHECK(receiver.IsFooCalled());
+    }
+
+    SECTION("Connect/Disconnect through default constructed transmitter throws error")
+    {
+        Transmitter<ITestEvents> transmitter;
+        CHECK_FALSE(transmitter.IsTargeted());
+        CHECK_THROWS_AS(transmitter.Connect(receiver), Transmitter<ITestEvents>::NoTargetError);
+        CHECK_THROWS_AS(transmitter.Disconnect(receiver), Transmitter<ITestEvents>::NoTargetError);
+    }
+
+    SECTION("Connect/Disconnect through disconnected transmitter throws error")
+    {
+        Transmitter<ITestEvents> transmitter(emitter);
+        CHECK(transmitter.IsTargeted());
+        transmitter.Reset();
+        CHECK_FALSE(transmitter.IsTargeted());
+        CHECK_THROWS_AS(transmitter.Connect(receiver), Transmitter<ITestEvents>::NoTargetError);
+        CHECK_THROWS_AS(transmitter.Disconnect(receiver), Transmitter<ITestEvents>::NoTargetError);
     }
 }
