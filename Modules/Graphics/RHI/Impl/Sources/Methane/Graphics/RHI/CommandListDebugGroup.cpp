@@ -62,8 +62,14 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandListDebugGroup);
 
+CommandListDebugGroup::CommandListDebugGroup(UniquePtr<Impl>&& impl_ptr)
+    : Data::Transmitter<IObjectCallback>(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 CommandListDebugGroup::CommandListDebugGroup(const Ptr<ICommandListDebugGroup>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : CommandListDebugGroup(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -80,10 +86,12 @@ CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
 void CommandListDebugGroup::Init(std::string_view name)
 {
     m_impl_ptr = std::make_unique<Impl>(ICommandListDebugGroup::Create(name));
+    Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 
 void CommandListDebugGroup::Release()
 {
+    Transmitter::Reset();
     m_impl_ptr.release();
 }
 

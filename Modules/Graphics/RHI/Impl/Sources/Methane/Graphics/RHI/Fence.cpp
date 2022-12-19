@@ -61,8 +61,14 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Fence);
 
+Fence::Fence(UniquePtr<Impl>&& impl_ptr)
+    : Data::Transmitter<IObjectCallback>(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 Fence::Fence(const Ptr<IFence>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : Fence(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -79,10 +85,12 @@ Fence::Fence(const CommandQueue& command_queue)
 void Fence::Init(const CommandQueue& command_queue)
 {
     m_impl_ptr = std::make_unique<Impl>(IFence::Create(command_queue.GetInterface()));
+    Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 
 void Fence::Release()
 {
+    Transmitter::Reset();
     m_impl_ptr.release();
 }
 
@@ -94,6 +102,16 @@ bool Fence::IsInitialized() const META_PIMPL_NOEXCEPT
 IFence& Fence::GetInterface() const META_PIMPL_NOEXCEPT
 {
     return GetPublicInterface(m_impl_ptr);
+}
+
+bool Fence::SetName(std::string_view name) const
+{
+    return GetPrivateImpl(m_impl_ptr).SetName(name);
+}
+
+std::string_view Fence::GetName() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetName();
 }
 
 void Fence::Signal() const

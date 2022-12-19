@@ -27,6 +27,7 @@ Methane ParallelRenderCommandList PIMPL wrappers for direct calls to final imple
 #include "RenderCommandList.h"
 
 #include <Methane/Graphics/RHI/IParallelRenderCommandList.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -40,6 +41,8 @@ class ViewState;
 class RenderCommandList;
 
 class ParallelRenderCommandList
+    : public Data::Transmitter<Rhi::ICommandListCallback>
+    , public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
     using Type        = CommandListType;
@@ -89,6 +92,8 @@ public:
 
 private:
     class Impl;
+
+    ParallelRenderCommandList(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
     mutable std::vector<RenderCommandList> m_parallel_command_lists;

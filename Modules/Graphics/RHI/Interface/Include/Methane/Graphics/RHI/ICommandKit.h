@@ -48,7 +48,8 @@ enum class CommandListPurpose : CommandListId // NOSONAR - multiple values initi
     PostUploadSync
 };
 
-struct ICommandKit : virtual IObject // NOSONAR
+struct ICommandKit
+    : virtual IObject // NOSONAR
 {
     // Create ICommandKit instance
     [[nodiscard]] static Ptr<ICommandKit> Create(const IContext& context, CommandListType command_lists_type);

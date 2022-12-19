@@ -26,6 +26,7 @@ Methane CommandQueue PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/ICommandQueue.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -34,6 +35,7 @@ class RenderContext;
 class CommandListSet;
 
 class CommandQueue
+    : Data::Transmitter<IObjectCallback>
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandQueue);
@@ -61,6 +63,8 @@ public:
 
 private:
     class Impl;
+
+    CommandQueue(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

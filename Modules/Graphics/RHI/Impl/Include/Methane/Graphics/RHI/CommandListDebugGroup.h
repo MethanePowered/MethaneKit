@@ -26,6 +26,7 @@ Methane CommandListDebugGroup PIMPL wrappers for direct calls to final implement
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/ICommandList.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -34,6 +35,7 @@ class CommandQueue;
 class RenderPass;
 
 class CommandListDebugGroup
+    : Data::Transmitter<IObjectCallback>
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandListDebugGroup);
@@ -59,6 +61,8 @@ public:
 
 private:
     class Impl;
+
+    CommandListDebugGroup(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

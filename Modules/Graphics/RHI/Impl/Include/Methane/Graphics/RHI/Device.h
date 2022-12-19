@@ -26,11 +26,13 @@ Methane System and Device PIMPL wrappers for direct calls to final implementatio
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IDevice.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
 
 class Device
+    : public Data::Transmitter<IDeviceCallback>
 {
     friend class System;
 
@@ -58,6 +60,8 @@ public:
 
 private:
     class Impl;
+
+    Device(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

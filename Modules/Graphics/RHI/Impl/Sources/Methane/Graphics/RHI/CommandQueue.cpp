@@ -62,8 +62,14 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandQueue);
 
+CommandQueue::CommandQueue(UniquePtr<Impl>&& impl_ptr)
+    : Data::Transmitter<IObjectCallback>(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 CommandQueue::CommandQueue(const Ptr<ICommandQueue>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : CommandQueue(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -80,10 +86,12 @@ CommandQueue::CommandQueue(const RenderContext& context, CommandListType command
 void CommandQueue::Init(const RenderContext& context, CommandListType command_lists_type)
 {
     m_impl_ptr = std::make_unique<Impl>(ICommandQueue::Create(context.GetInterface(), command_lists_type));
+    Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 
 void CommandQueue::Release()
 {
+    Transmitter::Reset();
     m_impl_ptr.release();
 }
 

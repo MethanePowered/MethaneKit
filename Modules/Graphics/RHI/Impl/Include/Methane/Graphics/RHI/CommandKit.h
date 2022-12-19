@@ -26,6 +26,7 @@ Methane CommandKit PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/ICommandKit.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -36,6 +37,7 @@ class RenderCommandList;
 class CommandListSet;
 
 class CommandKit
+    : Data::Transmitter<IObjectCallback>
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandKit);
@@ -69,6 +71,8 @@ public:
 
 private:
     class Impl;
+
+    CommandKit(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

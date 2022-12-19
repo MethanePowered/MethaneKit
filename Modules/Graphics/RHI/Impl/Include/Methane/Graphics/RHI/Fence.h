@@ -26,6 +26,7 @@ Methane Fence PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IFence.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -33,6 +34,7 @@ namespace Methane::Graphics::Rhi
 class CommandQueue;
 
 class Fence
+    : Data::Transmitter<IObjectCallback>
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Fence);
@@ -47,6 +49,10 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IFence& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // IObject interface methods
+    bool SetName(std::string_view name) const;
+    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
     // IFence interface methods
     void Signal() const;
     void WaitOnCpu() const;
@@ -56,6 +62,8 @@ public:
 
 private:
     class Impl;
+
+    Fence(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };
