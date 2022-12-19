@@ -424,7 +424,7 @@ TEST_CASE("Connect emitter to receiver through the transmitter", "[events]")
 
     SECTION("Emit Foo through transmitter connection")
     {
-        Transmitter transmitter(emitter);
+        TestTransmitter transmitter(emitter);
         CHECK_NOTHROW(transmitter.Connect(receiver));
 
         CHECK_FALSE(receiver.IsFooCalled());
@@ -438,7 +438,7 @@ TEST_CASE("Connect emitter to receiver through the transmitter", "[events]")
 
     SECTION("Emit Bar through transmitter connection")
     {
-        Transmitter transmitter(emitter);
+        TestTransmitter transmitter(emitter);
         CHECK_NOTHROW(transmitter.Connect(receiver));
 
         CHECK_FALSE(receiver.IsFooCalled());
@@ -458,7 +458,7 @@ TEST_CASE("Connect emitter to receiver through the transmitter", "[events]")
 
     SECTION("Transmitter can disconnect from receiver")
     {
-        Transmitter transmitter(emitter);
+        TestTransmitter transmitter(emitter);
         CHECK_NOTHROW(transmitter.Connect(receiver));
         CHECK_NOTHROW(transmitter.Disconnect(receiver));
         CHECK_NOTHROW(emitter.EmitFoo());
@@ -467,7 +467,7 @@ TEST_CASE("Connect emitter to receiver through the transmitter", "[events]")
 
     SECTION("Transmitter can be reset to other emitter")
     {
-        Transmitter transmitter(emitter);
+        TestTransmitter transmitter(emitter);
         TestEmitter other_emitter;
         transmitter.Reset(&other_emitter);
 
@@ -481,19 +481,19 @@ TEST_CASE("Connect emitter to receiver through the transmitter", "[events]")
 
     SECTION("Connect/Disconnect through default constructed transmitter throws error")
     {
-        Transmitter<ITestEvents> transmitter;
-        CHECK_FALSE(transmitter.IsTargeted());
-        CHECK_THROWS_AS(transmitter.Connect(receiver), Transmitter<ITestEvents>::NoTargetError);
-        CHECK_THROWS_AS(transmitter.Disconnect(receiver), Transmitter<ITestEvents>::NoTargetError);
+        TestTransmitter transmitter;
+        CHECK_FALSE(transmitter.IsTransmitting());
+        CHECK_THROWS_AS(transmitter.Connect(receiver), TestTransmitter::NoTargetError);
+        CHECK_THROWS_AS(transmitter.Disconnect(receiver), TestTransmitter::NoTargetError);
     }
 
     SECTION("Connect/Disconnect through disconnected transmitter throws error")
     {
-        Transmitter<ITestEvents> transmitter(emitter);
-        CHECK(transmitter.IsTargeted());
+        TestTransmitter transmitter(emitter);
+        CHECK(transmitter.IsTransmitting());
         transmitter.Reset();
-        CHECK_FALSE(transmitter.IsTargeted());
-        CHECK_THROWS_AS(transmitter.Connect(receiver), Transmitter<ITestEvents>::NoTargetError);
-        CHECK_THROWS_AS(transmitter.Disconnect(receiver), Transmitter<ITestEvents>::NoTargetError);
+        CHECK_FALSE(transmitter.IsTransmitting());
+        CHECK_THROWS_AS(transmitter.Connect(receiver), TestTransmitter::NoTargetError);
+        CHECK_THROWS_AS(transmitter.Disconnect(receiver), TestTransmitter::NoTargetError);
     }
 }

@@ -24,6 +24,7 @@ Emitter and Recever wrappers for events testing.
 #include <catch2/catch_test_macros.hpp>
 
 #include <Methane/Data/Emitter.hpp>
+#include <Methane/Data/Transmitter.hpp>
 
 #include <functional>
 
@@ -41,7 +42,8 @@ struct ITestEvents
     virtual ~ITestEvents() = default;
 };
 
-class TestEmitter : public Emitter<ITestEvents>
+class TestEmitter
+    : public Emitter<ITestEvents>
 {
 public:
     void EmitFoo()
@@ -60,6 +62,14 @@ public:
     }
 
     using Emitter<ITestEvents>::GetConnectedReceiversCount;
+};
+
+class TestTransmitter
+    : public Transmitter<ITestEvents>
+{
+public:
+    using Transmitter::Transmitter;
+    using Transmitter::Reset;
 };
 
 class TestReceiver

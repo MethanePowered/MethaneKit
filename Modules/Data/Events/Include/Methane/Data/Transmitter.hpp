@@ -43,7 +43,7 @@ public:
     {
     public:
         NoTargetError(const Transmitter& transmitter)
-            : std::logic_error("Transmitter is disconnected: connect via Reset call with target emitter.")
+            : std::logic_error("Event transmitter has no target emitter (set it via Reset call).")
             , m_transmitter(transmitter)
         { }
 
@@ -77,14 +77,15 @@ public:
         m_target_emitter_ptr->Disconnect(receiver);
     }
 
+    bool IsTransmitting() const noexcept
+    {
+        return static_cast<bool>(m_target_emitter_ptr);
+    }
+
+protected:
     void Reset(IEmitter<EventType>* target_emitter_ptr = nullptr) noexcept
     {
         m_target_emitter_ptr = target_emitter_ptr;
-    }
-
-    bool IsTargeted() const noexcept
-    {
-        return !!m_target_emitter_ptr;
     }
 
 private:
