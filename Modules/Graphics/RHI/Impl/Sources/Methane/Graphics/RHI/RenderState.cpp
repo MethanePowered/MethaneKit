@@ -61,8 +61,14 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderState);
 
+RenderState::RenderState(UniquePtr<Impl>&& impl_ptr)
+    : Transmitter(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 RenderState::RenderState(const Ptr<IRenderState>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : RenderState(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -79,10 +85,12 @@ RenderState::RenderState(const RenderContext& context, const Settings& settings)
 void RenderState::Init(const RenderContext& context, const Settings& settings)
 {
     m_impl_ptr = std::make_unique<Impl>(IRenderState::Create(context.GetInterface(), settings));
+    Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 
 void RenderState::Release()
 {
+    Transmitter::Reset();
     m_impl_ptr.release();
 }
 

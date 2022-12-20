@@ -66,8 +66,15 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Buffer);
 
+Buffer::Buffer(UniquePtr<Impl>&& impl_ptr)
+    : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
+    , Transmitter<IResourceCallback>(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 Buffer::Buffer(const Ptr<IBuffer>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : Buffer(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -79,25 +86,35 @@ Buffer::Buffer(IBuffer& interface_ref)
 void Buffer::InitVertexBuffer(const RenderContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateVertexBuffer(context.GetInterface(), size, stride, is_volatile));
+    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void Buffer::InitIndexBuffer(const RenderContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateIndexBuffer(context.GetInterface(), size, format, is_volatile));
+    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void Buffer::InitConstantBuffer(const RenderContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateConstantBuffer(context.GetInterface(), size, addressable, is_volatile));
+    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void Buffer::InitReadBackBuffer(const RenderContext& context, Data::Size size)
 {
     m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateReadBackBuffer(context.GetInterface(), size));
+    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void Buffer::Release()
 {
+    Transmitter<IObjectCallback>::Reset();
+    Transmitter<IResourceCallback>::Reset();
     m_impl_ptr.release();
 }
 
@@ -232,8 +249,14 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(BufferSet);
 
+BufferSet::BufferSet(UniquePtr<Impl>&& impl_ptr)
+    : Transmitter(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 BufferSet::BufferSet(const Ptr<IBufferSet>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : BufferSet(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -250,10 +273,12 @@ BufferSet::BufferSet(BufferType buffers_type, const Refs<Buffer>& buffer_refs)
 void BufferSet::Init(BufferType buffers_type, const Refs<Buffer>& buffer_refs)
 {
     m_impl_ptr = std::make_unique<Impl>(IBufferSet::Create(buffers_type, GetIBufferRefs(buffer_refs)));
+    Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 
 void BufferSet::Release()
 {
+    Transmitter::Reset();
     m_impl_ptr.release();
 }
 

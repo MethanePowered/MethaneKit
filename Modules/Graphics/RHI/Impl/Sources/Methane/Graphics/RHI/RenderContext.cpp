@@ -63,8 +63,15 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderContext);
 
+RenderContext::RenderContext(UniquePtr<Impl>&& impl_ptr)
+    : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
+    , Transmitter<IContextCallback>(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 RenderContext::RenderContext(const Ptr<IRenderContext>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : RenderContext(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -81,10 +88,14 @@ RenderContext::RenderContext(const Platform::AppEnvironment& env, const Device& 
 void RenderContext::Init(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings)
 {
     m_impl_ptr = std::make_unique<Impl>(IRenderContext::Create(env, device.GetInterface(), parallel_executor, settings));
+    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<IContextCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void RenderContext::Release()
 {
+    Transmitter<IObjectCallback>::Reset();
+    Transmitter<IContextCallback>::Reset();
     m_impl_ptr.release();
 }
 

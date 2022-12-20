@@ -26,6 +26,7 @@ Methane Texture PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/ITexture.h>
+#include <Methane/Data/Transmitter.hpp>
 
 #include <vector>
 
@@ -37,6 +38,8 @@ class ResourceBarriers;
 class CommandQueue;
 
 class Texture
+    : public Data::Transmitter<Rhi::IObjectCallback>
+    , public Data::Transmitter<Rhi::IResourceCallback>
 {
 public:
     using AllocationError  = ResourceAllocationError;
@@ -91,6 +94,8 @@ public:
     
 private:
     class Impl;
+
+    Texture(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

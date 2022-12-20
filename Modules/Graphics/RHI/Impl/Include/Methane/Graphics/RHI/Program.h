@@ -26,6 +26,7 @@ Methane Program PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IProgram.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -34,6 +35,7 @@ class RenderContext;
 class Shader;
 
 class Program
+    : public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
     using Shaders            = ProgramShaders;
@@ -69,6 +71,8 @@ public:
 
 private:
     class Impl;
+
+    Program(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

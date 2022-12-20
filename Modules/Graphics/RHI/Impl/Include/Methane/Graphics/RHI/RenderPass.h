@@ -26,6 +26,7 @@ Methane RenderPass PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IRenderPass.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -33,6 +34,7 @@ namespace Methane::Graphics::Rhi
 class RenderContext;
 
 class RenderPattern
+    : public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
     using Attachment        = RenderPassAttachment;
@@ -69,10 +71,14 @@ public:
 private:
     class Impl;
 
+    RenderPattern(UniquePtr<Impl>&& impl_ptr);
+
     UniquePtr<Impl> m_impl_ptr;
 };
 
 class RenderPass
+    : public Data::Transmitter<Rhi::IObjectCallback>
+    , public Data::Transmitter<Rhi::IRenderPassCallback>
 {
 public:
     using Pattern           = RenderPattern;
@@ -110,6 +116,8 @@ public:
 
 private:
     class Impl;
+
+    RenderPass(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

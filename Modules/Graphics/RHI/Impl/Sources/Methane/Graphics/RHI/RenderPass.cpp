@@ -64,8 +64,14 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderPattern);
 
+RenderPattern::RenderPattern(UniquePtr<Impl>&& impl_ptr)
+    : Transmitter(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 RenderPattern::RenderPattern(const Ptr<IRenderPattern>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : RenderPattern(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -82,10 +88,12 @@ RenderPattern::RenderPattern(const RenderContext& render_context, const Settings
 void RenderPattern::Init(const RenderContext& render_context, const Settings& settings)
 {
     m_impl_ptr = std::make_unique<Impl>(IRenderPattern::Create(render_context.GetInterface(), settings));
+    Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 
 void RenderPattern::Release()
 {
+    Transmitter::Reset();
     m_impl_ptr.release();
 }
 
@@ -137,8 +145,15 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderPass);
 
+RenderPass::RenderPass(UniquePtr<Impl>&& impl_ptr)
+    : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
+    , Transmitter<IRenderPassCallback>(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 RenderPass::RenderPass(const Ptr<IRenderPass>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : RenderPass(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -155,10 +170,14 @@ RenderPass::RenderPass(const Pattern& render_pattern, const Settings& settings)
 void RenderPass::Init(const Pattern& render_pattern, const Settings& settings)
 {
     m_impl_ptr = std::make_unique<Impl>(IRenderPass::Create(render_pattern.GetInterface(), settings));
+    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<IRenderPassCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void RenderPass::Release()
 {
+    Transmitter<IObjectCallback>::Reset();
+    Transmitter<IRenderPassCallback>::Reset();
     m_impl_ptr.release();
 }
 

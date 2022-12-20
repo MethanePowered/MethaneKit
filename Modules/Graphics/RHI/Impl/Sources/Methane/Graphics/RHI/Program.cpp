@@ -62,8 +62,14 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Program);
 
+Program::Program(UniquePtr<Impl>&& impl_ptr)
+    : Transmitter(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 Program::Program(const Ptr<IProgram>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : Program(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -80,10 +86,12 @@ Program::Program(const RenderContext& context, const Settings& settings)
 void Program::Init(const RenderContext& context, const Settings& settings)
 {
     m_impl_ptr = std::make_unique<Impl>(IProgram::Create(context.GetInterface(), settings));
+    Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 
 void Program::Release()
 {
+    Transmitter::Reset();
     m_impl_ptr.release();
 }
 

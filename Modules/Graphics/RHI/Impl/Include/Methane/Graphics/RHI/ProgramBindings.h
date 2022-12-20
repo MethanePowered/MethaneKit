@@ -26,6 +26,7 @@ Methane ProgramBindings PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IProgramBindings.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -33,6 +34,7 @@ namespace Methane::Graphics::Rhi
 class Program;
 
 class ProgramBindings
+    : public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
     using IArgumentBindingCallback = IProgramArgumentBindingCallback;
@@ -72,6 +74,8 @@ public:
 
 private:
     class Impl;
+
+    ProgramBindings(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

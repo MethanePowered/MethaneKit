@@ -26,6 +26,7 @@ Methane RenderContext PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -36,6 +37,8 @@ class CommandQueue;
 class ObjectRegistry;
 
 class RenderContext
+    : public Data::Transmitter<Rhi::IObjectCallback>
+    , public Data::Transmitter<Rhi::IContextCallback>
 {
 public:
     using Settings              = RenderContextSettings;
@@ -93,6 +96,8 @@ public:
 
 private:
     class Impl;
+
+    RenderContext(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

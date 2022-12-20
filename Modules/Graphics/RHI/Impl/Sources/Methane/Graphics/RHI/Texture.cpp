@@ -63,8 +63,15 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Texture);
 
+Texture::Texture(UniquePtr<Impl>&& impl_ptr)
+    : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
+    , Transmitter<IResourceCallback>(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 Texture::Texture(const Ptr<ITexture>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : Texture(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -81,25 +88,35 @@ Texture::Texture(const RenderContext& context, const Settings& settings)
 void Texture::Init(const RenderContext& context, const Settings& settings)
 {
     m_impl_ptr = std::make_unique<Impl>(ITexture::Create(context.GetInterface(), settings));
+    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void Texture::InitImage(const RenderContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     m_impl_ptr = std::make_unique<Impl>(ITexture::CreateImage(context.GetInterface(), dimensions, array_length_opt, pixel_format, mipmapped));
+    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void Texture::InitFrameBuffer(const RenderContext& context, Data::Index frame_index)
 {
     m_impl_ptr = std::make_unique<Impl>(ITexture::CreateFrameBuffer(context.GetInterface(), frame_index));
+    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void Texture::InitDepthStencil(const RenderContext& context)
 {
     m_impl_ptr = std::make_unique<Impl>(ITexture::CreateDepthStencil(context.GetInterface()));
+    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
+    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
 void Texture::Release()
 {
+    Transmitter<IObjectCallback>::Reset();
+    Transmitter<IResourceCallback>::Reset();
     m_impl_ptr.release();
 }
 

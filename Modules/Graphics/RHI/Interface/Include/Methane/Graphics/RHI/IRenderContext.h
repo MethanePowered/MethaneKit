@@ -66,7 +66,8 @@ struct RenderContextSettings
     RenderContextSettings& SetUnsyncMaxFps(uint32_t new_unsync_max_fps) noexcept;
 };
 
-struct IRenderContext : virtual IContext // NOSONAR
+struct IRenderContext
+    : virtual IContext // NOSONAR
 {
     using Settings = RenderContextSettings;
 

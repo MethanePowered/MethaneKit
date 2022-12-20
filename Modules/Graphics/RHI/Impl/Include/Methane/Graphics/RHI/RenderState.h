@@ -26,6 +26,7 @@ Methane RenderState PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IRenderState.h>
+#include <Methane/Data/Transmitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -33,6 +34,7 @@ namespace Methane::Graphics::Rhi
 class RenderContext;
 
 class RenderState
+    : public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
     using Rasterizer = RasterizerSettings;
@@ -61,6 +63,8 @@ public:
 
 private:
     class Impl;
+
+    RenderState(UniquePtr<Impl>&& impl_ptr);
 
     UniquePtr<Impl> m_impl_ptr;
 };

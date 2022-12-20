@@ -61,8 +61,14 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ProgramBindings);
 
+ProgramBindings::ProgramBindings(UniquePtr<Impl>&& impl_ptr)
+    : Transmitter(impl_ptr->GetInterface())
+    , m_impl_ptr(std::move(impl_ptr))
+{
+}
+
 ProgramBindings::ProgramBindings(const Ptr<IProgramBindings>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : ProgramBindings(std::make_unique<Impl>(interface_ptr))
 {
 }
 
@@ -85,16 +91,19 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, 
 void ProgramBindings::Init(const Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     m_impl_ptr = std::make_unique<Impl>(IProgramBindings::Create(program.GetInterface(), resource_views_by_argument, frame_index));
+    Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 
 void ProgramBindings::InitCopy(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument,
                                const Opt<Data::Index>& frame_index)
 {
     m_impl_ptr = std::make_unique<Impl>(IProgramBindings::CreateCopy(other_program_bindings.GetInterface(), replace_resource_views_by_argument, frame_index));
+    Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 
 void ProgramBindings::Release()
 {
+    Transmitter::Reset();
     m_impl_ptr.release();
 }
 
