@@ -70,11 +70,11 @@ public:
     [[nodiscard]] tf::Executor& GetParallelExecutor() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] IObjectRegistry& GetObjectRegistry() const META_PIMPL_NOEXCEPT;
     void RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT;
-    void CompleteInitialization();
+    void CompleteInitialization() const;
     [[nodiscard]] bool IsCompletingInitialization() const META_PIMPL_NOEXCEPT;
-    void WaitForGpu(WaitFor wait_for);
-    void Reset(const Device& device);
-    void Reset();
+    void WaitForGpu(WaitFor wait_for) const;
+    void Reset(const Device& device) const;
+    void Reset() const;
     [[nodiscard]] Device GetDevice() const;
     [[nodiscard]] CommandKit GetDefaultCommandKit(CommandListType type) const;
     [[nodiscard]] CommandKit GetDefaultCommandKit(const CommandQueue& cmd_queue) const;
@@ -83,16 +83,16 @@ public:
 
     // IRenderContext interface methods
     [[nodiscard]] bool ReadyToRender() const;
-    void Resize(const FrameSize& frame_size);
-    void Present();
+    void Resize(const FrameSize& frame_size) const;
+    void Present() const;
     [[nodiscard]] Platform::AppView  GetAppView() const;
     [[nodiscard]] const Settings&    GetSettings() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] uint32_t           GetFrameBufferIndex() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] uint32_t           GetFrameIndex() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] const IFpsCounter& GetFpsCounter() const META_PIMPL_NOEXCEPT;
-    bool SetVSyncEnabled(bool vsync_enabled);
-    bool SetFrameBuffersCount(uint32_t frame_buffers_count);
-    bool SetFullScreen(bool is_full_screen);
+    bool SetVSyncEnabled(bool vsync_enabled) const;
+    bool SetFrameBuffersCount(uint32_t frame_buffers_count) const;
+    bool SetFullScreen(bool is_full_screen) const;
 
 private:
     class Impl;

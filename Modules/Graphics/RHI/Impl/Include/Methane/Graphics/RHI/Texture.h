@@ -70,6 +70,10 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     ITexture& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // IObject interface methods
+    bool SetName(std::string_view name) const;
+    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
     // IResource interface methods
     bool SetState(State state) const;
     bool SetState(State state, Barriers& out_barriers) const;

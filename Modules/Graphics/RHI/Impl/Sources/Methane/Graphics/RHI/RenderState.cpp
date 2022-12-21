@@ -52,6 +52,20 @@ static_assert(false, "Static graphics API macro-definition is missing.");
 namespace Methane::Graphics::Rhi
 {
 
+static IRenderState::Settings ConvertRenderStateSettings(const RenderState::Settings& settings)
+{
+    return IRenderState::Settings
+    {
+        std::dynamic_pointer_cast<IProgram>(settings.program.GetInterface().GetPtr()),
+        std::dynamic_pointer_cast<IRenderPattern>(settings.render_pattern.GetInterface().GetPtr()),
+        settings.rasterizer,
+        settings.depth,
+        settings.stencil,
+        settings.blending,
+        settings.blending_color
+    };
+}
+
 class RenderState::Impl
     : public ImplWrapper<IRenderState, RenderStateImpl>
 {
@@ -78,13 +92,13 @@ RenderState::RenderState(IRenderState& interface_ref)
 }
 
 RenderState::RenderState(const RenderContext& context, const Settings& settings)
-    : RenderState(IRenderState::Create(context.GetInterface(), settings))
+    : RenderState(IRenderState::Create(context.GetInterface(), ConvertRenderStateSettings(settings)))
 {
 }
 
 void RenderState::Init(const RenderContext& context, const Settings& settings)
 {
-    m_impl_ptr = std::make_unique<Impl>(IRenderState::Create(context.GetInterface(), settings));
+    m_impl_ptr = std::make_unique<Impl>(IRenderState::Create(context.GetInterface(), ConvertRenderStateSettings(settings)));
     Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 
@@ -104,14 +118,24 @@ IRenderState& RenderState::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
-const RenderState::Settings& RenderState::GetSettings() const META_PIMPL_NOEXCEPT
+bool RenderState::SetName(std::string_view name) const
+{
+    return GetPrivateImpl(m_impl_ptr).SetName(name);
+}
+
+std::string_view RenderState::GetName() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetName();
+}
+
+const RenderStateSettings& RenderState::GetSettings() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetSettings();
 }
 
 void RenderState::Reset(const Settings& settings) const
 {
-    return GetPrivateImpl(m_impl_ptr).Reset(settings);
+    return GetPrivateImpl(m_impl_ptr).Reset(ConvertRenderStateSettings(settings));
 }
 
 } // namespace Methane::Graphics::Rhi

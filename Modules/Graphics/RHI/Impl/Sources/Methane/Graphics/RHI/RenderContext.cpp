@@ -139,7 +139,7 @@ void RenderContext::RequestDeferredAction(DeferredAction action) const META_PIMP
     GetPrivateImpl(m_impl_ptr).RequestDeferredAction(action);
 }
 
-void RenderContext::CompleteInitialization()
+void RenderContext::CompleteInitialization() const
 {
     GetPrivateImpl(m_impl_ptr).CompleteInitialization();
 }
@@ -149,17 +149,17 @@ bool RenderContext::IsCompletingInitialization() const META_PIMPL_NOEXCEPT
     return GetPrivateImpl(m_impl_ptr).IsCompletingInitialization();
 }
 
-void RenderContext::WaitForGpu(WaitFor wait_for)
+void RenderContext::WaitForGpu(WaitFor wait_for) const
 {
     GetPrivateImpl(m_impl_ptr).WaitForGpu(wait_for);
 }
 
-void RenderContext::Reset(const Device& device)
+void RenderContext::Reset(const Device& device) const
 {
     GetPrivateImpl(m_impl_ptr).Reset(device.GetInterface());
 }
 
-void RenderContext::Reset()
+void RenderContext::Reset() const
 {
     GetPrivateImpl(m_impl_ptr).Reset();
 }
@@ -194,12 +194,12 @@ bool RenderContext::ReadyToRender() const
     return GetPrivateImpl(m_impl_ptr).ReadyToRender();
 }
 
-void RenderContext::Resize(const FrameSize& frame_size)
+void RenderContext::Resize(const FrameSize& frame_size) const
 {
     GetPrivateImpl(m_impl_ptr).Resize(frame_size);
 }
 
-void RenderContext::Present()
+void RenderContext::Present() const
 {
     GetPrivateImpl(m_impl_ptr).Present();
 }
@@ -229,17 +229,17 @@ const IFpsCounter& RenderContext::GetFpsCounter() const META_PIMPL_NOEXCEPT
     return GetPrivateImpl(m_impl_ptr).GetFpsCounter();
 }
 
-bool RenderContext::SetVSyncEnabled(bool vsync_enabled)
+bool RenderContext::SetVSyncEnabled(bool vsync_enabled) const
 {
     return GetPrivateImpl(m_impl_ptr).SetVSyncEnabled(vsync_enabled);
 }
 
-bool RenderContext::SetFrameBuffersCount(uint32_t frame_buffers_count)
+bool RenderContext::SetFrameBuffersCount(uint32_t frame_buffers_count) const
 {
     return GetPrivateImpl(m_impl_ptr).SetFrameBuffersCount(frame_buffers_count);
 }
 
-bool RenderContext::SetFullScreen(bool is_full_screen)
+bool RenderContext::SetFullScreen(bool is_full_screen) const
 {
     return GetPrivateImpl(m_impl_ptr).SetFullScreen(is_full_screen);
 }

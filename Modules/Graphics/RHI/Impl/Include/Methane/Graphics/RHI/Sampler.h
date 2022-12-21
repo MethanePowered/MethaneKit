@@ -56,6 +56,10 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     ISampler& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // IObject interface methods
+    bool SetName(std::string_view name) const;
+    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
     // ISampler interface methods
     [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
 

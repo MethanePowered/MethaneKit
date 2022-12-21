@@ -128,6 +128,16 @@ IBuffer& Buffer::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
+bool Buffer::SetName(std::string_view name) const
+{
+    return GetPrivateImpl(m_impl_ptr).SetName(name);
+}
+
+std::string_view Buffer::GetName() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetName();
+}
+
 bool Buffer::SetState(State state) const
 {
     return GetPrivateImpl(m_impl_ptr).SetState(state);

@@ -38,14 +38,21 @@ class Program
     : public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
-    using Shaders            = ProgramShaders;
-    using Settings           = ProgramSettings;
+    using Shaders            = std::vector<Shader>;
     using InputBufferLayout  = ProgramInputBufferLayout;
     using InputBufferLayouts = ProgramInputBufferLayouts;
     using Argument           = ProgramArgument;
     using Arguments          = ProgramArguments;
     using ArgumentAccessor   = ProgramArgumentAccessor;
     using ArgumentAccessors  = ProgramArgumentAccessors;
+
+    struct Settings
+    {
+        std::vector<Shader>       shaders;
+        ProgramInputBufferLayouts input_buffer_layouts;
+        ProgramArgumentAccessors  argument_accessors;
+        AttachmentFormats         attachment_formats;
+    };
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Program);
 
@@ -64,10 +71,10 @@ public:
     std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     // IProgram interface methods
-    [[nodiscard]] const Settings&    GetSettings() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] const ShaderTypes& GetShaderTypes() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] Shader             GetShader(ShaderType shader_type) const;
-    [[nodiscard]] Data::Size         GetBindingsCount() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] const ProgramSettings& GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] const ShaderTypes&     GetShaderTypes() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] Shader                 GetShader(ShaderType shader_type) const;
+    [[nodiscard]] Data::Size             GetBindingsCount() const META_PIMPL_NOEXCEPT;
 
 private:
     class Impl;

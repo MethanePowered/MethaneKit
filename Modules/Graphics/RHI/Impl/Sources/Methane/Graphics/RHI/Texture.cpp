@@ -130,6 +130,16 @@ ITexture& Texture::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
+bool Texture::SetName(std::string_view name) const
+{
+    return GetPrivateImpl(m_impl_ptr).SetName(name);
+}
+
+std::string_view Texture::GetName() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetName();
+}
+
 bool Texture::SetState(State state) const
 {
     return GetPrivateImpl(m_impl_ptr).SetState(state);

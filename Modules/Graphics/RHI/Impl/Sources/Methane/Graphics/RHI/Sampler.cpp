@@ -107,6 +107,16 @@ ISampler& Sampler::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
+bool Sampler::SetName(std::string_view name) const
+{
+    return GetPrivateImpl(m_impl_ptr).SetName(name);
+}
+
+std::string_view Sampler::GetName() const META_PIMPL_NOEXCEPT
+{
+    return GetPrivateImpl(m_impl_ptr).GetName();
+}
+
 const Sampler::Settings& Sampler::GetSettings() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetSettings();

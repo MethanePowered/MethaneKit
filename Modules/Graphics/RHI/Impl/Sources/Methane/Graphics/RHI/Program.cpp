@@ -50,8 +50,31 @@ static_assert(false, "Static graphics API macro-definition is missing.");
 
 #include <Methane/Instrumentation.h>
 
+#include <algorithm>
+
 namespace Methane::Graphics::Rhi
 {
+
+static IProgram::Shaders ConvertProgramShaders(const Program::Shaders& shaders)
+{
+    META_FUNCTION_TASK();
+    ProgramShaders shader_ptrs;
+    std::transform(shaders.begin(), shaders.end(), std::back_inserter(shader_ptrs), [](const Shader& shader)
+                   { return shader.GetInterface().GetPtr(); });
+    return shader_ptrs;
+}
+
+static IProgram::Settings ConvertProgramSettings(const Program::Settings& settings)
+{
+    META_FUNCTION_TASK();
+    return IProgram::Settings
+    {
+        ConvertProgramShaders(settings.shaders),
+        settings.input_buffer_layouts,
+        settings.argument_accessors,
+        settings.attachment_formats
+    };
+}
 
 class Program::Impl
     : public ImplWrapper<IProgram, ProgramImpl>
@@ -79,13 +102,13 @@ Program::Program(IProgram& interface_ref)
 }
 
 Program::Program(const RenderContext& context, const Settings& settings)
-    : Program(IProgram::Create(context.GetInterface(), settings))
+    : Program(IProgram::Create(context.GetInterface(), ConvertProgramSettings(settings)))
 {
 }
 
 void Program::Init(const RenderContext& context, const Settings& settings)
 {
-    m_impl_ptr = std::make_unique<Impl>(IProgram::Create(context.GetInterface(), settings));
+    m_impl_ptr = std::make_unique<Impl>(IProgram::Create(context.GetInterface(), ConvertProgramSettings(settings)));
     Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 

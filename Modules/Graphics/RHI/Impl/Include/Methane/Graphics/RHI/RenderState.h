@@ -24,6 +24,8 @@ Methane RenderState PIMPL wrappers for direct calls to final implementation.
 #pragma once
 
 #include "Pimpl.h"
+#include "Program.h"
+#include "RenderPass.h"
 
 #include <Methane/Graphics/RHI/IRenderState.h>
 #include <Methane/Data/Transmitter.hpp>
@@ -43,7 +45,17 @@ public:
     using Stencil    = StencilSettings;
     using Groups     = RenderStateGroupMask;
     using Group      = RenderStateGroup;
-    using Settings   = RenderStateSettings;
+
+    struct Settings
+    {
+        Program            program;
+        RenderPattern      render_pattern;
+        RasterizerSettings rasterizer;
+        DepthSettings      depth;
+        StencilSettings    stencil;
+        BlendingSettings   blending;
+        Color4F            blending_color;
+    };
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderState);
 
@@ -57,8 +69,12 @@ public:
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IRenderState& GetInterface() const META_PIMPL_NOEXCEPT;
 
+    // IObject interface methods
+    bool SetName(std::string_view name) const;
+    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
     // IRenderState interface methods
-    [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] const RenderStateSettings& GetSettings() const META_PIMPL_NOEXCEPT;
     void Reset(const Settings& settings) const;
 
 private:
