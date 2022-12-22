@@ -52,6 +52,12 @@ Ptr<IBuffer> IBuffer::CreateConstantBuffer(const IContext& context, Data::Size s
     return Base::CreateConstantBuffer<Vulkan::Buffer>(context, size, addressable, is_volatile);
 }
 
+Ptr<IBuffer> IBuffer::CreateReadBackBuffer(const IContext& context, Data::Size size)
+{
+    META_FUNCTION_TASK();
+    return Base::CreateReadBackBuffer<Vulkan::Buffer>(context, size);
+}
+
 Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
 {
     META_FUNCTION_TASK();

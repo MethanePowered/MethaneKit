@@ -55,9 +55,10 @@ Ptr<IBuffer> IBuffer::CreateConstantBuffer(const IContext& context, Data::Size s
     return Base::CreateConstantBuffer<Metal::Buffer>(context, size, addressable, is_volatile);
 }
 
-Ptr<IBuffer> IBuffer::CreateReadBackBuffer(const IContext&, Data::Size)
+Ptr<IBuffer> IBuffer::CreateReadBackBuffer(const IContext& context, Data::Size size)
 {
-    META_FUNCTION_NOT_IMPLEMENTED_RETURN(nullptr);
+    META_FUNCTION_TASK();
+    return Base::CreateReadBackBuffer<Metal::Buffer>(context, size);
 }
 
 Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
