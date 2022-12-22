@@ -24,12 +24,8 @@ Base implementation of the Methane graphics application.
 #include <Methane/Graphics/AppBase.h>
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Graphics/AppContextController.h>
-#include <Methane/Graphics/RHI/IDevice.h>
-#include <Methane/Graphics/RHI/ITexture.h>
-#include <Methane/Graphics/RHI/IRenderState.h>
-#include <Methane/Graphics/RHI/IViewState.h>
-#include <Methane/Graphics/RHI/IRenderPass.h>
-#include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/Device.h>
+#include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Data/IProvider.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -73,10 +69,10 @@ AppBase::AppBase(const CombinedAppSettings& settings, Data::IProvider& textures_
 AppBase::~AppBase()
 {
     META_FUNCTION_TASK();
-    if (m_context_ptr)
+    if (m_context.IsInitialized())
     {
         // Prevent OnContextReleased callback emitting during application destruction
-        static_cast<Data::IEmitter<IContextCallback>&>(*m_context_ptr).Disconnect(*this);
+        m_context.Data::Transmitter<IContextCallback>::Disconnect(*this);
     }
 }
 
@@ -99,9 +95,9 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
 
     // Create render context of the current window size
     m_initial_context_settings.frame_size = frame_size;
-    m_context_ptr = Rhi::IRenderContext::Create(env, *device_ptr, GetParallelExecutor(), m_initial_context_settings);
-    m_context_ptr->SetName("Graphics Context");
-    static_cast<Data::IEmitter<IContextCallback>&>(*m_context_ptr).Connect(*this);
+    m_context.Init(env, *device_ptr, GetParallelExecutor(), m_initial_context_settings);
+    m_context.SetName("Graphics Context");
+    m_context.Data::Transmitter<IContextCallback>::Connect(*this);
 
     // Fill initial screen render-pass pattern settings
     m_screen_pass_pattern_settings.shader_access = m_settings.screen_pass_access;
@@ -136,7 +132,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
         );
     }
 
-    AddInputControllers({ std::make_shared<AppContextController>(*m_context_ptr) });
+    AddInputControllers({ std::make_shared<AppContextController>(m_context.GetInterface()) });
 
     SetFullScreen(m_initial_context_settings.is_full_screen);
 }
@@ -152,21 +148,20 @@ void AppBase::Init()
         SetBaseAnimationsEnabled(false);
     }
 
-    META_CHECK_ARG_NOT_NULL(m_context_ptr);
-    const Rhi::RenderContextSettings& context_settings = m_context_ptr->GetSettings();
+    const Rhi::RenderContextSettings& context_settings = m_context.GetSettings();
 
     // Create frame depth texture and attachment description
     if (context_settings.depth_stencil_format != PixelFormat::Unknown)
     {
-        m_depth_texture_ptr = Rhi::ITexture::CreateDepthStencil(*m_context_ptr);
-        m_depth_texture_ptr->SetName("Depth Texture");
+        m_depth_texture.InitDepthStencil(m_context);
+        m_depth_texture.SetName("Depth Texture");
     }
 
     // Create screen render pass pattern
-    m_screen_render_pattern_ptr = Rhi::IRenderPattern::Create(*m_context_ptr, m_screen_pass_pattern_settings);
-    m_screen_render_pattern_ptr->SetName("Final Render Pass");
+    m_screen_render_pattern.Init(m_context, m_screen_pass_pattern_settings);
+    m_screen_render_pattern.SetName("Final Render Pass");
 
-    m_view_state_ptr = Rhi::IViewState::Create({
+    m_view_state.Init({
         { GetFrameViewport(context_settings.frame_size)    },
         { GetFrameScissorRect(context_settings.frame_size) }
     });
@@ -200,8 +195,8 @@ bool AppBase::Resize(const FrameSize& frame_size, bool is_minimized)
     m_initial_context_settings.frame_size = frame_size;
 
     // Update viewports and scissor rects state
-    m_view_state_ptr->SetViewports({ GetFrameViewport(frame_size) });
-    m_view_state_ptr->SetScissorRects({ GetFrameScissorRect(frame_size) });
+    m_view_state.SetViewports({ GetFrameViewport(frame_size) });
+    m_view_state.SetScissorRects({ GetFrameScissorRect(frame_size) });
 
     return true;
 }
@@ -212,7 +207,7 @@ bool AppBase::Update()
     if (Platform::App::IsMinimized())
         return false;
 
-    META_LOG("\n========================== FRAME {} UPDATING =========================", m_context_ptr ? m_context_ptr->GetFrameIndex() : 0U);
+    META_LOG("\n========================== FRAME {} UPDATING =========================", m_context_ptr ? m_context.GetFrameIndex() : 0U);
 
     Rhi::ISystem::Get().CheckForChanges();
 
@@ -239,22 +234,22 @@ bool AppBase::Render()
         return false;
     }
 
-    META_CHECK_ARG_NOT_NULL_DESCR(m_context_ptr, "RenderContext is not initialized before rendering.");
-    if (!m_context_ptr->ReadyToRender())
+    META_CHECK_ARG_TRUE_DESCR(m_context.IsInitialized(), "RenderContext is not initialized before rendering.");
+    if (!m_context.ReadyToRender())
         return false;
 
-    META_LOG("\n========================= FRAME {} RENDERING =========================", m_context_ptr->GetFrameIndex());
+    META_LOG("\n========================= FRAME {} RENDERING =========================", m_context.GetFrameIndex());
 
     // Wait for previous frame rendering is completed and switch to next frame
-    m_context_ptr->WaitForGpu(Rhi::IContext::WaitFor::FramePresented);
+    m_context.WaitForGpu(Rhi::IContext::WaitFor::FramePresented);
     return true;
 }
 
 bool AppBase::SetFullScreen(bool is_full_screen)
 {
     META_FUNCTION_TASK();
-    if (m_context_ptr)
-        m_context_ptr->SetFullScreen(is_full_screen);
+    if (m_context.IsInitialized())
+        m_context.SetFullScreen(is_full_screen);
 
     return Platform::App::SetFullScreen(is_full_screen);
 }
@@ -295,37 +290,36 @@ void AppBase::SetShowHudInWindowTitle(bool show_hud_in_window_title)
     UpdateWindowTitle();
 }
 
-Rhi::ITexture::Views AppBase::GetScreenPassAttachments(Rhi::ITexture& frame_buffer_texture) const
+Rhi::TextureViews AppBase::GetScreenPassAttachments(const Rhi::Texture& frame_buffer_texture) const
 {
     META_FUNCTION_TASK();
-    Rhi::ITexture::Views attachments{
-        Rhi::ITexture::View(frame_buffer_texture)
+    Rhi::TextureViews attachments{
+        Rhi::TextureView(frame_buffer_texture.GetInterface())
     };
 
-    if (m_depth_texture_ptr)
-        attachments.emplace_back(*m_depth_texture_ptr);
+    if (m_depth_texture.IsInitialized())
+        attachments.emplace_back(m_depth_texture.GetInterface());
 
     return attachments;
 }
 
-Ptr<Rhi::IRenderPass> AppBase::CreateScreenRenderPass(Rhi::ITexture& frame_buffer_texture) const
+Rhi::RenderPass AppBase::CreateScreenRenderPass(const Rhi::Texture& frame_buffer_texture) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_context_ptr);
-    return Rhi::IRenderPass::Create(GetScreenRenderPattern(), {
+    return Rhi::RenderPass(GetScreenRenderPattern(), {
         GetScreenPassAttachments(frame_buffer_texture),
-        m_context_ptr->GetSettings().frame_size
+        m_context.GetSettings().frame_size
     });
 }
 
 Opt<AppBase::ResourceRestoreInfo> AppBase::ReleaseDepthTexture()
 {
     META_FUNCTION_TASK();
-    if (!m_depth_texture_ptr)
+    if (!m_depth_texture.IsInitialized())
         return std::nullopt;
 
-    ResourceRestoreInfo depth_restore_info(*m_depth_texture_ptr);
-    m_depth_texture_ptr.reset();
+    ResourceRestoreInfo depth_restore_info(m_depth_texture.GetInterface());
+    m_depth_texture.Release();
     return depth_restore_info;
 }
 
@@ -335,31 +329,31 @@ void AppBase::RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_
     if (!depth_restore_info_opt)
         return;
 
-    m_depth_texture_ptr = Rhi::ITexture::CreateDepthStencil(GetRenderContext());
-    m_depth_texture_ptr->RestoreDescriptorViews(depth_restore_info_opt->descriptor_by_view_id);
-    m_depth_texture_ptr->SetName(depth_restore_info_opt->name);
+    m_depth_texture.InitDepthStencil(GetRenderContext());
+    m_depth_texture.RestoreDescriptorViews(depth_restore_info_opt->descriptor_by_view_id);
+    m_depth_texture.SetName(depth_restore_info_opt->name);
 }
 
 void AppBase::UpdateWindowTitle()
 {
     META_FUNCTION_TASK();
-    if (!m_settings.show_hud_in_window_title || !m_context_ptr)
+    if (!m_settings.show_hud_in_window_title || !m_context.IsInitialized())
     {
         SetWindowTitle(GetPlatformAppSettings().name);
         return;
     }
 
-    const Rhi::RenderContextSettings&  context_settings     = m_context_ptr->GetSettings();
-    const Rhi::IFpsCounter&            fps_counter          = m_context_ptr->GetFpsCounter();
-    const uint32_t                     average_fps          = fps_counter.GetFramesPerSecond();
-    const Rhi::IFpsCounter::Timing     average_frame_timing = fps_counter.GetAverageFrameTiming();
+    const Rhi::RenderContextSettings& context_settings     = m_context.GetSettings();
+    const Rhi::IFpsCounter&           fps_counter          = m_context.GetFpsCounter();
+    const uint32_t                    average_fps          = fps_counter.GetFramesPerSecond();
+    const Rhi::IFpsCounter::Timing    average_frame_timing = fps_counter.GetAverageFrameTiming();
 
     const std::string title = fmt::format("{:s}        {:d} FPS, {:.2f} ms, {:.2f}% CPU |  {:d} x {:d}  |  {:d} FB  |  VSync {:s}  |  {:s}  |  {:s}  |  F1 - help",
                                           GetPlatformAppSettings().name,
                                           average_fps, average_frame_timing.GetTotalTimeMSec(), average_frame_timing.GetCpuTimePercent(),
                                           context_settings.frame_size.GetWidth(), context_settings.frame_size.GetHeight(),
                                           context_settings.frame_buffers_count, (context_settings.vsync_enabled ? "ON" : "OFF"),
-                                          m_context_ptr->GetDevice().GetAdapterName(),
+                                          m_context.GetDevice().GetAdapterName(),
                                           magic_enum::enum_name(Rhi::ISystem::GetNativeApi()));
 
     SetWindowTitle(title);
@@ -368,18 +362,18 @@ void AppBase::UpdateWindowTitle()
 void AppBase::CompleteInitialization() const
 {
     META_FUNCTION_TASK();
-    if (m_context_ptr)
+    if (m_context.IsInitialized())
     {
-        m_context_ptr->CompleteInitialization();
+        m_context.CompleteInitialization();
     }
 }
 
 void AppBase::WaitForRenderComplete() const
 {
     META_FUNCTION_TASK();
-    if (m_context_ptr)
+    if (m_context.IsInitialized())
     {
-        m_context_ptr->WaitForGpu(Rhi::IContext::WaitFor::RenderComplete);
+        m_context.WaitForGpu(Rhi::IContext::WaitFor::RenderComplete);
     }
 }
 
@@ -390,9 +384,9 @@ void AppBase::OnContextReleased(Rhi::IContext&)
     m_restore_animations_enabled = m_settings.animations_enabled;
     SetBaseAnimationsEnabled(false);
 
-    m_screen_render_pattern_ptr.reset();
-    m_depth_texture_ptr.reset();
-    m_view_state_ptr.reset();
+    m_screen_render_pattern.Release();
+    m_depth_texture.Release();
+    m_view_state.Release();
 
     Deinitialize();
 }

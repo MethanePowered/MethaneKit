@@ -76,7 +76,7 @@ RenderContext::RenderContext(const Ptr<IRenderContext>& interface_ptr)
 }
 
 RenderContext::RenderContext(IRenderContext& render_context)
-    : RenderContext(std::dynamic_pointer_cast<IRenderContext>(render_context.GetPtr()))
+    : RenderContext(render_context.GetDerivedPtr<IRenderContext>())
 {
 }
 

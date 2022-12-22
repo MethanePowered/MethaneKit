@@ -74,7 +74,7 @@ Sampler::Sampler(const Ptr<ISampler>& interface_ptr)
 }
 
 Sampler::Sampler(ISampler& interface_ref)
-    : Sampler(std::dynamic_pointer_cast<ISampler>(interface_ref.GetPtr()))
+    : Sampler(interface_ref.GetDerivedPtr<ISampler>())
 {
 }
 

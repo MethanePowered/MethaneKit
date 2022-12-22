@@ -74,7 +74,7 @@ CommandQueue::CommandQueue(const Ptr<ICommandQueue>& interface_ptr)
 }
 
 CommandQueue::CommandQueue(ICommandQueue& interface_ref)
-    : CommandQueue(std::dynamic_pointer_cast<ICommandQueue>(interface_ref.GetPtr()))
+    : CommandQueue(interface_ref.GetDerivedPtr<ICommandQueue>())
 {
 }
 

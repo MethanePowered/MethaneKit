@@ -76,7 +76,7 @@ RenderPattern::RenderPattern(const Ptr<IRenderPattern>& interface_ptr)
 }
 
 RenderPattern::RenderPattern(IRenderPattern& interface_ref)
-    : RenderPattern(std::dynamic_pointer_cast<IRenderPattern>(interface_ref.GetPtr()))
+    : RenderPattern(interface_ref.GetDerivedPtr<IRenderPattern>())
 {
 }
 
@@ -158,7 +158,7 @@ RenderPass::RenderPass(const Ptr<IRenderPass>& interface_ptr)
 }
 
 RenderPass::RenderPass(IRenderPass& interface_ref)
-    : RenderPass(std::dynamic_pointer_cast<IRenderPass>(interface_ref.GetPtr()))
+    : RenderPass(interface_ref.GetDerivedPtr<IRenderPass>())
 {
 }
 

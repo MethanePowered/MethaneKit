@@ -73,7 +73,7 @@ ProgramBindings::ProgramBindings(const Ptr<IProgramBindings>& interface_ptr)
 }
 
 ProgramBindings::ProgramBindings(IProgramBindings& interface_ref)
-    : ProgramBindings(std::dynamic_pointer_cast<IProgramBindings>(interface_ref.GetPtr()))
+    : ProgramBindings(interface_ref.GetDerivedPtr<IProgramBindings>())
 {
 }
 

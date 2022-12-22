@@ -83,8 +83,8 @@ ScreenQuad::ScreenQuad(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern
 
 ScreenQuad::ScreenQuad(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern& render_pattern, const Ptr<Rhi::ITexture>& texture_ptr, const Settings& settings)
     : m_settings(settings)
-    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<Rhi::ICommandQueue>(render_cmd_queue.GetPtr()))
-    , m_render_pattern_ptr(std::dynamic_pointer_cast<Rhi::IRenderPattern>(render_pattern.GetPtr()))
+    , m_render_cmd_queue_ptr(render_cmd_queue.GetDerivedPtr<Rhi::ICommandQueue>())
+    , m_render_pattern_ptr(render_pattern.GetDerivedPtr<Rhi::IRenderPattern>())
     , m_texture_ptr(texture_ptr)
 {
     META_FUNCTION_TASK();
@@ -132,7 +132,7 @@ ScreenQuad::ScreenQuad(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern
             }
         );
         state_settings.program_ptr->SetName(fmt::format("{} Shading", quad_name));
-        state_settings.render_pattern_ptr                                   = std::dynamic_pointer_cast<Rhi::IRenderPattern>(render_pattern.GetPtr());
+        state_settings.render_pattern_ptr                                   = render_pattern.GetDerivedPtr<Rhi::IRenderPattern>();
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;

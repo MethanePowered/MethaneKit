@@ -74,7 +74,7 @@ CommandListDebugGroup::CommandListDebugGroup(const Ptr<ICommandListDebugGroup>& 
 }
 
 CommandListDebugGroup::CommandListDebugGroup(ICommandListDebugGroup& interface_ref)
-    : CommandListDebugGroup(std::dynamic_pointer_cast<ICommandListDebugGroup>(interface_ref.GetPtr()))
+    : CommandListDebugGroup(interface_ref.GetDerivedPtr<ICommandListDebugGroup>())
 {
 }
 

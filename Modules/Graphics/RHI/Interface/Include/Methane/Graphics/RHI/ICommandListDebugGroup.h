@@ -71,6 +71,6 @@ struct ICommandListDebugGroup
 
 #endif
 
-#define META_DEBUG_GROUP_CREATE_VAR(variable, /*const std::string& */group_name) \
+#define META_DEBUG_GROUP_CREATE_VAR(variable, /*const std::string&*/ group_name) \
     META_UNUSED(group_name); \
     static const Methane::Ptr<Methane::Graphics::Rhi::ICommandListDebugGroup> variable = META_DEBUG_GROUP_CREATE(group_name)

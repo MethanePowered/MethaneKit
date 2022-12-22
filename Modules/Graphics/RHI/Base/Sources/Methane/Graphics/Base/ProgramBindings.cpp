@@ -74,7 +74,7 @@ ProgramBindings::ResourceAndState::ResourceAndState(Ptr<Resource> resource_ptr, 
 }
 
 ProgramBindings::ProgramBindings(Program& program, Data::Index frame_index)
-    : m_program_ptr(std::dynamic_pointer_cast<Rhi::IProgram>(program.GetPtr()))
+    : m_program_ptr(program.GetDerivedPtr<Rhi::IProgram>())
     , m_frame_index(frame_index)
     , m_bindings_index(static_cast<Program&>(*m_program_ptr).GetBindingsCountAndIncrement())
 {
@@ -299,7 +299,7 @@ void ProgramBindings::AddTransitionResourceState(const Rhi::IProgramBindings::IA
     const Rhi::IProgramBindings::IArgumentBinding::Settings& argument_binding_settings = argument_binding.GetSettings();
     const Rhi::ResourceState target_resource_state = GetBoundResourceTargetState(resource, argument_binding_settings.resource_type, argument_binding_settings.argument.IsConstant());
     ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
-    transition_resource_states.emplace_back(std::dynamic_pointer_cast<Resource>(resource.GetPtr()), target_resource_state);
+    transition_resource_states.emplace_back(resource.GetDerivedPtr<Resource>(), target_resource_state);
 }
 
 void ProgramBindings::AddTransitionResourceStates(const Rhi::IProgramBindings::IArgumentBinding& argument_binding)

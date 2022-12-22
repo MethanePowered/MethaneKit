@@ -73,7 +73,7 @@ Fence::Fence(const Ptr<IFence>& interface_ptr)
 }
 
 Fence::Fence(IFence& interface_ref)
-    : Fence(std::dynamic_pointer_cast<IFence>(interface_ref.GetPtr()))
+    : Fence(interface_ref.GetDerivedPtr<IFence>())
 {
 }
 

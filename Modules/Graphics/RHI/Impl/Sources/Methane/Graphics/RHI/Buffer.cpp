@@ -79,7 +79,7 @@ Buffer::Buffer(const Ptr<IBuffer>& interface_ptr)
 }
 
 Buffer::Buffer(IBuffer& interface_ref)
-    : Buffer(std::dynamic_pointer_cast<IBuffer>(interface_ref.GetPtr()))
+    : Buffer(interface_ref.GetDerivedPtr<IBuffer>())
 {
 }
 
@@ -271,7 +271,7 @@ BufferSet::BufferSet(const Ptr<IBufferSet>& interface_ptr)
 }
 
 BufferSet::BufferSet(IBufferSet& interface_ref)
-    : BufferSet(std::dynamic_pointer_cast<IBufferSet>(std::dynamic_pointer_cast<IBufferSet>(interface_ref.GetPtr())))
+    : BufferSet(std::dynamic_pointer_cast<IBufferSet>(interface_ref.GetDerivedPtr<IBufferSet>()))
 {
 }
 
@@ -331,10 +331,11 @@ std::string BufferSet::GetNames() const META_PIMPL_NOEXCEPT
     return GetPrivateImpl(m_impl_ptr).GetNames();
 }
 
-Buffer& BufferSet::operator[](Data::Index index)
+const Buffer& BufferSet::operator[](Data::Index index) const
 {
-    META_CHECK_ARG_LESS(index, m_buffers.size());
-    return m_buffers[index];
+    const Buffers& buffers = GetRefs();
+    META_CHECK_ARG_LESS(index, buffers.size());
+    return buffers[index];
 }
 
 } // namespace Methane::Graphics::Rhi

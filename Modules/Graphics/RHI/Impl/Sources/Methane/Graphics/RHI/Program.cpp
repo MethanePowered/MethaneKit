@@ -55,21 +55,22 @@ static_assert(false, "Static graphics API macro-definition is missing.");
 namespace Methane::Graphics::Rhi
 {
 
-static IProgram::Shaders ConvertProgramShaders(const Program::Shaders& shaders)
+static IProgram::Shaders ConvertProgramShaderSet(const IContext& context, const Program::ShaderSet& shader_set)
 {
     META_FUNCTION_TASK();
-    ProgramShaders shader_ptrs;
-    std::transform(shaders.begin(), shaders.end(), std::back_inserter(shader_ptrs), [](const Shader& shader)
-                   { return shader.GetInterface().GetPtr(); });
+    IProgram::Shaders shader_ptrs;
+    std::transform(shader_set.begin(), shader_set.end(), std::back_inserter(shader_ptrs),
+                   [&context](const std::pair<ShaderType, ShaderSettings>& shader_type_settings)
+                   { return IShader::Create(shader_type_settings.first, context, shader_type_settings.second); });
     return shader_ptrs;
 }
 
-static IProgram::Settings ConvertProgramSettings(const Program::Settings& settings)
+static IProgram::Settings ConvertProgramSettings(const IContext& context, const Program::Settings& settings)
 {
     META_FUNCTION_TASK();
     return IProgram::Settings
     {
-        ConvertProgramShaders(settings.shaders),
+        ConvertProgramShaderSet(context, settings.shader_set),
         settings.input_buffer_layouts,
         settings.argument_accessors,
         settings.attachment_formats
@@ -97,18 +98,18 @@ Program::Program(const Ptr<IProgram>& interface_ptr)
 }
 
 Program::Program(IProgram& interface_ref)
-    : Program(std::dynamic_pointer_cast<IProgram>(interface_ref.GetPtr()))
+    : Program(interface_ref.GetDerivedPtr<IProgram>())
 {
 }
 
 Program::Program(const RenderContext& context, const Settings& settings)
-    : Program(IProgram::Create(context.GetInterface(), ConvertProgramSettings(settings)))
+    : Program(IProgram::Create(context.GetInterface(), ConvertProgramSettings(context.GetInterface(), settings)))
 {
 }
 
 void Program::Init(const RenderContext& context, const Settings& settings)
 {
-    m_impl_ptr = std::make_unique<Impl>(IProgram::Create(context.GetInterface(), ConvertProgramSettings(settings)));
+    m_impl_ptr = std::make_unique<Impl>(IProgram::Create(context.GetInterface(), ConvertProgramSettings(context.GetInterface(), settings)));
     Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
 

@@ -48,13 +48,13 @@ public:
 
     struct Settings
     {
-        Program            program;
-        RenderPattern      render_pattern;
-        RasterizerSettings rasterizer;
-        DepthSettings      depth;
-        StencilSettings    stencil;
-        BlendingSettings   blending;
-        Color4F            blending_color;
+        const Program&       program;
+        const RenderPattern& render_pattern;
+        RasterizerSettings   rasterizer;
+        DepthSettings        depth;
+        StencilSettings      stencil;
+        BlendingSettings     blending;
+        Color4F              blending_color;
     };
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderState);

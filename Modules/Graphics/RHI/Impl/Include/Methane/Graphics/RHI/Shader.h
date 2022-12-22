@@ -35,12 +35,12 @@ class RenderContext;
 class Shader
 {
 public:
-    using Type = ShaderType;
-    using Types = ShaderTypes;
-    using MacroDefinition = ShaderMacroDefinition;
+    using Type             = ShaderType;
+    using Types            = ShaderTypes;
+    using MacroDefinition  = ShaderMacroDefinition;
     using MacroDefinitions = ShaderMacroDefinitions;
-    using EntryFunction = ShaderEntryFunction;
-    using Settings = ShaderSettings;
+    using Settings         = ShaderSettings;
+    using EntryFunction    = ShaderEntryFunction;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Shader);
 

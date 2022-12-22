@@ -56,8 +56,8 @@ static IRenderState::Settings ConvertRenderStateSettings(const RenderState::Sett
 {
     return IRenderState::Settings
     {
-        std::dynamic_pointer_cast<IProgram>(settings.program.GetInterface().GetPtr()),
-        std::dynamic_pointer_cast<IRenderPattern>(settings.render_pattern.GetInterface().GetPtr()),
+        settings.program.GetInterface().GetDerivedPtr<IProgram>(),
+        settings.render_pattern.GetInterface().GetDerivedPtr<IRenderPattern>(),
         settings.rasterizer,
         settings.depth,
         settings.stencil,
@@ -87,7 +87,7 @@ RenderState::RenderState(const Ptr<IRenderState>& interface_ptr)
 }
 
 RenderState::RenderState(IRenderState& interface_ref)
-    : RenderState(std::dynamic_pointer_cast<IRenderState>(interface_ref.GetPtr()))
+    : RenderState(interface_ref.GetDerivedPtr<IRenderState>())
 {
 }
 

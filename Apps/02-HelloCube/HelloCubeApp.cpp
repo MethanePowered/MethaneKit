@@ -47,13 +47,13 @@ using namespace Methane::Graphics::Rhi;
 struct HelloCubeFrame final : AppFrame
 {
 #ifdef UNIFORMS_BUFFER_ENABLED
-    Ptr<IBuffer>            uniforms_buffer_ptr;
-    Ptr<IProgramBindings>  program_bindings_ptr;
+    Buffer            uniforms_buffer;
+    ProgramBindings   program_bindings;
 #else
-    Ptr<IBufferSet> vertex_buffer_set_ptr;
+    BufferSet         vertex_buffer_set;
 #endif
-    Ptr<IRenderCommandList> render_cmd_list_ptr;
-    Ptr<ICommandListSet>    execute_cmd_list_set_ptr;
+    RenderCommandList render_cmd_list;
+    CommandListSet    execute_cmd_list_set;
 
     using AppFrame::AppFrame;
 };
@@ -82,13 +82,14 @@ private:
     const IResource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
     };
-    Ptr<IBufferSet>               m_vertex_buffer_set_ptr;
+    BufferSet m_vertex_buffer_set;
 #else
     std::vector<CubeVertex> m_proj_vertices;
 #endif
 
-    Ptr<IRenderState> m_render_state_ptr;
-    Ptr<IBuffer>      m_index_buffer_ptr;
+    CommandQueue m_render_cmd_queue;
+    RenderState  m_render_state;
+    Buffer       m_index_buffer;
 
 public:
     HelloCubeApp()
@@ -137,22 +138,22 @@ public:
 #endif
 
         // Create render state with program
-        m_render_state_ptr = IRenderState::Create(GetRenderContext(),
-            IRenderState::Settings
+        m_render_state.Init(GetRenderContext(),
+            RenderState::Settings
             {
-                IProgram::Create(GetRenderContext(),
-                    IProgram::Settings
+                Program(GetRenderContext(),
+                    Program::Settings
                     {
-                        IProgram::Shaders
+                        Program::ShaderSet
                         {
-                            IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions }),
-                            IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
+                            { ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions } },
+                            { ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
                         },
                         ProgramInputBufferLayouts
                         {
-                            IProgram::InputBufferLayout
+                            Program::InputBufferLayout
                             {
-                                IProgram::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
+                                Program::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
                             }
                         },
 #ifdef UNIFORMS_BUFFER_ENABLED
@@ -166,29 +167,30 @@ public:
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
-                GetScreenRenderPatternPtr()
+                GetScreenRenderPattern()
             }
         );
-        m_render_state_ptr->GetSettings().program_ptr->SetName("Colored Cube Shading");
-        m_render_state_ptr->SetName("Colored Cube Pipeline State");
+        m_render_state.GetSettings().program_ptr->SetName("Colored Cube Shading");
+        m_render_state.SetName("Colored Cube Pipeline State");
 
         // Create index buffer for cube mesh
-        m_index_buffer_ptr = IBuffer::CreateIndexBuffer(GetRenderContext(), m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0)));
-        m_index_buffer_ptr->SetName("Cube Index Buffer");
-        m_index_buffer_ptr->SetData(
+        m_index_buffer.InitIndexBuffer(GetRenderContext(), m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0)));
+        m_index_buffer.SetName("Cube Index Buffer");
+        m_index_buffer.SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }, // NOSONAR
             GetRenderContext().GetRenderCommandKit().GetQueue()
         );
 
 #ifdef UNIFORMS_BUFFER_ENABLED
         // Create constant vertex buffer
-        Ptr<IBuffer> vertex_buffer_ptr = IBuffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize());
-        vertex_buffer_ptr->SetName("Cube Vertex Buffer");
-        vertex_buffer_ptr->SetData(
+        Buffer vertex_buffer;
+        vertex_buffer.InitVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize());
+        vertex_buffer.SetName("Cube Vertex Buffer");
+        vertex_buffer.SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
             GetRenderContext().GetRenderCommandKit().GetQueue()
         );
-        m_vertex_buffer_set_ptr = IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+        m_vertex_buffer_set.Init(BufferType::Vertex, { vertex_buffer });
 
         const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
 #endif
@@ -198,26 +200,29 @@ public:
         {
 #ifdef UNIFORMS_BUFFER_ENABLED
             // Create uniforms buffer with volatile parameters for frame rendering
-            frame.uniforms_buffer_ptr = IBuffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
-            frame.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
+            frame.uniforms_buffer.InitConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
+            frame.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
             // Configure program resource bindings
-            frame.program_bindings_ptr = IProgramBindings::Create(*m_render_state_ptr->GetSettings().program_ptr, {
-                { { ShaderType::Vertex, "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } }
+            frame.program_bindings.Init(*m_render_state.GetSettings().program_ptr, {
+                { { ShaderType::Vertex, "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } }
             }, frame.index);
-            frame.program_bindings_ptr->SetName(IndexedName("Cube Bindings {}", frame.index));
+            frame.program_bindings.SetName(IndexedName("Cube Bindings {}", frame.index));
 #else
             // Create vertex buffers for each frame
-            Ptr<IBuffer> vertex_buffer_ptr = IBuffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true);
-            vertex_buffer_ptr->SetName(IndexedName("Cube Vertex Buffer", frame.index));
-            frame.vertex_buffer_set_ptr = IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+            Buffer vertex_buffer;
+            vertex_buffer.InitVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true);
+            vertex_buffer.SetName(IndexedName("Cube Vertex Buffer", frame.index));
+            frame.vertex_buffer_set.Init(BufferType::Vertex, { vertex_buffer });
 #endif
 
             // Create command list for rendering
-            frame.render_cmd_list_ptr = IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-            frame.render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
-            frame.execute_cmd_list_set_ptr = ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
+            frame.render_cmd_list.Init(GetRenderContext().GetRenderCommandKit().GetQueue(), frame.screen_pass);
+            frame.render_cmd_list.SetName(IndexedName("Cube Rendering", frame.index));
+            frame.execute_cmd_list_set.Init({ frame.render_cmd_list.GetInterface() }, frame.index);
         }
+
+        m_render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
 
         GraphicsApp::CompleteInitialization();
     }
@@ -260,36 +265,35 @@ public:
         if (!GraphicsApp::Render())
             return false;
 
-        const HelloCubeFrame& frame            = GetCurrentFrame();
-        ICommandQueue&        render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+        const HelloCubeFrame& frame = GetCurrentFrame();
 
 #ifdef UNIFORMS_BUFFER_ENABLED
         // Update uniforms buffer on GPU and apply model-view-projection tranformation in vertex shader on GPU
-        frame.uniforms_buffer_ptr->SetData(m_shader_uniforms_subresources, render_cmd_queue);
+        frame.uniforms_buffer.SetData(m_shader_uniforms_subresources, m_render_cmd_queue);
 #else
         // Update vertex buffer with vertices in camera's projection view
-        (*frame.vertex_buffer_set_ptr)[0].SetData(
+        (frame.vertex_buffer_set)[0].SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
-            render_cmd_queue
+            m_render_cmd_queue
         );
 #endif
 
         // Issue commands for cube rendering
-        META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
-        frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
-        frame.render_cmd_list_ptr->SetViewState(GetViewState());
+        static META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
+        frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
+        frame.render_cmd_list.SetViewState(GetViewState());
 #ifdef UNIFORMS_BUFFER_ENABLED
-        frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
-        frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
+        frame.render_cmd_list.SetProgramBindings(frame.program_bindings);
+        frame.render_cmd_list.SetVertexBuffers(m_vertex_buffer_set);
 #else
-        frame.render_cmd_list_ptr->SetVertexBuffers(*frame.vertex_buffer_set_ptr);
+        frame.render_cmd_list.SetVertexBuffers(frame.vertex_buffer_set);
 #endif
-        frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
-        frame.render_cmd_list_ptr->DrawIndexed(RenderPrimitive::Triangle);
-        frame.render_cmd_list_ptr->Commit();
+        frame.render_cmd_list.SetIndexBuffer(m_index_buffer);
+        frame.render_cmd_list.DrawIndexed(RenderPrimitive::Triangle);
+        frame.render_cmd_list.Commit();
 
         // Execute command list on render queue and present frame to screen
-        render_cmd_queue.Execute(*frame.execute_cmd_list_set_ptr);
+        m_render_cmd_queue.Execute(frame.execute_cmd_list_set);
         GetRenderContext().Present();
 
         return true;
@@ -298,10 +302,10 @@ public:
     void OnContextReleased(Rhi::IContext& context) override
     {
 #ifdef UNIFORMS_BUFFER_EANBLED
-        m_vertex_buffer_set_ptr.reset();
+        m_vertex_buffer_set.Release();
 #endif
-        m_index_buffer_ptr.reset();
-        m_render_state_ptr.reset();
+        m_index_buffer.Release();
+        m_render_state.Release();
 
         GraphicsApp::OnContextReleased(context);
     }

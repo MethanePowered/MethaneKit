@@ -35,6 +35,11 @@ class CommandQueue;
 class RenderPass;
 class CommandListDebugGroup;
 class ResourceBarriers;
+class Buffer;
+class BufferSet;
+class RenderState;
+class ViewState;
+class ProgramBindings;
 
 class RenderCommandList
     : public Data::Transmitter<Rhi::ICommandListCallback>
@@ -64,33 +69,33 @@ public:
     std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     // ICommandList interface methods
-    void  PushDebugGroup(DebugGroup& debug_group);
-    void  PopDebugGroup();
-    void  Reset(DebugGroup* debug_group_ptr = nullptr);
-    void  ResetOnce(DebugGroup* debug_group_ptr = nullptr);
-    void  SetProgramBindings(IProgramBindings& program_bindings,
-                             ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U));
-    void  SetResourceBarriers(const ResourceBarriers& resource_barriers);
-    void  Commit();
-    void  WaitUntilCompleted(uint32_t timeout_ms = 0U);
+    void  PushDebugGroup(const DebugGroup& debug_group) const;
+    void  PopDebugGroup() const;
+    void  Reset(const DebugGroup* debug_group_ptr = nullptr) const;
+    void  ResetOnce(const DebugGroup* debug_group_ptr = nullptr) const;
+    void  SetProgramBindings(const ProgramBindings& program_bindings,
+                             ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
+    void  SetResourceBarriers(const ResourceBarriers& resource_barriers) const;
+    void  Commit() const;
+    void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;
     [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const;
     [[nodiscard]] State GetState() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] CommandQueue GetCommandQueue();
+    [[nodiscard]] CommandQueue GetCommandQueue() const;
 
     // IRenderCommandList interface methods
     [[nodiscard]] bool IsValidationEnabled() const META_PIMPL_NOEXCEPT;
-    void SetValidationEnabled(bool is_validation_enabled);
+    void SetValidationEnabled(bool is_validation_enabled) const;
     [[nodiscard]] RenderPass GetRenderPass() const;
-    void ResetWithState(IRenderState& render_state, DebugGroup* debug_group_ptr = nullptr);
-    void ResetWithStateOnce(IRenderState& render_state, DebugGroup* debug_group_ptr = nullptr);
-    void SetRenderState(IRenderState& render_state, RenderStateGroupMask state_groups = RenderStateGroupMask(~0U));
-    void SetViewState(IViewState& view_state);
-    bool SetVertexBuffers(IBufferSet& vertex_buffers, bool set_resource_barriers = true);
-    bool SetIndexBuffer(IBuffer& index_buffer, bool set_resource_barriers = true);
-    void DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
-                     uint32_t instance_count = 1U, uint32_t start_instance = 0U);
-    void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
-              uint32_t instance_count = 1U, uint32_t start_instance = 0U);
+    void ResetWithState(const RenderState& render_state, const DebugGroup* debug_group_ptr = nullptr) const;
+    void ResetWithStateOnce(const RenderState& render_state, const DebugGroup* debug_group_ptr = nullptr) const;
+    void SetRenderState(const RenderState& render_state, RenderStateGroupMask state_groups = RenderStateGroupMask(~0U)) const;
+    void SetViewState(const ViewState& view_state) const;
+    bool SetVertexBuffers(const BufferSet& vertex_buffers, bool set_resource_barriers = true) const;
+    bool SetIndexBuffer(const Buffer& index_buffer, bool set_resource_barriers = true) const;
+    void DrawIndexed(Primitive primitive, uint32_t index_count = 0U, uint32_t start_index = 0U, uint32_t start_vertex = 0U,
+                     uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
+    void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex = 0U,
+              uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
 
 private:
     class Impl;

@@ -28,8 +28,8 @@ Base frame class provides frame buffer management with resize handling.
 
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Graphics/AppController.h>
-#include <Methane/Graphics/RHI/ITexture.h>
-#include <Methane/Graphics/RHI/IRenderPass.h>
+#include <Methane/Graphics/RHI/Texture.h>
+#include <Methane/Graphics/RHI/RenderPass.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -40,18 +40,23 @@ namespace Methane::Graphics
 
 struct AppFrame
 {
-    const uint32_t        index = 0;
-    Ptr<Rhi::ITexture>    screen_texture_ptr;
-    Ptr<Rhi::IRenderPass> screen_pass_ptr;
+    const uint32_t  index = 0;
+    Rhi::Texture    screen_texture;
+    Rhi::RenderPass screen_pass;
 
-    explicit AppFrame(uint32_t frame_index) : index(frame_index) { META_FUNCTION_TASK(); }
+    explicit AppFrame(uint32_t frame_index)
+        : index(frame_index)
+    { }
+
+    AppFrame(AppFrame&&) = default;
+
     virtual ~AppFrame() = default;
 
     // AppFrame interface
     virtual void ReleaseScreenPassAttachmentTextures()
     {
-        screen_pass_ptr->ReleaseAttachmentTextures();
-        screen_texture_ptr.reset();
+        screen_pass.ReleaseAttachmentTextures();
+        screen_texture.Release();
     }
 };
 
@@ -75,7 +80,7 @@ public:
     }
 
     // WARNING: Don't forget to wait for GPU rendering completion in the derived class destructor to release resources properly
-    // m_context_ptr->WaitForGpu(IRenderContext::WaitFor::RenderComplete)
+    // m_context.WaitForGpu(IRenderContext::WaitFor::RenderComplete)
 
     // Platform::App interface
 
@@ -85,20 +90,18 @@ public:
         AppBase::Init();
 
         // Create frame resources
-        Rhi::IRenderContext& render_context = GetRenderContext();
+        const Rhi::RenderContext& render_context = GetRenderContext();
         const Rhi::RenderContextSettings& context_settings = render_context.GetSettings();
         for (uint32_t frame_index = 0; frame_index < context_settings.frame_buffers_count; ++frame_index)
         {
-            FrameT frame(frame_index);
+            FrameT& frame = m_frames.emplace_back(frame_index);
 
             // Create color texture for frame buffer
-            frame.screen_texture_ptr = Rhi::ITexture::CreateFrameBuffer(render_context, frame.index);
-            frame.screen_texture_ptr->SetName(IndexedName("Frame Buffer", frame.index));
+            frame.screen_texture.InitFrameBuffer(render_context, frame.index);
+            frame.screen_texture.SetName(IndexedName("Frame Buffer", frame.index));
 
             // Configure render pass: color, depth, stencil attachments and shader access
-            frame.screen_pass_ptr = CreateScreenRenderPass(*frame.screen_texture_ptr);
-
-            m_frames.emplace_back(std::move(frame));
+            frame.screen_pass = CreateScreenRenderPass(frame.screen_texture);
         }
     }
 
@@ -113,8 +116,7 @@ public:
         frame_restore_infos.reserve(m_frames.size());
         for (FrameT& frame : m_frames)
         {
-            META_CHECK_ARG_NOT_NULL(frame.screen_texture_ptr);
-            frame_restore_infos.emplace_back(*frame.screen_texture_ptr);
+            frame_restore_infos.emplace_back(frame.screen_texture.GetInterface());
             frame.ReleaseScreenPassAttachmentTextures();
         }
         const Opt<ResourceRestoreInfo> depth_restore_info_opt = ReleaseDepthTexture();
@@ -127,11 +129,11 @@ public:
         for (FrameT& frame : m_frames)
         {
             ResourceRestoreInfo& frame_restore_info = frame_restore_infos[frame.index];
-            frame.screen_texture_ptr = Rhi::ITexture::CreateFrameBuffer(GetRenderContext(), frame.index);
-            frame.screen_texture_ptr->RestoreDescriptorViews(frame_restore_info.descriptor_by_view_id);
-            frame.screen_texture_ptr->SetName(frame_restore_info.name);
-            frame.screen_pass_ptr->Update({
-                GetScreenPassAttachments(*frame.screen_texture_ptr),
+            frame.screen_texture.InitFrameBuffer(GetRenderContext(), frame.index);
+            frame.screen_texture.RestoreDescriptorViews(frame_restore_info.descriptor_by_view_id);
+            frame.screen_texture.SetName(frame_restore_info.name);
+            frame.screen_pass.Update({
+                GetScreenPassAttachments(frame.screen_texture),
                 frame_size
             });
         }

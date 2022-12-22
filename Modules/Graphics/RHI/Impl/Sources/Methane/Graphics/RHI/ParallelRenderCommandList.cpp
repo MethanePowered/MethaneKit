@@ -80,7 +80,7 @@ ParallelRenderCommandList::ParallelRenderCommandList(const Ptr<IParallelRenderCo
 }
 
 ParallelRenderCommandList::ParallelRenderCommandList(IParallelRenderCommandList& interface_ref)
-    : ParallelRenderCommandList(std::dynamic_pointer_cast<IParallelRenderCommandList>(interface_ref.GetPtr()))
+    : ParallelRenderCommandList(interface_ref.GetDerivedPtr<IParallelRenderCommandList>())
 {
 }
 

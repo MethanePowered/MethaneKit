@@ -33,8 +33,8 @@ namespace Methane::UserInterface
 
 Context::Context(const pal::IApp& app, rhi::ICommandQueue& render_cmd_queue, rhi::IRenderPattern& render_pattern)
     : m_render_context(render_pattern.GetRenderContext())
-    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<rhi::ICommandQueue>(render_cmd_queue.GetPtr()))
-    , m_render_pattern_ptr(std::dynamic_pointer_cast<rhi::IRenderPattern>(render_pattern.GetPtr()))
+    , m_render_cmd_queue_ptr(render_cmd_queue.GetDerivedPtr<rhi::ICommandQueue>())
+    , m_render_pattern_ptr(render_pattern.GetDerivedPtr<rhi::IRenderPattern>())
     , m_dots_to_pixels_factor(app.GetContentScalingFactor())
     , m_font_resolution_dpi(app.GetFontResolutionDpi())
 {

@@ -42,7 +42,7 @@ public:
     using ApplyBehavior = ProgramBindingsApplyBehavior;
     using ApplyBehaviorMask = ProgramBindingsApplyBehaviorMask;
     using UnboundArgumentsException = ProgramBindingsUnboundArgumentsException;
-    using ResourceViewsByArgument = std::unordered_map<IProgram::Argument, IResource::Views, IProgram::Argument::Hash>;
+    using ResourceViewsByArgument = std::unordered_map<ProgramArgument, IResource::Views, ProgramArgument::Hash>;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ProgramBindings);
 

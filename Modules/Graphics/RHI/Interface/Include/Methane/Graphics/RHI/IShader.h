@@ -72,7 +72,7 @@ struct ShaderEntryFunction
 
 struct ShaderSettings
 {
-    Data::IProvider&        data_provider;
+    Data::IProvider&       data_provider;
     ShaderEntryFunction    entry_function;
     ShaderMacroDefinitions compile_definitions;
 

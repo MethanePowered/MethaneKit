@@ -38,7 +38,7 @@ class Program
     : public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
-    using Shaders            = std::vector<Shader>;
+    using ShaderSet          = std::map<ShaderType, ShaderSettings>;
     using InputBufferLayout  = ProgramInputBufferLayout;
     using InputBufferLayouts = ProgramInputBufferLayouts;
     using Argument           = ProgramArgument;
@@ -48,7 +48,7 @@ public:
 
     struct Settings
     {
-        std::vector<Shader>       shaders;
+        ShaderSet                 shader_set;
         ProgramInputBufferLayouts input_buffer_layouts;
         ProgramArgumentAccessors  argument_accessors;
         AttachmentFormats         attachment_formats;

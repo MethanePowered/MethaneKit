@@ -76,7 +76,7 @@ Texture::Texture(const Ptr<ITexture>& interface_ptr)
 }
 
 Texture::Texture(ITexture& interface_ref)
-    : Texture(std::dynamic_pointer_cast<ITexture>(interface_ref.GetPtr()))
+    : Texture(interface_ref.GetDerivedPtr<ITexture>())
 {
 }
 

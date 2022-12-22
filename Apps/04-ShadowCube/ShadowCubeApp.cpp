@@ -72,8 +72,9 @@ void ShadowCubeApp::Init()
 {
     UserInterfaceApp::Init();
 
-    rhi::ICommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    const rhi::RenderContextSettings& context_settings = GetRenderContext().GetSettings();
+    rhi::IRenderContext& render_context = GetRenderContext().GetInterface();
+    rhi::ICommandQueue& render_cmd_queue = render_context.GetRenderCommandKit().GetQueue();
+    const rhi::RenderContextSettings& context_settings = render_context.GetSettings();
     m_view_camera.Resize(context_settings.frame_size);
 
     const gfx::Mesh::VertexLayout mesh_layout(Vertex::layout);
@@ -94,7 +95,7 @@ void ShadowCubeApp::Init()
     const auto mesh_uniforms_data_size  = static_cast<Data::Size>(sizeof(hlslpp::MeshUniforms));
 
     // Create constants buffer for frame rendering
-    m_const_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(GetRenderContext(), constants_data_size);
+    m_const_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(render_context, constants_data_size);
     m_const_buffer_ptr->SetName("Constants Buffer");
     m_const_buffer_ptr->SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } }, // NOSONAR
@@ -102,7 +103,7 @@ void ShadowCubeApp::Init()
     );
 
     // Create sampler for cube and floor textures sampling
-    m_texture_sampler_ptr = rhi::ISampler::Create(GetRenderContext(),
+    m_texture_sampler_ptr = rhi::ISampler::Create(render_context,
         rhi::ISampler::Settings
         {
             rhi::ISampler::Filter  { rhi::ISampler::Filter::MinMag::Linear },
@@ -112,8 +113,8 @@ void ShadowCubeApp::Init()
     m_texture_sampler_ptr->SetName("Texture Sampler");
 
     // Create sampler for shadow-map texture
-    m_shadow_sampler_ptr = rhi::ISampler::Create(GetRenderContext(),
-                                                 rhi::ISampler::Settings
+    m_shadow_sampler_ptr = rhi::ISampler::Create(render_context,
+        rhi::ISampler::Settings
         {
             rhi::ISampler::Filter  { rhi::ISampler::Filter::MinMag::Linear },
             rhi::ISampler::Address { rhi::ISampler::Address::Mode::ClampToEdge }
@@ -129,13 +130,13 @@ void ShadowCubeApp::Init()
 
     // Create final pass rendering state with program
     rhi::IRenderState::Settings final_state_settings;
-    final_state_settings.program_ptr = rhi::IProgram::Create(GetRenderContext(),
+    final_state_settings.program_ptr = rhi::IProgram::Create(render_context,
         rhi::IProgram::Settings
         {
             rhi::IProgram::Shaders
             {
-                rhi::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
-                rhi::IShader::CreatePixel(GetRenderContext(), { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
+                rhi::IShader::CreateVertex(render_context, { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions }),
+                rhi::IShader::CreatePixel(render_context, { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions }),
             },
             rhi::ProgramInputBufferLayouts
             {
@@ -157,18 +158,18 @@ void ShadowCubeApp::Init()
             GetScreenRenderPattern().GetAttachmentFormats()
         }
     );
-    final_state_settings.render_pattern_ptr = GetScreenRenderPatternPtr();
+    final_state_settings.render_pattern_ptr = GetScreenRenderPattern().GetInterface().GetDerivedPtr<rhi::IRenderPattern>();
     final_state_settings.program_ptr->SetName("Textured, Shadows & Lighting");
     final_state_settings.depth.enabled = true;
 
-    m_final_pass.render_state_ptr = rhi::IRenderState::Create(GetRenderContext(), final_state_settings);
+    m_final_pass.render_state_ptr = rhi::IRenderState::Create(render_context, final_state_settings);
     m_final_pass.render_state_ptr->SetName("Final pass render state");
-    m_final_pass.view_state_ptr = GetViewStatePtr();
+    m_final_pass.view_state_ptr = GetViewState().GetInterface().GetPtr();
 
     // ========= Shadow Pass Render & View States =========
 
     // Create shadow-pass render pattern
-    m_shadow_pass_pattern_ptr = rhi::IRenderPattern::Create(GetRenderContext(), {
+    m_shadow_pass_pattern_ptr = rhi::IRenderPattern::Create(render_context, {
         { }, // No color attachments
         rhi::IRenderPattern::DepthAttachment(
             0U, context_settings.depth_stencil_format, 1U,
@@ -184,12 +185,12 @@ void ShadowCubeApp::Init()
     // Create shadow-pass rendering state with program
     const rhi::IShader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
     rhi::IRenderState::Settings          shadow_state_settings;
-    shadow_state_settings.program_ptr = rhi::IProgram::Create(GetRenderContext(),
+    shadow_state_settings.program_ptr = rhi::IProgram::Create(render_context,
         rhi::IProgram::Settings
         {
             rhi::IProgram::Shaders
             {
-                rhi::IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
+                rhi::IShader::CreateVertex(render_context, { Data::ShaderProvider::Get(), vs_main, textured_definitions }),
             },
             final_state_settings.program_ptr->GetSettings().input_buffer_layouts,
             rhi::ProgramArgumentAccessors
@@ -204,7 +205,7 @@ void ShadowCubeApp::Init()
     shadow_state_settings.render_pattern_ptr = m_shadow_pass_pattern_ptr;
     shadow_state_settings.depth.enabled = true;
 
-    m_shadow_pass.render_state_ptr = rhi::IRenderState::Create(GetRenderContext(), shadow_state_settings);
+    m_shadow_pass.render_state_ptr = rhi::IRenderState::Create(render_context, shadow_state_settings);
     m_shadow_pass.render_state_ptr->SetName("Shadow-map render state");
     m_shadow_pass.view_state_ptr = rhi::IViewState::Create({
         { gfx::GetFrameViewport(g_shadow_map_size)    },
@@ -222,17 +223,17 @@ void ShadowCubeApp::Init()
     for(ShadowCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.scene_uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(GetRenderContext(), scene_uniforms_data_size, false, true);
+        frame.scene_uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(render_context, scene_uniforms_data_size, false, true);
         frame.scene_uniforms_buffer_ptr->SetName(IndexedName("Scene Uniforms Buffer", frame.index));
 
         // ========= Shadow Pass Resources =========
 
         // Create uniforms buffer for Cube rendering in Shadow pass
-        frame.shadow_pass.cube.uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.shadow_pass.cube.uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(render_context, mesh_uniforms_data_size, false, true);
         frame.shadow_pass.cube.uniforms_buffer_ptr->SetName(IndexedName("Cube Uniforms Buffer for Shadow Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Shadow pass
-        frame.shadow_pass.floor.uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.shadow_pass.floor.uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(render_context, mesh_uniforms_data_size, false, true);
         frame.shadow_pass.floor.uniforms_buffer_ptr->SetName(IndexedName("Floor Uniforms Buffer for Shadow Pass", frame.index));
 
         // Shadow-pass resource bindings for cube rendering
@@ -248,7 +249,7 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.floor.program_bindings_ptr->SetName(IndexedName("Floor Shadow-Pass Bindings {}", frame.index));
 
         // Create depth texture for shadow map rendering
-        frame.shadow_pass.rt_texture_ptr = rhi::ITexture::Create(GetRenderContext(), shadow_texture_settings);
+        frame.shadow_pass.rt_texture_ptr = rhi::ITexture::Create(render_context, shadow_texture_settings);
         frame.shadow_pass.rt_texture_ptr->SetName(IndexedName("Shadow Map", frame.index));
         
         // Create shadow pass configuration with depth attachment
@@ -258,17 +259,17 @@ void ShadowCubeApp::Init()
         });
         
         // Create render pass and command list for shadow pass rendering
-        frame.shadow_pass.cmd_list_ptr = rhi::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.shadow_pass.render_pass_ptr);
+        frame.shadow_pass.cmd_list_ptr = rhi::IRenderCommandList::Create(render_context.GetRenderCommandKit().GetQueue(), *frame.shadow_pass.render_pass_ptr);
         frame.shadow_pass.cmd_list_ptr->SetName(IndexedName("Shadow-Map Rendering", frame.index));
 
         // ========= Final Pass Resources =========
 
         // Create uniforms buffer for Cube rendering in Final pass
-        frame.final_pass.cube.uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.final_pass.cube.uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(render_context, mesh_uniforms_data_size, false, true);
         frame.final_pass.cube.uniforms_buffer_ptr->SetName(IndexedName("Cube Uniforms Buffer for Final Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Final pass
-        frame.final_pass.floor.uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(GetRenderContext(), mesh_uniforms_data_size, false, true);
+        frame.final_pass.floor.uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(render_context, mesh_uniforms_data_size, false, true);
         frame.final_pass.floor.uniforms_buffer_ptr->SetName(IndexedName("Floor Uniforms Buffer for Final Pass", frame.index));
 
         // Final-pass resource bindings for cube rendering
@@ -291,11 +292,11 @@ void ShadowCubeApp::Init()
         frame.final_pass.floor.program_bindings_ptr->SetName(IndexedName("Floor Final-Pass Bindings {}", frame.index));
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.
-        frame.final_pass.rt_texture_ptr  = frame.screen_texture_ptr;
-        frame.final_pass.render_pass_ptr = frame.screen_pass_ptr;
+        frame.final_pass.rt_texture_ptr  = frame.screen_texture.GetInterface().GetDerivedPtr<rhi::ITexture>();
+        frame.final_pass.render_pass_ptr = frame.screen_pass.GetInterface().GetDerivedPtr<rhi::IRenderPass>();
         
         // Create render pass and command list for final pass rendering
-        frame.final_pass.cmd_list_ptr = rhi::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.final_pass.render_pass_ptr);
+        frame.final_pass.cmd_list_ptr = rhi::IRenderCommandList::Create(render_context.GetRenderCommandKit().GetQueue(), *frame.final_pass.render_pass_ptr);
         frame.final_pass.cmd_list_ptr->SetName(IndexedName("Final Scene Rendering", frame.index));
 
         // Rendering command lists sequence
@@ -317,7 +318,7 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     const bool is_resized = UserInterfaceApp::Resize(frame_size, is_minimized);
 
     for (ShadowCubeFrame& frame : GetFrames())
-        frame.final_pass.rt_texture_ptr = frame.screen_texture_ptr;
+        frame.final_pass.rt_texture_ptr = frame.screen_texture.GetInterface().GetDerivedPtr<rhi::ITexture>();
     
     if (!is_resized)
         return false;
@@ -384,7 +385,7 @@ bool ShadowCubeApp::Render()
 
     // Upload uniform buffers to GPU
     const ShadowCubeFrame& frame            = GetCurrentFrame();
-    rhi::ICommandQueue&    render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    rhi::ICommandQueue&    render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue().GetInterface();
     frame.scene_uniforms_buffer_ptr->SetData(m_scene_uniforms_subresources, render_cmd_queue);
     frame.shadow_pass.floor.uniforms_buffer_ptr->SetData(m_floor_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);
     frame.shadow_pass.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);

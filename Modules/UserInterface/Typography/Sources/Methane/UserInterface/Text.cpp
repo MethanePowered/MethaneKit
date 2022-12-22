@@ -130,7 +130,7 @@ Text::Text(Context& ui_context, rhi::IRenderPattern& render_pattern, Font& font,
             }
         );
         state_settings.program_ptr->SetName("Text Shading");
-        state_settings.render_pattern_ptr                                   = std::dynamic_pointer_cast<rhi::IRenderPattern>(render_pattern.GetPtr());
+        state_settings.render_pattern_ptr                                   = render_pattern.GetDerivedPtr<rhi::IRenderPattern>();
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;

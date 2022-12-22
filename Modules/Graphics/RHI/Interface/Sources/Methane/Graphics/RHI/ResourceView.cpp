@@ -217,7 +217,7 @@ bool ResourceViewId::operator!=(const ResourceViewId& other) const noexcept
 }
 
 ResourceView::ResourceView(IResource& resource, const Settings& settings)
-    : m_resource_ptr(std::dynamic_pointer_cast<IResource>(resource.GetPtr()))
+    : m_resource_ptr(resource.GetDerivedPtr<IResource>())
     , m_settings(settings)
 {
     META_FUNCTION_TASK();

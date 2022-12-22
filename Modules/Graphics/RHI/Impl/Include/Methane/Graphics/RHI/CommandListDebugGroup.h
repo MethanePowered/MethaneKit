@@ -68,3 +68,24 @@ private:
 };
 
 } // namespace Methane::Graphics::Rhi
+
+#ifdef METHANE_COMMAND_DEBUG_GROUPS_ENABLED
+
+#define META_DEBUG_GROUP_VAR(variable, /*const std::string& */group_name) \
+    const Methane::Graphics::Rhi::CommandListDebugGroup variable(group_name)
+
+#define META_DEBUG_GROUP_VAR_PUSH(/*ICommandList& */cmd_list, /*const std::string& */group_name) \
+    { \
+        META_DEBUG_GROUP_VAR(s_local_debug_group, group_name); \
+        (cmd_list).PushDebugGroup(s_local_debug_group); \
+    }
+
+#else
+
+#define META_DEBUG_GROUP_VAR(variable, /*const std::string& */group_name) \
+    nullptr
+
+#define META_DEBUG_GROUP_VAR_PUSH(/*ICommandList& */cmd_list, /*const std::string& */group_name) \
+    META_UNUSED(cmd_list); META_UNUSED(group_name)
+
+#endif

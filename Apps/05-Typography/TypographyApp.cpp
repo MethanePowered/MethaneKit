@@ -215,7 +215,8 @@ void TypographyApp::Init()
     // Create per-frame command lists
     for(TypographyFrame& frame : GetFrames())
     {
-        frame.render_cmd_list_ptr = rhi::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
+        frame.render_cmd_list_ptr = rhi::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue().GetInterface(),
+                                                                    frame.screen_pass.GetInterface());
         frame.render_cmd_list_ptr->SetName(IndexedName("Text Rendering", frame.index));
         frame.execute_cmd_list_set_ptr = rhi::ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
     }
@@ -246,7 +247,7 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const
 void TypographyApp::UpdateFontAtlasBadges()
 {
     const Refs<gui::Font> font_refs = gui::Font::Library::Get().GetFonts();
-    rhi::IRenderContext& context = GetRenderContext();
+    rhi::IRenderContext& context = GetRenderContext().GetInterface();
 
     // Remove obsolete font atlas badges
     for(auto badge_it = m_font_atlas_badges.begin(); badge_it != m_font_atlas_badges.end();)

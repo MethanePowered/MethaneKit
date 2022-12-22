@@ -46,13 +46,13 @@ SkyBox::SkyBox(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern& render
 SkyBox::SkyBox(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern& render_pattern, Rhi::ITexture& cube_map_texture,
                const Settings& settings, const BaseMesh<Vertex>& mesh)
     : m_settings(settings)
-    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<Rhi::ICommandQueue>(render_cmd_queue.GetPtr()))
+    , m_render_cmd_queue_ptr(render_cmd_queue.GetDerivedPtr<Rhi::ICommandQueue>())
     , m_context(render_pattern.GetRenderContext())
     , m_mesh_buffers(render_cmd_queue, mesh, "Sky-Box")
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, Rhi::TextureDimensionType::Cube);
-    m_mesh_buffers.SetTexture(std::dynamic_pointer_cast<Rhi::ITexture>(cube_map_texture.GetPtr()));
+    m_mesh_buffers.SetTexture(cube_map_texture.GetDerivedPtr<Rhi::ITexture>());
 
     Rhi::IRenderState::Settings state_settings;
     state_settings.program_ptr = Rhi::IProgram::Create(m_context,
@@ -81,7 +81,7 @@ SkyBox::SkyBox(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern& render
     );
 
     state_settings.program_ptr->SetName("Sky-box shading");
-    state_settings.render_pattern_ptr   = std::dynamic_pointer_cast<Rhi::IRenderPattern>(render_pattern.GetPtr());
+    state_settings.render_pattern_ptr   = render_pattern.GetDerivedPtr<Rhi::IRenderPattern>();
     state_settings.depth.enabled        = m_settings.render_options.HasAnyBit(Option::DepthEnabled);
     state_settings.depth.write_enabled  = false;
     state_settings.depth.compare        = m_settings.render_options.HasAnyBit(Option::DepthReversed) ? Compare::GreaterEqual : Compare::Less;

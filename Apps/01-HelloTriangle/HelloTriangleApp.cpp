@@ -27,20 +27,21 @@ Tutorial demonstrating colored triangle rendering with Methane graphics API
 
 using namespace Methane;
 using namespace Methane::Graphics;
-using namespace Methane::Graphics::Rhi;
 
-struct HelloTriangleFrame final : AppFrame
+struct HelloTriangleFrame final
+    : AppFrame
 {
-    Ptr<IRenderCommandList> render_cmd_list_ptr;
-    Ptr<ICommandListSet>    execute_cmd_list_set_ptr;
+    Rhi::RenderCommandList render_cmd_list;
+    Rhi::CommandListSet    execute_cmd_list_set;
     using AppFrame::AppFrame;
 };
 
 using GraphicsApp = Graphics::App<HelloTriangleFrame>;
-class HelloTriangleApp final : public GraphicsApp // NOSONAR
+class HelloTriangleApp final
+    : public GraphicsApp // NOSONAR
 {
 private:
-    Ptr<IRenderState> m_render_state_ptr;
+    Rhi::RenderState m_render_state;
 
 public:
     HelloTriangleApp()
@@ -62,32 +63,32 @@ public:
     {
         GraphicsApp::Init();
 
-        m_render_state_ptr = IRenderState::Create(GetRenderContext(),
-            IRenderState::Settings
+        m_render_state.Init(GetRenderContext(),
+            Rhi::RenderState::Settings
             {
-                IProgram::Create(GetRenderContext(),
-                    IProgram::Settings
+                Rhi::Program(GetRenderContext(),
+                    Rhi::Program::Settings
                     {
-                        IProgram::Shaders
+                        Rhi::Program::ShaderSet
                         {
-                            IShader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } }),
-                            IShader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } }),
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } } },
+                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } } },
                         },
-                        ProgramInputBufferLayouts{ },
+                        Rhi::ProgramInputBufferLayouts{ },
                         Rhi::ProgramArgumentAccessors{ },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
-                GetScreenRenderPatternPtr()
+                GetScreenRenderPattern()
             }
         );
-        m_render_state_ptr->SetName("Triangle Render State");
+        m_render_state.SetName("Triangle Render State");
 
         for (HelloTriangleFrame& frame : GetFrames())
         {
-            frame.render_cmd_list_ptr = IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-            frame.render_cmd_list_ptr->SetName(IndexedName("Render Triangle", frame.index));
-            frame.execute_cmd_list_set_ptr = ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
+            frame.render_cmd_list.Init(GetRenderContext().GetRenderCommandKit().GetQueue(), frame.screen_pass);
+            frame.render_cmd_list.SetName(IndexedName("Render Triangle", frame.index));
+            frame.execute_cmd_list_set.Init({ frame.render_cmd_list.GetInterface() }, frame.index);
         }
 
         GraphicsApp::CompleteInitialization();
@@ -99,12 +100,12 @@ public:
             return false;
 
         const HelloTriangleFrame& frame = GetCurrentFrame();
-        frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr);
-        frame.render_cmd_list_ptr->SetViewState(GetViewState());
-        frame.render_cmd_list_ptr->Draw(RenderPrimitive::Triangle, 3);
-        frame.render_cmd_list_ptr->Commit();
+        frame.render_cmd_list.ResetWithState(m_render_state);
+        frame.render_cmd_list.SetViewState(GetViewState());
+        frame.render_cmd_list.Draw(Rhi::RenderPrimitive::Triangle, 3);
+        frame.render_cmd_list.Commit();
 
-        GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
+        GetRenderContext().GetRenderCommandKit().GetQueue().Execute(frame.execute_cmd_list_set);
         GetRenderContext().Present();
 
         return true;
@@ -112,7 +113,7 @@ public:
 
     void OnContextReleased(Rhi::IContext& context) override
     {
-        m_render_state_ptr.reset();
+        m_render_state.Release();
 
         GraphicsApp::OnContextReleased(context);
     }

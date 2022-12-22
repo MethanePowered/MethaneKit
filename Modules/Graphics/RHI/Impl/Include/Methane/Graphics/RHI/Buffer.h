@@ -127,7 +127,7 @@ public:
     [[nodiscard]] Data::Size     GetCount() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] const Buffers& GetRefs() const noexcept;
     [[nodiscard]] std::string    GetNames() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] Buffer&        operator[](Data::Index index);
+    [[nodiscard]] const Buffer&  operator[](Data::Index index) const;
 
 private:
     class Impl;

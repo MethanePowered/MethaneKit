@@ -58,7 +58,7 @@ CommandKit::CommandKit(const Ptr<ICommandKit>& interface_ptr)
 }
 
 CommandKit::CommandKit(ICommandKit& interface_ref)
-    : CommandKit(std::dynamic_pointer_cast<ICommandKit>(interface_ref.GetPtr()))
+    : CommandKit(interface_ref.GetDerivedPtr<ICommandKit>())
 {
 }
 

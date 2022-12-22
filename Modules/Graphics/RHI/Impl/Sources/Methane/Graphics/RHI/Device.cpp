@@ -71,13 +71,13 @@ Device::Device(UniquePtr<Impl>&& impl_ptr)
 {
 }
 
-Device::Device(const Ptr <IDevice>& interface_ptr)
+Device::Device(const Ptr<IDevice>& interface_ptr)
     : Device(std::make_unique<Impl>(interface_ptr))
 {
 }
 
 Device::Device(IDevice& interface_ref)
-    : Device(std::dynamic_pointer_cast<IDevice>(interface_ref.GetPtr()))
+    : Device(interface_ref.GetDerivedPtr<IDevice>())
 {
 }
 

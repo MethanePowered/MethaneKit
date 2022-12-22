@@ -33,7 +33,7 @@ namespace Methane::Graphics::Base
 {
 
 RenderPattern::RenderPattern(RenderContext& render_context, const Settings& settings)
-    : m_render_context_ptr(std::dynamic_pointer_cast<RenderContext>(render_context.GetPtr()))
+    : m_render_context_ptr(render_context.GetDerivedPtr<RenderContext>())
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
@@ -81,7 +81,7 @@ AttachmentFormats RenderPattern::GetAttachmentFormats() const noexcept
 }
 
 RenderPass::RenderPass(RenderPattern& render_pattern, const Settings& settings, bool update_attachment_states)
-    : m_pattern_base_ptr(std::dynamic_pointer_cast<RenderPattern>(render_pattern.GetPtr()))
+    : m_pattern_base_ptr(render_pattern.GetDerivedPtr<RenderPattern>())
     , m_settings(settings)
     , m_update_attachment_states(update_attachment_states)
 {
