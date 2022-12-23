@@ -96,6 +96,11 @@ IViewState& ViewState::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
+Ptr<IViewState> ViewState::GetInterfacePtr() const META_PIMPL_NOEXCEPT
+{
+    return GetPublicInterfacePtr(m_impl_ptr);
+}
+
 const ViewState::Settings& ViewState::GetSettings() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetSettings();

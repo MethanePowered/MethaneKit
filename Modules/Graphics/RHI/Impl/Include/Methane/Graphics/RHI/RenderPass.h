@@ -57,6 +57,7 @@ public:
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IRenderPattern& GetInterface() const META_PIMPL_NOEXCEPT;
+    Ptr<IRenderPattern> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
     bool SetName(std::string_view name) const;
@@ -103,6 +104,7 @@ public:
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IRenderPass& GetInterface() const META_PIMPL_NOEXCEPT;
+    Ptr<IRenderPass> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
     bool SetName(std::string_view name) const;

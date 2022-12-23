@@ -48,6 +48,7 @@ public:
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IFence& GetInterface() const META_PIMPL_NOEXCEPT;
+    Ptr<IFence> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
     bool SetName(std::string_view name) const;

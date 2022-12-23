@@ -100,6 +100,11 @@ ICommandKit& CommandKit::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
+Ptr<ICommandKit> CommandKit::GetInterfacePtr() const META_PIMPL_NOEXCEPT
+{
+    return GetPublicInterfacePtr(m_impl_ptr);
+}
+
 bool CommandKit::SetName(std::string_view name) const
 {
     return GetPrivateImpl(m_impl_ptr).SetName(name);

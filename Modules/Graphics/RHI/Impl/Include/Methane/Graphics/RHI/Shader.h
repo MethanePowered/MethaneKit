@@ -53,6 +53,7 @@ public:
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IShader& GetInterface() const META_PIMPL_NOEXCEPT;
+    Ptr<IShader> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IShader interface methods
     [[nodiscard]] Type            GetType() const META_PIMPL_NOEXCEPT;

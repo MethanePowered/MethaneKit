@@ -158,13 +158,13 @@ void ShadowCubeApp::Init()
             GetScreenRenderPattern().GetAttachmentFormats()
         }
     );
-    final_state_settings.render_pattern_ptr = GetScreenRenderPattern().GetInterface().GetDerivedPtr<rhi::IRenderPattern>();
+    final_state_settings.render_pattern_ptr = GetScreenRenderPattern().GetInterfacePtr();
     final_state_settings.program_ptr->SetName("Textured, Shadows & Lighting");
     final_state_settings.depth.enabled = true;
 
     m_final_pass.render_state_ptr = rhi::IRenderState::Create(render_context, final_state_settings);
     m_final_pass.render_state_ptr->SetName("Final pass render state");
-    m_final_pass.view_state_ptr = GetViewState().GetInterface().GetPtr();
+    m_final_pass.view_state_ptr = GetViewState().GetInterfacePtr();
 
     // ========= Shadow Pass Render & View States =========
 
@@ -292,8 +292,8 @@ void ShadowCubeApp::Init()
         frame.final_pass.floor.program_bindings_ptr->SetName(IndexedName("Floor Final-Pass Bindings {}", frame.index));
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.
-        frame.final_pass.rt_texture_ptr  = frame.screen_texture.GetInterface().GetDerivedPtr<rhi::ITexture>();
-        frame.final_pass.render_pass_ptr = frame.screen_pass.GetInterface().GetDerivedPtr<rhi::IRenderPass>();
+        frame.final_pass.rt_texture_ptr  = frame.screen_texture.GetInterfacePtr();
+        frame.final_pass.render_pass_ptr = frame.screen_pass.GetInterfacePtr();
         
         // Create render pass and command list for final pass rendering
         frame.final_pass.cmd_list_ptr = rhi::IRenderCommandList::Create(render_context.GetRenderCommandKit().GetQueue(), *frame.final_pass.render_pass_ptr);
@@ -318,7 +318,7 @@ bool ShadowCubeApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
     const bool is_resized = UserInterfaceApp::Resize(frame_size, is_minimized);
 
     for (ShadowCubeFrame& frame : GetFrames())
-        frame.final_pass.rt_texture_ptr = frame.screen_texture.GetInterface().GetDerivedPtr<rhi::ITexture>();
+        frame.final_pass.rt_texture_ptr = frame.screen_texture.GetInterfacePtr();
     
     if (!is_resized)
         return false;

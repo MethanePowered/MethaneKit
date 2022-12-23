@@ -108,6 +108,11 @@ ITransferCommandList& TransferCommandList::GetInterface() const META_PIMPL_NOEXC
     return GetPublicInterface(m_impl_ptr);
 }
 
+Ptr<ITransferCommandList> TransferCommandList::GetInterfacePtr() const META_PIMPL_NOEXCEPT
+{
+    return GetPublicInterfacePtr(m_impl_ptr);
+}
+
 bool TransferCommandList::SetName(std::string_view name) const
 {
     return GetPrivateImpl(m_impl_ptr).SetName(name);

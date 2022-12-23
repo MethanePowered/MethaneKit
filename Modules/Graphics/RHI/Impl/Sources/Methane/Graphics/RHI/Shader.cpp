@@ -96,6 +96,11 @@ IShader& Shader::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
+Ptr<IShader> Shader::GetInterfacePtr() const META_PIMPL_NOEXCEPT
+{
+    return GetPublicInterfacePtr(m_impl_ptr);
+}
+
 ShaderType Shader::GetType() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).GetType();

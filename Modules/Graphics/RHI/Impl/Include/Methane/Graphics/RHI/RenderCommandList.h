@@ -63,6 +63,7 @@ public:
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IRenderCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
+    Ptr<IRenderCommandList> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
     bool SetName(std::string_view name) const;

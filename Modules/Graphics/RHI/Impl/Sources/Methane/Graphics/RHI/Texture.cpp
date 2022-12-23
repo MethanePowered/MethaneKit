@@ -130,6 +130,11 @@ ITexture& Texture::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
+Ptr<ITexture> Texture::GetInterfacePtr() const META_PIMPL_NOEXCEPT
+{
+    return GetPublicInterfacePtr(m_impl_ptr);
+}
+
 bool Texture::SetName(std::string_view name) const
 {
     return GetPrivateImpl(m_impl_ptr).SetName(name);
@@ -147,7 +152,7 @@ bool Texture::SetState(State state) const
 
 bool Texture::SetState(State state, Barriers& out_barriers) const
 {
-    Ptr<IResourceBarriers> out_barriers_ptr = out_barriers.GetInterface().GetPtr();
+    Ptr<IResourceBarriers> out_barriers_ptr = out_barriers.GetInterfacePtr();
     const bool state_changed = GetPrivateImpl(m_impl_ptr).SetState(state, out_barriers_ptr);
     if (!out_barriers.IsInitialized() && out_barriers_ptr)
     {
@@ -163,7 +168,7 @@ bool Texture::SetOwnerQueueFamily(uint32_t family_index) const
 
 bool Texture::SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers) const
 {
-    Ptr<IResourceBarriers> out_barriers_ptr = out_barriers.GetInterface().GetPtr();
+    Ptr<IResourceBarriers> out_barriers_ptr = out_barriers.GetInterfacePtr();
     const bool             state_changed    = GetPrivateImpl(m_impl_ptr).SetOwnerQueueFamily(family_index, out_barriers_ptr);
     if (!out_barriers.IsInitialized() && out_barriers_ptr)
     {

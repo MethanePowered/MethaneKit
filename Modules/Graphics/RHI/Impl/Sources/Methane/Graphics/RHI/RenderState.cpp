@@ -56,8 +56,8 @@ static IRenderState::Settings ConvertRenderStateSettings(const RenderState::Sett
 {
     return IRenderState::Settings
     {
-        settings.program.GetInterface().GetDerivedPtr<IProgram>(),
-        settings.render_pattern.GetInterface().GetDerivedPtr<IRenderPattern>(),
+        settings.program.GetInterfacePtr(),
+        settings.render_pattern.GetInterfacePtr(),
         settings.rasterizer,
         settings.depth,
         settings.stencil,
@@ -116,6 +116,11 @@ bool RenderState::IsInitialized() const META_PIMPL_NOEXCEPT
 IRenderState& RenderState::GetInterface() const META_PIMPL_NOEXCEPT
 {
     return GetPublicInterface(m_impl_ptr);
+}
+
+Ptr<IRenderState> RenderState::GetInterfacePtr() const META_PIMPL_NOEXCEPT
+{
+    return GetPublicInterfacePtr(m_impl_ptr);
 }
 
 bool RenderState::SetName(std::string_view name) const

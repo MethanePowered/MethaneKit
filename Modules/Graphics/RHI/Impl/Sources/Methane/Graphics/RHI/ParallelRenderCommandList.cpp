@@ -113,6 +113,11 @@ IParallelRenderCommandList& ParallelRenderCommandList::GetInterface() const META
     return GetPublicInterface(m_impl_ptr);
 }
 
+Ptr<IParallelRenderCommandList> ParallelRenderCommandList::GetInterfacePtr() const META_PIMPL_NOEXCEPT
+{
+    return GetPublicInterfacePtr(m_impl_ptr);
+}
+
 bool ParallelRenderCommandList::SetName(std::string_view name) const
 {
     return GetPrivateImpl(m_impl_ptr).SetName(name);

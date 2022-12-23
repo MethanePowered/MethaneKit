@@ -65,6 +65,7 @@ public:
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IProgram& GetInterface() const META_PIMPL_NOEXCEPT;
+    Ptr<IProgram> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
     bool SetName(std::string_view name) const;

@@ -46,6 +46,7 @@ public:
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IViewState& GetInterface() const META_PIMPL_NOEXCEPT;
+    Ptr<IViewState> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IViewState interface methods
     [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;

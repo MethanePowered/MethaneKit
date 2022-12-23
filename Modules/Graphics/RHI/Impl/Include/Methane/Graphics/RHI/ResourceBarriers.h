@@ -59,9 +59,9 @@ public:
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IResourceBarriers& GetInterface() const META_PIMPL_NOEXCEPT;
+    Ptr<IResourceBarriers> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IResourceBarriers interface methods
-
     [[nodiscard]] bool  IsEmpty() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] Set   GetSet() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] const Map& GetMap() const META_PIMPL_NOEXCEPT;

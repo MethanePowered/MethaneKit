@@ -115,7 +115,7 @@ void CubeMapArrayApp::Init()
         }
     );
     render_state_settings.program_ptr->SetName("Render Pipeline State");
-    render_state_settings.render_pattern_ptr = GetScreenRenderPattern().GetInterface().GetDerivedPtr<rhi::IRenderPattern>();
+    render_state_settings.render_pattern_ptr = GetScreenRenderPattern().GetInterfacePtr();
     render_state_settings.depth.enabled = true;
     render_state_settings.depth.compare = gfx::Compare::GreaterEqual; // Reversed depth rendering
     m_render_state_ptr = rhi::IRenderState::Create(render_context, render_state_settings);

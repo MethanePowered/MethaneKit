@@ -54,8 +54,9 @@ public:
     PrivateImplType&       Get() META_PIMPL_NOEXCEPT       { return *m_impl_ptr; }
     const PrivateImplType& Get() const META_PIMPL_NOEXCEPT { return *m_impl_ptr; }
 
-    const Ptr<PrivateImplType>& GetPtr() const META_PIMPL_NOEXCEPT { return m_impl_ptr; }
-    PublicInterfaceType&  GetInterface() const META_PIMPL_NOEXCEPT { return m_interface; }
+    const Ptr<PrivateImplType>& GetPtr() const META_PIMPL_NOEXCEPT  { return m_impl_ptr; }
+    Ptr<PublicInterfaceType>    GetIPtr() const META_PIMPL_NOEXCEPT { return m_impl_ptr; }
+    PublicInterfaceType&  GetInterface() const META_PIMPL_NOEXCEPT  { return m_interface; }
 
 private:
     // Hold reference to public interface type along with shared pointer to private implementation,
@@ -80,6 +81,12 @@ typename ImplWrapperType::InterfaceType& GetPublicInterface(const UniquePtr<Impl
     META_CHECK_ARG_NOT_NULL_DESCR(impl_ptr, "{} PIMPL is not initialized", typeid(typename ImplWrapperType::InterfaceType).name());
 #endif
     return impl_ptr->GetInterface();
+}
+
+template<typename ImplWrapperType, typename IPtrType = Ptr<typename ImplWrapperType::InterfaceType>>
+IPtrType GetPublicInterfacePtr(const UniquePtr<ImplWrapperType>& impl_ptr) noexcept
+{
+    return impl_ptr ? impl_ptr->GetIPtr() : IPtrType{};
 }
 
 } // namespace Methane::Graphics::Rhi

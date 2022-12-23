@@ -107,6 +107,11 @@ IRenderPattern& RenderPattern::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
+Ptr<IRenderPattern> RenderPattern::GetInterfacePtr() const META_PIMPL_NOEXCEPT
+{
+    return GetPublicInterfacePtr(m_impl_ptr);
+}
+
 bool RenderPattern::SetName(std::string_view name) const
 {
     return GetPrivateImpl(m_impl_ptr).SetName(name);
@@ -189,6 +194,11 @@ bool RenderPass::IsInitialized() const META_PIMPL_NOEXCEPT
 IRenderPass& RenderPass::GetInterface() const META_PIMPL_NOEXCEPT
 {
     return GetPublicInterface(m_impl_ptr);
+}
+
+Ptr<IRenderPass> RenderPass::GetInterfacePtr() const META_PIMPL_NOEXCEPT
+{
+    return GetPublicInterfacePtr(m_impl_ptr);
 }
 
 bool RenderPass::SetName(std::string_view name) const

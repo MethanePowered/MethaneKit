@@ -68,6 +68,7 @@ public:
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IBuffer& GetInterface() const META_PIMPL_NOEXCEPT;
+    Ptr<IBuffer> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
     bool SetName(std::string_view name) const;
@@ -121,6 +122,7 @@ public:
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;
     IBufferSet& GetInterface() const META_PIMPL_NOEXCEPT;
+    Ptr<IBufferSet> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IBufferSet interface methods
     [[nodiscard]] BufferType     GetType() const META_PIMPL_NOEXCEPT;

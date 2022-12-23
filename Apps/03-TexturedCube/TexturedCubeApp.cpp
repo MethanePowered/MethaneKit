@@ -131,7 +131,7 @@ void TexturedCubeApp::Init()
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }
             ),
-            GetScreenRenderPattern().GetInterface().GetDerivedPtr<rhi::IRenderPattern>()
+            GetScreenRenderPattern().GetInterfacePtr()
         }
     );
     m_render_state_ptr->GetSettings().program_ptr->SetName("Textured Phong Lighting");

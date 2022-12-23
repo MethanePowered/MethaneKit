@@ -47,6 +47,7 @@ public:
     Device(IDevice& interface_ref);
 
     IDevice& GetInterface() const META_PIMPL_NOEXCEPT;
+    Ptr<IDevice> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
     bool SetName(std::string_view name) const;

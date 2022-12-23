@@ -111,6 +111,11 @@ IResourceBarriers& ResourceBarriers::GetInterface() const META_PIMPL_NOEXCEPT
     return GetPublicInterface(m_impl_ptr);
 }
 
+Ptr<IResourceBarriers> ResourceBarriers::GetInterfacePtr() const META_PIMPL_NOEXCEPT
+{
+    return GetPublicInterfacePtr(m_impl_ptr);
+}
+
 bool ResourceBarriers::IsEmpty() const META_PIMPL_NOEXCEPT
 {
     return GetPrivateImpl(m_impl_ptr).IsEmpty();
