@@ -41,10 +41,10 @@ namespace rhi = Methane::Graphics::Rhi;
 
 struct TexturedCubeFrame final : Graphics::AppFrame
 {
-    Ptr<rhi::IBuffer>           uniforms_buffer_ptr;
-    Ptr<rhi::IProgramBindings>   program_bindings_ptr;
-    Ptr<rhi::IRenderCommandList> render_cmd_list_ptr;
-    Ptr<rhi::ICommandListSet>    execute_cmd_list_set_ptr;
+    rhi::Buffer            uniforms_buffer;
+    rhi::ProgramBindings   program_bindings;
+    rhi::RenderCommandList render_cmd_list;
+    rhi::CommandListSet    execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -77,14 +77,14 @@ private:
         0.04F,                     // - light_ambient_factor
         30.F                       // - light_specular_factor
     };
-    hlslpp::Uniforms       m_shader_uniforms { };
-    gfx::Camera            m_camera;
-    Ptr<rhi::IRenderState> m_render_state_ptr;
-    Ptr<rhi::IBufferSet>   m_vertex_buffer_set_ptr;
-    Ptr<rhi::IBuffer>      m_index_buffer_ptr;
-    Ptr<rhi::IBuffer>      m_const_buffer_ptr;
-    Ptr<rhi::ITexture>     m_cube_texture_ptr;
-    Ptr<rhi::ISampler>     m_texture_sampler_ptr;
+    hlslpp::Uniforms m_shader_uniforms { };
+    gfx::Camera      m_camera;
+    rhi::RenderState m_render_state;
+    rhi::BufferSet   m_vertex_buffer_set;
+    rhi::Buffer      m_index_buffer;
+    rhi::Buffer      m_const_buffer;
+    rhi::Texture     m_cube_texture;
+    rhi::Sampler     m_texture_sampler;
 
     const rhi::IResource::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
