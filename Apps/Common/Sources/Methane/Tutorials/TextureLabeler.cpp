@@ -23,11 +23,11 @@ Renders text labels to the faces of cube-map texture array
 
 #include <Methane/Tutorials/TextureLabeler.h>
 #include <Methane/Graphics/RHI/IDevice.h>
-#include <Methane/Graphics/RHI/IRenderCommandList.h>
+#include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/ITexture.h>
 #include <Methane/Graphics/RHI/IRenderPass.h>
 #include <Methane/Graphics/RHI/ICommandListSet.h>
-#include <Methane/Graphics/RHI/ICommandListDebugGroup.h>
+#include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/ICommandQueue.h>
 #include <Methane/Graphics/ScreenQuad.h>
 #include <Methane/UserInterface/Context.h>
@@ -189,15 +189,15 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
 
 void TextureLabeler::Render()
 {
-    META_DEBUG_GROUP_CREATE_VAR(s_debug_group_ptr, "Texture Faces Rendering");
+    META_DEBUG_GROUP_VAR(s_debug_group, "Texture Faces Rendering");
     for (const Slice& slice : m_slices)
     {
         META_CHECK_ARG_NOT_NULL(slice.bg_quad_ptr);
         META_CHECK_ARG_NOT_NULL(slice.label_text_ptr);
         META_CHECK_ARG_NOT_NULL(slice.render_cmd_list_ptr);
 
-        slice.bg_quad_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
-        slice.label_text_ptr->Draw(*slice.render_cmd_list_ptr, s_debug_group_ptr.get());
+        slice.bg_quad_ptr->Draw(*slice.render_cmd_list_ptr, &s_debug_group);
+        slice.label_text_ptr->Draw(*slice.render_cmd_list_ptr, &s_debug_group.GetInterface());
         slice.render_cmd_list_ptr->Commit();
     }
 

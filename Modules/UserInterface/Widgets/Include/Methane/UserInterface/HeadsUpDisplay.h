@@ -39,7 +39,8 @@ class Font;
 
 namespace pin = Methane::Platform::Input;
 
-class HeadsUpDisplay final : public Panel
+class HeadsUpDisplay final
+    : public Panel
 {
 public:
     struct Settings
@@ -77,7 +78,7 @@ public:
     void SetUpdateInterval(double update_interval_sec);
 
     void Update(const FrameSize& render_attachment_size);
-    void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* debug_group_ptr = nullptr) const override;
+    void Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr = nullptr) const override;
 
 private:
     enum class TextBlock : size_t

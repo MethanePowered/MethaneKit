@@ -143,4 +143,9 @@ void RenderState::Reset(const Settings& settings) const
     return GetPrivateImpl(m_impl_ptr).Reset(ConvertRenderStateSettings(settings));
 }
 
+void RenderState::Reset(const IRenderState::Settings& settings) const
+{
+    return GetPrivateImpl(m_impl_ptr).Reset(settings);
+}
+
 } // namespace Methane::Graphics::Rhi

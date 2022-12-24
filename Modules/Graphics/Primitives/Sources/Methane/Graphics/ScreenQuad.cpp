@@ -23,19 +23,7 @@ Screen Quad rendering primitive.
 
 #include <Methane/Graphics/ScreenQuad.h>
 
-#include <Methane/Graphics/RHI/IRenderContext.h>
-#include <Methane/Graphics/RHI/ICommandQueue.h>
-#include <Methane/Graphics/RHI/ICommandList.h>
-#include <Methane/Graphics/RHI/ITexture.h>
-#include <Methane/Graphics/RHI/IBuffer.h>
-#include <Methane/Graphics/RHI/IRenderState.h>
-#include <Methane/Graphics/RHI/IProgram.h>
-#include <Methane/Graphics/RHI/IProgramBindings.h>
-#include <Methane/Graphics/RHI/ISampler.h>
 #include <Methane/Graphics/QuadMesh.hpp>
-#include <Methane/Graphics/RHI/IRenderPass.h>
-#include <Methane/Graphics/RHI/ICommandKit.h>
-#include <Methane/Graphics/RHI/IRenderCommandList.h>
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
@@ -76,24 +64,25 @@ static std::string GetQuadName(const ScreenQuad::Settings& settings, const Rhi::
     return quad_name_ss.str();
 }
 
-ScreenQuad::ScreenQuad(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern& render_pattern, const Settings& settings)
-    : ScreenQuad(render_cmd_queue, render_pattern, nullptr, settings)
+ScreenQuad::ScreenQuad(const Rhi::CommandQueue& render_cmd_queue, const Rhi::RenderPattern& render_pattern, const Settings& settings)
+    : ScreenQuad(render_cmd_queue, render_pattern, Rhi::Texture(), settings)
 {
 }
 
-ScreenQuad::ScreenQuad(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern& render_pattern, const Ptr<Rhi::ITexture>& texture_ptr, const Settings& settings)
+ScreenQuad::ScreenQuad(const Rhi::CommandQueue& render_cmd_queue, const Rhi::RenderPattern& render_pattern,
+                       const Rhi::Texture& texture, const Settings& settings)
     : m_settings(settings)
-    , m_render_cmd_queue_ptr(render_cmd_queue.GetDerivedPtr<Rhi::ICommandQueue>())
-    , m_render_pattern_ptr(render_pattern.GetDerivedPtr<Rhi::IRenderPattern>())
-    , m_texture_ptr(texture_ptr)
+    , m_render_cmd_queue(render_cmd_queue)
+    , m_render_pattern(render_pattern)
+    , m_texture(texture)
 {
     META_FUNCTION_TASK();
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(m_texture_ptr, "screen-quad texture can not be empty when quad texturing is enabled");
+        META_CHECK_ARG_TRUE_DESCR(m_texture.IsInitialized(), "screen-quad texture can not be empty when quad texturing is enabled");
     }
 
-    Rhi::IRenderContext& render_context = render_pattern.GetRenderContext();
+    const Rhi::RenderContext render_context = render_pattern.GetRenderContext();
     static const QuadMesh<ScreenQuadVertex> quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
     const Rhi::IShader::MacroDefinitions ps_macro_definitions       = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
     Rhi::ProgramArgumentAccessors program_argument_accessors = {
@@ -108,31 +97,37 @@ ScreenQuad::ScreenQuad(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern
 
     const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
     const std::string state_name = fmt::format("{} Render State", quad_name);
-    m_render_state_ptr = std::dynamic_pointer_cast<Rhi::IRenderState>(render_context.GetObjectRegistry().GetGraphicsObject(state_name));
-    if (!m_render_state_ptr)
+    
+    if (const Ptr<Rhi::IRenderState> render_state_ptr = std::dynamic_pointer_cast<Rhi::IRenderState>(render_context.GetObjectRegistry().GetGraphicsObject(state_name));
+        render_state_ptr)
     {
-        Rhi::IRenderState::Settings state_settings;
-        state_settings.program_ptr = Rhi::IProgram::Create(render_context,
-            Rhi::IProgram::Settings
-            {
-                Rhi::IProgram::Shaders
+        m_render_state = Rhi::RenderState(render_state_ptr);
+    }
+    else
+    {
+        Rhi::RenderState::Settings state_settings
+        {
+            Rhi::Program(render_context,
+                Rhi::Program::Settings
                 {
-                    Rhi::IShader::CreateVertex(render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } }),
-                    Rhi::IShader::CreatePixel(render_context, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions }),
-                },
-                Rhi::ProgramInputBufferLayouts
-                {
-                    Rhi::IProgram::InputBufferLayout
+                    Rhi::Program::ShaderSet
                     {
-                        Rhi::IProgram::InputBufferLayout::ArgumentSemantics { quad_mesh.GetVertexLayout().GetSemantics() }
-                    }
-                },
-                program_argument_accessors,
-                render_pattern.GetAttachmentFormats(),
-            }
-        );
-        state_settings.program_ptr->SetName(fmt::format("{} Shading", quad_name));
-        state_settings.render_pattern_ptr                                   = render_pattern.GetDerivedPtr<Rhi::IRenderPattern>();
+                        { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } } },
+                        { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions } },
+                    },
+                    Rhi::ProgramInputBufferLayouts
+                    {
+                        Rhi::IProgram::InputBufferLayout
+                        {
+                            Rhi::IProgram::InputBufferLayout::ArgumentSemantics { quad_mesh.GetVertexLayout().GetSemantics() }
+                        }
+                    },
+                    program_argument_accessors,
+                    render_pattern.GetAttachmentFormats(),
+                }),
+            render_pattern
+        };
+        state_settings.program.SetName(fmt::format("{} Shading", quad_name));
         state_settings.depth.enabled                                        = false;
         state_settings.depth.write_enabled                                  = false;
         state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -142,13 +137,13 @@ ScreenQuad::ScreenQuad(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern
         state_settings.blending.render_targets[0].source_alpha_blend_factor = Rhi::IRenderState::Blending::Factor::Zero;
         state_settings.blending.render_targets[0].dest_alpha_blend_factor   = Rhi::IRenderState::Blending::Factor::Zero;
 
-        m_render_state_ptr = Rhi::IRenderState::Create(render_context, state_settings);
-        m_render_state_ptr->SetName(state_name);
+        m_render_state.Init(render_context, state_settings);
+        m_render_state.SetName(state_name);
 
-        render_context.GetObjectRegistry().AddGraphicsObject(*m_render_state_ptr);
+        render_context.GetObjectRegistry().AddGraphicsObject(m_render_state.GetInterface());
     }
 
-    m_view_state_ptr = Rhi::IViewState::Create({
+    m_view_state.Init({
         { GetFrameViewport(m_settings.screen_rect)    },
         { GetFrameScissorRect(m_settings.screen_rect) }
     });
@@ -156,69 +151,83 @@ ScreenQuad::ScreenQuad(Rhi::ICommandQueue& render_cmd_queue, Rhi::IRenderPattern
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
         static const std::string s_sampler_name = "Screen-Quad Sampler";
-        m_texture_sampler_ptr = std::dynamic_pointer_cast<Rhi::ISampler>(render_context.GetObjectRegistry().GetGraphicsObject(s_sampler_name));
-        if (!m_texture_sampler_ptr)
+        if (Ptr<Rhi::ISampler> texture_sampler_ptr = std::dynamic_pointer_cast<Rhi::ISampler>(render_context.GetObjectRegistry().GetGraphicsObject(s_sampler_name));
+            texture_sampler_ptr)
         {
-            m_texture_sampler_ptr = Rhi::ISampler::Create(render_context, {
+            m_texture_sampler = Rhi::Sampler(texture_sampler_ptr);
+        }
+        else
+        {
+            m_texture_sampler.Init(render_context, {
                 Rhi::ISampler::Filter(Rhi::ISampler::Filter::MinMag::Linear),
                 Rhi::ISampler::Address(Rhi::ISampler::Address::Mode::ClampToZero),
             });
-            m_texture_sampler_ptr->SetName(s_sampler_name);
-            render_context.GetObjectRegistry().AddGraphicsObject(*m_texture_sampler_ptr);
+            m_texture_sampler.SetName(s_sampler_name);
+            render_context.GetObjectRegistry().AddGraphicsObject(m_texture_sampler.GetInterface());
         }
 
-        m_texture_ptr->SetName(fmt::format("{} Screen-Quad Texture", m_settings.name));
+        m_texture.SetName(fmt::format("{} Screen-Quad Texture", m_settings.name));
     }
 
     static const std::string s_vertex_buffer_name = "Screen-Quad Vertex Buffer";
-    Ptr<Rhi::IBuffer> vertex_buffer_ptr = std::dynamic_pointer_cast<Rhi::IBuffer>(render_context.GetObjectRegistry().GetGraphicsObject(s_vertex_buffer_name));
-    if (!vertex_buffer_ptr)
+    
+    if (const Ptr<Rhi::IBuffer> vertex_buffer_ptr = std::dynamic_pointer_cast<Rhi::IBuffer>(render_context.GetObjectRegistry().GetGraphicsObject(s_vertex_buffer_name));
+        vertex_buffer_ptr)
     {
-        vertex_buffer_ptr = Rhi::IBuffer::CreateVertexBuffer(render_context, quad_mesh.GetVertexDataSize(), quad_mesh.GetVertexSize());
-        vertex_buffer_ptr->SetName(s_vertex_buffer_name);
-        vertex_buffer_ptr->SetData({
+        Rhi::Buffer vertex_buffer(vertex_buffer_ptr);
+        m_vertex_buffer_set.Init(Rhi::BufferType::Vertex, { vertex_buffer });
+    }
+    else
+    {
+        Rhi::Buffer vertex_buffer;
+        vertex_buffer.InitVertexBuffer(render_context.GetInterface(), quad_mesh.GetVertexDataSize(), quad_mesh.GetVertexSize());
+        vertex_buffer.SetName(s_vertex_buffer_name);
+        vertex_buffer.SetData({
                 {
                     reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetVertices().data()), // NOSONAR
                     quad_mesh.GetVertexDataSize()
                 }
             },
-            *m_render_cmd_queue_ptr);
-        render_context.GetObjectRegistry().AddGraphicsObject(*vertex_buffer_ptr);
+            m_render_cmd_queue);
+        render_context.GetObjectRegistry().AddGraphicsObject(vertex_buffer.GetInterface());
+        m_vertex_buffer_set.Init(Rhi::BufferType::Vertex, { vertex_buffer });
     }
 
-    m_vertex_buffer_set_ptr = Rhi::IBufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
-
     static const std::string s_index_buffer_name = "Screen-Quad Index Buffer";
-    m_index_buffer_ptr = std::dynamic_pointer_cast<Rhi::IBuffer>(render_context.GetObjectRegistry().GetGraphicsObject(s_index_buffer_name));
-    if (!m_index_buffer_ptr)
+    if (const Ptr<Rhi::IBuffer> index_buffer_ptr = std::dynamic_pointer_cast<Rhi::IBuffer>(render_context.GetObjectRegistry().GetGraphicsObject(s_index_buffer_name));
+        index_buffer_ptr)
     {
-        m_index_buffer_ptr = Rhi::IBuffer::CreateIndexBuffer(render_context, quad_mesh.GetIndexDataSize(), GetIndexFormat(quad_mesh.GetIndex(0)));
-        m_index_buffer_ptr->SetName(s_index_buffer_name);
-        m_index_buffer_ptr->SetData({
+        m_index_buffer = Rhi::Buffer(index_buffer_ptr);
+    }
+    else
+    {
+        m_index_buffer.InitIndexBuffer(render_context.GetInterface(), quad_mesh.GetIndexDataSize(), GetIndexFormat(quad_mesh.GetIndex(0)));
+        m_index_buffer.SetName(s_index_buffer_name);
+        m_index_buffer.SetData({
                 {
                     reinterpret_cast<Data::ConstRawPtr>(quad_mesh.GetIndices().data()), // NOSONAR
                     quad_mesh.GetIndexDataSize()
                 }
             },
-            *m_render_cmd_queue_ptr);
-        render_context.GetObjectRegistry().AddGraphicsObject(*m_index_buffer_ptr);
+            m_render_cmd_queue);
+        render_context.GetObjectRegistry().AddGraphicsObject(m_index_buffer.GetInterface());
     }
 
-    m_const_buffer_ptr = Rhi::IBuffer::CreateConstantBuffer(render_context, static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants)));
-    m_const_buffer_ptr->SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
+    m_const_buffer.InitConstantBuffer(render_context.GetInterface(), static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants)));
+    m_const_buffer.SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
-    Rhi::IProgramBindings::ResourceViewsByArgument program_binding_resource_views = {
-        { { Rhi::ShaderType::Pixel, "g_constants" }, { { *m_const_buffer_ptr    } } }
+    Rhi::ProgramBindings::ResourceViewsByArgument program_binding_resource_views = {
+        { { Rhi::ShaderType::Pixel, "g_constants" }, { { m_const_buffer.GetInterface() } } }
     };
 
     if (m_settings.texture_mode != TextureMode::Disabled)
     {
-        program_binding_resource_views.try_emplace(Rhi::IProgram::Argument(Rhi::ShaderType::Pixel, "g_texture"), Rhi::IResource::Views{ { *m_texture_ptr         } });
-        program_binding_resource_views.try_emplace(Rhi::IProgram::Argument(Rhi::ShaderType::Pixel, "g_sampler"), Rhi::IResource::Views{ { *m_texture_sampler_ptr } });
+        program_binding_resource_views.try_emplace(Rhi::Program::Argument(Rhi::ShaderType::Pixel, "g_texture"), Rhi::ResourceViews{ { m_texture.GetInterface()         } });
+        program_binding_resource_views.try_emplace(Rhi::Program::Argument(Rhi::ShaderType::Pixel, "g_sampler"), Rhi::ResourceViews{ { m_texture_sampler.GetInterface() } });
     }
 
-    m_const_program_bindings_ptr = Rhi::IProgramBindings::Create(*m_render_state_ptr->GetSettings().program_ptr, program_binding_resource_views);
-    m_const_program_bindings_ptr->SetName(fmt::format("{} Screen-Quad Constant Bindings", m_settings.name));
+    m_const_program_bindings.Init(*m_render_state.GetSettings().program_ptr, program_binding_resource_views);
+    m_const_program_bindings.SetName(fmt::format("{} Screen-Quad Constant Bindings", m_settings.name));
 
     UpdateConstantsBuffer();
 }
@@ -242,8 +251,8 @@ void ScreenQuad::SetScreenRect(const FrameRect& screen_rect, const FrameSize& re
 
     m_settings.screen_rect = screen_rect;
 
-    m_view_state_ptr->SetViewports({ GetFrameViewport(screen_rect) });
-    m_view_state_ptr->SetScissorRects({ GetFrameScissorRect(screen_rect, render_attachment_size) });
+    m_view_state.SetViewports({ GetFrameViewport(screen_rect) });
+    m_view_state.SetScissorRects({ GetFrameScissorRect(screen_rect, render_attachment_size) });
 }
 
 void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
@@ -254,46 +263,33 @@ void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
 
     m_settings.alpha_blending_enabled = alpha_blending_enabled;
 
-    Rhi::IRenderState::Settings state_settings = m_render_state_ptr->GetSettings();
+    Rhi::IRenderState::Settings state_settings = m_render_state.GetSettings();
     state_settings.blending.render_targets[0].blend_enabled = alpha_blending_enabled;
-    m_render_state_ptr->Reset(state_settings);
+    m_render_state.Reset(state_settings);
 }
 
-void ScreenQuad::SetTexture(Ptr<Rhi::ITexture> texture_ptr)
+void ScreenQuad::SetTexture(Rhi::Texture texture)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.texture_mode, TextureMode::Disabled, "can not set texture of screen quad with Disabled texture mode");
-    META_CHECK_ARG_NOT_NULL_DESCR(texture_ptr, "can not set null texture to screen quad");
+    META_CHECK_ARG_TRUE_DESCR(texture.IsInitialized(), "can not set null texture to screen quad");
 
-    if (m_texture_ptr.get() == texture_ptr.get())
+    if (std::addressof(m_texture.GetInterface()) == std::addressof(texture.GetInterface()))
         return;
 
-    m_texture_ptr = texture_ptr;
-    m_const_program_bindings_ptr->Get({ Rhi::ShaderType::Pixel, "g_texture" }).SetResourceViews({ { *m_texture_ptr } });
+    m_texture = texture;
+    m_const_program_bindings.Get({ Rhi::ShaderType::Pixel, "g_texture" }).SetResourceViews({ { m_texture.GetInterface() } });
 }
 
-const Rhi::ITexture& ScreenQuad::GetTexture() const
+void ScreenQuad::Draw(const Rhi::RenderCommandList& cmd_list, const Rhi::CommandListDebugGroup* debug_group_ptr) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_texture_ptr);
-    return *m_texture_ptr;
-}
-
-void ScreenQuad::Draw(Rhi::IRenderCommandList& cmd_list, Rhi::ICommandListDebugGroup* debug_group_ptr) const
-{
-    META_FUNCTION_TASK();
-    cmd_list.ResetWithStateOnce(*m_render_state_ptr, debug_group_ptr);
-    cmd_list.SetViewState(*m_view_state_ptr);
-    cmd_list.SetProgramBindings(*m_const_program_bindings_ptr);
-    cmd_list.SetVertexBuffers(*m_vertex_buffer_set_ptr);
-    cmd_list.SetIndexBuffer(*m_index_buffer_ptr);
+    cmd_list.ResetWithStateOnce(m_render_state, debug_group_ptr);
+    cmd_list.SetViewState(m_view_state);
+    cmd_list.SetProgramBindings(m_const_program_bindings);
+    cmd_list.SetVertexBuffers(m_vertex_buffer_set);
+    cmd_list.SetIndexBuffer(m_index_buffer);
     cmd_list.DrawIndexed(Rhi::RenderPrimitive::Triangle);
-}
-
-const Rhi::IRenderContext& ScreenQuad::GetRenderContext() const noexcept
-{
-    META_FUNCTION_TASK();
-    return GetRenderPattern().GetRenderContext();
 }
 
 void ScreenQuad::UpdateConstantsBuffer() const
@@ -303,7 +299,7 @@ void ScreenQuad::UpdateConstantsBuffer() const
         m_settings.blend_color.AsVector()
     };
 
-    m_const_buffer_ptr->SetData(
+    m_const_buffer.SetData(
         Rhi::IResource::SubResources
         {
             {
@@ -311,7 +307,7 @@ void ScreenQuad::UpdateConstantsBuffer() const
                 static_cast<Data::Size>(sizeof(constants))
             }
         },
-        *m_render_cmd_queue_ptr
+        m_render_cmd_queue
     );
 }
 

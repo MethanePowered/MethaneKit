@@ -26,8 +26,8 @@ Base implementation of the Methane user interface application.
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Panel.h>
 #include <Methane/UserInterface/Badge.h>
-#include <Methane/Graphics/RHI/ICommandList.h>
-#include <Methane/Graphics/RHI/ICommandListDebugGroup.h>
+#include <Methane/Graphics/RHI/RenderCommandList.h>
+#include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
@@ -161,20 +161,20 @@ bool AppBase::UpdateUI() const
     return true;
 }
 
-void AppBase::RenderOverlay(rhi::IRenderCommandList& cmd_list) const
+void AppBase::RenderOverlay(const rhi::RenderCommandList& cmd_list) const
 {
     META_FUNCTION_TASK();
-    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Overlay Rendering");
+    META_DEBUG_GROUP_VAR(s_debug_group, "Overlay Rendering");
 
     if (m_hud_ptr && m_app_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
-        m_hud_ptr->Draw(cmd_list, s_debug_group.get());
+        m_hud_ptr->Draw(cmd_list, &s_debug_group);
 
-    m_help_columns.first.Draw(cmd_list, s_debug_group.get());
-    m_help_columns.second.Draw(cmd_list, s_debug_group.get());
-    m_parameters.Draw(cmd_list, s_debug_group.get());
+    m_help_columns.first.Draw(cmd_list, &s_debug_group);
+    m_help_columns.second.Draw(cmd_list, &s_debug_group);
+    m_parameters.Draw(cmd_list.GetInterface(), &s_debug_group);
 
     if (m_logo_badge_ptr)
-        m_logo_badge_ptr->Draw(cmd_list, s_debug_group.get());
+        m_logo_badge_ptr->Draw(cmd_list, &s_debug_group);
 }
 
 void AppBase::TextItem::Update(const FrameSize& frame_size) const
@@ -186,7 +186,7 @@ void AppBase::TextItem::Update(const FrameSize& frame_size) const
     }
 }
 
-void AppBase::TextItem::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* debug_group_ptr) const
+void AppBase::TextItem::Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr) const
 {
     META_FUNCTION_TASK();
     if (panel_ptr)
@@ -195,7 +195,7 @@ void AppBase::TextItem::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandLis
     }
     if (text_ptr)
     {
-        text_ptr->Draw(cmd_list, debug_group_ptr);
+        text_ptr->Draw(cmd_list.GetInterface(), debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
     }
 }
 

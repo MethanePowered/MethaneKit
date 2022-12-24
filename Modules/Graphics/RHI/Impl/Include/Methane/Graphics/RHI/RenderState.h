@@ -77,6 +77,7 @@ public:
     // IRenderState interface methods
     [[nodiscard]] const RenderStateSettings& GetSettings() const META_PIMPL_NOEXCEPT;
     void Reset(const Settings& settings) const;
+    void Reset(const IRenderState::Settings& settings) const;
 
 private:
     class Impl;

@@ -64,7 +64,7 @@ protected:
     void ReleaseUI();
     bool ResizeUI(const gfx::FrameSize& frame_size, bool is_minimized);
     bool UpdateUI() const;
-    void RenderOverlay(rhi::IRenderCommandList& cmd_list) const;
+    void RenderOverlay(const rhi::RenderCommandList& cmd_list) const;
 
     bool SetHeadsUpDisplayUIMode(HeadsUpDisplayMode heads_up_display_mode);
     bool SetHelpText(std::string_view help_str);
@@ -93,7 +93,7 @@ private:
         Ptr<Text>   text_ptr;
 
         void Update(const FrameSize& frame_size) const;
-        void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* debug_group_ptr) const;
+        void Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr) const;
         void Reset(bool forget_text_string);
     };
 

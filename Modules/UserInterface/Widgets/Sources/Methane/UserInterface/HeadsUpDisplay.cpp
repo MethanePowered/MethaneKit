@@ -38,6 +38,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Graphics/RHI/IFpsCounter.h>
 #include <Methane/Graphics/RHI/IDevice.h>
+#include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
@@ -297,14 +298,14 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     m_update_timer.Reset();
 }
 
-void HeadsUpDisplay::Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* debug_group_ptr) const
+void HeadsUpDisplay::Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr) const
 {
     META_FUNCTION_TASK();
     Panel::Draw(cmd_list, debug_group_ptr);
 
     for(const Ptr<Text>& text_ptr : m_text_blocks)
     {
-        text_ptr->Draw(cmd_list, debug_group_ptr);
+        text_ptr->Draw(cmd_list.GetInterface(), debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
     }
 }
 
