@@ -41,10 +41,10 @@ namespace rhi = Methane::Graphics::Rhi;
 
 struct CubeMapArrayFrame final : Graphics::AppFrame
 {
-    gfx::MeshBufferBindings      cube;
-    gfx::MeshBufferBindings      sky_box;
-    Ptr<rhi::IRenderCommandList> render_cmd_list_ptr;
-    Ptr<rhi::ICommandListSet>    execute_cmd_list_set_ptr;
+    gfx::MeshBufferBindings cube;
+    gfx::MeshBufferBindings sky_box;
+    rhi::RenderCommandList  render_cmd_list;
+    rhi::CommandListSet     execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -72,10 +72,10 @@ private:
 
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<hlslpp::Uniforms>;
 
-    hlslpp::float4x4         m_model_matrix;
-    gfx::Camera              m_camera;
-    Ptr<rhi::IRenderState>   m_render_state_ptr;
-    Ptr<rhi::ISampler>       m_texture_sampler_ptr;
+    hlslpp::float4x4  m_model_matrix;
+    gfx::Camera       m_camera;
+    rhi::RenderState  m_render_state;
+    rhi::Sampler      m_texture_sampler;
     Ptr<TexturedMeshBuffers> m_cube_buffers_ptr;
     Ptr<gfx::SkyBox>         m_sky_box_ptr;
 };
