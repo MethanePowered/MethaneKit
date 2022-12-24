@@ -63,9 +63,9 @@ public:
 private:
     class Impl;
 
-    CommandListDebugGroup(UniquePtr<Impl>&& impl_ptr);
+    CommandListDebugGroup(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

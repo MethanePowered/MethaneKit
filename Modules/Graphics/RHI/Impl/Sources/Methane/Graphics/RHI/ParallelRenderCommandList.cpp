@@ -67,7 +67,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ParallelRenderCommandList);
 
-ParallelRenderCommandList::ParallelRenderCommandList(UniquePtr<Impl>&& impl_ptr)
+ParallelRenderCommandList::ParallelRenderCommandList(ImplPtr<Impl>&& impl_ptr)
     : Transmitter<Rhi::ICommandListCallback>(impl_ptr->GetInterface())
     , Transmitter<Rhi::IObjectCallback>(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
@@ -100,7 +100,7 @@ void ParallelRenderCommandList::Release()
 {
     Transmitter<Rhi::ICommandListCallback>::Reset();
     Transmitter<Rhi::IObjectCallback>::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool ParallelRenderCommandList::IsInitialized() const META_PIMPL_NOEXCEPT

@@ -46,7 +46,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandKit);
 
-CommandKit::CommandKit(UniquePtr<Impl>&& impl_ptr)
+CommandKit::CommandKit(ImplPtr<Impl>&& impl_ptr)
     : Data::Transmitter<IObjectCallback>(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
 {
@@ -87,7 +87,7 @@ void CommandKit::Init(const RenderContext& context, CommandListType command_list
 void CommandKit::Release()
 {
     Transmitter::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool CommandKit::IsInitialized() const META_PIMPL_NOEXCEPT

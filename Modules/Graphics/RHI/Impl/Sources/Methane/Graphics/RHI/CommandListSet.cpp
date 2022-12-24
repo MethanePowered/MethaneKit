@@ -84,7 +84,7 @@ void CommandListSet::Init(const Refs<ICommandList>& command_list_refs, Opt<Data:
 
 void CommandListSet::Release()
 {
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool CommandListSet::IsInitialized() const META_PIMPL_NOEXCEPT

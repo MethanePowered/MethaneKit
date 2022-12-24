@@ -61,7 +61,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ProgramBindings);
 
-ProgramBindings::ProgramBindings(UniquePtr<Impl>&& impl_ptr)
+ProgramBindings::ProgramBindings(ImplPtr<Impl>&& impl_ptr)
     : Transmitter(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
 {
@@ -104,7 +104,7 @@ void ProgramBindings::InitCopy(const ProgramBindings& other_program_bindings, co
 void ProgramBindings::Release()
 {
     Transmitter::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool ProgramBindings::IsInitialized() const META_PIMPL_NOEXCEPT

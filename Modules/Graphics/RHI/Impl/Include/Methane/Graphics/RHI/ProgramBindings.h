@@ -76,9 +76,9 @@ public:
 private:
     class Impl;
 
-    ProgramBindings(UniquePtr<Impl>&& impl_ptr);
+    ProgramBindings(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

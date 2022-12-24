@@ -83,7 +83,7 @@ void ViewState::Init(const Settings& settings)
 
 void ViewState::Release()
 {
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool ViewState::IsInitialized() const META_PIMPL_NOEXCEPT

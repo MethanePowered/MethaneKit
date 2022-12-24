@@ -101,9 +101,9 @@ public:
 private:
     class Impl;
 
-    RenderCommandList(UniquePtr<Impl>&& impl_ptr);
+    RenderCommandList(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

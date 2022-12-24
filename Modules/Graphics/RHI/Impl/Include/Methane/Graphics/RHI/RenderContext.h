@@ -98,9 +98,9 @@ public:
 private:
     class Impl;
 
-    RenderContext(UniquePtr<Impl>&& impl_ptr);
+    RenderContext(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

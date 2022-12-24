@@ -100,9 +100,9 @@ public:
 private:
     class Impl;
 
-    Texture(UniquePtr<Impl>&& impl_ptr);
+    Texture(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

@@ -66,7 +66,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Buffer);
 
-Buffer::Buffer(UniquePtr<Impl>&& impl_ptr)
+Buffer::Buffer(ImplPtr<Impl>&& impl_ptr)
     : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
     , Transmitter<IResourceCallback>(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
@@ -115,7 +115,7 @@ void Buffer::Release()
 {
     Transmitter<IObjectCallback>::Reset();
     Transmitter<IResourceCallback>::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool Buffer::IsInitialized() const META_PIMPL_NOEXCEPT
@@ -264,7 +264,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(BufferSet);
 
-BufferSet::BufferSet(UniquePtr<Impl>&& impl_ptr)
+BufferSet::BufferSet(ImplPtr<Impl>&& impl_ptr)
     : Transmitter(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
 {
@@ -294,7 +294,7 @@ void BufferSet::Init(BufferType buffers_type, const Refs<Buffer>& buffer_refs)
 void BufferSet::Release()
 {
     Transmitter::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool BufferSet::IsInitialized() const META_PIMPL_NOEXCEPT

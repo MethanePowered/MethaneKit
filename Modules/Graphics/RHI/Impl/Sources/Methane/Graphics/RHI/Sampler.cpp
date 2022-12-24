@@ -61,7 +61,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Sampler);
 
-Sampler::Sampler(UniquePtr<Impl>&& impl_ptr)
+Sampler::Sampler(ImplPtr<Impl>&& impl_ptr)
     : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
     , Transmitter<IResourceCallback>(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
@@ -94,7 +94,7 @@ void Sampler::Release()
 {
     Transmitter<IObjectCallback>::Reset();
     Transmitter<IResourceCallback>::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool Sampler::IsInitialized() const META_PIMPL_NOEXCEPT

@@ -94,9 +94,9 @@ public:
 private:
     class Impl;
 
-    ParallelRenderCommandList(UniquePtr<Impl>&& impl_ptr);
+    ParallelRenderCommandList(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
     mutable std::vector<RenderCommandList> m_parallel_command_lists;
 };
 

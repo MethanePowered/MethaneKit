@@ -48,13 +48,13 @@ public:
 
     struct Settings
     {
-        const Program&       program;
-        const RenderPattern& render_pattern;
-        RasterizerSettings   rasterizer;
-        DepthSettings        depth;
-        StencilSettings      stencil;
-        BlendingSettings     blending;
-        Color4F              blending_color;
+        Program            program;
+        RenderPattern      render_pattern;
+        RasterizerSettings rasterizer;
+        DepthSettings      depth;
+        StencilSettings    stencil;
+        BlendingSettings   blending;
+        Color4F            blending_color;
     };
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderState);
@@ -81,9 +81,9 @@ public:
 private:
     class Impl;
 
-    RenderState(UniquePtr<Impl>&& impl_ptr);
+    RenderState(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

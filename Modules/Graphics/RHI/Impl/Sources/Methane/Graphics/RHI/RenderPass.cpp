@@ -64,7 +64,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderPattern);
 
-RenderPattern::RenderPattern(UniquePtr<Impl>&& impl_ptr)
+RenderPattern::RenderPattern(ImplPtr<Impl>&& impl_ptr)
     : Transmitter(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
 {
@@ -94,7 +94,7 @@ void RenderPattern::Init(const RenderContext& render_context, const Settings& se
 void RenderPattern::Release()
 {
     Transmitter::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool RenderPattern::IsInitialized() const META_PIMPL_NOEXCEPT
@@ -150,7 +150,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderPass);
 
-RenderPass::RenderPass(UniquePtr<Impl>&& impl_ptr)
+RenderPass::RenderPass(ImplPtr<Impl>&& impl_ptr)
     : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
     , Transmitter<IRenderPassCallback>(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
@@ -183,7 +183,7 @@ void RenderPass::Release()
 {
     Transmitter<IObjectCallback>::Reset();
     Transmitter<IRenderPassCallback>::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool RenderPass::IsInitialized() const META_PIMPL_NOEXCEPT

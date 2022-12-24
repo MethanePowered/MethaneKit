@@ -61,7 +61,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Fence);
 
-Fence::Fence(UniquePtr<Impl>&& impl_ptr)
+Fence::Fence(ImplPtr<Impl>&& impl_ptr)
     : Data::Transmitter<IObjectCallback>(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
 {
@@ -91,7 +91,7 @@ void Fence::Init(const CommandQueue& command_queue)
 void Fence::Release()
 {
     Transmitter::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool Fence::IsInitialized() const META_PIMPL_NOEXCEPT

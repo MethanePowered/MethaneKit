@@ -62,9 +62,9 @@ public:
 private:
     class Impl;
 
-    Device(UniquePtr<Impl>&& impl_ptr);
+    Device(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 using Devices = std::vector<Device>;
@@ -96,7 +96,7 @@ private:
 
     class Impl;
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
     mutable Devices m_devices;
 };
 

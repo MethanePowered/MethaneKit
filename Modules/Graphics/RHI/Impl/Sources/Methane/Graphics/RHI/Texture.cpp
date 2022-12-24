@@ -63,7 +63,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Texture);
 
-Texture::Texture(UniquePtr<Impl>&& impl_ptr)
+Texture::Texture(ImplPtr<Impl>&& impl_ptr)
     : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
     , Transmitter<IResourceCallback>(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
@@ -117,7 +117,7 @@ void Texture::Release()
 {
     Transmitter<IObjectCallback>::Reset();
     Transmitter<IResourceCallback>::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool Texture::IsInitialized() const META_PIMPL_NOEXCEPT

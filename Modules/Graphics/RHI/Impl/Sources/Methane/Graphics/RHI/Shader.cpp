@@ -83,7 +83,7 @@ void Shader::Init(Type type, const RenderContext& context, const Settings& setti
 
 void Shader::Release()
 {
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool Shader::IsInitialized() const META_PIMPL_NOEXCEPT

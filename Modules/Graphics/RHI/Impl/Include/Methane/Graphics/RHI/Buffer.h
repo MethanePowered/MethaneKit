@@ -100,9 +100,9 @@ public:
 private:
     class Impl;
 
-    Buffer(UniquePtr<Impl>&& impl_ptr);
+    Buffer(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 class BufferSet
@@ -134,9 +134,9 @@ public:
 private:
     class Impl;
 
-    BufferSet(UniquePtr<Impl>&& impl_ptr);
+    BufferSet(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
     mutable Buffers m_buffers;
 };
 

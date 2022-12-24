@@ -86,7 +86,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Program);
 
-Program::Program(UniquePtr<Impl>&& impl_ptr)
+Program::Program(ImplPtr<Impl>&& impl_ptr)
     : Transmitter(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
 {
@@ -116,7 +116,7 @@ void Program::Init(const RenderContext& context, const Settings& settings)
 void Program::Release()
 {
     Transmitter::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool Program::IsInitialized() const META_PIMPL_NOEXCEPT

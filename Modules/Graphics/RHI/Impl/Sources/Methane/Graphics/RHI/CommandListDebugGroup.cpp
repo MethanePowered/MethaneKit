@@ -62,7 +62,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandListDebugGroup);
 
-CommandListDebugGroup::CommandListDebugGroup(UniquePtr<Impl>&& impl_ptr)
+CommandListDebugGroup::CommandListDebugGroup(ImplPtr<Impl>&& impl_ptr)
     : Data::Transmitter<IObjectCallback>(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
 {
@@ -92,7 +92,7 @@ void CommandListDebugGroup::Init(std::string_view name)
 void CommandListDebugGroup::Release()
 {
     Transmitter::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool CommandListDebugGroup::IsInitialized() const META_PIMPL_NOEXCEPT

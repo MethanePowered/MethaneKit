@@ -98,7 +98,7 @@ void ResourceBarriers::Init(const Refs<IResource>& resources,
 
 void ResourceBarriers::Release()
 {
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool ResourceBarriers::IsInitialized() const META_PIMPL_NOEXCEPT

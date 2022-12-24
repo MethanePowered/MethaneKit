@@ -80,9 +80,9 @@ public:
 private:
     class Impl;
 
-    Program(UniquePtr<Impl>&& impl_ptr);
+    Program(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

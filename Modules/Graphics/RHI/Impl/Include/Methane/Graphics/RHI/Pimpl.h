@@ -23,20 +23,34 @@ Methane PIMPL common header.
 
 #pragma once
 
+#include <memory>
+
+namespace Methane::Graphics
+{
+
+// PIMPL implementation is hold using this smart-pointer type
+// shared_ptr is used instead of unique_ptr to enable implicit copying of PIMPL types
+template<typename ImplType>
+using ImplPtr = std::shared_ptr<ImplType>;
+
+} // namespace Methane::Graphics
+
+#ifdef _DEBUG
 // Comment this define to disable checks of pointer to implementation in all PIMPL methods
 #define PIMPL_NULL_CHECK_ENABLED
+#endif
 
 #ifdef PIMPL_NULL_CHECK_ENABLED
 #define META_PIMPL_NOEXCEPT
 #else
-#define META_PIMPL_NOEXCEPT META_PIMPL_NOEXCEPT
+#define META_PIMPL_NOEXCEPT noexcept
 #endif
 
 #define META_PIMPL_METHODS_DECLARE(Class) \
     ~Class(); \
-    Class(const Class& other) = delete; \
+    Class(const Class& other); \
     Class(Class&& other) noexcept; \
-    Class& operator=(const Class& other) = delete; \
+    Class& operator=(const Class& other); \
     Class& operator=(Class&& other) noexcept
 
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Class) \
@@ -45,7 +59,9 @@ Methane PIMPL common header.
 
 #define META_PIMPL_METHODS_IMPLEMENT(Class) \
     Class::~Class() = default; \
+    Class::Class(const Class& other) = default; \
     Class::Class(Class&& other) noexcept = default; \
+    Class& Class::operator=(const Class& other) = default; \
     Class& Class::operator=(Class&& other) noexcept = default
 
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Class) \

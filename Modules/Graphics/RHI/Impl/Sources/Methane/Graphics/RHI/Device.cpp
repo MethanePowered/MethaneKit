@@ -65,7 +65,7 @@ public:
 
 META_PIMPL_METHODS_IMPLEMENT(Device);
 
-Device::Device(UniquePtr<Impl>&& impl_ptr)
+Device::Device(ImplPtr<Impl>&& impl_ptr)
     : Transmitter(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
 {

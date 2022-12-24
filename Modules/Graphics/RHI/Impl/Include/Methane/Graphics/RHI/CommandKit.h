@@ -73,9 +73,9 @@ public:
 private:
     class Impl;
 
-    CommandKit(UniquePtr<Impl>&& impl_ptr);
+    CommandKit(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

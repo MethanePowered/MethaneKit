@@ -66,7 +66,7 @@ private:
 };
 
 template<typename ImplWrapperType>
-typename ImplWrapperType::ImplType& GetPrivateImpl(const UniquePtr<ImplWrapperType>& impl_ptr) META_PIMPL_NOEXCEPT
+typename ImplWrapperType::ImplType& GetPrivateImpl(const ImplPtr<ImplWrapperType>& impl_ptr) META_PIMPL_NOEXCEPT
 {
 #ifdef PIMPL_NULL_CHECK_ENABLED
     META_CHECK_ARG_NOT_NULL_DESCR(impl_ptr, "{} PIMPL is not initialized", typeid(typename ImplWrapperType::InterfaceType).name());
@@ -75,7 +75,7 @@ typename ImplWrapperType::ImplType& GetPrivateImpl(const UniquePtr<ImplWrapperTy
 }
 
 template<typename ImplWrapperType>
-typename ImplWrapperType::InterfaceType& GetPublicInterface(const UniquePtr<ImplWrapperType>& impl_ptr) META_PIMPL_NOEXCEPT
+typename ImplWrapperType::InterfaceType& GetPublicInterface(const ImplPtr<ImplWrapperType>& impl_ptr) META_PIMPL_NOEXCEPT
 {
 #ifdef PIMPL_NULL_CHECK_ENABLED
     META_CHECK_ARG_NOT_NULL_DESCR(impl_ptr, "{} PIMPL is not initialized", typeid(typename ImplWrapperType::InterfaceType).name());
@@ -84,7 +84,7 @@ typename ImplWrapperType::InterfaceType& GetPublicInterface(const UniquePtr<Impl
 }
 
 template<typename ImplWrapperType, typename IPtrType = Ptr<typename ImplWrapperType::InterfaceType>>
-IPtrType GetPublicInterfacePtr(const UniquePtr<ImplWrapperType>& impl_ptr) noexcept
+IPtrType GetPublicInterfacePtr(const ImplPtr<ImplWrapperType>& impl_ptr) noexcept
 {
     return impl_ptr ? impl_ptr->GetIPtr() : IPtrType{};
 }

@@ -72,9 +72,9 @@ public:
 private:
     class Impl;
 
-    RenderPattern(UniquePtr<Impl>&& impl_ptr);
+    RenderPattern(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 class RenderPass
@@ -119,9 +119,9 @@ public:
 private:
     class Impl;
 
-    RenderPass(UniquePtr<Impl>&& impl_ptr);
+    RenderPass(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

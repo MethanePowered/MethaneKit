@@ -62,7 +62,7 @@ public:
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandQueue);
 
-CommandQueue::CommandQueue(UniquePtr<Impl>&& impl_ptr)
+CommandQueue::CommandQueue(ImplPtr<Impl>&& impl_ptr)
     : Data::Transmitter<IObjectCallback>(impl_ptr->GetInterface())
     , m_impl_ptr(std::move(impl_ptr))
 {
@@ -92,7 +92,7 @@ void CommandQueue::Init(const RenderContext& context, CommandListType command_li
 void CommandQueue::Release()
 {
     Transmitter::Reset();
-    m_impl_ptr.release();
+    m_impl_ptr.reset();
 }
 
 bool CommandQueue::IsInitialized() const META_PIMPL_NOEXCEPT

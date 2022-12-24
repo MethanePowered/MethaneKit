@@ -67,9 +67,9 @@ public:
 private:
     class Impl;
 
-    Sampler(UniquePtr<Impl>&& impl_ptr);
+    Sampler(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

@@ -65,9 +65,9 @@ public:
 private:
     class Impl;
 
-    CommandQueue(UniquePtr<Impl>&& impl_ptr);
+    CommandQueue(ImplPtr<Impl>&& impl_ptr);
 
-    UniquePtr<Impl> m_impl_ptr;
+    ImplPtr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi
