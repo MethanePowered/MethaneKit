@@ -46,21 +46,21 @@ struct ShadowCubeFrame final : gfx::AppFrame
     {
         struct MeshResources
         {
-            Ptr<rhi::IBuffer>          uniforms_buffer_ptr;
-            Ptr<rhi::IProgramBindings> program_bindings_ptr;
+            rhi::Buffer          uniforms_buffer;
+            rhi::ProgramBindings program_bindings;
         };
 
-        MeshResources                cube;
-        MeshResources                floor;
-        Ptr<rhi::ITexture>           rt_texture_ptr;
-        Ptr<rhi::IRenderPass>        render_pass_ptr;
-        Ptr<rhi::IRenderCommandList> cmd_list_ptr;
+        MeshResources          cube;
+        MeshResources          floor;
+        rhi::Texture           rt_texture;
+        rhi::RenderPass        render_pass;
+        rhi::RenderCommandList cmd_list;
     };
 
-    PassResources             shadow_pass;
-    PassResources             final_pass;
-    Ptr<rhi::IBuffer>         scene_uniforms_buffer_ptr;
-    Ptr<rhi::ICommandListSet> execute_cmd_list_set_ptr;
+    PassResources       shadow_pass;
+    PassResources       final_pass;
+    rhi::Buffer         scene_uniforms_buffer;
+    rhi::CommandListSet execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -92,8 +92,8 @@ private:
 
         void SetShadowPassUniforms(hlslpp::MeshUniforms&& uniforms) noexcept { m_shadow_pass_uniforms = std::move(uniforms); }
 
-        [[nodiscard]] const hlslpp::MeshUniforms&        GetShadowPassUniforms() const noexcept               { return m_shadow_pass_uniforms; }
-        [[nodiscard]] const rhi::IResource::SubResources& GetShadowPassUniformsSubresources() const noexcept   { return m_shadow_pass_uniforms_subresources; }
+        [[nodiscard]] const hlslpp::MeshUniforms&        GetShadowPassUniforms() const noexcept              { return m_shadow_pass_uniforms; }
+        [[nodiscard]] const rhi::IResource::SubResources& GetShadowPassUniformsSubresources() const noexcept { return m_shadow_pass_uniforms_subresources; }
 
     private:
         hlslpp::MeshUniforms         m_shadow_pass_uniforms{};
@@ -107,10 +107,10 @@ private:
         RenderPassState(bool is_final_pass, const std::string& command_group_name);
         void Release();
 
-        const bool                             is_final_pass;
-        const Ptr<rhi::ICommandListDebugGroup> debug_group_ptr;
-        Ptr<rhi::IRenderState>                 render_state_ptr;
-        Ptr<rhi::IViewState>                   view_state_ptr;
+        const bool                       is_final_pass;
+        const rhi::CommandListDebugGroup debug_group;
+        rhi::RenderState                 render_state;
+        rhi::ViewState                   view_state;
     };
 
     bool Animate(double elapsed_seconds, double delta_seconds);
@@ -129,12 +129,12 @@ private:
     };
     gfx::Camera              m_view_camera;
     gfx::Camera              m_light_camera;
-    Ptr<rhi::IBuffer>        m_const_buffer_ptr;
-    Ptr<rhi::ISampler>       m_texture_sampler_ptr;
-    Ptr<rhi::ISampler>       m_shadow_sampler_ptr;
+    rhi::Buffer              m_const_buffer;
+    rhi::Sampler             m_texture_sampler;
+    rhi::Sampler             m_shadow_sampler;
     Ptr<TexturedMeshBuffers> m_cube_buffers_ptr;
     Ptr<TexturedMeshBuffers> m_floor_buffers_ptr;
-    Ptr<rhi::IRenderPattern> m_shadow_pass_pattern_ptr;
+    rhi::RenderPattern       m_shadow_pass_pattern;
     RenderPassState          m_shadow_pass { false, "Shadow Render Pass" };
     RenderPassState          m_final_pass  { true,  "Final Render Pass" };
 };
