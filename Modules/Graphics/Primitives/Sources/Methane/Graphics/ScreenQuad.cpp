@@ -274,7 +274,7 @@ void ScreenQuad::SetTexture(Rhi::Texture texture)
     META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.texture_mode, TextureMode::Disabled, "can not set texture of screen quad with Disabled texture mode");
     META_CHECK_ARG_TRUE_DESCR(texture.IsInitialized(), "can not set null texture to screen quad");
 
-    if (std::addressof(m_texture.GetInterface()) == std::addressof(texture.GetInterface()))
+    if (m_texture == texture)
         return;
 
     m_texture = texture;

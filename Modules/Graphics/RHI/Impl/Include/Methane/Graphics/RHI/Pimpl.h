@@ -51,7 +51,9 @@ using ImplPtr = std::shared_ptr<ImplType>;
     Class(const Class& other); \
     Class(Class&& other) noexcept; \
     Class& operator=(const Class& other); \
-    Class& operator=(Class&& other) noexcept
+    Class& operator=(Class&& other) noexcept; \
+    bool operator==(const Class& other) const noexcept; \
+    bool operator!=(const Class& other) const noexcept
 
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Class) \
     Class(); \
@@ -62,7 +64,9 @@ using ImplPtr = std::shared_ptr<ImplType>;
     Class::Class(const Class& other) = default; \
     Class::Class(Class&& other) noexcept = default; \
     Class& Class::operator=(const Class& other) = default; \
-    Class& Class::operator=(Class&& other) noexcept = default
+    Class& Class::operator=(Class&& other) noexcept = default; \
+    bool Class::operator==(const Class& other) const noexcept { return std::addressof(GetInterface()) == std::addressof(other.GetInterface()); } \
+    bool Class::operator!=(const Class& other) const noexcept { return !operator==(other); }
 
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Class) \
     Class::Class() = default; \
