@@ -128,16 +128,16 @@ void SkyBox::Update()
 void SkyBox::Draw(Rhi::IRenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, Rhi::IViewState& view_state)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(buffer_bindings.program_bindings_ptr);
-    META_CHECK_ARG_NOT_NULL(buffer_bindings.uniforms_buffer_ptr);
-    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer_ptr->GetDataSize(), sizeof(Uniforms));
+    META_CHECK_ARG_TRUE(buffer_bindings.program_bindings.IsInitialized());
+    META_CHECK_ARG_TRUE(buffer_bindings.uniforms_buffer.IsInitialized());
+    META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), sizeof(Uniforms));
 
-    buffer_bindings.uniforms_buffer_ptr->SetData(m_mesh_buffers.GetFinalPassUniformsSubresources(), *m_render_cmd_queue_ptr);
+    buffer_bindings.uniforms_buffer.SetData(m_mesh_buffers.GetFinalPassUniformsSubresources(), *m_render_cmd_queue_ptr);
 
     META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Sky-box rendering");
     cmd_list.ResetWithStateOnce(*m_render_state_ptr, s_debug_group.get());
     cmd_list.SetViewState(view_state);
-    m_mesh_buffers.Draw(cmd_list, *buffer_bindings.program_bindings_ptr);
+    m_mesh_buffers.Draw(cmd_list, buffer_bindings.program_bindings);
 }
 
 } // namespace Methane::Graphics

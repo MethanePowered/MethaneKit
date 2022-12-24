@@ -170,24 +170,24 @@ void CubeMapArrayApp::Init()
     for(CubeMapArrayFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering
-        frame.cube.uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(GetRenderContext().GetInterface(), uniforms_data_size, false, true);
-        frame.cube.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
+        frame.cube.uniforms_buffer.InitConstantBuffer(GetRenderContext().GetInterface(), uniforms_data_size, false, true);
+        frame.cube.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
-        frame.cube.program_bindings_ptr = rhi::IProgramBindings::Create(*m_render_state.GetSettings().program_ptr, {
-            { { rhi::ShaderType::All,   "g_uniforms"      }, { { *frame.cube.uniforms_buffer_ptr  } } },
+        frame.cube.program_bindings.Init(*m_render_state.GetSettings().program_ptr, {
+            { { rhi::ShaderType::All,   "g_uniforms"      }, { { frame.cube.uniforms_buffer.GetInterface()  } } },
             { { rhi::ShaderType::Pixel, "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture() } } },
             { { rhi::ShaderType::Pixel, "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
         }, frame.index);
-        frame.cube.program_bindings_ptr->SetName(IndexedName("Cube Bindings", frame.index));
+        frame.cube.program_bindings.SetName(IndexedName("Cube Bindings", frame.index));
 
         // Create uniforms buffer for Sky-Box rendering
-        frame.sky_box.uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(GetRenderContext().GetInterface(), sizeof(gfx::SkyBox::Uniforms), false, true);
-        frame.sky_box.uniforms_buffer_ptr->SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
+        frame.sky_box.uniforms_buffer.InitConstantBuffer(GetRenderContext().GetInterface(), sizeof(gfx::SkyBox::Uniforms), false, true);
+        frame.sky_box.uniforms_buffer.SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering
-        frame.sky_box.program_bindings_ptr = m_sky_box_ptr->CreateProgramBindings(frame.sky_box.uniforms_buffer_ptr, frame.index);
-        frame.sky_box.program_bindings_ptr->SetName(IndexedName("Space Sky-Box Bindings {}", frame.index));
+        frame.sky_box.program_bindings = m_sky_box_ptr->CreateProgramBindings(frame.sky_box.uniforms_buffer.GetInterfacePtr(), frame.index);
+        frame.sky_box.program_bindings.SetName(IndexedName("Space Sky-Box Bindings {}", frame.index));
         
         // Create command list for rendering
         frame.render_cmd_list.Init(render_cmd_queue, frame.screen_pass.GetInterface());
@@ -259,15 +259,15 @@ bool CubeMapArrayApp::Render()
         return false;
 
     // Update uniforms buffer related to current frame
-    const CubeMapArrayFrame& frame       = GetCurrentFrame();
+    const CubeMapArrayFrame& frame = GetCurrentFrame();
     const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.cube.uniforms_buffer_ptr->SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue.GetInterface());
+    frame.cube.uniforms_buffer.SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue.GetInterface());
 
     // 1) Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
     frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
     frame.render_cmd_list.SetViewState(GetViewState().GetInterface());
-    m_cube_buffers_ptr->Draw(frame.render_cmd_list.GetInterface(), *frame.cube.program_bindings_ptr, 0U, CUBE_MAP_ARRAY_SIZE);
+    m_cube_buffers_ptr->Draw(frame.render_cmd_list.GetInterface(), frame.cube.program_bindings, 0U, CUBE_MAP_ARRAY_SIZE);
 
     // 2) Render sky-box after cubes to minimize overdraw
     m_sky_box_ptr->Draw(frame.render_cmd_list.GetInterface(), frame.sky_box, GetViewState().GetInterface());

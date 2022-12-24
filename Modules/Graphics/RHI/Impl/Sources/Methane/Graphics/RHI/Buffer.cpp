@@ -83,30 +83,30 @@ Buffer::Buffer(IBuffer& interface_ref)
 {
 }
 
-void Buffer::InitVertexBuffer(const RenderContext& context, Data::Size size, Data::Size stride, bool is_volatile)
+void Buffer::InitVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
-    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateVertexBuffer(context.GetInterface(), size, stride, is_volatile));
+    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateVertexBuffer(context, size, stride, is_volatile));
     Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
     Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
-void Buffer::InitIndexBuffer(const RenderContext& context, Data::Size size, PixelFormat format, bool is_volatile)
+void Buffer::InitIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
-    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateIndexBuffer(context.GetInterface(), size, format, is_volatile));
+    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateIndexBuffer(context, size, format, is_volatile));
     Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
     Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
-void Buffer::InitConstantBuffer(const RenderContext& context, Data::Size size, bool addressable, bool is_volatile)
+void Buffer::InitConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
-    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateConstantBuffer(context.GetInterface(), size, addressable, is_volatile));
+    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateConstantBuffer(context, size, addressable, is_volatile));
     Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
     Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }
 
-void Buffer::InitReadBackBuffer(const RenderContext& context, Data::Size size)
+void Buffer::InitReadBackBuffer(const IContext& context, Data::Size size)
 {
-    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateReadBackBuffer(context.GetInterface(), size));
+    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateReadBackBuffer(context, size));
     Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
     Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
 }

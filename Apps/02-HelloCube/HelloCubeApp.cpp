@@ -174,7 +174,7 @@ public:
         m_render_state.SetName("Colored Cube Pipeline State");
 
         // Create index buffer for cube mesh
-        m_index_buffer.InitIndexBuffer(GetRenderContext(), m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0)));
+        m_index_buffer.InitIndexBuffer(GetRenderContext().GetInterface(), m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0)));
         m_index_buffer.SetName("Cube Index Buffer");
         m_index_buffer.SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }, // NOSONAR
@@ -184,7 +184,7 @@ public:
 #ifdef UNIFORMS_BUFFER_ENABLED
         // Create constant vertex buffer
         Buffer vertex_buffer;
-        vertex_buffer.InitVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize());
+        vertex_buffer.InitVertexBuffer(GetRenderContext().GetInterface(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize());
         vertex_buffer.SetName("Cube Vertex Buffer");
         vertex_buffer.SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
@@ -200,7 +200,7 @@ public:
         {
 #ifdef UNIFORMS_BUFFER_ENABLED
             // Create uniforms buffer with volatile parameters for frame rendering
-            frame.uniforms_buffer.InitConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
+            frame.uniforms_buffer.InitConstantBuffer(GetRenderContext().GetInterface(), uniforms_data_size, false, true);
             frame.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
             // Configure program resource bindings
@@ -211,7 +211,7 @@ public:
 #else
             // Create vertex buffers for each frame
             Buffer vertex_buffer;
-            vertex_buffer.InitVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true);
+            vertex_buffer.InitVertexBuffer(GetRenderContext().GetInterface(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true);
             vertex_buffer.SetName(IndexedName("Cube Vertex Buffer", frame.index));
             frame.vertex_buffer_set.Init(BufferType::Vertex, { vertex_buffer });
 #endif

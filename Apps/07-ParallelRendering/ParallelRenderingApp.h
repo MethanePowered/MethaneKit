@@ -99,7 +99,8 @@ private:
 
     CubeArrayParameters InitializeCubeArrayParameters() const;
     bool Animate(double elapsed_seconds, double delta_seconds);
-    void RenderCubesRange(const rhi::RenderCommandList& remder_cmd_list, const Ptrs<rhi::IProgramBindings>& program_bindings_per_instance,
+    void RenderCubesRange(const rhi::RenderCommandList& remder_cmd_list,
+                          const std::vector<rhi::ProgramBindings>& program_bindings_per_instance,
                           uint32_t begin_instance_index, const uint32_t end_instance_index) const;
 
     Settings            m_settings;

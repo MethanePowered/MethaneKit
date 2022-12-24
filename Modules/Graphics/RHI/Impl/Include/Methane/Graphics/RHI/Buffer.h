@@ -60,10 +60,10 @@ public:
     Buffer(const Ptr<IBuffer>& interface_ptr);
     Buffer(IBuffer& interface_ref);
 
-    void InitVertexBuffer(const RenderContext& context, Data::Size size, Data::Size stride, bool is_volatile = false);
-    void InitIndexBuffer(const RenderContext& context, Data::Size size, PixelFormat format, bool is_volatile = false);
-    void InitConstantBuffer(const RenderContext& context, Data::Size size, bool addressable = false, bool is_volatile = false);
-    void InitReadBackBuffer(const RenderContext& context, Data::Size size);
+    void InitVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile = false);
+    void InitIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile = false);
+    void InitConstantBuffer(const IContext& context, Data::Size size, bool addressable = false, bool is_volatile = false);
+    void InitReadBackBuffer(const IContext& context, Data::Size size);
     void Release();
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;

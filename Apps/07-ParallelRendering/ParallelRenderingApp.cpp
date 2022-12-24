@@ -192,29 +192,29 @@ void ParallelRenderingApp::Init()
     for(ParallelRenderingFrame& frame : GetFrames())
     {
         // Create buffer for uniforms array related to all cube instances
-        frame.cubes_array.uniforms_buffer_ptr = rhi::IBuffer::CreateConstantBuffer(GetRenderContext().GetInterface(), uniforms_data_size, true, true);
-        frame.cubes_array.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
+        frame.cubes_array.uniforms_buffer.InitConstantBuffer(GetRenderContext().GetInterface(), uniforms_data_size, true, true);
+        frame.cubes_array.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
         frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
         frame.cubes_array.program_bindings_per_instance[0] = rhi::IProgramBindings::Create(render_state_settings.program.GetInterface(), {
-            { { rhi::ShaderType::All,   "g_uniforms"      }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size } } },
+            { { rhi::ShaderType::All,   "g_uniforms"      }, { { frame.cubes_array.uniforms_buffer.GetInterface(), m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size } } },
             { { rhi::ShaderType::Pixel, "g_texture_array" }, { { m_texture_array.GetInterface()   } } },
             { { rhi::ShaderType::Pixel, "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
         }, frame.index);
-        frame.cubes_array.program_bindings_per_instance[0]->SetName(fmt::format("Cube 0 Bindings {}", frame.index));
+        frame.cubes_array.program_bindings_per_instance[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 
         program_bindings_task_flow.for_each_index(1U, cubes_count, 1U,
             [this, &frame, uniform_data_size](const uint32_t cube_index)
             {
-                Ptr<rhi::IProgramBindings> cube_program_bindings_ptr = rhi::IProgramBindings::CreateCopy(*frame.cubes_array.program_bindings_per_instance[0], {
-                        {
-                          { rhi::ShaderType::All, "g_uniforms" },
-                          { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(cube_index), uniform_data_size } }
-                        }
-                    }, frame.index);
-                cube_program_bindings_ptr->SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
-                frame.cubes_array.program_bindings_per_instance[cube_index] = cube_program_bindings_ptr;
+                rhi::ProgramBindings& cube_program_bindings = frame.cubes_array.program_bindings_per_instance[cube_index];
+                cube_program_bindings.InitCopy(frame.cubes_array.program_bindings_per_instance[0], {
+                    {
+                      { rhi::ShaderType::All, "g_uniforms" },
+                      { { frame.cubes_array.uniforms_buffer.GetInterface(), m_cube_array_buffers_ptr->GetUniformsBufferOffset(cube_index), uniform_data_size } }
+                    }
+                }, frame.index);
+                cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
             });
 
         if (m_settings.parallel_rendering_enabled)
@@ -256,7 +256,7 @@ void ParallelRenderingApp::Init()
     m_cube_array_parameters = InitializeCubeArrayParameters();
 
     // Update initial resource states before asteroids drawing without applying barriers on GPU to let automatic state propagation from Common state work
-    m_cube_array_buffers_ptr->CreateBeginningResourceBarriers()->ApplyTransitions();
+    m_cube_array_buffers_ptr->CreateBeginningResourceBarriers().ApplyTransitions();
 
     GetRenderContext().WaitForGpu(rhi::IContext::WaitFor::RenderComplete);
 }
@@ -388,7 +388,7 @@ bool ParallelRenderingApp::Render()
     // Update uniforms buffer related to current frame
     const ParallelRenderingFrame& frame  = GetCurrentFrame();
     const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.cubes_array.uniforms_buffer_ptr->SetData(m_cube_array_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue.GetInterface());
+    frame.cubes_array.uniforms_buffer.SetData(m_cube_array_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue.GetInterface());
 
     // Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     if (m_settings.parallel_rendering_enabled)
@@ -444,7 +444,8 @@ bool ParallelRenderingApp::Render()
     return true;
 }
 
-void ParallelRenderingApp::RenderCubesRange(const rhi::RenderCommandList& render_cmd_list, const Ptrs<rhi::IProgramBindings>& program_bindings_per_instance,
+void ParallelRenderingApp::RenderCubesRange(const rhi::RenderCommandList& render_cmd_list,
+                                            const std::vector<rhi::ProgramBindings>& program_bindings_per_instance,
                                             uint32_t begin_instance_index, const uint32_t end_instance_index) const
 {
     META_FUNCTION_TASK();
@@ -454,9 +455,6 @@ void ParallelRenderingApp::RenderCubesRange(const rhi::RenderCommandList& render
 
     for (uint32_t instance_index = begin_instance_index; instance_index < end_instance_index; ++instance_index)
     {
-        const Ptr<rhi::IProgramBindings>& program_bindings_ptr = program_bindings_per_instance[instance_index];
-        META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
-
         // Constant argument bindings are applied once per command list, mutables are applied always
         // Bound resources are retained by command list during its lifetime, but only for the first binding instance (since all binding instances use the same resource objects)
         rhi::ProgramBindingsApplyBehaviorMask bindings_apply_behavior;
@@ -464,7 +462,7 @@ void ParallelRenderingApp::RenderCubesRange(const rhi::RenderCommandList& render
         if (instance_index == begin_instance_index)
             bindings_apply_behavior.SetBitOn(rhi::ProgramBindingsApplyBehavior::RetainResources);
 
-        render_cmd_list.SetProgramBindings(*program_bindings_ptr, bindings_apply_behavior);
+        render_cmd_list.SetProgramBindings(program_bindings_per_instance[instance_index], bindings_apply_behavior);
         render_cmd_list.DrawIndexed(rhi::RenderPrimitive::Triangle);
     }
 }
