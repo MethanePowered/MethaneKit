@@ -109,6 +109,7 @@ public:
     };
 
     Mesh(Type type, const VertexLayout& vertex_layout);
+    virtual ~Mesh() = default;
 
     [[nodiscard]] Type                GetType() const noexcept               { return m_type; }
     [[nodiscard]] const VertexLayout& GetVertexLayout() const noexcept       { return m_vertex_layout; }
@@ -117,6 +118,11 @@ public:
     [[nodiscard]] Index               GetIndex(Data::Index i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
     [[nodiscard]] Data::Size          GetIndexCount() const noexcept         { return static_cast<Data::Size>(m_indices.size()); }
     [[nodiscard]] Data::Size          GetIndexDataSize() const noexcept      { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
+
+    // Mesh interface methods
+    [[nodiscard]] virtual Data::Size        GetVertexCount() const noexcept = 0;
+    [[nodiscard]] virtual Data::Size        GetVertexDataSize() const noexcept = 0;
+    [[nodiscard]] virtual Data::ConstRawPtr GetVertexData() const noexcept = 0;
 
 protected:
     using HlslPosition   = Position::HlslVectorType;

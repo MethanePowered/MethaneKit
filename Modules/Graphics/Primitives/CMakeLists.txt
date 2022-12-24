@@ -9,6 +9,7 @@ set(SHADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Shaders)
 set(HEADERS
     ${INCLUDE_DIR}/Extensions.h
     ${INCLUDE_DIR}/ImageLoader.h
+    ${INCLUDE_DIR}/MeshBuffersBase.h
     ${INCLUDE_DIR}/MeshBuffers.hpp
     ${INCLUDE_DIR}/SkyBox.h
     ${INCLUDE_DIR}/ScreenQuad.h
@@ -16,6 +17,7 @@ set(HEADERS
 
 set(SOURCES
     ${SOURCES_DIR}/ImageLoader.cpp
+    ${SOURCES_DIR}/MeshBuffersBase.cpp
     ${SOURCES_DIR}/SkyBox.cpp
     ${SOURCES_DIR}/ScreenQuad.cpp
     ${SHADERS_DIR}/ScreenQuadConstants.h

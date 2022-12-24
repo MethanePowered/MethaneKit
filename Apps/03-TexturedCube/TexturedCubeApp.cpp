@@ -25,6 +25,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 
 #include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Graphics/CubeMesh.hpp>
+#include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/TimeAnimation.h>
 
 namespace Methane::Tutorials
