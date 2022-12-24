@@ -123,42 +123,42 @@ std::string_view TransferCommandList::GetName() const META_PIMPL_NOEXCEPT
     return GetPrivateImpl(m_impl_ptr).GetName();
 }
 
-void TransferCommandList::PushDebugGroup(DebugGroup& debug_group)
+void TransferCommandList::PushDebugGroup(DebugGroup& debug_group) const
 {
     GetPrivateImpl(m_impl_ptr).PushDebugGroup(debug_group.GetInterface());
 }
 
-void TransferCommandList::PopDebugGroup()
+void TransferCommandList::PopDebugGroup() const
 {
     GetPrivateImpl(m_impl_ptr).PopDebugGroup();
 }
 
-void TransferCommandList::Reset(DebugGroup* debug_group_ptr)
+void TransferCommandList::Reset(DebugGroup* debug_group_ptr) const
 {
     GetPrivateImpl(m_impl_ptr).Reset(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
 }
 
-void TransferCommandList::ResetOnce(DebugGroup* debug_group_ptr)
+void TransferCommandList::ResetOnce(DebugGroup* debug_group_ptr) const
 {
     GetPrivateImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
 }
 
-void TransferCommandList::SetProgramBindings(IProgramBindings& program_bindings, ProgramBindingsApplyBehaviorMask apply_behavior)
+void TransferCommandList::SetProgramBindings(IProgramBindings& program_bindings, ProgramBindingsApplyBehaviorMask apply_behavior) const
 {
     GetPrivateImpl(m_impl_ptr).SetProgramBindings(program_bindings, apply_behavior);
 }
 
-void TransferCommandList::SetResourceBarriers(const IResourceBarriers& resource_barriers)
+void TransferCommandList::SetResourceBarriers(const IResourceBarriers& resource_barriers) const
 {
     GetPrivateImpl(m_impl_ptr).SetResourceBarriers(resource_barriers);
 }
 
-void TransferCommandList::Commit()
+void TransferCommandList::Commit() const
 {
     GetPrivateImpl(m_impl_ptr).Commit();
 }
 
-void TransferCommandList::WaitUntilCompleted(uint32_t timeout_ms)
+void TransferCommandList::WaitUntilCompleted(uint32_t timeout_ms) const
 {
     GetPrivateImpl(m_impl_ptr).WaitUntilCompleted(timeout_ms);
 }
@@ -173,7 +173,7 @@ CommandListState TransferCommandList::GetState() const META_PIMPL_NOEXCEPT
     return GetPrivateImpl(m_impl_ptr).GetState();
 }
 
-CommandQueue TransferCommandList::GetCommandQueue()
+CommandQueue TransferCommandList::GetCommandQueue() const
 {
     return CommandQueue(GetPrivateImpl(m_impl_ptr).GetCommandQueue());
 }

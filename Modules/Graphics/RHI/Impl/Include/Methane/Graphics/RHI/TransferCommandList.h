@@ -62,18 +62,18 @@ public:
     std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     // ICommandList interface methods
-    void  PushDebugGroup(DebugGroup& debug_group);
-    void  PopDebugGroup();
-    void  Reset(DebugGroup* debug_group_ptr = nullptr);
-    void  ResetOnce(DebugGroup* debug_group_ptr = nullptr);
+    void  PushDebugGroup(DebugGroup& debug_group) const;
+    void  PopDebugGroup() const;
+    void  Reset(DebugGroup* debug_group_ptr = nullptr) const;
+    void  ResetOnce(DebugGroup* debug_group_ptr = nullptr) const;
     void  SetProgramBindings(IProgramBindings& program_bindings,
-                             ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U));
-    void  SetResourceBarriers(const IResourceBarriers& resource_barriers);
-    void  Commit();
-    void  WaitUntilCompleted(uint32_t timeout_ms = 0U);
+                             ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
+    void  SetResourceBarriers(const IResourceBarriers& resource_barriers) const;
+    void  Commit() const;
+    void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;
     [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const;
     [[nodiscard]] State GetState() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] CommandQueue GetCommandQueue();
+    [[nodiscard]] CommandQueue GetCommandQueue() const;
 
 private:
     class Impl;

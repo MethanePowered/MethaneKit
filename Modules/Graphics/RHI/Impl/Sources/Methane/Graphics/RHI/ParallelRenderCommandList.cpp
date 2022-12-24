@@ -128,42 +128,42 @@ std::string_view ParallelRenderCommandList::GetName() const META_PIMPL_NOEXCEPT
     return GetPrivateImpl(m_impl_ptr).GetName();
 }
 
-void ParallelRenderCommandList::PushDebugGroup(DebugGroup& debug_group)
+void ParallelRenderCommandList::PushDebugGroup(DebugGroup& debug_group) const
 {
     GetPrivateImpl(m_impl_ptr).PushDebugGroup(debug_group.GetInterface());
 }
 
-void ParallelRenderCommandList::PopDebugGroup()
+void ParallelRenderCommandList::PopDebugGroup() const
 {
     GetPrivateImpl(m_impl_ptr).PopDebugGroup();
 }
 
-void ParallelRenderCommandList::Reset(DebugGroup* debug_group_ptr)
+void ParallelRenderCommandList::Reset(DebugGroup* debug_group_ptr) const
 {
     GetPrivateImpl(m_impl_ptr).Reset(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
 }
 
-void ParallelRenderCommandList::ResetOnce(DebugGroup* debug_group_ptr)
+void ParallelRenderCommandList::ResetOnce(DebugGroup* debug_group_ptr) const
 {
     GetPrivateImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
 }
 
-void ParallelRenderCommandList::SetProgramBindings(IProgramBindings& program_bindings, ProgramBindingsApplyBehaviorMask apply_behavior)
+void ParallelRenderCommandList::SetProgramBindings(IProgramBindings& program_bindings, ProgramBindingsApplyBehaviorMask apply_behavior) const
 {
     GetPrivateImpl(m_impl_ptr).SetProgramBindings(program_bindings, apply_behavior);
 }
 
-void ParallelRenderCommandList::SetResourceBarriers(const ResourceBarriers& resource_barriers)
+void ParallelRenderCommandList::SetResourceBarriers(const ResourceBarriers& resource_barriers) const
 {
     GetPrivateImpl(m_impl_ptr).SetResourceBarriers(resource_barriers.GetInterface());
 }
 
-void ParallelRenderCommandList::Commit()
+void ParallelRenderCommandList::Commit() const
 {
     GetPrivateImpl(m_impl_ptr).Commit();
 }
 
-void ParallelRenderCommandList::WaitUntilCompleted(uint32_t timeout_ms)
+void ParallelRenderCommandList::WaitUntilCompleted(uint32_t timeout_ms) const
 {
     GetPrivateImpl(m_impl_ptr).WaitUntilCompleted(timeout_ms);
 }
@@ -178,7 +178,7 @@ CommandListState ParallelRenderCommandList::GetState() const META_PIMPL_NOEXCEPT
     return GetPrivateImpl(m_impl_ptr).GetState();
 }
 
-CommandQueue ParallelRenderCommandList::GetCommandQueue()
+CommandQueue ParallelRenderCommandList::GetCommandQueue() const
 {
     return CommandQueue(GetPrivateImpl(m_impl_ptr).GetCommandQueue());
 }
