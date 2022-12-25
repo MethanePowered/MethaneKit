@@ -55,8 +55,8 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderCommandList);
     META_PIMPL_METHODS_COMPARE_DECLARE(RenderCommandList);
 
-    RenderCommandList(const Ptr<IRenderCommandList>& interface_ptr);
-    RenderCommandList(IRenderCommandList& interface_ref);
+    explicit RenderCommandList(const Ptr<IRenderCommandList>& interface_ptr);
+    explicit RenderCommandList(IRenderCommandList& interface_ref);
     RenderCommandList(const CommandQueue& command_queue, const RenderPass& render_pass);
 
     void Init(const CommandQueue& command_queue, const RenderPass& render_pass);

@@ -40,9 +40,9 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Fence);
     META_PIMPL_METHODS_COMPARE_DECLARE(Fence);
 
-    Fence(const Ptr<IFence>& interface_ptr);
-    Fence(IFence& interface_ref);
-    Fence(const CommandQueue& command_queue);
+    explicit Fence(const Ptr<IFence>& interface_ptr);
+    explicit Fence(IFence& interface_ref);
+    explicit Fence(const CommandQueue& command_queue);
 
     void Init(const CommandQueue& command_queue);
     void Release();

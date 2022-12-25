@@ -64,8 +64,8 @@ public:
         UpdateParametersText();
         GraphicsApp::Init();
         AppBase::InitUI(*this,
-                        GraphicsApp::GetRenderContext().GetRenderCommandKit().GetQueue().GetInterface(),
-                        GraphicsApp::GetScreenRenderPattern().GetInterface(),
+                        GraphicsApp::GetRenderContext().GetRenderCommandKit().GetQueue(),
+                        GraphicsApp::GetScreenRenderPattern(),
                         GraphicsApp::GetFrameSize());
     }
 

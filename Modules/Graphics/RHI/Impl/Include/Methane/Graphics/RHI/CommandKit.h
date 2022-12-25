@@ -43,9 +43,9 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandKit);
     META_PIMPL_METHODS_COMPARE_DECLARE(CommandKit);
 
-    CommandKit(const Ptr<ICommandKit>& interface_ptr);
-    CommandKit(ICommandKit& interface_ref);
-    CommandKit(const CommandQueue& command_queue);
+    explicit CommandKit(const Ptr<ICommandKit>& interface_ptr);
+    explicit CommandKit(ICommandKit& interface_ref);
+    explicit CommandKit(const CommandQueue& command_queue);
     CommandKit(const RenderContext& context, CommandListType command_lists_type);
 
     void Init(const CommandQueue& command_queue);

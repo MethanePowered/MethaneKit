@@ -57,8 +57,8 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Program);
     META_PIMPL_METHODS_COMPARE_DECLARE(Program);
 
-    Program(const Ptr<IProgram>& interface_ptr);
-    Program(IProgram& interface_ref);
+    explicit Program(const Ptr<IProgram>& interface_ptr);
+    explicit Program(IProgram& interface_ref);
     Program(const RenderContext& context, const Settings& settings);
 
     void Init(const RenderContext& context, const Settings& settings);

@@ -121,12 +121,12 @@ void CubeMapArrayApp::Init()
     m_render_state.Init(GetRenderContext(), render_state_settings);
 
     // Create cube mesh buffer resources
-    m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue.GetInterface(), std::move(cube_mesh), "Cube");
+    m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube");
 
     // Create cube-map render target texture
     m_cube_buffers_ptr->SetTexture(
-        rhi::ITexture::Create(
-            GetRenderContext().GetInterface(),
+        rhi::Texture(
+            GetRenderContext(),
             rhi::ITexture::Settings::Cube(
                 g_cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,
                 rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })
@@ -142,7 +142,7 @@ void CubeMapArrayApp::Init()
     );
 
     // Load cube-map texture images for Sky-box
-    const Ptr<rhi::ITexture> sky_box_texture_ptr = GetImageLoader().LoadImagesToTextureCube(render_cmd_queue.GetInterface(),
+    const rhi::Texture sky_box_texture(GetImageLoader().LoadImagesToTextureCube(render_cmd_queue.GetInterface(),
         gfx::ImageLoader::CubeFaceResources
         {
             "SkyBox/Clouds/PositiveX.jpg",
@@ -154,10 +154,10 @@ void CubeMapArrayApp::Init()
         },
         gfx::ImageOptionMask(gfx::ImageOption::Mipmapped),
         "Sky-Box Texture"
-    );
+    ));
 
     // Create sky-box
-    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(render_cmd_queue.GetInterface(), GetScreenRenderPattern().GetInterface(), *sky_box_texture_ptr,
+    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(render_cmd_queue, GetScreenRenderPattern(), sky_box_texture,
         gfx::SkyBox::Settings
         {
             m_camera,
@@ -174,7 +174,7 @@ void CubeMapArrayApp::Init()
         frame.cube.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
-        frame.cube.program_bindings.Init(*m_render_state.GetSettings().program_ptr, {
+        frame.cube.program_bindings.Init(m_render_state.GetProgram(), {
             { { rhi::ShaderType::All,   "g_uniforms"      }, { { frame.cube.uniforms_buffer.GetInterface()  } } },
             { { rhi::ShaderType::Pixel, "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture().GetInterface() } } },
             { { rhi::ShaderType::Pixel, "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
@@ -186,17 +186,18 @@ void CubeMapArrayApp::Init()
         frame.sky_box.uniforms_buffer.SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering
-        frame.sky_box.program_bindings = m_sky_box_ptr->CreateProgramBindings(frame.sky_box.uniforms_buffer.GetInterfacePtr(), frame.index);
+        frame.sky_box.program_bindings = m_sky_box_ptr->CreateProgramBindings(frame.sky_box.uniforms_buffer, frame.index);
         frame.sky_box.program_bindings.SetName(IndexedName("Space Sky-Box Bindings {}", frame.index));
         
         // Create command list for rendering
-        frame.render_cmd_list.Init(render_cmd_queue, frame.screen_pass.GetInterface());
+        frame.render_cmd_list.Init(render_cmd_queue, frame.screen_pass);
         frame.render_cmd_list.SetName(IndexedName("Cube Rendering", frame.index));
         frame.execute_cmd_list_set.Init({ frame.render_cmd_list.GetInterface() }, frame.index);
     }
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
-    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture().GetInterface(), rhi::ResourceState::Undefined, { g_cube_texture_size / 4U, 10U });
+    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture(),
+                                        rhi::ResourceState::Undefined, { g_cube_texture_size / 4U, 10U });
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
     UserInterfaceApp::CompleteInitialization();
@@ -261,18 +262,18 @@ bool CubeMapArrayApp::Render()
     // Update uniforms buffer related to current frame
     const CubeMapArrayFrame& frame = GetCurrentFrame();
     const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.cube.uniforms_buffer.SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue.GetInterface());
+    frame.cube.uniforms_buffer.SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
     // 1) Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
     frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
-    frame.render_cmd_list.SetViewState(GetViewState().GetInterface());
-    m_cube_buffers_ptr->Draw(frame.render_cmd_list.GetInterface(), frame.cube.program_bindings, 0U, CUBE_MAP_ARRAY_SIZE);
+    frame.render_cmd_list.SetViewState(GetViewState());
+    m_cube_buffers_ptr->Draw(frame.render_cmd_list, frame.cube.program_bindings, 0U, CUBE_MAP_ARRAY_SIZE);
 
     // 2) Render sky-box after cubes to minimize overdraw
-    m_sky_box_ptr->Draw(frame.render_cmd_list.GetInterface(), frame.sky_box, GetViewState().GetInterface());
+    m_sky_box_ptr->Draw(frame.render_cmd_list, frame.sky_box, GetViewState());
 
-    RenderOverlay(frame.render_cmd_list.GetInterface());
+    RenderOverlay(frame.render_cmd_list);
 
     frame.render_cmd_list.Commit();
 

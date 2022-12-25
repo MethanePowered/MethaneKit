@@ -231,7 +231,7 @@ private:
     void ClearAtlasTextures();
 
     class Face;
-    using TextureByContext = std::map<rhi::IRenderContext*, AtlasTexture>;
+    using TextureByContext = std::map<rhi::RenderContext, AtlasTexture>;
     using CharByCode = std::map<Char::Code, Char>;
 
     Settings               m_settings;

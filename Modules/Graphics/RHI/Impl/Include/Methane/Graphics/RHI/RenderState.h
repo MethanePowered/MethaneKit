@@ -60,8 +60,8 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderState);
     META_PIMPL_METHODS_COMPARE_DECLARE(RenderState);
 
-    RenderState(const Ptr<IRenderState>& interface_ptr);
-    RenderState(IRenderState& interface_ref);
+    explicit RenderState(const Ptr<IRenderState>& interface_ptr);
+    explicit RenderState(IRenderState& interface_ref);
     RenderState(const RenderContext& context, const Settings& settings);
 
     void Init(const RenderContext& context, const Settings& settings);
@@ -79,6 +79,9 @@ public:
     [[nodiscard]] const RenderStateSettings& GetSettings() const META_PIMPL_NOEXCEPT;
     void Reset(const Settings& settings) const;
     void Reset(const IRenderState::Settings& settings) const;
+
+    Program       GetProgram() const;
+    RenderPattern GetRenderPattern() const;
 
 private:
     class Impl;

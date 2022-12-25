@@ -182,17 +182,17 @@ CommandKit RenderContext::GetDefaultCommandKit(CommandListType type) const
 
 CommandKit RenderContext::GetDefaultCommandKit(const CommandQueue& cmd_queue) const
 {
-    return GetPrivateImpl(m_impl_ptr).GetDefaultCommandKit(cmd_queue.GetInterface());
+    return CommandKit(GetPrivateImpl(m_impl_ptr).GetDefaultCommandKit(cmd_queue.GetInterface()));
 }
 
 CommandKit RenderContext::GetUploadCommandKit() const
 {
-    return GetPrivateImpl(m_impl_ptr).GetUploadCommandKit();
+    return CommandKit(GetPrivateImpl(m_impl_ptr).GetUploadCommandKit());
 }
 
 CommandKit RenderContext::GetRenderCommandKit() const
 {
-    return GetPrivateImpl(m_impl_ptr).GetRenderCommandKit();
+    return CommandKit(GetPrivateImpl(m_impl_ptr).GetRenderCommandKit());
 }
 
 bool RenderContext::ReadyToRender() const

@@ -149,4 +149,14 @@ void RenderState::Reset(const IRenderState::Settings& settings) const
     return GetPrivateImpl(m_impl_ptr).Reset(settings);
 }
 
+Program RenderState::GetProgram() const
+{
+    return Program(GetSettings().program_ptr);
+}
+
+RenderPattern RenderState::GetRenderPattern() const
+{
+    return RenderPattern(GetSettings().render_pattern_ptr);
+}
+
 } // namespace Methane::Graphics::Rhi

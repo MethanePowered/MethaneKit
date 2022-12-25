@@ -45,8 +45,8 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Shader);
     META_PIMPL_METHODS_COMPARE_DECLARE(Shader);
 
-    Shader(const Ptr<IShader>& interface_ptr);
-    Shader(IShader& interface_ref);
+    explicit Shader(const Ptr<IShader>& interface_ptr);
+    explicit Shader(IShader& interface_ref);
     Shader(Type type, const RenderContext& context, const Settings& settings);
 
     void Init(Type type, const RenderContext& context, const Settings& settings);

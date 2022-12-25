@@ -59,7 +59,8 @@ using ImplPtr = std::shared_ptr<ImplType>;
 
 #define META_PIMPL_METHODS_COMPARE_DECLARE(Class) \
     bool operator==(const Class& other) const noexcept; \
-    bool operator!=(const Class& other) const noexcept
+    bool operator!=(const Class& other) const noexcept; \
+    bool operator<(const Class& other) const noexcept
 
 #define META_PIMPL_METHODS_IMPLEMENT(Class) \
     Class::~Class() = default; \
@@ -72,7 +73,10 @@ using ImplPtr = std::shared_ptr<ImplType>;
     bool Class::operator==(const Class& other) const noexcept \
     { return (!IsInitialized() && !other.IsInitialized()) ||   \
              (IsInitialized() && other.IsInitialized() && std::addressof(GetInterface()) == std::addressof(other.GetInterface())); } \
-    bool Class::operator!=(const Class& other) const noexcept { return !operator==(other); }
+    bool Class::operator!=(const Class& other) const noexcept { return !operator==(other); } \
+    bool Class::operator<(const Class& other) const noexcept \
+    { if  (IsInitialized() && other.IsInitialized()) return std::addressof(GetInterface()) < std::addressof(other.GetInterface()); \
+      return !IsInitialized() && other.IsInitialized(); }
 
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Class) \
     Class::Class() = default; \

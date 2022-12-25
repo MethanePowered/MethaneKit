@@ -58,8 +58,8 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Buffer);
     META_PIMPL_METHODS_COMPARE_DECLARE(Buffer);
 
-    Buffer(const Ptr<IBuffer>& interface_ptr);
-    Buffer(IBuffer& interface_ref);
+    explicit Buffer(const Ptr<IBuffer>& interface_ptr);
+    explicit Buffer(IBuffer& interface_ref);
 
     void InitVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile = false);
     void InitIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile = false);
@@ -115,8 +115,8 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(BufferSet);
     META_PIMPL_METHODS_COMPARE_DECLARE(BufferSet);
 
-    BufferSet(const Ptr<IBufferSet>& interface_ptr);
-    BufferSet(IBufferSet& interface_ref);
+    explicit BufferSet(const Ptr<IBufferSet>& interface_ptr);
+    explicit BufferSet(IBufferSet& interface_ref);
     BufferSet(BufferType buffers_type, const Refs<Buffer>& buffer_refs);
 
     void Init(BufferType buffers_type, const Refs<Buffer>& buffer_refs);

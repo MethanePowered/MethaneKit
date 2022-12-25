@@ -38,9 +38,9 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ViewState);
     META_PIMPL_METHODS_COMPARE_DECLARE(ViewState);
 
-    ViewState(const Ptr<IViewState>& interface_ptr);
-    ViewState(IViewState& interface_ref);
-    ViewState(const Settings& settings);
+    explicit ViewState(const Ptr<IViewState>& interface_ptr);
+    explicit ViewState(IViewState& interface_ref);
+    explicit ViewState(const Settings& settings);
 
     void Init(const Settings& settings);
     void Release();

@@ -624,7 +624,7 @@ const rhi::Texture& Font::GetAtlasTexture(const rhi::RenderContext& context)
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE(context.IsInitialized());
 
-    if (const auto atlas_texture_it = m_atlas_textures.find(&context.GetInterface());
+    if (const auto atlas_texture_it = m_atlas_textures.find(context);
         atlas_texture_it != m_atlas_textures.end())
     {
         META_CHECK_ARG_TRUE(atlas_texture_it->second.texture.IsInitialized());
@@ -645,7 +645,7 @@ const rhi::Texture& Font::GetAtlasTexture(const rhi::RenderContext& context)
     // Create atlas texture and render glyphs to it
     UpdateAtlasBitmap(true);
 
-    const rhi::Texture& atlas_texture = m_atlas_textures.try_emplace(&context.GetInterface(), CreateAtlasTexture(context.GetInterface(), true)).first->second.texture;
+    const rhi::Texture& atlas_texture = m_atlas_textures.try_emplace(context, CreateAtlasTexture(context, true)).first->second.texture;
     Emit(&IFontCallback::OnFontAtlasTextureReset, *this, nullptr, &atlas_texture);
 
     return atlas_texture;
@@ -674,7 +674,7 @@ Font::AtlasTexture Font::CreateAtlasTexture(const rhi::RenderContext& render_con
 void Font::RemoveAtlasTexture(const rhi::RenderContext& render_context)
 {
     META_FUNCTION_TASK();
-    m_atlas_textures.erase(&render_context.GetInterface());
+    m_atlas_textures.erase(render_context);
     static_cast<Data::IEmitter<IContextCallback>&>(render_context.GetInterface()).Disconnect(*this);
 }
 
@@ -708,19 +708,19 @@ void Font::UpdateAtlasTextures(bool deferred_textures_update)
     if (m_atlas_textures.empty())
         return;
 
-    for(auto& [context_ptr, atlas_texture] : m_atlas_textures)
+    for(auto& [context, atlas_texture] : m_atlas_textures)
     {
         if (deferred_textures_update)
         {
             // Texture will be updated on GPU context completing initialization,
             // when next GPU Frame rendering is started and just before uploading data on GPU with upload command queue
             atlas_texture.is_update_required = true;
-            context_ptr->RequestDeferredAction(rhi::IContext::DeferredAction::CompleteInitialization);
+            context.RequestDeferredAction(rhi::IContext::DeferredAction::CompleteInitialization);
         }
         else
         {
-            META_CHECK_ARG_NOT_NULL(context_ptr);
-            UpdateAtlasTexture(*context_ptr, atlas_texture);
+            META_CHECK_ARG_TRUE(context.IsInitialized());
+            UpdateAtlasTexture(context, atlas_texture);
         }
     }
 
@@ -756,12 +756,12 @@ void Font::UpdateAtlasTexture(const rhi::RenderContext& render_context, AtlasTex
 void Font::ClearAtlasTextures()
 {
     META_FUNCTION_TASK();
-    for(const auto& [context_ptr, atlas_texture] : m_atlas_textures)
+    for(const auto& [context, atlas_texture] : m_atlas_textures)
     {
-        if (!context_ptr)
+        if (!context.IsInitialized())
             continue;
 
-        static_cast<Data::IEmitter<IContextCallback>&>(*context_ptr).Disconnect(*this);
+        static_cast<Data::IEmitter<IContextCallback>&>(context.GetInterface()).Disconnect(*this);
         Emit(&IFontCallback::OnFontAtlasTextureReset, *this, &atlas_texture.texture, nullptr);
     }
     m_atlas_textures.clear();
@@ -778,8 +778,8 @@ void Font::OnContextCompletingInitialization(rhi::IContext& context)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(context.GetType(), rhi::IContext::Type::Render);
-    auto& render_context = dynamic_cast<rhi::IRenderContext&>(context);
-    if (const auto atlas_texture_it = m_atlas_textures.find(&render_context);
+    const rhi::RenderContext render_context(dynamic_cast<rhi::IRenderContext&>(context));
+    if (const auto atlas_texture_it = m_atlas_textures.find(render_context);
         atlas_texture_it != m_atlas_textures.end() && atlas_texture_it->second.is_update_required)
     {
         UpdateAtlasTexture(render_context, atlas_texture_it->second);

@@ -47,8 +47,8 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Sampler);
     META_PIMPL_METHODS_COMPARE_DECLARE(Sampler);
 
-    Sampler(const Ptr<ISampler>& interface_ptr);
-    Sampler(ISampler& interface_ref);
+    explicit Sampler(const Ptr<ISampler>& interface_ptr);
+    explicit Sampler(ISampler& interface_ref);
     Sampler(const RenderContext& context, const Settings& settings);
 
     void Init(const RenderContext& context, const Settings& settings);

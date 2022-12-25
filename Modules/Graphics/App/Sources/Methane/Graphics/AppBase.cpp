@@ -81,21 +81,19 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     META_FUNCTION_TASK();
     META_LOG("\n====================== CONTEXT INITIALIZATION ======================");
 
-    const Ptrs<Rhi::IDevice>& devices = Rhi::ISystem::Get().UpdateGpuDevices(env, m_settings.device_capabilities);
+    const std::vector<Rhi::Device>& devices = Rhi::System::Get().UpdateGpuDevices(env, m_settings.device_capabilities);
     META_CHECK_ARG_NOT_EMPTY_DESCR(devices, "no suitable GPU devices were found for application rendering");
 
-    Ptr<Rhi::IDevice> device_ptr;
-    if (m_settings.default_device_index < 0)
-        device_ptr = Rhi::ISystem::Get().GetSoftwareGpuDevice();
-    else
-        device_ptr = static_cast<size_t>(m_settings.default_device_index) < devices.size()
-                   ? devices[m_settings.default_device_index]
-                   : devices.front();
-    META_CHECK_ARG_NOT_NULL(device_ptr);
+    const Rhi::Device device = m_settings.default_device_index < 0
+                             ? Rhi::System::Get().GetSoftwareGpuDevice()
+                             : static_cast<size_t>(m_settings.default_device_index) < devices.size()
+                                 ? devices[m_settings.default_device_index]
+                                 : devices.front();
+    META_CHECK_ARG_TRUE(device.IsInitialized());
 
     // Create render context of the current window size
     m_initial_context_settings.frame_size = frame_size;
-    m_context.Init(env, *device_ptr, GetParallelExecutor(), m_initial_context_settings);
+    m_context.Init(env, device, GetParallelExecutor(), m_initial_context_settings);
     m_context.SetName("Graphics Context");
     m_context.Data::Transmitter<IContextCallback>::Connect(*this);
 

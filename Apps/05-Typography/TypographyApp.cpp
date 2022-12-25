@@ -246,7 +246,7 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const
 void TypographyApp::UpdateFontAtlasBadges()
 {
     const Refs<gui::Font> font_refs = gui::Font::Library::Get().GetFonts();
-    rhi::IRenderContext& context = GetRenderContext().GetInterface();
+    const rhi::RenderContext& context = GetRenderContext();
 
     // Remove obsolete font atlas badges
     for(auto badge_it = m_font_atlas_badges.begin(); badge_it != m_font_atlas_badges.end();)

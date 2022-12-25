@@ -45,9 +45,9 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ResourceBarriers);
     META_PIMPL_METHODS_COMPARE_DECLARE(ResourceBarriers);
 
-    ResourceBarriers(const Ptr<IResourceBarriers>& interface_ptr);
-    ResourceBarriers(IResourceBarriers& interface_ref);
-    ResourceBarriers(const Set& barriers);
+    explicit ResourceBarriers(const Ptr<IResourceBarriers>& interface_ptr);
+    explicit ResourceBarriers(IResourceBarriers& interface_ref);
+    explicit ResourceBarriers(const Set& barriers);
     ResourceBarriers(const Refs<IResource>& resources,
                      const Opt<Barrier::StateChange>& state_change,
                      const Opt<Barrier::OwnerChange>& owner_change);

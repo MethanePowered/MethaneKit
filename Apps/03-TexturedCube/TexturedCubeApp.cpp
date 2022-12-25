@@ -132,7 +132,7 @@ void TexturedCubeApp::Init()
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }
             ),
-            GetScreenRenderPattern().GetInterfacePtr()
+            GetScreenRenderPattern()
         }
     );
     m_render_state.GetSettings().program_ptr->SetName("Textured Phong Lighting");
@@ -160,7 +160,7 @@ void TexturedCubeApp::Init()
         frame.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
-        frame.program_bindings.Init(*m_render_state.GetSettings().program_ptr, {
+        frame.program_bindings.Init(m_render_state.GetProgram(), {
             { { rhi::ShaderType::All,   "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } },
             { { rhi::ShaderType::Pixel, "g_constants" }, { { m_const_buffer.GetInterface()        } } },
             { { rhi::ShaderType::Pixel, "g_texture"   }, { { m_cube_texture.GetInterface()        } } },
@@ -169,7 +169,7 @@ void TexturedCubeApp::Init()
         frame.program_bindings.SetName(IndexedName("Cube Bindings", frame.index));
         
         // Create command list for rendering
-        frame.render_cmd_list.Init(GetRenderContext().GetRenderCommandKit().GetQueue(), frame.screen_pass.GetInterface());
+        frame.render_cmd_list.Init(GetRenderContext().GetRenderCommandKit().GetQueue(), frame.screen_pass);
         frame.render_cmd_list.SetName(IndexedName("Cube Rendering", frame.index));
         frame.execute_cmd_list_set.Init({ frame.render_cmd_list.GetInterface() }, frame.index);
     }
@@ -214,25 +214,25 @@ bool TexturedCubeApp::Render()
         return false;
 
     // Update uniforms buffer related to current frame
-    const TexturedCubeFrame& frame            = GetCurrentFrame();
-    rhi::ICommandQueue&      render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue().GetInterface();
+    const TexturedCubeFrame& frame = GetCurrentFrame();
+    const rhi::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     frame.uniforms_buffer.SetData(m_shader_uniforms_subresources, render_cmd_queue);
 
     // Issue commands for cube rendering
     META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
     frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
-    frame.render_cmd_list.SetViewState(GetViewState().GetInterface());
+    frame.render_cmd_list.SetViewState(GetViewState());
     frame.render_cmd_list.SetProgramBindings(frame.program_bindings);
     frame.render_cmd_list.SetVertexBuffers(m_vertex_buffer_set);
     frame.render_cmd_list.SetIndexBuffer(m_index_buffer);
     frame.render_cmd_list.DrawIndexed(rhi::RenderPrimitive::Triangle);
 
-    RenderOverlay(frame.render_cmd_list.GetInterface());
+    RenderOverlay(frame.render_cmd_list);
 
     frame.render_cmd_list.Commit();
 
     // Execute command list on render queue and present frame to screen
-    render_cmd_queue.Execute(frame.execute_cmd_list_set.GetInterface());
+    render_cmd_queue.Execute(frame.execute_cmd_list_set);
     GetRenderContext().Present();
 
     return true;

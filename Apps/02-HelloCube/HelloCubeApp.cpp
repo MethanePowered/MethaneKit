@@ -205,7 +205,7 @@ public:
             frame.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
             // Configure program resource bindings
-            frame.program_bindings.Init(*m_render_state.GetSettings().program_ptr, {
+            frame.program_bindings.Init(m_render_state.GetProgram(), {
                 { { ShaderType::Vertex, "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } }
             }, frame.index);
             frame.program_bindings.SetName(IndexedName("Cube Bindings {}", frame.index));

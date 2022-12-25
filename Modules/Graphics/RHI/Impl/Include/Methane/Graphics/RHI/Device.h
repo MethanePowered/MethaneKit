@@ -44,8 +44,8 @@ public:
     META_PIMPL_METHODS_DECLARE(Device);
     META_PIMPL_METHODS_COMPARE_DECLARE(Device);
 
-    Device(const Ptr<IDevice>& interface_ptr);
-    Device(IDevice& interface_ref);
+    explicit Device(const Ptr<IDevice>& interface_ptr);
+    explicit Device(IDevice& interface_ref);
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT { return true; }
     IDevice& GetInterface() const META_PIMPL_NOEXCEPT;
@@ -79,7 +79,7 @@ public:
 
     META_PIMPL_METHODS_DECLARE(System);
 
-    System(const Ptr<ISystem>& interface_ptr);
+    explicit System(const Ptr<ISystem>& interface_ptr);
 
     ISystem& GetInterface() const META_PIMPL_NOEXCEPT;
 

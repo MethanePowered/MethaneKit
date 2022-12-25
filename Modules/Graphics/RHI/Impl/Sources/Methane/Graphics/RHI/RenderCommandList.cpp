@@ -182,7 +182,7 @@ CommandListState RenderCommandList::GetState() const META_PIMPL_NOEXCEPT
 
 CommandQueue RenderCommandList::GetCommandQueue() const
 {
-    return GetPrivateImpl(m_impl_ptr).GetCommandQueue();
+    return CommandQueue(GetPrivateImpl(m_impl_ptr).GetCommandQueue());
 }
 
 bool RenderCommandList::IsValidationEnabled() const META_PIMPL_NOEXCEPT

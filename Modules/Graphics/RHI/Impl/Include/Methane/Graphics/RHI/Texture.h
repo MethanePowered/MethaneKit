@@ -58,8 +58,8 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Texture);
     META_PIMPL_METHODS_COMPARE_DECLARE(Texture);
 
-    Texture(const Ptr<ITexture>& interface_ptr);
-    Texture(ITexture& interface_ref);
+    explicit Texture(const Ptr<ITexture>& interface_ptr);
+    explicit Texture(ITexture& interface_ref);
     Texture(const RenderContext& context, const Settings& settings);
 
     void Init(const RenderContext& context, const Settings& settings);

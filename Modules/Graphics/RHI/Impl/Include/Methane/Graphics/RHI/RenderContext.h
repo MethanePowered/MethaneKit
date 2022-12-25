@@ -52,8 +52,8 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderContext);
     META_PIMPL_METHODS_COMPARE_DECLARE(RenderContext);
 
-    RenderContext(const Ptr<IRenderContext>& render_context_ptr);
-    RenderContext(IRenderContext& render_context);
+    explicit RenderContext(const Ptr<IRenderContext>& render_context_ptr);
+    explicit RenderContext(IRenderContext& render_context);
     RenderContext(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings);
 
     void Init(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings);

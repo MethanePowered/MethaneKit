@@ -47,7 +47,7 @@ namespace Methane::UserInterface
 {
 
 Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
-    : Text(ui_context, ui_context.GetRenderPattern().GetInterface(), font, settings)
+    : Text(ui_context, ui_context.GetRenderPattern(), font, settings)
 {
 }
 
@@ -71,7 +71,7 @@ Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, Font& 
 }
 
 Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
-    : Text(ui_context, ui_context.GetRenderPattern().GetInterface(), font, std::move(settings))
+    : Text(ui_context, ui_context.GetRenderPattern(), font, std::move(settings))
 {
 }
 
@@ -436,7 +436,7 @@ void Text::FrameResources::InitializeProgramBindings(const rhi::RenderState& sta
     META_CHECK_ARG_TRUE(m_atlas_texture.IsInitialized());
     META_CHECK_ARG_TRUE(m_uniforms_buffer.IsInitialized());
 
-    m_program_bindings.Init(state.GetSettings().program_ptr, {
+    m_program_bindings.Init(state.GetProgram(), {
         { { rhi::ShaderType::Vertex, "g_uniforms"  }, { { m_uniforms_buffer.GetInterface() } } },
         { { rhi::ShaderType::Pixel,  "g_constants" }, { { const_buffer.GetInterface()      } } },
         { { rhi::ShaderType::Pixel,  "g_texture"   }, { { m_atlas_texture.GetInterface()   } } },

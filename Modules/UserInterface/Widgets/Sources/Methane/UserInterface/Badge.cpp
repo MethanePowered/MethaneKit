@@ -78,9 +78,9 @@ Badge::Settings& Badge::Settings::SetTextureMode(TextureMode new_texture_mode) n
 
 Badge::Badge(Context& ui_context, Data::IProvider& data_provider, const std::string& image_path, const Settings& settings)
     : Badge(ui_context,
-            gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderCommandQueue().GetInterface(),
-                                                                 image_path, gfx::ImageLoader::OptionMask{},
-                                                                 fmt::format("{} Texture", settings.name)),
+            rhi::Texture(gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderCommandQueue().GetInterface(),
+                                                                              image_path, gfx::ImageLoader::OptionMask{},
+                                                                              fmt::format("{} Texture", settings.name))),
             settings)
 {
 }

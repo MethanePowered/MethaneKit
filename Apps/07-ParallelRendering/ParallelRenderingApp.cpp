@@ -168,7 +168,7 @@ void ParallelRenderingApp::Init()
                                                             gfx::Mesh::Subset::Slice(0U, cube_mesh.GetVertexCount()),
                                                             gfx::Mesh::Subset::Slice(0U, cube_mesh.GetIndexCount()),
                                                             false));
-    m_cube_array_buffers_ptr = std::make_unique<MeshBuffers>(render_cmd_queue.GetInterface(), std::move(cube_mesh), "Cube", mesh_subsets);
+    m_cube_array_buffers_ptr = std::make_unique<MeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube", mesh_subsets);
 
     // Create cube-map render target texture
     m_texture_array.Init(GetRenderContext(),
@@ -197,7 +197,7 @@ void ParallelRenderingApp::Init()
 
         // Configure program resource bindings
         frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
-        frame.cubes_array.program_bindings_per_instance[0] = rhi::IProgramBindings::Create(render_state_settings.program.GetInterface(), {
+        frame.cubes_array.program_bindings_per_instance[0].Init(render_state_settings.program, {
             { { rhi::ShaderType::All,   "g_uniforms"      }, { { frame.cubes_array.uniforms_buffer.GetInterface(), m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size } } },
             { { rhi::ShaderType::Pixel, "g_texture_array" }, { { m_texture_array.GetInterface()   } } },
             { { rhi::ShaderType::Pixel, "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
@@ -243,7 +243,7 @@ void ParallelRenderingApp::Init()
     TextureLabeler::Settings texture_labeler_settings;
     texture_labeler_settings.font_size_pt = g_texture_size.GetWidth() / 4U;
     texture_labeler_settings.border_width_px = 10U;
-    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_texture_array.GetInterface(),
+    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_texture_array,
                                         rhi::ResourceState::ShaderResource, texture_labeler_settings);
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
@@ -388,14 +388,14 @@ bool ParallelRenderingApp::Render()
     // Update uniforms buffer related to current frame
     const ParallelRenderingFrame& frame  = GetCurrentFrame();
     const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.cubes_array.uniforms_buffer.SetData(m_cube_array_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue.GetInterface());
+    frame.cubes_array.uniforms_buffer.SetData(m_cube_array_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
     // Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     if (m_settings.parallel_rendering_enabled)
     {
         META_DEBUG_GROUP_VAR(s_debug_group, "Parallel Cubes Rendering");
         frame.parallel_render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
-        frame.parallel_render_cmd_list.SetViewState(GetViewState().GetInterface());
+        frame.parallel_render_cmd_list.SetViewState(GetViewState());
 
 #ifdef EXPLICIT_PARALLEL_RENDERING_ENABLED
         const std::vector<rhi::RenderCommandList>& render_cmd_lists = frame.parallel_render_cmd_list.GetParallelCommandLists();
@@ -419,14 +419,14 @@ bool ParallelRenderingApp::Render()
         m_cube_array_buffers_ptr->DrawParallel(*frame.parallel_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance);
 #endif
 
-        RenderOverlay(frame.parallel_render_cmd_list.GetParallelCommandLists().back().GetInterface());
+        RenderOverlay(frame.parallel_render_cmd_list.GetParallelCommandLists().back());
         frame.parallel_render_cmd_list.Commit();
     }
     else
     {
         META_DEBUG_GROUP_VAR(s_debug_group, "Serial Cubes Rendering");
         frame.serial_render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
-        frame.serial_render_cmd_list.SetViewState(GetViewState().GetInterface());
+        frame.serial_render_cmd_list.SetViewState(GetViewState());
 
 #ifdef EXPLICIT_PARALLEL_RENDERING_ENABLED
         RenderCubesRange(frame.serial_render_cmd_list, frame.cubes_array.program_bindings_per_instance, 0U, m_cube_array_buffers_ptr->GetInstanceCount());
@@ -434,7 +434,7 @@ bool ParallelRenderingApp::Render()
         m_cube_array_buffers_ptr->Draw(frame.serial_render_cmd_list, frame.cubes_array.program_bindings_per_instance);
 #endif
 
-        RenderOverlay(frame.serial_render_cmd_list.GetInterface());
+        RenderOverlay(frame.serial_render_cmd_list);
         frame.serial_render_cmd_list.Commit();
     }
 

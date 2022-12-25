@@ -47,8 +47,8 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ProgramBindings);
     META_PIMPL_METHODS_COMPARE_DECLARE(ProgramBindings);
 
-    ProgramBindings(const Ptr<IProgramBindings>& interface_ptr);
-    ProgramBindings(IProgramBindings& interface_ref);
+    explicit ProgramBindings(const Ptr<IProgramBindings>& interface_ptr);
+    explicit ProgramBindings(IProgramBindings& interface_ref);
     ProgramBindings(const Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);
     ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument = {},
                     const Opt<Data::Index>& frame_index = {});

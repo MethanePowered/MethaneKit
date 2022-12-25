@@ -53,8 +53,8 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ParallelRenderCommandList);
     META_PIMPL_METHODS_COMPARE_DECLARE(ParallelRenderCommandList);
 
-    ParallelRenderCommandList(const Ptr<IParallelRenderCommandList>& interface_ptr);
-    ParallelRenderCommandList(IParallelRenderCommandList& interface_ref);
+    explicit ParallelRenderCommandList(const Ptr<IParallelRenderCommandList>& interface_ptr);
+    explicit ParallelRenderCommandList(IParallelRenderCommandList& interface_ref);
     ParallelRenderCommandList(const CommandQueue& command_queue, const RenderPass& render_pass);
 
     void Init(const CommandQueue& command_queue, const RenderPass& render_pass);

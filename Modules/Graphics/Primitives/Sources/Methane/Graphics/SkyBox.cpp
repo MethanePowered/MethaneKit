@@ -53,7 +53,7 @@ SkyBox::SkyBox(const Rhi::CommandQueue& render_cmd_queue,
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, Rhi::TextureDimensionType::Cube);
-    m_mesh_buffers.SetTexture(cube_map_texture.GetInterfacePtr());
+    m_mesh_buffers.SetTexture(cube_map_texture);
 
     m_program.Init(m_context,
         Rhi::Program::Settings
