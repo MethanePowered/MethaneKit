@@ -60,6 +60,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ProgramBindings);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(ProgramBindings);
 
 ProgramBindings::ProgramBindings(ImplPtr<Impl>&& impl_ptr)
     : Transmitter(impl_ptr->GetInterface())

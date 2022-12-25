@@ -36,8 +36,8 @@ namespace gui = Methane::UserInterface;
 
 struct TypographyFrame final : gfx::AppFrame
 {
-    Ptr<rhi::IRenderCommandList> render_cmd_list_ptr;
-    Ptr<rhi::ICommandListSet>    execute_cmd_list_set_ptr;
+    rhi::RenderCommandList render_cmd_list;
+    rhi::CommandListSet    execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -86,14 +86,14 @@ private:
     void OnFontRemoved(gui::Font&) override { /* not handled in this controller */ }
 
     // IFontCallback implementation
-    void OnFontAtlasTextureReset(gui::Font& font, const Ptr<rhi::ITexture>& old_atlas_texture_ptr, const Ptr<rhi::ITexture>& new_atlas_texture_ptr) override;
+    void OnFontAtlasTextureReset(gui::Font& font, const rhi::Texture* old_atlas_texture_ptr, const rhi::Texture* new_atlas_texture_ptr) override;
     void OnFontAtlasUpdated(gui::Font& font) override;
 
     bool Animate(double elapsed_seconds, double);
     void AnimateTextBlock(size_t block_index, int32_t& vertical_text_pos_in_dots);
     void ResetAnimation();
 
-    Ptr<gui::Badge> CreateFontAtlasBadge(const gui::Font& font, const Ptr<rhi::ITexture>& atlas_texture_ptr);
+    Ptr<gui::Badge> CreateFontAtlasBadge(const gui::Font& font, const rhi::Texture& atlas_texture);
     void UpdateFontAtlasBadges();
     void LayoutFontAtlasBadges(const gfx::FrameSize& frame_size);
 

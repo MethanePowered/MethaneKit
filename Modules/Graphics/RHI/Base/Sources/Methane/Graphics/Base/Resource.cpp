@@ -97,7 +97,7 @@ void Resource::SetData(const SubResources& sub_resources, Rhi::ICommandQueue&)
     const Data::Size reserved_data_size = GetDataSize(Data::MemoryState::Reserved);
     META_UNUSED(reserved_data_size);
 
-    META_CHECK_ARG_LESS_DESCR(sub_resources_data_size, reserved_data_size + 1, "can not set more data than allocated buffer size");
+    META_CHECK_ARG_LESS_OR_EQUAL_DESCR(sub_resources_data_size, reserved_data_size, "can not set more data than allocated buffer size");
     m_initialized_data_size = sub_resources_data_size;
 
     if (!m_sub_resource_count_constant)

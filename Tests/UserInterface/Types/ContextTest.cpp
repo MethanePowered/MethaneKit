@@ -52,8 +52,8 @@ TEST_CASE("UI Context Accessors", "[ui][context][accessor]")
     SECTION("Get UI render context")
     {
         const UserInterface::Context& const_ui_context = ui_context;
-        CHECK(std::addressof(ui_context.GetRenderContext()) == render_context_ptr.get());
-        CHECK(std::addressof(const_ui_context.GetRenderContext()) == render_context_ptr.get());
+        CHECK(std::addressof(ui_context.GetRenderContext().GetInterface()) == render_context_ptr.get());
+        CHECK(std::addressof(const_ui_context.GetRenderContext().GetInterface()) == render_context_ptr.get());
     }
 
     SECTION("Get UI content scale factor and font DPI")

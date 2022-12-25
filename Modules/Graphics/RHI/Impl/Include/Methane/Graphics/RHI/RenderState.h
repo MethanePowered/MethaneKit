@@ -58,6 +58,7 @@ public:
     };
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderState);
+    META_PIMPL_METHODS_COMPARE_DECLARE(RenderState);
 
     RenderState(const Ptr<IRenderState>& interface_ptr);
     RenderState(IRenderState& interface_ref);

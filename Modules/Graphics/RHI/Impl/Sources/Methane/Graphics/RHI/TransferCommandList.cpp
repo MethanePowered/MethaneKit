@@ -61,6 +61,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(TransferCommandList);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(TransferCommandList);
 
 TransferCommandList::TransferCommandList(ImplPtr<Impl>&& impl_ptr)
     : Transmitter<Rhi::ICommandListCallback>(impl_ptr->GetInterface())

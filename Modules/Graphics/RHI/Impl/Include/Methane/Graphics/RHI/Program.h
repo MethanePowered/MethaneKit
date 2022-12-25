@@ -55,6 +55,7 @@ public:
     };
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Program);
+    META_PIMPL_METHODS_COMPARE_DECLARE(Program);
 
     Program(const Ptr<IProgram>& interface_ptr);
     Program(IProgram& interface_ref);

@@ -195,7 +195,7 @@ void AppBase::TextItem::Draw(const rhi::RenderCommandList& cmd_list, const rhi::
     }
     if (text_ptr)
     {
-        text_ptr->Draw(cmd_list.GetInterface(), debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+        text_ptr->Draw(cmd_list, debug_group_ptr);
     }
 }
 

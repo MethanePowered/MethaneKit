@@ -23,7 +23,7 @@ Panel widget with opaque background containing other widgets.
 
 #include <Methane/UserInterface/Panel.h>
 #include <Methane/UserInterface/Context.h>
-#include <Methane/Graphics/RHI/ICommandKit.h>
+#include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Instrumentation.h>
 
 #include <cmath>

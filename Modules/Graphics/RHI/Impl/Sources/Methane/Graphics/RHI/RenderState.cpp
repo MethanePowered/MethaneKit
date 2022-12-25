@@ -74,6 +74,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderState);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderState);
 
 RenderState::RenderState(ImplPtr<Impl>&& impl_ptr)
     : Transmitter(impl_ptr->GetInterface())

@@ -51,21 +51,27 @@ using ImplPtr = std::shared_ptr<ImplType>;
     Class(const Class& other); \
     Class(Class&& other) noexcept; \
     Class& operator=(const Class& other); \
-    Class& operator=(Class&& other) noexcept; \
-    bool operator==(const Class& other) const noexcept; \
-    bool operator!=(const Class& other) const noexcept
+    Class& operator=(Class&& other) noexcept
 
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Class) \
     Class(); \
     META_PIMPL_METHODS_DECLARE(Class)
+
+#define META_PIMPL_METHODS_COMPARE_DECLARE(Class) \
+    bool operator==(const Class& other) const noexcept; \
+    bool operator!=(const Class& other) const noexcept
 
 #define META_PIMPL_METHODS_IMPLEMENT(Class) \
     Class::~Class() = default; \
     Class::Class(const Class& other) = default; \
     Class::Class(Class&& other) noexcept = default; \
     Class& Class::operator=(const Class& other) = default; \
-    Class& Class::operator=(Class&& other) noexcept = default; \
-    bool Class::operator==(const Class& other) const noexcept { return std::addressof(GetInterface()) == std::addressof(other.GetInterface()); } \
+    Class& Class::operator=(Class&& other) noexcept = default
+
+#define META_PIMPL_METHODS_COMPARE_IMPLEMENT(Class) \
+    bool Class::operator==(const Class& other) const noexcept \
+    { return (!IsInitialized() && !other.IsInitialized()) ||   \
+             (IsInitialized() && other.IsInitialized() && std::addressof(GetInterface()) == std::addressof(other.GetInterface())); } \
     bool Class::operator!=(const Class& other) const noexcept { return !operator==(other); }
 
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Class) \

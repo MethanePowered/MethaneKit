@@ -62,6 +62,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Texture);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(Texture);
 
 Texture::Texture(ImplPtr<Impl>&& impl_ptr)
     : Transmitter<IObjectCallback>(impl_ptr->GetInterface())

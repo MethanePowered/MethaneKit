@@ -215,28 +215,27 @@ void TypographyApp::Init()
     // Create per-frame command lists
     for(TypographyFrame& frame : GetFrames())
     {
-        frame.render_cmd_list_ptr = rhi::IRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue().GetInterface(),
-                                                                    frame.screen_pass.GetInterface());
-        frame.render_cmd_list_ptr->SetName(IndexedName("Text Rendering", frame.index));
-        frame.execute_cmd_list_set_ptr = rhi::ICommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
+        frame.render_cmd_list.Init(GetRenderContext().GetRenderCommandKit().GetQueue(), frame.screen_pass);
+        frame.render_cmd_list.SetName(IndexedName("Text Rendering", frame.index));
+        frame.execute_cmd_list_set.Init({ frame.render_cmd_list.GetInterface() }, frame.index);
     }
 
     CompleteInitialization();
 }
 
-Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const Ptr<rhi::ITexture>& atlas_texture_ptr)
+Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const rhi::Texture& atlas_texture)
 {
     const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().description.name);
     const gui::Color3F& font_color = font_color_by_name_it != g_font_color_by_name.end()
                                    ? font_color_by_name_it->second : g_misc_font_color;
 
     return std::make_shared<gui::Badge>(
-        GetUIContext(), atlas_texture_ptr,
+        GetUIContext(), atlas_texture,
         gui::Badge::Settings
         {
             font.GetSettings().description.name + " Font Atlas",
             gui::Badge::FrameCorner::BottomLeft,
-            gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture_ptr->GetSettings().dimensions)),
+            gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture.GetSettings().dimensions)),
             gui::UnitSize(gui::Units::Dots, 16U, 16U),
             gui::Color4F(font_color, 0.5F),
             gui::Badge::TextureMode::RFloatToAlpha,
@@ -256,7 +255,7 @@ void TypographyApp::UpdateFontAtlasBadges()
         if (const gui::Badge& badge = **badge_it;
             std::any_of(font_refs.begin(), font_refs.end(),
                 [&badge, &context](const Ref<gui::Font>& font_ref)
-                { return std::addressof(badge.GetTexture().GetInterface()) == font_ref.get().GetAtlasTexturePtr(context).get(); }))
+                { return badge.GetTexture() == font_ref.get().GetAtlasTexture(context); }))
         {
             ++badge_it;
             continue;
@@ -268,16 +267,16 @@ void TypographyApp::UpdateFontAtlasBadges()
     // Add new font atlas badges
     for(const Ref<gui::Font>& font_ref : font_refs)
     {
-        const Ptr<rhi::ITexture>& font_atlas_texture_ptr = font_ref.get().GetAtlasTexturePtr(context);
-        if (!font_atlas_texture_ptr ||
+        const rhi::Texture& font_atlas_texture = font_ref.get().GetAtlasTexture(context);
+        if (!font_atlas_texture.IsInitialized() ||
             std::any_of(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-                        [&font_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
+                        [&font_atlas_texture](const Ptr<gui::Badge>& font_atlas_badge_ptr)
                         {
-                            return std::addressof(font_atlas_badge_ptr->GetTexture().GetInterface()) == font_atlas_texture_ptr.get();
+                            return font_atlas_badge_ptr->GetTexture() == font_atlas_texture;
                         }))
             continue;
 
-        m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font_ref.get(), font_atlas_texture_ptr));
+        m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font_ref.get(), font_atlas_texture));
     }
 
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
@@ -438,24 +437,24 @@ bool TypographyApp::Render()
     const TypographyFrame& frame = GetCurrentFrame();
 
     // Draw text blocks
-    META_DEBUG_GROUP_CREATE_VAR(s_text_debug_group, "Text Blocks Rendering");
+    META_DEBUG_GROUP_VAR(s_text_debug_group, "Text Blocks Rendering");
     for(const Ptr<gui::Text>& text_ptr : m_texts)
     {
-        text_ptr->Draw(*frame.render_cmd_list_ptr, s_text_debug_group.get());
+        text_ptr->Draw(frame.render_cmd_list, &s_text_debug_group);
     }
 
     // Draw font atlas badges
     META_DEBUG_GROUP_VAR(s_atlas_debug_group, "Font Atlases Rendering");
     for(const Ptr<gui::Badge>& badge_atlas_ptr : m_font_atlas_badges)
     {
-        badge_atlas_ptr->Draw(*frame.render_cmd_list_ptr, &s_atlas_debug_group);
+        badge_atlas_ptr->Draw(frame.render_cmd_list, &s_atlas_debug_group);
     }
 
-    RenderOverlay(*frame.render_cmd_list_ptr);
-    frame.render_cmd_list_ptr->Commit();
+    RenderOverlay(frame.render_cmd_list);
+    frame.render_cmd_list.Commit();
 
     // Execute command list on render queue and present frame to screen
-    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(frame.execute_cmd_list_set);
     GetRenderContext().Present();
 
     return true;
@@ -539,26 +538,25 @@ void TypographyApp::OnFontAdded(gui::Font& font)
     font.Connect(*this);
 }
 
-void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const Ptr<rhi::ITexture>& old_atlas_texture_ptr, const Ptr<rhi::ITexture>& new_atlas_texture_ptr)
+void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const rhi::Texture* old_atlas_texture_ptr, const rhi::Texture* new_atlas_texture_ptr)
 {
-    const auto font_atlas_badge_ptr_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-                                                     [&old_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
-        {
-           return std::addressof(font_atlas_badge_ptr->GetTexture().GetInterface()) == old_atlas_texture_ptr.get();
-        }
-    );
+    const auto font_atlas_badge_ptr_it = old_atlas_texture_ptr
+        ? std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
+                       [&old_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
+                       { return font_atlas_badge_ptr->GetTexture() == *old_atlas_texture_ptr; })
+        : m_font_atlas_badges.end();
 
     if (new_atlas_texture_ptr)
     {
         if (font_atlas_badge_ptr_it == m_font_atlas_badges.end())
         {
-            m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, new_atlas_texture_ptr));
+            m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, *new_atlas_texture_ptr));
             LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
         }
         else
         {
             const Ptr<gui::Badge>& badge_ptr = *font_atlas_badge_ptr_it;
-            badge_ptr->SetTexture(new_atlas_texture_ptr);
+            badge_ptr->SetTexture(*new_atlas_texture_ptr);
             badge_ptr->SetSize(gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(new_atlas_texture_ptr->GetSettings().dimensions)));
         }
     }

@@ -39,6 +39,7 @@ class CommandQueue
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandQueue);
+    META_PIMPL_METHODS_COMPARE_DECLARE(CommandQueue);
 
     CommandQueue(const Ptr<ICommandQueue>& interface_ptr);
     CommandQueue(ICommandQueue& interface_ref);

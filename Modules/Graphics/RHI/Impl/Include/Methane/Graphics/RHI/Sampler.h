@@ -45,6 +45,7 @@ public:
     using Settings      = SamplerSettings;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Sampler);
+    META_PIMPL_METHODS_COMPARE_DECLARE(Sampler);
 
     Sampler(const Ptr<ISampler>& interface_ptr);
     Sampler(ISampler& interface_ref);

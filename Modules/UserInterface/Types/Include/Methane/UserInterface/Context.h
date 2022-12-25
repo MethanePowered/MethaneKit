@@ -26,21 +26,15 @@ Methane user interface context used by all widgets for rendering.
 #include "Types.hpp"
 #include "TypeTraits.hpp"
 
-#include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/RenderPass.h>
+#include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Data/TypeTraits.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Memory.hpp>
 
 namespace rhi = Methane::Graphics::Rhi;
 namespace pal = Methane::Platform;
-
-namespace Methane::Graphics::Rhi
-{
-
-struct ICommandQueue;
-struct IRenderPattern;
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Platform
 {
@@ -53,18 +47,15 @@ namespace Methane::UserInterface
 class Context
 {
 public:
-    Context(const pal::IApp& app, rhi::ICommandQueue& render_cmd_queue, rhi::IRenderPattern& render_pattern);
+    Context(const pal::IApp& app, const rhi::CommandQueue& render_cmd_queue, const rhi::RenderPattern& render_pattern);
 
-    const rhi::IRenderContext& GetRenderContext() const noexcept { return m_render_context; }
-    rhi::IRenderContext&       GetRenderContext() noexcept       { return m_render_context; }
-    rhi::ICommandQueue&        GetRenderCommandQueue() noexcept  { return *m_render_cmd_queue_ptr; }
+    const rhi::RenderContext& GetRenderContext() const noexcept      { return m_render_context; }
+    const rhi::CommandQueue&  GetRenderCommandQueue() const noexcept { return m_render_cmd_queue; }
+    const rhi::RenderPattern& GetRenderPattern() const noexcept      { return m_render_pattern; }
 
-    const Ptr<rhi::IRenderPattern>& GetRenderPatternPtr() const noexcept { return m_render_pattern_ptr; }
-    rhi::IRenderPattern&            GetRenderPattern() const noexcept    { return *m_render_pattern_ptr; }
-
-    double           GetDotsToPixelsFactor() const noexcept     { return m_dots_to_pixels_factor; }
-    uint32_t         GetFontResolutionDpi() const noexcept      { return m_font_resolution_dpi; }
-    const FrameSize& GetFrameSize() const noexcept              { return GetRenderContext().GetSettings().frame_size; }
+    double           GetDotsToPixelsFactor() const noexcept { return m_dots_to_pixels_factor; }
+    uint32_t         GetFontResolutionDpi() const noexcept  { return m_font_resolution_dpi; }
+    const FrameSize& GetFrameSize() const noexcept          { return GetRenderContext().GetSettings().frame_size; }
 
     template<Units units>
     [[nodiscard]] UnitSize  GetFrameSizeIn() const
@@ -156,11 +147,11 @@ public:
     }
 
 private:
-    rhi::IRenderContext&           m_render_context;
-    const Ptr<rhi::ICommandQueue>  m_render_cmd_queue_ptr;
-    const Ptr<rhi::IRenderPattern> m_render_pattern_ptr;
-    double                         m_dots_to_pixels_factor;
-    uint32_t                       m_font_resolution_dpi;
+    const rhi::RenderContext m_render_context;
+    const rhi::CommandQueue  m_render_cmd_queue;
+    const rhi::RenderPattern m_render_pattern;
+    double                   m_dots_to_pixels_factor;
+    uint32_t                 m_font_resolution_dpi;
 };
 
 } // namespace Methane::UserInterface

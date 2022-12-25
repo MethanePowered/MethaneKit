@@ -45,6 +45,7 @@ public:
     using ResourceViewsByArgument = std::unordered_map<ProgramArgument, IResource::Views, ProgramArgument::Hash>;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ProgramBindings);
+    META_PIMPL_METHODS_COMPARE_DECLARE(ProgramBindings);
 
     ProgramBindings(const Ptr<IProgramBindings>& interface_ptr);
     ProgramBindings(IProgramBindings& interface_ref);

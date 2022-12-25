@@ -50,6 +50,7 @@ public:
     using IncompatibleException = ContextIncompatibleException;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderContext);
+    META_PIMPL_METHODS_COMPARE_DECLARE(RenderContext);
 
     RenderContext(const Ptr<IRenderContext>& render_context_ptr);
     RenderContext(IRenderContext& render_context);

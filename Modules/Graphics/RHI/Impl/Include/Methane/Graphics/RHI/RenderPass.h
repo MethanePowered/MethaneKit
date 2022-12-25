@@ -47,6 +47,7 @@ public:
     using Settings          = RenderPatternSettings;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderPattern);
+    META_PIMPL_METHODS_COMPARE_DECLARE(RenderPattern);
 
     RenderPattern(const Ptr<IRenderPattern>& interface_ptr);
     RenderPattern(IRenderPattern& interface_ref);
@@ -94,6 +95,7 @@ public:
     using ICallback         = IRenderPassCallback;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderPass);
+    META_PIMPL_METHODS_COMPARE_DECLARE(RenderPass);
 
     RenderPass(const Ptr<IRenderPass>& interface_ptr);
     RenderPass(IRenderPass& interface_ref);

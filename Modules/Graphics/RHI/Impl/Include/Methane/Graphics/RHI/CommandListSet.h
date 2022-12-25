@@ -34,12 +34,13 @@ class CommandListSet
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandListSet);
+    META_PIMPL_METHODS_COMPARE_DECLARE(CommandListSet);
 
     CommandListSet(const Ptr<ICommandListSet>& interface_ptr);
     CommandListSet(ICommandListSet& interface_ref);
     CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
-    void Init(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
+    void Init(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt = {});
     void Release();
 
     bool IsInitialized() const META_PIMPL_NOEXCEPT;

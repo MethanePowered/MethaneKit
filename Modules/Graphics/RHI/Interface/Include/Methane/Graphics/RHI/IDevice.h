@@ -95,8 +95,7 @@ struct IDevice
 
 struct ISystem
 {
-    static NativeApi GetNativeApi() noexcept;
-
+    [[nodiscard]] static NativeApi GetNativeApi() noexcept;
     [[nodiscard]] static ISystem& Get();
 
     virtual void CheckForChanges() = 0;

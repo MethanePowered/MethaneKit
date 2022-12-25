@@ -61,6 +61,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandQueue);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(CommandQueue);
 
 CommandQueue::CommandQueue(ImplPtr<Impl>&& impl_ptr)
     : Data::Transmitter<IObjectCallback>(impl_ptr->GetInterface())

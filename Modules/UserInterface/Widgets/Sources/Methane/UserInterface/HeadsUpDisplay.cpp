@@ -35,9 +35,9 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/UserInterface/Font.h>
 #include <Methane/UserInterface/Context.h>
 
-#include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/Device.h>
 #include <Methane/Graphics/RHI/IFpsCounter.h>
-#include <Methane/Graphics/RHI/IDevice.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
@@ -278,8 +278,8 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
         return;
     }
 
-    const rhi::IFpsCounter          &            fps_counter = GetUIContext().GetRenderContext().GetFpsCounter();
-    const rhi::RenderContextSettings& context_settings       = GetUIContext().GetRenderContext().GetSettings();
+    const rhi::IFpsCounter&           fps_counter      = GetUIContext().GetRenderContext().GetFpsCounter();
+    const rhi::RenderContextSettings& context_settings = GetUIContext().GetRenderContext().GetSettings();
 
     GetTextBlock(TextBlock::Fps).SetText(fmt::format("{:d} FPS", fps_counter.GetFramesPerSecond()));
     GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
@@ -305,7 +305,7 @@ void HeadsUpDisplay::Draw(const rhi::RenderCommandList& cmd_list, const rhi::Com
 
     for(const Ptr<Text>& text_ptr : m_text_blocks)
     {
-        text_ptr->Draw(cmd_list.GetInterface(), debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+        text_ptr->Draw(cmd_list, debug_group_ptr);
     }
 }
 

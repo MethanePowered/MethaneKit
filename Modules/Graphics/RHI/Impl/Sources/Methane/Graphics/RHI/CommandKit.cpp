@@ -45,6 +45,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandKit);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(CommandKit);
 
 CommandKit::CommandKit(ImplPtr<Impl>&& impl_ptr)
     : Data::Transmitter<IObjectCallback>(impl_ptr->GetInterface())

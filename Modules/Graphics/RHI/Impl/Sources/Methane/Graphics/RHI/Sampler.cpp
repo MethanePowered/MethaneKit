@@ -60,6 +60,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Sampler);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(Sampler);
 
 Sampler::Sampler(ImplPtr<Impl>&& impl_ptr)
     : Transmitter<IObjectCallback>(impl_ptr->GetInterface())

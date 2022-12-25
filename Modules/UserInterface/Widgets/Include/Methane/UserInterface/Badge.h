@@ -70,7 +70,7 @@ public:
     };
 
     Badge(Context& ui_context, Data::IProvider& data_provider, const std::string& image_path, const Settings& settings);
-    Badge(Context& ui_context, const Ptr<rhi::ITexture>& texture_ptr, const Settings& settings);
+    Badge(Context& ui_context, const rhi::Texture& texture, const Settings& settings);
 
     void FrameResize(const UnitSize& frame_size, Opt<UnitSize> badge_size = {}, Opt<UnitSize> margins = {});
     void SetCorner(FrameCorner frame_corner);

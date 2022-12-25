@@ -22,13 +22,10 @@ Renders text labels to the faces of cube-map texture array
 ******************************************************************************/
 
 #include <Methane/Tutorials/TextureLabeler.h>
-#include <Methane/Graphics/RHI/IDevice.h>
-#include <Methane/Graphics/RHI/RenderCommandList.h>
-#include <Methane/Graphics/RHI/ITexture.h>
-#include <Methane/Graphics/RHI/IRenderPass.h>
-#include <Methane/Graphics/RHI/ICommandListSet.h>
+#include <Methane/Graphics/RHI/Device.h>
+#include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
-#include <Methane/Graphics/RHI/ICommandQueue.h>
+#include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/ScreenQuad.h>
 #include <Methane/UserInterface/Context.h>
 #include <Methane/UserInterface/Font.h>
@@ -75,7 +72,8 @@ static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size
 }
 
 TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider& font_provider,
-                               rhi::ITexture& rt_texture, rhi::ResourceState rt_texture_final_state, const Settings& settings)
+                               const rhi::Texture& rt_texture, rhi::ResourceState rt_texture_final_state,
+                               const Settings& settings)
     : m_gui_context(gui_context)
     , m_rt_texture(rt_texture)
     , m_font(gui::Font::Library::Get().GetFont(font_provider, gui::Font::Settings{
@@ -87,15 +85,15 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
 
     META_CHECK_ARG_TRUE(rt_texture_settings.usage_mask.HasAnyBit(rhi::ResourceUsage::RenderTarget));
 
-    m_texture_face_render_pattern_ptr = rhi::IRenderPattern::Create(m_gui_context.GetRenderContext(),
-        rhi::IRenderPattern::Settings
+    m_texture_face_render_pattern.Init(m_gui_context.GetRenderContext(),
+        rhi::RenderPattern::Settings
         {
-            rhi::IRenderPattern::ColorAttachments
+            rhi::RenderPattern::ColorAttachments
             {
-                rhi::IRenderPattern::ColorAttachment(
+                rhi::RenderPattern::ColorAttachment(
                     0U, rt_texture_settings.pixel_format, 1U,
-                    rhi::IRenderPattern::ColorAttachment::LoadAction::Clear,
-                    rhi::IRenderPattern::ColorAttachment::StoreAction::Store,
+                    rhi::RenderPattern::ColorAttachment::LoadAction::Clear,
+                    rhi::RenderPattern::ColorAttachment::StoreAction::Store,
                     settings.border_color)
             },
             std::nullopt, // No depth attachment
@@ -105,7 +103,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
         });
 
     const std::string_view rt_texture_name = m_rt_texture.GetName();
-    m_texture_face_render_pattern_ptr->SetName(fmt::format("Texture '{}' Face Render Pattern", rt_texture_name));
+    m_texture_face_render_pattern.SetName(fmt::format("Texture '{}' Face Render Pattern", rt_texture_name));
 
     gui::Text::SettingsUtf32 slice_text_settings
     {
@@ -136,23 +134,23 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
             m_slices.emplace_back(GetSliceDesc(array_index, depth_index, settings.cube_slice_descs, rt_texture_settings, sub_res_count));
             TextureLabeler::Slice& slice = m_slices.back();
 
-            slice.render_pass_ptr = rhi::IRenderPass::Create(*m_texture_face_render_pattern_ptr, {
-                { rhi::ITexture::View(rt_texture, rhi::SubResource::Index(depth_index, array_index), {}, rhi::TextureDimensionType::Tex2D) },
+            slice.render_pass.Init(m_texture_face_render_pattern, {
+                { rhi::TextureView(rt_texture.GetInterface(), rhi::SubResource::Index(depth_index, array_index), {}, rhi::TextureDimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
-            slice.render_pass_ptr->SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));
+            slice.render_pass.SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));
 
-            slice.render_cmd_list_ptr = rhi::IRenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *slice.render_pass_ptr);
-            slice.render_cmd_list_ptr->SetName(fmt::format("Render Texture '{}' Slice {}:{} Label", rt_texture_name, array_index, depth_index));
-            slice_render_cmd_list_refs.emplace_back(*slice.render_cmd_list_ptr);
+            slice.render_cmd_list.Init(m_gui_context.GetRenderCommandQueue(), slice.render_pass);
+            slice.render_cmd_list.SetName(fmt::format("Render Texture '{}' Slice {}:{} Label", rt_texture_name, array_index, depth_index));
+            slice_render_cmd_list_refs.emplace_back(slice.render_cmd_list.GetInterface());
 
             slice_text_settings.name = fmt::format("Texture '{}' Slice {}:{} Label Text", rt_texture_name, array_index, depth_index);
             slice_text_settings.text = gui::Font::ConvertUtf8To32(slice.label);
 
-            slice.label_text_ptr = std::make_shared<gui::Text>(m_gui_context, *m_texture_face_render_pattern_ptr, m_font, slice_text_settings);
+            slice.label_text_ptr = std::make_shared<gui::Text>(m_gui_context, m_texture_face_render_pattern, m_font, slice_text_settings);
             slice.label_text_ptr->Update(rt_texture_settings.dimensions.AsRectSize());
 
-            slice.bg_quad_ptr = std::make_shared<gfx::ScreenQuad>(m_gui_context.GetRenderCommandQueue(), *m_texture_face_render_pattern_ptr,
+            slice.bg_quad_ptr = std::make_shared<gfx::ScreenQuad>(m_gui_context.GetRenderCommandQueue(), m_texture_face_render_pattern,
                 gfx::ScreenQuad::Settings
                 {
                     fmt::format("Texture '{}' Slice BG Quad {}:{}", rt_texture_name, array_index, depth_index),
@@ -167,24 +165,24 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
     }
 
     if (rt_texture_final_state != rhi::ResourceState::Undefined &&
-        rhi::ISystem::GetNativeApi() != rhi::NativeApi::Metal) // No need in resource state transition barriers in Metal
+        rhi::System::GetNativeApi() != rhi::NativeApi::Metal) // No need in resource state transition barriers in Metal
     {
-        m_ending_render_pattern_ptr = rhi::IRenderPattern::Create(m_gui_context.GetRenderContext(), {
+        m_ending_render_pattern.Init(m_gui_context.GetRenderContext(), {
             rhi::IRenderPattern::ColorAttachments{ },
             std::nullopt, std::nullopt,
             rhi::RenderPassAccessMask(rhi::RenderPassAccess::ShaderResources),
             false
         });
-        m_ending_render_pass_ptr = rhi::IRenderPass::Create(*m_ending_render_pattern_ptr, { { }, rt_texture_settings.dimensions.AsRectSize() });
-        m_ending_render_cmd_list_ptr = rhi::IRenderCommandList::Create(m_gui_context.GetRenderCommandQueue(), *m_ending_render_pass_ptr);
-        m_ending_render_cmd_list_ptr->SetName(fmt::format("Render Texture State Transition", rt_texture_name));
-        m_ending_resource_barriers_ptr = rhi::IResourceBarriers::Create({
-            { m_rt_texture, rhi::ResourceState::RenderTarget, rt_texture_final_state }
+        m_ending_render_pass.Init(m_ending_render_pattern, { { }, rt_texture_settings.dimensions.AsRectSize() });
+        m_ending_render_cmd_list.Init(m_gui_context.GetRenderCommandQueue(), m_ending_render_pass);
+        m_ending_render_cmd_list.SetName(fmt::format("Render Texture State Transition", rt_texture_name));
+        m_ending_resource_barriers.Init({
+            { m_rt_texture.GetInterface(), rhi::ResourceState::RenderTarget, rt_texture_final_state }
         });
-        slice_render_cmd_list_refs.emplace_back(*m_ending_render_cmd_list_ptr);
+        slice_render_cmd_list_refs.emplace_back(m_ending_render_cmd_list.GetInterface());
     }
 
-    m_render_cmd_list_set_ptr = rhi::ICommandListSet::Create(slice_render_cmd_list_refs);
+    m_render_cmd_list_set.Init(slice_render_cmd_list_refs);
 }
 
 void TextureLabeler::Render()
@@ -194,21 +192,21 @@ void TextureLabeler::Render()
     {
         META_CHECK_ARG_NOT_NULL(slice.bg_quad_ptr);
         META_CHECK_ARG_NOT_NULL(slice.label_text_ptr);
-        META_CHECK_ARG_NOT_NULL(slice.render_cmd_list_ptr);
+        META_CHECK_ARG_TRUE(slice.render_cmd_list.IsInitialized());
 
-        slice.bg_quad_ptr->Draw(*slice.render_cmd_list_ptr, &s_debug_group);
-        slice.label_text_ptr->Draw(*slice.render_cmd_list_ptr, &s_debug_group.GetInterface());
-        slice.render_cmd_list_ptr->Commit();
+        slice.bg_quad_ptr->Draw(slice.render_cmd_list, &s_debug_group);
+        slice.label_text_ptr->Draw(slice.render_cmd_list, &s_debug_group);
+        slice.render_cmd_list.Commit();
     }
 
-    if (m_ending_resource_barriers_ptr)
+    if (m_ending_resource_barriers.IsInitialized())
     {
-        m_ending_render_cmd_list_ptr->Reset();
-        m_ending_render_cmd_list_ptr->SetResourceBarriers(*m_ending_resource_barriers_ptr);
-        m_ending_render_cmd_list_ptr->Commit();
+        m_ending_render_cmd_list.Reset();
+        m_ending_render_cmd_list.SetResourceBarriers(m_ending_resource_barriers);
+        m_ending_render_cmd_list.Commit();
     }
 
-    m_gui_context.GetRenderCommandQueue().Execute(*m_render_cmd_list_set_ptr);
+    m_gui_context.GetRenderCommandQueue().Execute(m_render_cmd_list_set);
 }
 
 } // namespace Methane::Tutorials

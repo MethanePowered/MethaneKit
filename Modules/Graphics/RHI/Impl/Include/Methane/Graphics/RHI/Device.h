@@ -42,10 +42,12 @@ public:
     using Capabilities = DeviceCaps;
 
     META_PIMPL_METHODS_DECLARE(Device);
+    META_PIMPL_METHODS_COMPARE_DECLARE(Device);
 
     Device(const Ptr<IDevice>& interface_ptr);
     Device(IDevice& interface_ref);
 
+    bool IsInitialized() const META_PIMPL_NOEXCEPT { return true; }
     IDevice& GetInterface() const META_PIMPL_NOEXCEPT;
     Ptr<IDevice> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
@@ -72,6 +74,7 @@ using Devices = std::vector<Device>;
 class System
 {
 public:
+    [[nodiscard]] static NativeApi GetNativeApi() noexcept;
     [[nodiscard]] static System& Get();
 
     META_PIMPL_METHODS_DECLARE(System);

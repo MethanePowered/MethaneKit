@@ -129,6 +129,11 @@ public:
 
 META_PIMPL_METHODS_IMPLEMENT(System);
 
+NativeApi System::GetNativeApi() noexcept
+{
+    return ISystem::GetNativeApi();
+}
+
 System& System::Get()
 {
     static System s_system(static_cast<Base::System&>(ISystem::Get()).GetPtr());

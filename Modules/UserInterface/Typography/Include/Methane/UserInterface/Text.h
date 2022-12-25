@@ -26,7 +26,14 @@ Methane text rendering primitive.
 #include "Font.h"
 
 #include <Methane/UserInterface/Item.h>
-#include <Methane/Graphics/RHI/ICommandList.h>
+#include <Methane/Graphics/RHI/CommandListDebugGroup.h>
+#include <Methane/Graphics/RHI/RenderState.h>
+#include <Methane/Graphics/RHI/RenderPass.h>
+#include <Methane/Graphics/RHI/ViewState.h>
+#include <Methane/Graphics/RHI/ProgramBindings.h>
+#include <Methane/Graphics/RHI/Buffer.h>
+#include <Methane/Graphics/RHI/Texture.h>
+#include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Data/Receiver.hpp>
 #include <Methane/Data/EnumMask.hpp>
@@ -35,16 +42,8 @@ Methane text rendering primitive.
 
 namespace Methane::Graphics::Rhi
 {
-struct IRenderContext;
-struct IRenderCommandList;
-struct IRenderState;
-struct IRenderPattern;
-struct IViewState;
-struct IProgramBindings;
-struct IBuffer;
-struct IBufferSet;
-struct ITexture;
-struct ISampler;
+class RenderContext;
+class RenderCommandList;
 }
 
 namespace Methane::UserInterface
@@ -126,9 +125,9 @@ public:
     using SettingsUtf32 = Settings<std::u32string>;
 
 
-    Text(Context& ui_context, rhi::IRenderPattern& render_pattern, Font& font, const SettingsUtf8& settings);
+    Text(Context& ui_context, const rhi::RenderPattern& render_pattern, Font& font, const SettingsUtf8& settings);
     Text(Context& ui_context, Font& font, const SettingsUtf8& settings);
-    Text(Context& ui_context, rhi::IRenderPattern& render_pattern, Font& font, SettingsUtf32 settings);
+    Text(Context& ui_context, const rhi::RenderPattern& render_pattern, Font& font, SettingsUtf32 settings);
     Text(Context& ui_context, Font& font, SettingsUtf32 settings);
     ~Text() override;
 
@@ -151,21 +150,21 @@ public:
     bool SetRect(const UnitRect& ui_rect) override;
 
     void Update(const gfx::FrameSize& render_attachment_size);
-    void Draw(rhi::IRenderCommandList& cmd_list, rhi::ICommandListDebugGroup* debug_group_ptr = nullptr);
+    void Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr = nullptr);
 
 protected:
     // IFontCallback interface
-    void OnFontAtlasTextureReset(Font& font, const Ptr<rhi::ITexture>& old_atlas_texture_ptr, const Ptr<rhi::ITexture>& new_atlas_texture_ptr) override;
+    void OnFontAtlasTextureReset(Font& font, const rhi::Texture* old_atlas_texture_ptr, const rhi::Texture* new_atlas_texture_ptr) override;
     void OnFontAtlasUpdated(Font&) override { /* not handled in this class */ }
 
 private:
     struct CommonResourceRefs
     {
-        rhi::IRenderContext&      render_context;
-        const rhi::IRenderState&  render_state;
-        const Ptr<rhi::IBuffer> & const_buffer_ptr;
-        const Ptr<rhi::ITexture>& atlas_texture_ptr;
-        const Ptr<rhi::ISampler>& atlas_sampler_ptr;
+        const rhi::RenderContext& render_context;
+        const rhi::RenderState&   render_state;
+        const rhi::Buffer&        const_buffer;
+        const rhi::Texture&       atlas_texture;
+        const rhi::Sampler&       atlas_sampler;
         const TextMesh&           text_mesh;
     };
 
@@ -187,27 +186,27 @@ private:
 
         [[nodiscard]] bool IsDirty(DirtyResource resource) const noexcept;
         [[nodiscard]] bool IsDirty() const noexcept;
-        [[nodiscard]] bool IsInitialized() const noexcept      { return m_program_bindings_ptr && m_vertex_buffer_set_ptr && m_index_buffer_ptr; }
-        [[nodiscard]] bool IsAtlasInitialized() const noexcept { return !!m_atlas_texture_ptr; }
+        [[nodiscard]] bool IsInitialized() const noexcept;
+        [[nodiscard]] bool IsAtlasInitialized() const noexcept;
 
-        [[nodiscard]] rhi::IBufferSet&       GetVertexBufferSet() const;
-        [[nodiscard]] rhi::IBuffer&          GetIndexBuffer() const;
-        [[nodiscard]] rhi::IProgramBindings& GetProgramBindings() const;
+        [[nodiscard]] const rhi::BufferSet&       GetVertexBufferSet() const noexcept;
+        [[nodiscard]] const rhi::Buffer&          GetIndexBuffer() const noexcept;
+        [[nodiscard]] const rhi::ProgramBindings& GetProgramBindings() const noexcept;
 
-        bool UpdateAtlasTexture(const Ptr<rhi::ITexture>& new_atlas_texture_ptr); // returns true if probram bindings were updated, false if bindings have to be initialized
-        void UpdateMeshBuffers(const rhi::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
-        void UpdateUniformsBuffer(const rhi::IRenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
-        void InitializeProgramBindings(const rhi::IRenderState& state, const Ptr<rhi::IBuffer>& const_buffer_ptr,
-                                       const Ptr<rhi::ISampler>& atlas_sampler_ptr, std::string_view text_name);
+        bool UpdateAtlasTexture(const rhi::Texture& new_atlas_texture); // returns true if program bindings were updated, false if bindings have to be initialized
+        void UpdateMeshBuffers(const rhi::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
+        void UpdateUniformsBuffer(const rhi::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
+        void InitializeProgramBindings(const rhi::RenderState& state, const rhi::Buffer& const_buffer_ptr,
+                                       const rhi::Sampler& atlas_sampler_ptr, std::string_view text_name);
 
     private:
-        uint32_t                   m_frame_index;
-        DirtyResourceMask          m_dirty_mask { ~0U };
-        Ptr<rhi::IBufferSet>       m_vertex_buffer_set_ptr;
-        Ptr<rhi::IBuffer>          m_index_buffer_ptr;
-        Ptr<rhi::IBuffer>          m_uniforms_buffer_ptr;
-        Ptr<rhi::ITexture>         m_atlas_texture_ptr;
-        Ptr<rhi::IProgramBindings> m_program_bindings_ptr;
+        uint32_t             m_frame_index;
+        DirtyResourceMask    m_dirty_mask { ~0U };
+        rhi::BufferSet       m_vertex_buffer_set;
+        rhi::Buffer          m_index_buffer;
+        rhi::Buffer          m_uniforms_buffer;
+        rhi::Texture         m_atlas_texture;
+        rhi::ProgramBindings m_program_bindings;
     };
 
     void InitializeFrameResources();
@@ -231,11 +230,11 @@ private:
     UnitRect                    m_frame_rect;
     FrameSize                   m_render_attachment_size = FrameSize::Max();
     Ptr<Font>                   m_font_ptr;
-    UniquePtr<TextMesh>    m_text_mesh_ptr;
-    Ptr<rhi::IRenderState> m_render_state_ptr;
-    Ptr<rhi::IViewState> m_view_state_ptr;
-    Ptr<rhi::IBuffer>           m_const_buffer_ptr;
-    Ptr<rhi::ISampler>          m_atlas_sampler_ptr;
+    UniquePtr<TextMesh>         m_text_mesh_ptr;
+    rhi::RenderState            m_render_state;
+    rhi::ViewState              m_view_state;
+    rhi::Buffer                 m_const_buffer;
+    rhi::Sampler                m_atlas_sampler;
     std::vector<FrameResources> m_frame_resources;
     bool                        m_is_viewport_dirty = true;
     bool                        m_is_const_buffer_dirty = true;

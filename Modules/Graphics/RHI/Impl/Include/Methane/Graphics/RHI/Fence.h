@@ -38,6 +38,7 @@ class Fence
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Fence);
+    META_PIMPL_METHODS_COMPARE_DECLARE(Fence);
 
     Fence(const Ptr<IFence>& interface_ptr);
     Fence(IFence& interface_ref);

@@ -66,6 +66,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ParallelRenderCommandList);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(ParallelRenderCommandList);
 
 ParallelRenderCommandList::ParallelRenderCommandList(ImplPtr<Impl>&& impl_ptr)
     : Transmitter<Rhi::ICommandListCallback>(impl_ptr->GetInterface())

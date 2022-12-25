@@ -39,6 +39,7 @@ class CommandListDebugGroup
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandListDebugGroup);
+    META_PIMPL_METHODS_COMPARE_DECLARE(CommandListDebugGroup);
 
     CommandListDebugGroup(const Ptr<ICommandListDebugGroup>& interface_ptr);
     CommandListDebugGroup(ICommandListDebugGroup& interface_ref);

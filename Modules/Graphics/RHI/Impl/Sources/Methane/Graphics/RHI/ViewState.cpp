@@ -60,6 +60,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ViewState);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(ViewState);
 
 ViewState::ViewState(const Ptr<IViewState>& interface_ptr)
     : m_impl_ptr(std::make_unique<Impl>(interface_ptr))

@@ -53,6 +53,7 @@ public:
     using ICallback   = ICommandListCallback;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderCommandList);
+    META_PIMPL_METHODS_COMPARE_DECLARE(RenderCommandList);
 
     RenderCommandList(const Ptr<IRenderCommandList>& interface_ptr);
     RenderCommandList(IRenderCommandList& interface_ref);

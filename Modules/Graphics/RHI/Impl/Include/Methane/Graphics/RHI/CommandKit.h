@@ -41,6 +41,7 @@ class CommandKit
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandKit);
+    META_PIMPL_METHODS_COMPARE_DECLARE(CommandKit);
 
     CommandKit(const Ptr<ICommandKit>& interface_ptr);
     CommandKit(ICommandKit& interface_ref);

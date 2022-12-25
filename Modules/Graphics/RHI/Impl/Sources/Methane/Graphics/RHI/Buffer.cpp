@@ -65,6 +65,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Buffer);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(Buffer);
 
 Buffer::Buffer(ImplPtr<Impl>&& impl_ptr)
     : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
@@ -263,6 +264,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(BufferSet);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(BufferSet);
 
 BufferSet::BufferSet(ImplPtr<Impl>&& impl_ptr)
     : Transmitter(impl_ptr->GetInterface())
@@ -287,6 +289,7 @@ BufferSet::BufferSet(BufferType buffers_type, const Refs<Buffer>& buffer_refs)
 
 void BufferSet::Init(BufferType buffers_type, const Refs<Buffer>& buffer_refs)
 {
+    m_buffers.clear();
     m_impl_ptr = std::make_unique<Impl>(IBufferSet::Create(buffers_type, GetIBufferRefs(buffer_refs)));
     Transmitter::Reset(&m_impl_ptr->GetInterface());
 }
@@ -295,6 +298,7 @@ void BufferSet::Release()
 {
     Transmitter::Reset();
     m_impl_ptr.reset();
+    m_buffers.clear();
 }
 
 bool BufferSet::IsInitialized() const META_PIMPL_NOEXCEPT

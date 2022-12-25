@@ -43,6 +43,7 @@ public:
     using EntryFunction    = ShaderEntryFunction;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Shader);
+    META_PIMPL_METHODS_COMPARE_DECLARE(Shader);
 
     Shader(const Ptr<IShader>& interface_ptr);
     Shader(IShader& interface_ref);

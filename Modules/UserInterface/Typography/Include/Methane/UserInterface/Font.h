@@ -23,7 +23,8 @@ Font atlas textures generation and fonts library management classes.
 
 #pragma once
 
-#include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Data/IProvider.h>
 #include <Methane/Data/Emitter.hpp>
@@ -33,11 +34,6 @@ Font atlas textures generation and fonts library management classes.
 #include <string>
 #include <cctype>
 #include <stdexcept>
-
-namespace Methane::Graphics::Rhi
-{
-struct ITexture;
-}
 
 namespace Methane::UserInterface
 {
@@ -57,7 +53,7 @@ struct IFontLibraryCallback
 
 struct IFontCallback
 {
-    virtual void OnFontAtlasTextureReset(Font& font, const Ptr<rhi::ITexture>& old_atlas_texture_ptr, const Ptr<rhi::ITexture>& new_atlas_texture_ptr) = 0;
+    virtual void OnFontAtlasTextureReset(Font& font, const rhi::Texture* old_atlas_texture_ptr, const rhi::Texture* new_atlas_texture_ptr) = 0;
     virtual void OnFontAtlasUpdated(Font& font) = 0;
 
     virtual ~IFontCallback() = default;
@@ -196,17 +192,16 @@ public:
     void              AddChars(const std::u32string& utf32_characters);
     const Font::Char& AddChar(Char::Code char_code);
     
-    [[nodiscard]] bool                      HasChar(Char::Code char_code) const;
-    [[nodiscard]] const Char&               GetChar(Char::Code char_code) const;
-    [[nodiscard]] Chars                     GetChars() const;
-    [[nodiscard]] Chars                     GetTextChars(const std::string& text);
-    [[nodiscard]] Chars                     GetTextChars(const std::u32string& text);
-    [[nodiscard]] gfx:: FramePoint          GetKerning(const Char& left_char, const Char& right_char) const;
-    [[nodiscard]] uint32_t                  GetLineHeight() const;
-    [[nodiscard]] const gfx::FrameSize&     GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
-    [[nodiscard]] const gfx::FrameSize&     GetAtlasSize() const noexcept;
-    [[nodiscard]] const Ptr<rhi::ITexture>& GetAtlasTexturePtr(rhi::IRenderContext& context);
-    [[nodiscard]] rhi::ITexture&            GetAtlasTexture(rhi::IRenderContext& context);
+    [[nodiscard]] bool                  HasChar(Char::Code char_code) const;
+    [[nodiscard]] const Char&           GetChar(Char::Code char_code) const;
+    [[nodiscard]] Chars                 GetChars() const;
+    [[nodiscard]] Chars                 GetTextChars(const std::string& text);
+    [[nodiscard]] Chars                 GetTextChars(const std::u32string& text);
+    [[nodiscard]] gfx:: FramePoint      GetKerning(const Char& left_char, const Char& right_char) const;
+    [[nodiscard]] uint32_t              GetLineHeight() const;
+    [[nodiscard]] const gfx::FrameSize& GetMaxGlyphSize() const noexcept { return m_max_glyph_size; }
+    [[nodiscard]] const gfx::FrameSize& GetAtlasSize() const noexcept;
+    [[nodiscard]] const rhi::Texture&   GetAtlasTexture(const rhi::RenderContext& context);
 
 protected:
     // Font can be created only via Font::Library::Add
@@ -223,16 +218,16 @@ protected:
 private:
     struct AtlasTexture
     {
-        Ptr<rhi::ITexture> texture_ptr;
-        bool               is_update_required = true;
+        rhi::Texture texture;
+        bool         is_update_required = true;
     };
 
-    AtlasTexture CreateAtlasTexture(const rhi::IRenderContext& context, bool deferred_data_init);
-    void RemoveAtlasTexture(rhi::IRenderContext& context);
+    AtlasTexture CreateAtlasTexture(const rhi::RenderContext& context, bool deferred_data_init);
+    void RemoveAtlasTexture(const rhi::RenderContext& context);
 
     bool UpdateAtlasBitmap(bool deferred_textures_update);
     void UpdateAtlasTextures(bool deferred_textures_update);
-    void UpdateAtlasTexture(const rhi::IRenderContext& context, AtlasTexture& atlas_texture);
+    void UpdateAtlasTexture(const rhi::RenderContext& context, AtlasTexture& atlas_texture);
     void ClearAtlasTextures();
 
     class Face;

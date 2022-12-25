@@ -63,6 +63,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderPattern);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderPattern);
 
 RenderPattern::RenderPattern(ImplPtr<Impl>&& impl_ptr)
     : Transmitter(impl_ptr->GetInterface())
@@ -149,6 +150,7 @@ public:
 };
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderPass);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderPass);
 
 RenderPass::RenderPass(ImplPtr<Impl>&& impl_ptr)
     : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
