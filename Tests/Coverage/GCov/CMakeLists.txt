@@ -7,7 +7,7 @@ list(APPEND TEST_TARGETS
     MethanePlatformInputTest
     MethaneGraphicsCameraTest
     MethaneGraphicsTypesTest
-    MethaneUserInterfaceTypesTest
+    #MethaneUserInterfaceTypesTest # Temporary disabled until RHI Null API is implemented for tests
 )
 
 list(APPEND EXCLUDE_DIRS
