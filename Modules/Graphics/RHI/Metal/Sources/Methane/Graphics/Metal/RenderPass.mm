@@ -35,13 +35,13 @@ namespace Methane::Graphics::Rhi
 Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<Base::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
+    return std::make_shared<Metal::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
 }
 
 Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<Metal::RenderPass>(dynamic_cast<Base::RenderPattern&>(render_pattern), settings);
+    return std::make_shared<Metal::RenderPass>(dynamic_cast<Metal::RenderPattern&>(render_pattern), settings);
 }
 
 } // namespace Methane::Graphics::Rhi
@@ -103,7 +103,7 @@ static void ConvertRenderPassAttachmentToMetal(const Base::RenderPass& render_pa
     }
 }
 
-RenderPass::RenderPass(Base::RenderPattern& render_pattern, const Settings& settings)
+RenderPass::RenderPass(RenderPattern& render_pattern, const Settings& settings)
     : Base::RenderPass(render_pattern, settings)
 {
     META_FUNCTION_TASK();

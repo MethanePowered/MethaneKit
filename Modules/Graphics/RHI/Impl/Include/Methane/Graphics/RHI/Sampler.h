@@ -28,6 +28,11 @@ Methane Sampler PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/ISampler.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class Sampler;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -66,11 +71,11 @@ public:
     [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::Sampler;
 
-    Sampler(ImplPtr<Impl>&& impl_ptr);
+    Sampler(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

@@ -24,52 +24,30 @@ Methane Fence PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/Fence.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 
-#if defined METHANE_GFX_DIRECTX
-
-#include <Methane/Graphics/DirectX/Fence.h>
-using FenceImpl = Methane::Graphics::DirectX::Fence;
-
-#elif defined METHANE_GFX_VULKAN
-
-#include <Methane/Graphics/Vulkan/Fence.h>
-using FenceImpl = Methane::Graphics::Vulkan::Fence;
-
-#elif defined METHANE_GFX_METAL
-
-#include <Methane/Graphics/Metal/Fence.hh>
-using FenceImpl = Methane::Graphics::Metal::Fence;
-
-#else // METHAN_GFX_[API] is undefined
-
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#if defined METHANE_GFX_METAL
+#include <Fence.hh>
+#else
+#include <Fence.h>
 #endif
 
-#include "ImplWrapper.hpp"
+#include "Pimpl.hpp"
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-class Fence::Impl
-    : public ImplWrapper<IFence, FenceImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Fence);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(Fence);
 
-Fence::Fence(ImplPtr<Impl>&& impl_ptr)
-    : Data::Transmitter<IObjectCallback>(impl_ptr->GetInterface())
+Fence::Fence(Ptr<Impl>&& impl_ptr)
+    : Data::Transmitter<IObjectCallback>(*impl_ptr)
     , m_impl_ptr(std::move(impl_ptr))
 {
 }
 
 Fence::Fence(const Ptr<IFence>& interface_ptr)
-    : Fence(std::make_unique<Impl>(interface_ptr))
+    : Fence(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -85,8 +63,8 @@ Fence::Fence(const CommandQueue& command_queue)
 
 void Fence::Init(const CommandQueue& command_queue)
 {
-    m_impl_ptr = std::make_unique<Impl>(IFence::Create(command_queue.GetInterface()));
-    Transmitter::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IFence::Create(command_queue.GetInterface()));
+    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void Fence::Release()
@@ -102,47 +80,47 @@ bool Fence::IsInitialized() const META_PIMPL_NOEXCEPT
 
 IFence& Fence::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<IFence> Fence::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 bool Fence::SetName(std::string_view name) const
 {
-    return GetPrivateImpl(m_impl_ptr).SetName(name);
+    return GetImpl(m_impl_ptr).SetName(name);
 }
 
 std::string_view Fence::GetName() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetName();
+    return GetImpl(m_impl_ptr).GetName();
 }
 
 void Fence::Signal() const
 {
-    GetPrivateImpl(m_impl_ptr).Signal();
+    GetImpl(m_impl_ptr).Signal();
 }
 
 void Fence::WaitOnCpu() const
 {
-    GetPrivateImpl(m_impl_ptr).WaitOnCpu();
+    GetImpl(m_impl_ptr).WaitOnCpu();
 }
 
 void Fence::WaitOnGpu(ICommandQueue& wait_on_command_queue) const
 {
-    GetPrivateImpl(m_impl_ptr).WaitOnGpu(wait_on_command_queue);
+    GetImpl(m_impl_ptr).WaitOnGpu(wait_on_command_queue);
 }
 
 void Fence::FlushOnCpu() const
 {
-    GetPrivateImpl(m_impl_ptr).FlushOnCpu();
+    GetImpl(m_impl_ptr).FlushOnCpu();
 }
 
 void Fence::FlushOnGpu(ICommandQueue& wait_on_command_queue) const
 {
-    GetPrivateImpl(m_impl_ptr).FlushOnGpu(wait_on_command_queue);
+    GetImpl(m_impl_ptr).FlushOnGpu(wait_on_command_queue);
 }
 
 } // namespace Methane::Graphics::Rhi

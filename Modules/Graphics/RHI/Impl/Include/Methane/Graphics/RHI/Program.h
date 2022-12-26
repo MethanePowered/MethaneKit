@@ -28,6 +28,11 @@ Methane Program PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/IProgram.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class Program;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -79,11 +84,11 @@ public:
     [[nodiscard]] Data::Size             GetBindingsCount() const META_PIMPL_NOEXCEPT;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::Program;
 
-    Program(ImplPtr<Impl>&& impl_ptr);
+    Program(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

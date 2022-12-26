@@ -20,6 +20,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderState.hh
     ${INCLUDE_DIR}/ViewState.hh
     ${INCLUDE_DIR}/Resource.hh
+    ${INCLUDE_DIR}/ResourceBarriers.hh
     ${INCLUDE_DIR}/DescriptorManager.h
     ${INCLUDE_DIR}/Buffer.hh
     ${INCLUDE_DIR}/Texture.hh
@@ -101,6 +102,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
     PROPERTIES
+        METHANE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${INCLUDE_DIR}
         FOLDER Modules/Graphics/RHI
         UNITY_BUILD ${METHANE_UNITY_BUILD_ENABLED}
         UNITY_BUILD_BATCH_SIZE 4

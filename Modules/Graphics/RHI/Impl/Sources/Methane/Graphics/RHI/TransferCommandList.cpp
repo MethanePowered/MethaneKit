@@ -25,53 +25,31 @@ Methane TransferCommandList PIMPL wrappers for direct calls to final implementat
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 
-#if defined METHANE_GFX_DIRECTX
-
-#include <Methane/Graphics/DirectX/TransferCommandList.h>
-using TransferCommandListImpl = Methane::Graphics::DirectX::TransferCommandList;
-
-#elif defined METHANE_GFX_VULKAN
-
-#include <Methane/Graphics/Vulkan/TransferCommandList.h>
-using TransferCommandListImpl = Methane::Graphics::Vulkan::TransferCommandList;
-
-#elif defined METHANE_GFX_METAL
-
-#include <Methane/Graphics/Metal/TransferCommandList.hh>
-using TransferCommandListImpl = Methane::Graphics::Metal::TransferCommandList;
-
-#else // METHAN_GFX_[API] is undefined
-
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#if defined METHANE_GFX_METAL
+#include <TransferCommandList.hh>
+#else
+#include <TransferCommandList.h>
 #endif
 
-#include "ImplWrapper.hpp"
+#include "Pimpl.hpp"
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-class TransferCommandList::Impl
-    : public ImplWrapper<ITransferCommandList, TransferCommandListImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(TransferCommandList);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(TransferCommandList);
 
-TransferCommandList::TransferCommandList(ImplPtr<Impl>&& impl_ptr)
-    : Transmitter<Rhi::ICommandListCallback>(impl_ptr->GetInterface())
-    , Transmitter<Rhi::IObjectCallback>(impl_ptr->GetInterface())
+TransferCommandList::TransferCommandList(Ptr<Impl>&& impl_ptr)
+    : Transmitter<Rhi::ICommandListCallback>(*impl_ptr)
+    , Transmitter<Rhi::IObjectCallback>(*impl_ptr)
     , m_impl_ptr(std::move(impl_ptr))
 {
 }
 
 TransferCommandList::TransferCommandList(const Ptr<ITransferCommandList>& interface_ptr)
-    : TransferCommandList(std::make_unique<Impl>(interface_ptr))
+    : TransferCommandList(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -87,9 +65,9 @@ TransferCommandList::TransferCommandList(const CommandQueue& command_queue)
 
 void TransferCommandList::Init(const CommandQueue& command_queue)
 {
-    m_impl_ptr = std::make_unique<Impl>(ITransferCommandList::Create(command_queue.GetInterface()));
-    Transmitter<Rhi::ICommandListCallback>::Reset(&m_impl_ptr->GetInterface());
-    Transmitter<Rhi::IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITransferCommandList::Create(command_queue.GetInterface()));
+    Transmitter<Rhi::ICommandListCallback>::Reset(m_impl_ptr.get());
+    Transmitter<Rhi::IObjectCallback>::Reset(m_impl_ptr.get());
 }
 
 void TransferCommandList::Release()
@@ -106,77 +84,77 @@ bool TransferCommandList::IsInitialized() const META_PIMPL_NOEXCEPT
 
 ITransferCommandList& TransferCommandList::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<ITransferCommandList> TransferCommandList::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 bool TransferCommandList::SetName(std::string_view name) const
 {
-    return GetPrivateImpl(m_impl_ptr).SetName(name);
+    return GetImpl(m_impl_ptr).SetName(name);
 }
 
 std::string_view TransferCommandList::GetName() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetName();
+    return GetImpl(m_impl_ptr).GetName();
 }
 
 void TransferCommandList::PushDebugGroup(DebugGroup& debug_group) const
 {
-    GetPrivateImpl(m_impl_ptr).PushDebugGroup(debug_group.GetInterface());
+    GetImpl(m_impl_ptr).PushDebugGroup(debug_group.GetInterface());
 }
 
 void TransferCommandList::PopDebugGroup() const
 {
-    GetPrivateImpl(m_impl_ptr).PopDebugGroup();
+    GetImpl(m_impl_ptr).PopDebugGroup();
 }
 
 void TransferCommandList::Reset(DebugGroup* debug_group_ptr) const
 {
-    GetPrivateImpl(m_impl_ptr).Reset(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+    GetImpl(m_impl_ptr).Reset(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
 }
 
 void TransferCommandList::ResetOnce(DebugGroup* debug_group_ptr) const
 {
-    GetPrivateImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+    GetImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
 }
 
 void TransferCommandList::SetProgramBindings(IProgramBindings& program_bindings, ProgramBindingsApplyBehaviorMask apply_behavior) const
 {
-    GetPrivateImpl(m_impl_ptr).SetProgramBindings(program_bindings, apply_behavior);
+    GetImpl(m_impl_ptr).SetProgramBindings(program_bindings, apply_behavior);
 }
 
 void TransferCommandList::SetResourceBarriers(const IResourceBarriers& resource_barriers) const
 {
-    GetPrivateImpl(m_impl_ptr).SetResourceBarriers(resource_barriers);
+    GetImpl(m_impl_ptr).SetResourceBarriers(resource_barriers);
 }
 
 void TransferCommandList::Commit() const
 {
-    GetPrivateImpl(m_impl_ptr).Commit();
+    GetImpl(m_impl_ptr).Commit();
 }
 
 void TransferCommandList::WaitUntilCompleted(uint32_t timeout_ms) const
 {
-    GetPrivateImpl(m_impl_ptr).WaitUntilCompleted(timeout_ms);
+    GetImpl(m_impl_ptr).WaitUntilCompleted(timeout_ms);
 }
 
 Data::TimeRange TransferCommandList::GetGpuTimeRange(bool in_cpu_nanoseconds) const
 {
-    return GetPrivateImpl(m_impl_ptr).GetGpuTimeRange(in_cpu_nanoseconds);
+    return GetImpl(m_impl_ptr).GetGpuTimeRange(in_cpu_nanoseconds);
 }
 
 CommandListState TransferCommandList::GetState() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetState();
+    return GetImpl(m_impl_ptr).GetState();
 }
 
 CommandQueue TransferCommandList::GetCommandQueue() const
 {
-    return CommandQueue(GetPrivateImpl(m_impl_ptr).GetCommandQueue());
+    return CommandQueue(GetImpl(m_impl_ptr).GetCommandQueue());
 }
 
 } // namespace Methane::Graphics::Rhi

@@ -30,6 +30,12 @@ Methane Buffer PIMPL wrappers for direct calls to final implementation.
 
 #include <vector>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class Buffer;
+class BufferSet;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -99,11 +105,11 @@ public:
     [[nodiscard]] uint32_t GetFormattedItemsCount() const META_PIMPL_NOEXCEPT;
     
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::Buffer;
 
-    Buffer(ImplPtr<Impl>&& impl_ptr);
+    Buffer(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 class BufferSet
@@ -134,11 +140,11 @@ public:
     [[nodiscard]] const Buffer&  operator[](Data::Index index) const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::BufferSet;
 
-    BufferSet(ImplPtr<Impl>&& impl_ptr);
+    BufferSet(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
     mutable Buffers m_buffers;
 };
 

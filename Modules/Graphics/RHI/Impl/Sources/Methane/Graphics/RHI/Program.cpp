@@ -25,28 +25,13 @@ Methane Program PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/Shader.h>
 
-#if defined METHANE_GFX_DIRECTX
-
-#include <Methane/Graphics/DirectX/Program.h>
-using ProgramImpl = Methane::Graphics::DirectX::Program;
-
-#elif defined METHANE_GFX_VULKAN
-
-#include <Methane/Graphics/Vulkan/Program.h>
-using ProgramImpl = Methane::Graphics::Vulkan::Program;
-
-#elif defined METHANE_GFX_METAL
-
-#include <Methane/Graphics/Metal/Program.hh>
-using ProgramImpl = Methane::Graphics::Metal::Program;
-
-#else // METHAN_GFX_[API] is undefined
-
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#if defined METHANE_GFX_METAL
+#include <Program.hh>
+#else
+#include <Program.h>
 #endif
 
-#include "ImplWrapper.hpp"
+#include "Pimpl.hpp"
 
 #include <Methane/Instrumentation.h>
 
@@ -77,23 +62,16 @@ static IProgram::Settings ConvertProgramSettings(const IContext& context, const 
     };
 }
 
-class Program::Impl
-    : public ImplWrapper<IProgram, ProgramImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Program);
 
-Program::Program(ImplPtr<Impl>&& impl_ptr)
-    : Transmitter(impl_ptr->GetInterface())
+Program::Program(Ptr<Impl>&& impl_ptr)
+    : Transmitter(*impl_ptr)
     , m_impl_ptr(std::move(impl_ptr))
 {
 }
 
 Program::Program(const Ptr<IProgram>& interface_ptr)
-    : Program(std::make_unique<Impl>(interface_ptr))
+    : Program(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -109,8 +87,8 @@ Program::Program(const RenderContext& context, const Settings& settings)
 
 void Program::Init(const RenderContext& context, const Settings& settings)
 {
-    m_impl_ptr = std::make_unique<Impl>(IProgram::Create(context.GetInterface(), ConvertProgramSettings(context.GetInterface(), settings)));
-    Transmitter::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IProgram::Create(context.GetInterface(), ConvertProgramSettings(context.GetInterface(), settings)));
+    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void Program::Release()
@@ -126,42 +104,42 @@ bool Program::IsInitialized() const META_PIMPL_NOEXCEPT
 
 IProgram& Program::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<IProgram> Program::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 bool Program::SetName(std::string_view name) const
 {
-    return GetPrivateImpl(m_impl_ptr).SetName(name);
+    return GetImpl(m_impl_ptr).SetName(name);
 }
 
 std::string_view Program::GetName() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetName();
+    return GetImpl(m_impl_ptr).GetName();
 }
 
 const ProgramSettings& Program::GetSettings() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetSettings();
+    return GetImpl(m_impl_ptr).GetSettings();
 }
 
 const ShaderTypes& Program::GetShaderTypes() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetShaderTypes();
+    return GetImpl(m_impl_ptr).GetShaderTypes();
 }
 
 Shader Program::GetShader(ShaderType shader_type) const
 {
-    return Shader(GetPrivateImpl(m_impl_ptr).GetShader(shader_type));
+    return Shader(GetImpl(m_impl_ptr).GetShader(shader_type));
 }
 
 Data::Size Program::GetBindingsCount() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetBindingsCount();
+    return GetImpl(m_impl_ptr).GetBindingsCount();
 }
 
 } // namespace Methane::Graphics::Rhi

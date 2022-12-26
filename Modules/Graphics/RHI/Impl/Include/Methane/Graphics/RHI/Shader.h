@@ -27,6 +27,11 @@ Methane Shader PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/IShader.h>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class Shader;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -61,9 +66,9 @@ public:
     [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::Shader;
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

@@ -24,53 +24,31 @@ Methane Sampler PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 
-#if defined METHANE_GFX_DIRECTX
-
-#include <Methane/Graphics/DirectX/Sampler.h>
-using SamplerImpl = Methane::Graphics::DirectX::Sampler;
-
-#elif defined METHANE_GFX_VULKAN
-
-#include <Methane/Graphics/Vulkan/Sampler.h>
-using SamplerImpl = Methane::Graphics::Vulkan::Sampler;
-
-#elif defined METHANE_GFX_METAL
-
-#include <Methane/Graphics/Metal/Sampler.hh>
-using SamplerImpl = Methane::Graphics::Metal::Sampler;
-
-#else // METHAN_GFX_[API] is undefined
-
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#if defined METHANE_GFX_METAL
+#include <Sampler.hh>
+#else
+#include <Sampler.h>
 #endif
 
-#include "ImplWrapper.hpp"
+#include "Pimpl.hpp"
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-class Sampler::Impl
-    : public ImplWrapper<ISampler, SamplerImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Sampler);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(Sampler);
 
-Sampler::Sampler(ImplPtr<Impl>&& impl_ptr)
-    : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
-    , Transmitter<IResourceCallback>(impl_ptr->GetInterface())
+Sampler::Sampler(Ptr<Impl>&& impl_ptr)
+    : Transmitter<IObjectCallback>(*impl_ptr)
+    , Transmitter<IResourceCallback>(*impl_ptr)
     , m_impl_ptr(std::move(impl_ptr))
 {
 }
 
 Sampler::Sampler(const Ptr<ISampler>& interface_ptr)
-    : Sampler(std::make_unique<Impl>(interface_ptr))
+    : Sampler(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -86,9 +64,9 @@ Sampler::Sampler(const RenderContext& context, const Settings& settings)
 
 void Sampler::Init(const RenderContext& context, const Settings& settings)
 {
-    m_impl_ptr = std::make_unique<Impl>(ISampler::Create(context.GetInterface(), settings));
-    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
-    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ISampler::Create(context.GetInterface(), settings));
+    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
+    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Sampler::Release()
@@ -105,27 +83,27 @@ bool Sampler::IsInitialized() const META_PIMPL_NOEXCEPT
 
 ISampler& Sampler::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<ISampler> Sampler::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 bool Sampler::SetName(std::string_view name) const
 {
-    return GetPrivateImpl(m_impl_ptr).SetName(name);
+    return GetImpl(m_impl_ptr).SetName(name);
 }
 
 std::string_view Sampler::GetName() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetName();
+    return GetImpl(m_impl_ptr).GetName();
 }
 
 const Sampler::Settings& Sampler::GetSettings() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetSettings();
+    return GetImpl(m_impl_ptr).GetSettings();
 }
 
 } // namespace Methane::Graphics::Rhi

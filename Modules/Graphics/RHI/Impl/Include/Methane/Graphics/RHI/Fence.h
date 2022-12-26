@@ -28,6 +28,11 @@ Methane Fence PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/IFence.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class Fence;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -63,11 +68,11 @@ public:
     void FlushOnGpu(ICommandQueue& wait_on_command_queue) const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::Fence;
 
-    Fence(ImplPtr<Impl>&& impl_ptr);
+    Fence(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

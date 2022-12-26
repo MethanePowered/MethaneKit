@@ -28,6 +28,11 @@ Methane TransferCommandList PIMPL wrappers for direct calls to final implementat
 #include <Methane/Graphics/RHI/ITransferCommandList.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class TransferCommandList;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -77,11 +82,11 @@ public:
     [[nodiscard]] CommandQueue GetCommandQueue() const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::TransferCommandList;
 
-    TransferCommandList(ImplPtr<Impl>&& impl_ptr);
+    TransferCommandList(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

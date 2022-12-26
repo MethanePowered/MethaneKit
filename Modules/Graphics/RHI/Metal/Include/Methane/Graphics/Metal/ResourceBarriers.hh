@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2021 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,45 +16,23 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/RenderPass.hh
-Metal implementation of the render pass interface.
+FILE: Methane/Graphics/Metal/ResourceBarriers.hh
+Metal implementation of the resource barriers interface is an alias of base implementation.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/Base/RenderPass.h>
-
-#import <Metal/Metal.h>
+#include <Methane/Graphics/Base/ResourceBarriers.h>
 
 namespace Methane::Graphics::Metal
 {
 
-struct IContext;
-
-class RenderPattern final
-    : public Base::RenderPattern
+class ResourceBarriers final
+    : public Base::ResourceBarriers
 {
 public:
-    using Base::RenderPattern::RenderPattern;
-};
-
-class RenderPass final : public Base::RenderPass
-{
-public:
-    RenderPass(RenderPattern& render_pattern, const Settings& settings);
-
-    // IRenderPass interface
-    bool Update(const Settings& settings) override;
-    
-    void Reset();
-    
-    MTLRenderPassDescriptor* GetNativeDescriptor(bool reset);
-
-private:
-    const IContext& GetMetalContext() const noexcept;
-    
-    MTLRenderPassDescriptor* m_mtl_pass_descriptor;
+    using Base::ResourceBarriers::ResourceBarriers;
 };
 
 } // namespace Methane::Graphics::Metal

@@ -27,6 +27,11 @@ Methane CommandListSet PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/ICommandListSet.h>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class CommandListSet;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -54,9 +59,9 @@ public:
     [[nodiscard]] const Opt<Data::Index>&   GetFrameIndex() const META_PIMPL_NOEXCEPT;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::CommandListSet;
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

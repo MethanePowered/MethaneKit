@@ -23,56 +23,31 @@ Methane System and Device PIMPL wrappers for direct calls to final implementatio
 
 #include <Methane/Graphics/RHI/Device.h>
 
-#if defined METHANE_GFX_DIRECTX
-
-#include <Methane/Graphics/DirectX/Device.h>
-using DeviceImpl = Methane::Graphics::DirectX::Device;
-using SystemImpl = Methane::Graphics::DirectX::System;
-
-#elif defined METHANE_GFX_VULKAN
-
-#include <Methane/Graphics/Vulkan/Device.h>
-using DeviceImpl = Methane::Graphics::Vulkan::Device;
-using SystemImpl = Methane::Graphics::Vulkan::System;
-
-#elif defined METHANE_GFX_METAL
-
-#include <Methane/Graphics/Metal/Device.hh>
-using DeviceImpl = Methane::Graphics::Metal::Device;
-using SystemImpl = Methane::Graphics::Metal::System;
-
-#else // METHAN_GFX_[API] is undefined
-
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#if defined METHANE_GFX_METAL
+#include <Device.hh>
+#else
+#include <Device.h>
 #endif
 
-#include <Methane/Instrumentation.h>
+#include "Pimpl.hpp"
 
-#include "ImplWrapper.hpp"
+#include <Methane/Instrumentation.h>
 
 #include <algorithm>
 
 namespace Methane::Graphics::Rhi
 {
 
-class Device::Impl
-    : public ImplWrapper<IDevice, DeviceImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_METHODS_IMPLEMENT(Device);
 
-Device::Device(ImplPtr<Impl>&& impl_ptr)
-    : Transmitter(impl_ptr->GetInterface())
+Device::Device(Ptr<Impl>&& impl_ptr)
+    : Transmitter(*impl_ptr)
     , m_impl_ptr(std::move(impl_ptr))
 {
 }
 
 Device::Device(const Ptr<IDevice>& interface_ptr)
-    : Device(std::make_unique<Impl>(interface_ptr))
+    : Device(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -83,49 +58,43 @@ Device::Device(IDevice& interface_ref)
 
 IDevice& Device::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<IDevice> Device::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 bool Device::SetName(std::string_view name) const
 {
-    return GetPrivateImpl(m_impl_ptr).SetName(name);
+    return GetImpl(m_impl_ptr).SetName(name);
 }
 
 std::string_view Device::GetName() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetName();
+    return GetImpl(m_impl_ptr).GetName();
 }
 
 const std::string& Device::GetAdapterName() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetAdapterName();
+    return GetImpl(m_impl_ptr).GetAdapterName();
 }
 
 bool Device::IsSoftwareAdapter() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).IsSoftwareAdapter();
+    return GetImpl(m_impl_ptr).IsSoftwareAdapter();
 }
 
 const DeviceCaps& Device::GetCapabilities() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetCapabilities();
+    return GetImpl(m_impl_ptr).GetCapabilities();
 }
 
 std::string Device::ToString() const
 {
-    return GetPrivateImpl(m_impl_ptr).ToString();
+    return GetImpl(m_impl_ptr).ToString();
 }
-
-class System::Impl : public ImplWrapper<ISystem, SystemImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
 
 META_PIMPL_METHODS_IMPLEMENT(System);
 
@@ -141,54 +110,54 @@ System& System::Get()
 }
 
 System::System(const Ptr<ISystem>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
 ISystem& System::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 void System::CheckForChanges() const
 {
-    GetPrivateImpl(m_impl_ptr).CheckForChanges();
+    GetImpl(m_impl_ptr).CheckForChanges();
 }
 
 const Devices& System::UpdateGpuDevices(const DeviceCaps& required_device_caps) const
 {
-    return UpdateDevices(GetPrivateImpl(m_impl_ptr).UpdateGpuDevices(required_device_caps));
+    return UpdateDevices(GetImpl(m_impl_ptr).UpdateGpuDevices(required_device_caps));
 }
 
 const Devices& System::UpdateGpuDevices(const Platform::AppEnvironment& app_env,
                                         const DeviceCaps& required_device_caps) const
 {
-    return UpdateDevices(GetPrivateImpl(m_impl_ptr).UpdateGpuDevices(app_env, required_device_caps));
+    return UpdateDevices(GetImpl(m_impl_ptr).UpdateGpuDevices(app_env, required_device_caps));
 }
 
 const Devices& System::GetGpuDevices() const META_PIMPL_NOEXCEPT
 {
-    return UpdateDevices(GetPrivateImpl(m_impl_ptr).GetGpuDevices());
+    return UpdateDevices(GetImpl(m_impl_ptr).GetGpuDevices());
 }
 
 Device System::GetNextGpuDevice(const Device& device) const META_PIMPL_NOEXCEPT
 {
-    return Device(GetPrivateImpl(m_impl_ptr).GetNextGpuDevice(device.GetInterface()));
+    return Device(GetImpl(m_impl_ptr).GetNextGpuDevice(device.GetInterface()));
 }
 
 Device System::GetSoftwareGpuDevice() const META_PIMPL_NOEXCEPT
 {
-    return Device(GetPrivateImpl(m_impl_ptr).GetSoftwareGpuDevice());
+    return Device(GetImpl(m_impl_ptr).GetSoftwareGpuDevice());
 }
 
 const DeviceCaps& System::GetDeviceCapabilities() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetDeviceCapabilities();
+    return GetImpl(m_impl_ptr).GetDeviceCapabilities();
 }
 
 std::string System::ToString() const
 {
-    return GetPrivateImpl(m_impl_ptr).ToString();
+    return GetImpl(m_impl_ptr).ToString();
 }
 
 const Devices& System::UpdateDevices(const Ptrs<Rhi::IDevice>& devices) const

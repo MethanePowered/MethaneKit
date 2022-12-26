@@ -24,52 +24,30 @@ Methane ProgramBindings PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/ProgramBindings.h>
 #include <Methane/Graphics/RHI/Program.h>
 
-#if defined METHANE_GFX_DIRECTX
-
-#include <Methane/Graphics/DirectX/ProgramBindings.h>
-using ProgramBindingsImpl = Methane::Graphics::DirectX::ProgramBindings;
-
-#elif defined METHANE_GFX_VULKAN
-
-#include <Methane/Graphics/Vulkan/ProgramBindings.h>
-using ProgramBindingsImpl = Methane::Graphics::Vulkan::ProgramBindings;
-
-#elif defined METHANE_GFX_METAL
-
-#include <Methane/Graphics/Metal/ProgramBindings.hh>
-using ProgramBindingsImpl = Methane::Graphics::Metal::ProgramBindings;
-
-#else // METHAN_GFX_[API] is undefined
-
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#if defined METHANE_GFX_METAL
+#include <ProgramBindings.hh>
+#else
+#include <ProgramBindings.h>
 #endif
 
-#include "ImplWrapper.hpp"
+#include "Pimpl.hpp"
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-class ProgramBindings::Impl
-    : public ImplWrapper<IProgramBindings, ProgramBindingsImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ProgramBindings);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(ProgramBindings);
 
-ProgramBindings::ProgramBindings(ImplPtr<Impl>&& impl_ptr)
-    : Transmitter(impl_ptr->GetInterface())
+ProgramBindings::ProgramBindings(Ptr<Impl>&& impl_ptr)
+    : Transmitter(*impl_ptr)
     , m_impl_ptr(std::move(impl_ptr))
 {
 }
 
 ProgramBindings::ProgramBindings(const Ptr<IProgramBindings>& interface_ptr)
-    : ProgramBindings(std::make_unique<Impl>(interface_ptr))
+    : ProgramBindings(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -91,15 +69,15 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, 
 
 void ProgramBindings::Init(const Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
-    m_impl_ptr = std::make_unique<Impl>(IProgramBindings::Create(program.GetInterface(), resource_views_by_argument, frame_index));
-    Transmitter::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IProgramBindings::Create(program.GetInterface(), resource_views_by_argument, frame_index));
+    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void ProgramBindings::InitCopy(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument,
                                const Opt<Data::Index>& frame_index)
 {
-    m_impl_ptr = std::make_unique<Impl>(IProgramBindings::CreateCopy(other_program_bindings.GetInterface(), replace_resource_views_by_argument, frame_index));
-    Transmitter::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IProgramBindings::CreateCopy(other_program_bindings.GetInterface(), replace_resource_views_by_argument, frame_index));
+    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void ProgramBindings::Release()
@@ -115,52 +93,52 @@ bool ProgramBindings::IsInitialized() const META_PIMPL_NOEXCEPT
 
 IProgramBindings& ProgramBindings::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<IProgramBindings> ProgramBindings::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 bool ProgramBindings::SetName(std::string_view name) const
 {
-    return GetPrivateImpl(m_impl_ptr).SetName(name);
+    return GetImpl(m_impl_ptr).SetName(name);
 }
 
 std::string_view ProgramBindings::GetName() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetName();
+    return GetImpl(m_impl_ptr).GetName();
 }
 
 Program ProgramBindings::GetProgram() const
 {
-    return Program(GetPrivateImpl(m_impl_ptr).GetProgram());
+    return Program(GetImpl(m_impl_ptr).GetProgram());
 }
 
 IProgramArgumentBinding& ProgramBindings::Get(const ProgramArgument& shader_argument) const
 {
-    return GetPrivateImpl(m_impl_ptr).Get(shader_argument);
+    return GetImpl(m_impl_ptr).Get(shader_argument);
 }
 
 const ProgramArguments& ProgramBindings::GetArguments() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetArguments();
+    return GetImpl(m_impl_ptr).GetArguments();
 }
 
 Data::Index ProgramBindings::GetFrameIndex() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetFrameIndex();
+    return GetImpl(m_impl_ptr).GetFrameIndex();
 }
 
 Data::Index ProgramBindings::GetBindingsIndex() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetBindingsIndex();
+    return GetImpl(m_impl_ptr).GetBindingsIndex();
 }
 
 ProgramBindings::operator std::string() const
 {
-    return GetPrivateImpl(m_impl_ptr).operator std::string();
+    return GetImpl(m_impl_ptr).operator std::string();
 }
 
 } // namespace Methane::Graphics::Rhi

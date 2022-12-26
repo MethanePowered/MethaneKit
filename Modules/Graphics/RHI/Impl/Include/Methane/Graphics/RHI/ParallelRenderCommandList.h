@@ -29,6 +29,11 @@ Methane ParallelRenderCommandList PIMPL wrappers for direct calls to final imple
 #include <Methane/Graphics/RHI/IParallelRenderCommandList.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class ParallelRenderCommandList;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -93,11 +98,11 @@ public:
     [[nodiscard]] const std::vector<RenderCommandList>& GetParallelCommandLists() const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::ParallelRenderCommandList;
 
-    ParallelRenderCommandList(ImplPtr<Impl>&& impl_ptr);
+    ParallelRenderCommandList(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
     mutable std::vector<RenderCommandList> m_parallel_command_lists;
 };
 

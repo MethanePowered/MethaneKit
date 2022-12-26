@@ -25,46 +25,24 @@ Methane CommandListSet PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
 
-#if defined METHANE_GFX_DIRECTX
-
-#include <Methane/Graphics/DirectX/CommandListSet.h>
-using CommandListSetImpl = Methane::Graphics::DirectX::CommandListSet;
-
-#elif defined METHANE_GFX_VULKAN
-
-#include <Methane/Graphics/Vulkan/CommandListSet.h>
-using CommandListSetImpl = Methane::Graphics::Vulkan::CommandListSet;
-
-#elif defined METHANE_GFX_METAL
-
-#include <Methane/Graphics/Metal/CommandListSet.hh>
-using CommandListSetImpl = Methane::Graphics::Metal::CommandListSet;
-
-#else // METHAN_GFX_[API] is undefined
-
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#if defined METHANE_GFX_METAL
+#include <CommandListSet.hh>
+#else
+#include <CommandListSet.h>
 #endif
 
-#include "ImplWrapper.hpp"
+#include "Pimpl.hpp"
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-class CommandListSet::Impl
-    : public ImplWrapper<ICommandListSet, CommandListSetImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandListSet);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(CommandListSet);
 
 CommandListSet::CommandListSet(const Ptr<ICommandListSet>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -80,7 +58,7 @@ CommandListSet::CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<
 
 void CommandListSet::Init(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
 {
-    m_impl_ptr = std::make_unique<Impl>(ICommandListSet::Create(command_list_refs, frame_index_opt));
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ICommandListSet::Create(command_list_refs, frame_index_opt));
 }
 
 void CommandListSet::Release()
@@ -95,32 +73,32 @@ bool CommandListSet::IsInitialized() const META_PIMPL_NOEXCEPT
 
 ICommandListSet& CommandListSet::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<ICommandListSet> CommandListSet::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 Data::Size CommandListSet::GetCount() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetCount();
+    return GetImpl(m_impl_ptr).GetCount();
 }
 
 const Refs<ICommandList>& CommandListSet::GetRefs() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetRefs();
+    return GetImpl(m_impl_ptr).GetRefs();
 }
 
 ICommandList& CommandListSet::operator[](Data::Index index) const
 {
-    return GetPrivateImpl(m_impl_ptr)[index];
+    return GetImpl(m_impl_ptr)[index];
 }
 
 const Opt<Data::Index>& CommandListSet::GetFrameIndex() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetFrameIndex();
+    return GetImpl(m_impl_ptr).GetFrameIndex();
 }
 
 } // namespace Methane::Graphics::Rhi

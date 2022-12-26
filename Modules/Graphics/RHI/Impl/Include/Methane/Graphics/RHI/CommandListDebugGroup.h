@@ -28,6 +28,11 @@ Methane CommandListDebugGroup PIMPL wrappers for direct calls to final implement
 #include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class CommandListDebugGroup;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -62,11 +67,11 @@ public:
     [[nodiscard]] bool HasSubGroups() const META_PIMPL_NOEXCEPT;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::CommandListDebugGroup;
 
-    CommandListDebugGroup(ImplPtr<Impl>&& impl_ptr);
+    CommandListDebugGroup(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

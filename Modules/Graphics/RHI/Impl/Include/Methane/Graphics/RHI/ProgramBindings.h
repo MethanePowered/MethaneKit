@@ -28,6 +28,11 @@ Methane ProgramBindings PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/IProgramBindings.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class ProgramBindings;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -75,11 +80,11 @@ public:
     [[nodiscard]] explicit operator       std::string() const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::ProgramBindings;
 
-    ProgramBindings(ImplPtr<Impl>&& impl_ptr);
+    ProgramBindings(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

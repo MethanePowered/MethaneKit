@@ -28,6 +28,12 @@ Methane System and Device PIMPL wrappers for direct calls to final implementatio
 #include <Methane/Graphics/RHI/IDevice.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class Device;
+class System;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -62,11 +68,11 @@ public:
     std::string         ToString() const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::Device;
 
-    Device(ImplPtr<Impl>&& impl_ptr);
+    Device(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 using Devices = std::vector<Device>;
@@ -97,9 +103,9 @@ public:
 private:
     const Devices& UpdateDevices(const Ptrs<Rhi::IDevice>& devices) const;
 
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::System;
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
     mutable Devices m_devices;
 };
 

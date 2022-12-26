@@ -28,6 +28,11 @@ Methane CommandQueue PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/ICommandQueue.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class CommandQueue;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -64,11 +69,11 @@ public:
     void Execute(const CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::CommandQueue;
 
-    CommandQueue(ImplPtr<Impl>&& impl_ptr);
+    CommandQueue(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

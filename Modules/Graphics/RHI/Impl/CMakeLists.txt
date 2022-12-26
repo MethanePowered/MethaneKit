@@ -30,7 +30,7 @@ list(APPEND HEADERS
 )
 
 list(APPEND SOURCES
-    ${SOURCES_DIR}/ImplWrapper.hpp
+    ${SOURCES_DIR}/Pimpl.hpp
     ${SOURCES_DIR}/Device.cpp
     ${SOURCES_DIR}/CommandListSet.cpp
     ${SOURCES_DIR}/CommandQueue.cpp
@@ -72,10 +72,14 @@ target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
 target_include_directories(${TARGET}
     PUBLIC
         Include
+    PRIVATE
+        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_DIRECTX}>:$<TARGET_PROPERTY:MethaneGraphicsRhiDirectX,METHANE_INCLUDE_DIR>>
+        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>:$<TARGET_PROPERTY:MethaneGraphicsRhiVulkan,METHANE_INCLUDE_DIR>>
+        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:$<TARGET_PROPERTY:MethaneGraphicsRhiMetal,METHANE_INCLUDE_DIR>>
 )
 
 target_compile_definitions(${TARGET}
-    PRIVATE
+    PUBLIC
         $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:METHANE_GFX_METAL>
         $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_DIRECTX}>:METHANE_GFX_DIRECTX>
         $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>:METHANE_GFX_VULKAN>

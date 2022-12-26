@@ -27,6 +27,11 @@ Methane ViewState PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/IViewState.h>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class ViewState;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -56,9 +61,9 @@ public:
     bool SetScissorRects(const ScissorRects& scissor_rects) const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::ViewState;
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

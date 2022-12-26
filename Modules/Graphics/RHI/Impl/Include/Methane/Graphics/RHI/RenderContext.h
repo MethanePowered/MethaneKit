@@ -28,6 +28,11 @@ Methane RenderContext PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class RenderContext;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -97,11 +102,11 @@ public:
     bool SetFullScreen(bool is_full_screen) const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::RenderContext;
 
-    RenderContext(ImplPtr<Impl>&& impl_ptr);
+    RenderContext(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

@@ -26,56 +26,31 @@ Methane Buffer PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 
-#if defined METHANE_GFX_DIRECTX
-
-#include <Methane/Graphics/DirectX/Buffer.h>
-using BufferImpl = Methane::Graphics::DirectX::Buffer;
-using BufferSetImpl = Methane::Graphics::DirectX::BufferSet;
-
-#elif defined METHANE_GFX_VULKAN
-
-#include <Methane/Graphics/Vulkan/Buffer.h>
-using BufferImpl = Methane::Graphics::Vulkan::Buffer;
-using BufferSetImpl = Methane::Graphics::Vulkan::BufferSet;
-
-#elif defined METHANE_GFX_METAL
-
-#include <Methane/Graphics/Metal/Buffer.hh>
-using BufferImpl = Methane::Graphics::Metal::Buffer;
-using BufferSetImpl = Methane::Graphics::Metal::BufferSet;
-
-#else // METHAN_GFX_[API] is undefined
-
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#if defined METHANE_GFX_METAL
+#include <Buffer.hh>
+#else
+#include <Buffer.h>
 #endif
 
-#include "ImplWrapper.hpp"
+#include "Pimpl.hpp"
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-class Buffer::Impl
-    : public ImplWrapper<IBuffer, BufferImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Buffer);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(Buffer);
 
-Buffer::Buffer(ImplPtr<Impl>&& impl_ptr)
-    : Transmitter<IObjectCallback>(impl_ptr->GetInterface())
-    , Transmitter<IResourceCallback>(impl_ptr->GetInterface())
+Buffer::Buffer(Ptr<Impl>&& impl_ptr)
+    : Transmitter<IObjectCallback>(*impl_ptr)
+    , Transmitter<IResourceCallback>(*impl_ptr)
     , m_impl_ptr(std::move(impl_ptr))
 {
 }
 
 Buffer::Buffer(const Ptr<IBuffer>& interface_ptr)
-    : Buffer(std::make_unique<Impl>(interface_ptr))
+    : Buffer(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -86,30 +61,30 @@ Buffer::Buffer(IBuffer& interface_ref)
 
 void Buffer::InitVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
-    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateVertexBuffer(context, size, stride, is_volatile));
-    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
-    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateVertexBuffer(context, size, stride, is_volatile));
+    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
+    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Buffer::InitIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
-    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateIndexBuffer(context, size, format, is_volatile));
-    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
-    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateIndexBuffer(context, size, format, is_volatile));
+    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
+    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Buffer::InitConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
-    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateConstantBuffer(context, size, addressable, is_volatile));
-    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
-    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateConstantBuffer(context, size, addressable, is_volatile));
+    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
+    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Buffer::InitReadBackBuffer(const IContext& context, Data::Size size)
 {
-    m_impl_ptr = std::make_unique<Impl>(IBuffer::CreateReadBackBuffer(context, size));
-    Transmitter<IObjectCallback>::Reset(&m_impl_ptr->GetInterface());
-    Transmitter<IResourceCallback>::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateReadBackBuffer(context, size));
+    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
+    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Buffer::Release()
@@ -126,33 +101,33 @@ bool Buffer::IsInitialized() const META_PIMPL_NOEXCEPT
 
 IBuffer& Buffer::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<IBuffer> Buffer::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 bool Buffer::SetName(std::string_view name) const
 {
-    return GetPrivateImpl(m_impl_ptr).SetName(name);
+    return GetImpl(m_impl_ptr).SetName(name);
 }
 
 std::string_view Buffer::GetName() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetName();
+    return GetImpl(m_impl_ptr).GetName();
 }
 
 bool Buffer::SetState(State state) const
 {
-    return GetPrivateImpl(m_impl_ptr).SetState(state);
+    return GetImpl(m_impl_ptr).SetState(state);
 }
 
 bool Buffer::SetState(State state, Barriers& out_barriers) const
 {
     Ptr<IResourceBarriers> out_barriers_ptr = out_barriers.GetInterfacePtr();
-    const bool state_changed = GetPrivateImpl(m_impl_ptr).SetState(state, out_barriers_ptr);
+    const bool state_changed = GetImpl(m_impl_ptr).SetState(state, out_barriers_ptr);
     if (!out_barriers.IsInitialized() && out_barriers_ptr)
     {
         out_barriers = ResourceBarriers(out_barriers_ptr);
@@ -162,13 +137,13 @@ bool Buffer::SetState(State state, Barriers& out_barriers) const
 
 bool Buffer::SetOwnerQueueFamily(uint32_t family_index) const
 {
-    return GetPrivateImpl(m_impl_ptr).SetOwnerQueueFamily(family_index);
+    return GetImpl(m_impl_ptr).SetOwnerQueueFamily(family_index);
 }
 
 bool Buffer::SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers) const
 {
     Ptr<IResourceBarriers> out_barriers_ptr = out_barriers.GetInterfacePtr();
-    const bool state_changed = GetPrivateImpl(m_impl_ptr).SetOwnerQueueFamily(family_index, out_barriers_ptr);
+    const bool state_changed = GetImpl(m_impl_ptr).SetOwnerQueueFamily(family_index, out_barriers_ptr);
     if (!out_barriers.IsInitialized() && out_barriers_ptr)
     {
         out_barriers = ResourceBarriers(out_barriers_ptr);
@@ -178,72 +153,72 @@ bool Buffer::SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers) 
 
 void Buffer::SetData(const SubResources& sub_resources, const CommandQueue& target_cmd_queue) const
 {
-    GetPrivateImpl(m_impl_ptr).SetData(sub_resources, target_cmd_queue.GetInterface());
+    GetImpl(m_impl_ptr).SetData(sub_resources, target_cmd_queue.GetInterface());
 }
 
 void Buffer::RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const
 {
-    GetPrivateImpl(m_impl_ptr).RestoreDescriptorViews(descriptor_by_view_id);
+    GetImpl(m_impl_ptr).RestoreDescriptorViews(descriptor_by_view_id);
 }
 
 SubResource Buffer::GetData(const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range) const
 {
-    return GetPrivateImpl(m_impl_ptr).GetData(sub_resource_index, data_range);
+    return GetImpl(m_impl_ptr).GetData(sub_resource_index, data_range);
 }
 
 Data::Size Buffer::GetDataSize(Data::MemoryState size_type) const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetDataSize(size_type);
+    return GetImpl(m_impl_ptr).GetDataSize(size_type);
 }
 
 Data::Size Buffer::GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const
 {
-    return GetPrivateImpl(m_impl_ptr).GetSubResourceDataSize(sub_resource_index);
+    return GetImpl(m_impl_ptr).GetSubResourceDataSize(sub_resource_index);
 }
 
 const SubResource::Count& Buffer::GetSubresourceCount() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetSubresourceCount();
+    return GetImpl(m_impl_ptr).GetSubresourceCount();
 }
 
 ResourceType Buffer::GetResourceType() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetResourceType();
+    return GetImpl(m_impl_ptr).GetResourceType();
 }
 
 ResourceState Buffer::GetState() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetState();
+    return GetImpl(m_impl_ptr).GetState();
 }
 
 ResourceUsageMask Buffer::GetUsage() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetUsage();
+    return GetImpl(m_impl_ptr).GetUsage();
 }
 
 const Buffer::DescriptorByViewId& Buffer::GetDescriptorByViewId() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetDescriptorByViewId();
+    return GetImpl(m_impl_ptr).GetDescriptorByViewId();
 }
 
 const IContext& Buffer::GetContext() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetContext();
+    return GetImpl(m_impl_ptr).GetContext();
 }
 
 const Opt<uint32_t>& Buffer::GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetOwnerQueueFamily();
+    return GetImpl(m_impl_ptr).GetOwnerQueueFamily();
 }
 
 const Buffer::Settings& Buffer::GetSettings() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetSettings();
+    return GetImpl(m_impl_ptr).GetSettings();
 }
 
 uint32_t Buffer::GetFormattedItemsCount() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetFormattedItemsCount();
+    return GetImpl(m_impl_ptr).GetFormattedItemsCount();
 }
 
 static Refs<IBuffer> GetIBufferRefs(const Refs<Buffer>& buffer_refs)
@@ -256,24 +231,17 @@ static Refs<IBuffer> GetIBufferRefs(const Refs<Buffer>& buffer_refs)
     return i_buffer_refs;
 }
 
-class BufferSet::Impl
-    : public ImplWrapper<IBufferSet, BufferSetImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(BufferSet);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(BufferSet);
 
-BufferSet::BufferSet(ImplPtr<Impl>&& impl_ptr)
-    : Transmitter(impl_ptr->GetInterface())
+BufferSet::BufferSet(Ptr<Impl>&& impl_ptr)
+    : Transmitter(*impl_ptr)
     , m_impl_ptr(std::move(impl_ptr))
 {
 }
 
 BufferSet::BufferSet(const Ptr<IBufferSet>& interface_ptr)
-    : BufferSet(std::make_unique<Impl>(interface_ptr))
+    : BufferSet(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -290,8 +258,8 @@ BufferSet::BufferSet(BufferType buffers_type, const Refs<Buffer>& buffer_refs)
 void BufferSet::Init(BufferType buffers_type, const Refs<Buffer>& buffer_refs)
 {
     m_buffers.clear();
-    m_impl_ptr = std::make_unique<Impl>(IBufferSet::Create(buffers_type, GetIBufferRefs(buffer_refs)));
-    Transmitter::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBufferSet::Create(buffers_type, GetIBufferRefs(buffer_refs)));
+    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void BufferSet::Release()
@@ -308,27 +276,27 @@ bool BufferSet::IsInitialized() const META_PIMPL_NOEXCEPT
 
 IBufferSet& BufferSet::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<IBufferSet> BufferSet::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 BufferType BufferSet::GetType() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetType();
+    return GetImpl(m_impl_ptr).GetType();
 }
 
 Data::Size BufferSet::GetCount() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetCount();
+    return GetImpl(m_impl_ptr).GetCount();
 }
 
 const BufferSet::Buffers& BufferSet::GetRefs() const noexcept
 {
-    const Refs<IBuffer>& i_buffer_refs = GetPrivateImpl(m_impl_ptr).GetRefs();
+    const Refs<IBuffer>& i_buffer_refs = GetImpl(m_impl_ptr).GetRefs();
     if (m_buffers.size() == i_buffer_refs.size())
         return m_buffers;
 
@@ -342,7 +310,7 @@ const BufferSet::Buffers& BufferSet::GetRefs() const noexcept
 
 std::string BufferSet::GetNames() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetNames();
+    return GetImpl(m_impl_ptr).GetNames();
 }
 
 const Buffer& BufferSet::operator[](Data::Index index) const

@@ -27,6 +27,11 @@ Methane ResourceBarriers PIMPL wrappers for direct calls to final implementation
 
 #include <Methane/Graphics/RHI/IResourceBarriers.h>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class ResourceBarriers;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -84,9 +89,9 @@ public:
     void ApplyTransitions() const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::ResourceBarriers;
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

@@ -28,6 +28,12 @@ Methane RenderPass PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/IRenderPass.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class RenderPass;
+class RenderPattern;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -71,11 +77,11 @@ public:
     [[nodiscard]] AttachmentFormats GetAttachmentFormats() const META_PIMPL_NOEXCEPT;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::RenderPattern;
 
-    RenderPattern(ImplPtr<Impl>&& impl_ptr);
+    RenderPattern(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 class RenderPass
@@ -119,11 +125,11 @@ public:
     void ReleaseAttachmentTextures() const META_PIMPL_NOEXCEPT;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::RenderPass;
 
-    RenderPass(ImplPtr<Impl>&& impl_ptr);
+    RenderPass(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

@@ -28,6 +28,11 @@ Methane CommandKit PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::Base
+{
+class CommandKit;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -72,11 +77,11 @@ public:
     [[nodiscard]] IFence&           GetFence(CommandListId fence_id = 0U) const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::Base::CommandKit;
 
-    CommandKit(ImplPtr<Impl>&& impl_ptr);
+    CommandKit(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

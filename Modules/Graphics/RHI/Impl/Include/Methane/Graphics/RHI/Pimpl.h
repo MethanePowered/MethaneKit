@@ -23,27 +23,24 @@ Methane PIMPL common header.
 
 #pragma once
 
-#include <memory>
+#include <Methane/Memory.hpp>
 
-namespace Methane::Graphics
-{
+#if defined METHANE_GFX_DIRECTX
 
-// PIMPL implementation is hold using this smart-pointer type
-// shared_ptr is used instead of unique_ptr to enable implicit copying of PIMPL types
-template<typename ImplType>
-using ImplPtr = std::shared_ptr<ImplType>;
+#define METHANE_GFX_API DirectX
 
-} // namespace Methane::Graphics
+#elif defined METHANE_GFX_VULKAN
 
-#ifdef _DEBUG
-// Comment this define to disable checks of pointer to implementation in all PIMPL methods
-#define PIMPL_NULL_CHECK_ENABLED
-#endif
+#define METHANE_GFX_API Vulkan
 
-#ifdef PIMPL_NULL_CHECK_ENABLED
-#define META_PIMPL_NOEXCEPT
-#else
-#define META_PIMPL_NOEXCEPT noexcept
+#elif defined METHANE_GFX_METAL
+
+#define METHANE_GFX_API Metal
+
+#else // METHAN_GFX_[API] is undefined
+
+static_assert(false, "Static graphics API macro-definition is missing.");
+
 #endif
 
 #define META_PIMPL_METHODS_DECLARE(Class) \
@@ -81,3 +78,17 @@ using ImplPtr = std::shared_ptr<ImplType>;
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Class) \
     Class::Class() = default; \
     META_PIMPL_METHODS_IMPLEMENT(Class)
+
+#ifdef _DEBUG
+// Comment this define to disable checks of pointer to implementation in all PIMPL methods
+#define PIMPL_NULL_CHECK_ENABLED
+#include <Methane/Checks.hpp>
+#endif
+
+#ifdef PIMPL_NULL_CHECK_ENABLED
+#define META_PIMPL_NOEXCEPT
+#else
+#define META_PIMPL_NOEXCEPT noexcept
+#endif
+
+

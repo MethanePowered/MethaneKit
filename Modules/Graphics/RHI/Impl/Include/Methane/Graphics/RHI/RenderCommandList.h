@@ -28,6 +28,11 @@ Methane RenderCommandList PIMPL wrappers for direct calls to final implementatio
 #include <Methane/Graphics/RHI/IRenderCommandList.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class RenderCommandList;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -100,11 +105,11 @@ public:
               uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::RenderCommandList;
 
-    RenderCommandList(ImplPtr<Impl>&& impl_ptr);
+    RenderCommandList(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

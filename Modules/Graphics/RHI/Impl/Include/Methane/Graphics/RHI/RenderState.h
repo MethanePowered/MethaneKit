@@ -30,6 +30,11 @@ Methane RenderState PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/IRenderState.h>
 #include <Methane/Data/Transmitter.hpp>
 
+namespace Methane::Graphics::METHANE_GFX_API
+{
+class RenderState;
+}
+
 namespace Methane::Graphics::Rhi
 {
 
@@ -84,11 +89,11 @@ public:
     RenderPattern GetRenderPattern() const;
 
 private:
-    class Impl;
+    using Impl = Methane::Graphics::METHANE_GFX_API::RenderState;
 
-    RenderState(ImplPtr<Impl>&& impl_ptr);
+    RenderState(Ptr<Impl>&& impl_ptr);
 
-    ImplPtr<Impl> m_impl_ptr;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi

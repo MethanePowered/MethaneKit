@@ -24,28 +24,13 @@ Methane RenderState PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 
-#if defined METHANE_GFX_DIRECTX
-
-#include <Methane/Graphics/DirectX/RenderState.h>
-using RenderStateImpl = Methane::Graphics::DirectX::RenderState;
-
-#elif defined METHANE_GFX_VULKAN
-
-#include <Methane/Graphics/Vulkan/RenderState.h>
-using RenderStateImpl = Methane::Graphics::Vulkan::RenderState;
-
-#elif defined METHANE_GFX_METAL
-
-#include <Methane/Graphics/Metal/RenderState.hh>
-using RenderStateImpl = Methane::Graphics::Metal::RenderState;
-
-#else // METHAN_GFX_[API] is undefined
-
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#if defined METHANE_GFX_METAL
+#include <RenderState.hh>
+#else
+#include <RenderState.h>
 #endif
 
-#include "ImplWrapper.hpp"
+#include "Pimpl.hpp"
 
 #include <Methane/Instrumentation.h>
 
@@ -66,24 +51,17 @@ static IRenderState::Settings ConvertRenderStateSettings(const RenderState::Sett
     };
 }
 
-class RenderState::Impl
-    : public ImplWrapper<IRenderState, RenderStateImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderState);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderState);
 
-RenderState::RenderState(ImplPtr<Impl>&& impl_ptr)
-    : Transmitter(impl_ptr->GetInterface())
+RenderState::RenderState(Ptr<Impl>&& impl_ptr)
+    : Transmitter(*impl_ptr)
     , m_impl_ptr(std::move(impl_ptr))
 {
 }
 
 RenderState::RenderState(const Ptr<IRenderState>& interface_ptr)
-    : RenderState(std::make_unique<Impl>(interface_ptr))
+    : RenderState(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -99,8 +77,8 @@ RenderState::RenderState(const RenderContext& context, const Settings& settings)
 
 void RenderState::Init(const RenderContext& context, const Settings& settings)
 {
-    m_impl_ptr = std::make_unique<Impl>(IRenderState::Create(context.GetInterface(), ConvertRenderStateSettings(settings)));
-    Transmitter::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IRenderState::Create(context.GetInterface(), ConvertRenderStateSettings(settings)));
+    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void RenderState::Release()
@@ -116,37 +94,37 @@ bool RenderState::IsInitialized() const META_PIMPL_NOEXCEPT
 
 IRenderState& RenderState::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<IRenderState> RenderState::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 bool RenderState::SetName(std::string_view name) const
 {
-    return GetPrivateImpl(m_impl_ptr).SetName(name);
+    return GetImpl(m_impl_ptr).SetName(name);
 }
 
 std::string_view RenderState::GetName() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetName();
+    return GetImpl(m_impl_ptr).GetName();
 }
 
 const RenderStateSettings& RenderState::GetSettings() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetSettings();
+    return GetImpl(m_impl_ptr).GetSettings();
 }
 
 void RenderState::Reset(const Settings& settings) const
 {
-    return GetPrivateImpl(m_impl_ptr).Reset(ConvertRenderStateSettings(settings));
+    return GetImpl(m_impl_ptr).Reset(ConvertRenderStateSettings(settings));
 }
 
 void RenderState::Reset(const IRenderState::Settings& settings) const
 {
-    return GetPrivateImpl(m_impl_ptr).Reset(settings);
+    return GetImpl(m_impl_ptr).Reset(settings);
 }
 
 Program RenderState::GetProgram() const

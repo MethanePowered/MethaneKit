@@ -25,52 +25,30 @@ Methane CommandListDebugGroup PIMPL wrappers for direct calls to final implement
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
 
-#if defined METHANE_GFX_DIRECTX
-
-#include <Methane/Graphics/DirectX/CommandListDebugGroup.h>
-using CommandListDebugGroupImpl = Methane::Graphics::DirectX::CommandListDebugGroup;
-
-#elif defined METHANE_GFX_VULKAN
-
-#include <Methane/Graphics/Vulkan/CommandListDebugGroup.h>
-using CommandListDebugGroupImpl = Methane::Graphics::Vulkan::CommandListDebugGroup;
-
-#elif defined METHANE_GFX_METAL
-
-#include <Methane/Graphics/Metal/CommandListDebugGroup.hh>
-using CommandListDebugGroupImpl = Methane::Graphics::Metal::CommandListDebugGroup;
-
-#else // METHAN_GFX_[API] is undefined
-
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#if defined METHANE_GFX_METAL
+#include <CommandListDebugGroup.hh>
+#else
+#include <CommandListDebugGroup.h>
 #endif
 
-#include "ImplWrapper.hpp"
+#include "Pimpl.hpp"
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-class CommandListDebugGroup::Impl
-    : public ImplWrapper<ICommandListDebugGroup, CommandListDebugGroupImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandListDebugGroup);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(CommandListDebugGroup);
 
-CommandListDebugGroup::CommandListDebugGroup(ImplPtr<Impl>&& impl_ptr)
-    : Data::Transmitter<IObjectCallback>(impl_ptr->GetInterface())
+CommandListDebugGroup::CommandListDebugGroup(Ptr<Impl>&& impl_ptr)
+    : Data::Transmitter<IObjectCallback>(*impl_ptr)
     , m_impl_ptr(std::move(impl_ptr))
 {
 }
 
 CommandListDebugGroup::CommandListDebugGroup(const Ptr<ICommandListDebugGroup>& interface_ptr)
-    : CommandListDebugGroup(std::make_unique<Impl>(interface_ptr))
+    : CommandListDebugGroup(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -86,8 +64,8 @@ CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
 
 void CommandListDebugGroup::Init(std::string_view name)
 {
-    m_impl_ptr = std::make_unique<Impl>(ICommandListDebugGroup::Create(name));
-    Transmitter::Reset(&m_impl_ptr->GetInterface());
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ICommandListDebugGroup::Create(name));
+    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void CommandListDebugGroup::Release()
@@ -103,32 +81,32 @@ bool CommandListDebugGroup::IsInitialized() const META_PIMPL_NOEXCEPT
 
 ICommandListDebugGroup& CommandListDebugGroup::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<ICommandListDebugGroup> CommandListDebugGroup::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 bool CommandListDebugGroup::SetName(std::string_view name) const
 {
-    return GetPrivateImpl(m_impl_ptr).SetName(name);
+    return GetImpl(m_impl_ptr).SetName(name);
 }
 
 std::string_view CommandListDebugGroup::GetName() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetName();
+    return GetImpl(m_impl_ptr).GetName();
 }
 
 CommandListDebugGroup CommandListDebugGroup::AddSubGroup(Data::Index id, const std::string& name)
 {
-    return CommandListDebugGroup(GetPrivateImpl(m_impl_ptr).AddSubGroup(id, name));
+    return CommandListDebugGroup(GetImpl(m_impl_ptr).AddSubGroup(id, name));
 }
 
 Opt<CommandListDebugGroup> CommandListDebugGroup::GetSubGroup(Data::Index id) const META_PIMPL_NOEXCEPT
 {
-    if (ICommandListDebugGroup* sub_group_ptr = GetPrivateImpl(m_impl_ptr).GetSubGroup(id);
+    if (ICommandListDebugGroup* sub_group_ptr = GetImpl(m_impl_ptr).GetSubGroup(id);
         sub_group_ptr)
         return CommandListDebugGroup(*sub_group_ptr);
 
@@ -137,7 +115,7 @@ Opt<CommandListDebugGroup> CommandListDebugGroup::GetSubGroup(Data::Index id) co
 
 bool CommandListDebugGroup::HasSubGroups() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).HasSubGroups();
+    return GetImpl(m_impl_ptr).HasSubGroups();
 }
 
 } // namespace Methane::Graphics::Rhi

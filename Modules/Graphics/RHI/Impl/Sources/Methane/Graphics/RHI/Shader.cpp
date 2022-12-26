@@ -24,46 +24,24 @@ Methane Shader PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/Shader.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 
-#if defined METHANE_GFX_DIRECTX
-
-#include <Methane/Graphics/DirectX/Shader.h>
-using ShaderImpl = Methane::Graphics::DirectX::Shader;
-
-#elif defined METHANE_GFX_VULKAN
-
-#include <Methane/Graphics/Vulkan/Shader.h>
-using ShaderImpl = Methane::Graphics::Vulkan::Shader;
-
-#elif defined METHANE_GFX_METAL
-
-#include <Methane/Graphics/Metal/Shader.hh>
-using ShaderImpl = Methane::Graphics::Metal::Shader;
-
-#else // METHAN_GFX_[API] is undefined
-
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#if defined METHANE_GFX_METAL
+#include <Shader.hh>
+#else
+#include <Shader.h>
 #endif
 
-#include "ImplWrapper.hpp"
+#include "Pimpl.hpp"
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-class Shader::Impl
-    : public ImplWrapper<IShader, ShaderImpl>
-{
-public:
-    using ImplWrapper::ImplWrapper;
-};
-
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Shader);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(Shader);
 
 Shader::Shader(const Ptr<IShader>& interface_ptr)
-    : m_impl_ptr(std::make_unique<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -79,7 +57,7 @@ Shader::Shader(Type type, const RenderContext& context, const Settings& settings
 
 void Shader::Init(Type type, const RenderContext& context, const Settings& settings)
 {
-    m_impl_ptr = std::make_unique<Impl>(IShader::Create(type, context.GetInterface(), settings));
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IShader::Create(type, context.GetInterface(), settings));
 }
 
 void Shader::Release()
@@ -94,22 +72,22 @@ bool Shader::IsInitialized() const META_PIMPL_NOEXCEPT
 
 IShader& Shader::GetInterface() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterface(m_impl_ptr);
+    return *m_impl_ptr;
 }
 
 Ptr<IShader> Shader::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
-    return GetPublicInterfacePtr(m_impl_ptr);
+    return m_impl_ptr;
 }
 
 ShaderType Shader::GetType() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetType();
+    return GetImpl(m_impl_ptr).GetType();
 }
 
 const ShaderSettings& Shader::GetSettings() const META_PIMPL_NOEXCEPT
 {
-    return GetPrivateImpl(m_impl_ptr).GetSettings();
+    return GetImpl(m_impl_ptr).GetSettings();
 }
 
 } // namespace Methane::Graphics::Rhi
