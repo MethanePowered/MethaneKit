@@ -205,7 +205,8 @@ bool AppBase::Update()
     if (Platform::App::IsMinimized())
         return false;
 
-    META_LOG("\n========================== FRAME {} UPDATING =========================", m_context_ptr ? m_context.GetFrameIndex() : 0U);
+    META_LOG("\n========================== FRAME {} UPDATING =========================",
+             m_context.IsInitialized() ? m_context.GetFrameIndex() : 0U);
 
     Rhi::ISystem::Get().CheckForChanges();
 
