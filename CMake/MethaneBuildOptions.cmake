@@ -91,6 +91,17 @@ if (MSVC)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
         target_compile_options(MethaneBuildOptions INTERFACE
+            # /Ox - Enable Most Speed Optimizations, including following flags:
+            #   /Ob2 - Inline Function Expansion, Any Suitable;
+            #   /Oi  - Generate Intrinsic Functions;
+            #   /Ot  - Favor Fast Code;
+            #   /Oy  - Frame-Pointer Omission.
+            # /GL - Whole program optimization
+            # /GF - Eliminate duplicate strings
+            # /GS- - Disable buffer security checks
+            # /fp:fast - Fast floating point model
+            # /fp:except- - Disable floating point exceptions
+            $<$<CONFIG:Release>:/Ox /GL /GF /GS- /fp:fast /fp:except->
             # Exception handling mode
             /EHsc
             # Set maximum warnings level and treat warnings as errors
@@ -99,7 +110,12 @@ if (MSVC)
             /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
             /wd4324 # - C4324: structure was padded due to alignment specifier
             /wd4201 # - C4201: nonstandard extension used : nameless struct/union (used for bitfields with mask)
-            )
+        )
+
+        target_link_options(MethaneBuildOptions INTERFACE
+            # /LTCG - Link-time code generation to perform whole-program optimization
+            $<$<CONFIG:Release>:/LTCG>
+        )
 
     else() # Clang compiler on Windows
 
