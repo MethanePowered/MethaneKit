@@ -43,7 +43,7 @@ namespace Methane::Graphics::Rhi
 Ptr<IRenderPattern> Rhi::IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<Base::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
+    return std::make_shared<DirectX::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
 }
 
 Ptr<IRenderPass> Rhi::IRenderPass::Create(IPattern& render_pattern, const Settings& settings)
