@@ -26,9 +26,7 @@ iOS application implementation.
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/iOS/AppEnvironment.hh>
 
-#if defined(__OBJC__) && defined(METHANE_RENDER_APP)
-
-#else
+#ifndef __OBJC__
 
 using UIWindow = void;
 
