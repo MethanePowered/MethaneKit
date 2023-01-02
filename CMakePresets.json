@@ -237,10 +237,6 @@
             "hidden": true,
             "cacheVariables": {
                 "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
-                "METHANE_RHI_PIMPL_INLINE_ENABLED": {
-                    "type": "BOOL",
-                    "value": "OFF"
-                },
                 "METHANE_PRECOMPILED_HEADERS_ENABLED": {
                     "type": "BOOL",
                     "value": "OFF"
