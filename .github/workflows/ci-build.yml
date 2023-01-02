@@ -45,74 +45,74 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win64_DX_Release"
-            config_preset: "VS2019-Win64-DX-Default"
-            build_preset: "VS2019-Win64-DX-Release"
+            config_preset: "VS2022-Win64-DX-Default"
+            build_preset: "VS2022-Win64-DX-Release"
             named_logo: Windows
             run_tests: true
             add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win64_VK_Release"
-            config_preset: "VS2019-Win64-VK-Default"
-            build_preset: "VS2019-Win64-VK-Release"
+            config_preset: "VS2022-Win64-VK-Default"
+            build_preset: "VS2022-Win64-VK-Release"
             named_logo: Windows
             run_tests: true
             add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win64_DX_Profile"
-            config_preset: "VS2019-Win64-DX-Profile"
-            build_preset: "VS2019-Win64-DX-Profile"
+            config_preset: "VS2022-Win64-DX-Profile"
+            build_preset: "VS2022-Win64-DX-Profile"
             named_logo: Windows
             run_tests: false
             add_tracy_app: true
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win64_VK_Profile"
-            config_preset: "VS2019-Win64-VK-Profile"
-            build_preset: "VS2019-Win64-VK-Profile"
+            config_preset: "VS2022-Win64-VK-Profile"
+            build_preset: "VS2022-Win64-VK-Profile"
             named_logo: Windows
             run_tests: false
             add_tracy_app: true
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win32_DX_Release"
-            config_preset: "VS2019-Win32-DX-Default"
-            build_preset: "VS2019-Win32-DX-Release"
+            config_preset: "VS2022-Win32-DX-Default"
+            build_preset: "VS2022-Win32-DX-Release"
             named_logo: Windows
             run_tests: true
             add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win32_VK_Release"
-            config_preset: "VS2019-Win32-VK-Default"
-            build_preset: "VS2019-Win32-VK-Release"
+            config_preset: "VS2022-Win32-VK-Default"
+            build_preset: "VS2022-Win32-VK-Release"
             named_logo: Windows
             run_tests: true
             add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win32_DX_Profile"
-            config_preset: "VS2019-Win32-DX-Profile"
-            build_preset: "VS2019-Win32-DX-Profile"
+            config_preset: "VS2022-Win32-DX-Profile"
+            build_preset: "VS2022-Win32-DX-Profile"
             named_logo: Windows
             run_tests: false
             add_tracy_app: true
 
-          - os: windows-2019
+          - os: windows-latest
             os_name: Windows
             name: "Win32_VK_Profile"
-            config_preset: "VS2019-Win32-VK-Profile"
-            build_preset: "VS2019-Win32-VK-Profile"
+            config_preset: "VS2022-Win32-VK-Profile"
+            build_preset: "VS2022-Win32-VK-Profile"
             named_logo: Windows
             run_tests: false
             add_tracy_app: true
