@@ -28,6 +28,8 @@ Base implementation of the command list set interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <sstream>
+
 namespace Methane::Graphics::Base
 {
 

@@ -25,15 +25,13 @@ Methane CommandQueue PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <CommandQueue.hh>
 #else
 #include <CommandQueue.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
@@ -42,8 +40,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandQueue);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(CommandQueue);
 
 CommandQueue::CommandQueue(Ptr<Impl>&& impl_ptr)
-    : Data::Transmitter<IObjectCallback>(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -65,12 +62,10 @@ CommandQueue::CommandQueue(const RenderContext& context, CommandListType command
 void CommandQueue::Init(const RenderContext& context, CommandListType command_lists_type)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(ICommandQueue::Create(context.GetInterface(), command_lists_type));
-    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void CommandQueue::Release()
 {
-    Transmitter::Reset();
     m_impl_ptr.reset();
 }
 
@@ -97,6 +92,16 @@ bool CommandQueue::SetName(std::string_view name) const
 std::string_view CommandQueue::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetName();
+}
+
+void CommandQueue::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void CommandQueue::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 [[nodiscard]] const IContext& CommandQueue::GetContext() const META_PIMPL_NOEXCEPT

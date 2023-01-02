@@ -25,15 +25,13 @@ Methane Program PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/Shader.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <Program.hh>
 #else
 #include <Program.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 #include <algorithm>
 
@@ -65,8 +63,7 @@ static IProgram::Settings ConvertProgramSettings(const IContext& context, const 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Program);
 
 Program::Program(Ptr<Impl>&& impl_ptr)
-    : Transmitter(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -88,12 +85,10 @@ Program::Program(const RenderContext& context, const Settings& settings)
 void Program::Init(const RenderContext& context, const Settings& settings)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IProgram::Create(context.GetInterface(), ConvertProgramSettings(context.GetInterface(), settings)));
-    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void Program::Release()
 {
-    Transmitter::Reset();
     m_impl_ptr.reset();
 }
 
@@ -120,6 +115,16 @@ bool Program::SetName(std::string_view name) const
 std::string_view Program::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetName();
+}
+
+void Program::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void Program::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 const ProgramSettings& Program::GetSettings() const META_PIMPL_NOEXCEPT

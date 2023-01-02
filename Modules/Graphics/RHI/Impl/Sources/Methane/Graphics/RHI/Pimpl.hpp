@@ -26,8 +26,12 @@ Methane PIMPL implementation helper functions.
 #include <Methane/Graphics/RHI/Pimpl.h>
 #include <Methane/Memory.hpp>
 
-#ifdef PIMPL_NULL_CHECK_ENABLED
+#ifdef META_PIMPL_NULL_CHECK_ENABLED
 #include <Methane/Checks.hpp>
+#endif
+
+#ifndef META_GFX_NAME
+static_assert(false, "Static graphics API macro-definition is missing.");
 #endif
 
 namespace Methane::Graphics::Rhi
@@ -36,7 +40,7 @@ namespace Methane::Graphics::Rhi
 template<typename ImplType>
 ImplType& GetImpl(const Ptr<ImplType>& impl_ptr) META_PIMPL_NOEXCEPT
 {
-#ifdef PIMPL_NULL_CHECK_ENABLED
+#ifdef META_PIMPL_NULL_CHECK_ENABLED
     META_CHECK_ARG_NOT_NULL_DESCR(impl_ptr, "{} PIMPL is not initialized", typeid(ImplType).name());
 #endif
     return *impl_ptr;

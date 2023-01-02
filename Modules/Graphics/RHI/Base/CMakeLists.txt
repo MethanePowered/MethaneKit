@@ -77,6 +77,7 @@ target_link_libraries(${TARGET}
         magic_enum
     PRIVATE
         MethaneBuildOptions
+        MethanePrecompiledHeaders
         MethaneDataPrimitives
         MethanePlatformUtils
         MethaneInstrumentation
@@ -89,8 +90,6 @@ target_compile_definitions(${TARGET}
     PUBLIC
         $<$<BOOL:${METHANE_GPU_INSTRUMENTATION_ENABLED}>:METHANE_GPU_INSTRUMENTATION_ENABLED=1> # 1 - Methane, 2 - Tracy
 )
-
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
 
 target_include_directories(${TARGET}
     PUBLIC

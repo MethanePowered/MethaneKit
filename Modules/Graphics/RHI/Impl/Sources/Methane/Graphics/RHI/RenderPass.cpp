@@ -24,15 +24,13 @@ Methane RenderPass PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderPass.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <RenderPass.hh>
 #else
 #include <RenderPass.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
@@ -41,8 +39,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderPattern);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderPattern);
 
 RenderPattern::RenderPattern(Ptr<Impl>&& impl_ptr)
-    : Transmitter(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -64,12 +61,10 @@ RenderPattern::RenderPattern(const RenderContext& render_context, const Settings
 void RenderPattern::Init(const RenderContext& render_context, const Settings& settings)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IRenderPattern::Create(render_context.GetInterface(), settings));
-    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void RenderPattern::Release()
 {
-    Transmitter::Reset();
     m_impl_ptr.reset();
 }
 
@@ -98,6 +93,16 @@ std::string_view RenderPattern::GetName() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetName();
 }
 
+void RenderPattern::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void RenderPattern::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
+}
+
 RenderContext RenderPattern::GetRenderContext() const META_PIMPL_NOEXCEPT
 {
     return RenderContext(GetImpl(m_impl_ptr).GetRenderContext());
@@ -122,9 +127,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderPass);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderPass);
 
 RenderPass::RenderPass(Ptr<Impl>&& impl_ptr)
-    : Transmitter<IObjectCallback>(*impl_ptr)
-    , Transmitter<IRenderPassCallback>(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -146,14 +149,10 @@ RenderPass::RenderPass(const Pattern& render_pattern, const Settings& settings)
 void RenderPass::Init(const Pattern& render_pattern, const Settings& settings)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IRenderPass::Create(render_pattern.GetInterface(), settings));
-    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
-    Transmitter<IRenderPassCallback>::Reset(m_impl_ptr.get());
 }
 
 void RenderPass::Release()
 {
-    Transmitter<IObjectCallback>::Reset();
-    Transmitter<IRenderPassCallback>::Reset();
     m_impl_ptr.reset();
 }
 
@@ -182,6 +181,16 @@ std::string_view RenderPass::GetName() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetName();
 }
 
+void RenderPass::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void RenderPass::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
+}
+
 RenderPattern RenderPass::GetPattern() const META_PIMPL_NOEXCEPT
 {
     return RenderPattern(GetImpl(m_impl_ptr).GetPattern());
@@ -200,6 +209,16 @@ bool RenderPass::Update(const Settings& settings) const META_PIMPL_NOEXCEPT
 void RenderPass::ReleaseAttachmentTextures() const META_PIMPL_NOEXCEPT
 {
     GetImpl(m_impl_ptr).ReleaseAttachmentTextures();
+}
+
+void RenderPass::Connect(Data::Receiver<IRenderPassCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IRenderPassCallback>::Connect(receiver);
+}
+
+void RenderPass::Disconnect(Data::Receiver<IRenderPassCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IRenderPassCallback>::Disconnect(receiver);
 }
 
 } // namespace Methane::Graphics::Rhi

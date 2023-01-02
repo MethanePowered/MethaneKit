@@ -25,15 +25,13 @@ Methane CommandListSet PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <CommandListSet.hh>
 #else
 #include <CommandListSet.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {

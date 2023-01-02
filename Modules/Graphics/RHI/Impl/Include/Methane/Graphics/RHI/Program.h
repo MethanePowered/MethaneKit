@@ -26,9 +26,8 @@ Methane Program PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IProgram.h>
-#include <Methane/Data/Transmitter.hpp>
 
-namespace Methane::Graphics::METHANE_GFX_API
+namespace Methane::Graphics::META_GFX_NAME
 {
 class Program;
 }
@@ -40,7 +39,6 @@ class RenderContext;
 class Shader;
 
 class Program
-    : public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
     using ShaderSet          = std::map<ShaderType, ShaderSettings>;
@@ -62,33 +60,43 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Program);
     META_PIMPL_METHODS_COMPARE_DECLARE(Program);
 
-    explicit Program(const Ptr<IProgram>& interface_ptr);
-    explicit Program(IProgram& interface_ref);
-    Program(const RenderContext& context, const Settings& settings);
+    META_RHI_API explicit Program(const Ptr<IProgram>& interface_ptr);
+    META_RHI_API explicit Program(IProgram& interface_ref);
+    META_RHI_API Program(const RenderContext& context, const Settings& settings);
 
-    void Init(const RenderContext& context, const Settings& settings);
-    void Release();
+    META_RHI_API void Init(const RenderContext& context, const Settings& settings);
+    META_RHI_API void Release();
 
-    bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    IProgram& GetInterface() const META_PIMPL_NOEXCEPT;
-    Ptr<IProgram> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_RHI_API IProgram& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_RHI_API Ptr<IProgram> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    bool SetName(std::string_view name) const;
-    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool SetName(std::string_view name) const;
+    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
+    // Data::IEmitter<IObjectCallback> interface methods
+    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IProgram interface methods
-    [[nodiscard]] const ProgramSettings& GetSettings() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] const ShaderTypes&     GetShaderTypes() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] Shader                 GetShader(ShaderType shader_type) const;
-    [[nodiscard]] Data::Size             GetBindingsCount() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API const ProgramSettings& GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API const ShaderTypes&     GetShaderTypes() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API Shader                 GetShader(ShaderType shader_type) const;
+    [[nodiscard]] META_RHI_API Data::Size             GetBindingsCount() const META_PIMPL_NOEXCEPT;
 
 private:
-    using Impl = Methane::Graphics::METHANE_GFX_API::Program;
+    using Impl = Methane::Graphics::META_GFX_NAME::Program;
 
-    Program(Ptr<Impl>&& impl_ptr);
+    META_RHI_API Program(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi
+
+#ifdef META_RHI_PIMPL_INLINE
+
+#include <Methane/Graphics/RHI/Program.cpp>
+
+#endif // META_RHI_PIMPL_INLINE

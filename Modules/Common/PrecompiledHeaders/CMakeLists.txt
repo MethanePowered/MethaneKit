@@ -1,8 +1,11 @@
 set(TARGET MethanePrecompiledHeaders)
+set(EXTRA_TARGET MethanePrecompiledExtraHeaders)
 
-include(MethaneModules)
-
-get_module_dirs("Methane")
+if (NOT METHANE_PRECOMPILED_HEADERS_ENABLED)
+    add_library(${TARGET} INTERFACE)
+    add_library(${EXTRA_TARGET} INTERFACE)
+    return()
+endif()
 
 # ===== Common precompiled headers =====
 
@@ -54,12 +57,10 @@ list(APPEND PRECOMPILED_HEADERS
     <thread>
 )
 
-add_library(${TARGET} STATIC
-    ${SOURCES_DIR}/PrecompiledHeaders.cpp
-)
+add_library(${TARGET} INTERFACE)
 
 target_link_libraries(${TARGET}
-    PUBLIC
+    INTERFACE
         MethaneBuildOptions
         MethanePrimitives
         MethaneInstrumentation
@@ -68,18 +69,11 @@ target_link_libraries(${TARGET}
 )
 
 target_precompile_headers(${TARGET}
-    PUBLIC
+    INTERFACE
         ${PRECOMPILED_HEADERS}
 )
 
-set_target_properties(${TARGET}
-    PROPERTIES
-        FOLDER Modules/Common
-)
-
 # ===== Extra precompiled headers =====
-
-set(EXTRA_TARGET MethanePrecompiledExtraHeaders)
 
 list(APPEND PRECOMPILED_EXTRA_HEADERS
     ${PRECOMPILED_HEADERS}
@@ -119,12 +113,10 @@ if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
 
 endif()
 
-add_library(${EXTRA_TARGET} STATIC
-    ${SOURCES_DIR}/PrecompiledHeaders.cpp
-)
+add_library(${EXTRA_TARGET} INTERFACE)
 
 target_link_libraries(${EXTRA_TARGET}
-    PUBLIC
+    INTERFACE
         MethaneBuildOptions
         MethaneInstrumentation
         TaskFlow
@@ -135,16 +127,11 @@ target_link_libraries(${EXTRA_TARGET}
 )
 
 target_precompile_headers(${EXTRA_TARGET}
-    PUBLIC
+    INTERFACE
         ${PRECOMPILED_EXTRA_HEADERS}
 )
 
 target_compile_definitions(${EXTRA_TARGET}
-    PUBLIC
+    INTERFACE
         ${PRECOMPILED_EXTRA_DEFINITIONS}
-)
-
-set_target_properties(${EXTRA_TARGET}
-    PROPERTIES
-        FOLDER Modules/Common
 )

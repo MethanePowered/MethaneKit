@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,18 +16,17 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/PrecompiledHeaders.cpp
-Methane Common dummy function.
+FILE: Methane/Inline.hpp
+Methane cross-compiler inline macro definition.
 
 ******************************************************************************/
 
-namespace Methane::PrecompiledHeaders
-{
+#pragma once
 
-void Dummy()
-{
-    // Prevents libtool warning for library: 
-    // the table of contents is empty (no object file members in the library define global symbols)
-}
-
-} // namespace Methane::PrecompiledHeaders
+#if defined(__GNUC__)
+#define META_INLINE __attribute__((always_inline)) inline
+#elif defined(_MSC_VER)
+#define META_INLINE __forceinline
+#else
+#define META_INLINE inline
+#endif

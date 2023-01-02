@@ -40,8 +40,6 @@ target_link_libraries(${TARGET}
         magic_enum
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
-
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}

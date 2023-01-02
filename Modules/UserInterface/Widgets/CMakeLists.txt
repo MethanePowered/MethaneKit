@@ -35,8 +35,6 @@ target_link_libraries(${TARGET}
         magic_enum
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
-
 target_include_directories(${TARGET}
     PRIVATE
         Sources

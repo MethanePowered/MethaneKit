@@ -26,11 +26,10 @@ Methane Texture PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/ITexture.h>
-#include <Methane/Data/Transmitter.hpp>
 
 #include <vector>
 
-namespace Methane::Graphics::METHANE_GFX_API
+namespace Methane::Graphics::META_GFX_NAME
 {
 class Texture;
 }
@@ -43,8 +42,6 @@ class ResourceBarriers;
 class CommandQueue;
 
 class Texture
-    : public Data::Transmitter<Rhi::IObjectCallback>
-    , public Data::Transmitter<Rhi::IResourceCallback>
 {
 public:
     using AllocationError  = ResourceAllocationError;
@@ -63,52 +60,66 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Texture);
     META_PIMPL_METHODS_COMPARE_DECLARE(Texture);
 
-    explicit Texture(const Ptr<ITexture>& interface_ptr);
-    explicit Texture(ITexture& interface_ref);
-    Texture(const RenderContext& context, const Settings& settings);
+    META_RHI_API explicit Texture(const Ptr<ITexture>& interface_ptr);
+    META_RHI_API explicit Texture(ITexture& interface_ref);
+    META_RHI_API Texture(const RenderContext& context, const Settings& settings);
 
-    void Init(const RenderContext& context, const Settings& settings);
-    void InitImage(const RenderContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
-    void InitFrameBuffer(const RenderContext& context, Data::Index frame_index);
-    void InitDepthStencil(const RenderContext& context);
-    void Release();
+    META_RHI_API void Init(const RenderContext& context, const Settings& settings);
+    META_RHI_API void InitImage(const RenderContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
+    META_RHI_API void InitFrameBuffer(const RenderContext& context, Data::Index frame_index);
+    META_RHI_API void InitDepthStencil(const RenderContext& context);
+    META_RHI_API void Release();
 
-    bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    ITexture& GetInterface() const META_PIMPL_NOEXCEPT;
-    Ptr<ITexture> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_RHI_API ITexture& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_RHI_API Ptr<ITexture> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    bool SetName(std::string_view name) const;
-    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool SetName(std::string_view name) const;
+    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
+    // Data::IEmitter<IObjectCallback> interface methods
+    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IResource interface methods
-    bool SetState(State state) const;
-    bool SetState(State state, Barriers& out_barriers) const;
-    bool SetOwnerQueueFamily(uint32_t family_index) const;
-    bool SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers) const;
-    void SetData(const SubResources& sub_resources, const CommandQueue& target_cmd_queue) const;
-    void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const;
+    META_RHI_API bool SetState(State state) const;
+    META_RHI_API bool SetState(State state, Barriers& out_barriers) const;
+    META_RHI_API bool SetOwnerQueueFamily(uint32_t family_index) const;
+    META_RHI_API bool SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers) const;
+    META_RHI_API void SetData(const SubResources& sub_resources, const CommandQueue& target_cmd_queue) const;
+    META_RHI_API void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const;
 
-    [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) const;
-    [[nodiscard]] Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const;
-    [[nodiscard]] const SubResource::Count& GetSubresourceCount() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] ResourceType              GetResourceType() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] State                     GetState() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] ResourceUsageMask         GetUsage() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] const DescriptorByViewId& GetDescriptorByViewId() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] RenderContext             GetRenderContext() const;
-    [[nodiscard]] const Opt<uint32_t>&      GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) const;
+    [[nodiscard]] META_RHI_API Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const;
+    [[nodiscard]] META_RHI_API const SubResource::Count& GetSubresourceCount() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API ResourceType              GetResourceType() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API State                     GetState() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API ResourceUsageMask         GetUsage() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API const DescriptorByViewId& GetDescriptorByViewId() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API RenderContext             GetRenderContext() const;
+    [[nodiscard]] META_RHI_API const Opt<uint32_t>&      GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT;
+
+    // Data::IEmitter<IResourceCallback> interface methods
+    META_RHI_API void Connect(Data::Receiver<IResourceCallback>& receiver) const;
+    META_RHI_API void Disconnect(Data::Receiver<IResourceCallback>& receiver) const;
 
     // ITexture interface methods
-    [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
     
 private:
-    using Impl = Methane::Graphics::METHANE_GFX_API::Texture;
+    using Impl = Methane::Graphics::META_GFX_NAME::Texture;
 
-    Texture(Ptr<Impl>&& impl_ptr);
+    META_RHI_API Texture(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi
+
+#ifdef META_RHI_PIMPL_INLINE
+
+#include <Methane/Graphics/RHI/Texture.cpp>
+
+#endif // META_RHI_PIMPL_INLINE

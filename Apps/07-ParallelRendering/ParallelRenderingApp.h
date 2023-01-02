@@ -26,6 +26,8 @@ Tutorial demonstrating parallel rendering with Methane graphics API
 #include <Methane/Kit.h>
 #include <Methane/UserInterface/App.hpp>
 
+#include <thread>
+
 namespace hlslpp // NOSONAR
 {
 #pragma pack(push, 16)

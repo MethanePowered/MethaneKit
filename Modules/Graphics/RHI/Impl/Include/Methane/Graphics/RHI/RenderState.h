@@ -28,9 +28,8 @@ Methane RenderState PIMPL wrappers for direct calls to final implementation.
 #include "RenderPass.h"
 
 #include <Methane/Graphics/RHI/IRenderState.h>
-#include <Methane/Data/Transmitter.hpp>
 
-namespace Methane::Graphics::METHANE_GFX_API
+namespace Methane::Graphics::META_GFX_NAME
 {
 class RenderState;
 }
@@ -41,7 +40,6 @@ namespace Methane::Graphics::Rhi
 class RenderContext;
 
 class RenderState
-    : public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
     using Rasterizer = RasterizerSettings;
@@ -65,35 +63,45 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderState);
     META_PIMPL_METHODS_COMPARE_DECLARE(RenderState);
 
-    explicit RenderState(const Ptr<IRenderState>& interface_ptr);
-    explicit RenderState(IRenderState& interface_ref);
-    RenderState(const RenderContext& context, const Settings& settings);
+    META_RHI_API explicit RenderState(const Ptr<IRenderState>& interface_ptr);
+    META_RHI_API explicit RenderState(IRenderState& interface_ref);
+    META_RHI_API RenderState(const RenderContext& context, const Settings& settings);
 
-    void Init(const RenderContext& context, const Settings& settings);
-    void Release();
+    META_RHI_API void Init(const RenderContext& context, const Settings& settings);
+    META_RHI_API void Release();
 
-    bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    IRenderState& GetInterface() const META_PIMPL_NOEXCEPT;
-    Ptr<IRenderState> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_RHI_API IRenderState& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_RHI_API Ptr<IRenderState> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    bool SetName(std::string_view name) const;
-    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool SetName(std::string_view name) const;
+    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
+    // Data::IEmitter<IObjectCallback> interface methods
+    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IRenderState interface methods
-    [[nodiscard]] const RenderStateSettings& GetSettings() const META_PIMPL_NOEXCEPT;
-    void Reset(const Settings& settings) const;
-    void Reset(const IRenderState::Settings& settings) const;
+    [[nodiscard]] META_RHI_API const RenderStateSettings& GetSettings() const META_PIMPL_NOEXCEPT;
+    META_RHI_API void Reset(const Settings& settings) const;
+    META_RHI_API void Reset(const IRenderState::Settings& settings) const;
 
-    Program       GetProgram() const;
-    RenderPattern GetRenderPattern() const;
+    META_RHI_API Program       GetProgram() const;
+    META_RHI_API RenderPattern GetRenderPattern() const;
 
 private:
-    using Impl = Methane::Graphics::METHANE_GFX_API::RenderState;
+    using Impl = Methane::Graphics::META_GFX_NAME::RenderState;
 
-    RenderState(Ptr<Impl>&& impl_ptr);
+    META_RHI_API RenderState(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi
+
+#ifdef META_RHI_PIMPL_INLINE
+
+#include <Methane/Graphics/RHI/RenderState.cpp>
+
+#endif // META_RHI_PIMPL_INLINE

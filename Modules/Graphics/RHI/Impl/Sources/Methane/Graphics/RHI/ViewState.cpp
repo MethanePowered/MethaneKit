@@ -24,15 +24,13 @@ Methane ViewState PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/ViewState.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <ViewState.hh>
 #else
 #include <ViewState.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {

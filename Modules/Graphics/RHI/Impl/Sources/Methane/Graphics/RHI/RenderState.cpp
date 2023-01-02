@@ -24,15 +24,13 @@ Methane RenderState PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <RenderState.hh>
 #else
 #include <RenderState.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
@@ -55,8 +53,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderState);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderState);
 
 RenderState::RenderState(Ptr<Impl>&& impl_ptr)
-    : Transmitter(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -78,12 +75,10 @@ RenderState::RenderState(const RenderContext& context, const Settings& settings)
 void RenderState::Init(const RenderContext& context, const Settings& settings)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IRenderState::Create(context.GetInterface(), ConvertRenderStateSettings(settings)));
-    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void RenderState::Release()
 {
-    Transmitter::Reset();
     m_impl_ptr.reset();
 }
 
@@ -110,6 +105,16 @@ bool RenderState::SetName(std::string_view name) const
 std::string_view RenderState::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetName();
+}
+
+void RenderState::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void RenderState::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 const RenderStateSettings& RenderState::GetSettings() const META_PIMPL_NOEXCEPT

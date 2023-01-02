@@ -53,37 +53,87 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/TransferCommandList.cpp
 )
 
-add_library(${TARGET} STATIC
-    ${HEADERS}
-    ${SOURCES}
-)
+if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
+    set(METHANE_GRAPHICS_RHI_IMPL_TARGET MethaneGraphicsRhiDirectX)
+    set(METHANE_GRAPHICS_API_NAME DirectX)
+elseif(METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
+    set(METHANE_GRAPHICS_RHI_IMPL_TARGET MethaneGraphicsRhiVulkan)
+    set(METHANE_GRAPHICS_API_NAME Vulkan)
+elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+    set(METHANE_GRAPHICS_RHI_IMPL_TARGET MethaneGraphicsRhiMetal)
+    set(METHANE_GRAPHICS_API_NAME Metal)
+else()
+    message(FATAL_ERROR "Methane Graphics API is undefined!")
+endif()
 
-target_link_libraries(${TARGET}
-    PUBLIC
-        MethaneGraphicsRhiInterface
-    PRIVATE
-        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_DIRECTX}>:MethaneGraphicsRhiDirectX>
-        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>:MethaneGraphicsRhiVulkan>
-        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:MethaneGraphicsRhiMetal>
-)
+get_target_property(METHANE_GRAPHICS_RHI_IMPL_INCLUDE_DIR ${METHANE_GRAPHICS_RHI_IMPL_TARGET} METHANE_INCLUDE_DIR)
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
+if(METHANE_RHI_PIMPL_INLINE_ENABLED)
 
-target_include_directories(${TARGET}
-    PUBLIC
-        Include
-    PRIVATE
-        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_DIRECTX}>:$<TARGET_PROPERTY:MethaneGraphicsRhiDirectX,METHANE_INCLUDE_DIR>>
-        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>:$<TARGET_PROPERTY:MethaneGraphicsRhiVulkan,METHANE_INCLUDE_DIR>>
-        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:$<TARGET_PROPERTY:MethaneGraphicsRhiMetal,METHANE_INCLUDE_DIR>>
-)
+    add_library(${TARGET} INTERFACE
+        ${HEADERS}
+        ${SOURCES}
+    )
 
-target_compile_definitions(${TARGET}
-    PUBLIC
-        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:METHANE_GFX_METAL>
-        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_DIRECTX}>:METHANE_GFX_DIRECTX>
-        $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_VULKAN}>:METHANE_GFX_VULKAN>
-)
+    target_link_libraries(${TARGET}
+        INTERFACE
+            MethaneBuildOptions
+            MethanePrecompiledHeaders
+            ${METHANE_GRAPHICS_RHI_IMPL_TARGET}
+    )
+
+    target_include_directories(${TARGET}
+        INTERFACE
+            ${CMAKE_CURRENT_SOURCE_DIR}/Include
+            ${CMAKE_CURRENT_SOURCE_DIR}/Sources
+            ${METHANE_GRAPHICS_RHI_IMPL_INCLUDE_DIR}
+    )
+
+    target_compile_definitions(${TARGET}
+        INTERFACE
+            META_RHI_PIMPL_INLINE
+            META_GFX_NAME=${METHANE_GRAPHICS_API_NAME}
+            $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:META_GFX_METAL>
+    )
+
+else() # METHANE_RHI_PIMPL_INLINE_ENABLED
+
+    add_library(${TARGET} STATIC
+        ${HEADERS}
+        ${SOURCES}
+    )
+
+    target_link_libraries(${TARGET}
+        PUBLIC
+            MethaneGraphicsRhiInterface
+        PRIVATE
+            MethanePrecompiledHeaders
+            ${METHANE_GRAPHICS_RHI_IMPL_TARGET}
+    )
+
+    target_include_directories(${TARGET}
+        PUBLIC
+            Include
+        PRIVATE
+            ${METHANE_GRAPHICS_RHI_IMPL_INCLUDE_DIR}
+    )
+
+    target_compile_definitions(${TARGET}
+        PUBLIC
+            META_GFX_NAME=${METHANE_GRAPHICS_API_NAME}
+            $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:META_GFX_METAL>
+    )
+
+    if (METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+        set_source_files_properties(${SOURCES}
+            PROPERTIES
+                COMPILE_FLAGS "-x objective-c++"
+                SKIP_PRECOMPILE_HEADERS ON
+                SKIP_UNITY_BUILD_INCLUSION ON
+        )
+    endif()
+
+endif() # METHANE_RHI_PIMPL_INLINE_ENABLED
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
@@ -94,15 +144,6 @@ set_target_properties(${TARGET}
         UNITY_BUILD ${METHANE_UNITY_BUILD_ENABLED}
         UNITY_BUILD_BATCH_SIZE 4
 )
-
-if (APPLE)
-    set_source_files_properties(${SOURCES}
-        PROPERTIES
-            COMPILE_FLAGS "-x objective-c++ -fobjc-weak"
-            SKIP_PRECOMPILE_HEADERS ON
-            SKIP_UNITY_BUILD_INCLUSION ON
-    )
-endif()
 
 install(TARGETS ${TARGET}
     PUBLIC_HEADER

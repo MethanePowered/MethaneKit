@@ -26,15 +26,13 @@ Methane Texture PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <Texture.hh>
 #else
 #include <Texture.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
@@ -43,9 +41,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Texture);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(Texture);
 
 Texture::Texture(Ptr<Impl>&& impl_ptr)
-    : Transmitter<IObjectCallback>(*impl_ptr)
-    , Transmitter<IResourceCallback>(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -67,35 +63,25 @@ Texture::Texture(const RenderContext& context, const Settings& settings)
 void Texture::Init(const RenderContext& context, const Settings& settings)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITexture::Create(context.GetInterface(), settings));
-    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
-    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Texture::InitImage(const RenderContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITexture::CreateImage(context.GetInterface(), dimensions, array_length_opt, pixel_format, mipmapped));
-    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
-    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Texture::InitFrameBuffer(const RenderContext& context, Data::Index frame_index)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITexture::CreateFrameBuffer(context.GetInterface(), frame_index));
-    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
-    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Texture::InitDepthStencil(const RenderContext& context)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITexture::CreateDepthStencil(context.GetInterface()));
-    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
-    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Texture::Release()
 {
-    Transmitter<IObjectCallback>::Reset();
-    Transmitter<IResourceCallback>::Reset();
     m_impl_ptr.reset();
 }
 
@@ -122,6 +108,16 @@ bool Texture::SetName(std::string_view name) const
 std::string_view Texture::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetName();
+}
+
+void Texture::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void Texture::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 bool Texture::SetState(State state) const
@@ -216,6 +212,16 @@ RenderContext Texture::GetRenderContext() const
 const Opt<uint32_t>& Texture::GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetOwnerQueueFamily();
+}
+
+void Texture::Connect(Data::Receiver<IResourceCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IResourceCallback>::Connect(receiver);
+}
+
+void Texture::Disconnect(Data::Receiver<IResourceCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IResourceCallback>::Disconnect(receiver);
 }
 
 const Texture::Settings& Texture::GetSettings() const META_PIMPL_NOEXCEPT

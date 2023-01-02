@@ -25,6 +25,8 @@ Methane shader interface: defines programmable stage of the graphics pipeline.
 
 #include <Methane/Instrumentation.h>
 
+#include <sstream>
+
 namespace Methane::Graphics::Rhi
 {
 

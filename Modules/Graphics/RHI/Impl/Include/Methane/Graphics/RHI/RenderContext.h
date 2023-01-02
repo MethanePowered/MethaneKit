@@ -26,9 +26,8 @@ Methane RenderContext PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IRenderContext.h>
-#include <Methane/Data/Transmitter.hpp>
 
-namespace Methane::Graphics::METHANE_GFX_API
+namespace Methane::Graphics::META_GFX_NAME
 {
 class RenderContext;
 }
@@ -42,8 +41,6 @@ class CommandQueue;
 class ObjectRegistry;
 
 class RenderContext
-    : public Data::Transmitter<Rhi::IObjectCallback>
-    , public Data::Transmitter<Rhi::IContextCallback>
 {
 public:
     using Settings              = RenderContextSettings;
@@ -57,56 +54,70 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderContext);
     META_PIMPL_METHODS_COMPARE_DECLARE(RenderContext);
 
-    explicit RenderContext(const Ptr<IRenderContext>& render_context_ptr);
-    explicit RenderContext(IRenderContext& render_context);
-    RenderContext(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings);
+    META_RHI_API explicit RenderContext(const Ptr<IRenderContext>& render_context_ptr);
+    META_RHI_API explicit RenderContext(IRenderContext& render_context);
+    META_RHI_API RenderContext(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings);
 
-    void Init(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings);
-    void Release();
+    META_RHI_API void Init(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings);
+    META_RHI_API void Release();
 
-    bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    IRenderContext& GetInterface() const META_PIMPL_NOEXCEPT;
-    Ptr<IRenderContext> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_RHI_API IRenderContext& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_RHI_API Ptr<IRenderContext> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    bool SetName(std::string_view name) const;
-    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool SetName(std::string_view name) const;
+    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
+    // Data::IEmitter<IObjectCallback> interface methods
+    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IContext interface methods
-    [[nodiscard]] OptionMask GetOptions() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] tf::Executor& GetParallelExecutor() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] IObjectRegistry& GetObjectRegistry() const META_PIMPL_NOEXCEPT;
-    void RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT;
-    void CompleteInitialization() const;
-    [[nodiscard]] bool IsCompletingInitialization() const META_PIMPL_NOEXCEPT;
-    void WaitForGpu(WaitFor wait_for) const;
-    void Reset(const Device& device) const;
-    void Reset() const;
-    [[nodiscard]] Device GetDevice() const;
-    [[nodiscard]] CommandKit GetDefaultCommandKit(CommandListType type) const;
-    [[nodiscard]] CommandKit GetDefaultCommandKit(const CommandQueue& cmd_queue) const;
-    [[nodiscard]] CommandKit GetUploadCommandKit() const;
-    [[nodiscard]] CommandKit GetRenderCommandKit() const;
+    [[nodiscard]] META_RHI_API OptionMask GetOptions() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API tf::Executor& GetParallelExecutor() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API IObjectRegistry& GetObjectRegistry() const META_PIMPL_NOEXCEPT;
+    META_RHI_API void RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT;
+    META_RHI_API void CompleteInitialization() const;
+    [[nodiscard]] META_RHI_API bool IsCompletingInitialization() const META_PIMPL_NOEXCEPT;
+    META_RHI_API void WaitForGpu(WaitFor wait_for) const;
+    META_RHI_API void Reset(const Device& device) const;
+    META_RHI_API void Reset() const;
+    [[nodiscard]] META_RHI_API Device GetDevice() const;
+    [[nodiscard]] META_RHI_API CommandKit GetDefaultCommandKit(CommandListType type) const;
+    [[nodiscard]] META_RHI_API CommandKit GetDefaultCommandKit(const CommandQueue& cmd_queue) const;
+    [[nodiscard]] META_RHI_API CommandKit GetUploadCommandKit() const;
+    [[nodiscard]] META_RHI_API CommandKit GetRenderCommandKit() const;
+
+    // Data::IEmitter<IContextCallback> interface methods
+    META_RHI_API void Connect(Data::Receiver<IContextCallback>& receiver) const;
+    META_RHI_API void Disconnect(Data::Receiver<IContextCallback>& receiver) const;
 
     // IRenderContext interface methods
-    [[nodiscard]] bool ReadyToRender() const;
-    void Resize(const FrameSize& frame_size) const;
-    void Present() const;
-    [[nodiscard]] Platform::AppView  GetAppView() const;
-    [[nodiscard]] const Settings&    GetSettings() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] uint32_t           GetFrameBufferIndex() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] uint32_t           GetFrameIndex() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] const IFpsCounter& GetFpsCounter() const META_PIMPL_NOEXCEPT;
-    bool SetVSyncEnabled(bool vsync_enabled) const;
-    bool SetFrameBuffersCount(uint32_t frame_buffers_count) const;
-    bool SetFullScreen(bool is_full_screen) const;
+    [[nodiscard]] META_RHI_API bool ReadyToRender() const;
+    META_RHI_API void Resize(const FrameSize& frame_size) const;
+    META_RHI_API void Present() const;
+    [[nodiscard]] META_RHI_API Platform::AppView  GetAppView() const;
+    [[nodiscard]] META_RHI_API const Settings&    GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API uint32_t           GetFrameBufferIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API uint32_t           GetFrameIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API const IFpsCounter& GetFpsCounter() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool SetVSyncEnabled(bool vsync_enabled) const;
+    META_RHI_API bool SetFrameBuffersCount(uint32_t frame_buffers_count) const;
+    META_RHI_API bool SetFullScreen(bool is_full_screen) const;
 
 private:
-    using Impl = Methane::Graphics::METHANE_GFX_API::RenderContext;
+    using Impl = Methane::Graphics::META_GFX_NAME::RenderContext;
 
-    RenderContext(Ptr<Impl>&& impl_ptr);
+    META_RHI_API RenderContext(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi
+
+#ifdef META_RHI_PIMPL_INLINE
+
+#include <Methane/Graphics/RHI/RenderContext.cpp>
+
+#endif // META_RHI_PIMPL_INLINE

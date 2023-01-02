@@ -32,6 +32,7 @@ Base implementation of the Methane graphics application.
 
 #include <fmt/format.h>
 #include <magic_enum.hpp>
+#include <thread>
 
 namespace Methane::Graphics
 {
@@ -72,7 +73,7 @@ AppBase::~AppBase()
     if (m_context.IsInitialized())
     {
         // Prevent OnContextReleased callback emitting during application destruction
-        m_context.Data::Transmitter<IContextCallback>::Disconnect(*this);
+        m_context.Disconnect(*this);
     }
 }
 
@@ -95,7 +96,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     m_initial_context_settings.frame_size = frame_size;
     m_context.Init(env, device, GetParallelExecutor(), m_initial_context_settings);
     m_context.SetName("Graphics Context");
-    m_context.Data::Transmitter<IContextCallback>::Connect(*this);
+    m_context.Connect(*this);
 
     // Fill initial screen render-pass pattern settings
     m_screen_pass_pattern_settings.shader_access = m_settings.screen_pass_access;

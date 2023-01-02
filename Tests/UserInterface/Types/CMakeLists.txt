@@ -8,8 +8,6 @@ add_executable(${TARGET}
     ContextTest.cpp
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
-
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions

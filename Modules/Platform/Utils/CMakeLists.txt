@@ -42,8 +42,6 @@ target_include_directories(${TARGET}
         Include
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
-
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneBuildOptions

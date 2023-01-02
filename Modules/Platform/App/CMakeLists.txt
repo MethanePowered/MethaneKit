@@ -112,8 +112,6 @@ target_compile_definitions(${TARGET}
         METHANE_RENDER_APP
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
-
 target_include_directories(${TARGET}
     PRIVATE
         Sources

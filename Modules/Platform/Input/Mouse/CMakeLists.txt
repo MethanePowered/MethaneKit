@@ -21,8 +21,6 @@ target_link_libraries(${TARGET}
         MethaneInstrumentation
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
-
 target_include_directories(${TARGET}
     PRIVATE
         Sources

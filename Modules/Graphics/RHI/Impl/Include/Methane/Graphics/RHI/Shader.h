@@ -27,7 +27,7 @@ Methane Shader PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/IShader.h>
 
-namespace Methane::Graphics::METHANE_GFX_API
+namespace Methane::Graphics::META_GFX_NAME
 {
 class Shader;
 }
@@ -50,25 +50,31 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Shader);
     META_PIMPL_METHODS_COMPARE_DECLARE(Shader);
 
-    explicit Shader(const Ptr<IShader>& interface_ptr);
-    explicit Shader(IShader& interface_ref);
-    Shader(Type type, const RenderContext& context, const Settings& settings);
+    META_RHI_API explicit Shader(const Ptr<IShader>& interface_ptr);
+    META_RHI_API explicit Shader(IShader& interface_ref);
+    META_RHI_API Shader(Type type, const RenderContext& context, const Settings& settings);
 
-    void Init(Type type, const RenderContext& context, const Settings& settings);
-    void Release();
+    META_RHI_API void Init(Type type, const RenderContext& context, const Settings& settings);
+    META_RHI_API void Release();
 
-    bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    IShader& GetInterface() const META_PIMPL_NOEXCEPT;
-    Ptr<IShader> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_RHI_API IShader& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_RHI_API Ptr<IShader> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IShader interface methods
-    [[nodiscard]] Type            GetType() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API Type            GetType() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
 
 private:
-    using Impl = Methane::Graphics::METHANE_GFX_API::Shader;
+    using Impl = Methane::Graphics::META_GFX_NAME::Shader;
 
     Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi
+
+#ifdef META_RHI_PIMPL_INLINE
+
+#include <Methane/Graphics/RHI/Shader.cpp>
+
+#endif // META_RHI_PIMPL_INLINE

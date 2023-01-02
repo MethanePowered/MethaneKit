@@ -44,8 +44,12 @@ endif()
 
 set(DEFAULT_APPS_BUILD_ENABLED ${IS_TOP_LEVEL_PROJECT})
 set(DEFAULT_TESTS_BUILD_ENABLED ON)
+set(DEFAULT_PRECOMPILED_HEADERS_ENABLED ON)
 
 if(APPLE)
+    # Disable precompiled headers in Apple builds because multi-language (C++/Obj-C) compilation is not supported
+    set(DEFAULT_PRECOMPILED_HEADERS_ENABLED OFF)
+
     if (NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         # Disable tests build on Apple mobile systems, because they do not support running unbundled executables
         set(DEFAULT_TESTS_BUILD_ENABLED OFF)
@@ -58,10 +62,19 @@ if(APPLE)
     endif()
 endif()
 
+if (CMAKE_BUILD_TYPE EQUAL "Release" OR
+    CMAKE_BUILD_TYPE EQUAL "RelWithDebInfo")
+    set(DEFAULT_RHI_INLINING_ENABLED ON)
+else()
+    set(DEFAULT_RHI_INLINING_ENABLED OFF)
+endif()
+
 # Build configuration
 option(METHANE_GFX_VULKAN_ENABLED           "Enable Vulkan graphics API instead of platform native API" OFF)
 option(METHANE_APPS_BUILD_ENABLED           "Enable applications build" ${DEFAULT_APPS_BUILD_ENABLED})
 option(METHANE_TESTS_BUILD_ENABLED          "Enable tests build" ${DEFAULT_TESTS_BUILD_ENABLED})
+option(METHANE_RHI_PIMPL_INLINE_ENABLED     "Enable RHI PIMPL implementation inlining" ${DEFAULT_RHI_INLINING_ENABLED})
+option(METHANE_PRECOMPILED_HEADERS_ENABLED  "Enable precompiled headers" ${DEFAULT_PRECOMPILED_HEADERS_ENABLED})
 option(METHANE_CHECKS_ENABLED               "Enable runtime checks of input arguments" ON)
 option(METHANE_RUN_TESTS_DURING_BUILD       "Enable test auto-run after module build" ON)
 option(METHANE_UNITY_BUILD_ENABLED          "Enable unity build speedup for some modules" ON)
@@ -146,6 +159,10 @@ endif()
 
 if(METHANE_RUN_TESTS_DURING_BUILD)
     message(STATUS "Methane tests running during build is enabled")
+endif()
+
+if(METHANE_RHI_PIMPL_INLINE_ENABLED)
+    message(STATUS "Methane RHI PIMPL implementation inlining is enabled")
 endif()
 
 if(METHANE_SHADERS_CODEVIEW_ENABLED)

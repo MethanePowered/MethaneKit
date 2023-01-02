@@ -26,18 +26,25 @@ MacOS application implementation.
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/MacOS/AppEnvironment.hh>
 
-#if defined(__OBJC__) && defined(METHANE_RENDER_APP)
+#ifdef __OBJC__
 
+#import <AppKit/NSApplication.h>
+#import <AppKit/NSWindow.h>
+
+#ifdef METHANE_RENDER_APP
 #import <Methane/Platform/MacOS/AppDelegate.hh>
 using AppDelegateType = AppDelegate;
-
 #else
+using AppDelegateType = void;
+#endif
+
+#else // __OBJC__
 
 using AppDelegateType = void;
 using NSApplication = void;
 using NSWindow = void;
 
-#endif
+#endif // __OBJC__
 
 namespace Methane::Platform
 {

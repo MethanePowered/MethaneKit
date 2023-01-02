@@ -26,9 +26,8 @@ Methane TransferCommandList PIMPL wrappers for direct calls to final implementat
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/ITransferCommandList.h>
-#include <Methane/Data/Transmitter.hpp>
 
-namespace Methane::Graphics::METHANE_GFX_API
+namespace Methane::Graphics::META_GFX_NAME
 {
 class TransferCommandList;
 }
@@ -40,8 +39,6 @@ class CommandQueue;
 class CommandListDebugGroup;
 
 class TransferCommandList
-    : public Data::Transmitter<Rhi::ICommandListCallback>
-    , public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
     using Type        = CommandListType;
@@ -52,41 +49,55 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(TransferCommandList);
     META_PIMPL_METHODS_COMPARE_DECLARE(TransferCommandList);
 
-    explicit TransferCommandList(const Ptr<ITransferCommandList>& interface_ptr);
-    explicit TransferCommandList(ITransferCommandList& interface_ref);
-    explicit TransferCommandList(const CommandQueue& command_queue);
+    META_RHI_API explicit TransferCommandList(const Ptr<ITransferCommandList>& interface_ptr);
+    META_RHI_API explicit TransferCommandList(ITransferCommandList& interface_ref);
+    META_RHI_API explicit TransferCommandList(const CommandQueue& command_queue);
 
-    void Init(const CommandQueue& command_queue);
-    void Release();
+    META_RHI_API void Init(const CommandQueue& command_queue);
+    META_RHI_API void Release();
 
-    bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    ITransferCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
-    Ptr<ITransferCommandList> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_RHI_API ITransferCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_RHI_API Ptr<ITransferCommandList> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    bool SetName(std::string_view name) const;
-    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool SetName(std::string_view name) const;
+    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
+    // Data::IEmitter<IObjectCallback> interface methods
+    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // ICommandList interface methods
-    void  PushDebugGroup(DebugGroup& debug_group) const;
-    void  PopDebugGroup() const;
-    void  Reset(DebugGroup* debug_group_ptr = nullptr) const;
-    void  ResetOnce(DebugGroup* debug_group_ptr = nullptr) const;
-    void  SetProgramBindings(IProgramBindings& program_bindings,
-                             ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
-    void  SetResourceBarriers(const IResourceBarriers& resource_barriers) const;
-    void  Commit() const;
-    void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;
-    [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const;
-    [[nodiscard]] State GetState() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] CommandQueue GetCommandQueue() const;
+    META_RHI_API void  PushDebugGroup(DebugGroup& debug_group) const;
+    META_RHI_API void  PopDebugGroup() const;
+    META_RHI_API void  Reset(DebugGroup* debug_group_ptr = nullptr) const;
+    META_RHI_API void  ResetOnce(DebugGroup* debug_group_ptr = nullptr) const;
+    META_RHI_API void  SetProgramBindings(IProgramBindings& program_bindings,
+                                          ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
+    META_RHI_API void  SetResourceBarriers(const IResourceBarriers& resource_barriers) const;
+    META_RHI_API void  Commit() const;
+    META_RHI_API void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;
+    [[nodiscard]] META_RHI_API Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const;
+    [[nodiscard]] META_RHI_API State GetState() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API CommandQueue GetCommandQueue() const;
+
+    // Data::IEmitter<ICommandListCallback> interface methods
+    META_RHI_API void Connect(Data::Receiver<ICommandListCallback>& receiver) const;
+    META_RHI_API void Disconnect(Data::Receiver<ICommandListCallback>& receiver) const;
 
 private:
-    using Impl = Methane::Graphics::METHANE_GFX_API::TransferCommandList;
+    using Impl = Methane::Graphics::META_GFX_NAME::TransferCommandList;
 
-    TransferCommandList(Ptr<Impl>&& impl_ptr);
+    META_RHI_API TransferCommandList(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi
+
+#ifdef META_RHI_PIMPL_INLINE
+
+#include <Methane/Graphics/RHI/TransferCommandList.cpp>
+
+#endif // META_RHI_PIMPL_INLINE

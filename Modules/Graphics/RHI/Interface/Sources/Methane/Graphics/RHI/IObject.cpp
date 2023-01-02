@@ -25,6 +25,8 @@ Methane object interface: represents any named object.
 
 #include <Methane/Instrumentation.h>
 
+#include <fmt/format.h>
+
 namespace Methane::Graphics::Rhi
 {
 

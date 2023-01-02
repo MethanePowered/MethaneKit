@@ -25,39 +25,44 @@ Methane PIMPL common header.
 
 #include <Methane/Memory.hpp>
 
-#if defined METHANE_GFX_DIRECTX
+#ifdef META_RHI_PIMPL_INLINE
 
-#define METHANE_GFX_API DirectX
+#include <Methane/Inline.hpp>
 
-#elif defined METHANE_GFX_VULKAN
+#define META_RHI_API META_INLINE
 
-#define METHANE_GFX_API Vulkan
+#else // META_RHI_PIMPL_INLINE
 
-#elif defined METHANE_GFX_METAL
+#define META_RHI_API
 
-#define METHANE_GFX_API Metal
+#endif // META_RHI_PIMPL_INLINE
 
-#else // METHAN_GFX_[API] is undefined
+#ifdef _DEBUG
+// Comment this define to disable checks of pointer to implementation in all PIMPL methods
+#define META_PIMPL_NULL_CHECK_ENABLED
+#endif
 
-static_assert(false, "Static graphics API macro-definition is missing.");
-
+#ifdef META_PIMPL_NULL_CHECK_ENABLED
+#define META_PIMPL_NOEXCEPT
+#else
+#define META_PIMPL_NOEXCEPT noexcept
 #endif
 
 #define META_PIMPL_METHODS_DECLARE(Class) \
-    ~Class(); \
-    Class(const Class& other); \
-    Class(Class&& other) noexcept; \
-    Class& operator=(const Class& other); \
-    Class& operator=(Class&& other) noexcept
+    META_RHI_API ~Class(); \
+    META_RHI_API Class(const Class& other); \
+    META_RHI_API Class(Class&& other) noexcept; \
+    META_RHI_API Class& operator=(const Class& other); \
+    META_RHI_API Class& operator=(Class&& other) noexcept
 
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Class) \
-    Class(); \
+    META_RHI_API Class(); \
     META_PIMPL_METHODS_DECLARE(Class)
 
 #define META_PIMPL_METHODS_COMPARE_DECLARE(Class) \
-    bool operator==(const Class& other) const noexcept; \
-    bool operator!=(const Class& other) const noexcept; \
-    bool operator<(const Class& other) const noexcept
+    META_RHI_API bool operator==(const Class& other) const noexcept; \
+    META_RHI_API bool operator!=(const Class& other) const noexcept; \
+    META_RHI_API bool operator<(const Class& other) const noexcept
 
 #define META_PIMPL_METHODS_IMPLEMENT(Class) \
     Class::~Class() = default; \
@@ -78,17 +83,4 @@ static_assert(false, "Static graphics API macro-definition is missing.");
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Class) \
     Class::Class() = default; \
     META_PIMPL_METHODS_IMPLEMENT(Class)
-
-#ifdef _DEBUG
-// Comment this define to disable checks of pointer to implementation in all PIMPL methods
-#define PIMPL_NULL_CHECK_ENABLED
-#include <Methane/Checks.hpp>
-#endif
-
-#ifdef PIMPL_NULL_CHECK_ENABLED
-#define META_PIMPL_NOEXCEPT
-#else
-#define META_PIMPL_NOEXCEPT noexcept
-#endif
-
 

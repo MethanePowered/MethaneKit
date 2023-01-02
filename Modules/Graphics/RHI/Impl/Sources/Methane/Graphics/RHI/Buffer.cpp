@@ -26,15 +26,13 @@ Methane Buffer PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 
-#if defined METHANE_GFX_METAL
+#ifdef META_GFX_METAL
 #include <Buffer.hh>
 #else
 #include <Buffer.h>
 #endif
 
 #include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
@@ -43,9 +41,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Buffer);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(Buffer);
 
 Buffer::Buffer(Ptr<Impl>&& impl_ptr)
-    : Transmitter<IObjectCallback>(*impl_ptr)
-    , Transmitter<IResourceCallback>(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -62,35 +58,25 @@ Buffer::Buffer(IBuffer& interface_ref)
 void Buffer::InitVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateVertexBuffer(context, size, stride, is_volatile));
-    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
-    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Buffer::InitIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateIndexBuffer(context, size, format, is_volatile));
-    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
-    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Buffer::InitConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateConstantBuffer(context, size, addressable, is_volatile));
-    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
-    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Buffer::InitReadBackBuffer(const IContext& context, Data::Size size)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateReadBackBuffer(context, size));
-    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
-    Transmitter<IResourceCallback>::Reset(m_impl_ptr.get());
 }
 
 void Buffer::Release()
 {
-    Transmitter<IObjectCallback>::Reset();
-    Transmitter<IResourceCallback>::Reset();
     m_impl_ptr.reset();
 }
 
@@ -117,6 +103,16 @@ bool Buffer::SetName(std::string_view name) const
 std::string_view Buffer::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetName();
+}
+
+void Buffer::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void Buffer::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 bool Buffer::SetState(State state) const
@@ -211,6 +207,16 @@ const Opt<uint32_t>& Buffer::GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetOwnerQueueFamily();
 }
 
+void Buffer::Connect(Data::Receiver<IResourceCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IResourceCallback>::Connect(receiver);
+}
+
+void Buffer::Disconnect(Data::Receiver<IResourceCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IResourceCallback>::Disconnect(receiver);
+}
+
 const Buffer::Settings& Buffer::GetSettings() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetSettings();
@@ -235,8 +241,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(BufferSet);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(BufferSet);
 
 BufferSet::BufferSet(Ptr<Impl>&& impl_ptr)
-    : Transmitter(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -259,12 +264,10 @@ void BufferSet::Init(BufferType buffers_type, const Refs<Buffer>& buffer_refs)
 {
     m_buffers.clear();
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBufferSet::Create(buffers_type, GetIBufferRefs(buffer_refs)));
-    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void BufferSet::Release()
 {
-    Transmitter::Reset();
     m_impl_ptr.reset();
     m_buffers.clear();
 }
@@ -282,6 +285,26 @@ IBufferSet& BufferSet::GetInterface() const META_PIMPL_NOEXCEPT
 Ptr<IBufferSet> BufferSet::GetInterfacePtr() const META_PIMPL_NOEXCEPT
 {
     return m_impl_ptr;
+}
+
+bool BufferSet::SetName(std::string_view name) const
+{
+    return GetImpl(m_impl_ptr).SetName(name);
+}
+
+std::string_view BufferSet::GetName() const META_PIMPL_NOEXCEPT
+{
+    return GetImpl(m_impl_ptr).GetName();
+}
+
+void BufferSet::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void BufferSet::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 BufferType BufferSet::GetType() const META_PIMPL_NOEXCEPT

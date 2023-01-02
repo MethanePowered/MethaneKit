@@ -50,8 +50,6 @@ target_link_libraries(${TARGET}
         MethaneDataProvider
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
-
 if (METHANE_OPEN_IMAGE_IO_ENABLED)
     target_link_libraries(${TARGET} PRIVATE OpenImageIO)
     target_compile_definitions(${TARGET}

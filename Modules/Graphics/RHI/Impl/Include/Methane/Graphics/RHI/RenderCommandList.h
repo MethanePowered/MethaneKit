@@ -26,9 +26,8 @@ Methane RenderCommandList PIMPL wrappers for direct calls to final implementatio
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IRenderCommandList.h>
-#include <Methane/Data/Transmitter.hpp>
 
-namespace Methane::Graphics::METHANE_GFX_API
+namespace Methane::Graphics::META_GFX_NAME
 {
 class RenderCommandList;
 }
@@ -47,8 +46,6 @@ class ViewState;
 class ProgramBindings;
 
 class RenderCommandList
-    : public Data::Transmitter<Rhi::ICommandListCallback>
-    , public Data::Transmitter<Rhi::IObjectCallback>
 {
 public:
     using Primitive   = RenderPrimitive;
@@ -60,56 +57,70 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderCommandList);
     META_PIMPL_METHODS_COMPARE_DECLARE(RenderCommandList);
 
-    explicit RenderCommandList(const Ptr<IRenderCommandList>& interface_ptr);
-    explicit RenderCommandList(IRenderCommandList& interface_ref);
-    RenderCommandList(const CommandQueue& command_queue, const RenderPass& render_pass);
+    META_RHI_API explicit RenderCommandList(const Ptr<IRenderCommandList>& interface_ptr);
+    META_RHI_API explicit RenderCommandList(IRenderCommandList& interface_ref);
+    META_RHI_API RenderCommandList(const CommandQueue& command_queue, const RenderPass& render_pass);
 
-    void Init(const CommandQueue& command_queue, const RenderPass& render_pass);
-    void Release();
+    META_RHI_API void Init(const CommandQueue& command_queue, const RenderPass& render_pass);
+    META_RHI_API void Release();
 
-    bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    IRenderCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
-    Ptr<IRenderCommandList> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_RHI_API IRenderCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_RHI_API Ptr<IRenderCommandList> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    bool SetName(std::string_view name) const;
-    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool SetName(std::string_view name) const;
+    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
+    // Data::IEmitter<IObjectCallback> interface methods
+    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // ICommandList interface methods
-    void  PushDebugGroup(const DebugGroup& debug_group) const;
-    void  PopDebugGroup() const;
-    void  Reset(const DebugGroup* debug_group_ptr = nullptr) const;
-    void  ResetOnce(const DebugGroup* debug_group_ptr = nullptr) const;
-    void  SetProgramBindings(const ProgramBindings& program_bindings,
-                             ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
-    void  SetResourceBarriers(const ResourceBarriers& resource_barriers) const;
-    void  Commit() const;
-    void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;
-    [[nodiscard]] Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const;
-    [[nodiscard]] State GetState() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] CommandQueue GetCommandQueue() const;
+    META_RHI_API void  PushDebugGroup(const DebugGroup& debug_group) const;
+    META_RHI_API void  PopDebugGroup() const;
+    META_RHI_API void  Reset(const DebugGroup* debug_group_ptr = nullptr) const;
+    META_RHI_API void  ResetOnce(const DebugGroup* debug_group_ptr = nullptr) const;
+    META_RHI_API void  SetProgramBindings(const ProgramBindings& program_bindings,
+                                          ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
+    META_RHI_API void  SetResourceBarriers(const ResourceBarriers& resource_barriers) const;
+    META_RHI_API void  Commit() const;
+    META_RHI_API void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;
+    [[nodiscard]] META_RHI_API Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const;
+    [[nodiscard]] META_RHI_API State GetState() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API CommandQueue GetCommandQueue() const;
+
+    // Data::IEmitter<ICommandListCallback> interface methods
+    META_RHI_API void Connect(Data::Receiver<ICommandListCallback>& receiver) const;
+    META_RHI_API void Disconnect(Data::Receiver<ICommandListCallback>& receiver) const;
 
     // IRenderCommandList interface methods
-    [[nodiscard]] bool IsValidationEnabled() const META_PIMPL_NOEXCEPT;
-    void SetValidationEnabled(bool is_validation_enabled) const;
-    [[nodiscard]] RenderPass GetRenderPass() const;
-    void ResetWithState(const RenderState& render_state, const DebugGroup* debug_group_ptr = nullptr) const;
-    void ResetWithStateOnce(const RenderState& render_state, const DebugGroup* debug_group_ptr = nullptr) const;
-    void SetRenderState(const RenderState& render_state, RenderStateGroupMask state_groups = RenderStateGroupMask(~0U)) const;
-    void SetViewState(const ViewState& view_state) const;
-    bool SetVertexBuffers(const BufferSet& vertex_buffers, bool set_resource_barriers = true) const;
-    bool SetIndexBuffer(const Buffer& index_buffer, bool set_resource_barriers = true) const;
-    void DrawIndexed(Primitive primitive, uint32_t index_count = 0U, uint32_t start_index = 0U, uint32_t start_vertex = 0U,
-                     uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
-    void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex = 0U,
-              uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
+    [[nodiscard]] META_RHI_API bool IsValidationEnabled() const META_PIMPL_NOEXCEPT;
+    META_RHI_API void SetValidationEnabled(bool is_validation_enabled) const;
+    [[nodiscard]] META_RHI_API RenderPass GetRenderPass() const;
+    META_RHI_API void ResetWithState(const RenderState& render_state, const DebugGroup* debug_group_ptr = nullptr) const;
+    META_RHI_API void ResetWithStateOnce(const RenderState& render_state, const DebugGroup* debug_group_ptr = nullptr) const;
+    META_RHI_API void SetRenderState(const RenderState& render_state, RenderStateGroupMask state_groups = RenderStateGroupMask(~0U)) const;
+    META_RHI_API void SetViewState(const ViewState& view_state) const;
+    META_RHI_API bool SetVertexBuffers(const BufferSet& vertex_buffers, bool set_resource_barriers = true) const;
+    META_RHI_API bool SetIndexBuffer(const Buffer& index_buffer, bool set_resource_barriers = true) const;
+    META_RHI_API void DrawIndexed(Primitive primitive, uint32_t index_count = 0U, uint32_t start_index = 0U, uint32_t start_vertex = 0U,
+                                  uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
+    META_RHI_API void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex = 0U,
+                           uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
 
 private:
-    using Impl = Methane::Graphics::METHANE_GFX_API::RenderCommandList;
+    using Impl = Methane::Graphics::META_GFX_NAME::RenderCommandList;
 
-    RenderCommandList(Ptr<Impl>&& impl_ptr);
+    META_RHI_API RenderCommandList(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi
+
+#ifdef META_RHI_PIMPL_INLINE
+
+#include <Methane/Graphics/RHI/RenderCommandList.cpp>
+
+#endif // META_RHI_PIMPL_INLINE

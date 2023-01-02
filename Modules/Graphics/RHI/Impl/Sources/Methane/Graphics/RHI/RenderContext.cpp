@@ -26,15 +26,13 @@ Methane RenderContext PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <RenderContext.hh>
 #else
 #include <RenderContext.h>
 #endif
-
-#include <Methane/Instrumentation.h>
-
-#include "Pimpl.hpp"
 
 namespace Methane::Graphics::Rhi
 {
@@ -43,9 +41,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderContext);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderContext);
 
 RenderContext::RenderContext(Ptr<Impl>&& impl_ptr)
-    : Transmitter<IObjectCallback>(*impl_ptr)
-    , Transmitter<IContextCallback>(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -67,14 +63,10 @@ RenderContext::RenderContext(const Platform::AppEnvironment& env, const Device& 
 void RenderContext::Init(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IRenderContext::Create(env, device.GetInterface(), parallel_executor, settings));
-    Transmitter<IObjectCallback>::Reset(m_impl_ptr.get());
-    Transmitter<IContextCallback>::Reset(m_impl_ptr.get());
 }
 
 void RenderContext::Release()
 {
-    Transmitter<IObjectCallback>::Reset();
-    Transmitter<IContextCallback>::Reset();
     m_impl_ptr.reset();
 }
 
@@ -101,6 +93,16 @@ bool RenderContext::SetName(std::string_view name) const
 std::string_view RenderContext::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetName();
+}
+
+void RenderContext::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void RenderContext::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 ContextOptionMask RenderContext::GetOptions() const META_PIMPL_NOEXCEPT
@@ -171,6 +173,16 @@ CommandKit RenderContext::GetUploadCommandKit() const
 CommandKit RenderContext::GetRenderCommandKit() const
 {
     return CommandKit(GetImpl(m_impl_ptr).GetRenderCommandKit());
+}
+
+void RenderContext::Connect(Data::Receiver<IContextCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IContextCallback>::Connect(receiver);
+}
+
+void RenderContext::Disconnect(Data::Receiver<IContextCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IContextCallback>::Disconnect(receiver);
 }
 
 bool RenderContext::ReadyToRender() const

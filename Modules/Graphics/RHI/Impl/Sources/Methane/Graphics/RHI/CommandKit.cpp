@@ -31,8 +31,6 @@ Methane CommandKit PIMPL wrappers for direct calls to final implementation.
 
 #include "Pimpl.hpp"
 
-#include <Methane/Instrumentation.h>
-
 namespace Methane::Graphics::Rhi
 {
 
@@ -40,8 +38,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandKit);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(CommandKit);
 
 CommandKit::CommandKit(Ptr<Impl>&& impl_ptr)
-    : Data::Transmitter<IObjectCallback>(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -68,18 +65,15 @@ CommandKit::CommandKit(const RenderContext& context, CommandListType command_lis
 void CommandKit::Init(const CommandQueue& command_queue)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(ICommandKit::Create(command_queue.GetInterface()));
-    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void CommandKit::Init(const RenderContext& context, CommandListType command_lists_type)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(ICommandKit::Create(context.GetInterface(), command_lists_type));
-    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void CommandKit::Release()
 {
-    Transmitter::Reset();
     m_impl_ptr.reset();
 }
 
@@ -106,6 +100,16 @@ bool CommandKit::SetName(std::string_view name) const
 std::string_view CommandKit::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetName();
+}
+
+void CommandKit::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void CommandKit::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 const IContext& CommandKit::GetContext() const META_PIMPL_NOEXCEPT

@@ -8,8 +8,6 @@ add_executable(${TARGET}
     EnumMaskTest.cpp
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
-
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneDataTypes

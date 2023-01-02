@@ -25,15 +25,13 @@ Methane TransferCommandList PIMPL wrappers for direct calls to final implementat
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <TransferCommandList.hh>
 #else
 #include <TransferCommandList.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
@@ -42,9 +40,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(TransferCommandList);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(TransferCommandList);
 
 TransferCommandList::TransferCommandList(Ptr<Impl>&& impl_ptr)
-    : Transmitter<Rhi::ICommandListCallback>(*impl_ptr)
-    , Transmitter<Rhi::IObjectCallback>(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -66,14 +62,10 @@ TransferCommandList::TransferCommandList(const CommandQueue& command_queue)
 void TransferCommandList::Init(const CommandQueue& command_queue)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITransferCommandList::Create(command_queue.GetInterface()));
-    Transmitter<Rhi::ICommandListCallback>::Reset(m_impl_ptr.get());
-    Transmitter<Rhi::IObjectCallback>::Reset(m_impl_ptr.get());
 }
 
 void TransferCommandList::Release()
 {
-    Transmitter<Rhi::ICommandListCallback>::Reset();
-    Transmitter<Rhi::IObjectCallback>::Reset();
     m_impl_ptr.reset();
 }
 
@@ -100,6 +92,16 @@ bool TransferCommandList::SetName(std::string_view name) const
 std::string_view TransferCommandList::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetName();
+}
+
+void TransferCommandList::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void TransferCommandList::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 void TransferCommandList::PushDebugGroup(DebugGroup& debug_group) const
@@ -156,5 +158,16 @@ CommandQueue TransferCommandList::GetCommandQueue() const
 {
     return CommandQueue(GetImpl(m_impl_ptr).GetCommandQueue());
 }
+
+void TransferCommandList::Connect(Data::Receiver<ICommandListCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<ICommandListCallback>::Connect(receiver);
+}
+
+void TransferCommandList::Disconnect(Data::Receiver<ICommandListCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<ICommandListCallback>::Disconnect(receiver);
+}
+
 
 } // namespace Methane::Graphics::Rhi

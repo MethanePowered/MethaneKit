@@ -77,6 +77,8 @@ add_library(${TARGET} STATIC
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsRhiBase
+        # DirectX Libs
+        DirectX-Headers
     PRIVATE
         MethaneBuildOptions
         MethaneDataPrimitives
@@ -86,7 +88,6 @@ target_link_libraries(${TARGET}
         TaskFlow
         nowide
         # DirectX Libs
-        DirectX-Headers
         DirectXTex
         DirectXCompiler
         d3d12
@@ -97,8 +98,6 @@ target_link_libraries(${TARGET}
 # Add cyclic dependency of the RhiBase library from RhiDirectX due to symbolic dependency
 # from RhiInterface fabric methods ISomething::Create(...) implementations defined in RhiDirectX
 target_link_libraries(MethaneGraphicsRhiBase PRIVATE ${TARGET})
-
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 
 target_include_directories(${TARGET}
     PRIVATE

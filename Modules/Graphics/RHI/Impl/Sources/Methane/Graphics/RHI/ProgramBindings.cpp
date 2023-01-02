@@ -24,15 +24,13 @@ Methane ProgramBindings PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/ProgramBindings.h>
 #include <Methane/Graphics/RHI/Program.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <ProgramBindings.hh>
 #else
 #include <ProgramBindings.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
@@ -41,8 +39,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ProgramBindings);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(ProgramBindings);
 
 ProgramBindings::ProgramBindings(Ptr<Impl>&& impl_ptr)
-    : Transmitter(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -70,19 +67,16 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, 
 void ProgramBindings::Init(const Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IProgramBindings::Create(program.GetInterface(), resource_views_by_argument, frame_index));
-    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void ProgramBindings::InitCopy(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument,
                                const Opt<Data::Index>& frame_index)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IProgramBindings::CreateCopy(other_program_bindings.GetInterface(), replace_resource_views_by_argument, frame_index));
-    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void ProgramBindings::Release()
 {
-    Transmitter::Reset();
     m_impl_ptr.reset();
 }
 
@@ -109,6 +103,16 @@ bool ProgramBindings::SetName(std::string_view name) const
 std::string_view ProgramBindings::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetName();
+}
+
+void ProgramBindings::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void ProgramBindings::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 Program ProgramBindings::GetProgram() const

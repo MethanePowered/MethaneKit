@@ -27,7 +27,7 @@ Methane ViewState PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/IViewState.h>
 
-namespace Methane::Graphics::METHANE_GFX_API
+namespace Methane::Graphics::META_GFX_NAME
 {
 class ViewState;
 }
@@ -43,27 +43,33 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ViewState);
     META_PIMPL_METHODS_COMPARE_DECLARE(ViewState);
 
-    explicit ViewState(const Ptr<IViewState>& interface_ptr);
-    explicit ViewState(IViewState& interface_ref);
-    explicit ViewState(const Settings& settings);
+    META_RHI_API explicit ViewState(const Ptr<IViewState>& interface_ptr);
+    META_RHI_API explicit ViewState(IViewState& interface_ref);
+    META_RHI_API explicit ViewState(const Settings& settings);
 
-    void Init(const Settings& settings);
-    void Release();
+    META_RHI_API void Init(const Settings& settings);
+    META_RHI_API void Release();
 
-    bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    IViewState& GetInterface() const META_PIMPL_NOEXCEPT;
-    Ptr<IViewState> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_RHI_API IViewState& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_RHI_API Ptr<IViewState> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IViewState interface methods
-    [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
-    bool Reset(const Settings& settings) const;
-    bool SetViewports(const Viewports& viewports) const;
-    bool SetScissorRects(const ScissorRects& scissor_rects) const;
+    [[nodiscard]] META_RHI_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool Reset(const Settings& settings) const;
+    META_RHI_API bool SetViewports(const Viewports& viewports) const;
+    META_RHI_API bool SetScissorRects(const ScissorRects& scissor_rects) const;
 
 private:
-    using Impl = Methane::Graphics::METHANE_GFX_API::ViewState;
+    using Impl = Methane::Graphics::META_GFX_NAME::ViewState;
 
     Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi
+
+#ifdef META_RHI_PIMPL_INLINE
+
+#include <Methane/Graphics/RHI/ViewState.cpp>
+
+#endif // META_RHI_PIMPL_INLINE

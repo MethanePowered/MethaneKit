@@ -24,15 +24,13 @@ Methane ResourceBarriers PIMPL wrappers for direct calls to final implementation
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <ResourceBarriers.hh>
 #else
 #include <ResourceBarriers.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {

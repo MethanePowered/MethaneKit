@@ -27,7 +27,7 @@ Methane ResourceBarriers PIMPL wrappers for direct calls to final implementation
 
 #include <Methane/Graphics/RHI/IResourceBarriers.h>
 
-namespace Methane::Graphics::METHANE_GFX_API
+namespace Methane::Graphics::META_GFX_NAME
 {
 class ResourceBarriers;
 }
@@ -50,48 +50,54 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ResourceBarriers);
     META_PIMPL_METHODS_COMPARE_DECLARE(ResourceBarriers);
 
-    explicit ResourceBarriers(const Ptr<IResourceBarriers>& interface_ptr);
-    explicit ResourceBarriers(IResourceBarriers& interface_ref);
-    explicit ResourceBarriers(const Set& barriers);
-    ResourceBarriers(const Refs<IResource>& resources,
-                     const Opt<Barrier::StateChange>& state_change,
-                     const Opt<Barrier::OwnerChange>& owner_change);
+    META_RHI_API explicit ResourceBarriers(const Ptr<IResourceBarriers>& interface_ptr);
+    META_RHI_API explicit ResourceBarriers(IResourceBarriers& interface_ref);
+    META_RHI_API explicit ResourceBarriers(const Set& barriers);
+    META_RHI_API ResourceBarriers(const Refs<IResource>& resources,
+                                  const Opt<Barrier::StateChange>& state_change,
+                                  const Opt<Barrier::OwnerChange>& owner_change);
 
-    void Init(const Set& barriers);
-    void Init(const Refs<IResource>& resources,
-              const Opt<Barrier::StateChange>& state_change,
-              const Opt<Barrier::OwnerChange>& owner_change);
-    void Release();
+    META_RHI_API void Init(const Set& barriers);
+    META_RHI_API void Init(const Refs<IResource>& resources,
+                           const Opt<Barrier::StateChange>& state_change,
+                           const Opt<Barrier::OwnerChange>& owner_change);
+    META_RHI_API void Release();
 
-    bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    IResourceBarriers& GetInterface() const META_PIMPL_NOEXCEPT;
-    Ptr<IResourceBarriers> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_RHI_API IResourceBarriers& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_RHI_API Ptr<IResourceBarriers> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IResourceBarriers interface methods
-    [[nodiscard]] bool  IsEmpty() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] Set   GetSet() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] const Map& GetMap() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] const Barrier* GetBarrier(const Barrier::Id& id) const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] bool  HasStateTransition(IResource& resource, State before, State after) const;
-    [[nodiscard]] bool  HasOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) const;
-    [[nodiscard]] explicit operator std::string() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API bool  IsEmpty() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API Set   GetSet() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API const Map& GetMap() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API const Barrier* GetBarrier(const Barrier::Id& id) const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API bool  HasStateTransition(IResource& resource, State before, State after) const;
+    [[nodiscard]] META_RHI_API bool  HasOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) const;
+    [[nodiscard]] META_RHI_API explicit operator std::string() const META_PIMPL_NOEXCEPT;
 
-    bool Remove(Barrier::Type type, IResource& resource) const;
-    bool RemoveStateTransition(IResource& resource) const;
-    bool RemoveOwnerTransition(IResource& resource) const;
+    META_RHI_API bool Remove(Barrier::Type type, IResource& resource) const;
+    META_RHI_API bool RemoveStateTransition(IResource& resource) const;
+    META_RHI_API bool RemoveOwnerTransition(IResource& resource) const;
 
-    AddResult AddStateTransition(IResource& resource, State before, State after) const;
-    AddResult AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) const;
+    META_RHI_API AddResult AddStateTransition(IResource& resource, State before, State after) const;
+    META_RHI_API AddResult AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) const;
 
-    AddResult Add(const Barrier::Id& id, const Barrier& barrier) const;
-    bool      Remove(const Barrier::Id& id) const;
+    META_RHI_API AddResult Add(const Barrier::Id& id, const Barrier& barrier) const;
+    META_RHI_API bool      Remove(const Barrier::Id& id) const;
 
-    void ApplyTransitions() const;
+    META_RHI_API void ApplyTransitions() const;
 
 private:
-    using Impl = Methane::Graphics::METHANE_GFX_API::ResourceBarriers;
+    using Impl = Methane::Graphics::META_GFX_NAME::ResourceBarriers;
 
     Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi
+
+#ifdef META_RHI_PIMPL_INLINE
+
+#include <Methane/Graphics/RHI/ResourceBarriers.cpp>
+
+#endif // META_RHI_PIMPL_INLINE

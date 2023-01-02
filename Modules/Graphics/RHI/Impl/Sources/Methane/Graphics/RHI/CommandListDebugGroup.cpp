@@ -25,15 +25,13 @@ Methane CommandListDebugGroup PIMPL wrappers for direct calls to final implement
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <CommandListDebugGroup.hh>
 #else
 #include <CommandListDebugGroup.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
@@ -42,8 +40,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandListDebugGroup);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(CommandListDebugGroup);
 
 CommandListDebugGroup::CommandListDebugGroup(Ptr<Impl>&& impl_ptr)
-    : Data::Transmitter<IObjectCallback>(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -65,12 +62,10 @@ CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
 void CommandListDebugGroup::Init(std::string_view name)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(ICommandListDebugGroup::Create(name));
-    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void CommandListDebugGroup::Release()
 {
-    Transmitter::Reset();
     m_impl_ptr.reset();
 }
 
@@ -97,6 +92,16 @@ bool CommandListDebugGroup::SetName(std::string_view name) const
 std::string_view CommandListDebugGroup::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetName();
+}
+
+void CommandListDebugGroup::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void CommandListDebugGroup::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 CommandListDebugGroup CommandListDebugGroup::AddSubGroup(Data::Index id, const std::string& name)

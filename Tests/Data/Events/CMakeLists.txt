@@ -19,8 +19,6 @@ target_compile_definitions(${TARGET}
         $<$<NOT:$<CONFIG:Debug>>:CATCH_CONFIG_ENABLE_BENCHMARKING>
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
-
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneDataEvents

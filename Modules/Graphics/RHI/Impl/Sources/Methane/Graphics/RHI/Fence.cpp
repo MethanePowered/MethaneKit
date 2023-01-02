@@ -24,15 +24,13 @@ Methane Fence PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/Fence.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <Fence.hh>
 #else
 #include <Fence.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
@@ -41,8 +39,7 @@ META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Fence);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(Fence);
 
 Fence::Fence(Ptr<Impl>&& impl_ptr)
-    : Data::Transmitter<IObjectCallback>(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -64,12 +61,10 @@ Fence::Fence(const CommandQueue& command_queue)
 void Fence::Init(const CommandQueue& command_queue)
 {
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(IFence::Create(command_queue.GetInterface()));
-    Transmitter::Reset(m_impl_ptr.get());
 }
 
 void Fence::Release()
 {
-    Transmitter::Reset();
     m_impl_ptr.reset();
 }
 
@@ -96,6 +91,16 @@ bool Fence::SetName(std::string_view name) const
 std::string_view Fence::GetName() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetName();
+}
+
+void Fence::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void Fence::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
 void Fence::Signal() const

@@ -4,8 +4,6 @@ add_executable(${TARGET}
     ArcBallCameraTest.cpp
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
-
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneGraphicsCamera

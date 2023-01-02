@@ -26,9 +26,8 @@ Methane Fence PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IFence.h>
-#include <Methane/Data/Transmitter.hpp>
 
-namespace Methane::Graphics::METHANE_GFX_API
+namespace Methane::Graphics::META_GFX_NAME
 {
 class Fence;
 }
@@ -39,40 +38,49 @@ namespace Methane::Graphics::Rhi
 class CommandQueue;
 
 class Fence
-    : Data::Transmitter<IObjectCallback>
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Fence);
     META_PIMPL_METHODS_COMPARE_DECLARE(Fence);
 
-    explicit Fence(const Ptr<IFence>& interface_ptr);
-    explicit Fence(IFence& interface_ref);
-    explicit Fence(const CommandQueue& command_queue);
+    META_RHI_API explicit Fence(const Ptr<IFence>& interface_ptr);
+    META_RHI_API explicit Fence(IFence& interface_ref);
+    META_RHI_API explicit Fence(const CommandQueue& command_queue);
 
-    void Init(const CommandQueue& command_queue);
-    void Release();
+    META_RHI_API void Init(const CommandQueue& command_queue);
+    META_RHI_API void Release();
 
-    bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    IFence& GetInterface() const META_PIMPL_NOEXCEPT;
-    Ptr<IFence> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_RHI_API IFence& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_RHI_API Ptr<IFence> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    bool SetName(std::string_view name) const;
-    std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_RHI_API bool SetName(std::string_view name) const;
+    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
+    // Data::IEmitter<IObjectCallback> interface methods
+    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IFence interface methods
-    void Signal() const;
-    void WaitOnCpu() const;
-    void WaitOnGpu(ICommandQueue& wait_on_command_queue) const;
-    void FlushOnCpu() const;
-    void FlushOnGpu(ICommandQueue& wait_on_command_queue) const;
+    META_RHI_API void Signal() const;
+    META_RHI_API void WaitOnCpu() const;
+    META_RHI_API void WaitOnGpu(ICommandQueue& wait_on_command_queue) const;
+    META_RHI_API void FlushOnCpu() const;
+    META_RHI_API void FlushOnGpu(ICommandQueue& wait_on_command_queue) const;
 
 private:
-    using Impl = Methane::Graphics::METHANE_GFX_API::Fence;
+    using Impl = Methane::Graphics::META_GFX_NAME::Fence;
 
-    Fence(Ptr<Impl>&& impl_ptr);
+    META_RHI_API Fence(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics::Rhi
+
+#ifdef META_RHI_PIMPL_INLINE
+
+#include <Methane/Graphics/RHI/Fence.cpp>
+
+#endif // META_RHI_PIMPL_INLINE

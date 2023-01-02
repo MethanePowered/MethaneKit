@@ -97,7 +97,12 @@ add_library(${TARGET} STATIC
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsRhiBase
+        # Vulkan Libs
+        $<$<NOT:$<BOOL:${APPLE}>>:Vulkan-Headers> # Lin/Win: Dynamic linking with Vulkan, only Vulkan headers are needed
+        $<$<BOOL:${APPLE}>:Vulkan::Vulkan>        # MacOS: Link statically with Molten framework on MacOS
+        $<$<BOOL:${LINUX}>:dl> # Linux: Link with dynamic linker for vk::DynamicLoader on Linux
     PRIVATE
+
         MethaneBuildOptions
         MethaneDataPrimitives
         MethanePlatformUtils
@@ -106,9 +111,6 @@ target_link_libraries(${TARGET}
         TaskFlow
         nowide
         # Vulkan Libs
-        $<$<NOT:$<BOOL:${APPLE}>>:Vulkan-Headers> # Lin/Win: Dynamic linking with Vulkan, only Vulkan headers are needed
-        $<$<BOOL:${LINUX}>:dl>                    # Linux: Link with dynamic linker for vk::DynamicLoader on Linux
-        $<$<BOOL:${APPLE}>:Vulkan::Vulkan>        # MacOS: Link statically with Molten framework on MacOS
         spirv-cross-core
         spirv-cross-hlsl
 )
@@ -126,12 +128,13 @@ target_include_directories(${TARGET}
 )
 
 target_compile_definitions(${TARGET}
-    PRIVATE
-        METHANE_GFX_VULKAN
+    PUBLIC
         VK_NO_PROTOTYPES
         $<$<BOOL:${WIN32}>:VK_USE_PLATFORM_WIN32_KHR>
         $<$<BOOL:${APPLE}>:VK_USE_PLATFORM_METAL_EXT>
         $<$<BOOL:${LINUX}>:VK_USE_PLATFORM_XCB_KHR>
+    PRIVATE
+        METHANE_GFX_VULKAN
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
@@ -153,8 +156,4 @@ if (APPLE)
             SKIP_PRECOMPILE_HEADERS ON
             SKIP_UNITY_BUILD_INCLUSION ON
     )
-else()
-    # Precompiled headers are disable on Apple because of weird CMake error:
-    # Unable to resolve full path of PCH-header
-    target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
 endif()

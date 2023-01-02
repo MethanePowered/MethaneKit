@@ -23,15 +23,13 @@ Methane System and Device PIMPL wrappers for direct calls to final implementatio
 
 #include <Methane/Graphics/RHI/Device.h>
 
-#if defined METHANE_GFX_METAL
+#include "Pimpl.hpp"
+
+#ifdef META_GFX_METAL
 #include <Device.hh>
 #else
 #include <Device.h>
 #endif
-
-#include "Pimpl.hpp"
-
-#include <Methane/Instrumentation.h>
 
 #include <algorithm>
 
@@ -41,8 +39,7 @@ namespace Methane::Graphics::Rhi
 META_PIMPL_METHODS_IMPLEMENT(Device);
 
 Device::Device(Ptr<Impl>&& impl_ptr)
-    : Transmitter(*impl_ptr)
-    , m_impl_ptr(std::move(impl_ptr))
+    : m_impl_ptr(std::move(impl_ptr))
 {
 }
 
@@ -94,6 +91,16 @@ const DeviceCaps& Device::GetCapabilities() const META_PIMPL_NOEXCEPT
 std::string Device::ToString() const
 {
     return GetImpl(m_impl_ptr).ToString();
+}
+
+void Device::Connect(Data::Receiver<IDeviceCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IDeviceCallback>::Connect(receiver);
+}
+
+void Device::Disconnect(Data::Receiver<IDeviceCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IDeviceCallback>::Disconnect(receiver);
 }
 
 META_PIMPL_METHODS_IMPLEMENT(System);
