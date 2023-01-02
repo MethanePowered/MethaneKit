@@ -91,17 +91,6 @@ if (MSVC)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
         target_compile_options(MethaneBuildOptions INTERFACE
-            # /Ox - Enable Most Speed Optimizations, including following flags:
-            #   /Ob2 - Inline Function Expansion, Any Suitable;
-            #   /Oi  - Generate Intrinsic Functions;
-            #   /Ot  - Favor Fast Code;
-            #   /Oy  - Frame-Pointer Omission.
-            # /GL - Whole program optimization
-            # /GF - Eliminate duplicate strings
-            # /GS- - Disable buffer security checks
-            # /fp:fast - Fast floating point model
-            # /fp:except- - Disable floating point exceptions
-            $<$<CONFIG:Release>:/Ox /GL /GF /GS- /fp:fast /fp:except->
             # Exception handling mode
             /EHsc
             # Set maximum warnings level and treat warnings as errors
