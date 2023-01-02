@@ -29,13 +29,6 @@ target_link_libraries(${TARGET}
         MethaneUserInterfaceApp
 )
 
-if(METHANE_PRECOMPILED_HEADERS_ENABLED)
-    target_precompile_headers(${TARGET}
-        INTERFACE
-            <Methane/Kit.h>
-    )
-endif()
-
 set(PREREQUISITE_TARGETS
     MethaneGraphicsRhi
     MethaneGraphicsPrimitives

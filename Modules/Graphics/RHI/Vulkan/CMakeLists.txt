@@ -102,7 +102,6 @@ target_link_libraries(${TARGET}
         $<$<BOOL:${APPLE}>:Vulkan::Vulkan>        # MacOS: Link statically with Molten framework on MacOS
         $<$<BOOL:${LINUX}>:dl> # Linux: Link with dynamic linker for vk::DynamicLoader on Linux
     PRIVATE
-
         MethaneBuildOptions
         MethaneDataPrimitives
         MethanePlatformUtils
@@ -120,11 +119,11 @@ target_link_libraries(${TARGET}
 target_link_libraries(MethaneGraphicsRhiBase PRIVATE ${TARGET})
 
 target_include_directories(${TARGET}
+    PUBLIC
+        Include
     PRIVATE
         Sources
         $<$<BOOL:${APPLE}>:${CMAKE_CURRENT_SOURCE_DIR}/${METAL_DIR}/Include>
-    PUBLIC
-        Include
 )
 
 target_compile_definitions(${TARGET}
@@ -133,8 +132,6 @@ target_compile_definitions(${TARGET}
         $<$<BOOL:${WIN32}>:VK_USE_PLATFORM_WIN32_KHR>
         $<$<BOOL:${APPLE}>:VK_USE_PLATFORM_METAL_EXT>
         $<$<BOOL:${LINUX}>:VK_USE_PLATFORM_XCB_KHR>
-    PRIVATE
-        METHANE_GFX_VULKAN
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

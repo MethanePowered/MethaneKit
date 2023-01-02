@@ -135,6 +135,8 @@ else() # METHANE_RHI_PIMPL_INLINE_ENABLED
 
 endif() # METHANE_RHI_PIMPL_INLINE_ENABLED
 
+add_prerequisite_modules(${TARGET} "${METHANE_GRAPHICS_RHI_IMPL_TARGET}")
+
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}

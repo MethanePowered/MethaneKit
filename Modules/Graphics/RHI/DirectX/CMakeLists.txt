@@ -106,11 +106,6 @@ target_include_directories(${TARGET}
         Include
 )
 
-target_compile_definitions(${TARGET}
-    PRIVATE
-        METHANE_GFX_DIRECTX
-)
-
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 
 set_target_properties(${TARGET}
@@ -121,6 +116,4 @@ set_target_properties(${TARGET}
         UNITY_BUILD_BATCH_SIZE 4
 )
 
-if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
-    set_target_properties(${TARGET} PROPERTIES PREREQUISITE_MODULES "DirectXCompiler")
-endif()
+set_target_properties(${TARGET} PROPERTIES PREREQUISITE_MODULES "DirectXCompiler")
