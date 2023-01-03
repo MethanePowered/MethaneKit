@@ -106,7 +106,7 @@
             "cacheVariables": {
                 "METHANE_RHI_PIMPL_INLINE_ENABLED": {
                     "type": "BOOL",
-                    "value": "OFF"
+                    "value": "ON"
                 },
                 "METHANE_SHADERS_CODEVIEW_ENABLED": {
                     "type": "BOOL",
