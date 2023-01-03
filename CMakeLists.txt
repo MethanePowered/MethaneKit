@@ -81,7 +81,10 @@ option(METHANE_UNITY_BUILD_ENABLED          "Enable unity build speedup for some
 option(METHANE_CODE_COVERAGE_ENABLED        "Enable code coverage data collection with GCC and Clang" OFF)
 option(METHANE_SHADERS_CODEVIEW_ENABLED     "Enable shaders code symbols viewing in debug tools" OFF)
 option(METHANE_OPEN_IMAGE_IO_ENABLED        "Enable using OpenImageIO library for images loading" OFF)
-option(METHANE_APPLE_CODE_SIGNING_ENABLED   "Enable code signing on Apple platforms" ${DEFAULT_APPLE_CODE_SIGNING_ENABLED})
+
+if(APPLE)
+    option(METHANE_APPLE_CODE_SIGNING_ENABLED   "Enable code signing on Apple platforms" ${DEFAULT_APPLE_CODE_SIGNING_ENABLED})
+endif()
 
 # Profiling and instrumentation configuration
 option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
@@ -148,7 +151,7 @@ message(STATUS "METHANE Tracy profiling.......................... ${METHANE_TRAC
 message(STATUS "METHANE Tracy profiling on demand................ ${METHANE_TRACY_PROFILING_ON_DEMAND}")
 
 if (APPLE)
-    message(STATUS "METHANE Apple code signing....................... ${METHANE_LOGGING_ENABLED} (dev.team: '${APPLE_DEVELOPMENT_TEAM}')")
+    message(STATUS "METHANE Apple code signing....................... ${METHANE_APPLE_CODE_SIGNING_ENABLED} (dev.team: '${APPLE_DEVELOPMENT_TEAM}')")
 endif()
 
 if (APPLE AND METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)

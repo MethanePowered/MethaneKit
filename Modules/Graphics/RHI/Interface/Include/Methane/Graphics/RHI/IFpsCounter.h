@@ -23,6 +23,8 @@ FPS counter interface.
 
 #pragma once
 
+#include <cstdint>
+
 namespace Methane::Graphics::Rhi
 {
 

@@ -34,6 +34,7 @@ Font atlas textures generation and fonts library management classes.
 #include <locale>
 #include <codecvt>
 #include <algorithm>
+#include <cassert>
 
 #include <ft2build.h>
 #include <freetype/ftglyph.h>

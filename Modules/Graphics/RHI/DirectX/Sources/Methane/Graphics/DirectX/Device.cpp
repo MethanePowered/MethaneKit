@@ -36,6 +36,7 @@ DirectX 12 implementation of the device interface.
 #endif
 
 #include <nowide/convert.hpp>
+#include <array>
 #include <algorithm>
 #include <cassert>
 

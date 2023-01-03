@@ -27,6 +27,7 @@ Base implementation of the named object interface.
 #include <Methane/Checks.hpp>
 
 #include <stdexcept>
+#include <cassert>
 
 namespace Methane::Graphics::Base
 {

@@ -417,9 +417,14 @@
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Default-Vulkan",
                 "VS2019-Win64-DX-Scan"
-            ]
+            ],
+            "cacheVariables": {
+                "METHANE_GFX_VULKAN_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
         },
         {
             "name": "VS2019-Win32-VK-Scan",
@@ -427,9 +432,14 @@
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "Ninja-Default-Vulkan",
                 "VS2019-Win32-DX-Scan"
-            ]
+            ],
+            "cacheVariables": {
+                "METHANE_GFX_VULKAN_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
         },
 
         {
@@ -553,9 +563,14 @@
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 17 2022",
             "inherits": [
-                "Ninja-Default-Vulkan",
                 "VS2022-Win64-DX-Scan"
-            ]
+            ],
+            "cacheVariables": {
+                "METHANE_GFX_VULKAN_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
         },
         {
             "name": "VS2022-Win32-VK-Scan",
@@ -563,9 +578,14 @@
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 17 2022",
             "inherits": [
-                "Ninja-Default-Vulkan",
                 "VS2022-Win32-DX-Scan"
-            ]
+            ],
+            "cacheVariables": {
+                "METHANE_GFX_VULKAN_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
         },
 
         {

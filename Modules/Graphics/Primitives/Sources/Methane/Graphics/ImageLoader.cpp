@@ -46,6 +46,10 @@ by decoding them from popular image formats.
 
 #endif
 
+#ifdef LoadImage
+#undef LoadImage
+#endif
+
 namespace Methane::Graphics
 {
 

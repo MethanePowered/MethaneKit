@@ -25,6 +25,8 @@ Unit-tests of the VolumeSize data type
 
 #include <catch2/catch_template_test_macros.hpp>
 
+#include <algorithm>
+
 using namespace Methane::Graphics;
 
 #define VOLUME_SIZE_TYPES int32_t, uint32_t, float, double

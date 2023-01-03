@@ -27,6 +27,8 @@ Base implementation of the shader interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <sstream>
+
 namespace Methane::Graphics::Base
 {
 

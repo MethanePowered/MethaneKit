@@ -23,6 +23,8 @@ Descriptor manager interface.
 
 #pragma once
 
+#include <cstdint>
+
 namespace Methane::Data
 {
 
