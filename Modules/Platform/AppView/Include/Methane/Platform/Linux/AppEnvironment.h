@@ -23,6 +23,8 @@ Linux application environment.
 
 #pragma once
 
+#include <cstdint>
+
 struct xcb_connection_t;
 struct xcb_screen_t;
 struct _XDisplay; // X11 display
