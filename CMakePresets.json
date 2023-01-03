@@ -74,7 +74,7 @@
                 },
                 "METHANE_ITT_INSTRUMENTATION_ENABLED": {
                     "type": "BOOL",
-                    "value": "ON"
+                    "value": "OFF"
                 },
                 "METHANE_ITT_METADATA_ENABLED": {
                     "type": "BOOL",
@@ -671,7 +671,13 @@
             "inherits": [
                 "Ninja-Profile",
                 "Ninja-Mac-Default"
-            ]
+            ],
+            "cacheVariables": {
+                "METHANE_PRECOMPILED_HEADERS_ENABLED": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
         },
 
         {
