@@ -104,6 +104,10 @@
             "inherits": "Ninja-Default",
             "hidden": true,
             "cacheVariables": {
+                "METHANE_RHI_PIMPL_INLINE_ENABLED": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                },
                 "METHANE_SHADERS_CODEVIEW_ENABLED": {
                     "type": "BOOL",
                     "value": "ON"
@@ -126,7 +130,7 @@
                 },
                 "METHANE_ITT_METADATA_ENABLED": {
                     "type": "BOOL",
-                    "value": "OFF"
+                    "value": "ON"
                 },
                 "METHANE_GPU_INSTRUMENTATION_ENABLED": {
                     "type": "BOOL",
