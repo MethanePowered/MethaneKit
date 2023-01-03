@@ -270,8 +270,8 @@
             "displayName": "Default - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Default configuration using Ninja Multi-Config generator for Windows (Vulkan)",
             "inherits": [
-                "Ninja-Win-Default",
-                "Ninja-Default-Vulkan"
+                "Ninja-Default-Vulkan",
+                "Ninja-Win-Default"
             ]
         },
         {
@@ -279,8 +279,8 @@
             "displayName": "Profile - Ninja Multi-Config - Windows (DirectX)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Windows (DirectX)",
             "inherits": [
-                "Ninja-Win-Default",
-                "Ninja-Profile"
+                "Ninja-Profile",
+                "Ninja-Win-Default"
             ]
         },
         {
@@ -288,8 +288,8 @@
             "displayName": "Profile - Ninja Multi-Config - Windows (Vulkan)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Windows (Vulkan)",
             "inherits": [
-                "Ninja-Win-Default",
-                "Ninja-Profile-Vulkan"
+                "Ninja-Profile-Vulkan",
+                "Ninja-Win-Default"
             ]
         },
 
@@ -335,8 +335,8 @@
             "description": "Default configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "VS2019-Win64-DX-Default",
-                "Ninja-Default-Vulkan"
+                "Ninja-Default-Vulkan",
+                "VS2019-Win64-DX-Default"
             ]
         },
         {
@@ -345,8 +345,8 @@
             "description": "Default configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "VS2019-Win32-DX-Default",
-                "Ninja-Default-Vulkan"
+                "Ninja-Default-Vulkan",
+                "VS2019-Win32-DX-Default"
             ]
         },
 
@@ -356,8 +356,8 @@
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "VS2019-Win64-DX-Default",
-                "Ninja-Profile"
+                "Ninja-Profile",
+                "VS2019-Win64-DX-Default"
             ]
         },
         {
@@ -366,8 +366,8 @@
             "description": "Profiling configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "VS2019-Win32-DX-Default",
-                "Ninja-Profile"
+                "Ninja-Profile",
+                "VS2019-Win32-DX-Default"
             ]
         },
         {
@@ -397,8 +397,8 @@
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "VS2019-Win64-DX-Default",
-                "Ninja-Scan"
+                "Ninja-Scan",
+                "VS2019-Win64-DX-Default"
             ]
         },
         {
@@ -407,8 +407,8 @@
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "VS2019-Win32-DX-Default",
-                "Ninja-Scan"
+                "Ninja-Scan",
+                "VS2019-Win32-DX-Default"
             ]
         },
         {
@@ -533,8 +533,8 @@
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
             "generator": "Visual Studio 16 2019",
             "inherits": [
-                "VS2022-Win64-DX-Default",
-                "Ninja-Scan"
+                "Ninja-Scan",
+                "VS2022-Win64-DX-Default"
             ]
         },
         {
@@ -543,8 +543,8 @@
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
             "generator": "Visual Studio 17 2022",
             "inherits": [
-                "VS2022-Win32-DX-Default",
-                "Ninja-Scan"
+                "Ninja-Scan",
+                "VS2022-Win32-DX-Default"
             ]
         },
         {
@@ -581,8 +581,8 @@
             "displayName": "Profile - Ninja Multi-Config - Linux (Vulkan)",
             "description": "Profiling configuration using Ninja Multi-Config generator for Linux (Vulkan)",
             "inherits": [
-                "Ninja-Lin-Default",
-                "Ninja-Profile"
+                "Ninja-Profile",
+                "Ninja-Lin-Default"
             ]
         },
 
@@ -628,8 +628,8 @@
             "description": "Scanning configuration using Unix Makefiles generator for Linux (Vulkan)",
             "generator": "Unix Makefiles",
             "inherits": [
-                "Ninja-Lin-VK-Default",
-                "Ninja-Scan"
+                "Ninja-Scan",
+                "Ninja-Lin-VK-Default"
             ],
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
@@ -649,8 +649,8 @@
             "displayName": "Profile - Ninja Multi-Config - MacOS (Metal)",
             "description": "Profiling configuration using Ninja Multi-Config generator for MacOS (Metal)",
             "inherits": [
-                "Ninja-Mac-Default",
-                "Ninja-Profile"
+                "Ninja-Profile",
+                "Ninja-Mac-Default"
             ]
         },
 
@@ -678,8 +678,8 @@
             "description": "Scanning configuration using Xcode generator for MacOS (Metal)",
             "generator": "Xcode",
             "inherits": [
-                "Ninja-Mac-Default",
-                "Ninja-Scan"
+                "Ninja-Scan",
+                "Ninja-Mac-Default"
             ]
         },
 
