@@ -26,7 +26,7 @@
                 },
                 "METHANE_PRECOMPILED_HEADERS_ENABLED": {
                     "type": "BOOL",
-                    "value": "ON"
+                    "value": "OFF"
                 },
                 "METHANE_APPS_BUILD_ENABLED": {
                     "type": "BOOL",
