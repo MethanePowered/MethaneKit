@@ -32,6 +32,10 @@ by decoding them from popular image formats.
 #include <string>
 #include <array>
 
+#ifdef LoadImage
+#undef LoadImage
+#endif
+
 namespace Methane::Graphics
 {
 

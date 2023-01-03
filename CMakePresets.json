@@ -700,7 +700,13 @@
             "inherits": [
                 "Ninja-Scan",
                 "Ninja-Mac-Default"
-            ]
+            ],
+            "cacheVariables": {
+                "METHANE_PRECOMPILED_HEADERS_ENABLED": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
         },
 
         {
