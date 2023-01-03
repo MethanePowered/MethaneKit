@@ -318,3 +318,7 @@ jobs:
         logoColor: #f5f5f5
         message: ${{ env.badge_message }}
         color: ${{ env.badge_color }}
+
+    - name: Windows disk space report
+      if: ${{ matrix.os_name == 'Windows' && always() }}
+      run: Get-PSDrive
