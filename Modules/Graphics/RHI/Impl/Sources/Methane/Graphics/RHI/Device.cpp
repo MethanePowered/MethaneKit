@@ -32,6 +32,7 @@ Methane System and Device PIMPL wrappers for direct calls to final implementatio
 #endif
 
 #include <algorithm>
+#include <iterator>
 
 namespace Methane::Graphics::Rhi
 {
