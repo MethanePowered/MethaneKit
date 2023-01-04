@@ -71,17 +71,21 @@ add_library(${TARGET} STATIC
     ${SOURCES}
 )
 
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneMathPrecompiledHeaders)
+endif()
+
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsRhiInterface
         magic_enum
     PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledHeaders
+        MethaneCommonPrecompiledHeaders
         MethaneDataPrimitives
         MethanePlatformUtils
         MethaneInstrumentation
-        MethanePrecompiledExtraHeaders
+        MethaneMathPrecompiledHeaders
         TaskFlow
         nowide
 )

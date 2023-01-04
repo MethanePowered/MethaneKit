@@ -28,12 +28,16 @@ target_link_libraries(${TARGET}
         MethaneInstrumentation
     PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledHeaders
+        MethaneCommonPrecompiledHeaders
         MethanePrimitives
         MethanePlatformUtils
         magic_enum
         ${PLATFORM_LIBRARIES}
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneCommonPrecompiledHeaders)
+endif()
 
 target_include_directories(${TARGET}
     PRIVATE

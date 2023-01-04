@@ -75,7 +75,6 @@ target_link_libraries(${TARGET}
         MethaneDataPrimitives
         MethanePlatformUtils
         MethaneInstrumentation
-        MethanePrecompiledExtraHeaders
         TaskFlow
         nowide
 )

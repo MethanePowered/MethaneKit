@@ -34,6 +34,10 @@ add_library(${TARGET} STATIC
     ${SOURCES}
 )
 
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhi)
+endif()
+
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsRhi
@@ -44,7 +48,6 @@ target_link_libraries(${TARGET}
         TaskFlow
     PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledExtraHeaders
         MethanePlatformUtils
         MethaneGraphicsCamera
         MethaneDataProvider

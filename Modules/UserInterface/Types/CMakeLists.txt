@@ -37,9 +37,13 @@ target_link_libraries(${TARGET}
         MethanePlatformApp
         MethaneGraphicsRhi
         MethaneBuildOptions
-        MethanePrecompiledExtraHeaders
+        MethaneMathPrecompiledHeaders
         MethaneInstrumentation
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhi)
+endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES  ${HEADERS} ${SOURCES})
 

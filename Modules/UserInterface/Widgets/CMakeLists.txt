@@ -30,10 +30,14 @@ target_link_libraries(${TARGET}
         MethanePlatformInputKeyboard
     PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledExtraHeaders
+        MethaneMathPrecompiledHeaders
         MethaneInstrumentation
         magic_enum
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneMathPrecompiledHeaders)
+endif()
 
 target_include_directories(${TARGET}
     PRIVATE

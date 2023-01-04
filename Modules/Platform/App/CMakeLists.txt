@@ -98,7 +98,7 @@ target_link_libraries(${TARGET}
         MethanePlatformInputActionControllers
     PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledHeaders
+        MethaneCommonPrecompiledHeaders
         MethanePlatformUtils
         MethaneDataProvider
         TaskFlow
@@ -111,6 +111,10 @@ target_compile_definitions(${TARGET}
     PRIVATE
         METHANE_RENDER_APP
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneCommonPrecompiledHeaders)
+endif()
 
 target_include_directories(${TARGET}
     PRIVATE

@@ -70,33 +70,41 @@ get_target_property(METHANE_GRAPHICS_RHI_IMPL_INCLUDE_DIR ${METHANE_GRAPHICS_RHI
 
 if(METHANE_RHI_PIMPL_INLINE_ENABLED)
 
-    add_library(${TARGET} INTERFACE
+    list(APPEND PUBLIC_HEADERS
         ${HEADERS}
         ${SOURCES}
     )
 
+    add_library(${TARGET} STATIC
+        ${HEADERS}
+        ${SOURCES_DIR}/Implementations.cpp
+    )
+
     target_link_libraries(${TARGET}
-        INTERFACE
+        PUBLIC
             MethaneBuildOptions
-            MethanePrecompiledHeaders
             ${METHANE_GRAPHICS_RHI_IMPL_TARGET}
     )
 
     target_include_directories(${TARGET}
-        INTERFACE
+        PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}/Include
             ${CMAKE_CURRENT_SOURCE_DIR}/Sources
             ${METHANE_GRAPHICS_RHI_IMPL_INCLUDE_DIR}
     )
 
     target_compile_definitions(${TARGET}
-        INTERFACE
+        PUBLIC
             META_RHI_PIMPL_INLINE
             META_GFX_NAME=${METHANE_GRAPHICS_API_NAME}
             $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:META_GFX_METAL>
     )
 
 else() # METHANE_RHI_PIMPL_INLINE_ENABLED
+
+    list(APPEND PUBLIC_HEADERS
+        ${HEADERS}
+    )
 
     add_library(${TARGET} STATIC
         ${HEADERS}
@@ -107,7 +115,6 @@ else() # METHANE_RHI_PIMPL_INLINE_ENABLED
         PUBLIC
             MethaneGraphicsRhiInterface
         PRIVATE
-            MethanePrecompiledHeaders
             ${METHANE_GRAPHICS_RHI_IMPL_TARGET}
     )
 
@@ -122,7 +129,9 @@ else() # METHANE_RHI_PIMPL_INLINE_ENABLED
         PUBLIC
             META_GFX_NAME=${METHANE_GRAPHICS_API_NAME}
             $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:META_GFX_METAL>
-    )
+            # Precompiled headers is going to be reused by other targets and it has to be included with the same definitions
+            $<$<BOOL:METHANE_PRECOMPILED_HEADERS_ENABLED>:$<TARGET_PROPERTY:${METHANE_GRAPHICS_RHI_IMPL_TARGET},COMPILE_DEFINITIONS>>
+        )
 
     if (METHANE_GFX_API EQUAL METHANE_GFX_METAL)
         set_source_files_properties(${SOURCES}
@@ -135,6 +144,13 @@ else() # METHANE_RHI_PIMPL_INLINE_ENABLED
 
 endif() # METHANE_RHI_PIMPL_INLINE_ENABLED
 
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET}
+        PUBLIC
+            <Methane/Graphics/RHI/Implementations.h>
+    )
+endif()
+
 add_prerequisite_modules(${TARGET} "${METHANE_GRAPHICS_RHI_IMPL_TARGET}")
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
@@ -142,7 +158,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 set_target_properties(${TARGET}
     PROPERTIES
         FOLDER Modules/Graphics/RHI
-        PUBLIC_HEADER "${HEADERS}"
+        PUBLIC_HEADER "${PUBLIC_HEADERS}"
         UNITY_BUILD ${METHANE_UNITY_BUILD_ENABLED}
         UNITY_BUILD_BATCH_SIZE 4
 )

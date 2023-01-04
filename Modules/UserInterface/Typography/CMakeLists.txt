@@ -48,10 +48,14 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethaneInstrumentation
-        MethanePrecompiledExtraHeaders
+        MethaneMathPrecompiledHeaders
         MethaneDataPrimitives
         freetype
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhi)
+endif()
 
 target_include_directories(${TARGET}
     PRIVATE

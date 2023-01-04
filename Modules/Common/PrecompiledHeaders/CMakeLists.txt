@@ -1,21 +1,22 @@
-set(TARGET MethanePrecompiledHeaders)
-set(EXTRA_TARGET MethanePrecompiledExtraHeaders)
+set(COM_TARGET MethaneCommonPrecompiledHeaders)
+set(MAT_TARGET MethaneMathPrecompiledHeaders)
 
 if (NOT METHANE_PRECOMPILED_HEADERS_ENABLED)
-    add_library(${TARGET} INTERFACE)
-    add_library(${EXTRA_TARGET} INTERFACE)
+    add_library(${COM_TARGET} INTERFACE)
+    add_library(${MAT_TARGET} INTERFACE)
     return()
 endif()
+
+include(MethaneModules)
+get_module_dirs("Methane")
 
 # ===== Common precompiled headers =====
 
 if (WIN32)
-
     list(APPEND PRECOMPILED_HEADERS
         <windows.h>
         <wrl.h>
     )
-
 endif()
 
 list(APPEND PRECOMPILED_HEADERS
@@ -57,81 +58,62 @@ list(APPEND PRECOMPILED_HEADERS
     <thread>
 )
 
-add_library(${TARGET} INTERFACE)
-
-target_link_libraries(${TARGET}
-    INTERFACE
-        MethaneBuildOptions
-        MethanePrimitives
-        MethaneInstrumentation
-        fmt
-        nowide
+list(APPEND PRECOMPILED_LIBS
+    MethaneBuildOptions
+    MethanePrimitives
+    MethaneInstrumentation
+    fmt
+    nowide
 )
 
-target_precompile_headers(${TARGET}
-    INTERFACE
+add_library(${COM_TARGET} STATIC
+    ${SOURCES_DIR}/PrecompiledHeaders.cpp
+)
+
+target_link_libraries(${COM_TARGET}
+    PUBLIC
+        ${PRECOMPILED_LIBS}
+)
+
+target_precompile_headers(${COM_TARGET}
+    PUBLIC
         ${PRECOMPILED_HEADERS}
 )
 
-# ===== Extra precompiled headers =====
+set_target_properties(${COM_TARGET}
+    PROPERTIES
+        FOLDER Modules/Common
+)
 
-list(APPEND PRECOMPILED_EXTRA_HEADERS
+# ===== Math precompiled headers =====
+
+list(APPEND PRECOMPILED_MATH_HEADERS
     ${PRECOMPILED_HEADERS}
     <hlsl++.h>
     <taskflow/taskflow.hpp>
 )
 
-if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
-
-    list(APPEND PRECOMPILED_EXTRA_HEADERS
-        <directx/d3d12.h>
-        <directx/d3dx12.h>
-    )
-
-    list(APPEND PLATFORM_LIBRARIES
-        DirectX-Headers
-    )
-
-endif()
-
-if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
-
-    list(APPEND PRECOMPILED_EXTRA_HEADERS
-        <vulkan/vulkan.hpp>
-    )
-
-    list(APPEND PLATFORM_LIBRARIES
-        Vulkan-Headers
-    )
-
-    list(APPEND PRECOMPILED_EXTRA_DEFINITIONS
-        VK_NO_PROTOTYPES
-        $<$<BOOL:${WIN32}>:VK_USE_PLATFORM_WIN32_KHR>
-        $<$<BOOL:${APPLE}>:VK_USE_PLATFORM_METAL_EXT>
-        $<$<BOOL:${LINUX}>:VK_USE_PLATFORM_XCB_KHR>
-    )
-
-endif()
-
-add_library(${EXTRA_TARGET} INTERFACE)
-
-target_link_libraries(${EXTRA_TARGET}
-    INTERFACE
-        MethaneBuildOptions
-        MethaneInstrumentation
-        TaskFlow
-        HLSLpp
-        fmt
-        nowide
-        ${PLATFORM_LIBRARIES}
+list(APPEND PRECOMPILED_MATH_LIBS
+    ${PRECOMPILED_LIBS}
+    HLSLpp
+    TaskFlow
 )
 
-target_precompile_headers(${EXTRA_TARGET}
-    INTERFACE
-        ${PRECOMPILED_EXTRA_HEADERS}
+add_library(${MAT_TARGET} STATIC
+    ${SOURCES_DIR}/PrecompiledHeaders.cpp
 )
 
-target_compile_definitions(${EXTRA_TARGET}
-    INTERFACE
-        ${PRECOMPILED_EXTRA_DEFINITIONS}
+target_link_libraries(${MAT_TARGET}
+    PUBLIC
+        ${PRECOMPILED_MATH_LIBS}
+)
+
+target_precompile_headers(${MAT_TARGET}
+    PUBLIC
+        ${PRECOMPILED_MATH_HEADERS}
+)
+
+set_target_properties(${MAT_TARGET}
+    PROPERTIES
+        FOLDER Modules/Common
 )

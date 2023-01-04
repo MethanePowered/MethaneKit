@@ -17,9 +17,13 @@ target_link_libraries(${TARGET}
         MethaneDataTypes
     PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledHeaders
+        MethaneCommonPrecompiledHeaders
         MethaneInstrumentation
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneCommonPrecompiledHeaders)
+endif()
 
 target_include_directories(${TARGET}
     PRIVATE

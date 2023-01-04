@@ -14,11 +14,14 @@ target_link_libraries(${TARGET}
         MethaneUserInterfaceTypes
         MethanePlatformApp
         MethaneGraphicsRhi
-        MethaneGraphicsRhiBase
-        MethanePrecompiledExtraHeaders
+        MethaneMathPrecompiledHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2WithMain
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhi)
+endif()
 
 set_target_properties(${TARGET}
     PROPERTIES

@@ -33,6 +33,10 @@ target_include_directories(${TARGET}
         Include
 )
 
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhi)
+endif()
+
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneDataProvider
@@ -45,7 +49,6 @@ target_link_libraries(${TARGET}
         MethaneInstrumentation
     PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledExtraHeaders
         magic_enum
 )
 

@@ -43,16 +43,20 @@ target_include_directories(${TARGET}
 )
 
 target_link_libraries(${TARGET}
-PUBLIC
-    MethaneGraphicsApp
-    MethaneUserInterfaceWidgets
-    MethaneInstrumentation
-PRIVATE
-    MethaneBuildOptions
-    MethanePrecompiledExtraHeaders
-    MethaneUserInterfaceTypes
-    magic_enum
+    PUBLIC
+        MethaneGraphicsApp
+        MethaneUserInterfaceWidgets
+        MethaneInstrumentation
+    PRIVATE
+        MethaneBuildOptions
+        MethaneMathPrecompiledHeaders
+        MethaneUserInterfaceTypes
+        magic_enum
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneMathPrecompiledHeaders)
+endif()
 
 set_target_properties(${TARGET}
     PROPERTIES
