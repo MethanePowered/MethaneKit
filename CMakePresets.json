@@ -130,7 +130,7 @@
                 },
                 "METHANE_ITT_METADATA_ENABLED": {
                     "type": "BOOL",
-                    "value": "ON"
+                    "value": "OFF"
                 },
                 "METHANE_GPU_INSTRUMENTATION_ENABLED": {
                     "type": "BOOL",
