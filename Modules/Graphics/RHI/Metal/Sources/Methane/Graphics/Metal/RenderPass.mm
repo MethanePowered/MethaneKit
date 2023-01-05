@@ -22,6 +22,7 @@ Metal implementation of the render pass interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/RenderPass.hh>
+#include <Methane/Graphics/Metal/RenderPattern.hh>
 #include <Methane/Graphics/Metal/RenderContext.hh>
 #include <Methane/Graphics/Metal/Texture.hh>
 #include <Methane/Graphics/Metal/Types.hh>

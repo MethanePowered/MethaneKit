@@ -22,6 +22,7 @@ Metal implementation of the render pattern interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/RenderPattern.hh>
+#include <Methane/Graphics/Base/RenderContext.h>
 
 #include <Methane/Instrumentation.h>
 
