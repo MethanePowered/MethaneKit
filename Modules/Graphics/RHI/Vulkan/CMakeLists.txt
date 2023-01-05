@@ -8,6 +8,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/Platform.h
     ${INCLUDE_DIR}/Types.h
     ${INCLUDE_DIR}/Device.h
+    ${INCLUDE_DIR}/System.h
     ${INCLUDE_DIR}/Fence.h
     ${INCLUDE_DIR}/IContext.h
     ${INCLUDE_DIR}/Context.hpp
@@ -44,6 +45,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/${PLATFORM_DIR}/PlatformExt.${CPP_EXT}
     ${SOURCES_DIR}/Types.cpp
     ${SOURCES_DIR}/Device.cpp
+    ${SOURCES_DIR}/System.cpp
     ${SOURCES_DIR}/Fence.cpp
     ${SOURCES_DIR}/Shader.cpp
     ${SOURCES_DIR}/Program.cpp

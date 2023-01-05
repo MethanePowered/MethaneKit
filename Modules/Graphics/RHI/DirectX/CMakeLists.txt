@@ -8,6 +8,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ErrorHandling.h
     ${INCLUDE_DIR}/Types.h
     ${INCLUDE_DIR}/Device.h
+    ${INCLUDE_DIR}/System.h
     ${INCLUDE_DIR}/Fence.h
     ${INCLUDE_DIR}/IContext.h
     ${INCLUDE_DIR}/Context.hpp
@@ -43,6 +44,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/ErrorHandling.cpp
     ${SOURCES_DIR}/Types.cpp
     ${SOURCES_DIR}/Device.cpp
+    ${SOURCES_DIR}/System.cpp
     ${SOURCES_DIR}/Fence.cpp
     ${SOURCES_DIR}/Shader.cpp
     ${SOURCES_DIR}/Program.cpp

@@ -17,8 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/RHI/IDevice.h
-Methane system and device interfaces: describes system graphics devices,
-used to create graphics context for rendering.
+Methane device interface, used to create graphics context for rendering.
 
 ******************************************************************************/
 
@@ -39,15 +38,6 @@ struct AppEnvironment;
 
 namespace Methane::Graphics::Rhi
 {
-
-enum class NativeApi
-{
-    Undefined,
-    Metal,
-    DirectX,
-    Vulkan
-};
-
 
 enum class DeviceFeature : uint32_t
 {
@@ -91,24 +81,6 @@ struct IDevice
     [[nodiscard]] virtual bool                IsSoftwareAdapter() const noexcept = 0;
     [[nodiscard]] virtual const Capabilities& GetCapabilities() const noexcept = 0;
     [[nodiscard]] virtual std::string         ToString() const = 0;
-};
-
-struct ISystem
-{
-    [[nodiscard]] static NativeApi GetNativeApi() noexcept;
-    [[nodiscard]] static ISystem& Get();
-
-    virtual void CheckForChanges() = 0;
-    [[nodiscard]] virtual const Ptrs<IDevice>& UpdateGpuDevices(const DeviceCaps& required_device_caps = {}) = 0;
-    [[nodiscard]] virtual const Ptrs<IDevice>& UpdateGpuDevices(const Platform::AppEnvironment& app_env,
-                                                                const DeviceCaps& required_device_caps = {}) = 0;
-    [[nodiscard]] virtual const Ptrs<IDevice>& GetGpuDevices() const noexcept = 0;
-    [[nodiscard]] virtual Ptr<IDevice>         GetNextGpuDevice(const IDevice& device) const noexcept = 0;
-    [[nodiscard]] virtual Ptr<IDevice>         GetSoftwareGpuDevice() const noexcept = 0;
-    [[nodiscard]] virtual const DeviceCaps&    GetDeviceCapabilities() const noexcept = 0;
-    [[nodiscard]] virtual std::string          ToString() const = 0;
-    
-    virtual ~ISystem() = default;
 };
 
 } // namespace Methane::Graphics::Rhi

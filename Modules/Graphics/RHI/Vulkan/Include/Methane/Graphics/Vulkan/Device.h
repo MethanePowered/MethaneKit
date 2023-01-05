@@ -62,7 +62,8 @@ private:
     mutable Data::RangeSet<uint32_t> m_free_indices;
 };
 
-class Device final : public Base::Device
+class Device final
+    : public Base::Device
 {
 public:
     class IncompatibleException: public std::runtime_error
@@ -107,30 +108,6 @@ private:
     std::vector<vk::QueueFamilyProperties> m_vk_queue_family_properties;
     vk::UniqueDevice                       m_vk_unique_device;
     QueueFamilyReservationByType           m_queue_family_reservation_by_type;
-};
-
-class System final : public Base::System // NOSONAR - destructor is required in this class
-{
-public:
-    System();
-    ~System() override;
-
-    // ISystem interface
-    void CheckForChanges() override;
-    const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Methane::Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps) override;
-    const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps) override;
-
-    vk::DynamicLoader&       GetNativeLoader() noexcept       { return m_vk_loader; }
-    const vk::DynamicLoader& GetNativeLoader() const noexcept { return m_vk_loader; }
-
-    vk::Instance&       GetNativeInstance() noexcept          { return m_vk_unique_instance.get(); }
-    const vk::Instance& GetNativeInstance() const noexcept    { return m_vk_unique_instance.get(); }
-
-private:    
-    vk::DynamicLoader                m_vk_loader;
-    vk::UniqueInstance               m_vk_unique_instance;
-    vk::UniqueDebugUtilsMessengerEXT m_vk_unique_debug_utils_messanger;
-    vk::UniqueSurfaceKHR             m_vk_unique_surface;
 };
 
 } // namespace Methane::Graphics::Vulkan

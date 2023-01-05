@@ -16,32 +16,39 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/Device.hh
-Metal implementation of the device interface.
+FILE: Methane/Graphics/Metal/System.hh
+Metal implementation of the system interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/Base/Device.h>
+#include <Methane/Graphics/Base/System.h>
 
 #import <Metal/Metal.h>
 
 namespace Methane::Graphics::Metal
 {
 
-class Device final
-    : public Base::Device
+class System final
+    : public Base::System
 {
 public:
-    static Rhi::DeviceFeatureMask GetSupportedFeatures(const id<MTLDevice>& mtl_device);
+    ~System() override;
     
-    Device(const id<MTLDevice>& mtl_device, const Capabilities& capabilities);
-
-    const id<MTLDevice>& GetNativeDevice() const { return m_mtl_device; }
-
+    void CheckForChanges() override {}
+    const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps) override;
+    const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps) override;
+    
 private:
-    id<MTLDevice> m_mtl_device;
+    void AddDevice(const id<MTLDevice>& mtl_device);
+    const Ptr<Rhi::IDevice>& FindMetalDevice(const id<MTLDevice>& mtl_device) const;
+
+#ifdef APPLE_MACOS
+    void OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificationName device_notification);
+
+    id<NSObject> m_device_observer = nil;
+#endif
 };
 
 } // namespace Methane::Graphics::Metal

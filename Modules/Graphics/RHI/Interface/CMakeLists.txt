@@ -7,6 +7,7 @@ get_module_dirs("Methane/Graphics/RHI")
 list(APPEND HEADERS
     ${INCLUDE_DIR}/IObject.h
     ${INCLUDE_DIR}/IDevice.h
+    ${INCLUDE_DIR}/ISystem.h
     ${INCLUDE_DIR}/IContext.h
     ${INCLUDE_DIR}/IRenderContext.h
     ${INCLUDE_DIR}/IFence.h
@@ -38,6 +39,7 @@ list(APPEND HEADERS
 list(APPEND SOURCES
     ${SOURCES_DIR}/IObject.cpp
     ${SOURCES_DIR}/IDevice.cpp
+    ${SOURCES_DIR}/ISystem.cpp
     ${SOURCES_DIR}/IContext.cpp
     ${SOURCES_DIR}/IRenderContext.cpp
     ${SOURCES_DIR}/IShader.cpp

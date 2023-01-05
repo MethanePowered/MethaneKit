@@ -24,7 +24,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Graphics/AppBase.h>
 #include <Methane/Graphics/AppCameraController.h>
 #include <Methane/Graphics/AppContextController.h>
-#include <Methane/Graphics/RHI/Device.h>
+#include <Methane/Graphics/RHI/System.h>
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Data/IProvider.h>
 #include <Methane/Instrumentation.h>

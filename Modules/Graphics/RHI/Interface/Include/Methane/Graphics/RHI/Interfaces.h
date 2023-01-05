@@ -24,6 +24,7 @@ Methane graphics RHI interfaces: all headers under one umbrella.
 #pragma once
 
 #include "IDevice.h"
+#include "ISystem.h"
 #include "IRenderContext.h"
 #include "IShader.h"
 #include "IProgram.h"

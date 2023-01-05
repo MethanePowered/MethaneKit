@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/RHI/Device.h
-Methane System and Device PIMPL wrappers for direct calls to final implementation.
+Methane Device PIMPL wrappers for direct calls to final implementation.
 
 ******************************************************************************/
 
@@ -30,7 +30,6 @@ Methane System and Device PIMPL wrappers for direct calls to final implementatio
 namespace Methane::Graphics::META_GFX_NAME
 {
 class Device;
-class System;
 }
 
 namespace Methane::Graphics::Rhi
@@ -78,38 +77,6 @@ private:
 };
 
 using Devices = std::vector<Device>;
-
-class System
-{
-public:
-    [[nodiscard]] META_RHI_API static NativeApi GetNativeApi() noexcept;
-    [[nodiscard]] META_RHI_API static System& Get();
-
-    META_PIMPL_METHODS_DECLARE(System);
-
-    META_RHI_API explicit System(const Ptr<ISystem>& interface_ptr);
-
-    META_RHI_API ISystem& GetInterface() const META_PIMPL_NOEXCEPT;
-
-    // ISystem interface methods
-    META_RHI_API void CheckForChanges() const;
-    [[nodiscard]] META_RHI_API const Devices&    UpdateGpuDevices(const DeviceCaps& required_device_caps = {}) const;
-    [[nodiscard]] META_RHI_API const Devices&    UpdateGpuDevices(const Platform::AppEnvironment& app_env,
-                                                                  const DeviceCaps& required_device_caps = {}) const;
-    [[nodiscard]] META_RHI_API const Devices&    GetGpuDevices() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API Device            GetNextGpuDevice(const Device& device) const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API Device            GetSoftwareGpuDevice() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API const DeviceCaps& GetDeviceCapabilities() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API std::string       ToString() const;
-
-private:
-    META_RHI_API const Devices& UpdateDevices(const Ptrs<Rhi::IDevice>& devices) const;
-
-    using Impl = Methane::Graphics::META_GFX_NAME::System;
-
-    Ptr<Impl> m_impl_ptr;
-    mutable Devices m_devices;
-};
 
 } // namespace Methane::Graphics::Rhi
 

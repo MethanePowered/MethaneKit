@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/RHI/Device.cpp
-Methane System and Device PIMPL wrappers for direct calls to final implementation.
+Methane Device PIMPL wrappers for direct calls to final implementation.
 
 ******************************************************************************/
 
@@ -102,80 +102,6 @@ void Device::Connect(Data::Receiver<IDeviceCallback>& receiver) const
 void Device::Disconnect(Data::Receiver<IDeviceCallback>& receiver) const
 {
     GetImpl(m_impl_ptr).Data::Emitter<IDeviceCallback>::Disconnect(receiver);
-}
-
-META_PIMPL_METHODS_IMPLEMENT(System);
-
-NativeApi System::GetNativeApi() noexcept
-{
-    return ISystem::GetNativeApi();
-}
-
-System& System::Get()
-{
-    static System s_system(static_cast<Base::System&>(ISystem::Get()).GetPtr());
-    return s_system;
-}
-
-System::System(const Ptr<ISystem>& interface_ptr)
-    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
-{
-}
-
-ISystem& System::GetInterface() const META_PIMPL_NOEXCEPT
-{
-    return *m_impl_ptr;
-}
-
-void System::CheckForChanges() const
-{
-    GetImpl(m_impl_ptr).CheckForChanges();
-}
-
-const Devices& System::UpdateGpuDevices(const DeviceCaps& required_device_caps) const
-{
-    return UpdateDevices(GetImpl(m_impl_ptr).UpdateGpuDevices(required_device_caps));
-}
-
-const Devices& System::UpdateGpuDevices(const Platform::AppEnvironment& app_env,
-                                        const DeviceCaps& required_device_caps) const
-{
-    return UpdateDevices(GetImpl(m_impl_ptr).UpdateGpuDevices(app_env, required_device_caps));
-}
-
-const Devices& System::GetGpuDevices() const META_PIMPL_NOEXCEPT
-{
-    return UpdateDevices(GetImpl(m_impl_ptr).GetGpuDevices());
-}
-
-Device System::GetNextGpuDevice(const Device& device) const META_PIMPL_NOEXCEPT
-{
-    return Device(GetImpl(m_impl_ptr).GetNextGpuDevice(device.GetInterface()));
-}
-
-Device System::GetSoftwareGpuDevice() const META_PIMPL_NOEXCEPT
-{
-    return Device(GetImpl(m_impl_ptr).GetSoftwareGpuDevice());
-}
-
-const DeviceCaps& System::GetDeviceCapabilities() const META_PIMPL_NOEXCEPT
-{
-    return GetImpl(m_impl_ptr).GetDeviceCapabilities();
-}
-
-std::string System::ToString() const
-{
-    return GetImpl(m_impl_ptr).ToString();
-}
-
-const Devices& System::UpdateDevices(const Ptrs<Rhi::IDevice>& devices) const
-{
-    META_FUNCTION_TASK();
-    m_devices.clear();
-    std::transform(devices.cbegin(), devices.cend(), std::back_inserter(m_devices),
-                   [](const Ptr<Rhi::IDevice>& device_ptr)
-                   { return Device(device_ptr); });
-    return m_devices;
 }
 
 } // namespace Methane::Graphics::Rhi

@@ -22,6 +22,7 @@ Vulkan implementation of the render context interface specific to MacOS.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/RenderContext.h>
+#include <Methane/Graphics/Vulkan/System.h>
 #include <Methane/Graphics/Vulkan/Platform.h>
 #include <Methane/Graphics/Metal/RenderContextAppView.hh>
 #include <Methane/Instrumentation.h>

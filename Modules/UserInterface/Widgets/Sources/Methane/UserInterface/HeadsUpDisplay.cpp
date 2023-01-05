@@ -36,7 +36,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/UserInterface/Context.h>
 
 #include <Methane/Graphics/RHI/RenderContext.h>
-#include <Methane/Graphics/RHI/Device.h>
+#include <Methane/Graphics/RHI/System.h>
 #include <Methane/Graphics/RHI/IFpsCounter.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Data/AppResourceProviders.h>

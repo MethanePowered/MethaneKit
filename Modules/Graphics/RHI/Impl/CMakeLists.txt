@@ -8,6 +8,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/Implementations.h
     ${INCLUDE_DIR}/Pimpl.h
     ${INCLUDE_DIR}/Device.h
+    ${INCLUDE_DIR}/System.h
     ${INCLUDE_DIR}/CommandListSet.h
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandListDebugGroup.h
@@ -32,6 +33,7 @@ list(APPEND HEADERS
 list(APPEND SOURCES
     ${SOURCES_DIR}/Pimpl.hpp
     ${SOURCES_DIR}/Device.cpp
+    ${SOURCES_DIR}/System.cpp
     ${SOURCES_DIR}/CommandListSet.cpp
     ${SOURCES_DIR}/CommandQueue.cpp
     ${SOURCES_DIR}/CommandListDebugGroup.cpp

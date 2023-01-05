@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,32 +16,27 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/Device.hh
-Metal implementation of the device interface.
+FILE: Methane/Graphics/RHI/ISystem.cpp
+Methane system interface to query graphics devices.
 
 ******************************************************************************/
 
-#pragma once
+#include <Methane/Graphics/RHI/ISystem.h>
 
-#include <Methane/Graphics/Base/Device.h>
-
-#import <Metal/Metal.h>
-
-namespace Methane::Graphics::Metal
+namespace Methane::Graphics::Rhi
 {
 
-class Device final
-    : public Base::Device
+NativeApi ISystem::GetNativeApi() noexcept
 {
-public:
-    static Rhi::DeviceFeatureMask GetSupportedFeatures(const id<MTLDevice>& mtl_device);
-    
-    Device(const id<MTLDevice>& mtl_device, const Capabilities& capabilities);
+#if defined METHANE_GFX_METAL
+    return NativeApi::Metal;
+#elif defined METHANE_GFX_DIRECTX
+    return NativeApi::DirectX;
+#elif defined METHANE_GFX_VULKAN
+    return NativeApi::Vulkan;
+#else
+    return NativeApi::Undefined;
+#endif
+}
 
-    const id<MTLDevice>& GetNativeDevice() const { return m_mtl_device; }
-
-private:
-    id<MTLDevice> m_mtl_device;
-};
-
-} // namespace Methane::Graphics::Metal
+} // namespace Methane::Graphics::Rhi

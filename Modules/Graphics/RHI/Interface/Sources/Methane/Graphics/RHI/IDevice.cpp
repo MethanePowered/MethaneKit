@@ -17,8 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/RHI/IDevice.cpp
-Methane system and device interfaces: describes system graphics devices,
-used to create graphics context for rendering.
+Methane device interface, used to create graphics context for rendering.
 
 ******************************************************************************/
 
@@ -48,19 +47,6 @@ DeviceCaps& DeviceCaps::SetTransferQueuesCount(uint32_t new_transfer_queues_coun
     META_FUNCTION_TASK();
     transfer_queues_count = new_transfer_queues_count;
     return *this;
-}
-
-NativeApi ISystem::GetNativeApi() noexcept
-{
-#if defined METHANE_GFX_METAL
-    return NativeApi::Metal;
-#elif defined METHANE_GFX_DIRECTX
-    return NativeApi::DirectX;
-#elif defined METHANE_GFX_VULKAN
-    return NativeApi::Vulkan;
-#else
-    return NativeApi::Undefined;
-#endif
 }
 
 } // namespace Methane::Graphics::Rhi

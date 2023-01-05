@@ -7,6 +7,7 @@ get_module_dirs("Methane/Graphics/Base")
 set(HEADERS
     ${INCLUDE_DIR}/Object.h
     ${INCLUDE_DIR}/Device.h
+    ${INCLUDE_DIR}/System.h
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/RenderContext.h
     ${INCLUDE_DIR}/Fence.h
@@ -38,6 +39,7 @@ set(HEADERS
 set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/Object.cpp
     ${SOURCES_DIR}/Device.cpp
+    ${SOURCES_DIR}/System.cpp
     ${SOURCES_DIR}/Context.cpp
     ${SOURCES_DIR}/RenderContext.cpp
     ${SOURCES_DIR}/Fence.cpp
