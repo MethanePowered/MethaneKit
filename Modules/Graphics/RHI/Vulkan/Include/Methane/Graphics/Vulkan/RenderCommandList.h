@@ -26,6 +26,7 @@ Vulkan implementation of the render command list interface.
 #include "CommandList.hpp"
 
 #include <Methane/Graphics/Base/RenderCommandList.h>
+#include <Methane/Graphics/RHI/IRenderPass.h>
 #include <Methane/Data/Receiver.hpp>
 
 #include <vulkan/vulkan.hpp>

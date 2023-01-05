@@ -55,18 +55,4 @@ private:
     std::vector<vk::BufferCopy> m_vk_copy_regions;
 };
 
-class BufferSet final
-    : public Base::BufferSet
-{
-public:
-    BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buffer_refs);
-
-    const std::vector<vk::Buffer>&     GetNativeBuffers() const noexcept { return m_vk_buffers; }
-    const std::vector<vk::DeviceSize>& GetNativeOffsets() const noexcept { return m_vk_offsets; }
-
-private:
-    std::vector<vk::Buffer>     m_vk_buffers;
-    std::vector<vk::DeviceSize> m_vk_offsets;
-};
-
 } // namespace Methane::Graphics::Vulkan

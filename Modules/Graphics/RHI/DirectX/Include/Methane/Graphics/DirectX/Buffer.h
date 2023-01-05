@@ -23,16 +23,10 @@ DirectX 12 implementation of the buffer interface.
 
 #pragma once
 
-#include "TransferCommandList.h"
 #include "Resource.hpp"
-#include "DescriptorHeap.h"
-#include "ErrorHandling.h"
 
 #include <Methane/Graphics/Base/Buffer.h>
-#include <Methane/Instrumentation.h>
-#include <Methane/Checks.hpp>
 
-#include <fmt/format.h>
 #include <directx/d3dx12.h>
 
 namespace Methane::Graphics::DirectX
@@ -58,18 +52,6 @@ public:
 
 private:
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
-};
-
-class BufferSet final
-    : public Base::BufferSet
-{
-public:
-    BufferSet(Rhi::IBuffer::Type buffers_type, const Refs<Rhi::IBuffer>& buffer_refs);
-
-    const std::vector<D3D12_VERTEX_BUFFER_VIEW>& GetNativeVertexBufferViews() const;
-
-private:
-    std::vector<D3D12_VERTEX_BUFFER_VIEW> m_vertex_buffer_views;
 };
 
 } // namespace Methane::Graphics::DirectX

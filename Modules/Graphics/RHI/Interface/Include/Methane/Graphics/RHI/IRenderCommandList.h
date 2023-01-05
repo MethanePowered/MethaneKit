@@ -24,9 +24,7 @@ Methane render command list interface.
 #pragma once
 
 #include "ICommandList.h"
-#include "IBuffer.h"
 #include "IRenderState.h"
-#include "IViewState.h"
 
 #include <Methane/Memory.hpp>
 
@@ -35,6 +33,9 @@ namespace Methane::Graphics::Rhi
 
 struct IRenderPass;
 struct IParallelRenderCommandList;
+struct IBuffer;
+struct IBufferSet;
+struct IViewState;
 
 enum class RenderPrimitive
 {

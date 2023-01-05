@@ -24,6 +24,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ResourceBarriers.hh
     ${INCLUDE_DIR}/DescriptorManager.h
     ${INCLUDE_DIR}/Buffer.hh
+    ${INCLUDE_DIR}/BufferSet.hh
     ${INCLUDE_DIR}/Texture.hh
     ${INCLUDE_DIR}/Sampler.hh
     ${INCLUDE_DIR}/RenderPass.hh
@@ -52,6 +53,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/Resource.mm
     ${SOURCES_DIR}/QueryPool.mm
     ${SOURCES_DIR}/Buffer.mm
+    ${SOURCES_DIR}/BufferSet.mm
     ${SOURCES_DIR}/Texture.mm
     ${SOURCES_DIR}/Sampler.mm
     ${SOURCES_DIR}/RenderPass.mm

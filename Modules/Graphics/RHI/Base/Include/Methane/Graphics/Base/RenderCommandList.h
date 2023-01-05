@@ -24,9 +24,6 @@ Base implementation of the render command list interface.
 #pragma once
 
 #include "CommandList.h"
-#include "Buffer.h"
-#include "RenderPass.h"
-#include "RenderState.h"
 
 #include <Methane/Graphics/RHI/IRenderCommandList.h>
 
@@ -46,6 +43,11 @@ namespace Methane::Graphics::Base
 
 class ParallelRenderCommandList;
 class ViewState;
+class RenderState;
+class RenderPass;
+class BufferSet;
+class Buffer;
+class Texture;
 
 class RenderCommandList
     : public Rhi::IRenderCommandList

@@ -67,30 +67,10 @@ Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
     return (size + (D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1)) & ~(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1);
 }
 
-Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::BufferSet>(buffers_type, buffer_refs);
-}
-
 } // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
-
-static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Refs<Rhi::IBuffer>& buffer_refs)
-{
-    META_FUNCTION_TASK();
-    std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
-    std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vertex_buffer_views),
-        [](const Ref<Rhi::IBuffer>& buffer_ref)
-        {
-           const auto& buffer = static_cast<const Buffer&>(buffer_ref.get());
-           return buffer.GetNativeVertexBufferView();
-        }
-    );
-    return vertex_buffer_views;
-}
 
 Buffer::Buffer(const Base::Context& context, const Settings& settings)
     : Resource(context, settings)
@@ -263,25 +243,6 @@ Opt<Rhi::IResource::Descriptor> Buffer::InitializeNativeViewDescriptor(const Vie
     const D3D12_CONSTANT_BUFFER_VIEW_DESC view_desc = GetNativeConstantBufferViewDesc();
     GetDirectContext().GetDirectDevice().GetNativeDevice()->CreateConstantBufferView(&view_desc, cpu_descriptor_handle);
     return descriptor;
-}
-
-BufferSet::BufferSet(Rhi::IBuffer::Type buffers_type, const Refs<Rhi::IBuffer>& buffer_refs)
-    : Base::BufferSet(buffers_type, buffer_refs)
-{
-    META_FUNCTION_TASK();
-    if (buffers_type == Rhi::IBuffer::Type::Vertex)
-    {
-        m_vertex_buffer_views = DirectX::GetNativeVertexBufferViews(GetRefs());
-    }
-}
-
-const std::vector<D3D12_VERTEX_BUFFER_VIEW>& BufferSet::GetNativeVertexBufferViews() const
-{
-    META_FUNCTION_TASK();
-    const Rhi::IBuffer::Type buffers_type = GetType();
-    META_CHECK_ARG_EQUAL_DESCR(buffers_type, Rhi::IBuffer::Type::Vertex,
-                               "unable to get vertex buffer views from buffer of {} type", magic_enum::enum_name(buffers_type));
-    return m_vertex_buffer_views;
 }
 
 } // namespace Methane::Graphics

@@ -32,7 +32,6 @@ Methane Buffer PIMPL wrappers for direct calls to final implementation.
 namespace Methane::Graphics::META_GFX_NAME
 {
 class Buffer;
-class BufferSet;
 }
 
 namespace Methane::Graphics::Rhi
@@ -115,49 +114,6 @@ private:
     META_RHI_API Buffer(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
-};
-
-class BufferSet
-{
-public:
-    using Buffers = std::vector<Buffer>;
-
-    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(BufferSet);
-    META_PIMPL_METHODS_COMPARE_DECLARE(BufferSet);
-
-    META_RHI_API explicit BufferSet(const Ptr<IBufferSet>& interface_ptr);
-    META_RHI_API explicit BufferSet(IBufferSet& interface_ref);
-    META_RHI_API BufferSet(BufferType buffers_type, const Refs<Buffer>& buffer_refs);
-
-    META_RHI_API void Init(BufferType buffers_type, const Refs<Buffer>& buffer_refs);
-    META_RHI_API void Release();
-
-    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    META_RHI_API IBufferSet& GetInterface() const META_PIMPL_NOEXCEPT;
-    META_RHI_API Ptr<IBufferSet> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
-
-    // IObject interface methods
-    META_RHI_API bool SetName(std::string_view name) const;
-    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
-
-    // Data::IEmitter<IObjectCallback> interface methods
-    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
-    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
-
-    // IBufferSet interface methods
-    [[nodiscard]] META_RHI_API BufferType     GetType() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API Data::Size     GetCount() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API const Buffers& GetRefs() const noexcept;
-    [[nodiscard]] META_RHI_API std::string    GetNames() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API const Buffer&  operator[](Data::Index index) const;
-
-private:
-    using Impl = Methane::Graphics::META_GFX_NAME::BufferSet;
-
-    META_RHI_API BufferSet(Ptr<Impl>&& impl_ptr);
-
-    Ptr<Impl> m_impl_ptr;
-    mutable Buffers m_buffers;
 };
 
 } // namespace Methane::Graphics::Rhi

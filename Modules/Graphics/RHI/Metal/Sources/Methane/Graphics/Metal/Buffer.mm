@@ -22,15 +22,11 @@ Metal implementation of the buffer interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/Buffer.hh>
-#include <Methane/Graphics/Metal/Device.hh>
 #include <Methane/Graphics/Metal/IContext.h>
 #include <Methane/Graphics/Metal/Types.hh>
 #include <Methane/Graphics/Metal/TransferCommandList.hh>
 
-#include <Methane/Graphics/Base/Context.h>
-#include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Graphics/Base/BufferFactory.hpp>
-#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -65,12 +61,6 @@ Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
 {
     META_FUNCTION_TASK();
     return size;
-}
-
-Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::BufferSet>(buffers_type, buffer_refs);
 }
 
 } // namespace Methane::Graphics::Rhi
@@ -187,22 +177,6 @@ MTLIndexType Buffer::GetNativeIndexType() const noexcept
 {
     META_FUNCTION_TASK();
     return TypeConverter::DataFormatToMetalIndexType(GetSettings().data_format);
-}
-
-BufferSet::BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buffer_refs)
-    : Base::BufferSet(buffers_type, buffer_refs)
-    , m_mtl_buffer_offsets(GetCount(), 0U)
-{
-    META_FUNCTION_TASK();
-    const Refs<Rhi::IBuffer>& refs = GetRefs();
-    m_mtl_buffers.reserve(refs.size());
-    std::transform(refs.begin(), refs.end(), std::back_inserter(m_mtl_buffers),
-        [](const Ref<Rhi::IBuffer>& buffer_ref)
-        {
-           const Buffer& metal_buffer = static_cast<const Buffer&>(buffer_ref.get());
-           return metal_buffer.GetNativeBuffer();
-        }
-    );
 }
 
 } // namespace Methane::Graphics::Metal

@@ -26,6 +26,7 @@ Methane RenderCommandList PIMPL wrappers for direct calls to final implementatio
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 #include <Methane/Graphics/RHI/Buffer.h>
+#include <Methane/Graphics/RHI/BufferSet.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/ViewState.h>

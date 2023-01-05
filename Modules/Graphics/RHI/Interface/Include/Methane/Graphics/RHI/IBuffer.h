@@ -76,22 +76,4 @@ struct IBuffer
     [[nodiscard]] virtual uint32_t        GetFormattedItemsCount() const noexcept = 0;
 };
 
-struct IBufferSet
-    : virtual IObject // NOSONAR
-{
-    [[nodiscard]] static Ptr<IBufferSet> Create(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs);
-    [[nodiscard]] static Ptr<IBufferSet> CreateVertexBuffers(const Refs<IBuffer>& buffer_refs)
-    {
-        return IBufferSet::Create(IBuffer::Type::Vertex, buffer_refs);
-    }
-
-    [[nodiscard]] virtual IBuffer::Type        GetType() const noexcept = 0;
-    [[nodiscard]] virtual Data::Size           GetCount() const noexcept = 0;
-    [[nodiscard]] virtual const Refs<IBuffer>& GetRefs() const noexcept = 0;
-    [[nodiscard]] virtual std::string          GetNames() const noexcept = 0;
-    [[nodiscard]] virtual IBuffer&             operator[](Data::Index index) const = 0;
-
-    virtual ~IBufferSet() = default;
-};
-
 } // namespace Methane::Graphics::Rhi

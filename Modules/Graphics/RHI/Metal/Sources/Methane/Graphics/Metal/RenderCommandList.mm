@@ -27,6 +27,7 @@ Metal implementation of the render command list interface.
 #include <Methane/Graphics/Metal/RenderPass.hh>
 #include <Methane/Graphics/Metal/RenderContext.hh>
 #include <Methane/Graphics/Metal/Buffer.hh>
+#include <Methane/Graphics/Metal/BufferSet.hh>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>

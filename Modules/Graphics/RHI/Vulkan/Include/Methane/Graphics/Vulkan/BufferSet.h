@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2022 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,31 +16,34 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/Interfaces.h
-Methane graphics RHI interfaces: all headers under one umbrella.
+FILE: Methane/Graphics/Vulkan/BufferSet.h
+Vulkan implementation of the buffer-set interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "IDevice.h"
-#include "ISystem.h"
-#include "IRenderContext.h"
-#include "IShader.h"
-#include "IProgram.h"
-#include "IProgramBindings.h"
-#include "IRenderPass.h"
-#include "IRenderState.h"
-#include "IViewState.h"
-#include "IResource.h"
-#include "IBuffer.h"
-#include "IBufferSet.h"
-#include "ITexture.h"
-#include "ISampler.h"
-#include "ICommandKit.h"
-#include "ICommandListSet.h"
-#include "ICommandListDebugGroup.h"
-#include "ICommandQueue.h"
-#include "ITransferCommandList.h"
-#include "IRenderCommandList.h"
-#include "IParallelRenderCommandList.h"
+#include "Resource.hpp"
+
+#include <Methane/Graphics/Base/BufferSet.h>
+
+#include <vulkan/vulkan.hpp>
+
+namespace Methane::Graphics::Vulkan
+{
+
+class BufferSet final
+    : public Base::BufferSet
+{
+public:
+    BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buffer_refs);
+
+    const std::vector<vk::Buffer>&     GetNativeBuffers() const noexcept { return m_vk_buffers; }
+    const std::vector<vk::DeviceSize>& GetNativeOffsets() const noexcept { return m_vk_offsets; }
+
+private:
+    std::vector<vk::Buffer>     m_vk_buffers;
+    std::vector<vk::DeviceSize> m_vk_offsets;
+};
+
+} // namespace Methane::Graphics::Vulkan

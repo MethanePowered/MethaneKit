@@ -28,6 +28,7 @@ Base implementation of the render command list interface.
 #include <Methane/Graphics/Base/RenderState.h>
 #include <Methane/Graphics/Base/ViewState.h>
 #include <Methane/Graphics/Base/Buffer.h>
+#include <Methane/Graphics/Base/BufferSet.h>
 #include <Methane/Graphics/Base/Program.h>
 #include <Methane/Graphics/Base/Texture.h>
 
@@ -156,7 +157,7 @@ bool RenderCommandList::SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool s
 
     if (m_is_validation_enabled)
     {
-        META_CHECK_ARG_NAME_DESCR("vertex_buffers", vertex_buffers.GetType() == Rhi::IBuffer::Type::Vertex,
+        META_CHECK_ARG_NAME_DESCR("vertex_buffers", vertex_buffers.GetType() == Rhi::BufferType::Vertex,
                                   "can not set buffers of '{}' type where 'Vertex' buffers are required",
                                   magic_enum::enum_name(vertex_buffers.GetType()));
     }
@@ -186,7 +187,7 @@ bool RenderCommandList::SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_reso
 
     if (m_is_validation_enabled)
     {
-        META_CHECK_ARG_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == Rhi::IBuffer::Type::Index,
+        META_CHECK_ARG_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == Rhi::BufferType::Index,
                                   "can not set with index buffer of type '{}' where 'Index' buffer is required",
                                   magic_enum::enum_name(index_buffer.GetSettings().type));
     }

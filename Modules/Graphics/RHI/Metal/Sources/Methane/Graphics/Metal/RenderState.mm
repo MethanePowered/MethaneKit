@@ -28,6 +28,8 @@ Metal implementation of the render state interface.
 #include <Methane/Graphics/Metal/Shader.hh>
 #include <Methane/Graphics/Metal/Types.hh>
 
+#include <Methane/Graphics/RHI/IRenderPass.h>
+
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>

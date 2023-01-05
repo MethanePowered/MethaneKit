@@ -64,30 +64,10 @@ Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
     return size;
 }
 
-Ptr<IBufferSet> IBufferSet::Create(IBuffer::Type buffers_type, const Refs<IBuffer>& buffer_refs)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::BufferSet>(buffers_type, buffer_refs);
-}
-
 } // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
-
-static std::vector<vk::Buffer> GetVulkanBuffers(const Refs<Rhi::IBuffer>& buffer_refs)
-{
-    META_FUNCTION_TASK();
-    std::vector<vk::Buffer> vk_buffers;
-    std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vk_buffers),
-                   [](const Ref<Rhi::IBuffer>& buffer_ref)
-                   {
-                       const auto& vertex_buffer = static_cast<const Buffer&>(buffer_ref.get());
-                       return vertex_buffer.GetNativeResource();
-                   }
-    );
-    return vk_buffers;
-}
 
 static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Rhi::BufferType buffer_type, Rhi::BufferStorageMode storage_mode)
 {
@@ -226,14 +206,6 @@ Ptr<ResourceView::ViewDescriptorVariant> Buffer::CreateNativeViewDescriptor(cons
     );
 
     return std::make_shared<ResourceView::ViewDescriptorVariant>(std::move(buffer_view_desc));
-}
-
-BufferSet::BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buffer_refs)
-    : Base::BufferSet(buffers_type, buffer_refs)
-    , m_vk_buffers(GetVulkanBuffers(buffer_refs))
-    , m_vk_offsets(m_vk_buffers.size(), 0U)
-{
-    META_FUNCTION_TASK();
 }
 
 } // namespace Methane::Graphics::Vulkan

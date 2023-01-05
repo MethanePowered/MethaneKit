@@ -22,6 +22,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
     ${INCLUDE_DIR}/Buffer.h
+    ${INCLUDE_DIR}/BufferSet.h
     ${INCLUDE_DIR}/Texture.h
     ${INCLUDE_DIR}/Sampler.h
     ${INCLUDE_DIR}/ResourceBarriers.h
@@ -47,6 +48,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderState.cpp
     ${SOURCES_DIR}/ViewState.cpp
     ${SOURCES_DIR}/Buffer.cpp
+    ${SOURCES_DIR}/BufferSet.cpp
     ${SOURCES_DIR}/Texture.cpp
     ${SOURCES_DIR}/Sampler.cpp
     ${SOURCES_DIR}/ResourceBarriers.cpp

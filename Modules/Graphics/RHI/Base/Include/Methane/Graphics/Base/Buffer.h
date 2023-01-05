@@ -50,30 +50,4 @@ private:
     Settings m_settings;
 };
 
-class BufferSet
-    : public Rhi::IBufferSet
-    , public Object
-{
-public:
-    BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buffer_refs);
-
-    // Buffers interface
-    Rhi::BufferType           GetType() const noexcept final  { return m_buffers_type; }
-    Data::Size                GetCount() const noexcept final { return static_cast<Data::Size>(m_refs.size()); }
-    const Refs<Rhi::IBuffer>& GetRefs() const noexcept final  { return m_refs; }
-    std::string               GetNames() const noexcept final;
-    Rhi::IBuffer&             operator[](Data::Index index) const final;
-
-    [[nodiscard]] bool  SetState(Rhi::ResourceState state);
-    [[nodiscard]] const Ptr<Rhi::IResourceBarriers>& GetSetupTransitionBarriers() const noexcept { return m_setup_transition_barriers; }
-    [[nodiscard]] const RawPtrs<Buffer>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
-
-private:
-    const Rhi::BufferType       m_buffers_type;
-    Refs<Rhi::IBuffer>          m_refs;
-    Ptrs<Rhi::IBuffer>          m_ptrs;
-    RawPtrs<Buffer>             m_raw_ptrs;
-    Ptr<Rhi::IResourceBarriers> m_setup_transition_barriers;
-};
-
 } // namespace Methane::Graphics::Base

@@ -25,6 +25,7 @@ Mesh buffers base implementation class.
 
 #include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/Buffer.h>
+#include <Methane/Graphics/RHI/BufferSet.h>
 #include <Methane/Graphics/RHI/ProgramBindings.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 #include <Methane/Graphics/UberMesh.hpp>
@@ -64,9 +65,9 @@ public:
 
     virtual ~MeshBuffersBase() = default;
 
-    [[nodiscard]] const Rhi::IContext&  GetContext() const noexcept         { return m_context; }
-    [[nodiscard]] const std::string&    GetMeshName() const noexcept        { return m_mesh_name; }
-    [[nodiscard]] Data::Size            GetSubsetsCount() const noexcept    { return static_cast<Data::Size>(m_mesh_subsets.size()); }
+    [[nodiscard]] const Rhi::IContext&  GetContext() const noexcept        { return m_context; }
+    [[nodiscard]] const std::string&    GetMeshName() const noexcept       { return m_mesh_name; }
+    [[nodiscard]] Data::Size            GetSubsetsCount() const noexcept   { return static_cast<Data::Size>(m_mesh_subsets.size()); }
     [[nodiscard]] const Rhi::BufferSet& GetVertexBuffers() const noexcept  { return m_vertex_buffer_set; }
     [[nodiscard]] const Rhi::Buffer&    GetIndexBuffer() const noexcept    { return m_index_buffer; }
 

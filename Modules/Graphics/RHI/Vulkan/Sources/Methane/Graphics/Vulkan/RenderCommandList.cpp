@@ -28,6 +28,7 @@ Vulkan implementation of the render command list interface.
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Buffer.h>
+#include <Methane/Graphics/Vulkan/BufferSet.h>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>

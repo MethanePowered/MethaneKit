@@ -21,6 +21,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ResourceBarriers.h
     ${INCLUDE_DIR}/Resource.h
     ${INCLUDE_DIR}/Buffer.h
+    ${INCLUDE_DIR}/BufferSet.h
     ${INCLUDE_DIR}/Texture.h
     ${INCLUDE_DIR}/Sampler.h
     ${INCLUDE_DIR}/CommandKit.h
@@ -52,6 +53,7 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/Resource.cpp
     ${SOURCES_DIR}/Buffer.cpp
+    ${SOURCES_DIR}/BufferSet.cpp
     ${SOURCES_DIR}/Texture.cpp
     ${SOURCES_DIR}/Sampler.cpp
     ${SOURCES_DIR}/RenderPass.cpp

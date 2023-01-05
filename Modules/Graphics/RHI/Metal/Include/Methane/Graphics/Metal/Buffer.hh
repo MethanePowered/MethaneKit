@@ -32,7 +32,8 @@ Metal implementation of the buffer interface.
 namespace Methane::Graphics::Metal
 {
 
-class Buffer final : public Resource<Base::Buffer>
+class Buffer final
+    : public Resource<Base::Buffer>
 {
 public:
     Buffer(const Base::Context& context, const Settings& settings);
@@ -51,19 +52,6 @@ private:
     void SetDataToPrivateBuffer(const SubResources& sub_resources);
 
     id<MTLBuffer> m_mtl_buffer;
-};
-
-class BufferSet final : public Base::BufferSet
-{
-public:
-    BufferSet(Rhi::IBuffer::Type buffers_type, const Refs<Rhi::IBuffer>& buffer_refs);
-
-    const std::vector<id<MTLBuffer>>& GetNativeBuffers() const noexcept { return m_mtl_buffers; }
-    const std::vector<NSUInteger>&    GetNativeOffsets() const noexcept { return m_mtl_buffer_offsets; }
-
-private:
-    std::vector<id<MTLBuffer>>  m_mtl_buffers;
-    std::vector<NSUInteger>     m_mtl_buffer_offsets;
 };
 
 } // namespace Methane::Graphics::Metal

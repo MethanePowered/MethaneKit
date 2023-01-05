@@ -16,31 +16,30 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/Interfaces.h
-Methane graphics RHI interfaces: all headers under one umbrella.
+FILE: Methane/Graphics/DirectX/BufferSet.h
+DirectX 12 implementation of the buffer-set interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "IDevice.h"
-#include "ISystem.h"
-#include "IRenderContext.h"
-#include "IShader.h"
-#include "IProgram.h"
-#include "IProgramBindings.h"
-#include "IRenderPass.h"
-#include "IRenderState.h"
-#include "IViewState.h"
-#include "IResource.h"
-#include "IBuffer.h"
-#include "IBufferSet.h"
-#include "ITexture.h"
-#include "ISampler.h"
-#include "ICommandKit.h"
-#include "ICommandListSet.h"
-#include "ICommandListDebugGroup.h"
-#include "ICommandQueue.h"
-#include "ITransferCommandList.h"
-#include "IRenderCommandList.h"
-#include "IParallelRenderCommandList.h"
+#include <Methane/Graphics/Base/BufferSet.h>
+
+#include <directx/d3dx12.h>
+
+namespace Methane::Graphics::DirectX
+{
+
+class BufferSet final
+    : public Base::BufferSet
+{
+public:
+    BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buffer_refs);
+
+    const std::vector<D3D12_VERTEX_BUFFER_VIEW>& GetNativeVertexBufferViews() const;
+
+private:
+    std::vector<D3D12_VERTEX_BUFFER_VIEW> m_vertex_buffer_views;
+};
+
+} // namespace Methane::Graphics::DirectX

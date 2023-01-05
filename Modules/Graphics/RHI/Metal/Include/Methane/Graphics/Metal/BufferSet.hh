@@ -16,31 +16,32 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/Interfaces.h
-Methane graphics RHI interfaces: all headers under one umbrella.
+FILE: Methane/Graphics/Metal/BufferSet.hh
+Metal implementation of the buffer-set interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "IDevice.h"
-#include "ISystem.h"
-#include "IRenderContext.h"
-#include "IShader.h"
-#include "IProgram.h"
-#include "IProgramBindings.h"
-#include "IRenderPass.h"
-#include "IRenderState.h"
-#include "IViewState.h"
-#include "IResource.h"
-#include "IBuffer.h"
-#include "IBufferSet.h"
-#include "ITexture.h"
-#include "ISampler.h"
-#include "ICommandKit.h"
-#include "ICommandListSet.h"
-#include "ICommandListDebugGroup.h"
-#include "ICommandQueue.h"
-#include "ITransferCommandList.h"
-#include "IRenderCommandList.h"
-#include "IParallelRenderCommandList.h"
+#include <Methane/Graphics/Base/BufferSet.h>
+
+#import <Metal/Metal.h>
+
+namespace Methane::Graphics::Metal
+{
+
+class BufferSet final
+    : public Base::BufferSet
+{
+public:
+    BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buffer_refs);
+
+    const std::vector<id<MTLBuffer>>& GetNativeBuffers() const noexcept { return m_mtl_buffers; }
+    const std::vector<NSUInteger>&    GetNativeOffsets() const noexcept { return m_mtl_buffer_offsets; }
+
+private:
+    std::vector<id<MTLBuffer>>  m_mtl_buffers;
+    std::vector<NSUInteger>     m_mtl_buffer_offsets;
+};
+
+} // namespace Methane::Graphics::Metal

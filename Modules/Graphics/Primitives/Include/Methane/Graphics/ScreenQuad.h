@@ -30,6 +30,7 @@ ScreenQuad rendering primitive.
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/ViewState.h>
 #include <Methane/Graphics/RHI/Buffer.h>
+#include <Methane/Graphics/RHI/BufferSet.h>
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/RHI/ProgramBindings.h>

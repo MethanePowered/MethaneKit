@@ -26,6 +26,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/DescriptorManager.h
     ${INCLUDE_DIR}/DescriptorHeap.h
     ${INCLUDE_DIR}/Buffer.h
+    ${INCLUDE_DIR}/BufferSet.h
     ${INCLUDE_DIR}/Texture.h
     ${INCLUDE_DIR}/Sampler.h
     ${INCLUDE_DIR}/QueryPool.h
@@ -59,6 +60,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/DescriptorManager.cpp
     ${SOURCES_DIR}/DescriptorHeap.cpp
     ${SOURCES_DIR}/Buffer.cpp
+    ${SOURCES_DIR}/BufferSet.cpp
     ${SOURCES_DIR}/Texture.cpp
     ${SOURCES_DIR}/Sampler.cpp
     ${SOURCES_DIR}/QueryPool.cpp

@@ -38,6 +38,7 @@ Methane graphics RHI PIMPL implementations.
 #include "RenderState.h"
 #include "ViewState.h"
 #include "Buffer.h"
+#include "BufferSet.h"
 #include "Texture.h"
 #include "Sampler.h"
 #include "ResourceBarriers.h"
