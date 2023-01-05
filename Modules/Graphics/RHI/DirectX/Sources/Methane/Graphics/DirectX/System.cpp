@@ -55,14 +55,6 @@ Rhi::ISystem& Rhi::ISystem::Get()
 namespace Methane::Graphics::DirectX
 {
 
-static bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter)
-{
-    META_FUNCTION_TASK();
-    DXGI_ADAPTER_DESC1 desc{};
-    adapter.GetDesc1(&desc);
-    return desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE;
-}
-
 #ifdef _DEBUG
 
 static bool EnableDebugLayer()

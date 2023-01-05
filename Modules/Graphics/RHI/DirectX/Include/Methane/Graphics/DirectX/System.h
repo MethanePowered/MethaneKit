@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/System.h
+FILE: Methane/Graphics/DirectX/System.h
 DirectX 12 implementation of the system interface.
 
 ******************************************************************************/
@@ -28,7 +28,6 @@ DirectX 12 implementation of the system interface.
 #include <wrl.h>
 #include <dxgi1_6.h>
 #include <directx/d3d12.h>
-#include <directx/d3dx12.h>
 
 #include <optional>
 

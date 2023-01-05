@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/Device.h
+FILE: Methane/Graphics/DirectX/Device.h
 DirectX 12 implementation of the device interface.
 
 ******************************************************************************/
@@ -63,41 +63,6 @@ private:
     mutable wrl::ComPtr<ID3D12Device>   m_cp_device;
 };
 
-class System final // NOSONAR - custom destructor is required
-    : public Base::System
-{
-public:
-    [[nodiscard]] static System& Get() { return static_cast<System&>(ISystem::Get()); }
-
-    System();
-    System(const System&) = delete;
-    System(System&&) = delete;
-    ~System() override;
-
-    System& operator=(const System&) = delete;
-    System& operator=(System&&) = delete;
-
-    // ISystem interface
-    void  CheckForChanges() override;
-    const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps) override;
-    const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps) override;
-
-    [[nodiscard]] const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_cp_factory; }
-    void ReportLiveObjects() const noexcept;
-
-private:
-    void Initialize();
-    void AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
-
-#ifdef ADAPTERS_CHANGE_HANDLING
-    void RegisterAdapterChangeEvent();
-    void UnregisterAdapterChangeEvent();
-
-    HANDLE m_adapter_change_event = NULL;
-    DWORD  m_adapter_change_registration_cookie = 0;
-#endif
-
-    wrl::ComPtr<IDXGIFactory5> m_cp_factory;
-};
+bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter);
 
 } // namespace Methane::Graphics::DirectX

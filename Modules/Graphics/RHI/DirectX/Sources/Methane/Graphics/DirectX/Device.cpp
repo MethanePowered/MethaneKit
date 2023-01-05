@@ -52,7 +52,7 @@ static std::string GetAdapterNameDxgi(IDXGIAdapter& adapter)
     return nowide::narrow(desc.Description);
 }
 
-static bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter)
+bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter)
 {
     META_FUNCTION_TASK();
 
@@ -103,8 +103,8 @@ Rhi::DeviceFeatureMask Device::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapt
 
 Device::Device(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities)
     : Base::Device(GetAdapterNameDxgi(*cp_adapter.Get()),
-                 IsSoftwareAdapterDxgi(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
-                 capabilities)
+                   IsSoftwareAdapterDxgi(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
+                   capabilities)
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
 {

@@ -25,6 +25,7 @@ DirectX 12 base template implementation of the context interface.
 
 #include "Fence.h"
 #include "Device.h"
+#include "System.h"
 #include "IContext.h"
 #include "CommandQueue.h"
 #include "DescriptorManager.h"

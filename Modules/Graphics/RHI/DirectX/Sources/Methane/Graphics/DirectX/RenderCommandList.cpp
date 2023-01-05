@@ -29,10 +29,11 @@ DirectX 12 implementation of the render command list interface.
 #include <Methane/Graphics/DirectX/Device.h>
 #include <Methane/Graphics/DirectX/Program.h>
 #include <Methane/Graphics/DirectX/Buffer.h>
+#include <Methane/Graphics/DirectX/BufferSet.h>
+#include <Methane/Graphics/DirectX/ErrorHandling.h>
 
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Graphics/DirectX/ErrorHandling.h>
 
 #include <magic_enum.hpp>
 #include <directx/d3dx12.h>
