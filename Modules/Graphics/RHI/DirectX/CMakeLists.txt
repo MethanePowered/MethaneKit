@@ -30,6 +30,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/Texture.h
     ${INCLUDE_DIR}/Sampler.h
     ${INCLUDE_DIR}/QueryPool.h
+    ${INCLUDE_DIR}/RenderPattern.h
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/CommandQueue.h
     ${INCLUDE_DIR}/CommandListSet.h
@@ -64,6 +65,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/Texture.cpp
     ${SOURCES_DIR}/Sampler.cpp
     ${SOURCES_DIR}/QueryPool.cpp
+    ${SOURCES_DIR}/RenderPattern.cpp
     ${SOURCES_DIR}/RenderPass.cpp
     ${SOURCES_DIR}/CommandQueue.cpp
     ${SOURCES_DIR}/CommandListSet.cpp

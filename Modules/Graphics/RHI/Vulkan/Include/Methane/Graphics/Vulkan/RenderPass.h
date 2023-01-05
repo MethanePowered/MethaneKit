@@ -35,26 +35,7 @@ namespace Methane::Graphics::Vulkan
 
 struct IContext;
 class RenderContext;
-
-class RenderPattern
-    : public Base::RenderPattern
-{
-public:
-    RenderPattern(RenderContext& render_context, const Settings& settings);
-
-    // Base::Object overrides
-    bool SetName(std::string_view name) override;
-
-    [[nodiscard]] const RenderContext& GetVulkanRenderContext() const noexcept;
-    [[nodiscard]] RenderContext&       GetVulkanRenderContext() noexcept;
-
-    [[nodiscard]] const vk::RenderPass& GetNativeRenderPass() const noexcept                   { return m_vk_unique_render_pass.get(); }
-    [[nodiscard]] const std::vector<vk::ClearValue>& GetAttachmentClearValues() const noexcept { return m_attachment_clear_colors; }
-
-private:
-    vk::UniqueRenderPass        m_vk_unique_render_pass;
-    std::vector<vk::ClearValue> m_attachment_clear_colors;
-};
+class RenderPattern;
 
 class RenderPass final
     : public Base::RenderPass
@@ -77,7 +58,7 @@ public:
     void Reset();
 
     const IContext& GetVulkanContext() const noexcept { return m_vk_context; }
-    RenderPattern&  GetVulkanPattern() const noexcept { return static_cast<RenderPattern&>(GetBasePattern()); }
+    RenderPattern&  GetVulkanPattern() const noexcept;
 
     const vk::Framebuffer& GetNativeFrameBuffer() const noexcept { return m_vk_unique_frame_buffer.get(); }
 

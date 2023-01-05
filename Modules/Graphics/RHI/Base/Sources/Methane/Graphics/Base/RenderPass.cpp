@@ -32,54 +32,6 @@ Base implementation of the render pass interface.
 namespace Methane::Graphics::Base
 {
 
-RenderPattern::RenderPattern(RenderContext& render_context, const Settings& settings)
-    : m_render_context_ptr(render_context.GetDerivedPtr<RenderContext>())
-    , m_settings(settings)
-{
-    META_FUNCTION_TASK();
-}
-
-const Rhi::IRenderContext& RenderPattern::GetRenderContext() const noexcept
-{
-    META_FUNCTION_TASK();
-    return *m_render_context_ptr;
-}
-
-Rhi::IRenderContext& RenderPattern::GetRenderContext() noexcept
-{
-    META_FUNCTION_TASK();
-    return *m_render_context_ptr;
-}
-
-Data::Size RenderPattern::GetAttachmentCount() const noexcept
-{
-    META_FUNCTION_TASK();
-    auto attachment_count = static_cast<Data::Size>(m_settings.color_attachments.size());
-    if (m_settings.depth_attachment)
-        attachment_count++;
-    if (m_settings.stencil_attachment)
-        attachment_count++;
-    return attachment_count;
-}
-
-AttachmentFormats RenderPattern::GetAttachmentFormats() const noexcept
-{
-    META_FUNCTION_TASK();
-    AttachmentFormats attachment_formats;
-
-    attachment_formats.colors.reserve(m_settings.color_attachments.size());
-    std::transform(m_settings.color_attachments.begin(), m_settings.color_attachments.end(), std::back_inserter(attachment_formats.colors),
-                   [](const ColorAttachment& color_attachment) { return color_attachment.format; });
-
-    if (m_settings.depth_attachment)
-        attachment_formats.depth = m_settings.depth_attachment->format;
-
-    if (m_settings.stencil_attachment)
-        attachment_formats.stencil = m_settings.stencil_attachment->format;
-
-    return attachment_formats;
-}
-
 RenderPass::RenderPass(RenderPattern& render_pattern, const Settings& settings, bool update_attachment_states)
     : m_pattern_base_ptr(render_pattern.GetDerivedPtr<RenderPattern>())
     , m_settings(settings)

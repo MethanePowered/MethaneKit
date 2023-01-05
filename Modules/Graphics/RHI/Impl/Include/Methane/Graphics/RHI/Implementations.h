@@ -33,6 +33,7 @@ Methane graphics RHI PIMPL implementations.
 #include "Shader.h"
 #include "Program.h"
 #include "ProgramBindings.h"
+#include "RenderPattern.h"
 #include "RenderPass.h"
 #include "RenderContext.h"
 #include "RenderState.h"

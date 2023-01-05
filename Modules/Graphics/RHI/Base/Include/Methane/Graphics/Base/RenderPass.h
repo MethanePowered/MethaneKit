@@ -23,6 +23,7 @@ Base implementation of the render pass interface.
 
 #pragma once
 
+#include "RenderPattern.h"
 #include "Object.h"
 #include "Resource.h"
 
@@ -34,28 +35,6 @@ namespace Methane::Graphics::Base
 class RenderContext;
 class RenderCommandList;
 class Texture;
-
-class RenderPattern
-    : public Rhi::IRenderPattern
-    , public Object
-{
-public:
-    RenderPattern(RenderContext& render_context, const Settings& settings);
-
-    // IRenderPattern overrides
-    [[nodiscard]] const Rhi::IRenderContext& GetRenderContext() const noexcept final;
-    [[nodiscard]] Rhi::IRenderContext&       GetRenderContext() noexcept final;
-    [[nodiscard]] const Settings&            GetSettings() const noexcept final { return m_settings; }
-    [[nodiscard]] Data::Size                 GetAttachmentCount() const noexcept final;
-    [[nodiscard]] AttachmentFormats          GetAttachmentFormats() const noexcept final;
-
-    [[nodiscard]] const RenderContext& GetBaseRenderContext() const noexcept { return *m_render_context_ptr; }
-    [[nodiscard]] RenderContext&       GetBaseRenderContext() noexcept       { return *m_render_context_ptr; }
-
-private:
-    const Ptr<RenderContext> m_render_context_ptr;
-    Settings m_settings;
-};
 
 class RenderPass
     : public Rhi::IRenderPass

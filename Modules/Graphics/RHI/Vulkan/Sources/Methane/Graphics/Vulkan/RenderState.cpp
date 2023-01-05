@@ -22,7 +22,7 @@ Vulkan implementation of the render state interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/RenderState.h>
-#include <Methane/Graphics/Vulkan/RenderPass.h>
+#include <Methane/Graphics/Vulkan/RenderPattern.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/RenderCommandList.h>

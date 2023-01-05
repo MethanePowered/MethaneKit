@@ -29,6 +29,7 @@ Methane graphics RHI interfaces: all headers under one umbrella.
 #include "IShader.h"
 #include "IProgram.h"
 #include "IProgramBindings.h"
+#include "IRenderPattern.h"
 #include "IRenderPass.h"
 #include "IRenderState.h"
 #include "IViewState.h"

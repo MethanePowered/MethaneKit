@@ -40,13 +40,6 @@ namespace Methane::Graphics::DirectX
 class RenderCommandList;
 class RenderContext;
 
-class RenderPattern final
-    : public Base::RenderPattern
-{
-public:
-    using Base::RenderPattern::RenderPattern;
-};
-
 class RenderPass final
     : public Base::RenderPass
     , private Data::Receiver<IDescriptorHeapCallback> //NOSONAR

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2022 Evgeny Gorodetskiy
+Copyright 2019-2020 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,30 +16,23 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/IRenderPass.cpp
-Methane render pass interface: specifies output texture views of the render pattern.
+FILE: Methane/Graphics/DirectX/RenderPattern.h
+DirectX 12 implementation of the render pattern interface.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/RHI/IRenderPass.h>
+#pragma once
 
-#include <Methane/Instrumentation.h>
+#include <Methane/Graphics/Base/RenderPattern.h>
 
-namespace Methane::Graphics::Rhi
+namespace Methane::Graphics::DirectX
 {
 
-bool RenderPassSettings::operator==(const RenderPassSettings& other) const
+class RenderPattern final
+    : public Base::RenderPattern
 {
-    META_FUNCTION_TASK();
-    return std::tie(attachments, frame_size) ==
-           std::tie(other.attachments, other.frame_size);
-}
+public:
+    using Base::RenderPattern::RenderPattern;
+};
 
-bool RenderPassSettings::operator!=(const RenderPassSettings& other) const
-{
-    META_FUNCTION_TASK();
-    return std::tie(attachments, frame_size) !=
-           std::tie(other.attachments, other.frame_size);
-}
-
-} // namespace Methane::Graphics::Rhi
+} // namespace Methane::Graphics::DirectX

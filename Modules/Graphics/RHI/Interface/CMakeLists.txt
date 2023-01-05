@@ -23,6 +23,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/IBufferSet.h
     ${INCLUDE_DIR}/ITexture.h
     ${INCLUDE_DIR}/ISampler.h
+    ${INCLUDE_DIR}/IRenderPattern.h
     ${INCLUDE_DIR}/IRenderPass.h
     ${INCLUDE_DIR}/ICommandKit.h
     ${INCLUDE_DIR}/ICommandQueue.h
@@ -52,6 +53,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/IResourceBarriers.cpp
     ${SOURCES_DIR}/ITexture.cpp
     ${SOURCES_DIR}/ISampler.cpp
+    ${SOURCES_DIR}/IRenderPattern.cpp
     ${SOURCES_DIR}/IRenderPass.cpp
     ${SOURCES_DIR}/IFpsCounter.cpp
     ${SOURCES_DIR}/ResourceView.cpp

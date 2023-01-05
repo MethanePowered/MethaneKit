@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2022 Evgeny Gorodetskiy
+Copyright 2019-2021 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,30 +16,22 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/IRenderPass.cpp
-Methane render pass interface: specifies output texture views of the render pattern.
+FILE: Methane/Graphics/Metal/RenderPattern.mm
+Metal implementation of the render pattern interface.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/RHI/IRenderPass.h>
+#include <Methane/Graphics/Metal/RenderPattern.hh>
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-bool RenderPassSettings::operator==(const RenderPassSettings& other) const
+Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return std::tie(attachments, frame_size) ==
-           std::tie(other.attachments, other.frame_size);
-}
-
-bool RenderPassSettings::operator!=(const RenderPassSettings& other) const
-{
-    META_FUNCTION_TASK();
-    return std::tie(attachments, frame_size) !=
-           std::tie(other.attachments, other.frame_size);
+    return std::make_shared<Metal::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
 }
 
 } // namespace Methane::Graphics::Rhi

@@ -32,12 +32,6 @@ Metal implementation of the render pass interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
-}
-
 Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();

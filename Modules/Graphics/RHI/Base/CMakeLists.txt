@@ -16,6 +16,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ProgramArgumentBinding.h
     ${INCLUDE_DIR}/ProgramBindings.h
     ${INCLUDE_DIR}/RenderPass.h
+    ${INCLUDE_DIR}/RenderPattern.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
     ${INCLUDE_DIR}/ResourceBarriers.h
@@ -56,6 +57,7 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/BufferSet.cpp
     ${SOURCES_DIR}/Texture.cpp
     ${SOURCES_DIR}/Sampler.cpp
+    ${SOURCES_DIR}/RenderPattern.cpp
     ${SOURCES_DIR}/RenderPass.cpp
     ${SOURCES_DIR}/CommandKit.cpp
     ${SOURCES_DIR}/CommandQueue.cpp
