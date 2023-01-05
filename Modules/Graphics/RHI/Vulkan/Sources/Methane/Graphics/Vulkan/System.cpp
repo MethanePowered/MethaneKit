@@ -22,6 +22,7 @@ Vulkan implementation of the system interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/System.h>
+#include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/Platform.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>
 

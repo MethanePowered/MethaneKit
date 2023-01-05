@@ -23,6 +23,7 @@ Vulkan implementation of the render context interface.
 
 #include <Methane/Graphics/Vulkan/RenderContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
+#include <Methane/Graphics/Vulkan/System.h>
 #include <Methane/Graphics/Vulkan/RenderState.h>
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
 #include <Methane/Graphics/Vulkan/ICommandList.h>
