@@ -205,6 +205,8 @@ if(METHANE_TESTS_BUILD_ENABLED)
     target_compile_definitions(${TEST_TARGET}
         PUBLIC
             META_GFX_NAME=Null
+            # Precompiled headers is going to be reused by other targets and it has to be included with the same definitions
+            $<$<BOOL:METHANE_PRECOMPILED_HEADERS_ENABLED>:$<TARGET_PROPERTY:${METHANE_GRAPHICS_RHI_IMPL_TARGET},COMPILE_DEFINITIONS>>
     )
 
     if(METHANE_PRECOMPILED_HEADERS_ENABLED)
