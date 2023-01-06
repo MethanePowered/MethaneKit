@@ -36,7 +36,7 @@ Vulkan implementation of the render pass interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IRenderPass> Rhi::IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
+Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::RenderPass>(dynamic_cast<Vulkan::RenderPattern&>(render_pattern), settings);

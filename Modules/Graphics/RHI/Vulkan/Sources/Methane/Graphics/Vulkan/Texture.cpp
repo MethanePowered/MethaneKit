@@ -36,13 +36,13 @@ Vulkan implementation of the texture interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITexture> Rhi::ITexture::Create(const Rhi::IContext& context, const Settings& settings)
+Ptr<ITexture> ITexture::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::Texture>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-Ptr<ITexture> Rhi::ITexture::CreateFrameBuffer(const Rhi::IRenderContext& context, FrameBufferIndex frame_index)
+Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex frame_index)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
@@ -50,7 +50,7 @@ Ptr<ITexture> Rhi::ITexture::CreateFrameBuffer(const Rhi::IRenderContext& contex
     return std::make_shared<Vulkan::Texture>(dynamic_cast<const Vulkan::RenderContext&>(context), texture_settings, frame_index);
 }
 
-Ptr<ITexture> Rhi::ITexture::CreateDepthStencil(const Rhi::IRenderContext& context)
+Ptr<ITexture> ITexture::CreateDepthStencil(const IRenderContext& context)
 {
     META_FUNCTION_TASK();
     const RenderContextSettings& context_settings = context.GetSettings();
@@ -58,14 +58,14 @@ Ptr<ITexture> Rhi::ITexture::CreateDepthStencil(const Rhi::IRenderContext& conte
     return std::make_shared<Vulkan::Texture>(dynamic_cast<const Base::Context&>(context), texture_settings);
 }
 
-Ptr<ITexture> Rhi::ITexture::CreateImage(const Rhi::IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<ITexture> ITexture::CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, UsageMask({ Usage::ShaderRead }));
     return std::make_shared<Vulkan::Texture>(dynamic_cast<const Base::Context&>(context), texture_settings);
 }
 
-Ptr<ITexture> Rhi::ITexture::CreateCube(const Rhi::IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
+Ptr<ITexture> ITexture::CreateCube(const IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
 {
     META_FUNCTION_TASK();
     const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, UsageMask({ Usage::ShaderRead }));

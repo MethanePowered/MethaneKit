@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX12/ProgramArgumentBinding.h
+FILE: Methane/Graphics/Vulkan/ProgramArgumentBinding.h
 Vulkan implementation of the program argument binding interface.
 
 ******************************************************************************/

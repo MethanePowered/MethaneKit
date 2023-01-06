@@ -32,7 +32,8 @@ namespace Methane::Graphics::Vulkan
 
 struct IContext;
 
-class RenderState final : public Base::RenderState
+class RenderState final
+    : public Base::RenderState
 {
 public:
     RenderState(const Base::RenderContext& context, const Settings& settings);

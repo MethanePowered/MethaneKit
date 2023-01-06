@@ -9,4 +9,8 @@ elseif(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
     add_subdirectory(Metal)
 endif()
 
+if(METHANE_TESTS_BUILD_ENABLED)
+    add_subdirectory(Null)
+endif()
+
 add_subdirectory(Impl)

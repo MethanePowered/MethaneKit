@@ -48,7 +48,7 @@ VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 namespace Methane::Graphics::Rhi
 {
 
-Rhi::ISystem& Rhi::ISystem::Get()
+ISystem& ISystem::Get()
 {
     META_FUNCTION_TASK();
     static const auto s_system_ptr = std::make_shared<Vulkan::System>();

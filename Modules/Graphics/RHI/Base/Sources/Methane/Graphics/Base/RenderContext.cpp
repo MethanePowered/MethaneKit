@@ -176,7 +176,6 @@ void RenderContext::OnGpuWaitComplete(WaitFor wait_for)
     if (wait_for == WaitFor::FramePresented)
     {
         m_fps_counter.OnGpuFramePresented();
-        m_is_frame_buffer_in_use = false;
         PerformRequestedAction();
     }
     else
@@ -191,7 +190,6 @@ void RenderContext::UpdateFrameBufferIndex()
     m_frame_buffer_index = GetNextFrameBufferIndex();
     META_CHECK_ARG_LESS(m_frame_buffer_index, GetSettings().frame_buffers_count);
     m_frame_index++;
-    m_is_frame_buffer_in_use = true;
 }
 
 void RenderContext::InvalidateFrameBuffersCount(uint32_t frame_buffers_count)

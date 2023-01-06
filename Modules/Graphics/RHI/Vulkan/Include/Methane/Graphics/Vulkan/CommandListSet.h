@@ -38,7 +38,7 @@ class CommandListSet final
     : public Base::CommandListSet
 {
 public:
-    explicit CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
+    CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     // Base::CommandListSet interface
     void Execute(const Rhi::ICommandList::CompletedCallback& completed_callback) override;

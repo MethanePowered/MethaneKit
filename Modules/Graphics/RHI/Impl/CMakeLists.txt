@@ -1,4 +1,4 @@
-set(TARGET MethaneGraphicsRhi)
+set(TARGET MethaneGraphicsRhiImpl)
 
 include(MethaneModules)
 
@@ -177,3 +177,41 @@ install(TARGETS ${TARGET}
         DESTINATION Lib
         COMPONENT Development
 )
+
+if(METHANE_TESTS_BUILD_ENABLED)
+
+    set(TEST_TARGET MethaneGraphicsRhiNullImpl)
+
+    add_library(${TEST_TARGET} STATIC
+        ${HEADERS}
+        ${SOURCES}
+    )
+
+    target_link_libraries(${TEST_TARGET}
+        PUBLIC
+            MethaneGraphicsRhiInterface
+        PRIVATE
+            MethaneBuildOptions
+            MethaneGraphicsRhiNull
+    )
+
+    target_include_directories(${TEST_TARGET}
+        PUBLIC
+            Include
+        PRIVATE
+            $<TARGET_PROPERTY:MethaneGraphicsRhiNull,METHANE_INCLUDE_DIR>
+    )
+
+    target_compile_definitions(${TEST_TARGET}
+        PUBLIC
+            META_GFX_NAME=Null
+    )
+
+    if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+        target_precompile_headers(${TEST_TARGET}
+            PUBLIC
+                <Methane/Graphics/RHI/Implementations.h>
+        )
+    endif()
+
+endif() # METHANE_TESTS_BUILD_ENABLED

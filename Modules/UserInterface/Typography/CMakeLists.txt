@@ -42,7 +42,7 @@ add_methane_shaders_library(${TARGET})
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneUserInterfaceTypes
-        MethaneGraphicsRhi
+        MethaneGraphicsRhiImpl
         MethaneDataProvider
         MethaneDataEvents
     PRIVATE
@@ -54,7 +54,7 @@ target_link_libraries(${TARGET}
 )
 
 if(METHANE_PRECOMPILED_HEADERS_ENABLED)
-    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhi)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhiImpl)
 endif()
 
 target_include_directories(${TARGET}

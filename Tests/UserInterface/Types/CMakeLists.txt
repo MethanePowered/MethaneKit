@@ -3,7 +3,6 @@ set(TARGET MethaneUserInterfaceTypesTest)
 add_executable(${TARGET}
     UnitTypeCatchHelpers.hpp
     UnitTypesTest.cpp
-    FakeRenderContext.hpp
     FakePlatformApp.hpp
     ContextTest.cpp
 )
@@ -11,16 +10,15 @@ add_executable(${TARGET}
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
-        MethaneUserInterfaceTypes
+        MethaneGraphicsRhiNullImpl
+        MethaneUserInterfaceNullTypes
         MethanePlatformApp
-        MethaneGraphicsRhi
-        MethaneMathPrecompiledHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2WithMain
 )
 
 if(METHANE_PRECOMPILED_HEADERS_ENABLED)
-    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhi)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhiNullImpl)
 endif()
 
 set_target_properties(${TARGET}

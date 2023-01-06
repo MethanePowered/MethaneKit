@@ -62,7 +62,6 @@ public:
     const Context&   GetContext() const noexcept { return m_context; }
     std::string_view GetCachedArgName(std::string_view arg_name) const;
 
-
 protected:
     uint32_t    GetProgramInputBufferIndexByArgumentSemantic(const Program& program, const std::string& argument_semantic) const;
     std::string GetCompiledEntryFunctionName() const { return GetCompiledEntryFunctionName(m_settings); }

@@ -58,9 +58,6 @@ public:
     // Context interface
     void Initialize(Device& device, bool is_callback_emitted = true) override;
 
-    // Frame buffer is in use while there are executing rendering commands contributing to this frame buffer
-    bool IsFrameBufferInUse() const noexcept { return m_is_frame_buffer_in_use; }
-
 protected:
     void ResetWithSettings(const Settings& settings);
     void OnCpuPresentComplete(bool signal_frame_fence = true);
@@ -88,7 +85,6 @@ private:
     Settings   m_settings;
     uint32_t   m_frame_buffer_index = 0U;
     uint32_t   m_frame_index = 0U;
-    bool       m_is_frame_buffer_in_use = true;
     FpsCounter m_fps_counter;
 };
 

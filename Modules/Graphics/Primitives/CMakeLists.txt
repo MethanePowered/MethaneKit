@@ -35,12 +35,12 @@ add_library(${TARGET} STATIC
 )
 
 if(METHANE_PRECOMPILED_HEADERS_ENABLED)
-    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhi)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhiImpl)
 endif()
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethaneGraphicsRhi
+        MethaneGraphicsRhiImpl
         MethaneGraphicsMesh
         MethaneDataPrimitives
         MethaneDataTypes

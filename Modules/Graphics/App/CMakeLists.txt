@@ -34,7 +34,7 @@ target_include_directories(${TARGET}
 )
 
 if(METHANE_PRECOMPILED_HEADERS_ENABLED)
-    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhi)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhiImpl)
 endif()
 
 target_link_libraries(${TARGET}
@@ -43,7 +43,7 @@ target_link_libraries(${TARGET}
         MethanePlatformApp
         MethanePlatformUtils
         MethanePlatformInputActionControllers
-        MethaneGraphicsRhi
+        MethaneGraphicsRhiImpl
         MethaneGraphicsPrimitives
         MethaneGraphicsCamera
         MethaneInstrumentation
