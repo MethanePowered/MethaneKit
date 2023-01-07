@@ -167,7 +167,7 @@ QueryPool::QueryPool(CommandQueue& command_queue, Type type,
                          Data::Size max_query_count, Rhi::IQuery::Count slots_count_per_query,
                          Data::Size buffer_size, Data::Size query_size)
     : Base::QueryPool(static_cast<Base::CommandQueue&>(command_queue), type, max_query_count, slots_count_per_query, buffer_size, query_size)
-    , m_result_buffer_ptr(Rhi::IBuffer::CreateReadBackBuffer(GetContext(), buffer_size))
+    , m_result_buffer_ptr(Rhi::IBuffer::Create(GetContext(), Rhi::BufferSettings::ForReadBackBuffer(buffer_size)))
     , m_context_dx(dynamic_cast<const IContext&>(GetContext()))
     , m_result_resource_dx(dynamic_cast<IResource&>(*m_result_buffer_ptr))
     , m_native_query_type(GetQueryTypeDx(type))
