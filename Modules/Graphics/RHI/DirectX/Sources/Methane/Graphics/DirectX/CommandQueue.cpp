@@ -137,7 +137,7 @@ Ptr<Rhi::IParallelRenderCommandList> CommandQueue::CreateParallelRenderCommandLi
 Ptr<Rhi::ITimestampQueryPool> CommandQueue::CreateTimestampQueryPool(uint32_t max_timestamps_per_frame)
 {
     META_FUNCTION_TASK();
-    return CheckCommandQueueSupportsTimestampQueries(static_cast<DirectX::CommandQueue&>(command_queue))
+    return CheckCommandQueueSupportsTimestampQueries(*this)
          ? std::make_shared<TimestampQueryPool>(*this, max_timestamps_per_frame)
          : nullptr;
 }

@@ -107,7 +107,9 @@ Ptr<Rhi::IBuffer> RenderContext::CreateBuffer(const Rhi::BufferSettings& setting
 Ptr<Rhi::ITexture> RenderContext::CreateTexture(const Rhi::TextureSettings& settings) const
 {
     META_FUNCTION_TASK();
-    return std::make_shared<Texture>(*this, settings);
+    return settings.type == Rhi::TextureType::FrameBuffer
+         ? std::make_shared<Texture>(*this, settings, settings.frame_index_opt.value())
+         : std::make_shared<Texture>(*this, settings);
 }
 
 Ptr<Rhi::ISampler> RenderContext::CreateSampler(const Rhi::SamplerSettings& settings) const

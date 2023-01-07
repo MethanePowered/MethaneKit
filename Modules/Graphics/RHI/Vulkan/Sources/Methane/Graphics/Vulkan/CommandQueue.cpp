@@ -28,6 +28,7 @@ Vulkan implementation of the command queue interface.
 #include <Methane/Graphics/Vulkan/RenderCommandList.h>
 #include <Methane/Graphics/Vulkan/ParallelRenderCommandList.h>
 #include <Methane/Graphics/Vulkan/QueryPool.h>
+#include <Methane/Graphics/Vulkan/RenderPass.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>
