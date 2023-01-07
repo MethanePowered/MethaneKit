@@ -27,7 +27,6 @@ DirectX 12 implementation of the buffer interface.
 
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/TypeConverters.hpp>
-#include <Methane/Graphics/Base/BufferFactory.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -36,35 +35,10 @@ DirectX 12 implementation of the buffer interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IBuffer> IBuffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
+Ptr<IBuffer> IBuffer::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return Base::CreateVertexBuffer<DirectX::Buffer>(context, size, stride, is_volatile);
-}
-
-Ptr<IBuffer> IBuffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
-{
-    META_FUNCTION_TASK();
-    return Base::CreateIndexBuffer<DirectX::Buffer>(context, size, format, is_volatile);
-}
-
-Ptr<IBuffer> IBuffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
-{
-    META_FUNCTION_TASK();
-    return Base::CreateConstantBuffer<DirectX::Buffer>(context, size, addressable, is_volatile);
-}
-
-Ptr<IBuffer> IBuffer::CreateReadBackBuffer(const IContext& context, Data::Size size)
-{
-    META_FUNCTION_TASK();
-    return Base::CreateReadBackBuffer<DirectX::Buffer>(context, size);
-}
-
-Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
-{
-    META_FUNCTION_TASK();
-    // Aligned size must be a multiple 256 bytes
-    return (size + (D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1)) & ~(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT - 1);
+    return std::make_shared<DirectX::Buffer>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
 } // namespace Methane::Graphics::Rhi

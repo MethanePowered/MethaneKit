@@ -509,7 +509,7 @@ void Text::FrameResources::UpdateMeshBuffers(const rhi::RenderContext& render_co
     {
         const Data::Size  vertex_buffer_size = vertices_data_size * reservation_multiplier;
         rhi::Buffer vertex_buffer;
-        vertex_buffer.InitVertexBuffer(render_context.GetInterface(), vertex_buffer_size, text_mesh.GetVertexSize());
+        vertex_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForVertexBuffer(vertex_buffer_size, text_mesh.GetVertexSize()));
         vertex_buffer.SetName(fmt::format("{} Text Vertex Buffer {}", text_name, m_frame_index));
         m_vertex_buffer_set.Init(rhi::BufferType::Vertex, { vertex_buffer });
     }
@@ -527,7 +527,7 @@ void Text::FrameResources::UpdateMeshBuffers(const rhi::RenderContext& render_co
     if (!m_index_buffer.IsInitialized() || m_index_buffer.GetDataSize() < indices_data_size)
     {
         const Data::Size index_buffer_size = vertices_data_size * reservation_multiplier;
-        m_index_buffer.InitIndexBuffer(render_context.GetInterface(), index_buffer_size, gfx::PixelFormat::R16Uint);
+        m_index_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForIndexBuffer(index_buffer_size, gfx::PixelFormat::R16Uint));
         m_index_buffer.SetName(fmt::format("{} Text Index Buffer {}", text_name, m_frame_index));
     }
 
@@ -560,7 +560,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const rhi::RenderContext& render
 
     if (!m_uniforms_buffer.IsInitialized())
     {
-        m_uniforms_buffer.InitConstantBuffer(render_context.GetInterface(), uniforms_data_size);
+        m_uniforms_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForConstantBuffer(uniforms_data_size));
         m_uniforms_buffer.SetName(fmt::format("{} Text Uniforms Buffer {}", text_name, m_frame_index));
 
         if (m_program_bindings.IsInitialized())
@@ -592,7 +592,7 @@ void Text::InitializeFrameResources()
 
     if (!m_const_buffer.IsInitialized())
     {
-        m_const_buffer.InitConstantBuffer(render_context.GetInterface(), static_cast<Data::Size>(sizeof(hlslpp::TextConstants)));
+        m_const_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForConstantBuffer(static_cast<Data::Size>(sizeof(hlslpp::TextConstants))));
         m_const_buffer.SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
     }
 

@@ -55,24 +55,9 @@ Buffer::Buffer(IBuffer& interface_ref)
 {
 }
 
-void Buffer::InitVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
+void Buffer::Init(const IContext& context, const Settings& settings)
 {
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateVertexBuffer(context, size, stride, is_volatile));
-}
-
-void Buffer::InitIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateIndexBuffer(context, size, format, is_volatile));
-}
-
-void Buffer::InitConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateConstantBuffer(context, size, addressable, is_volatile));
-}
-
-void Buffer::InitReadBackBuffer(const IContext& context, Data::Size size)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::CreateReadBackBuffer(context, size));
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::Create(context, settings));
 }
 
 void Buffer::Release()

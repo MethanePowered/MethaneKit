@@ -51,6 +51,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/IViewState.cpp
     ${SOURCES_DIR}/IResource.cpp
     ${SOURCES_DIR}/IResourceBarriers.cpp
+    ${SOURCES_DIR}/IBuffer.cpp
     ${SOURCES_DIR}/ITexture.cpp
     ${SOURCES_DIR}/ISampler.cpp
     ${SOURCES_DIR}/IRenderPattern.cpp

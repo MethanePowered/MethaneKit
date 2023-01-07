@@ -53,6 +53,14 @@ struct BufferSettings
     Data::Size        item_stride_size;
     PixelFormat       data_format;
     BufferStorageMode storage_mode = BufferStorageMode::Managed;
+
+    static constexpr Data::Size s_data_alignment = 256U;
+
+    [[nodiscard]] static Data::Size     GetAlignedSize(Data::Size size) noexcept;
+    [[nodiscard]] static BufferSettings ForVertexBuffer(Data::Size size, Data::Size stride, bool is_volatile = false);
+    [[nodiscard]] static BufferSettings ForIndexBuffer(Data::Size size, PixelFormat format, bool is_volatile = false);
+    [[nodiscard]] static BufferSettings ForConstantBuffer(Data::Size size, bool addressable = false, bool is_volatile = false);
+    [[nodiscard]] static BufferSettings ForReadBackBuffer(Data::Size size);
 };
 
 struct IBuffer
@@ -63,13 +71,7 @@ struct IBuffer
     using Settings = BufferSettings;
 
     // Create IBuffer instance
-    [[nodiscard]] static Ptr<IBuffer> CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile = false);
-    [[nodiscard]] static Ptr<IBuffer> CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile = false);
-    [[nodiscard]] static Ptr<IBuffer> CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable = false, bool is_volatile = false);
-    [[nodiscard]] static Ptr<IBuffer> CreateReadBackBuffer(const IContext& context, Data::Size size);
-
-    // Auxiliary functions
-    [[nodiscard]] static Data::Size GetAlignedBufferSize(Data::Size size) noexcept;
+    [[nodiscard]] static Ptr<IBuffer> Create(const IContext& context, const Settings& settings);
 
     // IBuffer interface
     [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;

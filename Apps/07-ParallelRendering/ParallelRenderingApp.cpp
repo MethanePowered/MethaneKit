@@ -192,7 +192,7 @@ void ParallelRenderingApp::Init()
     for(ParallelRenderingFrame& frame : GetFrames())
     {
         // Create buffer for uniforms array related to all cube instances
-        frame.cubes_array.uniforms_buffer.InitConstantBuffer(GetRenderContext().GetInterface(), uniforms_data_size, true, true);
+        frame.cubes_array.uniforms_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, true, true));
         frame.cubes_array.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings

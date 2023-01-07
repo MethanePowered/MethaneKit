@@ -77,7 +77,7 @@ void TexturedCubeApp::Init()
     const Data::Size vertex_data_size   = cube_mesh.GetVertexDataSize();
     const Data::Size  vertex_size       = cube_mesh.GetVertexSize();
     rhi::Buffer vertex_buffer;
-    vertex_buffer.InitVertexBuffer(GetRenderContext().GetInterface(), vertex_data_size, vertex_size);
+    vertex_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForVertexBuffer(vertex_data_size, vertex_size));
     vertex_buffer.SetName("Cube Vertex Buffer");
     vertex_buffer.SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } }, // NOSONAR
@@ -87,7 +87,7 @@ void TexturedCubeApp::Init()
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
-    m_index_buffer.InitIndexBuffer(GetRenderContext().GetInterface(), index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0)));
+    m_index_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForIndexBuffer(index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0))));
     m_index_buffer.SetName("Cube Index Buffer");
     m_index_buffer.SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } }, // NOSONAR
@@ -96,7 +96,7 @@ void TexturedCubeApp::Init()
 
     // Create constants buffer for frame rendering
     const auto constants_data_size = static_cast<Data::Size>(sizeof(m_shader_constants));
-    m_const_buffer.InitConstantBuffer(GetRenderContext().GetInterface(), constants_data_size);
+    m_const_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForConstantBuffer(constants_data_size));
     m_const_buffer.SetName("Constants Buffer");
     m_const_buffer.SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), constants_data_size } }, // NOSONAR
@@ -156,7 +156,7 @@ void TexturedCubeApp::Init()
     for(TexturedCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering
-        frame.uniforms_buffer.InitConstantBuffer(GetRenderContext().GetInterface(), uniforms_data_size, false, true);
+        frame.uniforms_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
         frame.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings

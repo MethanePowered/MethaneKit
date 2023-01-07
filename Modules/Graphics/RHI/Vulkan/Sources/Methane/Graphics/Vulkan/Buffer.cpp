@@ -26,7 +26,6 @@ Vulkan implementation of the buffer interface.
 
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Base/Context.h>
-#include <Methane/Graphics/Base/BufferFactory.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <iterator>
@@ -34,34 +33,10 @@ Vulkan implementation of the buffer interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IBuffer> IBuffer::CreateVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile)
+Ptr<IBuffer> IBuffer::Create(const IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
-    return Base::CreateVertexBuffer<Vulkan::Buffer>(context, size, stride, is_volatile);
-}
-
-Ptr<IBuffer> IBuffer::CreateIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile)
-{
-    META_FUNCTION_TASK();
-    return Base::CreateIndexBuffer<Vulkan::Buffer>(context, size, format, is_volatile);
-}
-
-Ptr<IBuffer> IBuffer::CreateConstantBuffer(const IContext& context, Data::Size size, bool addressable, bool is_volatile)
-{
-    META_FUNCTION_TASK();
-    return Base::CreateConstantBuffer<Vulkan::Buffer>(context, size, addressable, is_volatile);
-}
-
-Ptr<IBuffer> IBuffer::CreateReadBackBuffer(const IContext& context, Data::Size size)
-{
-    META_FUNCTION_TASK();
-    return Base::CreateReadBackBuffer<Vulkan::Buffer>(context, size);
-}
-
-Data::Size IBuffer::GetAlignedBufferSize(Data::Size size) noexcept
-{
-    META_FUNCTION_TASK();
-    return size;
+    return std::make_shared<Vulkan::Buffer>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
 } // namespace Methane::Graphics::Rhi

@@ -37,7 +37,6 @@ class Buffer;
 namespace Methane::Graphics::Rhi
 {
 
-class RenderContext;
 class ResourceBarriers;
 class CommandQueue;
 
@@ -63,10 +62,7 @@ public:
     META_RHI_API explicit Buffer(const Ptr<IBuffer>& interface_ptr);
     META_RHI_API explicit Buffer(IBuffer& interface_ref);
 
-    META_RHI_API void InitVertexBuffer(const IContext& context, Data::Size size, Data::Size stride, bool is_volatile = false);
-    META_RHI_API void InitIndexBuffer(const IContext& context, Data::Size size, PixelFormat format, bool is_volatile = false);
-    META_RHI_API void InitConstantBuffer(const IContext& context, Data::Size size, bool addressable = false, bool is_volatile = false);
-    META_RHI_API void InitReadBackBuffer(const IContext& context, Data::Size size);
+    META_RHI_API void Init(const IContext& context, const Settings& settings);
     META_RHI_API void Release();
 
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
