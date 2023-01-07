@@ -169,24 +169,25 @@ ImageData ImageLoader::LoadImage(const std::string& image_path, Data::Size chann
 #endif
 }
 
-Ptr<Rhi::ITexture> ImageLoader::LoadImageToTexture2D(Rhi::ICommandQueue& target_cmd_queue, const std::string& image_path,
-                                                     ImageOptionMask options, const std::string& texture_name) const
+Rhi::Texture ImageLoader::LoadImageToTexture2D(const Rhi::CommandQueue& target_cmd_queue, const std::string& image_path,
+                                               ImageOptionMask options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
     const ImageData    image_data   = LoadImage(image_path, 4, false);
     const PixelFormat  image_format = GetDefaultImageFormat(options.HasAnyBit(ImageOption::SrgbColorSpace));
-    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::Create(target_cmd_queue.GetContext(),
-                                                            Rhi::TextureSettings::ForImage(
-                                                                image_data.GetDimensions(), std::nullopt, image_format,
-                                                                options.HasAnyBit(ImageOption::Mipmapped)));
-    texture_ptr->SetName(texture_name);
-    texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } }, target_cmd_queue);
 
-    return texture_ptr;
+    Rhi::Texture texture(target_cmd_queue.GetContext(),
+                         Rhi::TextureSettings::ForImage(
+                             image_data.GetDimensions(), std::nullopt, image_format,
+                             options.HasAnyBit(ImageOption::Mipmapped)));
+    texture.SetName(texture_name);
+    texture.SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } }, target_cmd_queue);
+
+    return texture;
 }
 
-Ptr<Rhi::ITexture> ImageLoader::LoadImagesToTextureCube(Rhi::ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths,
-                                                        ImageOptionMask options, const std::string& texture_name) const
+Rhi::Texture ImageLoader::LoadImagesToTextureCube(const Rhi::CommandQueue& target_cmd_queue, const CubeFaceResources& image_paths,
+                                                  ImageOptionMask options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
 
@@ -228,14 +229,14 @@ Ptr<Rhi::ITexture> ImageLoader::LoadImagesToTextureCube(Rhi::ICommandQueue& targ
 
     // Load face images to cube texture
     const PixelFormat  image_format = GetDefaultImageFormat(options.HasAnyBit(ImageOption::SrgbColorSpace));
-    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::Create(target_cmd_queue.GetContext(),
-                                                            Rhi::TextureSettings::ForCubeImage(
-                                                                face_dimensions.GetWidth(), std::nullopt,
-                                                                image_format, options.HasAnyBit(Option::Mipmapped)));
-    texture_ptr->SetName(texture_name);
-    texture_ptr->SetData(face_resources, target_cmd_queue);
+    Rhi::Texture texture(target_cmd_queue.GetContext(),
+                         Rhi::TextureSettings::ForCubeImage(
+                             face_dimensions.GetWidth(), std::nullopt,
+                             image_format, options.HasAnyBit(Option::Mipmapped)));
+    texture.SetName(texture_name);
+    texture.SetData(face_resources, target_cmd_queue);
 
-    return texture_ptr;
+    return texture;
 }
 
 } // namespace Methane::Graphics

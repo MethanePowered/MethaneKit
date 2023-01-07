@@ -140,7 +140,7 @@ void TexturedCubeApp::Init()
 
     // Load texture image from file
     constexpr gfx::ImageOptionMask image_options({ gfx::ImageOption::Mipmapped, gfx::ImageOption::SrgbColorSpace });
-    m_cube_texture = rhi::Texture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue.GetInterface(), "MethaneBubbles.jpg", image_options, "ForCubeImage Face Texture"));
+    m_cube_texture = GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MethaneBubbles.jpg", image_options, "ForCubeImage Face Texture");
 
     // Create sampler for image texture
     m_texture_sampler.Init(GetRenderContext(),

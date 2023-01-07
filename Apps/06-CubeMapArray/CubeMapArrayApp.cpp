@@ -142,7 +142,7 @@ void CubeMapArrayApp::Init()
     );
 
     // Load cube-map texture images for Sky-box
-    const rhi::Texture sky_box_texture(GetImageLoader().LoadImagesToTextureCube(render_cmd_queue.GetInterface(),
+    const rhi::Texture sky_box_texture = GetImageLoader().LoadImagesToTextureCube(render_cmd_queue,
         gfx::ImageLoader::CubeFaceResources
         {
             "SkyBox/Clouds/PositiveX.jpg",
@@ -154,7 +154,7 @@ void CubeMapArrayApp::Init()
         },
         gfx::ImageOptionMask(gfx::ImageOption::Mipmapped),
         "Sky-Box Texture"
-    ));
+    );
 
     // Create sky-box
     m_sky_box_ptr = std::make_shared<gfx::SkyBox>(render_cmd_queue, GetScreenRenderPattern(), sky_box_texture,

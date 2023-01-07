@@ -25,7 +25,7 @@ by decoding them from popular image formats.
 #pragma once
 
 #include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/RHI/ITexture.h>
+#include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Data/IProvider.h>
 #include <Methane/Data/EnumMask.hpp>
 
@@ -88,9 +88,9 @@ public:
 
     explicit ImageLoader(Data::IProvider& data_provider);
 
-    [[nodiscard]] ImageData          LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const;
-    [[nodiscard]] Ptr<Rhi::ITexture> LoadImageToTexture2D(Rhi::ICommandQueue& target_cmd_queue, const std::string& image_path, ImageOptionMask options = {}, const std::string& texture_name = "") const;
-    [[nodiscard]] Ptr<Rhi::ITexture> LoadImagesToTextureCube(Rhi::ICommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, ImageOptionMask options = {}, const std::string& texture_name = "") const;
+    [[nodiscard]] ImageData    LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const;
+    [[nodiscard]] Rhi::Texture LoadImageToTexture2D(const Rhi::CommandQueue& target_cmd_queue, const std::string& image_path, ImageOptionMask options = {}, const std::string& texture_name = "") const;
+    [[nodiscard]] Rhi::Texture LoadImagesToTextureCube(const Rhi::CommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, ImageOptionMask options = {}, const std::string& texture_name = "") const;
 
 private:
     Data::IProvider& m_data_provider;

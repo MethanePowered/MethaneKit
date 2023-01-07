@@ -85,10 +85,10 @@ void ShadowCubeApp::Init()
     constexpr gfx::ImageOptionMask image_options({ gfx::ImageOption::Mipmapped, gfx::ImageOption::SrgbColorSpace });
 
     m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, cube_mesh, "ForCubeImage");
-    m_cube_buffers_ptr->SetTexture(rhi::Texture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue.GetInterface(), "MethaneBubbles.jpg", image_options, "ForCubeImage Face Texture")));
+    m_cube_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MethaneBubbles.jpg", image_options, "ForCubeImage Face Texture"));
 
     m_floor_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, floor_mesh, "Floor");
-    m_floor_buffers_ptr->SetTexture(rhi::Texture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue.GetInterface(), "MarbleWhite.jpg", image_options, "Floor Texture")));
+    m_floor_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MarbleWhite.jpg", image_options, "Floor Texture"));
 
     const auto constants_data_size      = static_cast<Data::Size>(sizeof(hlslpp::Constants));
     const auto scene_uniforms_data_size = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));

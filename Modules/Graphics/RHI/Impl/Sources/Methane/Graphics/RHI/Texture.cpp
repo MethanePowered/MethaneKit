@@ -55,14 +55,24 @@ Texture::Texture(ITexture& interface_ref)
 {
 }
 
-Texture::Texture(const RenderContext& context, const Settings& settings)
-    : Texture(ITexture::Create(context.GetInterface(), settings))
+Texture::Texture(const IContext& context, const Settings& settings)
+    : Texture(ITexture::Create(context, settings))
 {
 }
 
-void Texture::Init(const RenderContext& context, const Settings& settings)
+Texture::Texture(const RenderContext& render_context, const Settings& settings)
+    : Texture(render_context.GetInterface(), settings)
 {
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITexture::Create(context.GetInterface(), settings));
+}
+
+void Texture::Init(const IContext& context, const Settings& settings)
+{
+    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITexture::Create(context, settings));
+}
+
+void Texture::Init(const RenderContext& render_context, const Settings& settings)
+{
+    Init(render_context.GetInterface(), settings);
 }
 
 void Texture::Release()
