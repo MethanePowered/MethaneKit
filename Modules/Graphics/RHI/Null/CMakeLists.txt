@@ -71,10 +71,6 @@ target_link_libraries(${TARGET}
         MethaneMathPrecompiledHeaders
 )
 
-# Add cyclic dependency of the RhiBase library from RhiNull due to symbolic dependency
-# from RhiInterface fabric methods ISomething::Create(...) implementations defined in RhiNull
-target_link_libraries(MethaneGraphicsRhiBase PRIVATE ${TARGET})
-
 target_include_directories(${TARGET}
     PUBLIC
         Include

@@ -22,8 +22,9 @@ DirectX 12 implementation of the device interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/DirectX/System.h>
-
+#include <Methane/Graphics/DirectX/Device.h>
 #include <Methane/Graphics/DirectX/ErrorHandling.h>
+
 #include <Methane/Platform/Windows/Utils.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>

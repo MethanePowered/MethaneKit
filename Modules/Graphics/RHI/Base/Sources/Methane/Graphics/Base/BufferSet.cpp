@@ -22,6 +22,7 @@ Base implementation of the buffer-set interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Base/BufferSet.h>
+#include <Methane/Graphics/Base/Buffer.h>
 
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
@@ -45,7 +46,7 @@ BufferSet::BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buf
     {
         META_CHECK_ARG_EQUAL_DESCR(buffer_ref.get().GetSettings().type, m_buffers_type,
                                    "All buffers must be of the same type '{}'", magic_enum::enum_name(m_buffers_type));
-        auto& buffer_base = static_cast<Buffer&>(buffer_ref.get());
+        auto& buffer_base = dynamic_cast<Buffer&>(buffer_ref.get());
         m_ptrs.emplace_back(buffer_base.GetPtr<Buffer>());
         m_raw_ptrs.emplace_back(std::addressof(buffer_base));
     }

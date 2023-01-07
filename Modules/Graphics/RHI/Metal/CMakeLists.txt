@@ -84,10 +84,6 @@ target_link_libraries(${TARGET}
         nowide
 )
 
-# Add cyclic dependency of the RhiBase library from RhiDirectX due to symbolic dependency
-# from RhiInterface fabric methods ISomething::Create(...) implementations defined in RhiDirectX
-target_link_libraries(MethaneGraphicsRhiBase PRIVATE ${TARGET})
-
 target_include_directories(${TARGET}
     PRIVATE
         Sources

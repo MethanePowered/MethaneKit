@@ -22,6 +22,7 @@ Null implementation of the render command list interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Null/RenderCommandList.h>
+#include <Methane/Graphics/Null/CommandQueue.h>
 #include <Methane/Graphics/Null/ParallelRenderCommandList.h>
 #include <Methane/Graphics/Null/Buffer.h>
 
@@ -34,7 +35,7 @@ namespace Methane::Graphics::Base
 Ptr<Rhi::IRenderCommandList> RenderCommandList::CreateForSynchronization(Rhi::ICommandQueue& cmd_queue)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<Null::RenderCommandList>(static_cast<Null::CommandQueue&>(cmd_queue));
+    return std::make_shared<Null::RenderCommandList>(dynamic_cast<Null::CommandQueue&>(cmd_queue));
 }
 
 } // namespace Methane::Graphics::Base

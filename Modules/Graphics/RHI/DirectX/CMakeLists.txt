@@ -100,10 +100,6 @@ target_link_libraries(${TARGET}
         dxguid
 )
 
-# Add cyclic dependency of the RhiBase library from RhiDirectX due to symbolic dependency
-# from RhiInterface fabric methods ISomething::Create(...) implementations defined in RhiDirectX
-target_link_libraries(MethaneGraphicsRhiBase PRIVATE ${TARGET})
-
 if(METHANE_PRECOMPILED_HEADERS_ENABLED)
     get_target_property(MATH_PRECOMPILE_HEADERS MethaneMathPrecompiledHeaders PRECOMPILE_HEADERS)
     target_precompile_headers(${TARGET}
@@ -111,7 +107,7 @@ if(METHANE_PRECOMPILED_HEADERS_ENABLED)
         ${MATH_PRECOMPILE_HEADERS}
         <directx/d3d12.h>
         <directx/d3dx12.h>
-        )
+    )
 endif()
 
 target_include_directories(${TARGET}
