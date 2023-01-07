@@ -41,6 +41,10 @@ public:
     // IParallelRenderCommandList interface
     void SetBeginningResourceBarriers(const Rhi::IResourceBarriers&) override {}
     void SetEndingResourceBarriers(const Rhi::IResourceBarriers&) override    {}
+
+protected:
+    // ParallelRenderCommandListBase interface
+    [[nodiscard]] Ptr<Rhi::IRenderCommandList> CreateCommandList(bool is_beginning_list) override;
 };
 
 } // namespace Methane::Graphics::Null

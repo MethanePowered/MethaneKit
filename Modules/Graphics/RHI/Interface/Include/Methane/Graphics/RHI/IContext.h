@@ -24,6 +24,7 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 #pragma once
 
 #include "IObject.h"
+#include "IShader.h"
 #include "ICommandList.h"
 
 #include <Methane/Memory.hpp>
@@ -77,8 +78,6 @@ public:
     using runtime_error::runtime_error;
 };
 
-struct IDevice;
-struct ICommandKit;
 struct IContext;
 
 struct IContextCallback
@@ -89,6 +88,19 @@ struct IContextCallback
 
     virtual ~IContextCallback() = default;
 };
+
+struct IDevice;
+struct ICommandQueue;
+struct ICommandKit;
+struct IProgram;
+struct IBuffer;
+struct ITexture;
+struct ISampler;
+
+struct ProgramSettings;
+struct BufferSettings;
+struct TextureSettings;
+struct SamplerSettings;
 
 struct IContext
     : virtual IObject // NOSONAR
@@ -102,6 +114,13 @@ struct IContext
     using IncompatibleException = ContextIncompatibleException;
 
     // IContext interface
+    [[nodiscard]] virtual Ptr<ICommandQueue> CreateCommandQueue(CommandListType type) const = 0;
+    [[nodiscard]] virtual Ptr<ICommandKit> CreateCommandKit(CommandListType type) const = 0;
+    [[nodiscard]] virtual Ptr<IShader> CreateShader(ShaderType type, const ShaderSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<IProgram> CreateProgram(const ProgramSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<IBuffer> CreateBuffer(const BufferSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<ITexture> CreateTexture(const TextureSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<ISampler> CreateSampler(const SamplerSettings& settings) const = 0;
     [[nodiscard]] virtual Type GetType() const noexcept = 0;
     [[nodiscard]] virtual OptionMask GetOptions() const noexcept = 0;
     [[nodiscard]] virtual tf::Executor& GetParallelExecutor() const noexcept = 0;

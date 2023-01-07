@@ -22,22 +22,12 @@ Metal implementation of the parallel render command list interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/ParallelRenderCommandList.hh>
+#include <Methane/Graphics/Metal/RenderCommandList.hh>
 #include <Methane/Graphics/Metal/RenderPass.hh>
 #include <Methane/Graphics/Metal/RenderState.hh>
 #include <Methane/Graphics/Metal/RenderContext.hh>
 
 #include <Methane/Instrumentation.h>
-
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IParallelRenderCommandList> IParallelRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::ParallelRenderCommandList>(static_cast<Base::CommandQueue&>(command_queue), static_cast<Base::RenderPass&>(render_pass));
-}
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {
@@ -63,6 +53,11 @@ void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, 
         static_cast<RenderState&>(render_state).InitializeNativeStates();
     }
     Base::ParallelRenderCommandList::ResetWithState(render_state, debug_group_ptr);
+}
+
+Ptr<Rhi::IRenderCommandList> ParallelRenderCommandList::CreateCommandList(bool)
+{
+    return std::make_shared<RenderCommandList>(*this);
 }
 
 bool ParallelRenderCommandList::ResetCommandEncoder()

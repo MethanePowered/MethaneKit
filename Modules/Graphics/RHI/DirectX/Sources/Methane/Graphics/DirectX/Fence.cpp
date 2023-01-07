@@ -32,17 +32,6 @@ DirectX 12 fence implementation.
 
 #include <nowide/convert.hpp>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr <IFence> Rhi::IFence::Create(ICommandQueue& command_queue)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::Fence>(static_cast<Base::CommandQueue&>(command_queue));
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::DirectX
 {
 

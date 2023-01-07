@@ -48,17 +48,6 @@ struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
 };
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<ITexture> ITexture::Create(const IContext& context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::Texture>(dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::DirectX
 {
 

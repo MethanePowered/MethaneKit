@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2022 Evgeny Gorodetskiy
+Copyright 2023 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,21 +16,23 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/QueryPool.mm
-Metal stub implementation of the Base::TimestampQueryPool factory function
+FILE: Methane/Graphics/RHI/IFence.cpp
+Methane fence interface
 
 ******************************************************************************/
 
-#include <Methane/Graphics/RHI/IQueryPool.h>
+#include <Methane/Graphics/RHI/IFence.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
+
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<ITimestampQueryPool> ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
+Ptr<IFence> IFence::Create(ICommandQueue& command_queue)
 {
-    META_UNUSED(command_queue);
-    META_UNUSED(max_timestamps_per_frame);
-    return {};
+    META_FUNCTION_TASK();
+    return command_queue.CreateFence();
 }
 
 } // namespace Methane::Graphics::Rhi

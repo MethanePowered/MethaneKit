@@ -22,13 +22,14 @@ Null implementation of the render pattern interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Null/RenderPattern.h>
+#include <Methane/Graphics/Null/RenderPass.h>
 
-namespace Methane::Graphics::Rhi
+namespace Methane::Graphics::Null
 {
 
-Ptr<IRenderPattern> Rhi::IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
+Ptr<Rhi::IRenderPass> RenderPattern::CreateRenderPass(const Rhi::RenderPassSettings& settings)
 {
-    return std::make_shared<Null::RenderPattern>(dynamic_cast<Null::RenderContext&>(render_context), settings);
+    return std::make_shared<RenderPass>(*this, settings);
 }
 
-} // namespace Methane::Graphics::Rhi
+} // namespace Methane::Graphics::Null

@@ -80,6 +80,9 @@ protected:
     static std::string GetTrailingCommandListDebugName(std::string_view base_name, bool is_beginning);
     static std::string GetThreadCommandListName(std::string_view base_name, Data::Index index);
 
+    // ParallelRenderCommandListBase interface
+    [[nodiscard]] virtual Ptr<Rhi::IRenderCommandList> CreateCommandList(bool is_beginning_list) = 0;
+
 private:
     template<typename ResetCommandListFn>
     void ResetImpl(IDebugGroup* debug_group_ptr, const ResetCommandListFn& reset_command_list_fn);

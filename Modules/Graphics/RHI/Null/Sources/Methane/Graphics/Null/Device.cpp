@@ -16,23 +16,24 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Null/Sampler.cpp
-Null implementation of the sampler interface.
+FILE: Methane/Graphics/Null/Buffer.cpp
+Null implementation of the buffer interface.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Null/Sampler.h>
+#include <Methane/Graphics/Null/Device.h>
+#include <Methane/Graphics/Null/RenderContext.h>
 
-#include <Methane/Graphics/Base/Context.h>
-#include <Methane/Instrumentation.h>
+#include <iterator>
 
 namespace Methane::Graphics::Null
 {
 
-Sampler::Sampler(const Base::Context& context, const Settings& settings)
-    : Resource(context, settings)
+Ptr<Rhi::IRenderContext> Device::CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
 {
-    META_FUNCTION_TASK();
+    auto render_context_ptr = std::make_shared<RenderContext>(env, *this, parallel_executor, settings);
+    render_context_ptr->Initialize(*this, true);
+    return render_context_ptr;
 }
 
 } // namespace Methane::Graphics::Null

@@ -22,17 +22,17 @@ DirectX 12 implementation of the render pattern interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/DirectX/RenderPattern.h>
+#include <Methane/Graphics/DirectX/RenderPass.h>
 #include <Methane/Graphics/Base/RenderContext.h>
 
 #include <Methane/Instrumentation.h>
 
-namespace Methane::Graphics::Rhi
+namespace Methane::Graphics::DirectX
 {
 
-Ptr<IRenderPattern> Rhi::IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
+Ptr<Rhi::IRenderPass> RenderPattern::CreateRenderPass(const Rhi::RenderPassSettings& settings)
 {
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
+    return std::make_shared<RenderPass>(*this, settings);
 }
 
-} // namespace Methane::Graphics::Rhi
+} // namespace Methane::Graphics::DirectX

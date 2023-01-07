@@ -68,6 +68,7 @@ public:
     ~Context() override;
 
     // IContext interface
+    [[nodiscard]] Ptr<Rhi::ICommandKit> CreateCommandKit(Rhi::CommandListType type) const final;
     Type                        GetType() const noexcept override                       { return m_type; }
     tf::Executor&               GetParallelExecutor() const noexcept override           { return m_parallel_executor; }
     Rhi::IObjectRegistry&       GetObjectRegistry() noexcept override                   { return m_objects_cache; }

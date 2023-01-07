@@ -24,7 +24,7 @@ by decoding them from popular image formats.
 
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Graphics/TypeFormatters.hpp>
-#include <Methane/Graphics/RHI/ICommandQueue.h>
+#include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Platform/Utils.h>
 #include <Methane/Data/Math.hpp>

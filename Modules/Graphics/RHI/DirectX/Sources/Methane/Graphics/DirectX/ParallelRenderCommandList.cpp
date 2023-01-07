@@ -22,6 +22,7 @@ DirectX 12 implementation of the parallel render command list interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/DirectX/ParallelRenderCommandList.h>
+#include <Methane/Graphics/DirectX/RenderCommandList.h>
 #include <Methane/Graphics/DirectX/RenderState.h>
 #include <Methane/Graphics/DirectX/RenderPass.h>
 #include <Methane/Graphics/DirectX/CommandQueue.h>
@@ -34,17 +35,6 @@ DirectX 12 implementation of the parallel render command list interface.
 
 #include <fmt/format.h>
 #include <string_view>
-
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IParallelRenderCommandList> IParallelRenderCommandList::Create(ICommandQueue& cmd_queue, IRenderPass& render_pass)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::ParallelRenderCommandList>(static_cast<Base::CommandQueue&>(cmd_queue), static_cast<Base::RenderPass&>(render_pass));
-}
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -166,6 +156,11 @@ RenderPass& ParallelRenderCommandList::GetDirectPass()
 {
     META_FUNCTION_TASK();
     return static_cast<RenderPass&>(GetPass());
+}
+
+Ptr<Rhi::IRenderCommandList> ParallelRenderCommandList::CreateCommandList(bool)
+{
+    return std::make_shared<RenderCommandList>(*this);
 }
 
 } // namespace Methane::Graphics::DirectX

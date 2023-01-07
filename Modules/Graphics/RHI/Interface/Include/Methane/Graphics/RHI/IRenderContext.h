@@ -39,8 +39,6 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 namespace Methane::Graphics::Rhi
 {
 
-struct IRenderCommandList;
-
 struct RenderContextSettings
 {
     FrameSize               frame_size;
@@ -66,6 +64,13 @@ struct RenderContextSettings
     RenderContextSettings& SetUnsyncMaxFps(uint32_t new_unsync_max_fps) noexcept;
 };
 
+struct IRenderCommandList;
+struct IRenderState;
+struct IRenderPattern;
+
+struct RenderStateSettings;
+struct RenderPatternSettings;
+
 struct IRenderContext
     : virtual IContext // NOSONAR
 {
@@ -75,10 +80,11 @@ struct IRenderContext
     [[nodiscard]] static Ptr<IRenderContext> Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const Settings& settings);
 
     // IRenderContext interface
+    [[nodiscard]] virtual Ptr<IRenderState> CreateRenderState(const RenderStateSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<IRenderPattern> CreateRenderPattern(const RenderPatternSettings& settings) = 0;
     [[nodiscard]] virtual bool ReadyToRender() const = 0;
     virtual void Resize(const FrameSize& frame_size) = 0;
     virtual void Present() = 0;
-
     [[nodiscard]] virtual Platform::AppView  GetAppView() const = 0;
     [[nodiscard]] virtual const Settings&    GetSettings() const noexcept = 0;
     [[nodiscard]] virtual uint32_t           GetFrameBufferIndex() const noexcept = 0;

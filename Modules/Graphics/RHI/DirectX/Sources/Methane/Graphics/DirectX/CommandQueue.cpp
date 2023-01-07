@@ -22,11 +22,13 @@ DirectX 12 implementation of the command queue interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/DirectX/CommandQueue.h>
-#include <Methane/Graphics/DirectX/ICommandList.h>
 #include <Methane/Graphics/DirectX/Device.h>
+#include <Methane/Graphics/DirectX/Fence.h>
 #include <Methane/Graphics/DirectX/TransferCommandList.h>
 #include <Methane/Graphics/DirectX/RenderCommandList.h>
 #include <Methane/Graphics/DirectX/ParallelRenderCommandList.h>
+#include <Methane/Graphics/DirectX/QueryPool.h>
+#include <Methane/Graphics/DirectX/ICommandList.h>
 
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/DirectX/ErrorHandling.h>
@@ -38,24 +40,21 @@ DirectX 12 implementation of the command queue interface.
 #include <stdexcept>
 #include <cassert>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<ICommandQueue> Rhi::ICommandQueue::Create(const Rhi::IContext& context, CommandListType command_lists_type)
-{
-    META_FUNCTION_TASK();
-    auto command_queue_ptr =  std::make_shared<DirectX::CommandQueue>(dynamic_cast<const Base::Context&>(context), command_lists_type);
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    // Base::TimestampQueryPool construction uses command queue and requires it to be fully constructed
-    command_queue_ptr->InitializeTimestampQueryPool();
-#endif
-    return command_queue_ptr;
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::DirectX
 {
+
+static bool CheckCommandQueueSupportsTimestampQueries(CommandQueue& command_queue)
+{
+    META_FUNCTION_TASK();
+    if (command_queue.GetNativeCommandQueue().GetDesc().Type != D3D12_COMMAND_LIST_TYPE_COPY)
+        return true;
+
+    if (D3D12_FEATURE_DATA_D3D12_OPTIONS3 feature_data{};
+        SUCCEEDED(command_queue.GetDirectContext().GetDirectDevice().GetNativeDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &feature_data, sizeof(feature_data))))
+        return static_cast<bool>(feature_data.CopyQueueTimestampQueriesSupported);
+
+    return true;
+}
 
 static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(Rhi::CommandListType command_list_type, Rhi::ContextOptionMask options)
 {
@@ -109,6 +108,38 @@ CommandQueue::~CommandQueue()
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
     TracyD3D12Destroy(m_tracy_context);
 #endif
+}
+
+Ptr<Rhi::IFence> CommandQueue::CreateFence()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Fence>(*this);
+}
+
+Ptr<Rhi::ITransferCommandList> CommandQueue::CreateTransferCommandList()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<TransferCommandList>(*this);
+}
+
+Ptr<Rhi::IRenderCommandList> CommandQueue::CreateRenderCommandList(Rhi::IRenderPass& render_pass)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderCommandList>(*this, dynamic_cast<RenderPass&>(render_pass));
+}
+
+Ptr<Rhi::IParallelRenderCommandList> CommandQueue::CreateParallelRenderCommandList(Rhi::IRenderPass& render_pass)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ParallelRenderCommandList>(*this, dynamic_cast<RenderPass&>(render_pass));
+}
+
+Ptr<Rhi::ITimestampQueryPool> CommandQueue::CreateTimestampQueryPool(uint32_t max_timestamps_per_frame)
+{
+    META_FUNCTION_TASK();
+    return CheckCommandQueueSupportsTimestampQueries(static_cast<DirectX::CommandQueue&>(command_queue))
+         ? std::make_shared<TimestampQueryPool>(*this, max_timestamps_per_frame)
+         : nullptr;
 }
 
 bool CommandQueue::SetName(std::string_view name)

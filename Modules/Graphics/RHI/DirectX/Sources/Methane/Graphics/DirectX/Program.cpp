@@ -37,17 +37,6 @@ DirectX 12 implementation of the program interface.
 #include <nowide/convert.hpp>
 #include <iomanip>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::Program>(dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::DirectX
 {
 
@@ -150,6 +139,13 @@ Program::~Program()
 
         heap_reservation.heap.get().ReleaseRange(heap_reservation.range);
     }
+}
+
+Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+{
+    auto program_bindings_ptr = std::make_shared<DirectX::ProgramBindings>(*this, resource_views_by_argument, frame_index);
+    program_bindings_ptr->Initialize();
+    return program_bindings_ptr;
 }
 
 bool Program::SetName(std::string_view name)

@@ -23,6 +23,7 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 ******************************************************************************/
 
 #include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/IDevice.h>
 
 #include <Methane/Instrumentation.h>
 
@@ -97,6 +98,12 @@ RenderContextSettings& RenderContextSettings::SetUnsyncMaxFps(uint32_t new_unsyn
     META_FUNCTION_TASK();
     unsync_max_fps = new_unsync_max_fps;
     return *this;
+}
+
+Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    return device.CreateRenderContext(env, parallel_executor, settings);
 }
 
 } // namespace Methane::Graphics::Rhi

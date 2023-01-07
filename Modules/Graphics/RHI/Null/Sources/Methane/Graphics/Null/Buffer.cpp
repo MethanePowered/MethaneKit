@@ -23,20 +23,7 @@ Null implementation of the buffer interface.
 
 #include <Methane/Graphics/Null/Buffer.h>
 
-#include <Methane/Graphics/Base/Context.h>
-
 #include <iterator>
-
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IBuffer> IBuffer::Create(const IContext& context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Null::Buffer>(dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Null
 {

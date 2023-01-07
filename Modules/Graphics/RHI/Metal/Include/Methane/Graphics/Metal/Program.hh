@@ -38,6 +38,9 @@ class Program final : public Base::Program
 public:
     Program(const Base::Context& context, const Settings& settings);
 
+    // IProgram interface
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index) override;
+
     Shader& GetMetalShader(Rhi::ShaderType shader_type) noexcept;
     
     id<MTLFunction> GetNativeShaderFunction(Rhi::ShaderType shader_type) noexcept;

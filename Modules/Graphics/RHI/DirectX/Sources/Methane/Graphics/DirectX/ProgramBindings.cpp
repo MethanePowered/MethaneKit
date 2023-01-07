@@ -39,27 +39,6 @@ DirectX 12 implementation of the program bindings interface.
 #include <directx/d3dx12.h>
 #include <magic_enum.hpp>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IProgramBindings> IProgramBindings::Create(IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
-{
-    META_FUNCTION_TASK();
-    const auto dx_program_bindings_ptr = std::make_shared<DirectX::ProgramBindings>(static_cast<DirectX::Program&>(program), resource_views_by_argument, frame_index);
-    dx_program_bindings_ptr->Initialize(); // NOTE: Initialize is called externally (not from constructor) to enable using shared_from_this from its code
-    return dx_program_bindings_ptr;
-}
-
-Ptr<IProgramBindings> IProgramBindings::CreateCopy(const Rhi::IProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
-{
-    META_FUNCTION_TASK();
-    const auto dx_program_bindings_ptr = std::make_shared<DirectX::ProgramBindings>(static_cast<const DirectX::ProgramBindings&>(other_program_bindings), replace_resource_views_by_argument, frame_index);
-    dx_program_bindings_ptr->Initialize(); // NOTE: Initialize is called externally (not from constructor) to enable using shared_from_this from its code
-    return dx_program_bindings_ptr;
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::DirectX
 {
 
@@ -135,6 +114,14 @@ void ProgramBindings::CompleteInitialization()
     META_FUNCTION_TASK();
     CopyDescriptorsToGpu();
     UpdateRootParameterBindings();
+}
+
+Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+{
+    META_FUNCTION_TASK();
+    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);
+    program_bindings_ptr->Initialize();
+    return program_bindings_ptr;
 }
 
 void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const

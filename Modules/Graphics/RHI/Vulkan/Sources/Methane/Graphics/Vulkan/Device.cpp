@@ -23,6 +23,7 @@ Vulkan implementation of the device interface.
 
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/Platform.h>
+#include <Methane/Graphics/Vulkan/RenderContext.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>
 
 #include <Methane/Graphics/TypeFormatters.hpp>
@@ -293,6 +294,14 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
 
     m_vk_unique_device = vk_physical_device.createDeviceUnique(vk_device_info);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_unique_device.get());
+}
+
+Ptr<Rhi::IRenderContext> Device::CreateRenderContext(const Methane::Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
+{
+    META_FUNCTION_TASK();
+    const auto render_context_ptr = std::make_shared<Vulkan::RenderContext>(env, *this, parallel_executor, settings);
+    render_context_ptr->Initialize(*this, true);
+    return render_context_ptr;
 }
 
 bool Device::SetName(std::string_view name)

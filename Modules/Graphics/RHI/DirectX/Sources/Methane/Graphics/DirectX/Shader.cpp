@@ -45,17 +45,6 @@ DirectX 12 implementation of the shader interface.
 #include <magic_enum.hpp>
 #endif
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IShader> Rhi::IShader::Create(Type type, const Rhi::IContext& context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::Shader>(type, dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::DirectX
 {
 

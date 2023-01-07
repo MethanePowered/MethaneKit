@@ -23,6 +23,7 @@ pipeline via state object and used to create resource binding objects.
 ******************************************************************************/
 
 #include <Methane/Graphics/RHI/IProgram.h>
+#include <Methane/Graphics/RHI/IContext.h>
 
 #include <Methane/Instrumentation.h>
 
@@ -99,6 +100,12 @@ ProgramArgumentNotFoundException::ProgramArgumentNotFoundException(const IProgra
     , m_argument_ptr(std::make_unique<IProgram::Argument>(argument))
 {
     META_FUNCTION_TASK();
+}
+
+Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    return context.CreateProgram(settings);
 }
 
 } // namespace Methane::Graphics::Rhi

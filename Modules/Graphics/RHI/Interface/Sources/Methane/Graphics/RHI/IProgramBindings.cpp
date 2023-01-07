@@ -22,6 +22,7 @@ Methane program bindings interface for resources binding to program arguments.
 ******************************************************************************/
 
 #include <Methane/Graphics/RHI/IProgramBindings.h>
+#include <Methane/Graphics/RHI/IProgram.h>
 
 #include <Methane/Instrumentation.h>
 
@@ -57,6 +58,11 @@ ProgramBindingsUnboundArgumentsException::ProgramBindingsUnboundArgumentsExcepti
     , m_unbound_arguments(unbound_arguments)
 {
     META_FUNCTION_TASK();
+}
+
+Ptr<IProgramBindings> IProgramBindings::Create(IProgram& program, const IProgram::ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+{
+    return program.CreateBindings(resource_views_by_argument, frame_index);
 }
 
 } // namespace Methane::Graphics::Rhi

@@ -56,6 +56,7 @@ public:
     void Initialize();
 
     // IProgramBindings interface
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index) override;
     void CompleteInitialization() override;
     void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 

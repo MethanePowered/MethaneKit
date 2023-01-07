@@ -42,6 +42,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/IObject.cpp
     ${SOURCES_DIR}/IDevice.cpp
     ${SOURCES_DIR}/ISystem.cpp
+    ${SOURCES_DIR}/IFence.cpp
     ${SOURCES_DIR}/IContext.cpp
     ${SOURCES_DIR}/IRenderContext.cpp
     ${SOURCES_DIR}/IShader.cpp
@@ -54,9 +55,15 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/IBuffer.cpp
     ${SOURCES_DIR}/ITexture.cpp
     ${SOURCES_DIR}/ISampler.cpp
+    ${SOURCES_DIR}/IQueryPool.cpp
     ${SOURCES_DIR}/IRenderPattern.cpp
     ${SOURCES_DIR}/IRenderPass.cpp
     ${SOURCES_DIR}/IFpsCounter.cpp
+    ${SOURCES_DIR}/ICommandKit.cpp
+    ${SOURCES_DIR}/ICommandQueue.cpp
+    ${SOURCES_DIR}/ITransferCommandList.cpp
+    ${SOURCES_DIR}/IRenderCommandList.cpp
+    ${SOURCES_DIR}/IParallelRenderCommandList.cpp
     ${SOURCES_DIR}/ResourceView.cpp
 )
 

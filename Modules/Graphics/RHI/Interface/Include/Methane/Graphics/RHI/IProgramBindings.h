@@ -32,7 +32,6 @@ Methane program bindings interface for resources binding to program arguments.
 #include <Methane/Memory.hpp>
 
 #include <string>
-#include <unordered_map>
 #include <stdexcept>
 
 namespace Methane::Graphics::Rhi
@@ -106,13 +105,13 @@ struct IProgramBindings
     using ApplyBehavior = ProgramBindingsApplyBehavior;
     using ApplyBehaviorMask = ProgramBindingsApplyBehaviorMask;
     using UnboundArgumentsException = ProgramBindingsUnboundArgumentsException;
-    using ResourceViewsByArgument = std::unordered_map<IProgram::Argument, IResource::Views, IProgram::Argument::Hash>;
+    using ResourceViewsByArgument = IProgram::ResourceViewsByArgument;
 
     // Create IProgramBindings instance
     [[nodiscard]] static Ptr<IProgramBindings> Create(IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);
-    [[nodiscard]] static Ptr<IProgramBindings> CreateCopy(const IProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument = {}, const Opt<Data::Index>& frame_index = {});
 
     // IProgramBindings interface
+    [[nodiscard]] virtual Ptr<IProgramBindings>   CreateCopy(const IProgram::ResourceViewsByArgument& replace_resource_views_by_argument = {}, const Opt<Data::Index>& frame_index = {}) = 0;
     [[nodiscard]] virtual IProgram&               GetProgram() const = 0;
     [[nodiscard]] virtual IArgumentBinding&       Get(const ProgramArgument& shader_argument) const = 0;
     [[nodiscard]] virtual const ProgramArguments& GetArguments() const noexcept = 0;

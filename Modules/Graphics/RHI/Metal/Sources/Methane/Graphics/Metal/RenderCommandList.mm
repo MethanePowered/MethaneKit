@@ -32,23 +32,6 @@ Metal implementation of the render command list interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::RenderCommandList>(dynamic_cast<Metal::CommandQueue&>(command_queue), static_cast<Base::RenderPass&>(render_pass));
-}
-
-Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& parallel_render_command_list)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::RenderCommandList>(dynamic_cast<Metal::ParallelRenderCommandList&>(parallel_render_command_list));
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Base
 {
 

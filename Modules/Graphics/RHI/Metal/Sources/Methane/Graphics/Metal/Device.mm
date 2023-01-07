@@ -22,7 +22,7 @@ Metal implementation of the device interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/Device.hh>
-
+#include <Methane/Graphics/Metal/RenderContext.hh>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 
@@ -46,6 +46,14 @@ Device::Device(const id<MTLDevice>& mtl_device, const Capabilities& capabilities
     , m_mtl_device(mtl_device)
 {
     META_FUNCTION_TASK();
+}
+
+Ptr<Rhi::IRenderContext> Device::CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
+{
+    META_FUNCTION_TASK();
+    const auto render_context_ptr = std::make_shared<RenderContext>(env, *this, parallel_executor, settings);
+    render_context_ptr->Initialize(*this, true);
+    return render_context_ptr;
 }
 
 } // namespace Methane::Graphics::Metal

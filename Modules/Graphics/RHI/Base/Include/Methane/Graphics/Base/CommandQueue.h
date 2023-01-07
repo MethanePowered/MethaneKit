@@ -53,6 +53,7 @@ public:
     bool SetName(std::string_view name) override;
 
     // ICommandQueue overrides
+    [[nodiscard]] Ptr<Rhi::ICommandKit> CreateCommandKit() final;
     [[nodiscard]] const Rhi::IContext& GetContext() const noexcept final;
     Rhi::CommandListType GetCommandListType() const noexcept final { return m_command_lists_type; }
     void Execute(Rhi::ICommandListSet& command_lists, const Rhi::ICommandList::CompletedCallback& completed_callback = {}) override;

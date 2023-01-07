@@ -48,10 +48,10 @@ static IProgram::Shaders ConvertProgramShaderSet(const IContext& context, const 
     return shader_ptrs;
 }
 
-static IProgram::Settings ConvertProgramSettings(const IContext& context, const Program::Settings& settings)
+static ProgramSettings ConvertProgramSettings(const IContext& context, const Program::Settings& settings)
 {
     META_FUNCTION_TASK();
-    return IProgram::Settings
+    return ProgramSettings
     {
         ConvertProgramShaderSet(context, settings.shader_set),
         settings.input_buffer_layouts,

@@ -48,6 +48,10 @@ public:
     void SetBeginningResourceBarriers(const Rhi::IResourceBarriers&) override { }
     void SetEndingResourceBarriers(const Rhi::IResourceBarriers&) override { }
 
+protected:
+    // ParallelRenderCommandListBase interface
+    [[nodiscard]] Ptr<Rhi::IRenderCommandList> CreateCommandList(bool is_beginning_list) override;
+
 private:
     RenderPass& GetMetalRenderPass();
     bool ResetCommandEncoder();

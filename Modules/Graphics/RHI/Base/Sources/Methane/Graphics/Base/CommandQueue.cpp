@@ -23,6 +23,7 @@ Base implementation of the command queue interface.
 
 #include <Methane/Graphics/Base/CommandQueue.h>
 #include <Methane/Graphics/Base/CommandListSet.h>
+#include <Methane/Graphics/Base/CommandKit.h>
 #include <Methane/Graphics/Base/RenderContext.h>
 
 #include <Methane/Instrumentation.h>
@@ -49,6 +50,12 @@ bool CommandQueue::SetName(std::string_view name)
         m_tracy_gpu_context_ptr->SetName(name);
     }
     return true;
+}
+
+Ptr<Rhi::ICommandKit> CommandQueue::CreateCommandKit()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<CommandKit>(*this);
 }
 
 const Rhi::IContext& CommandQueue::GetContext() const noexcept

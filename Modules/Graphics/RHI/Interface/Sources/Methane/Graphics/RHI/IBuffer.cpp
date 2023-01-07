@@ -22,11 +22,18 @@ Methane buffer interface: GPU memory buffer resource.
 ******************************************************************************/
 
 #include <Methane/Graphics/RHI/IBuffer.h>
+#include <Methane/Graphics/RHI/IContext.h>
 
 #include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
+
+Ptr<IBuffer> IBuffer::Create(const IContext& context, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    return context.CreateBuffer(settings);
+}
 
 inline Rhi::BufferStorageMode GetBufferStorageMode(bool is_volatile_data) noexcept
 {

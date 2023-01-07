@@ -22,6 +22,7 @@ Vulkan implementation of the program interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/Program.h>
+#include <Methane/Graphics/Vulkan/ProgramBindings.h>
 #include <Methane/Graphics/Vulkan/Shader.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
@@ -36,17 +37,6 @@ Vulkan implementation of the program interface.
 #include <magic_enum.hpp>
 #include <sstream>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IProgram> Rhi::IProgram::Create(const Rhi::IContext& context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::Program>(dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Vulkan
 {
 
@@ -57,6 +47,14 @@ Program::Program(const Base::Context& context, const Settings& settings)
     META_FUNCTION_TASK();
     InitArgumentBindings(settings.argument_accessors);
     InitializeDescriptorSetLayouts();
+}
+
+Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+{
+    META_FUNCTION_TASK();
+    auto program_bindings_ptr = std::make_shared<Vulkan::ProgramBindings>(*this, resource_views_by_argument, frame_index);
+    program_bindings_ptr->Initialize();
+    return program_bindings_ptr;
 }
 
 bool Program::SetName(std::string_view name)

@@ -32,17 +32,6 @@ Vulkan fence implementation.
 
 #include <nowide/convert.hpp>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IFence> Rhi::IFence::Create(ICommandQueue& command_queue)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::Fence>(static_cast<Vulkan::CommandQueue&>(command_queue));
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Vulkan
 {
 

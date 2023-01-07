@@ -33,6 +33,9 @@ class RenderPattern final
 {
 public:
     using Base::RenderPattern::RenderPattern;
+
+    // IRenderPattern interface
+    [[nodiscard]] Ptr<Rhi::IRenderPass> CreateRenderPass(const Rhi::RenderPassSettings& settings) override;
 };
 
 } // namespace Methane::Graphics::DirectX

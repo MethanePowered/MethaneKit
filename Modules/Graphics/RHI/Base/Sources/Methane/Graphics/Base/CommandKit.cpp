@@ -35,23 +35,6 @@ Methane command kit implementation.
 
 #include <fmt/format.h>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<ICommandKit> ICommandKit::Create(const Rhi::IContext& context, CommandListType cmd_list_type)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Base::CommandKit>(context, cmd_list_type);
-}
-
-Ptr<ICommandKit> ICommandKit::Create(ICommandQueue& cmd_queue)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Base::CommandKit>(cmd_queue);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Base
 {
 

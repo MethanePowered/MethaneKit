@@ -35,27 +35,6 @@ Vulkan implementation of the program bindings interface.
 
 #include <algorithm>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IProgramBindings> IProgramBindings::Create(IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
-{
-    META_FUNCTION_TASK();
-    auto program_bindings_ptr = std::make_shared<Vulkan::ProgramBindings>(static_cast<Vulkan::Program&>(program), resource_views_by_argument, frame_index);
-    program_bindings_ptr->Initialize();
-    return program_bindings_ptr;
-}
-
-Ptr<IProgramBindings> IProgramBindings::CreateCopy(const IProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index)
-{
-    META_FUNCTION_TASK();
-    auto program_bindings_ptr = std::make_shared<Vulkan::ProgramBindings>(static_cast<const Vulkan::ProgramBindings&>(other_program_bindings), replace_resource_view_by_argument, frame_index);
-    program_bindings_ptr->Initialize();
-    return program_bindings_ptr;
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Vulkan
 {
 
@@ -168,6 +147,14 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
     UpdateMutableDescriptorSetName();
     SetResourcesForArguments(ReplaceResourceViews(other_program_bindings.GetArgumentBindings(), replace_resource_view_by_argument));
     VerifyAllArgumentsAreBoundToResources();
+}
+
+Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+{
+    META_FUNCTION_TASK();
+    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);
+    program_bindings_ptr->Initialize();
+    return program_bindings_ptr;
 }
 
 void ProgramBindings::SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument)

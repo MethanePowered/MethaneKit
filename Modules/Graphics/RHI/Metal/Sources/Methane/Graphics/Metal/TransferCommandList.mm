@@ -25,17 +25,6 @@ Metal implementation of the transfer command list interface.
 
 #include <Methane/Instrumentation.h>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<ITransferCommandList> ITransferCommandList::Create(ICommandQueue& command_queue)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::TransferCommandList>(static_cast<Base::CommandQueue&>(command_queue));
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Metal
 {
 

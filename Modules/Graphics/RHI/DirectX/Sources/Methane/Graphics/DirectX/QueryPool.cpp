@@ -38,32 +38,6 @@ DirectX 12 GPU query pool implementation.
 
 namespace wrl = Microsoft::WRL;
 
-namespace Methane::Graphics::Rhi
-{
-
-static bool CheckCommandQueueSupportsTimestampQueries(DirectX::CommandQueue& command_queue)
-{
-    META_FUNCTION_TASK();
-    if (command_queue.GetNativeCommandQueue().GetDesc().Type != D3D12_COMMAND_LIST_TYPE_COPY)
-        return true;
-
-    if (D3D12_FEATURE_DATA_D3D12_OPTIONS3 feature_data{};
-        SUCCEEDED(command_queue.GetDirectContext().GetDirectDevice().GetNativeDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &feature_data, sizeof(feature_data))))
-        return static_cast<bool>(feature_data.CopyQueueTimestampQueriesSupported);
-
-    return true;
-}
-
-Ptr<ITimestampQueryPool> Rhi::ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
-{
-    META_FUNCTION_TASK();
-    return CheckCommandQueueSupportsTimestampQueries(static_cast<DirectX::CommandQueue&>(command_queue))
-           ? std::make_shared<DirectX::TimestampQueryPool>(static_cast<DirectX::CommandQueue&>(command_queue), max_timestamps_per_frame)
-           : nullptr;
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::DirectX
 {
 

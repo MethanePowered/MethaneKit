@@ -16,21 +16,23 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Null/Fence.cpp
-Vulkan fence implementation.
+FILE: Methane/Graphics/RHI/ICommandKit.cpp
+Methane command queue interface.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Null/Fence.h>
-#include <Methane/Graphics/Null/CommandQueue.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
+#include <Methane/Graphics/RHI/IContext.h>
+
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IFence> Rhi::IFence::Create(ICommandQueue& command_queue)
+Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<Null::Fence>(static_cast<Null::CommandQueue&>(command_queue));
+    return context.CreateCommandQueue(command_lists_type);
 }
 
 } // namespace Methane::Graphics::Rhi

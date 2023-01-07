@@ -55,7 +55,6 @@ struct IRenderCommandList
 
     // Create IRenderCommandList instance
     [[nodiscard]] static Ptr<IRenderCommandList> Create(ICommandQueue& command_queue, IRenderPass& render_pass);
-    [[nodiscard]] static Ptr<IRenderCommandList> Create(IParallelRenderCommandList& parallel_command_list);
     
     // IRenderCommandList interface
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;

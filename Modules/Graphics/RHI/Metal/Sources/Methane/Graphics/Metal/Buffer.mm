@@ -29,17 +29,6 @@ Metal implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IBuffer> IBuffer::Create(const IContext& context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::Buffer>(dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Metal
 {
 

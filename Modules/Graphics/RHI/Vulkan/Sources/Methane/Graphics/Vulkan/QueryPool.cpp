@@ -45,17 +45,6 @@ static const vk::TimeDomainEXT g_vk_cpu_time_domain =
     static_cast<vk::TimeDomainEXT>(-1);
 #endif
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<ITimestampQueryPool> Rhi::ITimestampQueryPool::Create(ICommandQueue& command_queue, uint32_t max_timestamps_per_frame)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::TimestampQueryPool>(dynamic_cast<Vulkan::CommandQueue&>(command_queue), max_timestamps_per_frame);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Vulkan
 {
 

@@ -56,20 +56,28 @@ class RenderContext final // NOSONAR - this class requires destructor
     , public Data::Emitter<IRenderContextCallback>
 {
 public:
-    RenderContext(const Platform::AppEnvironment& app_env, Device& device,
+    RenderContext(const Methane::Platform::AppEnvironment& app_env, Device& device,
                   tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings);
     ~RenderContext() override;
 
     // IContext interface
+    [[nodiscard]] Ptr<Rhi::ICommandQueue> CreateCommandQueue(Rhi::CommandListType type) const override;
+    [[nodiscard]] Ptr<Rhi::IShader> CreateShader(Rhi::ShaderType type, const Rhi::ShaderSettings& settings) const override;
+    [[nodiscard]] Ptr<Rhi::IProgram> CreateProgram(const Rhi::ProgramSettings& settings) const override;
+    [[nodiscard]] Ptr<Rhi::IBuffer> CreateBuffer(const Rhi::BufferSettings& settings) const override;
+    [[nodiscard]] Ptr<Rhi::ITexture> CreateTexture(const Rhi::TextureSettings& settings) const override;
+    [[nodiscard]] Ptr<Rhi::ISampler> CreateSampler(const Rhi::SamplerSettings& settings) const override;
     void WaitForGpu(WaitFor wait_for) override;
 
     // IRenderContext interface
+    [[nodiscard]] Ptr<Rhi::IRenderState> CreateRenderState(const Rhi::RenderStateSettings& settings) const override;
+    [[nodiscard]] Ptr<Rhi::IRenderPattern> CreateRenderPattern(const Rhi::RenderPatternSettings& settings) override;
     bool     ReadyToRender() const override;
     void     Resize(const FrameSize& frame_size) override;
     void     Present() override;
     bool     SetVSyncEnabled(bool vsync_enabled) override;
     bool     SetFrameBuffersCount(uint32_t frame_buffers_count) override;
-    Platform::AppView GetAppView() const override { return { }; }
+    Methane::Platform::AppView GetAppView() const override { return { }; }
 
     // Base::Context overrides
     void Initialize(Base::Device& device, bool is_callback_emitted = true) override;

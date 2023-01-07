@@ -31,6 +31,13 @@ Methane device interface, used to create graphics context for rendering.
 
 #include <functional>
 
+namespace tf
+{
+// TaskFlow Executor class forward declaration:
+// #include <taskflow/core/executor.hpp>
+class Executor;
+}
+
 namespace Methane::Platform
 {
 struct AppEnvironment;
@@ -69,6 +76,9 @@ struct IDeviceCallback
     virtual ~IDeviceCallback() = default;
 };
 
+struct IRenderContext;
+struct RenderContextSettings;
+
 struct IDevice
     : virtual IObject // NOSONAR
     , virtual Data::IEmitter<IDeviceCallback> // NOSONAR
@@ -77,6 +87,7 @@ struct IDevice
     using Feature      = DeviceFeature;
     using Capabilities = DeviceCaps;
 
+    [[nodiscard]] virtual Ptr<IRenderContext> CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) = 0;
     [[nodiscard]] virtual const std::string&  GetAdapterName() const noexcept = 0;
     [[nodiscard]] virtual bool                IsSoftwareAdapter() const noexcept = 0;
     [[nodiscard]] virtual const Capabilities& GetCapabilities() const noexcept = 0;

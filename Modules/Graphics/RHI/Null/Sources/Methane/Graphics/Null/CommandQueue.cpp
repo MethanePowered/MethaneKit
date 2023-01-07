@@ -22,15 +22,43 @@ Null implementation of the command queue interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Null/CommandQueue.h>
+#include <Methane/Graphics/Null/Fence.h>
+#include <Methane/Graphics/Null/TransferCommandList.h>
+#include <Methane/Graphics/Null/RenderCommandList.h>
+#include <Methane/Graphics/Null/ParallelRenderCommandList.h>
 #include <Methane/Graphics/Base/Context.h>
 
-namespace Methane::Graphics::Rhi
+namespace Methane::Graphics::Null
 {
 
-Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
+Ptr<Rhi::IFence> CommandQueue::CreateFence()
 {
     META_FUNCTION_TASK();
-    return std::make_shared<Null::CommandQueue>(dynamic_cast<const Base::Context&>(context), command_lists_type);
+    return std::make_shared<Fence>(*this);
 }
 
-} // namespace Methane::Graphics::Rhi
+Ptr<Rhi::ITransferCommandList> CommandQueue::CreateTransferCommandList()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<TransferCommandList>(*this);
+}
+
+Ptr<Rhi::IRenderCommandList> CommandQueue::CreateRenderCommandList(Rhi::IRenderPass& render_pass)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderCommandList>(*this, dynamic_cast<RenderPass&>(render_pass));
+}
+
+Ptr<Rhi::IParallelRenderCommandList> CommandQueue::CreateParallelRenderCommandList(Rhi::IRenderPass& render_pass)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ParallelRenderCommandList>(*this, dynamic_cast<RenderPass&>(render_pass));
+}
+
+Ptr<Rhi::ITimestampQueryPool> CommandQueue::CreateTimestampQueryPool(uint32_t)
+{
+    META_FUNCTION_TASK();
+    return nullptr;
+}
+
+} // namespace Methane::Graphics::Null

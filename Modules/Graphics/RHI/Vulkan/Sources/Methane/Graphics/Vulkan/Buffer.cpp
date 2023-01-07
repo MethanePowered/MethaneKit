@@ -30,17 +30,6 @@ Vulkan implementation of the buffer interface.
 
 #include <iterator>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IBuffer> IBuffer::Create(const IContext& context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::Buffer>(dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Vulkan
 {
 

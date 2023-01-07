@@ -161,6 +161,8 @@ struct RenderPatternSettings
 };
 
 struct IRenderContext;
+struct IRenderPass;
+struct RenderPassSettings;
 
 struct IRenderPattern
     : virtual IObject // NOSONAR
@@ -178,6 +180,7 @@ struct IRenderPattern
     [[nodiscard]] static Ptr<IRenderPattern> Create(IRenderContext& render_context, const Settings& settings);
 
     // IRenderPattern interface
+    [[nodiscard]] virtual Ptr<IRenderPass>      CreateRenderPass(const RenderPassSettings& settings) = 0;
     [[nodiscard]] virtual const IRenderContext& GetRenderContext() const noexcept = 0;
     [[nodiscard]] virtual IRenderContext&       GetRenderContext() noexcept = 0;
     [[nodiscard]] virtual const Settings&       GetSettings() const noexcept = 0;

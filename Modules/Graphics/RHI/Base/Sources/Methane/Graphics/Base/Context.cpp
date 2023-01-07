@@ -24,6 +24,7 @@ Base implementation of the context interface.
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Base/Device.h>
 #include <Methane/Graphics/Base/CommandQueue.h>
+#include <Methane/Graphics/Base/CommandKit.h>
 #include <Methane/Graphics/RHI/IDescriptorManager.h>
 
 #include <Methane/Graphics/RHI/ICommandKit.h>
@@ -60,6 +61,12 @@ Context::Context(Device& device, UniquePtr<Rhi::IDescriptorManager>&& descriptor
 }
 
 Context::~Context() = default;
+
+Ptr<Rhi::ICommandKit> Context::CreateCommandKit(Rhi::CommandListType type) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<CommandKit>(*this, type);
+}
 
 void Context::RequestDeferredAction(DeferredAction action) const noexcept
 {

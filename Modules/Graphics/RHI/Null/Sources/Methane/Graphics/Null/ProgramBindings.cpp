@@ -25,22 +25,13 @@ Null implementation of the program bindings interface.
 #include <Methane/Graphics/Null/Program.h>
 #include <Methane/Graphics/Null/Device.h>
 
-
-namespace Methane::Graphics::Rhi
+namespace Methane::Graphics::Null
 {
 
-Ptr<IProgramBindings> IProgramBindings::Create(IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
-{
-    META_FUNCTION_TASK();
-    auto program_bindings_ptr = std::make_shared<Null::ProgramBindings>(static_cast<Null::Program&>(program), resource_views_by_argument, frame_index);
-    return program_bindings_ptr;
-}
-
-Ptr<IProgramBindings> IProgramBindings::CreateCopy(const IProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index)
+Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    auto program_bindings_ptr = std::make_shared<Null::ProgramBindings>(static_cast<const Null::ProgramBindings&>(other_program_bindings), replace_resource_view_by_argument, frame_index);
-    return program_bindings_ptr;
+    return std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);
 }
 
-} // namespace Methane::Graphics::Rhi
+} // namespace Methane::Graphics::Null

@@ -41,7 +41,7 @@ struct IParallelRenderCommandList
 
     // Create IParallelRenderCommandList instance
     [[nodiscard]] static Ptr<IParallelRenderCommandList> Create(ICommandQueue& command_queue, IRenderPass& render_pass);
-    
+
     // IParallelRenderCommandList interface
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;
     virtual void SetValidationEnabled(bool is_validation_enabled) = 0;

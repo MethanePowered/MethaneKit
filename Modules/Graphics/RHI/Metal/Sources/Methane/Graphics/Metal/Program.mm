@@ -22,26 +22,16 @@ Metal implementation of the program interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/Program.hh>
+#include <Methane/Graphics/Metal/ProgramBindings.hh>
 #include <Methane/Graphics/Metal/Shader.hh>
 #include <Methane/Graphics/Metal/IContext.h>
 #include <Methane/Graphics/Metal/Device.hh>
 #include <Methane/Graphics/Metal/Types.hh>
-
 #include <Methane/Graphics/Base/Context.h>
+
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
-
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::Program>(dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {
@@ -90,6 +80,11 @@ Program::Program(const Base::Context& context, const Settings& settings)
         SetNativeShaderArguments(Rhi::ShaderType::Pixel,  mtl_render_pipeline_reflection.fragmentArguments);
         InitArgumentBindings(settings.argument_accessors);
     }
+}
+
+Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+{
+    return std::make_shared<Metal::ProgramBindings>(*this, resource_views_by_argument, frame_index);
 }
 
 const IContext& Program::GetMetalContext() const noexcept

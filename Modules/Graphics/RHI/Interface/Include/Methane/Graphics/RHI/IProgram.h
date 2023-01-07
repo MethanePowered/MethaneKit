@@ -26,6 +26,7 @@ pipeline via state object and used to create resource binding objects.
 
 #include "IShader.h"
 #include "IObject.h"
+#include "ResourceView.h"
 
 #include <Methane/Memory.hpp>
 #include <Methane/Data/EnumMask.hpp>
@@ -35,6 +36,7 @@ pipeline via state object and used to create resource binding objects.
 #include <string>
 #include <string_view>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace Methane::Graphics::Rhi
 {
@@ -143,6 +145,7 @@ struct ProgramSettings
 };
 
 struct IContext;
+struct IProgramBindings;
 
 struct IProgram
     : virtual IObject // NOSONAR
@@ -155,6 +158,7 @@ struct IProgram
     using Arguments = ProgramArguments;
     using ArgumentAccessor = ProgramArgumentAccessor;
     using ArgumentAccessors = ProgramArgumentAccessors;
+    using ResourceViewsByArgument = std::unordered_map<Argument, ResourceViews, Argument::Hash>;
 
     static ArgumentAccessors::const_iterator FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const Argument& argument);
 
@@ -162,10 +166,11 @@ struct IProgram
     [[nodiscard]] static Ptr<IProgram> Create(const IContext& context, const Settings& settings);
 
     // IProgram interface
-    [[nodiscard]] virtual const Settings&      GetSettings() const noexcept = 0;
-    [[nodiscard]] virtual const ShaderTypes&   GetShaderTypes() const noexcept = 0;
-    [[nodiscard]] virtual const Ptr<IShader>&  GetShader(ShaderType shader_type) const = 0;
-    [[nodiscard]] virtual Data::Size           GetBindingsCount() const noexcept = 0;
+    [[nodiscard]] virtual Ptr<IProgramBindings> CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U) = 0;
+    [[nodiscard]] virtual const Settings&       GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual const ShaderTypes&    GetShaderTypes() const noexcept = 0;
+    [[nodiscard]] virtual const Ptr<IShader>&   GetShader(ShaderType shader_type) const = 0;
+    [[nodiscard]] virtual Data::Size            GetBindingsCount() const noexcept = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

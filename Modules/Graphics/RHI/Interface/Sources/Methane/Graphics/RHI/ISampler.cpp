@@ -22,6 +22,7 @@ Methane sampler interface: GPU resource for texture sampling.
 ******************************************************************************/
 
 #include <Methane/Graphics/RHI/ISampler.h>
+#include <Methane/Graphics/RHI/IContext.h>
 
 #include <Methane/Instrumentation.h>
 
@@ -47,6 +48,12 @@ SamplerLevelOfDetail::SamplerLevelOfDetail(float bias, float min, float max)
     , bias(bias)
 {
     META_FUNCTION_TASK();
+}
+
+Ptr<ISampler> ISampler::Create(const IContext& context, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    return context.CreateSampler(settings);
 }
 
 } // namespace Methane::Graphics::Rhi

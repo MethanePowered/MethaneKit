@@ -53,6 +53,11 @@ public:
     ~CommandQueue() override;
 
     // ICommandQueue interface
+    [[nodiscard]] Ptr<Rhi::IFence>                     CreateFence() override;
+    [[nodiscard]] Ptr<Rhi::ITransferCommandList>       CreateTransferCommandList() override;
+    [[nodiscard]] Ptr<Rhi::IRenderCommandList>         CreateRenderCommandList(Rhi::IRenderPass& render_pass) override;
+    [[nodiscard]] Ptr<Rhi::IParallelRenderCommandList> CreateParallelRenderCommandList(Rhi::IRenderPass& render_pass) override;
+    [[nodiscard]] Ptr<Rhi::ITimestampQueryPool>        CreateTimestampQueryPool(uint32_t max_timestamps_per_frame) override;
     uint32_t GetFamilyIndex() const noexcept override { return m_queue_family_index; }
     void Execute(Rhi::ICommandListSet& command_list_set, const Rhi::ICommandList::CompletedCallback& completed_callback = {}) override;
 

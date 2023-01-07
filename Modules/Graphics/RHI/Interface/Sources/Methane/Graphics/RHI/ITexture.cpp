@@ -127,4 +127,10 @@ TextureSettings TextureSettings::ForDepthStencil(const RenderContextSettings& re
                            render_context_settings.clear_depth_stencil);
 }
 
+Ptr<ITexture> ITexture::Create(const IContext& context, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    return context.CreateTexture(settings);
+}
+
 } // namespace Methane::Graphics::Rhi

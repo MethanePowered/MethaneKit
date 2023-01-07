@@ -24,6 +24,14 @@ DirectX 12 implementation of the render context interface.
 #include <Methane/Graphics/DirectX/RenderContext.h>
 #include <Methane/Graphics/DirectX/Device.h>
 #include <Methane/Graphics/DirectX/CommandQueue.h>
+#include <Methane/Graphics/DirectX/Shader.h>
+#include <Methane/Graphics/DirectX/Program.h>
+#include <Methane/Graphics/DirectX/RenderPass.h>
+#include <Methane/Graphics/DirectX/RenderState.h>
+#include <Methane/Graphics/DirectX/RenderPattern.h>
+#include <Methane/Graphics/DirectX/Buffer.h>
+#include <Methane/Graphics/DirectX/Texture.h>
+#include <Methane/Graphics/DirectX/Sampler.h>
 #include <Methane/Graphics/DirectX/Types.h>
 
 #include <Methane/Graphics/DirectX/ErrorHandling.h>
@@ -31,21 +39,6 @@ DirectX 12 implementation of the render context interface.
 #include <Methane/Checks.hpp>
 
 #include <nowide/convert.hpp>
-
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IRenderContext> Rhi::IRenderContext::Create(const Platform::AppEnvironment& env, Rhi::IDevice& device,
-                                           tf::Executor& parallel_executor, const RenderContextSettings& settings)
-{
-    META_FUNCTION_TASK();
-    auto& device_base = static_cast<Base::Device&>(device);
-    const auto render_context_ptr = std::make_shared<DirectX::RenderContext>(env, device_base, parallel_executor, settings);
-    render_context_ptr->Initialize(device_base, true);
-    return render_context_ptr;
-}
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
 {
@@ -76,6 +69,55 @@ RenderContext::RenderContext(const Platform::AppEnvironment& env, Base::Device& 
 RenderContext::~RenderContext()
 {
     META_FUNCTION_TASK();
+}
+
+
+Ptr<Rhi::ICommandQueue> RenderContext::CreateCommandQueue(Rhi::CommandListType type) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<CommandQueue>(*this, type);
+}
+
+Ptr<Rhi::IShader> RenderContext::CreateShader(Rhi::ShaderType type, const Rhi::ShaderSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Shader>(type, *this, settings);
+}
+
+Ptr<Rhi::IProgram> RenderContext::CreateProgram(const Rhi::ProgramSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Program>(*this, settings);
+}
+
+Ptr<Rhi::IBuffer> RenderContext::CreateBuffer(const Rhi::BufferSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Buffer>(*this, settings);
+}
+
+Ptr<Rhi::ITexture> RenderContext::CreateTexture(const Rhi::TextureSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Texture>(*this, settings);
+}
+
+Ptr<Rhi::ISampler> RenderContext::CreateSampler(const Rhi::SamplerSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Sampler>(*this, settings);
+}
+
+Ptr<Rhi::IRenderState> RenderContext::CreateRenderState(const Rhi::RenderStateSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderState>(*this, settings);
+}
+
+Ptr<Rhi::IRenderPattern> RenderContext::CreateRenderPattern(const Rhi::RenderPatternSettings& settings)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderPattern>(*this, settings);
 }
 
 void RenderContext::WaitForGpu(WaitFor wait_for)

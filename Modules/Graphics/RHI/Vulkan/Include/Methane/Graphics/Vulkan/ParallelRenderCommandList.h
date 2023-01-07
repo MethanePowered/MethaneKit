@@ -63,6 +63,10 @@ public:
     CommandQueue& GetVulkanCommandQueue() noexcept;
     RenderPass& GetVulkanPass() noexcept;
 
+protected:
+    // ParallelRenderCommandListBase interface
+    [[nodiscard]] Ptr<Rhi::IRenderCommandList> CreateCommandList(bool is_beginning_list) override;
+
 private:
     using SyncCommandList = Vulkan::CommandList<Base::CommandList, vk::PipelineBindPoint::eGraphics>;
 

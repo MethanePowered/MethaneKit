@@ -38,23 +38,6 @@ DirectX 12 implementation of the render command list interface.
 #include <magic_enum.hpp>
 #include <directx/d3dx12.h>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& cmd_queue, IRenderPass& render_pass)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::RenderCommandList>(static_cast<Base::CommandQueue&>(cmd_queue), static_cast<Base::RenderPass&>(render_pass));
-}
-
-Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& parallel_render_command_list)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::RenderCommandList>(static_cast<Base::ParallelRenderCommandList&>(parallel_render_command_list));
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Base
 {
 

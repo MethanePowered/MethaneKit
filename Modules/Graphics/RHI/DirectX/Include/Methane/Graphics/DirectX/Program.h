@@ -49,6 +49,9 @@ public:
     Program(const Base::Context& context, const Settings& settings);
     ~Program() override;
 
+    // IProgram interface
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index) override;
+
     // IObject interface
     bool SetName(std::string_view name) override;
 

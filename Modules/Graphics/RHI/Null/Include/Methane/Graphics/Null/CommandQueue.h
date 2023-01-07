@@ -28,6 +28,8 @@ Null implementation of the command queue interface.
 namespace Methane::Graphics::Null
 {
 
+struct IFence;
+
 class CommandQueue final
     : public Base::CommandQueue
 {
@@ -35,6 +37,11 @@ public:
     using Base::CommandQueue::CommandQueue;
 
     // ICommandQueue interface
+    [[nodiscard]] Ptr<Rhi::IFence>                     CreateFence() override;
+    [[nodiscard]] Ptr<Rhi::ITransferCommandList>       CreateTransferCommandList() override;
+    [[nodiscard]] Ptr<Rhi::IRenderCommandList>         CreateRenderCommandList(Rhi::IRenderPass& render_pass) override;
+    [[nodiscard]] Ptr<Rhi::IParallelRenderCommandList> CreateParallelRenderCommandList(Rhi::IRenderPass& render_pass) override;
+    [[nodiscard]] Ptr<Rhi::ITimestampQueryPool>        CreateTimestampQueryPool(uint32_t max_timestamps_per_frame) override;
     uint32_t GetFamilyIndex() const noexcept override { return 0U; }
     Rhi::ITimestampQueryPool* GetTimestampQueryPool() const noexcept override { return nullptr; }
 };

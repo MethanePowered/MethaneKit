@@ -23,6 +23,10 @@ Metal implementation of the command queue interface.
 
 #include <Methane/Graphics/Metal/CommandQueue.hh>
 #include <Methane/Graphics/Metal/Device.hh>
+#include <Methane/Graphics/Metal/Fence.hh>
+#include <Methane/Graphics/Metal/TransferCommandList.hh>
+#include <Methane/Graphics/Metal/RenderCommandList.hh>
+#include <Methane/Graphics/Metal/ParallelRenderCommandList.hh>
 #include <Methane/Graphics/Metal/RenderContext.hh>
 
 #include <Methane/Platform/Apple/Types.hh>
@@ -30,17 +34,6 @@ Metal implementation of the command queue interface.
 #include <Methane/Checks.hpp>
 
 #include <QuartzCore/CABase.h>
-
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::CommandQueue>(dynamic_cast<const Base::Context&>(context), command_lists_type);
-}
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {
@@ -57,6 +50,36 @@ CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType co
             Data::ConvertTimeSecondsToNanoseconds(CACurrentMediaTime())
         )
     );
+}
+
+Ptr<Rhi::IFence> CommandQueue::CreateFence()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Fence>(*this);
+}
+
+Ptr<Rhi::ITransferCommandList> CommandQueue::CreateTransferCommandList()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<TransferCommandList>(*this);
+}
+
+Ptr<Rhi::IRenderCommandList> CommandQueue::CreateRenderCommandList(Rhi::IRenderPass& render_pass)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderCommandList>(*this, dynamic_cast<Base::RenderPass&>(render_pass));
+}
+
+Ptr<Rhi::IParallelRenderCommandList> CommandQueue::CreateParallelRenderCommandList(Rhi::IRenderPass& render_pass)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ParallelRenderCommandList>(*this, dynamic_cast<Base::RenderPass&>(render_pass));
+}
+
+Ptr<Rhi::ITimestampQueryPool> CommandQueue::CreateTimestampQueryPool(uint32_t)
+{
+    META_FUNCTION_TASK();
+    return nullptr;
 }
 
 bool CommandQueue::SetName(std::string_view name)

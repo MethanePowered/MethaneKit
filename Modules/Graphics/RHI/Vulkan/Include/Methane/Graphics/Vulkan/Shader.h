@@ -52,6 +52,7 @@ class Shader final
 {
 public:
     Shader(Type shader_type, const Base::Context& context, const Settings& settings);
+    ~Shader() override;
 
     // Base::Shader interface
     Ptrs<Base::ProgramArgumentBinding> GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const override;

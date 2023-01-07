@@ -16,19 +16,23 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Null/RenderState.cpp
-Null implementation of the render state interface.
+FILE: Methane/Graphics/RHI/IRenderCommandList.cpp
+Methane render command list interface.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Null/RenderState.h>
+#include <Methane/Graphics/RHI/IRenderCommandList.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
+
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IRenderState> Rhi::IRenderState::Create(const Rhi::IRenderContext& context, const Rhi::IRenderState::Settings& state_settings)
+Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& command_queue, IRenderPass& render_pass)
 {
-    return std::make_shared<Null::RenderState>(dynamic_cast<const Base::RenderContext&>(context), state_settings);
+    META_FUNCTION_TASK();
+    return command_queue.CreateRenderCommandList(render_pass);
 }
 
 } // namespace Methane::Graphics::Rhi

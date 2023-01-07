@@ -22,6 +22,7 @@ Methane render pass interface: specifies output texture views of the render patt
 ******************************************************************************/
 
 #include <Methane/Graphics/RHI/IRenderPass.h>
+#include <Methane/Graphics/RHI/IRenderPattern.h>
 
 #include <Methane/Instrumentation.h>
 
@@ -40,6 +41,12 @@ bool RenderPassSettings::operator!=(const RenderPassSettings& other) const
     META_FUNCTION_TASK();
     return std::tie(attachments, frame_size) !=
            std::tie(other.attachments, other.frame_size);
+}
+
+Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    return render_pattern.CreateRenderPass(settings);
 }
 
 } // namespace Methane::Graphics::Rhi

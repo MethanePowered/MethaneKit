@@ -56,6 +56,10 @@ public:
     using D3D12CommandLists = std::vector<ID3D12CommandList*>;
     D3D12CommandLists GetNativeCommandLists() const;
 
+protected:
+    // ParallelRenderCommandListBase interface
+    [[nodiscard]] Ptr<Rhi::IRenderCommandList> CreateCommandList(bool is_beginning_list) override;
+
 private:
     CommandQueue& GetDirectCommandQueue();
     RenderPass&   GetDirectPass();

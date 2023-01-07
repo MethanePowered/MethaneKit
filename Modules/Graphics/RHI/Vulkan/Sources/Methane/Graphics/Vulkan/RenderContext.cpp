@@ -24,8 +24,15 @@ Vulkan implementation of the render context interface.
 #include <Methane/Graphics/Vulkan/RenderContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/System.h>
-#include <Methane/Graphics/Vulkan/RenderState.h>
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
+#include <Methane/Graphics/Vulkan/Shader.h>
+#include <Methane/Graphics/Vulkan/Program.h>
+#include <Methane/Graphics/Vulkan/RenderPass.h>
+#include <Methane/Graphics/Vulkan/RenderState.h>
+#include <Methane/Graphics/Vulkan/RenderPattern.h>
+#include <Methane/Graphics/Vulkan/Buffer.h>
+#include <Methane/Graphics/Vulkan/Texture.h>
+#include <Methane/Graphics/Vulkan/Sampler.h>
 #include <Methane/Graphics/Vulkan/ICommandList.h>
 #include <Methane/Graphics/Vulkan/Platform.h>
 #include <Methane/Graphics/Vulkan/Types.h>
@@ -36,21 +43,6 @@ Vulkan implementation of the render context interface.
 #include <fmt/format.h>
 #include <magic_enum.hpp>
 #include <sstream>
-
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, IDevice& device,
-                                           tf::Executor& parallel_executor, const RenderContextSettings& settings)
-{
-    META_FUNCTION_TASK();
-    auto& device_vk = static_cast<Vulkan::Device&>(device);
-    const auto render_context_ptr = std::make_shared<Vulkan::RenderContext>(env, device_vk, parallel_executor, settings);
-    render_context_ptr->Initialize(device_vk, true);
-    return render_context_ptr;
-}
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
@@ -81,6 +73,59 @@ RenderContext::~RenderContext()
         META_LOG("WARNING: Unexpected error during Query destruction: {}", e.what());
         assert(false);
     }
+}
+
+Ptr<Rhi::ICommandQueue> RenderContext::CreateCommandQueue(Rhi::CommandListType type) const
+{
+    META_FUNCTION_TASK();
+    auto command_queue_ptr = std::make_shared<CommandQueue>(*this, type);
+#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
+    // Base::TimestampQueryPool construction uses command queue and requires it to be fully constructed
+    command_queue_ptr->InitializeTimestampQueryPool();
+#endif
+    return command_queue_ptr;
+}
+
+Ptr<Rhi::IShader> RenderContext::CreateShader(Rhi::ShaderType type, const Rhi::ShaderSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Shader>(type, *this, settings);
+}
+
+Ptr<Rhi::IProgram> RenderContext::CreateProgram(const Rhi::ProgramSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Program>(*this, settings);
+}
+
+Ptr<Rhi::IBuffer> RenderContext::CreateBuffer(const Rhi::BufferSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Buffer>(*this, settings);
+}
+
+Ptr<Rhi::ITexture> RenderContext::CreateTexture(const Rhi::TextureSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Texture>(*this, settings);
+}
+
+Ptr<Rhi::ISampler> RenderContext::CreateSampler(const Rhi::SamplerSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Sampler>(*this, settings);
+}
+
+Ptr<Rhi::IRenderState> RenderContext::CreateRenderState(const Rhi::RenderStateSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderState>(*this, settings);
+}
+
+Ptr<Rhi::IRenderPattern> RenderContext::CreateRenderPattern(const Rhi::RenderPatternSettings& settings)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderPattern>(*this, settings);
 }
 
 void RenderContext::Release()

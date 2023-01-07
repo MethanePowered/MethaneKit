@@ -16,20 +16,30 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Null/RenderPass.cpp
-Null implementation of the render pass interface.
+FILE: Methane/Graphics/RHI/ICommandKit.cpp
+Methane command-kit interface.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Null/RenderPass.h>
-#include <Methane/Graphics/Null/RenderPattern.h>
+#include <Methane/Graphics/RHI/ICommandKit.h>
+#include <Methane/Graphics/RHI/IContext.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
+
+#include <Methane/Instrumentation.h>
 
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IRenderPass> IRenderPass::Create(IRenderPattern& render_pattern, const Settings& settings)
+Ptr<ICommandKit> ICommandKit::Create(const IContext& context, CommandListType command_lists_type)
 {
-    return std::make_shared<Null::RenderPass>(dynamic_cast<Null::RenderPattern&>(render_pattern), settings);
+    META_FUNCTION_TASK();
+    return context.CreateCommandKit(command_lists_type);
+}
+
+Ptr<ICommandKit> ICommandKit::Create(ICommandQueue& cmd_queue)
+{
+    META_FUNCTION_TASK();
+    return cmd_queue.CreateCommandKit();
 }
 
 } // namespace Methane::Graphics::Rhi

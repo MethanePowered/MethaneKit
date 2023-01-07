@@ -24,22 +24,12 @@ Vulkan implementation of the render pattern interface.
 #include <Methane/Graphics/Vulkan/RenderPattern.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/RenderContext.h>
+#include <Methane/Graphics/Vulkan/RenderPass.h>
 #include <Methane/Graphics/Vulkan/Types.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
-
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IRenderPattern> Rhi::IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::RenderPattern>(dynamic_cast<Vulkan::RenderContext&>(render_context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
@@ -209,6 +199,11 @@ RenderPattern::RenderPattern(RenderContext& render_context, const Settings& sett
             )
         );
     }
+}
+
+Ptr<Rhi::IRenderPass> RenderPattern::CreateRenderPass(const Rhi::RenderPassSettings& settings)
+{
+    return std::make_shared<RenderPass>(*this, settings);
 }
 
 bool RenderPattern::SetName(std::string_view name)

@@ -34,24 +34,6 @@ Vulkan implementation of the render command list interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IRenderCommandList> IRenderCommandList::Create(ICommandQueue& command_queue, Rhi::IRenderPass& render_pass)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::RenderCommandList>(static_cast<Vulkan::CommandQueue&>(command_queue),
-                                                       static_cast<Vulkan::RenderPass&>(render_pass));
-}
-
-Ptr<IRenderCommandList> IRenderCommandList::Create(IParallelRenderCommandList& parallel_render_command_list)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::RenderCommandList>(static_cast<Vulkan::ParallelRenderCommandList&>(parallel_render_command_list), false);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Base
 {
 

@@ -31,23 +31,6 @@ Metal implementation of the program bindings interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IProgramBindings> IProgramBindings::Create(IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::ProgramBindings>(static_cast<Metal::Program&>(program), resource_views_by_argument, frame_index);
-}
-
-Ptr<IProgramBindings> IProgramBindings::CreateCopy(const IProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::ProgramBindings>(static_cast<const Metal::ProgramBindings&>(other_program_bindings), replace_resource_views_by_argument, frame_index);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Metal
 {
 
@@ -190,6 +173,12 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, 
     : Base::ProgramBindings(other_program_bindings, replace_resource_views_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
+}
+
+Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);
 }
 
 void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const

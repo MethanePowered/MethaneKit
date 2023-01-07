@@ -43,17 +43,6 @@ DirectX 12 implementation of the render state interface.
 
 #include <algorithm>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IRenderState> Rhi::IRenderState::Create(const Rhi::IRenderContext& context, const Rhi::IRenderState::Settings& state_settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::RenderState>(dynamic_cast<const Base::RenderContext&>(context), state_settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::DirectX
 {
 

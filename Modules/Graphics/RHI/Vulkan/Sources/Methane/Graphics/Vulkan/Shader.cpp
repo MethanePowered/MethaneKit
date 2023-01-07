@@ -34,17 +34,6 @@ Vulkan implementation of the shader interface.
 #include <spirv_cross.hpp>
 #include <spirv_hlsl.hpp>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IShader> IShader::Create(Rhi::ShaderType shader_type, const Rhi::IContext& context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::Shader>(shader_type, dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Vulkan
 {
 
@@ -216,6 +205,8 @@ Shader::Shader(Rhi::ShaderType shader_type, const Base::Context& context, const 
 {
     META_FUNCTION_TASK();
 }
+
+Shader::~Shader() = default;
 
 Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
 {

@@ -33,7 +33,8 @@ namespace Methane::Graphics::Metal
 struct IContext;
 class RenderPattern;
 
-class RenderPass final : public Base::RenderPass
+class RenderPass final
+    : public Base::RenderPass
 {
 public:
     RenderPass(RenderPattern& render_pattern, const Settings& settings);

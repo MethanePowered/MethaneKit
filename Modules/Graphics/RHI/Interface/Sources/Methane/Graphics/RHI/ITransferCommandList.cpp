@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2022 Evgeny Gorodetskiy
+Copyright 2023 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,40 +16,23 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/IShader.cpp
-Methane shader interface: defines programmable stage of the graphics pipeline.
+FILE: Methane/Graphics/RHI/ITransferCommandList.cpp
+Methane transfer command list interface.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/RHI/IShader.h>
-#include <Methane/Graphics/RHI/IContext.h>
+#include <Methane/Graphics/RHI/ITransferCommandList.h>
+#include <Methane/Graphics/RHI/ICommandQueue.h>
 
 #include <Methane/Instrumentation.h>
-
-#include <sstream>
 
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IShader> IShader::Create(Type type, const IContext& context, const Settings& settings)
-{
-    return context.CreateShader(type, settings);
-}
-
-std::string IShader::ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, std::string_view splitter) noexcept
+Ptr<ITransferCommandList> ITransferCommandList::Create(ICommandQueue& command_queue)
 {
     META_FUNCTION_TASK();
-    std::stringstream ss;
-    bool is_first_defintion = true;
-    for(const MacroDefinition& macro_definition : macro_definitions)
-    {
-        if (!is_first_defintion)
-            ss << splitter;
-
-        ss << macro_definition.name << "=" << macro_definition.value;
-        is_first_defintion = false;
-    }
-    return ss.str();
+    return command_queue.CreateTransferCommandList();
 }
 
 } // namespace Methane::Graphics::Rhi

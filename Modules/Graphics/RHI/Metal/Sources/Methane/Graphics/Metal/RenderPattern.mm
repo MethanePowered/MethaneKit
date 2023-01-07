@@ -22,17 +22,17 @@ Metal implementation of the render pattern interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/RenderPattern.hh>
+#include <Methane/Graphics/Metal/RenderPass.hh>
 #include <Methane/Graphics/Base/RenderContext.h>
 
 #include <Methane/Instrumentation.h>
 
-namespace Methane::Graphics::Rhi
+namespace Methane::Graphics::Metal
 {
 
-Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
+Ptr<Rhi::IRenderPass> RenderPattern::CreateRenderPass(const Rhi::RenderPassSettings& settings)
 {
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::RenderPattern>(dynamic_cast<Base::RenderContext&>(render_context), settings);
+    return std::make_shared<RenderPass>(*this, settings);
 }
 
-} // namespace Methane::Graphics::Rhi
+} // namespace Methane::Graphics::Metal

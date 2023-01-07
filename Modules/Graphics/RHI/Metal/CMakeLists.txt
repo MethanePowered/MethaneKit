@@ -52,7 +52,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderState.mm
     ${SOURCES_DIR}/ViewState.mm
     ${SOURCES_DIR}/Resource.mm
-    ${SOURCES_DIR}/QueryPool.mm
     ${SOURCES_DIR}/Buffer.mm
     ${SOURCES_DIR}/BufferSet.mm
     ${SOURCES_DIR}/Texture.mm

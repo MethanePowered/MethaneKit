@@ -94,8 +94,6 @@ struct IShader
 
     // Create IShader instance
     [[nodiscard]] static Ptr<IShader> Create(Type type, const IContext& context, const Settings& settings);
-    [[nodiscard]] static Ptr<IShader> CreateVertex(const IContext& context, const Settings& settings) { return Create(Type::Vertex, context, settings); }
-    [[nodiscard]] static Ptr<IShader> CreatePixel(const IContext& context, const Settings& settings)  { return Create(Type::Pixel, context, settings); }
 
     // Auxiliary functions
     [[nodiscard]] static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, std::string_view splitter = ", ") noexcept;

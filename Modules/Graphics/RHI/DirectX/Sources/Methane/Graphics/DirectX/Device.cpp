@@ -1,3 +1,4 @@
+
 /******************************************************************************
 
 Copyright 2019-2020 Evgeny Gorodetskiy
@@ -22,8 +23,9 @@ DirectX 12 implementation of the device interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/DirectX/Device.h>
-
+#include <Methane/Graphics/DirectX/RenderContext.h>
 #include <Methane/Graphics/DirectX/ErrorHandling.h>
+
 #include <Methane/Platform/Windows/Utils.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -109,6 +111,14 @@ Device::Device(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL fe
     , m_feature_level(feature_level)
 {
     META_FUNCTION_TASK();
+}
+
+Ptr<Rhi::IRenderContext> Device::CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
+{
+    META_FUNCTION_TASK();
+    auto render_context_ptr = std::make_shared<RenderContext>(env, *this, parallel_executor, settings);
+    render_context_ptr->Initialize(*this, true);
+    return render_context_ptr;
 }
 
 bool Device::SetName(std::string_view name)

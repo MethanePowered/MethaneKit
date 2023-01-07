@@ -37,17 +37,6 @@ DirectX 12 implementation of the render pass interface.
 
 #include <directx/d3dx12.h>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IRenderPass> Rhi::IRenderPass::Create(IPattern& render_pattern, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::RenderPass>(dynamic_cast<Base::RenderPattern&>(render_pattern), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::DirectX
 {
 

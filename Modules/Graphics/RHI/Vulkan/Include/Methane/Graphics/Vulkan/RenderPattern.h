@@ -38,6 +38,9 @@ class RenderPattern
 public:
     RenderPattern(RenderContext& render_context, const Settings& settings);
 
+    // IRenderPattern interface
+    [[nodiscard]] Ptr<Rhi::IRenderPass> CreateRenderPass(const Rhi::RenderPassSettings& settings) override;
+
     // Base::Object overrides
     bool SetName(std::string_view name) override;
 

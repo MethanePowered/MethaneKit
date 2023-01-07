@@ -22,6 +22,7 @@ Methane render state interface: specifies configuration of the graphics pipeline
 ******************************************************************************/
 
 #include <Methane/Graphics/RHI/IRenderState.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 
 #include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
@@ -230,6 +231,12 @@ RenderStateSettings::operator std::string() const
                        static_cast<std::string>(stencil),
                        static_cast<std::string>(blending),
                        static_cast<std::string>(blending_color));
+}
+
+Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const Settings& state_settings)
+{
+    META_FUNCTION_TASK();
+    return context.CreateRenderState(state_settings);
 }
 
 } // namespace Methane::Graphics::Rhi

@@ -33,6 +33,9 @@ class Device final
 {
 public:
     using Base::Device::Device;
+
+    // IDevice interface
+    [[nodiscard]] Ptr<Rhi::IRenderContext> CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings) override;
 };
 
 } // namespace Methane::Graphics::Null

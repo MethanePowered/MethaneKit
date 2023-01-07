@@ -24,16 +24,6 @@ Null implementation of the transfer command list interface.
 #include <Methane/Graphics/Null/TransferCommandList.h>
 #include <Methane/Graphics/Null/CommandQueue.h>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<ITransferCommandList> Rhi::ITransferCommandList::Create(ICommandQueue& command_queue)
-{
-    return std::make_shared<Null::TransferCommandList>(static_cast<Null::CommandQueue&>(command_queue));
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Null
 {
 

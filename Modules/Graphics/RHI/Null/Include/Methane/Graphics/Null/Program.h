@@ -33,6 +33,9 @@ class Program final
 {
 public:
     using Base::Program::Program;
+
+    // IProgram interface
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index) override;
 };
 
 } // namespace Methane::Graphics::Null

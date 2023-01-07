@@ -23,6 +23,11 @@ Vulkan implementation of the command queue interface.
 
 #include <Methane/Graphics/Vulkan/CommandQueue.h>
 #include <Methane/Graphics/Vulkan/CommandListSet.h>
+#include <Methane/Graphics/Vulkan/Fence.h>
+#include <Methane/Graphics/Vulkan/TransferCommandList.h>
+#include <Methane/Graphics/Vulkan/RenderCommandList.h>
+#include <Methane/Graphics/Vulkan/ParallelRenderCommandList.h>
+#include <Methane/Graphics/Vulkan/QueryPool.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>
@@ -31,22 +36,6 @@ Vulkan implementation of the command queue interface.
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
-
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<ICommandQueue> ICommandQueue::Create(const IContext& context, CommandListType command_lists_type)
-{
-    META_FUNCTION_TASK();
-    auto command_queue_ptr = std::make_shared<Vulkan::CommandQueue>(dynamic_cast<const Base::Context&>(context), command_lists_type);
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    // Base::TimestampQueryPool construction uses command queue and requires it to be fully constructed
-    command_queue_ptr->InitializeTimestampQueryPool();
-#endif
-    return command_queue_ptr;
-}
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
@@ -149,6 +138,36 @@ CommandQueue::~CommandQueue()
     META_FUNCTION_TASK();
     ShutdownQueueExecution();
     GetVulkanDevice().GetQueueFamilyReservation(Base::CommandQueue::GetCommandListType()).ReleaseQueueIndex(m_queue_index);
+}
+
+Ptr<Rhi::IFence> CommandQueue::CreateFence()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Fence>(*this);
+}
+
+Ptr<Rhi::ITransferCommandList> CommandQueue::CreateTransferCommandList()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<TransferCommandList>(*this);
+}
+
+Ptr<Rhi::IRenderCommandList> CommandQueue::CreateRenderCommandList(Rhi::IRenderPass& render_pass)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderCommandList>(*this, dynamic_cast<RenderPass&>(render_pass));
+}
+
+Ptr<Rhi::IParallelRenderCommandList> CommandQueue::CreateParallelRenderCommandList(Rhi::IRenderPass& render_pass)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ParallelRenderCommandList>(*this, dynamic_cast<RenderPass&>(render_pass));
+}
+
+Ptr<Rhi::ITimestampQueryPool> CommandQueue::CreateTimestampQueryPool(uint32_t max_timestamps_per_frame)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<TimestampQueryPool>(*this, max_timestamps_per_frame);
 }
 
 void CommandQueue::Execute(Rhi::ICommandListSet& command_list_set, const Rhi::ICommandList::CompletedCallback& completed_callback)

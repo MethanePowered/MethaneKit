@@ -22,8 +22,15 @@ Metal implementation of the render context interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/RenderContext.hh>
-#include <Methane/Graphics/Metal/RenderPass.hh>
 #include <Methane/Graphics/Metal/CommandQueue.hh>
+#include <Methane/Graphics/Metal/Shader.hh>
+#include <Methane/Graphics/Metal/Program.hh>
+#include <Methane/Graphics/Metal/RenderPass.hh>
+#include <Methane/Graphics/Metal/RenderState.hh>
+#include <Methane/Graphics/Metal/RenderPattern.hh>
+#include <Methane/Graphics/Metal/Buffer.hh>
+#include <Methane/Graphics/Metal/Texture.hh>
+#include <Methane/Graphics/Metal/Sampler.hh>
 #include <Methane/Graphics/Metal/Types.hh>
 #include <Methane/Graphics/Metal/RenderContextAppView.hh>
 
@@ -38,20 +45,6 @@ Metal implementation of the render context interface.
 
 // Enables automatic capture of all initialization commands before the first frame rendering
 //#define CAPTURE_INITIALIZATION_SCOPE
-
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const RenderContextSettings& settings)
-{
-    META_FUNCTION_TASK();
-    Base::Device& device_base = static_cast<Base::Device&>(device);
-    auto render_context_ptr = std::make_shared<Metal::RenderContext>(env, device_base, parallel_executor, settings);
-    render_context_ptr->Initialize(device_base, true);
-    return render_context_ptr;
-}
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Metal
 {
@@ -87,6 +80,54 @@ RenderContext::~RenderContext()
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
     dispatch_release(m_dispatch_semaphore);
 #endif
+}
+
+Ptr<Rhi::ICommandQueue> RenderContext::CreateCommandQueue(Rhi::CommandListType type) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<CommandQueue>(*this, type);
+}
+
+Ptr<Rhi::IShader> RenderContext::CreateShader(Rhi::ShaderType type, const Rhi::ShaderSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Shader>(type, *this, settings);
+}
+
+Ptr<Rhi::IProgram> RenderContext::CreateProgram(const Rhi::ProgramSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Program>(*this, settings);
+}
+
+Ptr<Rhi::IBuffer> RenderContext::CreateBuffer(const Rhi::BufferSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Buffer>(*this, settings);
+}
+
+Ptr<Rhi::ITexture> RenderContext::CreateTexture(const Rhi::TextureSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Texture>(*this, settings);
+}
+
+Ptr<Rhi::ISampler> RenderContext::CreateSampler(const Rhi::SamplerSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<Sampler>(*this, settings);
+}
+
+Ptr<Rhi::IRenderState> RenderContext::CreateRenderState(const Rhi::RenderStateSettings& settings) const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderState>(*this, settings);
+}
+
+Ptr<Rhi::IRenderPattern> RenderContext::CreateRenderPattern(const Rhi::RenderPatternSettings& settings)
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<RenderPattern>(*this, settings);
 }
 
 void RenderContext::Release()

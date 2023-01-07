@@ -35,14 +35,13 @@ list(APPEND HEADERS
 )
 
 list(APPEND SOURCES
+    ${SOURCES_DIR}/Device.cpp
     ${SOURCES_DIR}/System.cpp
-    ${SOURCES_DIR}/Fence.cpp
     ${SOURCES_DIR}/Shader.cpp
     ${SOURCES_DIR}/Program.cpp
     ${SOURCES_DIR}/ProgramArgumentBinding.cpp
     ${SOURCES_DIR}/ProgramBindings.cpp
     ${SOURCES_DIR}/RenderContext.cpp
-    ${SOURCES_DIR}/RenderState.cpp
     ${SOURCES_DIR}/ViewState.cpp
     ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/Buffer.cpp
@@ -50,7 +49,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/Texture.cpp
     ${SOURCES_DIR}/Sampler.cpp
     ${SOURCES_DIR}/RenderPattern.cpp
-    ${SOURCES_DIR}/RenderPass.cpp
     ${SOURCES_DIR}/CommandQueue.cpp
     ${SOURCES_DIR}/CommandListSet.cpp
     ${SOURCES_DIR}/CommandListDebugGroup.cpp

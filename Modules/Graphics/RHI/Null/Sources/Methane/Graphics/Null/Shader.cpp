@@ -25,16 +25,6 @@ Null implementation of the shader interface.
 
 #include <Methane/Graphics/Base/Context.h>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IShader> IShader::Create(Rhi::ShaderType shader_type, const Rhi::IContext& context, const Settings& settings)
-{
-    return std::make_shared<Null::Shader>(shader_type, dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Null
 {
 

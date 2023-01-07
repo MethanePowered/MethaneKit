@@ -25,6 +25,7 @@ Vulkan implementation of the device interface.
 
 #include <Methane/Graphics/Base/Device.h>
 #include <Methane/Graphics/RHI/ICommandQueue.h>
+#include <Methane/Platform/AppEnvironment.h>
 #include <Methane/Data/RangeSet.hpp>
 #include <Methane/Memory.hpp>
 
@@ -82,6 +83,9 @@ public:
     static Rhi::DeviceFeatureMask GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device);
 
     Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities);
+
+    // IDevice interface
+    [[nodiscard]] Ptr<Rhi::IRenderContext> CreateRenderContext(const Methane::Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings) override;
 
     // IObject interface
     bool SetName(std::string_view name) override;

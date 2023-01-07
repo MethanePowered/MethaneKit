@@ -28,17 +28,6 @@ Vulkan implementation of the sampler interface.
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<ISampler> ISampler::Create(const IContext& context, const ISampler::Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::Sampler>(dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Vulkan
 {
 

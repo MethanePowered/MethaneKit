@@ -31,17 +31,6 @@ Metal fence implementation.
 #include <Methane/Instrumentation.h>
 #include <Methane/ScopeTimer.h>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IFence> IFence::Create(ICommandQueue& command_queue)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::Fence>(static_cast<Base::CommandQueue&>(command_queue));
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Metal
 {
     

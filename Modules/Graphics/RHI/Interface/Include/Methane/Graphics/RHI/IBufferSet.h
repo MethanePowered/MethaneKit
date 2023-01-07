@@ -32,10 +32,6 @@ struct IBufferSet
     : virtual IObject // NOSONAR
 {
     [[nodiscard]] static Ptr<IBufferSet> Create(BufferType buffers_type, const Refs<IBuffer>& buffer_refs);
-    [[nodiscard]] static Ptr<IBufferSet> CreateVertexBuffers(const Refs<IBuffer>& buffer_refs)
-    {
-        return IBufferSet::Create(BufferType::Vertex, buffer_refs);
-    }
 
     [[nodiscard]] virtual BufferType           GetType() const noexcept = 0;
     [[nodiscard]] virtual Data::Size           GetCount() const noexcept = 0;

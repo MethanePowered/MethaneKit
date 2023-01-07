@@ -34,17 +34,6 @@ Metal implementation of the render state interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IRenderState> IRenderState::Create(const IRenderContext& context, const IRenderState::Settings& state_settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::RenderState>(dynamic_cast<const Base::RenderContext&>(context), state_settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Metal
 {
 

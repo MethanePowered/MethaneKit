@@ -30,17 +30,6 @@ DirectX 12 implementation of the sampler interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<ISampler> ISampler::Create(const IContext& context, const SamplerSettings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::Sampler>(dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::DirectX
 {
 

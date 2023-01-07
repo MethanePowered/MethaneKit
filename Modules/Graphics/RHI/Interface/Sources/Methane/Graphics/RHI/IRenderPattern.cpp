@@ -22,6 +22,7 @@ Methane render pattern interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/RHI/IRenderPattern.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 
 #include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
@@ -186,6 +187,12 @@ RenderPatternSettings::operator std::string() const
                        stencil_attachment ? static_cast<std::string>(*stencil_attachment) : "  - No depth attachment",
                        Data::GetEnumMaskName(shader_access),
                        (is_final_pass ? "final" : "intermediate"));
+}
+
+Ptr<IRenderPattern> IRenderPattern::Create(IRenderContext& render_context, const Settings& settings)
+{
+    META_FUNCTION_TASK();
+    return render_context.CreateRenderPattern(settings);
 }
 
 } // namespace Methane::Graphics::Rhi

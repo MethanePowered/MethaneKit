@@ -22,15 +22,15 @@ Null implementation of the program interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Null/Program.h>
+#include <Methane/Graphics/Null/ProgramBindings.h>
 #include <Methane/Graphics/Base/Context.h>
 
-namespace Methane::Graphics::Rhi
+namespace Methane::Graphics::Null
 {
 
-Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
+Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
-    META_FUNCTION_TASK();
-    return std::make_shared<Null::Program>(dynamic_cast<const Base::Context&>(context), settings);
+    return std::make_shared<ProgramBindings>(*this, resource_views_by_argument, frame_index);
 }
 
-} // namespace Methane::Graphics::Rhi
+} // namespace Methane::Graphics::Null

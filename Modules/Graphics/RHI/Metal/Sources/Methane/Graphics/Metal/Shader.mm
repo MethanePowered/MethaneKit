@@ -39,17 +39,6 @@ Metal implementation of the shader interface.
 
 #include <regex>
 
-namespace Methane::Graphics::Rhi
-{
-
-Ptr<IShader> IShader::Create(Rhi::ShaderType shader_type, const IContext& context, const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::Shader>(shader_type, dynamic_cast<const Base::Context&>(context), settings);
-}
-
-} // namespace Methane::Graphics::Rhi
-
 namespace Methane::Graphics::Metal
 {
 
