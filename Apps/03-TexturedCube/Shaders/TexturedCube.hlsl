@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: MethaneKit/Apps/Tutorials/03-TexturedCube/Shaders/Cube.hlsl
+FILE: MethaneKit/Apps/Tutorials/03-TexturedCube/Shaders/ForCubeImage.hlsl
 Shaders for textured cube rendering with Phong lighting model
 
 ******************************************************************************/

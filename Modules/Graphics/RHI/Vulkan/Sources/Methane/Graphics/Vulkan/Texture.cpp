@@ -42,36 +42,6 @@ Ptr<ITexture> ITexture::Create(const IContext& context, const Settings& settings
     return std::make_shared<Vulkan::Texture>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex frame_index)
-{
-    META_FUNCTION_TASK();
-    const RenderContextSettings& context_settings = context.GetSettings();
-    const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format, frame_index);
-    return std::make_shared<Vulkan::Texture>(dynamic_cast<const Vulkan::RenderContext&>(context), texture_settings, frame_index);
-}
-
-Ptr<ITexture> ITexture::CreateDepthStencil(const IRenderContext& context)
-{
-    META_FUNCTION_TASK();
-    const RenderContextSettings& context_settings = context.GetSettings();
-    const Settings texture_settings = Settings::DepthStencil(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format, context_settings.clear_depth_stencil);
-    return std::make_shared<Vulkan::Texture>(dynamic_cast<const Base::Context&>(context), texture_settings);
-}
-
-Ptr<ITexture> ITexture::CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
-{
-    META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, UsageMask({ Usage::ShaderRead }));
-    return std::make_shared<Vulkan::Texture>(dynamic_cast<const Base::Context&>(context), texture_settings);
-}
-
-Ptr<ITexture> ITexture::CreateCube(const IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
-{
-    META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, UsageMask({ Usage::ShaderRead }));
-    return std::make_shared<Vulkan::Texture>(dynamic_cast<const Base::Context&>(context), texture_settings);
-}
-
 } // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
@@ -211,7 +181,7 @@ static Ptr<ResourceView::ViewDescriptorVariant> CreateNativeImageViewDescriptor(
                                       view_id.subresource_count.GetBaseLayerCount())
         ));
 
-    const std::string view_name = fmt::format("{} Image View for {} usage", texture_name, Data::GetEnumMaskName(view_id.usage));
+    const std::string view_name = fmt::format("{} ForImage View for {} usage", texture_name, Data::GetEnumMaskName(view_id.usage));
     SetVulkanObjectName(vk_device, image_view_desc.vk_view.get(), view_name.c_str());
 
     image_view_desc.vk_desc = vk::DescriptorImageInfo(

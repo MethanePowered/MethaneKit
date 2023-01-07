@@ -97,7 +97,7 @@ public:
             FrameT& frame = m_frames.emplace_back(frame_index);
 
             // Create color texture for frame buffer
-            frame.screen_texture.InitFrameBuffer(render_context, frame.index);
+            frame.screen_texture.Init(render_context, Rhi::TextureSettings::ForFrameBuffer(render_context.GetSettings(), frame.index));
             frame.screen_texture.SetName(IndexedName("Frame Buffer", frame.index));
 
             // Configure render pass: color, depth, stencil attachments and shader access
@@ -129,7 +129,7 @@ public:
         for (FrameT& frame : m_frames)
         {
             ResourceRestoreInfo& frame_restore_info = frame_restore_infos[frame.index];
-            frame.screen_texture.InitFrameBuffer(GetRenderContext(), frame.index);
+            frame.screen_texture.Init(GetRenderContext(), Rhi::TextureSettings::ForFrameBuffer(GetRenderContext().GetSettings(), frame.index));
             frame.screen_texture.RestoreDescriptorViews(frame_restore_info.descriptor_by_view_id);
             frame.screen_texture.SetName(frame_restore_info.name);
             frame.screen_pass.Update({

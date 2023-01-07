@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/CubeMesh.hpp
-Cube mesh generator with customizable vertex type
+ForCubeImage mesh generator with customizable vertex type
 
 ******************************************************************************/
 

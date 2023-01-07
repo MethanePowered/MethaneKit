@@ -57,36 +57,6 @@ Ptr<ITexture> ITexture::Create(const IContext& context, const Settings& settings
     return std::make_shared<DirectX::Texture>(dynamic_cast<const Base::Context&>(context), settings);
 }
 
-Ptr<ITexture> ITexture::CreateFrameBuffer(const IRenderContext& render_context, FrameBufferIndex frame_index)
-{
-    META_FUNCTION_TASK();
-    const RenderContextSettings& context_settings = render_context.GetSettings();
-    const Settings texture_settings = Settings::FrameBuffer(Dimensions(context_settings.frame_size), context_settings.color_format, frame_index);
-    return std::make_shared<DirectX::Texture>(static_cast<const Base::RenderContext&>(render_context), texture_settings);
-}
-
-Ptr<ITexture> ITexture::CreateDepthStencil(const IRenderContext& render_context)
-{
-    META_FUNCTION_TASK();
-    const RenderContextSettings& context_settings = render_context.GetSettings();
-    const Settings texture_settings = Settings::DepthStencil(Dimensions(context_settings.frame_size), context_settings.depth_stencil_format, context_settings.clear_depth_stencil);
-    return std::make_shared<DirectX::Texture>(static_cast<const Base::RenderContext&>(render_context), texture_settings);
-}
-
-Ptr<ITexture> ITexture::CreateImage(const IContext& render_context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
-{
-    META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Image(dimensions, array_length_opt, pixel_format, mipmapped, UsageMask({ Usage::ShaderRead }));
-    return std::make_shared<DirectX::Texture>(dynamic_cast<const Base::Context&>(render_context), texture_settings);
-}
-
-Ptr<ITexture> ITexture::CreateCube(const IContext& render_context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
-{
-    META_FUNCTION_TASK();
-    const Settings texture_settings = Settings::Cube(dimension_size, array_length_opt, pixel_format, mipmapped, UsageMask({ Usage::ShaderRead }));
-    return std::make_shared<DirectX::Texture>(dynamic_cast<const Base::Context&>(render_context), texture_settings);
-}
-
 } // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::DirectX
@@ -165,11 +135,11 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
         break;
 
     case Rhi::TextureDimensionType::Cube:
-        META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single Cube texture must have array length equal to 1");
+        META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single ForCubeImage texture must have array length equal to 1");
         [[fallthrough]];
 
     case Rhi::TextureDimensionType::CubeArray:
-        META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 6, "Cube textures depth dimension must be equal to 6");
+        META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 6, "ForCubeImage textures depth dimension must be equal to 6");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
             TypeConverter::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.GetWidth(),
@@ -337,7 +307,7 @@ bool Texture::SetName(std::string_view name)
 void Texture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_cp_upload_resource, "Only Image textures support data upload from CPU.");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_cp_upload_resource, "Only ForImage textures support data upload from CPU.");
 
     Resource::SetData(sub_resources, target_cmd_queue);
 

@@ -38,7 +38,7 @@ namespace hlslpp // NOSONAR
 
 static const std::string g_app_name = "Methane Hello Cube Uniforms";
 #else
-static const std::string g_app_name = "Methane Hello Cube Simple";
+static const std::string g_app_name = "Methane Hello ForCubeImage Simple";
 #endif
 
 using namespace Methane;
@@ -171,12 +171,12 @@ public:
                 GetScreenRenderPattern()
             }
         );
-        m_render_state.GetSettings().program_ptr->SetName("Colored Cube Shading");
-        m_render_state.SetName("Colored Cube Pipeline State");
+        m_render_state.GetSettings().program_ptr->SetName("Colored ForCubeImage Shading");
+        m_render_state.SetName("Colored ForCubeImage Pipeline State");
 
         // Create index buffer for cube mesh
         m_index_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForIndexBuffer(m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0))));
-        m_index_buffer.SetName("Cube Index Buffer");
+        m_index_buffer.SetName("ForCubeImage Index Buffer");
         m_index_buffer.SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }, // NOSONAR
             GetRenderContext().GetRenderCommandKit().GetQueue()
@@ -213,13 +213,13 @@ public:
             // Create vertex buffers for each frame
             Buffer vertex_buffer;
             vertex_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true));
-            vertex_buffer.SetName(IndexedName("Cube Vertex Buffer", frame.index));
+            vertex_buffer.SetName(IndexedName("ForCubeImage Vertex Buffer", frame.index));
             frame.vertex_buffer_set.Init(BufferType::Vertex, { vertex_buffer });
 #endif
 
             // Create command list for rendering
             frame.render_cmd_list.Init(GetRenderContext().GetRenderCommandKit().GetQueue(), frame.screen_pass);
-            frame.render_cmd_list.SetName(IndexedName("Cube Rendering", frame.index));
+            frame.render_cmd_list.SetName(IndexedName("ForCubeImage Rendering", frame.index));
             frame.execute_cmd_list_set.Init({ frame.render_cmd_list.GetInterface() }, frame.index);
         }
 
@@ -280,7 +280,7 @@ public:
 #endif
 
         // Issue commands for cube rendering
-        static META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
+        static META_DEBUG_GROUP_VAR(s_debug_group, "ForCubeImage Rendering");
         frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
         frame.render_cmd_list.SetViewState(GetViewState());
 #ifdef UNIFORMS_BUFFER_ENABLED

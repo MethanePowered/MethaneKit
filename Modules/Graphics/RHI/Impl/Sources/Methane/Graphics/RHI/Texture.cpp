@@ -65,21 +65,6 @@ void Texture::Init(const RenderContext& context, const Settings& settings)
     m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITexture::Create(context.GetInterface(), settings));
 }
 
-void Texture::InitImage(const RenderContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITexture::CreateImage(context.GetInterface(), dimensions, array_length_opt, pixel_format, mipmapped));
-}
-
-void Texture::InitFrameBuffer(const RenderContext& context, Data::Index frame_index)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITexture::CreateFrameBuffer(context.GetInterface(), frame_index));
-}
-
-void Texture::InitDepthStencil(const RenderContext& context)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITexture::CreateDepthStencil(context.GetInterface()));
-}
-
 void Texture::Release()
 {
     m_impl_ptr.reset();

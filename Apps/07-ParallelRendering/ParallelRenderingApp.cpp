@@ -168,12 +168,12 @@ void ParallelRenderingApp::Init()
                                                             gfx::Mesh::Subset::Slice(0U, cube_mesh.GetVertexCount()),
                                                             gfx::Mesh::Subset::Slice(0U, cube_mesh.GetIndexCount()),
                                                             false));
-    m_cube_array_buffers_ptr = std::make_unique<MeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube", mesh_subsets);
+    m_cube_array_buffers_ptr = std::make_unique<MeshBuffers>(render_cmd_queue, std::move(cube_mesh), "ForCubeImage", mesh_subsets);
 
     // Create cube-map render target texture
     m_texture_array.Init(GetRenderContext(),
-        rhi::Texture::Settings::Image(g_texture_size, m_settings.render_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
-                                       rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })));
+                         rhi::Texture::Settings::ForImage(g_texture_size, m_settings.render_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
+                                                          rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })));
     m_texture_array.SetName("Per-Thread Texture Array");
 
     // Create sampler for image texture
@@ -202,7 +202,7 @@ void ParallelRenderingApp::Init()
             { { rhi::ShaderType::Pixel, "g_texture_array" }, { { m_texture_array.GetInterface()   } } },
             { { rhi::ShaderType::Pixel, "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
         }, frame.index);
-        frame.cubes_array.program_bindings_per_instance[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
+        frame.cubes_array.program_bindings_per_instance[0].SetName(fmt::format("ForCubeImage 0 Bindings {}", frame.index));
 
         program_bindings_task_flow.for_each_index(1U, cubes_count, 1U,
             [this, &frame, uniform_data_size](const uint32_t cube_index)
@@ -214,7 +214,7 @@ void ParallelRenderingApp::Init()
                       { { frame.cubes_array.uniforms_buffer.GetInterface(), m_cube_array_buffers_ptr->GetUniformsBufferOffset(cube_index), uniform_data_size } }
                     }
                 }, frame.index);
-                cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
+                cube_program_bindings.SetName(fmt::format("ForCubeImage {} Bindings {}", cube_index, frame.index));
             });
 
         if (m_settings.parallel_rendering_enabled)

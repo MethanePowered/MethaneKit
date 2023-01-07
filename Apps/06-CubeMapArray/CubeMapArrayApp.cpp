@@ -50,7 +50,7 @@ constexpr float    g_model_scale = 6.F;
 CubeMapArrayApp::CubeMapArrayApp()
     : UserInterfaceApp(
         []() {
-            Graphics::CombinedAppSettings settings = GetGraphicsTutorialAppSettings("Methane Cube Map Array", AppOptions::GetDefaultWithColorDepthAndAnim());
+            Graphics::CombinedAppSettings settings = GetGraphicsTutorialAppSettings("Methane ForCubeImage Map Array", AppOptions::GetDefaultWithColorDepthAndAnim());
             settings.graphics_app.device_capabilities.features.SetBitOn(rhi::DeviceFeature::ImageCubeArray);
             settings.render_context.clear_depth_stencil = gfx::DepthStencilValues(0.F, {}); // Clear depth with 0.F to support reversed depth rendering
             settings.render_context.clear_color = {}; // Disable color clearing, use sky-box instead
@@ -121,16 +121,16 @@ void CubeMapArrayApp::Init()
     m_render_state.Init(GetRenderContext(), render_state_settings);
 
     // Create cube mesh buffer resources
-    m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube");
+    m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, std::move(cube_mesh), "ForCubeImage");
 
     // Create cube-map render target texture
     m_cube_buffers_ptr->SetTexture(
         rhi::Texture(
             GetRenderContext(),
-            rhi::ITexture::Settings::Cube(
+            rhi::ITexture::Settings::ForCubeImage(
                 g_cube_texture_size, CUBE_MAP_ARRAY_SIZE, gfx::PixelFormat::RGBA8Unorm, false,
                 rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })
-        )));
+            )));
 
     // Create sampler for image texture
     m_texture_sampler.Init(GetRenderContext(),
@@ -179,7 +179,7 @@ void CubeMapArrayApp::Init()
             { { rhi::ShaderType::Pixel, "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture().GetInterface() } } },
             { { rhi::ShaderType::Pixel, "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
         }, frame.index);
-        frame.cube.program_bindings.SetName(IndexedName("Cube Bindings", frame.index));
+        frame.cube.program_bindings.SetName(IndexedName("ForCubeImage Bindings", frame.index));
 
         // Create uniforms buffer for Sky-Box rendering
         frame.sky_box.uniforms_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForConstantBuffer(sizeof(gfx::SkyBox::Uniforms), false, true));
@@ -191,7 +191,7 @@ void CubeMapArrayApp::Init()
         
         // Create command list for rendering
         frame.render_cmd_list.Init(render_cmd_queue, frame.screen_pass);
-        frame.render_cmd_list.SetName(IndexedName("Cube Rendering", frame.index));
+        frame.render_cmd_list.SetName(IndexedName("ForCubeImage Rendering", frame.index));
         frame.execute_cmd_list_set.Init({ frame.render_cmd_list.GetInterface() }, frame.index);
     }
     
@@ -265,7 +265,7 @@ bool CubeMapArrayApp::Render()
     frame.cube.uniforms_buffer.SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
     // 1) Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
-    META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
+    META_DEBUG_GROUP_VAR(s_debug_group, "ForCubeImage Rendering");
     frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
     frame.render_cmd_list.SetViewState(GetViewState());
     m_cube_buffers_ptr->Draw(frame.render_cmd_list, frame.cube.program_bindings, 0U, CUBE_MAP_ARRAY_SIZE);

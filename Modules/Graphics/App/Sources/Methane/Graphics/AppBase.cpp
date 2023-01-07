@@ -152,7 +152,7 @@ void AppBase::Init()
     // Create frame depth texture and attachment description
     if (context_settings.depth_stencil_format != PixelFormat::Unknown)
     {
-        m_depth_texture.InitDepthStencil(m_context);
+        m_depth_texture.Init(m_context, Rhi::TextureSettings::ForDepthStencil(m_context.GetSettings()));
         m_depth_texture.SetName("Depth Texture");
     }
 
@@ -329,7 +329,8 @@ void AppBase::RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_
     if (!depth_restore_info_opt)
         return;
 
-    m_depth_texture.InitDepthStencil(GetRenderContext());
+    const Rhi::RenderContext& render_context = GetRenderContext();
+    m_depth_texture.Init(render_context, Rhi::TextureSettings::ForDepthStencil(render_context.GetSettings()));
     m_depth_texture.RestoreDescriptorViews(depth_restore_info_opt->descriptor_by_view_id);
     m_depth_texture.SetName(depth_restore_info_opt->name);
 }

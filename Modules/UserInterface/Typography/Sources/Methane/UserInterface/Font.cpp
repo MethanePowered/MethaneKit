@@ -655,8 +655,10 @@ const rhi::Texture& Font::GetAtlasTexture(const rhi::RenderContext& context)
 Font::AtlasTexture Font::CreateAtlasTexture(const rhi::RenderContext& render_context, bool deferred_data_init)
 {
     META_FUNCTION_TASK();
-    rhi::Texture atlas_texture;
-    atlas_texture.InitImage(render_context, gfx::Dimensions(m_atlas_pack_ptr->GetSize()), std::nullopt, gfx::PixelFormat::R8Unorm, false);
+    rhi::Texture atlas_texture(render_context,
+        rhi::TextureSettings::ForImage(
+            gfx::Dimensions(m_atlas_pack_ptr->GetSize()),
+            std::nullopt, gfx::PixelFormat::R8Unorm, false));
     atlas_texture.SetName(fmt::format("{} Font Atlas", m_settings.description.name));
     if (deferred_data_init)
     {

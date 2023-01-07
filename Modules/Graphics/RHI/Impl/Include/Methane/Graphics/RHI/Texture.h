@@ -65,9 +65,6 @@ public:
     META_RHI_API Texture(const RenderContext& context, const Settings& settings);
 
     META_RHI_API void Init(const RenderContext& context, const Settings& settings);
-    META_RHI_API void InitImage(const RenderContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
-    META_RHI_API void InitFrameBuffer(const RenderContext& context, Data::Index frame_index);
-    META_RHI_API void InitDepthStencil(const RenderContext& context);
     META_RHI_API void Release();
 
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;

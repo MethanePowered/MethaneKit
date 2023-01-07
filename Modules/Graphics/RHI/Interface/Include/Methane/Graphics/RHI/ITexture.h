@@ -66,6 +66,8 @@ private:
 
 using TextureViews = std::vector<TextureView>;
 
+struct RenderContextSettings;
+
 struct TextureSettings
 {
     TextureType          type           = TextureType::Image;
@@ -80,11 +82,15 @@ struct TextureSettings
     Opt<Data::Index>        frame_index_opt;          // for TextureType::FrameBuffer
     Opt<DepthStencilValues> depth_stencil_clear_opt;  // for TextureType::DepthStencil
 
-    [[nodiscard]] static TextureSettings Image(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, ResourceUsageMask usage);
-    [[nodiscard]] static TextureSettings Cube(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped, ResourceUsageMask usage);
-    [[nodiscard]] static TextureSettings FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Data::Index frame_index);
-    [[nodiscard]] static TextureSettings DepthStencil(const Dimensions& dimensions, PixelFormat pixel_format, const Opt<DepthStencilValues>& depth_stencil_clear,
-                                                      ResourceUsageMask usage_mask = ResourceUsageMask(ResourceUsage::RenderTarget));
+    [[nodiscard]] static TextureSettings ForImage(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped,
+                                                  ResourceUsageMask usage = { ResourceUsage::ShaderRead });
+    [[nodiscard]] static TextureSettings ForCubeImage(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped,
+                                                      ResourceUsageMask usage = { ResourceUsage::ShaderRead });
+    [[nodiscard]] static TextureSettings ForFrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Data::Index frame_index);
+    [[nodiscard]] static TextureSettings ForFrameBuffer(const RenderContextSettings& render_context_settings, Data::Index frame_index);
+    [[nodiscard]] static TextureSettings ForDepthStencil(const Dimensions& dimensions, PixelFormat pixel_format, const Opt<DepthStencilValues>& depth_stencil_clear,
+                                                         ResourceUsageMask usage_mask = ResourceUsageMask(ResourceUsage::RenderTarget));
+    [[nodiscard]] static TextureSettings ForDepthStencil(const RenderContextSettings& render_context_settings);
 };
 
 struct IRenderContext;
@@ -101,10 +107,6 @@ struct ITexture
 
     // Create ITexture instance
     [[nodiscard]] static Ptr<ITexture> Create(const IContext& context, const Settings& settings);
-    [[nodiscard]] static Ptr<ITexture> CreateFrameBuffer(const IRenderContext& context, FrameBufferIndex frame_buffer_index);
-    [[nodiscard]] static Ptr<ITexture> CreateDepthStencil(const IRenderContext& context);
-    [[nodiscard]] static Ptr<ITexture> CreateImage(const IContext& context, const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
-    [[nodiscard]] static Ptr<ITexture> CreateCube(const IContext& context, uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped);
 
     // ITexture interface
     [[nodiscard]] virtual const Settings& GetSettings() const = 0;

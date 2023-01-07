@@ -47,7 +47,7 @@ static const gfx::FrameSize g_shadow_map_size(1024, 1024);
 
 ShadowCubeApp::ShadowCubeApp()
     : UserInterfaceApp(
-        GetGraphicsTutorialAppSettings("Methane Shadow Cube", AppOptions::GetDefaultWithColorDepthAndAnim()),
+        GetGraphicsTutorialAppSettings("Methane Shadow ForCubeImage", AppOptions::GetDefaultWithColorDepthAndAnim()),
         GetUserInterfaceTutorialAppSettings(AppOptions::GetDefaultWithColorDepthAndAnim()),
         "Methane tutorial of shadow pass rendering")
 {
@@ -84,8 +84,8 @@ void ShadowCubeApp::Init()
     // Load textures, vertex and index buffers for cube and floor meshes
     constexpr gfx::ImageOptionMask image_options({ gfx::ImageOption::Mipmapped, gfx::ImageOption::SrgbColorSpace });
 
-    m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, cube_mesh, "Cube");
-    m_cube_buffers_ptr->SetTexture(rhi::Texture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue.GetInterface(), "MethaneBubbles.jpg", image_options, "Cube Face Texture")));
+    m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, cube_mesh, "ForCubeImage");
+    m_cube_buffers_ptr->SetTexture(rhi::Texture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue.GetInterface(), "MethaneBubbles.jpg", image_options, "ForCubeImage Face Texture")));
 
     m_floor_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, floor_mesh, "Floor");
     m_floor_buffers_ptr->SetTexture(rhi::Texture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue.GetInterface(), "MarbleWhite.jpg", image_options, "Floor Texture")));
@@ -217,7 +217,7 @@ void ShadowCubeApp::Init()
 
     // ========= Per-Frame Data =========
 
-    const rhi::ITexture::Settings shadow_texture_settings = rhi::ITexture::Settings::DepthStencil(
+    const rhi::ITexture::Settings shadow_texture_settings = rhi::ITexture::Settings::ForDepthStencil(
         gfx::Dimensions(g_shadow_map_size),
         context_settings.depth_stencil_format, context_settings.clear_depth_stencil,
         rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })
@@ -233,7 +233,7 @@ void ShadowCubeApp::Init()
 
         // Create uniforms buffer for Cube rendering in Shadow pass
         frame.shadow_pass.cube.uniforms_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
-        frame.shadow_pass.cube.uniforms_buffer.SetName(IndexedName("Cube Uniforms Buffer for Shadow Pass", frame.index));
+        frame.shadow_pass.cube.uniforms_buffer.SetName(IndexedName("ForCubeImage Uniforms Buffer for Shadow Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Shadow pass
         frame.shadow_pass.floor.uniforms_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
@@ -243,7 +243,7 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.cube.program_bindings.Init(shadow_state_settings.program, {
             { { rhi::ShaderType::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.uniforms_buffer.GetInterface() } } },
         }, frame.index);
-        frame.shadow_pass.cube.program_bindings.SetName(IndexedName("Cube Shadow-Pass Bindings {}", frame.index));
+        frame.shadow_pass.cube.program_bindings.SetName(IndexedName("ForCubeImage Shadow-Pass Bindings {}", frame.index));
 
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.program_bindings.Init(shadow_state_settings.program, {
@@ -269,7 +269,7 @@ void ShadowCubeApp::Init()
 
         // Create uniforms buffer for Cube rendering in Final pass
         frame.final_pass.cube.uniforms_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
-        frame.final_pass.cube.uniforms_buffer.SetName(IndexedName("Cube Uniforms Buffer for Final Pass", frame.index));
+        frame.final_pass.cube.uniforms_buffer.SetName(IndexedName("ForCubeImage Uniforms Buffer for Final Pass", frame.index));
 
         // Create uniforms buffer for Floor rendering in Final pass
         frame.final_pass.floor.uniforms_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
@@ -285,7 +285,7 @@ void ShadowCubeApp::Init()
             { { rhi::ShaderType::Pixel,  "g_texture"        }, { { m_cube_buffers_ptr->GetTexture().GetInterface()       } } },
             { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, { { m_texture_sampler.GetInterface()                      } } },
         }, frame.index);
-        frame.final_pass.cube.program_bindings.SetName(IndexedName("Cube Final-Pass Bindings {}", frame.index));
+        frame.final_pass.cube.program_bindings.SetName(IndexedName("ForCubeImage Final-Pass Bindings {}", frame.index));
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.program_bindings.InitCopy(frame.final_pass.cube.program_bindings, {

@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/ImageLoader.cpp
-Image Loader creates textures from images loaded via data provider and
+ForImage Loader creates textures from images loaded via data provider and
 by decoding them from popular image formats.
 
 ******************************************************************************/
@@ -175,8 +175,10 @@ Ptr<Rhi::ITexture> ImageLoader::LoadImageToTexture2D(Rhi::ICommandQueue& target_
     META_FUNCTION_TASK();
     const ImageData    image_data   = LoadImage(image_path, 4, false);
     const PixelFormat  image_format = GetDefaultImageFormat(options.HasAnyBit(ImageOption::SrgbColorSpace));
-    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::CreateImage(target_cmd_queue.GetContext(), image_data.GetDimensions(), std::nullopt, image_format,
-                                                                 options.HasAnyBit(ImageOption::Mipmapped));
+    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::Create(target_cmd_queue.GetContext(),
+                                                            Rhi::TextureSettings::ForImage(
+                                                                image_data.GetDimensions(), std::nullopt, image_format,
+                                                                options.HasAnyBit(ImageOption::Mipmapped)));
     texture_ptr->SetName(texture_name);
     texture_ptr->SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } }, target_cmd_queue);
 
@@ -226,8 +228,10 @@ Ptr<Rhi::ITexture> ImageLoader::LoadImagesToTextureCube(Rhi::ICommandQueue& targ
 
     // Load face images to cube texture
     const PixelFormat  image_format = GetDefaultImageFormat(options.HasAnyBit(ImageOption::SrgbColorSpace));
-    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::CreateCube(target_cmd_queue.GetContext(), face_dimensions.GetWidth(), std::nullopt,
-                                                                image_format, options.HasAnyBit(Option::Mipmapped));
+    Ptr<Rhi::ITexture> texture_ptr  = Rhi::ITexture::Create(target_cmd_queue.GetContext(),
+                                                            Rhi::TextureSettings::ForCubeImage(
+                                                                face_dimensions.GetWidth(), std::nullopt,
+                                                                image_format, options.HasAnyBit(Option::Mipmapped)));
     texture_ptr->SetName(texture_name);
     texture_ptr->SetData(face_resources, target_cmd_queue);
 

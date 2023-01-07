@@ -22,6 +22,7 @@ Methane graphics interface: graphics texture.
 ******************************************************************************/
 
 #include <Methane/Graphics/RHI/ITexture.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 
 #include <Methane/Instrumentation.h>
 
@@ -42,8 +43,8 @@ Rhi::ITexture& TextureView::GetTexture() const
     return *m_texture_ptr;
 }
 
-TextureSettings TextureSettings::Image(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format,
-                                       bool mipmapped, ResourceUsageMask usage)
+TextureSettings TextureSettings::ForImage(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format,
+                                          bool mipmapped, ResourceUsageMask usage)
 {
     META_FUNCTION_TASK();
 
@@ -64,8 +65,8 @@ TextureSettings TextureSettings::Image(const Dimensions& dimensions, const Opt<u
     return settings;
 }
 
-TextureSettings TextureSettings::Cube(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format,
-                                      bool mipmapped, ResourceUsageMask usage)
+TextureSettings TextureSettings::ForCubeImage(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format,
+                                              bool mipmapped, ResourceUsageMask usage)
 {
     META_FUNCTION_TASK();
 
@@ -81,7 +82,7 @@ TextureSettings TextureSettings::Cube(uint32_t dimension_size, const Opt<uint32_
     return settings;
 }
 
-TextureSettings TextureSettings::FrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Data::Index frame_index)
+TextureSettings TextureSettings::ForFrameBuffer(const Dimensions& dimensions, PixelFormat pixel_format, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
 
@@ -96,9 +97,15 @@ TextureSettings TextureSettings::FrameBuffer(const Dimensions& dimensions, Pixel
     return settings;
 }
 
-TextureSettings TextureSettings::DepthStencil(const Dimensions& dimensions, PixelFormat pixel_format,
-                                              const Opt<DepthStencilValues>& depth_stencil_clear,
-                                              ResourceUsageMask usage_mask)
+TextureSettings TextureSettings::ForFrameBuffer(const RenderContextSettings& render_context_settings, Data::Index frame_index)
+{
+    META_FUNCTION_TASK();
+    return ForFrameBuffer(Dimensions(render_context_settings.frame_size), render_context_settings.color_format, frame_index);
+}
+
+TextureSettings TextureSettings::ForDepthStencil(const Dimensions& dimensions, PixelFormat pixel_format,
+                                                 const Opt<DepthStencilValues>& depth_stencil_clear,
+                                                 ResourceUsageMask usage_mask)
 {
     META_FUNCTION_TASK();
 
@@ -111,6 +118,13 @@ TextureSettings TextureSettings::DepthStencil(const Dimensions& dimensions, Pixe
     settings.depth_stencil_clear_opt = std::move(depth_stencil_clear);
 
     return settings;
+}
+
+TextureSettings TextureSettings::ForDepthStencil(const RenderContextSettings& render_context_settings)
+{
+    META_FUNCTION_TASK();
+    return ForDepthStencil(Dimensions(render_context_settings.frame_size), render_context_settings.depth_stencil_format,
+                           render_context_settings.clear_depth_stencil);
 }
 
 } // namespace Methane::Graphics::Rhi
