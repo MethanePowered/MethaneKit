@@ -27,17 +27,6 @@ Vulkan implementation of the program argument binding interface.
 
 #include <Methane/Graphics/Base/Context.h>
 
-namespace Methane::Graphics::Base
-{
-
-Ptr<Base::ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy(const Base::ProgramArgumentBinding& other_argument_binding)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Vulkan::ProgramArgumentBinding>(static_cast<const Vulkan::ProgramArgumentBinding&>(other_argument_binding));
-}
-
-} // namespace Methane::Graphics::Base
-
 namespace Methane::Graphics::Vulkan
 {
 
@@ -59,6 +48,12 @@ void ProgramArgumentBinding::SetDescriptorSet(const vk::DescriptorSet& descripto
 {
     META_FUNCTION_TASK();
     m_vk_descriptor_set_ptr = &descriptor_set;
+}
+
+Ptr<Base::ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy() const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ProgramArgumentBinding>(*this);
 }
 
 void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& other)

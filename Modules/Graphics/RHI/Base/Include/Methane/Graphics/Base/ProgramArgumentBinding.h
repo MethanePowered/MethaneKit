@@ -39,10 +39,10 @@ class ProgramArgumentBinding
     , public std::enable_shared_from_this<ProgramArgumentBinding>
 {
 public:
-    static Ptr<ProgramArgumentBinding> CreateCopy(const ProgramArgumentBinding& other_argument_binding);
-
     ProgramArgumentBinding(const Context& context, const Settings& settings);
 
+    // Base::ProgramArgumentBinding interface
+    [[nodiscard]] virtual Ptr<ProgramArgumentBinding> CreateCopy() const = 0;
     virtual void MergeSettings(const ProgramArgumentBinding& other);
 
     // IArgumentBinding interface

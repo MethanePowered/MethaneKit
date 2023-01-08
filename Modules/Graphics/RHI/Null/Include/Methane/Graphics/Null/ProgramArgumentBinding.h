@@ -40,6 +40,9 @@ class ProgramArgumentBinding final
 {
 public:
     using Base::ProgramArgumentBinding::ProgramArgumentBinding;
+
+    // Base::ProgramArgumentBinding interface
+    [[nodiscard]] Ptr<Base::ProgramArgumentBinding> CreateCopy() const override;
 };
 
 } // namespace Methane::Graphics::Null

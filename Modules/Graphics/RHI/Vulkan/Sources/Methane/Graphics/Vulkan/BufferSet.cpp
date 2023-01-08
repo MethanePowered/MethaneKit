@@ -22,6 +22,7 @@ Vulkan implementation of the buffer-set interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Vulkan/BufferSet.h>
+#include <Methane/Graphics/Vulkan/Buffer.h>
 
 #include <Methane/Instrumentation.h>
 
@@ -48,7 +49,7 @@ static std::vector<vk::Buffer> GetVulkanBuffers(const Refs<Rhi::IBuffer>& buffer
     std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vk_buffers),
                    [](const Ref<Rhi::IBuffer>& buffer_ref)
                    {
-                       const auto& vertex_buffer = static_cast<const Buffer&>(buffer_ref.get());
+                       const auto& vertex_buffer = dynamic_cast<const Buffer&>(buffer_ref.get());
                        return vertex_buffer.GetNativeResource();
                    }
     );

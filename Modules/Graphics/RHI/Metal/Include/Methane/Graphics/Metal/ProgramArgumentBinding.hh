@@ -48,6 +48,9 @@ public:
 
     ProgramArgumentBinding(const Base::Context& context, const Settings& settings);
 
+    // Base::ProgramArgumentBinding interface
+    [[nodiscard]] Ptr<Base::ProgramArgumentBinding> CreateCopy() const override;
+
     // IArgumentBinding interface
     bool SetResourceViews(const Rhi::IResource::Views& resource_views) override;
 

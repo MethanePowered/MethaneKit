@@ -78,6 +78,9 @@ public:
     ProgramArgumentBinding& operator=(const ProgramArgumentBinding&) = delete;
     ProgramArgumentBinding& operator=(ProgramArgumentBinding&&) noexcept = default;
 
+    // Base::ProgramArgumentBinding interface
+    [[nodiscard]] Ptr<Base::ProgramArgumentBinding> CreateCopy() const override;
+
     // IArgumentBinding interface
     bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
 

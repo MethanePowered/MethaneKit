@@ -143,7 +143,7 @@ void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
         per_frame_argument_bindings[0] = argument_binding_ptr;
         for(uint32_t frame_index = 1; frame_index < frame_buffers_count; ++frame_index)
         {
-            per_frame_argument_bindings[frame_index] = ProgramBindings::ArgumentBinding::CreateCopy(*argument_binding_ptr);
+            per_frame_argument_bindings[frame_index] = argument_binding_ptr->CreateCopy();
         }
         m_frame_bindings_by_argument.try_emplace(program_argument, std::move(per_frame_argument_bindings));
     }
@@ -165,7 +165,7 @@ Ptr<ProgramBindings::ArgumentBinding> Program::CreateArgumentBindingInstance(con
     const Rhi::ProgramArgumentAccessor& argument_accessor = argument_binding_ptr->GetSettings().argument;
     switch(argument_accessor.GetAccessorType())
     {
-    case ArgumentAccessor::Type::Mutable:       return ProgramBindings::ArgumentBinding::CreateCopy(*argument_binding_ptr);
+    case ArgumentAccessor::Type::Mutable:       return argument_binding_ptr->CreateCopy();
     case ArgumentAccessor::Type::Constant:      return argument_binding_ptr;
     case ArgumentAccessor::Type::FrameConstant: return GetFrameArgumentBinding(frame_index, argument_accessor);
     default:                                    META_UNEXPECTED_ARG_RETURN(argument_accessor.GetAccessorType(), nullptr);

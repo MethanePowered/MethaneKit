@@ -63,7 +63,8 @@ public:
     void SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index) noexcept;
     void SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept;
 
-    // Base::ArgumentBinding interface
+    // Base::ProgramArgumentBinding interface
+    [[nodiscard]] Ptr<Base::ProgramArgumentBinding> CreateCopy() const override;
     void MergeSettings(const Base::ProgramArgumentBinding& other) override;
 
     // IArgumentBinding interface

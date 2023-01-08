@@ -23,13 +23,14 @@ Null implementation of the program argument binding interface.
 
 #include <Methane/Graphics/Null/ProgramArgumentBinding.h>
 
-namespace Methane::Graphics::Base
+namespace Methane::Graphics::Null
 {
 
-Ptr<Base::ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy(const Base::ProgramArgumentBinding& other_argument_binding)
+// Base::ProgramArgumentBinding interface
+Ptr<Base::ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy() const
 {
     META_FUNCTION_TASK();
-    return std::make_shared<Null::ProgramArgumentBinding>(static_cast<const Null::ProgramArgumentBinding&>(other_argument_binding));
+    return std::make_shared<ProgramArgumentBinding>(*this);
 }
 
-} // namespace Methane::Graphics::Base
+} // namespace Methane::Graphics::Null

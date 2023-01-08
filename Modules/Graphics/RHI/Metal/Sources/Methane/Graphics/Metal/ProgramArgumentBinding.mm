@@ -26,17 +26,6 @@ Metal implementation of the program argument binding interface.
 #include <Methane/Graphics/Metal/Texture.hh>
 #include <Methane/Graphics/Metal/Sampler.hh>
 
-namespace Methane::Graphics::Base
-{
-
-Ptr<ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy(const ProgramArgumentBinding& other_argument_binding)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Metal::ProgramArgumentBinding>(static_cast<const Metal::ProgramArgumentBinding&>(other_argument_binding));
-}
-
-} // namespace Methane::Graphics::Base
-
 namespace Methane::Graphics::Metal
 {
 
@@ -50,6 +39,12 @@ ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, con
     , m_settings_mt(settings)
 {
     META_FUNCTION_TASK();
+}
+
+Ptr<Base::ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy() const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ProgramArgumentBinding>(*this);
 }
 
 bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)

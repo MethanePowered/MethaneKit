@@ -29,21 +29,8 @@ DirectX 12 implementation of the program argument binding interface.
 
 #include <magic_enum.hpp>
 
-namespace Methane::Graphics::Base
-{
-
-Ptr<ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy(const ProgramArgumentBinding& other_argument_binding)
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<DirectX::ProgramArgumentBinding>(static_cast<const DirectX::ProgramArgumentBinding&>(other_argument_binding));
-}
-
-} // namespace Methane::Graphics::Base
-
 namespace Methane::Graphics::DirectX
 {
-
-
 
 ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, const Settings& settings)
     : Base::ProgramArgumentBinding(context, settings)
@@ -71,6 +58,12 @@ ProgramArgumentBinding::ProgramArgumentBinding(const ProgramArgumentBinding& oth
         META_CHECK_ARG_TRUE( m_p_descriptor_heap_reservation->heap.get().IsShaderVisible());
         META_CHECK_ARG_EQUAL(m_p_descriptor_heap_reservation->heap.get().GetSettings().type, m_descriptor_range.heap_type);
     }
+}
+
+Ptr<Base::ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy() const
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ProgramArgumentBinding>(*this);
 }
 
 DescriptorHeapType ProgramArgumentBinding::GetDescriptorHeapType() const
