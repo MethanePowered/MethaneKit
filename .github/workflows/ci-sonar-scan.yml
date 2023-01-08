@@ -38,8 +38,6 @@ env:
   product_ver_minor: 7
   product_ver_patch: 1
   product_ver_build: ${{ github.run_number }}
-  # Find the latest sonar-scanner version here: https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
-  sonar_scanner_version: 4.7.0.2747
   sonar_server_url: "https://sonarcloud.io"
   sonar_organization: methane-powered
   build_wrapper_out_dir: Build/Output/BuildWrapperOutput
@@ -60,7 +58,6 @@ jobs:
             config_preset: "VS2019-Win64-DX-Scan"
             build_preset: "VS2019-Win64-DX-Scan"
             sonar_project_key: "methane-powered-kit-windows"
-            build_wrapper_zip: "build-wrapper-win-x86"
             build_wrapper_exe: "build-wrapper-win-x86-64"
             tests_coverage_reports: "Build/Output/VS2019-Win64-DX-Scan/Install/Tests/Coverage/*.xml"
 
@@ -71,7 +68,6 @@ jobs:
             config_preset: "Make-Lin-VK-Scan"
             build_preset: "Make-Lin-VK-Scan"
             sonar_project_key: "methane-powered-kit-linux"
-            build_wrapper_zip: "build-wrapper-linux-x86"
             build_wrapper_exe: "build-wrapper-linux-x86-64"
             tests_coverage_reports: "Build/Output/Make-Lin-VK-Scan/Build/MethaneTestCoverage.info"
 
@@ -82,7 +78,6 @@ jobs:
             config_preset: "Xcode-Mac-MTL-Scan"
             build_preset: "Xcode-Mac-MTL-Scan"
             sonar_project_key: "methane-powered-kit-macos"
-            build_wrapper_zip: "build-wrapper-macosx-x86"
             build_wrapper_exe: "build-wrapper-macosx-x86"
             tests_coverage_reports: "Build/Output/Xcode-Mac-MTL-Scan/Install/Tests/Coverage/*.lcov"
 
@@ -103,29 +98,13 @@ jobs:
         with:
           domain: ${{ github.repository_owner }}
 
-      - name: Install JDK 11 # Required to use Sonar Scanner
-        uses: actions/setup-java@v3
-        with:
-          java-version: 11
-          distribution: 'zulu'
-
       - name: Install .NET Core # Required to use ReportGenerator
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.400
 
-      - name: Download sonar-scanner
-        shell: bash
-        run: |
-          mkdir -p $HOME/.sonar
-          curl -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}.zip
-          unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
-
-      - name: Download build-wrapper
-        shell: bash
-        run: |
-          curl -sSLo $HOME/.sonar/build-wrapper.zip ${{ env.sonar_server_url }}/static/cpp/${{ matrix.build_wrapper_zip }}.zip
-          unzip -o $HOME/.sonar/build-wrapper.zip -d $HOME/.sonar/
+      - name: Install sonar-scanner and build-wrapper
+        uses: sonarsource/sonarcloud-github-c-cpp@v1
 
       - name: Initialize Externals Cache
         uses: actions/cache@v3
@@ -150,7 +129,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          "$HOME/.sonar/${{ matrix.build_wrapper_zip }}/${{ matrix.build_wrapper_exe }}" --out-dir "${{ env.build_wrapper_out_dir }}" cmake --build --preset ${{ matrix.build_preset }} --target install 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Build.log
+          ${{ matrix.build_wrapper_exe }} --out-dir "${{ env.build_wrapper_out_dir }}" cmake --build --preset ${{ matrix.build_preset }} --target install 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Build.log
 
       - name: Download OpenCppCoverage
         if: ${{ matrix.os_name == 'windows' }}
@@ -271,10 +250,11 @@ jobs:
           else
               SONAR_SCANNER_EXE=sonar-scanner
           fi
-          SONAR_SCANNER_PATH=$HOME/.sonar/sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}/bin/$SONAR_SCANNER_EXE
-          chmod a+x "$SONAR_SCANNER_PATH"
+          if [ "${{ matrix.os_name }}" == "macosx" ]; then
+            SONAR_SCANNER_EXE="$SONAR_SCANNER_EXE -X"
+          fi
           TESTS_DIR=Build/Output/${{ matrix.config_preset }}/Install/Tests
-          SONAR_SCAN_CMD="$SONAR_SCANNER_PATH --define sonar.host.url=${{ env.sonar_server_url }}"
+          SONAR_SCAN_CMD="$SONAR_SCANNER_EXE --define sonar.host.url=${{ env.sonar_server_url }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.organization=${{ env.sonar_organization }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectKey=${{ matrix.sonar_project_key }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectVersion=${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}"
