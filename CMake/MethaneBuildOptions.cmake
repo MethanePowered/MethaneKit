@@ -145,10 +145,17 @@ if (MSVC)
 else() # Clang or GCC on Linux/MacOS
 
     target_compile_options(MethaneBuildOptions INTERFACE
+        # -flto - use the link-time optimizer
+        $<$<CONFIG:Release>:-Ofast -flto>
         # Set maximum warnings level & treat warnings as errors
         -Wall -Wextra -Werror
         # Disable useless Clang and GCC warnings
         -Wno-missing-field-initializers
+    )
+
+    target_link_options(MethaneBuildOptions INTERFACE
+        # -flto - use the link-time optimizer
+        $<$<CONFIG:Release>:-flto>
     )
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # GCC
@@ -156,6 +163,18 @@ else() # Clang or GCC on Linux/MacOS
         target_compile_options(MethaneBuildOptions INTERFACE
             # Disable useless GCC warnings
             -Wno-ignored-qualifiers
+        )
+
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+
+        target_compile_options(MethaneBuildOptions INTERFACE
+            # -fwhole-program-vtables - whole-program vtable optimizations, such as single-implementation devirtualization
+            $<$<CONFIG:Release>:-fwhole-program-vtables>
+        )
+
+        target_link_options(MethaneBuildOptions INTERFACE
+            # -fwhole-program-vtables - whole-program vtable optimizations, such as single-implementation devirtualization
+            $<$<CONFIG:Release>:-fwhole-program-vtables>
         )
 
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
