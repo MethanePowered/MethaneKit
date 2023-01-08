@@ -62,21 +62,6 @@ CommandKit::CommandKit(const RenderContext& context, CommandListType command_lis
 {
 }
 
-void CommandKit::Init(const CommandQueue& command_queue)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ICommandKit::Create(command_queue.GetInterface()));
-}
-
-void CommandKit::Init(const RenderContext& context, CommandListType command_lists_type)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ICommandKit::Create(context.GetInterface(), command_lists_type));
-}
-
-void CommandKit::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool CommandKit::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

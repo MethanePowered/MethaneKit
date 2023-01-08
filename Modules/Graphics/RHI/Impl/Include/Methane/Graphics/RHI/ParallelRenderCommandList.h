@@ -59,9 +59,6 @@ public:
     META_RHI_API explicit ParallelRenderCommandList(IParallelRenderCommandList& interface_ref);
     META_RHI_API ParallelRenderCommandList(const CommandQueue& command_queue, const RenderPass& render_pass);
 
-    META_RHI_API void Init(const CommandQueue& command_queue, const RenderPass& render_pass);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IParallelRenderCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<IParallelRenderCommandList> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

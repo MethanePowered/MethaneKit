@@ -35,6 +35,18 @@ class Program;
 namespace Methane::Graphics::Rhi
 {
 
+struct ProgramSettingsImpl
+{
+    using ShaderSet = std::map<ShaderType, ShaderSettings>;
+
+    ShaderSet                 shader_set;
+    ProgramInputBufferLayouts input_buffer_layouts;
+    ProgramArgumentAccessors  argument_accessors;
+    AttachmentFormats         attachment_formats;
+
+    META_RHI_API static ProgramSettings Convert(const IContext& context, const ProgramSettingsImpl& settings);
+};
+
 class RenderContext;
 class Shader;
 class ProgramBindings;
@@ -42,7 +54,8 @@ class ProgramBindings;
 class Program
 {
 public:
-    using ShaderSet               = std::map<ShaderType, ShaderSettings>;
+    using Settings                = ProgramSettingsImpl;
+    using ShaderSet               = ProgramSettingsImpl::ShaderSet;
     using InputBufferLayout       = ProgramInputBufferLayout;
     using InputBufferLayouts      = ProgramInputBufferLayouts;
     using Argument                = ProgramArgument;
@@ -51,23 +64,12 @@ public:
     using ArgumentAccessors       = ProgramArgumentAccessors;
     using ResourceViewsByArgument = IProgram::ResourceViewsByArgument;
 
-    struct Settings
-    {
-        ShaderSet                 shader_set;
-        ProgramInputBufferLayouts input_buffer_layouts;
-        ProgramArgumentAccessors  argument_accessors;
-        AttachmentFormats         attachment_formats;
-    };
-
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Program);
     META_PIMPL_METHODS_COMPARE_DECLARE(Program);
 
     META_RHI_API explicit Program(const Ptr<IProgram>& interface_ptr);
     META_RHI_API explicit Program(IProgram& interface_ref);
     META_RHI_API Program(const RenderContext& context, const Settings& settings);
-
-    META_RHI_API void Init(const RenderContext& context, const Settings& settings);
-    META_RHI_API void Release();
 
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IProgram& GetInterface() const META_PIMPL_NOEXCEPT;

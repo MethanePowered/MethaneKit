@@ -45,11 +45,10 @@ MeshBuffersBase::MeshBuffersBase(const Rhi::CommandQueue& render_cmd_queue, cons
 {
     META_FUNCTION_TASK();
 
-    Rhi::Buffer vertex_buffer;
-    vertex_buffer.Init(m_context,
-                       Rhi::BufferSettings::ForVertexBuffer(
-                           static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
-                           static_cast<Data::Size>(mesh_data.GetVertexSize())));
+    Rhi::Buffer vertex_buffer(m_context,
+        Rhi::BufferSettings::ForVertexBuffer(
+            static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
+            static_cast<Data::Size>(mesh_data.GetVertexSize())));
     vertex_buffer.SetName(fmt::format("{} Vertex Buffer", mesh_name));
     vertex_buffer.SetData({
         {
@@ -57,12 +56,12 @@ MeshBuffersBase::MeshBuffersBase(const Rhi::CommandQueue& render_cmd_queue, cons
             static_cast<Data::Size>(mesh_data.GetVertexDataSize())
         }
     }, render_cmd_queue);
-    m_vertex_buffer_set.Init(Rhi::BufferType::Vertex, { vertex_buffer });
+    m_vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
 
-    m_index_buffer.Init(render_cmd_queue.GetContext(),
-                        Rhi::BufferSettings::ForIndexBuffer(
-                            static_cast<Data::Size>(mesh_data.GetIndexDataSize()),
-                            GetIndexFormat(mesh_data.GetIndex(0))));
+    m_index_buffer = Rhi::Buffer(m_context,
+        Rhi::BufferSettings::ForIndexBuffer(
+            static_cast<Data::Size>(mesh_data.GetIndexDataSize()),
+            GetIndexFormat(mesh_data.GetIndex(0))));
     m_index_buffer.SetName(fmt::format("{} Index Buffer", mesh_name));
     m_index_buffer.SetData({
         {

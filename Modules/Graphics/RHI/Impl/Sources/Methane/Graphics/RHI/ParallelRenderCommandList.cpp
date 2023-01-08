@@ -64,16 +64,6 @@ ParallelRenderCommandList::ParallelRenderCommandList(const CommandQueue& command
 {
 }
 
-void ParallelRenderCommandList::Init(const CommandQueue& command_queue, const RenderPass& render_pass)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IParallelRenderCommandList::Create(command_queue.GetInterface(), render_pass.GetInterface()));
-}
-
-void ParallelRenderCommandList::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool ParallelRenderCommandList::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

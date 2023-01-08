@@ -54,16 +54,6 @@ CommandListSet::CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<
 {
 }
 
-void CommandListSet::Init(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ICommandListSet::Create(command_list_refs, frame_index_opt));
-}
-
-void CommandListSet::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool CommandListSet::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

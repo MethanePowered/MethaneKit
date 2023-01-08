@@ -49,7 +49,7 @@ static IProgram::Shaders ConvertProgramShaderSet(const IContext& context, const 
     return shader_ptrs;
 }
 
-static ProgramSettings ConvertProgramSettings(const IContext& context, const Program::Settings& settings)
+ProgramSettings ProgramSettingsImpl::Convert(const IContext& context, const ProgramSettingsImpl& settings)
 {
     META_FUNCTION_TASK();
     return ProgramSettings
@@ -79,18 +79,8 @@ Program::Program(IProgram& interface_ref)
 }
 
 Program::Program(const RenderContext& context, const Settings& settings)
-    : Program(IProgram::Create(context.GetInterface(), ConvertProgramSettings(context.GetInterface(), settings)))
+    : Program(IProgram::Create(context.GetInterface(), Settings::Convert(context.GetInterface(), settings)))
 {
-}
-
-void Program::Init(const RenderContext& context, const Settings& settings)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IProgram::Create(context.GetInterface(), ConvertProgramSettings(context.GetInterface(), settings)));
-}
-
-void Program::Release()
-{
-    m_impl_ptr.reset();
 }
 
 bool Program::IsInitialized() const META_PIMPL_NOEXCEPT

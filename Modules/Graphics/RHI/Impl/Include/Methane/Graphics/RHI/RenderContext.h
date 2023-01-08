@@ -47,11 +47,11 @@ class RenderState;
 class RenderPattern;
 
 struct ShaderSettings;
-struct ProgramSettings;
+struct ProgramSettingsImpl;
 struct BufferSettings;
 struct TextureSettings;
 struct SamplerSettings;
-struct RenderStateSettings;
+struct RenderStateSettingsImpl;
 struct RenderPatternSettings;
 
 enum class CommandListType;
@@ -75,9 +75,6 @@ public:
     META_RHI_API explicit RenderContext(IRenderContext& render_context);
     META_RHI_API RenderContext(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings);
 
-    META_RHI_API void Init(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IRenderContext& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<IRenderContext> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
@@ -94,11 +91,11 @@ public:
     [[nodiscard]] META_RHI_API CommandQueue     CreateCommandQueue(CommandListType type) const;
     [[nodiscard]] META_RHI_API CommandKit       CreateCommandKit(CommandListType type) const;
     [[nodiscard]] META_RHI_API Shader           CreateShader(ShaderType type, const ShaderSettings& settings) const;
-    [[nodiscard]] META_RHI_API Program          CreateProgram(const ProgramSettings& settings) const;
+    [[nodiscard]] META_RHI_API Program          CreateProgram(const ProgramSettingsImpl& settings) const;
     [[nodiscard]] META_RHI_API Buffer           CreateBuffer(const BufferSettings& settings) const;
     [[nodiscard]] META_RHI_API Texture          CreateTexture(const TextureSettings& settings) const;
     [[nodiscard]] META_RHI_API Sampler          CreateSampler(const SamplerSettings& settings) const;
-    [[nodiscard]] META_RHI_API RenderState      CreateRenderState(const RenderStateSettings& settings) const;
+    [[nodiscard]] META_RHI_API RenderState      CreateRenderState(const RenderStateSettingsImpl& settings) const;
     [[nodiscard]] META_RHI_API RenderPattern    CreateRenderPattern(const RenderPatternSettings& settings) const;
     [[nodiscard]] META_RHI_API OptionMask       GetOptions() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API tf::Executor&    GetParallelExecutor() const META_PIMPL_NOEXCEPT;

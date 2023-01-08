@@ -48,9 +48,6 @@ public:
     META_RHI_API explicit CommandListDebugGroup(ICommandListDebugGroup& interface_ref);
     META_RHI_API explicit CommandListDebugGroup(std::string_view name);
 
-    META_RHI_API void Init(std::string_view name);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API ICommandListDebugGroup& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<ICommandListDebugGroup> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

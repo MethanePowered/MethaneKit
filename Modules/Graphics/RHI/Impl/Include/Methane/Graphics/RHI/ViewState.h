@@ -47,9 +47,6 @@ public:
     META_RHI_API explicit ViewState(IViewState& interface_ref);
     META_RHI_API explicit ViewState(const Settings& settings);
 
-    META_RHI_API void Init(const Settings& settings);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IViewState& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<IViewState> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

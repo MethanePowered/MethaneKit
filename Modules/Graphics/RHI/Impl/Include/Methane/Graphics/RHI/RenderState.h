@@ -38,11 +38,25 @@ class RenderState;
 namespace Methane::Graphics::Rhi
 {
 
+struct RenderStateSettingsImpl
+{
+    Program            program;
+    RenderPattern      render_pattern;
+    RasterizerSettings rasterizer;
+    DepthSettings      depth;
+    StencilSettings    stencil;
+    BlendingSettings   blending;
+    Color4F            blending_color;
+
+    META_RHI_API static RenderStateSettings Convert(const RenderStateSettingsImpl& settings);
+};
+
 class RenderContext;
 
 class RenderState
 {
 public:
+    using Settings   = RenderStateSettingsImpl;
     using Rasterizer = RasterizerSettings;
     using Blending   = BlendingSettings;
     using Depth      = DepthSettings;
@@ -50,26 +64,12 @@ public:
     using Groups     = RenderStateGroupMask;
     using Group      = RenderStateGroup;
 
-    struct Settings
-    {
-        Program            program;
-        RenderPattern      render_pattern;
-        RasterizerSettings rasterizer;
-        DepthSettings      depth;
-        StencilSettings    stencil;
-        BlendingSettings   blending;
-        Color4F            blending_color;
-    };
-
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderState);
     META_PIMPL_METHODS_COMPARE_DECLARE(RenderState);
 
     META_RHI_API explicit RenderState(const Ptr<IRenderState>& interface_ptr);
     META_RHI_API explicit RenderState(IRenderState& interface_ref);
     META_RHI_API RenderState(const RenderContext& context, const Settings& settings);
-
-    META_RHI_API void Init(const RenderContext& context, const Settings& settings);
-    META_RHI_API void Release();
 
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IRenderState& GetInterface() const META_PIMPL_NOEXCEPT;

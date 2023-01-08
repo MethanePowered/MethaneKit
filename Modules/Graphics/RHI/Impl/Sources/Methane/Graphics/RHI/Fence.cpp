@@ -58,16 +58,6 @@ Fence::Fence(const CommandQueue& command_queue)
 {
 }
 
-void Fence::Init(const CommandQueue& command_queue)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IFence::Create(command_queue.GetInterface()));
-}
-
-void Fence::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool Fence::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

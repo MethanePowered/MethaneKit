@@ -61,9 +61,7 @@ public:
 
     META_RHI_API explicit Buffer(const Ptr<IBuffer>& interface_ptr);
     META_RHI_API explicit Buffer(IBuffer& interface_ref);
-
-    META_RHI_API void Init(const IContext& context, const Settings& settings);
-    META_RHI_API void Release();
+    META_RHI_API Buffer(const IContext& context, const BufferSettings& settings);
 
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IBuffer& GetInterface() const META_PIMPL_NOEXCEPT;

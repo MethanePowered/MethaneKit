@@ -35,7 +35,7 @@ Methane RenderState PIMPL wrappers for direct calls to final implementation.
 namespace Methane::Graphics::Rhi
 {
 
-static IRenderState::Settings ConvertRenderStateSettings(const RenderState::Settings& settings)
+RenderStateSettings RenderStateSettingsImpl::Convert(const RenderStateSettingsImpl& settings)
 {
     return IRenderState::Settings
     {
@@ -68,18 +68,8 @@ RenderState::RenderState(IRenderState& interface_ref)
 }
 
 RenderState::RenderState(const RenderContext& context, const Settings& settings)
-    : RenderState(IRenderState::Create(context.GetInterface(), ConvertRenderStateSettings(settings)))
+    : RenderState(IRenderState::Create(context.GetInterface(), RenderStateSettingsImpl::Convert(settings)))
 {
-}
-
-void RenderState::Init(const RenderContext& context, const Settings& settings)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IRenderState::Create(context.GetInterface(), ConvertRenderStateSettings(settings)));
-}
-
-void RenderState::Release()
-{
-    m_impl_ptr.reset();
 }
 
 bool RenderState::IsInitialized() const META_PIMPL_NOEXCEPT
@@ -124,7 +114,7 @@ const RenderStateSettings& RenderState::GetSettings() const META_PIMPL_NOEXCEPT
 
 void RenderState::Reset(const Settings& settings) const
 {
-    return GetImpl(m_impl_ptr).Reset(ConvertRenderStateSettings(settings));
+    return GetImpl(m_impl_ptr).Reset(RenderStateSettingsImpl::Convert(settings));
 }
 
 void RenderState::Reset(const IRenderState::Settings& settings) const

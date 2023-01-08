@@ -59,16 +59,6 @@ RenderPass::RenderPass(const Pattern& render_pattern, const Settings& settings)
 {
 }
 
-void RenderPass::Init(const Pattern& render_pattern, const Settings& settings)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IRenderPass::Create(render_pattern.GetInterface(), settings));
-}
-
-void RenderPass::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool RenderPass::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

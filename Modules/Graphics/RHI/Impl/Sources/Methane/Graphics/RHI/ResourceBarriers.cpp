@@ -60,23 +60,6 @@ ResourceBarriers::ResourceBarriers(const Refs<IResource>& resources,
 {
 }
 
-void ResourceBarriers::Init(const Set& barriers)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IResourceBarriers::Create(barriers));
-}
-
-void ResourceBarriers::Init(const Refs<IResource>& resources,
-                            const Opt<Barrier::StateChange>& state_change,
-                            const Opt<Barrier::OwnerChange>& owner_change)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IResourceBarriers::CreateTransitions(resources, state_change, owner_change));
-}
-
-void ResourceBarriers::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool ResourceBarriers::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

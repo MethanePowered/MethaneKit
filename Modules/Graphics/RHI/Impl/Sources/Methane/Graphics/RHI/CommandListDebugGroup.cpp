@@ -59,16 +59,6 @@ CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
 {
 }
 
-void CommandListDebugGroup::Init(std::string_view name)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ICommandListDebugGroup::Create(name));
-}
-
-void CommandListDebugGroup::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool CommandListDebugGroup::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

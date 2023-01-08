@@ -47,9 +47,6 @@ public:
     META_RHI_API explicit Fence(IFence& interface_ref);
     META_RHI_API explicit Fence(const CommandQueue& command_queue);
 
-    META_RHI_API void Init(const CommandQueue& command_queue);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IFence& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<IFence> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

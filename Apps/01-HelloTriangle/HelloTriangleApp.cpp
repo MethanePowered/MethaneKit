@@ -63,10 +63,10 @@ public:
     {
         GraphicsApp::Init();
 
-        m_render_state.Init(GetRenderContext(),
+        m_render_state = GetRenderContext().CreateRenderState(
             Rhi::RenderState::Settings
             {
-                Rhi::Program(GetRenderContext(),
+                GetRenderContext().CreateProgram(
                     Rhi::Program::Settings
                     {
                         Rhi::Program::ShaderSet
@@ -84,11 +84,12 @@ public:
         );
         m_render_state.SetName("Triangle Render State");
 
+        const Rhi::CommandQueue& cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
         for (HelloTriangleFrame& frame : GetFrames())
         {
-            frame.render_cmd_list.Init(GetRenderContext().GetRenderCommandKit().GetQueue(), frame.screen_pass);
+            frame.render_cmd_list = cmd_queue.CreateRenderCommandList(frame.screen_pass);
             frame.render_cmd_list.SetName(IndexedName("Render Triangle", frame.index));
-            frame.execute_cmd_list_set.Init({ frame.render_cmd_list.GetInterface() }, frame.index);
+            frame.execute_cmd_list_set = Rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
         }
 
         GraphicsApp::CompleteInitialization();
@@ -113,7 +114,7 @@ public:
 
     void OnContextReleased(Rhi::IContext& context) override
     {
-        m_render_state.Release();
+        m_render_state = {};
 
         GraphicsApp::OnContextReleased(context);
     }

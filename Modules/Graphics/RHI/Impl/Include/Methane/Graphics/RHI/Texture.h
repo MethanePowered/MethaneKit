@@ -65,10 +65,6 @@ public:
     META_RHI_API Texture(const IContext& context, const Settings& settings);
     META_RHI_API Texture(const RenderContext& render_context, const Settings& settings);
 
-    META_RHI_API void Init(const IContext& context, const Settings& settings);
-    META_RHI_API void Init(const RenderContext& render_context, const Settings& settings);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API ITexture& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<ITexture> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

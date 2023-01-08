@@ -59,16 +59,6 @@ Sampler::Sampler(const RenderContext& context, const Settings& settings)
 {
 }
 
-void Sampler::Init(const RenderContext& context, const Settings& settings)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ISampler::Create(context.GetInterface(), settings));
-}
-
-void Sampler::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool Sampler::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

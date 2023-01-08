@@ -59,9 +59,6 @@ public:
     META_RHI_API explicit RenderPattern(IRenderPattern& interface_ref);
     META_RHI_API RenderPattern(const RenderContext& render_context, const Settings& settings);
 
-    META_RHI_API void Init(const RenderContext& render_context, const Settings& settings);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IRenderPattern& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<IRenderPattern> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

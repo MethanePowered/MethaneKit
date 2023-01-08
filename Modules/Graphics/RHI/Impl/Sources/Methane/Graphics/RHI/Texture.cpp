@@ -65,21 +65,6 @@ Texture::Texture(const RenderContext& render_context, const Settings& settings)
 {
 }
 
-void Texture::Init(const IContext& context, const Settings& settings)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITexture::Create(context, settings));
-}
-
-void Texture::Init(const RenderContext& render_context, const Settings& settings)
-{
-    Init(render_context.GetInterface(), settings);
-}
-
-void Texture::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool Texture::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

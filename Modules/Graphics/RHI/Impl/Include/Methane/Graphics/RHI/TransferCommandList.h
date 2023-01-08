@@ -53,9 +53,6 @@ public:
     META_RHI_API explicit TransferCommandList(ITransferCommandList& interface_ref);
     META_RHI_API explicit TransferCommandList(const CommandQueue& command_queue);
 
-    META_RHI_API void Init(const CommandQueue& command_queue);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API ITransferCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<ITransferCommandList> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

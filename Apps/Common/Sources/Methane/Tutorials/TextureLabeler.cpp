@@ -85,8 +85,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
 
     META_CHECK_ARG_TRUE(rt_texture_settings.usage_mask.HasAnyBit(rhi::ResourceUsage::RenderTarget));
 
-    m_texture_face_render_pattern.Init(m_gui_context.GetRenderContext(),
-        rhi::RenderPattern::Settings
+    m_texture_face_render_pattern = m_gui_context.GetRenderContext().CreateRenderPattern(rhi::RenderPattern::Settings
         {
             rhi::RenderPattern::ColorAttachments
             {
@@ -134,13 +133,13 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
             m_slices.emplace_back(GetSliceDesc(array_index, depth_index, settings.cube_slice_descs, rt_texture_settings, sub_res_count));
             TextureLabeler::Slice& slice = m_slices.back();
 
-            slice.render_pass.Init(m_texture_face_render_pattern, {
+            slice.render_pass = m_texture_face_render_pattern.CreateRenderPass({
                 { rhi::TextureView(rt_texture.GetInterface(), rhi::SubResource::Index(depth_index, array_index), {}, rhi::TextureDimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
             slice.render_pass.SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));
 
-            slice.render_cmd_list.Init(m_gui_context.GetRenderCommandQueue(), slice.render_pass);
+            slice.render_cmd_list = m_gui_context.GetRenderCommandQueue().CreateRenderCommandList(slice.render_pass);
             slice.render_cmd_list.SetName(fmt::format("Render Texture '{}' Slice {}:{} Label", rt_texture_name, array_index, depth_index));
             slice_render_cmd_list_refs.emplace_back(slice.render_cmd_list.GetInterface());
 
@@ -167,22 +166,22 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
     if (rt_texture_final_state != rhi::ResourceState::Undefined &&
         rhi::System::GetNativeApi() != rhi::NativeApi::Metal) // No need in resource state transition barriers in Metal
     {
-        m_ending_render_pattern.Init(m_gui_context.GetRenderContext(), {
+        m_ending_render_pattern = m_gui_context.GetRenderContext().CreateRenderPattern({
             rhi::IRenderPattern::ColorAttachments{ },
             std::nullopt, std::nullopt,
             rhi::RenderPassAccessMask(rhi::RenderPassAccess::ShaderResources),
             false
         });
-        m_ending_render_pass.Init(m_ending_render_pattern, { { }, rt_texture_settings.dimensions.AsRectSize() });
-        m_ending_render_cmd_list.Init(m_gui_context.GetRenderCommandQueue(), m_ending_render_pass);
+        m_ending_render_pass = m_ending_render_pattern.CreateRenderPass({ { }, rt_texture_settings.dimensions.AsRectSize() });
+        m_ending_render_cmd_list = m_gui_context.GetRenderCommandQueue().CreateRenderCommandList(m_ending_render_pass);
         m_ending_render_cmd_list.SetName(fmt::format("Render Texture State Transition", rt_texture_name));
-        m_ending_resource_barriers.Init({
+        m_ending_resource_barriers = rhi::ResourceBarriers({
             { m_rt_texture.GetInterface(), rhi::ResourceState::RenderTarget, rt_texture_final_state }
         });
         slice_render_cmd_list_refs.emplace_back(m_ending_render_cmd_list.GetInterface());
     }
 
-    m_render_cmd_list_set.Init(slice_render_cmd_list_refs);
+    m_render_cmd_list_set = rhi::CommandListSet(slice_render_cmd_list_refs);
 }
 
 void TextureLabeler::Render()

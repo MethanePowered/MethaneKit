@@ -89,7 +89,7 @@ public:
 
         // DirectX descriptor heaps are released after destroying all resources
         // to check that all descriptor ranges have been properly released by resources
-        GetDescriptorManager().Release();
+        GetDescriptorManager() = {};
 
         static_cast<System&>(Rhi::ISystem::Get()).ReportLiveObjects();
     }

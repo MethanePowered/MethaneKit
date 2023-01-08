@@ -65,16 +65,6 @@ CommandQueue::CommandQueue(const RenderContext& context, CommandListType command
 {
 }
 
-void CommandQueue::Init(const RenderContext& context, CommandListType command_lists_type)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ICommandQueue::Create(context.GetInterface(), command_lists_type));
-}
-
-void CommandQueue::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool CommandQueue::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

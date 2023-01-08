@@ -51,10 +51,6 @@ public:
     META_RHI_API explicit CommandKit(const CommandQueue& command_queue);
     META_RHI_API CommandKit(const RenderContext& context, CommandListType command_lists_type);
 
-    META_RHI_API void Init(const CommandQueue& command_queue);
-    META_RHI_API void Init(const RenderContext& context, CommandListType command_lists_type);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API ICommandKit& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<ICommandKit> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

@@ -56,11 +56,6 @@ public:
     META_RHI_API ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument = {},
                                  const Opt<Data::Index>& frame_index = {});
 
-    META_RHI_API void Init(const Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);
-    META_RHI_API void InitCopy(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument = {},
-                               const Opt<Data::Index>& frame_index = {});
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IProgramBindings& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<IProgramBindings> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

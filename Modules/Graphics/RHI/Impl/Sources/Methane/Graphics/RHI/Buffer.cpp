@@ -55,14 +55,9 @@ Buffer::Buffer(IBuffer& interface_ref)
 {
 }
 
-void Buffer::Init(const IContext& context, const Settings& settings)
+Buffer::Buffer(const IContext& context, const BufferSettings& settings)
+    : Buffer(IBuffer::Create(context, settings))
 {
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBuffer::Create(context, settings));
-}
-
-void Buffer::Release()
-{
-    m_impl_ptr.reset();
 }
 
 bool Buffer::IsInitialized() const META_PIMPL_NOEXCEPT

@@ -58,9 +58,6 @@ public:
     META_RHI_API explicit RenderPass(IRenderPass& interface_ref);
     META_RHI_API RenderPass(const Pattern& render_pattern, const Settings& settings);
 
-    META_RHI_API void Init(const Pattern& render_pattern, const Settings& settings);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IRenderPass& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<IRenderPass> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

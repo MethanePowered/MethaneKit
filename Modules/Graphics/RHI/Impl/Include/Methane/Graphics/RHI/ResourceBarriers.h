@@ -57,12 +57,6 @@ public:
                                   const Opt<Barrier::StateChange>& state_change,
                                   const Opt<Barrier::OwnerChange>& owner_change);
 
-    META_RHI_API void Init(const Set& barriers);
-    META_RHI_API void Init(const Refs<IResource>& resources,
-                           const Opt<Barrier::StateChange>& state_change,
-                           const Opt<Barrier::OwnerChange>& owner_change);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IResourceBarriers& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<IResourceBarriers> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

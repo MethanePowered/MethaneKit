@@ -68,18 +68,6 @@ BufferSet::BufferSet(BufferType buffers_type, const Refs<Buffer>& buffer_refs)
 {
 }
 
-void BufferSet::Init(BufferType buffers_type, const Refs<Buffer>& buffer_refs)
-{
-    m_buffers.clear();
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IBufferSet::Create(buffers_type, GetIBufferRefs(buffer_refs)));
-}
-
-void BufferSet::Release()
-{
-    m_impl_ptr.reset();
-    m_buffers.clear();
-}
-
 bool BufferSet::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

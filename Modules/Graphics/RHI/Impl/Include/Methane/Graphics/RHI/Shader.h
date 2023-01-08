@@ -54,9 +54,6 @@ public:
     META_RHI_API explicit Shader(IShader& interface_ref);
     META_RHI_API Shader(Type type, const RenderContext& context, const Settings& settings);
 
-    META_RHI_API void Init(Type type, const RenderContext& context, const Settings& settings);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IShader& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<IShader> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

@@ -43,10 +43,7 @@ public:
 
     META_RHI_API explicit CommandListSet(const Ptr<ICommandListSet>& interface_ptr);
     META_RHI_API explicit CommandListSet(ICommandListSet& interface_ref);
-    META_RHI_API CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
-
-    META_RHI_API void Init(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt = {});
-    META_RHI_API void Release();
+    META_RHI_API CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt = {});
 
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API ICommandListSet& GetInterface() const META_PIMPL_NOEXCEPT;

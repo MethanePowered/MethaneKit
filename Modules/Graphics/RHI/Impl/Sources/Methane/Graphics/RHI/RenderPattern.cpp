@@ -59,16 +59,6 @@ RenderPattern::RenderPattern(const RenderContext& render_context, const Settings
 {
 }
 
-void RenderPattern::Init(const RenderContext& render_context, const Settings& settings)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IRenderPattern::Create(render_context.GetInterface(), settings));
-}
-
-void RenderPattern::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool RenderPattern::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

@@ -53,16 +53,6 @@ ViewState::ViewState(const Settings& settings)
 {
 }
 
-void ViewState::Init(const Settings& settings)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IViewState::Create(settings));
-}
-
-void ViewState::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool ViewState::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

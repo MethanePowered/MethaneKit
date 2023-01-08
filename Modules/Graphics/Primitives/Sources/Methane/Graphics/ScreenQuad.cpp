@@ -137,13 +137,13 @@ ScreenQuad::ScreenQuad(const Rhi::CommandQueue& render_cmd_queue, const Rhi::Ren
         state_settings.blending.render_targets[0].source_alpha_blend_factor = Rhi::IRenderState::Blending::Factor::Zero;
         state_settings.blending.render_targets[0].dest_alpha_blend_factor   = Rhi::IRenderState::Blending::Factor::Zero;
 
-        m_render_state.Init(render_context, state_settings);
+        m_render_state = render_context.CreateRenderState( state_settings);
         m_render_state.SetName(state_name);
 
         render_context.GetObjectRegistry().AddGraphicsObject(m_render_state.GetInterface());
     }
 
-    m_view_state.Init({
+    m_view_state = Rhi::ViewState({
         { GetFrameViewport(m_settings.screen_rect)    },
         { GetFrameScissorRect(m_settings.screen_rect) }
     });
@@ -158,7 +158,7 @@ ScreenQuad::ScreenQuad(const Rhi::CommandQueue& render_cmd_queue, const Rhi::Ren
         }
         else
         {
-            m_texture_sampler.Init(render_context, {
+            m_texture_sampler = render_context.CreateSampler( {
                 Rhi::ISampler::Filter(Rhi::ISampler::Filter::MinMag::Linear),
                 Rhi::ISampler::Address(Rhi::ISampler::Address::Mode::ClampToZero),
             });
@@ -175,12 +175,12 @@ ScreenQuad::ScreenQuad(const Rhi::CommandQueue& render_cmd_queue, const Rhi::Ren
         vertex_buffer_ptr)
     {
         Rhi::Buffer vertex_buffer(vertex_buffer_ptr);
-        m_vertex_buffer_set.Init(Rhi::BufferType::Vertex, { vertex_buffer });
+        m_vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
     }
     else
     {
         Rhi::Buffer vertex_buffer;
-        vertex_buffer.Init(render_context.GetInterface(),
+        vertex_buffer = render_context.CreateBuffer(
                            Rhi::BufferSettings::ForVertexBuffer(
                                quad_mesh.GetVertexDataSize(),
                                quad_mesh.GetVertexSize()));
@@ -193,7 +193,7 @@ ScreenQuad::ScreenQuad(const Rhi::CommandQueue& render_cmd_queue, const Rhi::Ren
             },
             m_render_cmd_queue);
         render_context.GetObjectRegistry().AddGraphicsObject(vertex_buffer.GetInterface());
-        m_vertex_buffer_set.Init(Rhi::BufferType::Vertex, { vertex_buffer });
+        m_vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
     }
 
     static const std::string s_index_buffer_name = "Screen-Quad Index Buffer";
@@ -204,7 +204,7 @@ ScreenQuad::ScreenQuad(const Rhi::CommandQueue& render_cmd_queue, const Rhi::Ren
     }
     else
     {
-        m_index_buffer.Init(render_context.GetInterface(),
+        m_index_buffer = render_context.CreateBuffer(
                             Rhi::BufferSettings::ForIndexBuffer(
                                 quad_mesh.GetIndexDataSize(),
                                 GetIndexFormat(quad_mesh.GetIndex(0))));
@@ -219,7 +219,7 @@ ScreenQuad::ScreenQuad(const Rhi::CommandQueue& render_cmd_queue, const Rhi::Ren
         render_context.GetObjectRegistry().AddGraphicsObject(m_index_buffer.GetInterface());
     }
 
-    m_const_buffer.Init(render_context.GetInterface(),
+    m_const_buffer = render_context.CreateBuffer(
                         Rhi::BufferSettings::ForConstantBuffer(static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants))));
     m_const_buffer.SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
@@ -233,7 +233,7 @@ ScreenQuad::ScreenQuad(const Rhi::CommandQueue& render_cmd_queue, const Rhi::Ren
         program_binding_resource_views.try_emplace(Rhi::Program::Argument(Rhi::ShaderType::Pixel, "g_sampler"), Rhi::ResourceViews{ { m_texture_sampler.GetInterface() } });
     }
 
-    m_const_program_bindings.Init(m_render_state.GetProgram(), program_binding_resource_views);
+    m_const_program_bindings = m_render_state.GetProgram().CreateBindings(program_binding_resource_views);
     m_const_program_bindings.SetName(fmt::format("{} Screen-Quad Constant Bindings", m_settings.name));
 
     UpdateConstantsBuffer();

@@ -53,16 +53,6 @@ Shader::Shader(Type type, const RenderContext& context, const Settings& settings
 {
 }
 
-void Shader::Init(Type type, const RenderContext& context, const Settings& settings)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IShader::Create(type, context.GetInterface(), settings));
-}
-
-void Shader::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool Shader::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

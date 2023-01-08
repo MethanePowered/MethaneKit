@@ -136,7 +136,7 @@ Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, Font& 
         state_settings.blending.render_targets[0].source_alpha_blend_factor = rhi::IRenderState::Blending::Factor::Zero;
         state_settings.blending.render_targets[0].dest_alpha_blend_factor   = rhi::IRenderState::Blending::Factor::Zero;
 
-        m_render_state.Init(GetUIContext().GetRenderContext(), state_settings);
+        m_render_state = GetUIContext().GetRenderContext().CreateRenderState(state_settings);
         m_render_state.SetName(m_settings.state_name);
 
         gfx_objects_registry.AddGraphicsObject(m_render_state.GetInterface());
@@ -145,7 +145,7 @@ Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, Font& 
     UpdateTextMesh();
 
     const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsBase();
-    m_view_state.Init({
+    m_view_state = rhi::ViewState({
         { gfx::GetFrameViewport(viewport_rect)    },
         { gfx::GetFrameScissorRect(viewport_rect) }
     });
@@ -158,7 +158,7 @@ Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, Font& 
     }
     else
     {
-        m_atlas_sampler.Init(GetUIContext().GetRenderContext(), {
+        m_atlas_sampler = GetUIContext().GetRenderContext().CreateSampler({
             rhi::ISampler::Filter(rhi::ISampler::Filter::MinMag::Linear),
             rhi::ISampler::Address(rhi::ISampler::Address::Mode::ClampToZero),
         });
@@ -436,7 +436,7 @@ void Text::FrameResources::InitializeProgramBindings(const rhi::RenderState& sta
     META_CHECK_ARG_TRUE(m_atlas_texture.IsInitialized());
     META_CHECK_ARG_TRUE(m_uniforms_buffer.IsInitialized());
 
-    m_program_bindings.Init(state.GetProgram(), {
+    m_program_bindings = state.GetProgram().CreateBindings({
         { { rhi::ShaderType::Vertex, "g_uniforms"  }, { { m_uniforms_buffer.GetInterface() } } },
         { { rhi::ShaderType::Pixel,  "g_constants" }, { { const_buffer.GetInterface()      } } },
         { { rhi::ShaderType::Pixel,  "g_texture"   }, { { m_atlas_texture.GetInterface()   } } },
@@ -485,7 +485,7 @@ bool Text::FrameResources::UpdateAtlasTexture(const rhi::Texture& new_atlas_text
 
     if (!m_atlas_texture.IsInitialized())
     {
-        m_program_bindings.Release();
+        m_program_bindings = {};
         return true;
     }
 
@@ -509,9 +509,9 @@ void Text::FrameResources::UpdateMeshBuffers(const rhi::RenderContext& render_co
     {
         const Data::Size  vertex_buffer_size = vertices_data_size * reservation_multiplier;
         rhi::Buffer vertex_buffer;
-        vertex_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForVertexBuffer(vertex_buffer_size, text_mesh.GetVertexSize()));
+        vertex_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForVertexBuffer(vertex_buffer_size, text_mesh.GetVertexSize()));
         vertex_buffer.SetName(fmt::format("{} Text Vertex Buffer {}", text_name, m_frame_index));
-        m_vertex_buffer_set.Init(rhi::BufferType::Vertex, { vertex_buffer });
+        m_vertex_buffer_set = rhi::BufferSet(rhi::BufferType::Vertex, { vertex_buffer });
     }
     m_vertex_buffer_set[0].SetData({
         rhi::SubResource(
@@ -527,7 +527,7 @@ void Text::FrameResources::UpdateMeshBuffers(const rhi::RenderContext& render_co
     if (!m_index_buffer.IsInitialized() || m_index_buffer.GetDataSize() < indices_data_size)
     {
         const Data::Size index_buffer_size = vertices_data_size * reservation_multiplier;
-        m_index_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForIndexBuffer(index_buffer_size, gfx::PixelFormat::R16Uint));
+        m_index_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForIndexBuffer(index_buffer_size, gfx::PixelFormat::R16Uint));
         m_index_buffer.SetName(fmt::format("{} Text Index Buffer {}", text_name, m_frame_index));
     }
 
@@ -560,7 +560,7 @@ void Text::FrameResources::UpdateUniformsBuffer(const rhi::RenderContext& render
 
     if (!m_uniforms_buffer.IsInitialized())
     {
-        m_uniforms_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForConstantBuffer(uniforms_data_size));
+        m_uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size));
         m_uniforms_buffer.SetName(fmt::format("{} Text Uniforms Buffer {}", text_name, m_frame_index));
 
         if (m_program_bindings.IsInitialized())
@@ -592,7 +592,7 @@ void Text::InitializeFrameResources()
 
     if (!m_const_buffer.IsInitialized())
     {
-        m_const_buffer.Init(render_context.GetInterface(), rhi::BufferSettings::ForConstantBuffer(static_cast<Data::Size>(sizeof(hlslpp::TextConstants))));
+        m_const_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(static_cast<Data::Size>(sizeof(hlslpp::TextConstants))));
         m_const_buffer.SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
     }
 

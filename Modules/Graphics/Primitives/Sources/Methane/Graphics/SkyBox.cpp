@@ -55,7 +55,7 @@ SkyBox::SkyBox(const Rhi::CommandQueue& render_cmd_queue,
     META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, Rhi::TextureDimensionType::Cube);
     m_mesh_buffers.SetTexture(cube_map_texture);
 
-    m_program.Init(m_context,
+    m_program = m_context.CreateProgram(
         Rhi::Program::Settings
         {
             Rhi::Program::ShaderSet
@@ -86,10 +86,10 @@ SkyBox::SkyBox(const Rhi::CommandQueue& render_cmd_queue,
     state_settings.depth.compare        = m_settings.render_options.HasAnyBit(Option::DepthReversed) ? Compare::GreaterEqual : Compare::Less;
     state_settings.rasterizer.is_front_counter_clockwise = true;
 
-    m_render_state.Init(m_context, state_settings);
+    m_render_state = m_context.CreateRenderState( state_settings);
     m_render_state.SetName("Sky-box render state");
 
-    m_texture_sampler.Init(m_context, {
+    m_texture_sampler = m_context.CreateSampler( {
         Rhi::ISampler::Filter(Rhi::ISampler::Filter::MinMag::Linear),
         Rhi::ISampler::Address(Rhi::ISampler::Address::Mode::ClampToZero),
         Rhi::ISampler::LevelOfDetail(m_settings.lod_bias)

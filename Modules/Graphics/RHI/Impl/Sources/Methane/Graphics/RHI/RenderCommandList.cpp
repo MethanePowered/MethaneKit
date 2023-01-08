@@ -66,16 +66,6 @@ RenderCommandList::RenderCommandList(const CommandQueue& command_queue, const Re
 {
 }
 
-void RenderCommandList::Init(const CommandQueue& command_queue, const RenderPass& render_pass)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IRenderCommandList::Create(command_queue.GetInterface(), render_pass.GetInterface()));
-}
-
-void RenderCommandList::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool RenderCommandList::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

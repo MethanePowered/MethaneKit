@@ -454,8 +454,8 @@ releasing render pass pipeline states:
 ```cpp
 void ShadowCubeApp::OnContextReleased(gfx::Context& context)
 {
-    m_final_pass.Release();
-    m_shadow_pass.Release();
+    m_final_pass = {};
+    m_shadow_pass = {};
 
     m_floor_buffers_ptr.reset();
     m_cube_buffers_ptr.reset();

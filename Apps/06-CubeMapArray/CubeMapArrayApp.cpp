@@ -90,7 +90,7 @@ void CubeMapArrayApp::Init()
     // Create render state with program
     rhi::RenderState::Settings render_state_settings
     {
-        rhi::Program(GetRenderContext(),
+        GetRenderContext().CreateProgram(
             rhi::Program::Settings
             {
                 rhi::Program::ShaderSet
@@ -118,7 +118,7 @@ void CubeMapArrayApp::Init()
     render_state_settings.program.SetName("Render Pipeline State");
     render_state_settings.depth.enabled = true;
     render_state_settings.depth.compare = gfx::Compare::GreaterEqual; // Reversed depth rendering
-    m_render_state.Init(GetRenderContext(), render_state_settings);
+    m_render_state = GetRenderContext().CreateRenderState( render_state_settings);
 
     // Create cube mesh buffer resources
     m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, std::move(cube_mesh), "ForCubeImage");
@@ -133,7 +133,7 @@ void CubeMapArrayApp::Init()
             )));
 
     // Create sampler for image texture
-    m_texture_sampler.Init(GetRenderContext(),
+    m_texture_sampler = GetRenderContext().CreateSampler(
         rhi::Sampler::Settings
         {
             rhi::Sampler::Filter  { rhi::Sampler::Filter::MinMag::Linear },
@@ -170,11 +170,11 @@ void CubeMapArrayApp::Init()
     for(CubeMapArrayFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering
-        frame.cube.uniforms_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
+        frame.cube.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
         frame.cube.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
-        frame.cube.program_bindings.Init(m_render_state.GetProgram(), {
+        frame.cube.program_bindings = m_render_state.GetProgram().CreateBindings({
             { { rhi::ShaderType::All,   "g_uniforms"      }, { { frame.cube.uniforms_buffer.GetInterface()  } } },
             { { rhi::ShaderType::Pixel, "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture().GetInterface() } } },
             { { rhi::ShaderType::Pixel, "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
@@ -182,7 +182,7 @@ void CubeMapArrayApp::Init()
         frame.cube.program_bindings.SetName(IndexedName("ForCubeImage Bindings", frame.index));
 
         // Create uniforms buffer for Sky-Box rendering
-        frame.sky_box.uniforms_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForConstantBuffer(sizeof(gfx::SkyBox::Uniforms), false, true));
+        frame.sky_box.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(sizeof(gfx::SkyBox::Uniforms), false, true));
         frame.sky_box.uniforms_buffer.SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering
@@ -190,9 +190,9 @@ void CubeMapArrayApp::Init()
         frame.sky_box.program_bindings.SetName(IndexedName("Space Sky-Box Bindings {}", frame.index));
         
         // Create command list for rendering
-        frame.render_cmd_list.Init(render_cmd_queue, frame.screen_pass);
+        frame.render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
         frame.render_cmd_list.SetName(IndexedName("ForCubeImage Rendering", frame.index));
-        frame.execute_cmd_list_set.Init({ frame.render_cmd_list.GetInterface() }, frame.index);
+        frame.execute_cmd_list_set = rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
     }
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
@@ -288,8 +288,8 @@ void CubeMapArrayApp::OnContextReleased(rhi::IContext& context)
 {
     m_sky_box_ptr.reset();
     m_cube_buffers_ptr.reset();
-    m_texture_sampler.Release();
-    m_render_state.Release();
+    m_texture_sampler = {};
+    m_render_state = {};
 
     UserInterfaceApp::OnContextReleased(context);
 }

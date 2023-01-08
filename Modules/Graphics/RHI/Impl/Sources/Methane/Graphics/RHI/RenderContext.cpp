@@ -67,16 +67,6 @@ RenderContext::RenderContext(const Platform::AppEnvironment& env, const Device& 
 {
 }
 
-void RenderContext::Init(const Platform::AppEnvironment& env, const Device& device, tf::Executor& parallel_executor, const Settings& settings)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(IRenderContext::Create(env, device.GetInterface(), parallel_executor, settings));
-}
-
-void RenderContext::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool RenderContext::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);
@@ -127,9 +117,9 @@ Shader RenderContext::CreateShader(ShaderType type, const ShaderSettings& settin
     return Shader(GetImpl(m_impl_ptr).CreateShader(type, settings));
 }
 
-Program RenderContext::CreateProgram(const ProgramSettings& settings) const
+Program RenderContext::CreateProgram(const ProgramSettingsImpl& settings) const
 {
-    return Program(GetImpl(m_impl_ptr).CreateProgram(settings));
+    return Program(GetImpl(m_impl_ptr).CreateProgram(ProgramSettingsImpl::Convert(GetInterface(), settings)));
 }
 
 Buffer RenderContext::CreateBuffer(const BufferSettings& settings) const
@@ -147,9 +137,9 @@ Sampler RenderContext::CreateSampler(const SamplerSettings& settings) const
     return Sampler(GetImpl(m_impl_ptr).CreateSampler(settings));
 }
 
-RenderState RenderContext::CreateRenderState(const RenderStateSettings& settings) const
+RenderState RenderContext::CreateRenderState(const RenderStateSettingsImpl& settings) const
 {
-    return RenderState(GetImpl(m_impl_ptr).CreateRenderState(settings));
+    return RenderState(GetImpl(m_impl_ptr).CreateRenderState(RenderStateSettingsImpl::Convert(settings)));
 }
 
 RenderPattern RenderContext::CreateRenderPattern(const RenderPatternSettings& settings) const

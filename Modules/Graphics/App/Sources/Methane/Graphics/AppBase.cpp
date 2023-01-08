@@ -94,7 +94,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
 
     // Create render context of the current window size
     m_initial_context_settings.frame_size = frame_size;
-    m_context.Init(env, device, GetParallelExecutor(), m_initial_context_settings);
+    m_context = device.CreateRenderContext(env, GetParallelExecutor(), m_initial_context_settings);
     m_context.SetName("Graphics Context");
     m_context.Connect(*this);
 
@@ -152,15 +152,15 @@ void AppBase::Init()
     // Create frame depth texture and attachment description
     if (context_settings.depth_stencil_format != PixelFormat::Unknown)
     {
-        m_depth_texture.Init(m_context, Rhi::TextureSettings::ForDepthStencil(m_context.GetSettings()));
+        m_depth_texture = m_context.CreateTexture(Rhi::TextureSettings::ForDepthStencil(m_context.GetSettings()));
         m_depth_texture.SetName("Depth Texture");
     }
 
     // Create screen render pass pattern
-    m_screen_render_pattern.Init(m_context, m_screen_pass_pattern_settings);
+    m_screen_render_pattern = m_context.CreateRenderPattern(m_screen_pass_pattern_settings);
     m_screen_render_pattern.SetName("Final Render Pass");
 
-    m_view_state.Init({
+    m_view_state = Rhi::ViewState({
         { GetFrameViewport(context_settings.frame_size)    },
         { GetFrameScissorRect(context_settings.frame_size) }
     });
@@ -319,7 +319,7 @@ Opt<AppBase::ResourceRestoreInfo> AppBase::ReleaseDepthTexture()
         return std::nullopt;
 
     ResourceRestoreInfo depth_restore_info(m_depth_texture.GetInterface());
-    m_depth_texture.Release();
+    m_depth_texture = {};
     return depth_restore_info;
 }
 
@@ -330,7 +330,7 @@ void AppBase::RestoreDepthTexture(const Opt<ResourceRestoreInfo>& depth_restore_
         return;
 
     const Rhi::RenderContext& render_context = GetRenderContext();
-    m_depth_texture.Init(render_context, Rhi::TextureSettings::ForDepthStencil(render_context.GetSettings()));
+    m_depth_texture = render_context.CreateTexture(Rhi::TextureSettings::ForDepthStencil(render_context.GetSettings()));
     m_depth_texture.RestoreDescriptorViews(depth_restore_info_opt->descriptor_by_view_id);
     m_depth_texture.SetName(depth_restore_info_opt->name);
 }
@@ -385,9 +385,9 @@ void AppBase::OnContextReleased(Rhi::IContext&)
     m_restore_animations_enabled = m_settings.animations_enabled;
     SetBaseAnimationsEnabled(false);
 
-    m_screen_render_pattern.Release();
-    m_depth_texture.Release();
-    m_view_state.Release();
+    m_screen_render_pattern = {};
+    m_depth_texture = {};
+    m_view_state = {};
 
     Deinitialize();
 }

@@ -59,16 +59,6 @@ TransferCommandList::TransferCommandList(const CommandQueue& command_queue)
 {
 }
 
-void TransferCommandList::Init(const CommandQueue& command_queue)
-{
-    m_impl_ptr = std::dynamic_pointer_cast<Impl>(ITransferCommandList::Create(command_queue.GetInterface()));
-}
-
-void TransferCommandList::Release()
-{
-    m_impl_ptr.reset();
-}
-
 bool TransferCommandList::IsInitialized() const META_PIMPL_NOEXCEPT
 {
     return static_cast<bool>(m_impl_ptr);

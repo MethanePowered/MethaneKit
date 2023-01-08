@@ -215,9 +215,9 @@ void TypographyApp::Init()
     // Create per-frame command lists
     for(TypographyFrame& frame : GetFrames())
     {
-        frame.render_cmd_list.Init(GetRenderContext().GetRenderCommandKit().GetQueue(), frame.screen_pass);
+        frame.render_cmd_list = GetRenderContext().GetRenderCommandKit().GetQueue().CreateRenderCommandList(frame.screen_pass);
         frame.render_cmd_list.SetName(IndexedName("Text Rendering", frame.index));
-        frame.execute_cmd_list_set.Init({ frame.render_cmd_list.GetInterface() }, frame.index);
+        frame.execute_cmd_list_set = rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
     }
 
     CompleteInitialization();

@@ -60,9 +60,6 @@ public:
     META_RHI_API explicit Sampler(ISampler& interface_ref);
     META_RHI_API Sampler(const RenderContext& context, const Settings& settings);
 
-    META_RHI_API void Init(const RenderContext& context, const Settings& settings);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API ISampler& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<ISampler> GetInterfacePtr() const META_PIMPL_NOEXCEPT;

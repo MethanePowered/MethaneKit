@@ -139,10 +139,10 @@ public:
 #endif
 
         // Create render state with program
-        m_render_state.Init(GetRenderContext(),
+        m_render_state = GetRenderContext().CreateRenderState(
             RenderState::Settings
             {
-                Program(GetRenderContext(),
+                GetRenderContext().CreateProgram(
                     Program::Settings
                     {
                         Program::ShaderSet
@@ -175,7 +175,7 @@ public:
         m_render_state.SetName("Colored ForCubeImage Pipeline State");
 
         // Create index buffer for cube mesh
-        m_index_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForIndexBuffer(m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0))));
+        m_index_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForIndexBuffer(m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0))));
         m_index_buffer.SetName("ForCubeImage Index Buffer");
         m_index_buffer.SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }, // NOSONAR
@@ -185,45 +185,44 @@ public:
 #ifdef UNIFORMS_BUFFER_ENABLED
         // Create constant vertex buffer
         Buffer vertex_buffer;
-        vertex_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize()));
+        vertex_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize()));
         vertex_buffer.SetName("Cube Vertex Buffer");
         vertex_buffer.SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
             GetRenderContext().GetRenderCommandKit().GetQueue()
         );
-        m_vertex_buffer_set.Init(BufferType::Vertex, { vertex_buffer });
+        m_vertex_buffer_set = Rhi::BufferSet(BufferType::Vertex, { vertex_buffer });
 
         const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
 #endif
 
         // Create per-frame command lists
+        m_render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
         for(HelloCubeFrame& frame : GetFrames())
         {
 #ifdef UNIFORMS_BUFFER_ENABLED
             // Create uniforms buffer with volatile parameters for frame rendering
-            frame.uniforms_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
+            frame.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
             frame.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
             // Configure program resource bindings
-            frame.program_bindings.Init(m_render_state.GetProgram(), {
+            frame.program_bindings = m_render_state.GetProgram().CreateBindings({
                 { { ShaderType::Vertex, "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } }
             }, frame.index);
             frame.program_bindings.SetName(IndexedName("Cube Bindings {}", frame.index));
 #else
             // Create vertex buffers for each frame
             Buffer vertex_buffer;
-            vertex_buffer.Init(GetRenderContext().GetInterface(), rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true));
+            vertex_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true));
             vertex_buffer.SetName(IndexedName("ForCubeImage Vertex Buffer", frame.index));
-            frame.vertex_buffer_set.Init(BufferType::Vertex, { vertex_buffer });
+            frame.vertex_buffer_set = Rhi::BufferSet(BufferType::Vertex, { vertex_buffer });
 #endif
 
             // Create command list for rendering
-            frame.render_cmd_list.Init(GetRenderContext().GetRenderCommandKit().GetQueue(), frame.screen_pass);
+            frame.render_cmd_list = m_render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
             frame.render_cmd_list.SetName(IndexedName("ForCubeImage Rendering", frame.index));
-            frame.execute_cmd_list_set.Init({ frame.render_cmd_list.GetInterface() }, frame.index);
+            frame.execute_cmd_list_set = Rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
         }
-
-        m_render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
 
         GraphicsApp::CompleteInitialization();
     }
@@ -303,10 +302,10 @@ public:
     void OnContextReleased(Rhi::IContext& context) override
     {
 #ifdef UNIFORMS_BUFFER_EANBLED
-        m_vertex_buffer_set.Release();
+        m_vertex_buffer_set = {};
 #endif
-        m_index_buffer.Release();
-        m_render_state.Release();
+        m_index_buffer = {};
+        m_render_state = {};
 
         GraphicsApp::OnContextReleased(context);
     }

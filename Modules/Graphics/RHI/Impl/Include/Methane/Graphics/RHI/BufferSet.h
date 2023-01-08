@@ -51,9 +51,6 @@ public:
     META_RHI_API explicit BufferSet(IBufferSet& interface_ref);
     META_RHI_API BufferSet(BufferType buffers_type, const Refs<Buffer>& buffer_refs);
 
-    META_RHI_API void Init(BufferType buffers_type, const Refs<Buffer>& buffer_refs);
-    META_RHI_API void Release();
-
     META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_RHI_API IBufferSet& GetInterface() const META_PIMPL_NOEXCEPT;
     META_RHI_API Ptr<IBufferSet> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
