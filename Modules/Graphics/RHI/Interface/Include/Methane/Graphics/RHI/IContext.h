@@ -24,8 +24,6 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 #pragma once
 
 #include "IObject.h"
-#include "IShader.h"
-#include "ICommandList.h"
 
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
@@ -92,15 +90,20 @@ struct IContextCallback
 struct IDevice;
 struct ICommandQueue;
 struct ICommandKit;
+struct IShader;
 struct IProgram;
 struct IBuffer;
 struct ITexture;
 struct ISampler;
 
+struct ShaderSettings;
 struct ProgramSettings;
 struct BufferSettings;
 struct TextureSettings;
 struct SamplerSettings;
+
+enum class CommandListType;
+enum class ShaderType : uint32_t;
 
 struct IContext
     : virtual IObject // NOSONAR
@@ -115,16 +118,16 @@ struct IContext
 
     // IContext interface
     [[nodiscard]] virtual Ptr<ICommandQueue> CreateCommandQueue(CommandListType type) const = 0;
-    [[nodiscard]] virtual Ptr<ICommandKit> CreateCommandKit(CommandListType type) const = 0;
-    [[nodiscard]] virtual Ptr<IShader> CreateShader(ShaderType type, const ShaderSettings& settings) const = 0;
-    [[nodiscard]] virtual Ptr<IProgram> CreateProgram(const ProgramSettings& settings) const = 0;
-    [[nodiscard]] virtual Ptr<IBuffer> CreateBuffer(const BufferSettings& settings) const = 0;
-    [[nodiscard]] virtual Ptr<ITexture> CreateTexture(const TextureSettings& settings) const = 0;
-    [[nodiscard]] virtual Ptr<ISampler> CreateSampler(const SamplerSettings& settings) const = 0;
-    [[nodiscard]] virtual Type GetType() const noexcept = 0;
-    [[nodiscard]] virtual OptionMask GetOptions() const noexcept = 0;
-    [[nodiscard]] virtual tf::Executor& GetParallelExecutor() const noexcept = 0;
-    [[nodiscard]] virtual IObjectRegistry& GetObjectRegistry() noexcept = 0;
+    [[nodiscard]] virtual Ptr<ICommandKit>   CreateCommandKit(CommandListType type) const = 0;
+    [[nodiscard]] virtual Ptr<IShader>       CreateShader(ShaderType type, const ShaderSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<IProgram>      CreateProgram(const ProgramSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<IBuffer>       CreateBuffer(const BufferSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<ITexture>      CreateTexture(const TextureSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<ISampler>      CreateSampler(const SamplerSettings& settings) const = 0;
+    [[nodiscard]] virtual Type               GetType() const noexcept = 0;
+    [[nodiscard]] virtual OptionMask         GetOptions() const noexcept = 0;
+    [[nodiscard]] virtual tf::Executor&      GetParallelExecutor() const noexcept = 0;
+    [[nodiscard]] virtual IObjectRegistry&   GetObjectRegistry() noexcept = 0;
     [[nodiscard]] virtual const IObjectRegistry& GetObjectRegistry() const noexcept = 0;
     virtual void RequestDeferredAction(DeferredAction action) const noexcept = 0;
     virtual void CompleteInitialization() = 0;

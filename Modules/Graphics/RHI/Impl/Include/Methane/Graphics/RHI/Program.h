@@ -37,17 +37,19 @@ namespace Methane::Graphics::Rhi
 
 class RenderContext;
 class Shader;
+class ProgramBindings;
 
 class Program
 {
 public:
-    using ShaderSet          = std::map<ShaderType, ShaderSettings>;
-    using InputBufferLayout  = ProgramInputBufferLayout;
-    using InputBufferLayouts = ProgramInputBufferLayouts;
-    using Argument           = ProgramArgument;
-    using Arguments          = ProgramArguments;
-    using ArgumentAccessor   = ProgramArgumentAccessor;
-    using ArgumentAccessors  = ProgramArgumentAccessors;
+    using ShaderSet               = std::map<ShaderType, ShaderSettings>;
+    using InputBufferLayout       = ProgramInputBufferLayout;
+    using InputBufferLayouts      = ProgramInputBufferLayouts;
+    using Argument                = ProgramArgument;
+    using Arguments               = ProgramArguments;
+    using ArgumentAccessor        = ProgramArgumentAccessor;
+    using ArgumentAccessors       = ProgramArgumentAccessors;
+    using ResourceViewsByArgument = IProgram::ResourceViewsByArgument;
 
     struct Settings
     {
@@ -80,6 +82,7 @@ public:
     META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IProgram interface methods
+    [[nodiscard]] META_RHI_API ProgramBindings        CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U) const;
     [[nodiscard]] META_RHI_API const ProgramSettings& GetSettings() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API const ShaderTypes&     GetShaderTypes() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API Shader                 GetShader(ShaderType shader_type) const;

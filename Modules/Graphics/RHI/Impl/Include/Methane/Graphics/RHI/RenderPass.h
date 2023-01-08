@@ -23,7 +23,6 @@ Methane RenderPass PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
-#include "RenderPattern.h"
 #include "Pimpl.h"
 
 #include <Methane/Graphics/RHI/IRenderPass.h>
@@ -35,6 +34,8 @@ class RenderPass;
 
 namespace Methane::Graphics::Rhi
 {
+
+class RenderPattern;
 
 class RenderPass
 {

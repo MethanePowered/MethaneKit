@@ -38,7 +38,24 @@ namespace Methane::Graphics::Rhi
 class Device;
 class CommandKit;
 class CommandQueue;
-class ObjectRegistry;
+class Shader;
+class Program;
+class Buffer;
+class Texture;
+class Sampler;
+class RenderState;
+class RenderPattern;
+
+struct ShaderSettings;
+struct ProgramSettings;
+struct BufferSettings;
+struct TextureSettings;
+struct SamplerSettings;
+struct RenderStateSettings;
+struct RenderPatternSettings;
+
+enum class CommandListType;
+enum class ShaderType : uint32_t;
 
 class RenderContext
 {
@@ -74,8 +91,17 @@ public:
     META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IContext interface methods
-    [[nodiscard]] META_RHI_API OptionMask GetOptions() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API tf::Executor& GetParallelExecutor() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API CommandQueue     CreateCommandQueue(CommandListType type) const;
+    [[nodiscard]] META_RHI_API CommandKit       CreateCommandKit(CommandListType type) const;
+    [[nodiscard]] META_RHI_API Shader           CreateShader(ShaderType type, const ShaderSettings& settings) const;
+    [[nodiscard]] META_RHI_API Program          CreateProgram(const ProgramSettings& settings) const;
+    [[nodiscard]] META_RHI_API Buffer           CreateBuffer(const BufferSettings& settings) const;
+    [[nodiscard]] META_RHI_API Texture          CreateTexture(const TextureSettings& settings) const;
+    [[nodiscard]] META_RHI_API Sampler          CreateSampler(const SamplerSettings& settings) const;
+    [[nodiscard]] META_RHI_API RenderState      CreateRenderState(const RenderStateSettings& settings) const;
+    [[nodiscard]] META_RHI_API RenderPattern    CreateRenderPattern(const RenderPatternSettings& settings) const;
+    [[nodiscard]] META_RHI_API OptionMask       GetOptions() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_RHI_API tf::Executor&    GetParallelExecutor() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API IObjectRegistry& GetObjectRegistry() const META_PIMPL_NOEXCEPT;
     META_RHI_API void RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT;
     META_RHI_API void CompleteInitialization() const;

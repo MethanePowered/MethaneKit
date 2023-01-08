@@ -24,6 +24,7 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 
 #include <Methane/Graphics/RHI/IRenderContext.h>
 #include <Methane/Graphics/RHI/IDevice.h>
+#include <Methane/Graphics/RHI/ICommandList.h>
 
 #include <Methane/Instrumentation.h>
 
@@ -104,6 +105,11 @@ Ptr<IRenderContext> IRenderContext::Create(const Platform::AppEnvironment& env, 
 {
     META_FUNCTION_TASK();
     return device.CreateRenderContext(env, parallel_executor, settings);
+}
+
+ICommandKit& IRenderContext::GetRenderCommandKit() const
+{
+    return GetDefaultCommandKit(CommandListType::Render);
 }
 
 } // namespace Methane::Graphics::Rhi

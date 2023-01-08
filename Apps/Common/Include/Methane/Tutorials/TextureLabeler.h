@@ -25,7 +25,7 @@ Renders text labels to the faces of cube-map texture array
 
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
-#include <Methane/Graphics/RHI/RenderPass.h>
+#include <Methane/Graphics/RHI/RenderPattern.h>
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/RHI/Texture.h>

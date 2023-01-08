@@ -22,6 +22,7 @@ Methane RenderPattern PIMPL wrappers for direct calls to final implementation.
 ******************************************************************************/
 
 #include <Methane/Graphics/RHI/RenderPattern.h>
+#include <Methane/Graphics/RHI/RenderPass.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 
 #include "Pimpl.hpp"
@@ -101,6 +102,11 @@ void RenderPattern::Connect(Data::Receiver<IObjectCallback>& receiver) const
 void RenderPattern::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
 {
     GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
+}
+
+RenderPass RenderPattern::CreateRenderPass(const RenderPassSettings& settings) const
+{
+    return RenderPass(GetImpl(m_impl_ptr).CreateRenderPass(settings));
 }
 
 RenderContext RenderPattern::GetRenderContext() const META_PIMPL_NOEXCEPT

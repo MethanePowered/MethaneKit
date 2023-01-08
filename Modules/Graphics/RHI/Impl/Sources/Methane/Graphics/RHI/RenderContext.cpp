@@ -25,6 +25,13 @@ Methane RenderContext PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/Device.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
+#include <Methane/Graphics/RHI/Shader.h>
+#include <Methane/Graphics/RHI/Program.h>
+#include <Methane/Graphics/RHI/Buffer.h>
+#include <Methane/Graphics/RHI/Texture.h>
+#include <Methane/Graphics/RHI/Sampler.h>
+#include <Methane/Graphics/RHI/RenderState.h>
+#include <Methane/Graphics/RHI/RenderPattern.h>
 
 #include "Pimpl.hpp"
 
@@ -103,6 +110,51 @@ void RenderContext::Connect(Data::Receiver<IObjectCallback>& receiver) const
 void RenderContext::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
 {
     GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
+}
+
+CommandQueue RenderContext::CreateCommandQueue(CommandListType type) const
+{
+    return CommandQueue(GetImpl(m_impl_ptr).CreateCommandQueue(type));
+}
+
+CommandKit RenderContext::CreateCommandKit(CommandListType type) const
+{
+    return CommandKit(GetImpl(m_impl_ptr).CreateCommandKit(type));
+}
+
+Shader RenderContext::CreateShader(ShaderType type, const ShaderSettings& settings) const
+{
+    return Shader(GetImpl(m_impl_ptr).CreateShader(type, settings));
+}
+
+Program RenderContext::CreateProgram(const ProgramSettings& settings) const
+{
+    return Program(GetImpl(m_impl_ptr).CreateProgram(settings));
+}
+
+Buffer RenderContext::CreateBuffer(const BufferSettings& settings) const
+{
+    return Buffer(GetImpl(m_impl_ptr).CreateBuffer(settings));
+}
+
+Texture RenderContext::CreateTexture(const TextureSettings& settings) const
+{
+    return Texture(GetImpl(m_impl_ptr).CreateTexture(settings));
+}
+
+Sampler RenderContext::CreateSampler(const SamplerSettings& settings) const
+{
+    return Sampler(GetImpl(m_impl_ptr).CreateSampler(settings));
+}
+
+RenderState RenderContext::CreateRenderState(const RenderStateSettings& settings) const
+{
+    return RenderState(GetImpl(m_impl_ptr).CreateRenderState(settings));
+}
+
+RenderPattern RenderContext::CreateRenderPattern(const RenderPatternSettings& settings) const
+{
+    return RenderPattern(GetImpl(m_impl_ptr).CreateRenderPattern(settings));
 }
 
 ContextOptionMask RenderContext::GetOptions() const META_PIMPL_NOEXCEPT

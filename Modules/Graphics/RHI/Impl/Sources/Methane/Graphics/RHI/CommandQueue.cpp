@@ -24,6 +24,12 @@ Methane CommandQueue PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
+#include <Methane/Graphics/RHI/CommandKit.h>
+#include <Methane/Graphics/RHI/Fence.h>
+#include <Methane/Graphics/RHI/RenderPass.h>
+#include <Methane/Graphics/RHI/RenderCommandList.h>
+#include <Methane/Graphics/RHI/ParallelRenderCommandList.h>
+#include <Methane/Graphics/RHI/TransferCommandList.h>
 
 #include "Pimpl.hpp"
 
@@ -102,6 +108,31 @@ void CommandQueue::Connect(Data::Receiver<IObjectCallback>& receiver) const
 void CommandQueue::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
 {
     GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
+}
+
+CommandKit CommandQueue::CreateCommandKit() const
+{
+    return CommandKit(GetImpl(m_impl_ptr).CreateCommandKit());
+}
+
+Fence CommandQueue::CreateFence() const
+{
+    return Fence(GetImpl(m_impl_ptr).CreateFence());
+}
+
+TransferCommandList CommandQueue::CreateTransferCommandList() const
+{
+    return TransferCommandList(GetImpl(m_impl_ptr).CreateTransferCommandList());
+}
+
+RenderCommandList CommandQueue::CreateRenderCommandList(RenderPass& render_pass) const
+{
+    return RenderCommandList(GetImpl(m_impl_ptr).CreateRenderCommandList(render_pass.GetInterface()));
+}
+
+ParallelRenderCommandList CommandQueue::CreateParallelRenderCommandList(RenderPass& render_pass) const
+{
+    return ParallelRenderCommandList(GetImpl(m_impl_ptr).CreateParallelRenderCommandList(render_pass.GetInterface()));
 }
 
 [[nodiscard]] const IContext& CommandQueue::GetContext() const META_PIMPL_NOEXCEPT

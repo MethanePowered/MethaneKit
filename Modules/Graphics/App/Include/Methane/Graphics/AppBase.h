@@ -33,6 +33,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
+#include <Methane/Graphics/RHI/RenderPattern.h>
 #include <Methane/Graphics/RHI/ViewState.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Checks.hpp>

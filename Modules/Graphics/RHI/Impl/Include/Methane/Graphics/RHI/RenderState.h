@@ -26,6 +26,7 @@ Methane RenderState PIMPL wrappers for direct calls to final implementation.
 #include "Pimpl.h"
 #include "Program.h"
 #include "RenderPass.h"
+#include "RenderPattern.h"
 
 #include <Methane/Graphics/RHI/IRenderState.h>
 

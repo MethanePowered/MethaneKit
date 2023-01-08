@@ -35,6 +35,8 @@ class Device;
 namespace Methane::Graphics::Rhi
 {
 
+class RenderContext;
+
 class Device
 {
     friend class System;
@@ -59,6 +61,7 @@ public:
     META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     // IDevice interface methods
+    [[nodiscard]] META_RHI_API RenderContext       CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) const;
     [[nodiscard]] META_RHI_API const std::string&  GetAdapterName() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API bool                IsSoftwareAdapter() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API const Capabilities& GetCapabilities() const META_PIMPL_NOEXCEPT;

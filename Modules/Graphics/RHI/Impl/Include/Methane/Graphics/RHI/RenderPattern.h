@@ -36,6 +36,9 @@ namespace Methane::Graphics::Rhi
 {
 
 class RenderContext;
+class RenderPass;
+
+struct RenderPassSettings;
 
 class RenderPattern
 {
@@ -72,6 +75,7 @@ public:
     META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IRenderPattern interface methods
+    [[nodiscard]] META_RHI_API RenderPass        CreateRenderPass(const RenderPassSettings& settings) const;
     [[nodiscard]] META_RHI_API RenderContext     GetRenderContext() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API const Settings&   GetSettings() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API Data::Size        GetAttachmentCount() const META_PIMPL_NOEXCEPT;

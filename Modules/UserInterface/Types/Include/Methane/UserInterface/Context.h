@@ -28,6 +28,7 @@ Methane user interface context used by all widgets for rendering.
 
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
+#include <Methane/Graphics/RHI/RenderPattern.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Data/TypeTraits.hpp>
 #include <Methane/Instrumentation.h>

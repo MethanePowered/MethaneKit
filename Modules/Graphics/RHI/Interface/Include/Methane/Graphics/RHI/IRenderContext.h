@@ -80,7 +80,7 @@ struct IRenderContext
     [[nodiscard]] static Ptr<IRenderContext> Create(const Platform::AppEnvironment& env, IDevice& device, tf::Executor& parallel_executor, const Settings& settings);
 
     // IRenderContext interface
-    [[nodiscard]] virtual Ptr<IRenderState> CreateRenderState(const RenderStateSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<IRenderState>   CreateRenderState(const RenderStateSettings& settings) const = 0;
     [[nodiscard]] virtual Ptr<IRenderPattern> CreateRenderPattern(const RenderPatternSettings& settings) = 0;
     [[nodiscard]] virtual bool ReadyToRender() const = 0;
     virtual void Resize(const FrameSize& frame_size) = 0;
@@ -95,7 +95,7 @@ struct IRenderContext
     virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;
     virtual bool SetFullScreen(bool is_full_screen) = 0;
 
-    [[nodiscard]] inline ICommandKit& GetRenderCommandKit() const { return GetDefaultCommandKit(CommandListType::Render); }
+    [[nodiscard]] ICommandKit& GetRenderCommandKit() const;
 };
 
 } // namespace Methane::Graphics::Rhi

@@ -24,6 +24,7 @@ Methane Program PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/Program.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/Shader.h>
+#include <Methane/Graphics/RHI/ProgramBindings.h>
 
 #include "Pimpl.hpp"
 
@@ -125,6 +126,11 @@ void Program::Connect(Data::Receiver<IObjectCallback>& receiver) const
 void Program::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
 {
     GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
+}
+
+ProgramBindings Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index) const
+{
+    return ProgramBindings(GetImpl(m_impl_ptr).CreateBindings(resource_views_by_argument, frame_index));
 }
 
 const ProgramSettings& Program::GetSettings() const META_PIMPL_NOEXCEPT
