@@ -106,7 +106,6 @@ if(METHANE_PRECOMPILED_HEADERS_ENABLED)
         PRIVATE
         ${MATH_PRECOMPILE_HEADERS}
         <directx/d3d12.h>
-        <directx/d3dx12.h>
     )
 endif()
 

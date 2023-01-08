@@ -36,7 +36,6 @@ DirectX 12 implementation of the render command list interface.
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
-#include <directx/d3dx12.h>
 
 namespace Methane::Graphics::Base
 {

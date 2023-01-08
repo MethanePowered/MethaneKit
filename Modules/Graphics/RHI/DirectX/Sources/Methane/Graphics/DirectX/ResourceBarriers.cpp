@@ -27,7 +27,7 @@ DirectX 12 specialization of the resource barriers.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <directx/d3dx12.h>
+#include <directx/d3dx12_barriers.h>
 
 namespace Methane::Graphics::Rhi
 {

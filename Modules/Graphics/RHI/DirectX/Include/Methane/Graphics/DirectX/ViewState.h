@@ -27,7 +27,6 @@ DirectX 12 implementation of the view state interface.
 
 #include <wrl.h>
 #include <directx/d3d12.h>
-#include <directx/d3dx12.h>
 
 namespace Methane::Graphics::Base
 {
@@ -56,8 +55,8 @@ public:
     void Apply(Base::RenderCommandList& command_list) override;
 
 private:
-    std::vector<CD3DX12_VIEWPORT> m_dx_viewports;
-    std::vector<CD3DX12_RECT>     m_dx_scissor_rects;
+    std::vector<D3D12_VIEWPORT> m_dx_viewports;
+    std::vector<D3D12_RECT>     m_dx_scissor_rects;
 };
 
 } // namespace Methane::Graphics::DirectX

@@ -25,7 +25,7 @@ DirectX 12 implementation of the buffer-set interface.
 
 #include <Methane/Graphics/Base/BufferSet.h>
 
-#include <directx/d3dx12.h>
+#include <directx/d3d12.h>
 
 namespace Methane::Graphics::DirectX
 {

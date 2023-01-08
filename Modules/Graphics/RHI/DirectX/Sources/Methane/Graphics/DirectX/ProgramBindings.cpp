@@ -36,7 +36,6 @@ DirectX 12 implementation of the program bindings interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <directx/d3dx12.h>
 #include <magic_enum.hpp>
 
 namespace Methane::Graphics::DirectX

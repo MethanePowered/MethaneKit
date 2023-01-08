@@ -38,6 +38,7 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
+#include <directx/d3dx12_resource_helpers.h>
 #include <DirectXTex.h>
 
 template<>

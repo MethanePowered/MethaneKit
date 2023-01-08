@@ -31,8 +31,6 @@ DirectX 12 implementation of the parallel render command list interface.
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 
-#include <directx/d3dx12.h>
-
 #include <fmt/format.h>
 #include <string_view>
 

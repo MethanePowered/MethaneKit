@@ -31,7 +31,7 @@ DirectX 12 implementation of the program interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Graphics/DirectX/ErrorHandling.h>
 
-#include <directx/d3dx12.h>
+#include <directx/d3dx12_root_signature.h>
 #include <d3dcompiler.h>
 
 #include <nowide/convert.hpp>

@@ -31,6 +31,7 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Checks.hpp>
 
 #include <magic_enum.hpp>
+#include <directx/d3dx12_core.h>
 
 namespace Methane::Graphics::DirectX
 {

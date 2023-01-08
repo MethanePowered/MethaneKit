@@ -31,8 +31,7 @@ DirectX 12 implementation of the view state interface.
 #include <Methane/Checks.hpp>
 
 #include <nowide/convert.hpp>
-#include <directx/d3dx12.h>
-#include <d3dcompiler.h>
+#include <directx/d3dx12_core.h>
 
 #include <algorithm>
 
@@ -51,7 +50,7 @@ namespace Methane::Graphics::DirectX
 {
 
 [[nodiscard]]
-static CD3DX12_VIEWPORT ViewportToD3D(const Viewport& viewport) noexcept
+static D3D12_VIEWPORT ViewportToD3D(const Viewport& viewport) noexcept
 {
     META_FUNCTION_TASK();
     return CD3DX12_VIEWPORT(static_cast<float>(viewport.origin.GetX()),   static_cast<float>(viewport.origin.GetY()),
@@ -60,7 +59,7 @@ static CD3DX12_VIEWPORT ViewportToD3D(const Viewport& viewport) noexcept
 }
 
 [[nodiscard]]
-static CD3DX12_RECT ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
+static D3D12_RECT ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
 {
     META_FUNCTION_TASK();
     return CD3DX12_RECT(static_cast<LONG>(scissor_rect.origin.GetX()), static_cast<LONG>(scissor_rect.origin.GetY()),
@@ -69,20 +68,20 @@ static CD3DX12_RECT ScissorRectToD3D(const ScissorRect& scissor_rect) noexcept
 }
 
 [[nodiscard]]
-static std::vector<CD3DX12_VIEWPORT> ViewportsToD3D(const Viewports& viewports) noexcept
+static std::vector<D3D12_VIEWPORT> ViewportsToD3D(const Viewports& viewports) noexcept
 {
     META_FUNCTION_TASK();
-    std::vector<CD3DX12_VIEWPORT> d3d_viewports;
+    std::vector<D3D12_VIEWPORT> d3d_viewports;
     std::transform(viewports.begin(), viewports.end(), std::back_inserter(d3d_viewports),
                    [](const Viewport& viewport) { return ViewportToD3D(viewport); });
     return d3d_viewports;
 }
 
 [[nodiscard]]
-static std::vector<CD3DX12_RECT> ScissorRectsToD3D(const ScissorRects& scissor_rects) noexcept
+static std::vector<D3D12_RECT> ScissorRectsToD3D(const ScissorRects& scissor_rects) noexcept
 {
     META_FUNCTION_TASK();
-    std::vector<CD3DX12_RECT> d3d_scissor_rects;
+    std::vector<D3D12_RECT> d3d_scissor_rects;
     std::transform(scissor_rects.begin(), scissor_rects.end(), std::back_inserter(d3d_scissor_rects),
                    [](const ScissorRect& scissor_rect) { return ScissorRectToD3D(scissor_rect); });
     return d3d_scissor_rects;

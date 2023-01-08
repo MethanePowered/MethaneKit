@@ -27,7 +27,6 @@ DirectX 12 implementation of the shader interface.
 
 #include <wrl.h>
 #include <directx/d3d12.h>
-#include <directx/d3dx12.h>
 #include <d3d12shader.h>
 
 namespace Methane::Data

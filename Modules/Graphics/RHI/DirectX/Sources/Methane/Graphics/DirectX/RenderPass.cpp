@@ -35,7 +35,8 @@ DirectX 12 implementation of the render pass interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <directx/d3dx12.h>
+#include <directx/d3dx12_core.h>
+#include <directx/d3dx12_render_pass.h>
 
 namespace Methane::Graphics::DirectX
 {
