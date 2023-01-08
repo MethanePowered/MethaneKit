@@ -146,7 +146,7 @@ else() # Clang or GCC on Linux/MacOS
 
     target_compile_options(MethaneBuildOptions INTERFACE
         # -flto - use the link-time optimizer
-        $<$<CONFIG:Release>:-Ofast -flto>
+        $<$<CONFIG:Release>:-flto>
         # Set maximum warnings level & treat warnings as errors
         -Wall -Wextra -Werror
         # Disable useless Clang and GCC warnings
