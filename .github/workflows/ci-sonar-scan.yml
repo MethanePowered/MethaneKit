@@ -61,7 +61,7 @@ jobs:
             build_wrapper_exe: "build-wrapper-win-x86-64"
             tests_coverage_reports: "Build/Output/VS2019-Win64-DX-Scan/Install/Tests/Coverage/*.xml"
 
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             os_name: linux
             name: "Ubuntu_VK_SonarScan"
             named_logo: Linux
@@ -71,7 +71,7 @@ jobs:
             build_wrapper_exe: "build-wrapper-linux-x86-64"
             tests_coverage_reports: "Build/Output/Make-Lin-VK-Scan/Build/MethaneTestCoverage.info"
 
-          - os: macos-latest
+          - os: macos-11
             os_name: macosx
             name: "MacOS_MTL_SonarScan"
             named_logo: Apple

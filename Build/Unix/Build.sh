@@ -163,7 +163,7 @@ fi
 
 if [ "$IS_ANALYZE_BUILD" == true ]; then
     BUILD_DIR=$CONFIG_DIR/Analyze
-    SONAR_SCANNER_VERSION=4.4.0.2170
+    SONAR_SCANNER_VERSION=4.7.0.2747
     SONAR_SCANNER_DIR=$OUTPUT_DIR/SonarScanner
     SONAR_BUILD_WRAPPER_EXE=$SONAR_SCANNER_DIR/build-wrapper-macosx-x86/build-wrapper-macosx-x86
     SONAR_SCANNER_EXE=$SONAR_SCANNER_DIR/sonar-scanner-$SONAR_SCANNER_VERSION-macosx/bin/sonar-scanner
