@@ -235,7 +235,7 @@ jobs:
           ls -la ./Coverage
 
       - name: Generate Code Coverage Reports
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.10
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.13
         with:
           reports: ${{ matrix.tests_coverage_reports }}
           targetdir: 'Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report'
