@@ -39,22 +39,18 @@ Methane Program PIMPL wrappers for direct calls to final implementation.
 namespace Methane::Graphics::Rhi
 {
 
-static IProgram::Shaders ConvertProgramShaderSet(const IContext& context, const Program::ShaderSet& shader_set)
-{
-    META_FUNCTION_TASK();
-    IProgram::Shaders shader_ptrs;
-    std::transform(shader_set.begin(), shader_set.end(), std::back_inserter(shader_ptrs),
-                   [&context](const std::pair<ShaderType, ShaderSettings>& shader_type_settings)
-                   { return IShader::Create(shader_type_settings.first, context, shader_type_settings.second); });
-    return shader_ptrs;
-}
-
 ProgramSettings ProgramSettingsImpl::Convert(const IContext& context, const ProgramSettingsImpl& settings)
 {
     META_FUNCTION_TASK();
+
+    IProgram::Shaders shader_ptrs;
+    std::transform(settings.shader_set.begin(), settings.shader_set.end(), std::back_inserter(shader_ptrs),
+                   [&context](const std::pair<ShaderType, ShaderSettings>& shader_type_settings)
+                   { return IShader::Create(shader_type_settings.first, context, shader_type_settings.second); });
+
     return ProgramSettings
     {
-        ConvertProgramShaderSet(context, settings.shader_set),
+        shader_ptrs,
         settings.input_buffer_layouts,
         settings.argument_accessors,
         settings.attachment_formats

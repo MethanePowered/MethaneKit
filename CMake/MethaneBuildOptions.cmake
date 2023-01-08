@@ -110,6 +110,7 @@ if (MSVC)
             /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
             /wd4324 # - C4324: structure was padded due to alignment specifier
             /wd4201 # - C4201: nonstandard extension used : nameless struct/union (used for bitfields with mask)
+            /wd4714 # - C4714: function marked as __forceinline not inlined
         )
 
         target_link_options(MethaneBuildOptions INTERFACE
