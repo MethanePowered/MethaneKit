@@ -124,7 +124,6 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
-          toolset: 17
 
       - name: CMake Configure Preset ${{ matrix.config_preset }}
         shell: bash
