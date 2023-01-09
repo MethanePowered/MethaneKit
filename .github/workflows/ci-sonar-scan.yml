@@ -40,7 +40,6 @@ env:
   product_ver_build: ${{ github.run_number }}
   sonar_server_url: "https://sonarcloud.io"
   sonar_organization: methane-powered
-  build_wrapper_out_dir: Build/Output/BuildWrapperOutput
   TRACY_NO_INVARIANT_CHECK: 1
 
 jobs:
@@ -51,34 +50,31 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-2019
+          - os: windows-latest
             os_name: windows
             name: "Win64_DX_SonarScan"
             named_logo: Windows
-            config_preset: "VS2019-Win64-DX-Scan"
-            build_preset: "VS2019-Win64-DX-Scan"
+            config_preset: "Ninja-Win-DX-Scan"
+            build_preset: "Ninja-Win-DX-Scan"
             sonar_project_key: "methane-powered-kit-windows"
-            build_wrapper_exe: "build-wrapper-win-x86-64"
             tests_coverage_reports: "Build/Output/VS2019-Win64-DX-Scan/Install/Tests/Coverage/*.xml"
 
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             os_name: linux
             name: "Ubuntu_VK_SonarScan"
             named_logo: Linux
-            config_preset: "Make-Lin-VK-Scan"
-            build_preset: "Make-Lin-VK-Scan"
+            config_preset: "Ninja-Lin-VK-Scan"
+            build_preset: "Ninja-Lin-VK-Scan"
             sonar_project_key: "methane-powered-kit-linux"
-            build_wrapper_exe: "build-wrapper-linux-x86-64"
             tests_coverage_reports: "Build/Output/Make-Lin-VK-Scan/Build/MethaneTestCoverage.info"
 
-          - os: macos-11
+          - os: macos-latest
             os_name: macosx
             name: "MacOS_MTL_SonarScan"
             named_logo: Apple
-            config_preset: "Xcode-Mac-MTL-Scan"
-            build_preset: "Xcode-Mac-MTL-Scan"
+            config_preset: "Ninja-Mac-MTL-Scan"
+            build_preset: "Ninja-Mac-MTL-Scan"
             sonar_project_key: "methane-powered-kit-macos"
-            build_wrapper_exe: "build-wrapper-macosx-x86"
             tests_coverage_reports: "Build/Output/Xcode-Mac-MTL-Scan/Install/Tests/Coverage/*.lcov"
 
     runs-on: ${{ matrix.os }}
@@ -103,8 +99,13 @@ jobs:
         with:
           dotnet-version: 6.0.400
 
-      - name: Install sonar-scanner and build-wrapper
+      - name: Install Sonar-Scanner
         uses: sonarsource/sonarcloud-github-c-cpp@v1
+
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+        with:
+          version: v1.11.1
 
       - name: Initialize Externals Cache
         uses: actions/cache@v3
@@ -125,11 +126,11 @@ jobs:
           mkdir -p "Build/Output/${{ matrix.config_preset }}"
           cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Build.log
 
-      - name: CMake Build Preset ${{ matrix.build_preset }} under Build-Wrapper
+      - name: CMake Build Preset ${{ matrix.build_preset }}
         shell: bash
         run: |
           set -o pipefail
-          ${{ matrix.build_wrapper_exe }} --out-dir "${{ env.build_wrapper_out_dir }}" cmake --build --preset ${{ matrix.build_preset }} --target install 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Build.log
+          cmake --build --preset ${{ matrix.build_preset }} --target install 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Build.log
 
       - name: Download OpenCppCoverage
         if: ${{ matrix.os_name == 'windows' }}
@@ -258,7 +259,7 @@ jobs:
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.organization=${{ env.sonar_organization }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectKey=${{ matrix.sonar_project_key }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectVersion=${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.cfamily.build-wrapper-output=${{ env.build_wrapper_out_dir }}"
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.cfamily.compile-commands=Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.testExecutionReportPaths=$TESTS_DIR/Results/MethaneDataTypesTest.xml,$TESTS_DIR/Results/MethaneDataEventsTest.xml,$TESTS_DIR/Results/MethaneDataRangeSetTest.xml,$TESTS_DIR/Results/MethanePlatformInputTest.xml,$TESTS_DIR/Results/MethaneGraphicsTypesTest.xml,$TESTS_DIR/Results/MethaneGraphicsCameraTest.xml,$TESTS_DIR/Results/MethaneUserInterfaceTypesTest.xml"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.coverageReportPaths=$TESTS_DIR/Coverage/Report/SonarQube.xml"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.scm.revision=${{ github.sha }}"

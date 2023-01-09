@@ -171,6 +171,10 @@
                 "METHANE_UNITY_BUILD_ENABLED": {
                     "type": "BOOL",
                     "value": "OFF"
+                },
+                "CMAKE_EXPORT_COMPILE_COMMANDS": {
+                    "type": "BOOL",
+                    "value": "ON"
                 }
             }
         },
@@ -189,6 +193,17 @@
         {
             "name": "Ninja-Profile-Vulkan",
             "inherits": "Ninja-Profile",
+            "hidden": true,
+            "cacheVariables": {
+                "METHANE_GFX_VULKAN_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
+            "name": "Ninja-Scan-Vulkan",
+            "inherits": "Ninja-Scan",
             "hidden": true,
             "cacheVariables": {
                 "METHANE_GFX_VULKAN_ENABLED": {
@@ -289,6 +304,24 @@
             "description": "Profiling configuration using Ninja Multi-Config generator for Windows (Vulkan)",
             "inherits": [
                 "Ninja-Profile-Vulkan",
+                "Ninja-Win-Default"
+            ]
+        },
+        {
+            "name": "Ninja-Win-DX-Scan",
+            "displayName": "Scan - Ninja Multi-Config - Windows (DirectX)",
+            "description": "Scanning configuration using Ninja Multi-Config generator for Windows (DirectX)",
+            "inherits": [
+                "Ninja-Scan",
+                "Ninja-Win-Default"
+            ]
+        },
+        {
+            "name": "Ninja-Win-VK-Scan",
+            "displayName": "Scan - Ninja Multi-Config - Windows (Vulkan)",
+            "description": "Scanning configuration using Ninja Multi-Config generator for Windows (Vulkan)",
+            "inherits": [
+                "Ninja-Scan-Vulkan",
                 "Ninja-Win-Default"
             ]
         },
@@ -605,6 +638,15 @@
                 "Ninja-Lin-Default"
             ]
         },
+        {
+            "name": "Ninja-Lin-VK-Scan",
+            "displayName": "Scan - Ninja Multi-Config - Linux (Vulkan)",
+            "description": "Scanning configuration using Ninja Multi-Config generator for Linux (Vulkan)",
+            "inherits": [
+                "Ninja-Scan",
+                "Ninja-Lin-Default"
+            ]
+        },
 
         {
             "name": "Make-Lin-VK-Release",
@@ -678,6 +720,15 @@
                     "value": "OFF"
                 }
             }
+        },
+        {
+            "name": "Ninja-Mac-MTL-Scan",
+            "displayName": "Scan - Ninja Multi-Config - MacOS (Metal)",
+            "description": "Scanning configuration using Ninja Multi-Config generator for MacOS (Metal)",
+            "inherits": [
+                "Ninja-Scan",
+                "Ninja-Mac-Default"
+            ]
         },
 
         {
@@ -857,6 +908,14 @@
             "configurePreset": "Ninja-Win-DX-Profile",
             "configuration": "RelWithDebInfo"
         },
+        {
+            "name": "Ninja-Win-DX-Scan",
+            "displayName": "Scan - Ninja Multi-Config - Windows (DirectX)",
+            "description": "Scanning build with Ninja Multi-Config for Windows (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "Ninja-Win-DX-Scan",
+            "configuration": "Debug"
+        },
 
         {
             "name": "Ninja-Win-VK-Debug",
@@ -881,6 +940,14 @@
             "inherits": [ "Windows-Build" ],
             "configurePreset": "Ninja-Win-VK-Profile",
             "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "Ninja-Win-VK-Scan",
+            "displayName": "Scan - Ninja Multi-Config - Windows (Vulkan)",
+            "description": "Scanning build with Ninja Multi-Config for Windows (Vulkan)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "Ninja-Win-VK-Scan",
+            "configuration": "Debug"
         },
 
         {
@@ -1137,6 +1204,14 @@
             "configurePreset": "Ninja-Lin-VK-Profile",
             "configuration": "RelWithDebInfo"
         },
+        {
+            "name": "Ninja-Lin-VK-Scan",
+            "displayName": "Scan - Ninja Multi-Config - Linux (Vulkan)",
+            "description": "Scanning build with Ninja Multi-Config for Linux (Vulkan)",
+            "inherits": [ "Linux-Build" ],
+            "configurePreset": "Ninja-Lin-VK-Scan",
+            "configuration": "Debug"
+        },
 
         {
             "name": "Make-Lin-VK-Debug",
@@ -1191,6 +1266,14 @@
             "inherits": [ "MacOS-Build" ],
             "configurePreset": "Ninja-Mac-MTL-Profile",
             "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "Ninja-Mac-MTL-Scan",
+            "displayName": "Scan - Ninja Multi-Config - MacOS (Metal)",
+            "description": "Scanning build with Ninja Multi-Config for MacOS (Metal)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Ninja-Mac-MTL-Scan",
+            "configuration": "Debug"
         },
 
         {
