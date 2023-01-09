@@ -103,9 +103,9 @@ jobs:
         uses: sonarsource/sonarcloud-github-c-cpp@v1
 
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
+        uses: seanmiddleditch/gha-setup-ninja@v3
         with:
-          version: v1.11.1
+          version: 1.11.1
 
       - name: Initialize Externals Cache
         uses: actions/cache@v3
