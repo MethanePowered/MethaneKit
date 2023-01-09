@@ -131,6 +131,7 @@ jobs:
           set -o pipefail
           mkdir -p "Build/Output/${{ matrix.config_preset }}"
           cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Build.log
+          ls -la "Build/Output/${{ matrix.config_preset }}/Build"
 
       - name: CMake Build Preset ${{ matrix.build_preset }}
         shell: bash
@@ -190,7 +191,6 @@ jobs:
 
       - name: Collect tests code coverage using ctest and gcov/lcov on Linux
         if: ${{ matrix.os_name == 'linux' }}
-        working-directory: 'Build/Output/${{ matrix.config_preset }}/Build'
         run: |
           cmake --build --preset ${{ matrix.build_preset }} --target MethaneTestCoverage
 
@@ -237,7 +237,7 @@ jobs:
 
       - name: Upload Build Log and Code Coverage to Testspace server
         if: ${{ always() }}
-        run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Build.log"
+        run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Build.log" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json"
 
       - name: Upload Code Coverage to CodeCov server
         uses: codecov/codecov-action@v3
@@ -256,9 +256,6 @@ jobs:
               SONAR_SCANNER_EXE=sonar-scanner.bat
           else
               SONAR_SCANNER_EXE=sonar-scanner
-          fi
-          if [ "${{ matrix.os_name }}" == "macosx" ]; then
-            SONAR_SCANNER_EXE="$SONAR_SCANNER_EXE -X"
           fi
           TESTS_DIR=Build/Output/${{ matrix.config_preset }}/Install/Tests
           SONAR_SCAN_CMD="$SONAR_SCANNER_EXE --define sonar.host.url=${{ env.sonar_server_url }}"
