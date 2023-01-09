@@ -57,7 +57,7 @@ jobs:
             config_preset: "Ninja-Win-DX-Scan"
             build_preset: "Ninja-Win-DX-Scan"
             sonar_project_key: "methane-powered-kit-windows"
-            tests_coverage_reports: "Build/Output/VS2019-Win64-DX-Scan/Install/Tests/Coverage/*.xml"
+            tests_coverage_reports: "Build/Output/Ninja-Win-DX-Scan/Install/Tests/Coverage/*.xml"
 
           - os: ubuntu-latest
             os_name: linux
@@ -66,7 +66,7 @@ jobs:
             config_preset: "Ninja-Lin-VK-Scan"
             build_preset: "Ninja-Lin-VK-Scan"
             sonar_project_key: "methane-powered-kit-linux"
-            tests_coverage_reports: "Build/Output/Make-Lin-VK-Scan/Build/MethaneTestCoverage.info"
+            tests_coverage_reports: "Build/Output/Ninja-Lin-VK-Scan/Build/MethaneTestCoverage.info"
 
           - os: macos-latest
             os_name: macosx
@@ -75,7 +75,7 @@ jobs:
             config_preset: "Ninja-Mac-MTL-Scan"
             build_preset: "Ninja-Mac-MTL-Scan"
             sonar_project_key: "methane-powered-kit-macos"
-            tests_coverage_reports: "Build/Output/Xcode-Mac-MTL-Scan/Install/Tests/Coverage/*.lcov"
+            tests_coverage_reports: "Build/Output/Ninja-Mac-MTL-Scan/Install/Tests/Coverage/*.lcov"
 
     runs-on: ${{ matrix.os }}
 
@@ -118,6 +118,13 @@ jobs:
         with:
           path: ~/.sonar/cache
           key: SonarCache-${{ runner.os }}
+
+      - name: Setup Developer Command Prompt for MSVC (VS2022 x64) to build with Ninja
+        if: ${{ matrix.os_name == 'windows' }}
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+          toolset: 17
 
       - name: CMake Configure Preset ${{ matrix.config_preset }}
         shell: bash
@@ -186,7 +193,7 @@ jobs:
         if: ${{ matrix.os_name == 'linux' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Build'
         run: |
-          make MethaneTestCoverage
+          cmake --build --preset ${{ matrix.build_preset }} --target MethaneTestCoverage
 
       - name: Run all unit-tests from install directory with LCov code coverage on MacOS
         if: ${{ matrix.os_name == 'macosx' }}
