@@ -291,13 +291,13 @@ jobs:
           eval "$SONAR_SCAN_CMD" 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Scan.log
 
       - name: Archive Scan Artifacts
-        if: ${{ steps.cmake_build.outputs.status == 'success' && always() }}
+        if: ${{ always() }}
         shell: bash
         working-directory: Build/Output/${{ matrix.config_preset }}/Install
         run: 7z a -t7z -mx=9 MethaneKit_${{ matrix.name }}.7z *
 
       - name: Upload Archived Scan Artifacts
-        if: ${{ steps.cmake_build.outputs.status == 'success' && always() }}
+        if: ${{ always() }}
         uses: actions/upload-artifact@v3
         with:
           name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
