@@ -103,7 +103,7 @@ jobs:
         uses: sonarsource/sonarcloud-github-c-cpp@v1
 
       - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@v3
+        uses: MethanePowered/gha-setup-ninja@master
         with:
           version: 1.11.1
 
