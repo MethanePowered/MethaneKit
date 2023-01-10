@@ -79,6 +79,12 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      BUILD_DIR: Build/Output/${{ matrix.config_preset }}/Build
+      INSTALL_DIR: Build/Output/${{ matrix.config_preset }}/Install
+      BUILD_LOG_FILE: Build/Output/${{ matrix.config_preset }}/Install/Build.log
+      COMPILE_COMMANDS_FILE: Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -129,24 +135,21 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          mkdir -p "Build/Output/${{ matrix.config_preset }}"
-          set BUILD_LOG_FILE=Build/Output/${{ matrix.config_preset }}/Install/Build.log
+          mkdir -p "$INSTALL_DIR"
           cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee $BUILD_LOG_FILE
-          ls -la "Build/Output/${{ matrix.config_preset }}/Build" 2>&1 | tee -a $BUILD_LOG_FILE
+          ls -la "$BUILD_DIR" 2>&1 | tee -a $BUILD_LOG_FILE
+          if [ -f $COMPILE_COMMANDS_FILE ]; then
+            cp "$COMPILE_COMMANDS_FILE" "$INSTALL_DIR"
+          else
+            echo "Compile commands file was not found!"
+          fi
 
       - name: CMake Build Preset ${{ matrix.build_preset }}
         id: cmake_build
         shell: bash
         run: |
           set -o pipefail
-          set BUILD_LOG_FILE=Build/Output/${{ matrix.config_preset }}/Install/Build.log
-          set COMPILE_COMMANDS_FILE=Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json
           cmake --build --preset ${{ matrix.build_preset }} --target install 2>&1 | tee -a $BUILD_LOG_FILE
-          if [ -f $COMPILE_COMMANDS_FILE ]; then
-            cp "$COMPILE_COMMANDS_FILE" "Build/Output/${{ matrix.config_preset }}/Install"
-          else
-            echo "Compile commands file was not found!"
-          fi
 
       - name: Download OpenCppCoverage
         if: ${{ matrix.os_name == 'windows' }}
