@@ -138,6 +138,12 @@ jobs:
         run: |
           set -o pipefail
           cmake --build --preset ${{ matrix.build_preset }} --target install 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Build.log
+          set COMPILE_COMMANDS_FILE=Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json
+          if [ -f "$COMPILE_COMMANDS_FILE" ]; then
+            cp "$COMPILE_COMMANDS_FILE" "Build/Output/${{ matrix.config_preset }}/Install"
+          else
+            echo "Compile commands file was not found!"
+          fi
 
       - name: Download OpenCppCoverage
         if: ${{ matrix.os_name == 'windows' }}
@@ -192,7 +198,8 @@ jobs:
       - name: Collect tests code coverage using ctest and gcov/lcov on Linux
         if: ${{ matrix.os_name == 'linux' }}
         run: |
-          cmake --build --preset ${{ matrix.build_preset }} --target MethaneTestCoverage
+          set -o pipefail
+          cmake --build --preset ${{ matrix.build_preset }} --target MethaneTestCoverage 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Build-Coverage.log
 
       - name: Run all unit-tests from install directory with LCov code coverage on MacOS
         if: ${{ matrix.os_name == 'macosx' }}
@@ -237,7 +244,7 @@ jobs:
 
       - name: Upload Build Log and Code Coverage to Testspace server
         if: ${{ always() }}
-        run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Build.log" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json"
+        run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Build.log"
 
       - name: Upload Code Coverage to CodeCov server
         uses: codecov/codecov-action@v3
@@ -257,6 +264,9 @@ jobs:
           else
               SONAR_SCANNER_EXE=sonar-scanner
           fi
+          if [ "${{ matrix.os_name }}" == "macosx" ]; then
+            SONAR_SCANNER_EXE="$SONAR_SCANNER_EXE -X"
+          fi
           TESTS_DIR=Build/Output/${{ matrix.config_preset }}/Install/Tests
           SONAR_SCAN_CMD="$SONAR_SCANNER_EXE --define sonar.host.url=${{ env.sonar_server_url }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.organization=${{ env.sonar_organization }}"
@@ -271,8 +281,19 @@ jobs:
             SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }}"
             SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}"
           fi
-          echo "$SONAR_SCAN_CMD"
-          eval "$SONAR_SCAN_CMD"
+          echo "$SONAR_SCAN_CMD" | tee Build/Output/${{ matrix.config_preset }}/Scan.log
+          eval "$SONAR_SCAN_CMD" 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Scan.log
+
+      - name: Archive Scan Artifacts
+        shell: bash
+        working-directory: Build/Output/${{ matrix.config_preset }}/Install
+        run: 7z a -t7z -mx=9 MethaneKit_${{ matrix.name }}.7z *
+
+      - name: Upload Archived Scan Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
+          path: Build/Output/${{ matrix.config_preset }}/Install/MethaneKit_${{ matrix.name }}.7z
 
       - name: Update Badge Parameters
         id: badge-params
