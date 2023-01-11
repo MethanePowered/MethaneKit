@@ -83,6 +83,8 @@ jobs:
       BUILD_DIR: Build/Output/${{ matrix.config_preset }}/Build
       INSTALL_DIR: Build/Output/${{ matrix.config_preset }}/Install
       BUILD_LOG_FILE: Build/Output/${{ matrix.config_preset }}/Install/Build.log
+      COVERAGE_LOG_FILE: Build/Output/${{ matrix.config_preset }}/Install/Coverage.log
+      SCAN_LOG_FILE: Build/Output/${{ matrix.config_preset }}/Install/SonarScan.log
       COMPILE_COMMANDS_FILE: Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json
 
     steps:
@@ -205,7 +207,7 @@ jobs:
         if: ${{ matrix.os_name == 'linux' }}
         run: |
           set -o pipefail
-          cmake --build --preset ${{ matrix.build_preset }} --target MethaneTestCoverage 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Install/Build-Coverage.log
+          cmake --build --preset ${{ matrix.build_preset }} --target MethaneTestCoverage 2>&1 | tee $COVERAGE_LOG_FILE
 
       - name: Run all unit-tests from install directory with LCov code coverage on MacOS
         if: ${{ matrix.os_name == 'macosx' }}
@@ -287,8 +289,14 @@ jobs:
             SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }}"
             SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}"
           fi
-          echo "$SONAR_SCAN_CMD" | tee Build/Output/${{ matrix.config_preset }}/Scan.log
-          eval "$SONAR_SCAN_CMD" 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Scan.log
+          set -o pipefail
+          echo "$SONAR_SCAN_CMD" | tee $SCAN_LOG_FILE
+          eval "$SONAR_SCAN_CMD" 2>&1 | tee -a $SCAN_LOG_FILE
+          cp sonar-project.properties $INSTALL_DIR
+          prop_files=(`find .sonar -name "sonar-scanner.properties"`)
+          for prop_file in "${prop_files[@]}"; do
+            cp $prop_file $INSTALL_DIR
+          done
 
       - name: Archive Scan Artifacts
         if: ${{ always() }}
