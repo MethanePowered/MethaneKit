@@ -60,6 +60,7 @@ if (APPLE)
     set_source_files_properties(
         ${SOURCES_PLATFORM_OS_DIR}/Keyboard.mm
         PROPERTIES
+            COMPILE_FLAGS -fobjc-arc
             SKIP_PRECOMPILE_HEADERS ON
     )
 endif()

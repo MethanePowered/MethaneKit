@@ -81,6 +81,7 @@ if (APPLE)
     set_source_files_properties(
         ${PLATFORM_SOURCES}
         PROPERTIES
+            COMPILE_FLAGS -fobjc-arc
             SKIP_PRECOMPILE_HEADERS ON
     )
 endif()

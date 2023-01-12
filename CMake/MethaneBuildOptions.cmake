@@ -180,13 +180,14 @@ else() # Clang or GCC on Linux/MacOS
 
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 
-        target_compile_options(MethaneBuildOptions INTERFACE
-            # Compile all C++ sources as Objective-C++ in case of RHI PIMPL inlining
-            $<$<AND:$<BOOL:METHANE_RHI_PIMPL_INLINE_ENABLED>,$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>>:-x objective-c++>
-            # Enable automatic reference counting in Objective-C
-            -fobjc-arc
-            #-fobjc-weak
-        )
+        if(METHANE_RHI_PIMPL_INLINE_ENABLED AND METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+            target_compile_options(MethaneBuildOptions INTERFACE
+                # Compile all C++ sources as Objective-C++ in case of RHI PIMPL inlining
+                -x objective-c++
+                # Enable automatic reference counting in Objective-C
+                -fobjc-arc
+            )
+        endif()
 
     endif()
 

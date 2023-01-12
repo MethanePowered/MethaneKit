@@ -87,10 +87,11 @@ set_target_properties(${TARGET}
 )
 
 if (APPLE)
-    # Disable precompiled headers on MacOS for Objective-C files:
+    # Disable precompiled headers and enable ARC on MacOS for Objective-C files:
     set_source_files_properties(
         ${PLATFORM_SOURCES}
         PROPERTIES
+            COMPILE_FLAGS -fobjc-arc
             SKIP_PRECOMPILE_HEADERS ON
     )
 endif()

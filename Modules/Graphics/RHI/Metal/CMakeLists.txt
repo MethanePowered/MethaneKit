@@ -104,7 +104,7 @@ set_target_properties(${TARGET}
 set_source_files_properties(
     ${SOURCES}
     PROPERTIES
-        COMPILE_FLAGS -fobjc-weak # CLANG_ENABLE_OBJC_WEAK = YES
+        COMPILE_FLAGS "-fobjc-arc -fobjc-weak"
         SKIP_PRECOMPILE_HEADERS ON
         SKIP_UNITY_BUILD_INCLUSION ON
 )
