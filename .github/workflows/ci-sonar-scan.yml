@@ -124,7 +124,7 @@ jobs:
       - name: Initialize Sonar Cache
         uses: actions/cache@v3
         with:
-          path: ~/.sonar/cache
+          path: .sonar/cache
           key: SonarCache-v2-${{ runner.os }}
 
       - name: Setup Developer Command Prompt for MSVC (VS2022 x64) to build with Ninja
