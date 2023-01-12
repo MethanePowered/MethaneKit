@@ -150,8 +150,10 @@
             "name": "Ninja-Scan",
             "description": "Static scanning Ninja Multi configuration for builds under Sonar Cloud code analyzer",
             "inherits": "Ninja-Default",
+            "generator": "Ninja",
             "hidden": true,
             "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
                 "METHANE_RHI_PIMPL_INLINE_ENABLED": {
                     "type": "BOOL",
                     "value": "OFF"
