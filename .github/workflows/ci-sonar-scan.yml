@@ -272,9 +272,7 @@ jobs:
           else
               SONAR_SCANNER_EXE=sonar-scanner
           fi
-          if [ "${{ matrix.os_name }}" == "macosx" ]; then
-            SONAR_SCANNER_EXE="$SONAR_SCANNER_EXE -X"
-          fi
+          # SONAR_SCANNER_EXE="$SONAR_SCANNER_EXE -X" # Uncomment to enable debug output
           TESTS_DIR=Build/Output/${{ matrix.config_preset }}/Install/Tests
           SONAR_SCAN_CMD="$SONAR_SCANNER_EXE --define sonar.host.url=${{ env.sonar_server_url }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.organization=${{ env.sonar_organization }}"
