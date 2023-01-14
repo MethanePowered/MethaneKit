@@ -147,7 +147,6 @@ jobs:
           fi
 
       - name: CMake Build Preset ${{ matrix.build_preset }}
-        id: cmake_build
         shell: bash
         run: |
           set -o pipefail
@@ -251,7 +250,7 @@ jobs:
           path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
 
       - name: Upload Build Log and Code Coverage to Testspace server
-        if: ${{ steps.cmake_build.outputs.status == 'success' && always() }}
+        if: ${{ always() }}
         run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Build.log"
 
       - name: Upload Code Coverage to CodeCov server
