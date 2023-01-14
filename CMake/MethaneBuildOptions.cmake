@@ -98,10 +98,9 @@ if (MSVC)
             #   /Oy  - Frame-Pointer Omission.
             # /GL - Whole program optimization
             # /GF - Eliminate duplicate strings
-            # /GS- - Disable buffer security checks
-            # /fp:fast - Fast floating point model
+            # /GS - Disable buffer security checks
             # /fp:except- - Disable floating point exceptions
-            $<$<CONFIG:Release>:/Ox /GL /GF /GS- /fp:fast /fp:except->
+            $<$<CONFIG:Release>:/Ox /GL /GF /GS- /fp:except->
             # Exception handling mode
             /EHsc
             # Set maximum warnings level and treat warnings as errors
