@@ -188,7 +188,7 @@ Rhi::Texture ImageLoader::LoadImagesToTextureCube(const Rhi::CommandQueue& targe
     META_FUNCTION_TASK();
 
     // Load face image data in parallel
-    TracyLockable(std::mutex, data_mutex)
+    TracyLockable(std::mutex, data_mutex);
     std::vector<std::pair<Data::Index, ImageData>> face_images_data;
     face_images_data.reserve(image_paths.size());
 
