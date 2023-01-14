@@ -5,6 +5,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY MethanePowered/DirectXShaderCompilerBinary
     GIT_TAG ae99e6a9291b5081e3270750767d9be1c432b735
     VERSION 1.6.2104
+    DOWNLOAD_ONLY YES
 )
 
 get_platform_arch_dir(PLATFORM_ARCH_DIR CPP_EXT)
