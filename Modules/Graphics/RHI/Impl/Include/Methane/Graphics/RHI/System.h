@@ -51,9 +51,9 @@ public:
 
     // ISystem interface methods
     META_RHI_API void CheckForChanges() const;
-    [[nodiscard]] META_RHI_API const Devices&    UpdateGpuDevices(const DeviceCaps& required_device_caps = {}) const;
-    [[nodiscard]] META_RHI_API const Devices&    UpdateGpuDevices(const Platform::AppEnvironment& app_env,
-                                                                  const DeviceCaps& required_device_caps = {}) const;
+    META_RHI_API const Devices& UpdateGpuDevices(const DeviceCaps& required_device_caps = {}) const;
+    META_RHI_API const Devices& UpdateGpuDevices(const Platform::AppEnvironment& app_env,
+                                                 const DeviceCaps& required_device_caps = {}) const;
     [[nodiscard]] META_RHI_API const Devices&    GetGpuDevices() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API Device            GetNextGpuDevice(const Device& device) const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API Device            GetSoftwareGpuDevice() const META_PIMPL_NOEXCEPT;

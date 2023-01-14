@@ -44,7 +44,7 @@ struct TypographyFrame final : gfx::AppFrame
 
 using UserInterfaceApp = UserInterface::App<TypographyFrame>;
 
-class TypographyApp final // NOSONAR
+class TypographyApp final // NOSONAR - destructor required
     : public UserInterfaceApp
     , private Data::Receiver<gui::IFontLibraryCallback> // NOSONAR
     , private Data::Receiver<gui::IFontCallback>        // NOSONAR

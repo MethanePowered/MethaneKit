@@ -37,8 +37,8 @@ struct HelloTriangleFrame final
 };
 
 using GraphicsApp = Graphics::App<HelloTriangleFrame>;
-class HelloTriangleApp final
-    : public GraphicsApp // NOSONAR
+class HelloTriangleApp final // NOSONAR - destructor required
+    : public GraphicsApp
 {
 private:
     Rhi::RenderState m_render_state;

@@ -184,7 +184,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
     m_render_cmd_list_set = rhi::CommandListSet(slice_render_cmd_list_refs);
 }
 
-void TextureLabeler::Render()
+void TextureLabeler::Render() const
 {
     META_DEBUG_GROUP_VAR(s_debug_group, "Texture Faces Rendering");
     for (const Slice& slice : m_slices)

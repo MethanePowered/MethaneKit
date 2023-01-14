@@ -38,40 +38,43 @@ MeshBuffersBase::MeshBuffersBase(const Rhi::CommandQueue& render_cmd_queue, cons
                                  std::string_view mesh_name, const Mesh::Subsets& mesh_subsets)
     : m_context(render_cmd_queue.GetContext())
     , m_mesh_name(mesh_name)
-    , m_mesh_subsets(!mesh_subsets.empty() ? mesh_subsets
-                                           : Mesh::Subsets{ Mesh::Subset(mesh_data.GetType(),
-                                                                         { 0, mesh_data.GetVertexCount() },
-                                                                         { 0, mesh_data.GetIndexCount()  }, true ) })
+    , m_mesh_subsets(!mesh_subsets.empty()
+                    ? mesh_subsets
+                    : Mesh::Subsets{
+                        Mesh::Subset(mesh_data.GetType(),
+                                     { 0, mesh_data.GetVertexCount() },
+                                     { 0, mesh_data.GetIndexCount()  }, true )
+                      })
 {
     META_FUNCTION_TASK();
 
     Rhi::Buffer vertex_buffer(m_context,
         Rhi::BufferSettings::ForVertexBuffer(
-            static_cast<Data::Size>(mesh_data.GetVertexDataSize()),
-            static_cast<Data::Size>(mesh_data.GetVertexSize())));
+            mesh_data.GetVertexDataSize(),
+            mesh_data.GetVertexSize()));
     vertex_buffer.SetName(fmt::format("{} Vertex Buffer", mesh_name));
     vertex_buffer.SetData({
         {
             mesh_data.GetVertexData(), // NOSONAR
-            static_cast<Data::Size>(mesh_data.GetVertexDataSize())
+            mesh_data.GetVertexDataSize()
         }
     }, render_cmd_queue);
     m_vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
 
     m_index_buffer = Rhi::Buffer(m_context,
         Rhi::BufferSettings::ForIndexBuffer(
-            static_cast<Data::Size>(mesh_data.GetIndexDataSize()),
+            mesh_data.GetIndexDataSize(),
             GetIndexFormat(mesh_data.GetIndex(0))));
     m_index_buffer.SetName(fmt::format("{} Index Buffer", mesh_name));
     m_index_buffer.SetData({
         {
             reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()), // NOSONAR
-            static_cast<Data::Size>(mesh_data.GetIndexDataSize())
+            mesh_data.GetIndexDataSize()
         }
     }, render_cmd_queue);
 }
 
-Rhi::ResourceBarriers MeshBuffersBase::CreateBeginningResourceBarriers(const Rhi::Buffer* constants_buffer_ptr)
+Rhi::ResourceBarriers MeshBuffersBase::CreateBeginningResourceBarriers(const Rhi::Buffer* constants_buffer_ptr) const
 {
     META_FUNCTION_TASK();
     Rhi::ResourceBarriers beginning_resource_barriers({
@@ -100,7 +103,7 @@ void MeshBuffersBase::Draw(const Rhi::RenderCommandList& cmd_list,
                            const Rhi::ProgramBindings& program_bindings,
                            uint32_t mesh_subset_index,
                            uint32_t instance_count,
-                           uint32_t start_instance)
+                           uint32_t start_instance) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_LESS_DESCR(mesh_subset_index, m_mesh_subsets.size(), "can not draw mesh subset because its index is out of bounds");
@@ -120,7 +123,7 @@ void MeshBuffersBase::Draw(const Rhi::RenderCommandList& cmd_list,
                            Rhi::ProgramBindingsApplyBehaviorMask bindings_apply_behavior,
                            uint32_t first_instance_index,
                            bool retain_bindings_once,
-                           bool set_resource_barriers)
+                           bool set_resource_barriers) const
 {
     META_FUNCTION_TASK();
     Draw(cmd_list, instance_program_bindings.begin(), instance_program_bindings.end(),
@@ -131,7 +134,7 @@ void MeshBuffersBase::Draw(const Rhi::RenderCommandList& cmd_list,
                            const ProgramBindingsIteratorType& instance_program_bindings_begin,
                            const ProgramBindingsIteratorType& instance_program_bindings_end,
                            Rhi::ProgramBindingsApplyBehaviorMask bindings_apply_behavior,
-                           uint32_t first_instance_index, bool retain_bindings_once, bool set_resource_barriers)
+                           uint32_t first_instance_index, bool retain_bindings_once, bool set_resource_barriers) const
 {
     META_FUNCTION_TASK();
     cmd_list.SetVertexBuffers(GetVertexBuffers(), set_resource_barriers);
@@ -165,7 +168,7 @@ void MeshBuffersBase::Draw(const Rhi::RenderCommandList& cmd_list,
 void MeshBuffersBase::DrawParallel(const Rhi::ParallelRenderCommandList& parallel_cmd_list,
                                    const std::vector<Rhi::ProgramBindings>& instance_program_bindings,
                                    Rhi::ProgramBindingsApplyBehaviorMask bindings_apply_behavior,
-                                   bool retain_bindings_once, bool set_resource_barriers)
+                                   bool retain_bindings_once, bool set_resource_barriers) const
 {
     META_FUNCTION_TASK();
     const std::vector<Rhi::RenderCommandList>& render_cmd_lists = parallel_cmd_list.GetParallelCommandLists();

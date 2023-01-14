@@ -32,10 +32,6 @@ by decoding them from popular image formats.
 #include <string>
 #include <array>
 
-#ifdef LoadImage
-#undef LoadImage
-#endif
-
 namespace Methane::Graphics
 {
 
@@ -88,7 +84,7 @@ public:
 
     explicit ImageLoader(Data::IProvider& data_provider);
 
-    [[nodiscard]] ImageData    LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const;
+    [[nodiscard]] ImageData    LoadImageData(const std::string& image_path, Data::Size channels_count, bool create_copy) const;
     [[nodiscard]] Rhi::Texture LoadImageToTexture2D(const Rhi::CommandQueue& target_cmd_queue, const std::string& image_path, ImageOptionMask options = {}, const std::string& texture_name = "") const;
     [[nodiscard]] Rhi::Texture LoadImagesToTextureCube(const Rhi::CommandQueue& target_cmd_queue, const CubeFaceResources& image_paths, ImageOptionMask options = {}, const std::string& texture_name = "") const;
 

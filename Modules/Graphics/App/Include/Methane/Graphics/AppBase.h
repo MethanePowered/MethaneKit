@@ -81,6 +81,7 @@ protected:
         ResourceRestoreInfo& operator=(ResourceRestoreInfo&& other) noexcept = default;
     };
 
+    Rhi::Device GetDefaultDevice() const;
     Rhi::TextureViews GetScreenPassAttachments(const Rhi::Texture& frame_buffer_texture) const;
     Rhi::RenderPass   CreateScreenRenderPass(const Rhi::Texture& frame_buffer_texture) const;
     Opt<ResourceRestoreInfo> ReleaseDepthTexture();

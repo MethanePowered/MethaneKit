@@ -60,7 +60,8 @@ struct HelloCubeFrame final : AppFrame
 };
 
 using GraphicsApp = App<HelloCubeFrame>;
-class HelloCubeApp final : public GraphicsApp // NOSONAR
+class HelloCubeApp final // NOSONAR - destructor required
+    : public GraphicsApp
 {
 private:
     struct CubeVertex

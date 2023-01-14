@@ -39,7 +39,8 @@ namespace Methane::Tutorials
 namespace gfx = Methane::Graphics;
 namespace rhi = Methane::Graphics::Rhi;
 
-struct CubeMapArrayFrame final : Graphics::AppFrame
+struct CubeMapArrayFrame final
+    : Graphics::AppFrame
 {
     gfx::MeshBufferBindings cube;
     gfx::MeshBufferBindings sky_box;
@@ -51,7 +52,8 @@ struct CubeMapArrayFrame final : Graphics::AppFrame
 
 using UserInterfaceApp = UserInterface::App<CubeMapArrayFrame>;
 
-class CubeMapArrayApp final : public UserInterfaceApp // NOSONAR
+class CubeMapArrayApp final // NOSONAR - destructor required
+    : public UserInterfaceApp
 {
 public:
     CubeMapArrayApp();

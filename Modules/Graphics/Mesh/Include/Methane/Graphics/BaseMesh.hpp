@@ -47,7 +47,7 @@ public:
     [[nodiscard]] const Vertices&   GetVertices() const noexcept             { return m_vertices; }
     [[nodiscard]] Data::Size        GetVertexCount() const noexcept final    { return static_cast<Data::Size>(m_vertices.size()); }
     [[nodiscard]] Data::Size        GetVertexDataSize() const noexcept final { return static_cast<Data::Size>(m_vertices.size() * GetVertexSize()); }
-    [[nodiscard]] Data::ConstRawPtr GetVertexData() const noexcept final     { return reinterpret_cast<Data::ConstRawPtr>(m_vertices.data()); }
+    [[nodiscard]] Data::ConstRawPtr GetVertexData() const noexcept final     { return reinterpret_cast<Data::ConstRawPtr>(m_vertices.data()); } // NOSONAR
 
 protected:
     template<typename FType>

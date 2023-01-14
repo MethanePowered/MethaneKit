@@ -129,7 +129,8 @@ protected:
 };
 
 template<typename UniformsType>
-class TexturedMeshBuffers : public MeshBuffers<UniformsType>
+class TexturedMeshBuffers
+    : public MeshBuffers<UniformsType>
 {
 protected:
     using Textures = std::vector<Rhi::Texture>;

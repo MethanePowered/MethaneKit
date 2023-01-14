@@ -51,7 +51,8 @@ struct TexturedCubeFrame final : Graphics::AppFrame
 
 using UserInterfaceApp = UserInterface::App<TexturedCubeFrame>;
 
-class TexturedCubeApp final : public UserInterfaceApp // NOSONAR
+class TexturedCubeApp final // NOSONAR - destructor required
+    : public UserInterfaceApp
 {
 public:
     TexturedCubeApp();

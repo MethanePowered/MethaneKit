@@ -45,11 +45,12 @@ public:
     class Bit
     {
     public:
-        explicit constexpr Bit(M i) noexcept : m_value(M{ 1 } << i) { }
-        constexpr Bit(E e) noexcept : Bit(static_cast<M>(e)) { }
+        explicit constexpr Bit(M i) noexcept : m_value(static_cast<M>(1) << i) { }
+        constexpr Bit(E e) noexcept // NOSONAR - intentionally not explicit
+            : Bit(static_cast<M>(e)) { }
 
         constexpr M GetValue() const noexcept { return m_value; }
-        constexpr operator M() const noexcept { return m_value; }
+        constexpr explicit operator M() const noexcept { return m_value; }
 
         constexpr M GetIndex() const noexcept { return floorLog2(m_value); }
         constexpr E GetEnum() const noexcept  { return static_cast<E>(GetIndex()); }
@@ -66,7 +67,8 @@ public:
     constexpr EnumMask() noexcept = default;
     constexpr explicit EnumMask(M value) noexcept : m_value(value) { }
     constexpr explicit EnumMask(Bit bit) noexcept : m_value(bit.GetValue()) { }
-    constexpr EnumMask(std::initializer_list<Bit> bits) noexcept : m_value(BitsToInt(bits.begin(), bits.end())) { }
+    constexpr EnumMask(std::initializer_list<Bit> bits) noexcept // NOSONAR - intentionally not explicit
+        : m_value(BitsToInt(bits.begin(), bits.end())) { }
 
     constexpr M GetValue() const noexcept { return m_value; }
 
@@ -93,8 +95,8 @@ public:
     constexpr EnumMask& operator^=(Bit bit) noexcept        { m_value ^= bit.GetValue();  return *this; }
     constexpr EnumMask& operator^=(EnumMask mask) noexcept  { m_value ^= mask.GetValue(); return *this; }
 
-    constexpr operator bool() const noexcept { return m_value != M{}; }
-    constexpr operator M() const noexcept    { return m_value; }
+    constexpr explicit operator bool() const noexcept { return m_value != M{}; }
+    constexpr explicit operator M() const noexcept    { return m_value; }
 
     constexpr EnumMask& SetBitOn(Bit bit) noexcept          { return *this |= bit; }
     constexpr EnumMask& SetBitOff(Bit bit) noexcept         { return *this &= ~EnumMask(bit); }

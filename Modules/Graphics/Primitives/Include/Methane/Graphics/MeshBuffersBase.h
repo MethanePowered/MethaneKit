@@ -71,25 +71,25 @@ public:
     [[nodiscard]] const Rhi::BufferSet& GetVertexBuffers() const noexcept  { return m_vertex_buffer_set; }
     [[nodiscard]] const Rhi::Buffer&    GetIndexBuffer() const noexcept    { return m_index_buffer; }
 
-    Rhi::ResourceBarriers CreateBeginningResourceBarriers(const Rhi::Buffer* constants_buffer_ptr = nullptr);
+    Rhi::ResourceBarriers CreateBeginningResourceBarriers(const Rhi::Buffer* constants_buffer_ptr = nullptr) const;
 
     void Draw(const Rhi::RenderCommandList& cmd_list, const Rhi::ProgramBindings& program_bindings,
-              uint32_t mesh_subset_index = 0U, uint32_t instance_count = 1U, uint32_t start_instance = 0U);
+              uint32_t mesh_subset_index = 0U, uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
 
     void Draw(const Rhi::RenderCommandList& cmd_list, const std::vector<Rhi::ProgramBindings>& instance_program_bindings,
               Rhi::ProgramBindingsApplyBehaviorMask bindings_apply_behavior = Rhi::ProgramBindingsApplyBehaviorMask(~0U),
-              uint32_t first_instance_index = 0U, bool retain_bindings_once = false, bool set_resource_barriers = true);
+              uint32_t first_instance_index = 0U, bool retain_bindings_once = false, bool set_resource_barriers = true) const;
 
     void Draw(const Rhi::RenderCommandList& cmd_list,
               const ProgramBindingsIteratorType& instance_program_bindings_begin,
               const ProgramBindingsIteratorType& instance_program_bindings_end,
               Rhi::ProgramBindingsApplyBehaviorMask bindings_apply_behavior = Rhi::ProgramBindingsApplyBehaviorMask(~0U),
-              uint32_t first_instance_index = 0U, bool retain_bindings_once = false, bool set_resource_barriers = true);
+              uint32_t first_instance_index = 0U, bool retain_bindings_once = false, bool set_resource_barriers = true) const;
 
     void DrawParallel(const Rhi::ParallelRenderCommandList& parallel_cmd_list,
                       const std::vector<Rhi::ProgramBindings>& instance_program_bindings,
                       Rhi::ProgramBindingsApplyBehaviorMask bindings_apply_behavior = Rhi::ProgramBindingsApplyBehaviorMask(~0U),
-                      bool retain_bindings_once = false, bool set_resource_barriers = true);
+                      bool retain_bindings_once = false, bool set_resource_barriers = true) const;
 
 protected:
     [[nodiscard]]

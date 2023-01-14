@@ -77,19 +77,29 @@ AppBase::~AppBase()
     }
 }
 
+Rhi::Device AppBase::GetDefaultDevice() const
+{
+    META_FUNCTION_TASK();
+    if (m_settings.default_device_index < 0)
+        return Rhi::System::Get().GetSoftwareGpuDevice();
+
+    const std::vector<Rhi::Device>& devices = Rhi::System::Get().GetGpuDevices();
+    META_CHECK_ARG_NOT_EMPTY_DESCR(devices, "no suitable GPU devices were found for application rendering");
+
+    if (static_cast<size_t>(m_settings.default_device_index) < devices.size())
+        return devices[m_settings.default_device_index];
+
+    return devices.front();
+}
+
 void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
     META_LOG("\n====================== CONTEXT INITIALIZATION ======================");
 
-    const std::vector<Rhi::Device>& devices = Rhi::System::Get().UpdateGpuDevices(env, m_settings.device_capabilities);
-    META_CHECK_ARG_NOT_EMPTY_DESCR(devices, "no suitable GPU devices were found for application rendering");
-
-    const Rhi::Device device = m_settings.default_device_index < 0
-                             ? Rhi::System::Get().GetSoftwareGpuDevice()
-                             : static_cast<size_t>(m_settings.default_device_index) < devices.size()
-                                 ? devices[m_settings.default_device_index]
-                                 : devices.front();
+    // Get default device for rendering
+    Rhi::System::Get().UpdateGpuDevices(env, m_settings.device_capabilities);
+    const Rhi::Device device = GetDefaultDevice();
     META_CHECK_ARG_TRUE(device.IsInitialized());
 
     // Create render context of the current window size
@@ -109,8 +119,8 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
             attachment_index++,
             m_initial_context_settings.color_format, 1U,
             m_initial_context_settings.clear_color.has_value()
-            ? Rhi::IRenderPass::Attachment::LoadAction::Clear
-            : Rhi::IRenderPass::Attachment::LoadAction::DontCare,
+                ? Rhi::IRenderPass::Attachment::LoadAction::Clear
+                : Rhi::IRenderPass::Attachment::LoadAction::DontCare,
             Rhi::IRenderPass::Attachment::StoreAction::Store,
             m_initial_context_settings.clear_color.value_or(Color4F())
         )
@@ -124,8 +134,8 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
             attachment_index++,
             m_initial_context_settings.depth_stencil_format, 1U,
             m_initial_context_settings.clear_depth_stencil.has_value()
-            ? Rhi::IRenderPass::Attachment::LoadAction::Clear
-            : Rhi::IRenderPass::Attachment::LoadAction::DontCare,
+                ? Rhi::IRenderPass::Attachment::LoadAction::Clear
+                : Rhi::IRenderPass::Attachment::LoadAction::DontCare,
             Rhi::IRenderPass::Attachment::StoreAction::DontCare,
             m_initial_context_settings.clear_depth_stencil.value_or(s_default_depth_stencil).first
         );

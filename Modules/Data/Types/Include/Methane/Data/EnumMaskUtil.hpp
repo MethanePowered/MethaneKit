@@ -52,7 +52,7 @@ constexpr void ConstexprForEach(const std::array<T, N>& values, F&& functor)
     if constexpr (Start < End)
     {
         functor(values[Start]);
-        ConstexprForEach<Start + 1, End>(values, functor);
+        ConstexprForEach<Start + 1, End>(values, std::forward<F>(functor));
     }
 }
 
@@ -83,7 +83,7 @@ constexpr auto GetEnumMaskBitsArray()
 template<typename T, size_t N, typename F>
 constexpr void ConstexprForEach(const std::array<T, N>& values, F&& functor)
 {
-    Impl::ConstexprForEach<0, N, T, N, F>(values, std::move(functor));
+    Impl::ConstexprForEach<0, N, T, N, F>(values, std::forward<F>(functor));
 }
 
 template<typename E, typename M, typename F>

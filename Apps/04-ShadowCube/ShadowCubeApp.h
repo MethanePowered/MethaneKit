@@ -40,7 +40,8 @@ namespace Methane::Tutorials
 namespace gfx = Methane::Graphics;
 namespace rhi = Methane::Graphics::Rhi;
 
-struct ShadowCubeFrame final : gfx::AppFrame
+struct ShadowCubeFrame final
+    : gfx::AppFrame
 {
     struct PassResources
     {
@@ -67,7 +68,8 @@ struct ShadowCubeFrame final : gfx::AppFrame
 
 using UserInterfaceApp = UserInterface::App<ShadowCubeFrame>;
 
-class ShadowCubeApp final : public UserInterfaceApp // NOSONAR
+class ShadowCubeApp final // NOSONAR - destructor required
+    : public UserInterfaceApp
 {
 public:
     ShadowCubeApp();

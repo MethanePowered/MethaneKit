@@ -104,7 +104,7 @@ public:
     TextureLabeler(gui::Context& gui_context, const Data::IProvider& font_provider,
                    const rhi::Texture& rt_texture, rhi::ResourceState rt_texture_final_state, const Settings& settings);
 
-    void Render();
+    void Render() const;
 
 private:
     struct Slice : SliceDesc

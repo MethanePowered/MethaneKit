@@ -46,10 +46,6 @@ by decoding them from popular image formats.
 
 #endif
 
-#ifdef LoadImage
-#undef LoadImage
-#endif
-
 namespace Methane::Graphics
 {
 
@@ -96,7 +92,7 @@ ImageLoader::ImageLoader(Data::IProvider& data_provider)
     META_FUNCTION_TASK();
 }
 
-ImageData ImageLoader::LoadImage(const std::string& image_path, Data::Size channels_count, bool create_copy) const
+ImageData ImageLoader::LoadImageData(const std::string& image_path, Data::Size channels_count, bool create_copy) const
 {
     META_FUNCTION_TASK();
 
@@ -173,7 +169,7 @@ Rhi::Texture ImageLoader::LoadImageToTexture2D(const Rhi::CommandQueue& target_c
                                                ImageOptionMask options, const std::string& texture_name) const
 {
     META_FUNCTION_TASK();
-    const ImageData    image_data   = LoadImage(image_path, 4, false);
+    const ImageData    image_data   = LoadImageData(image_path, 4, false);
     const PixelFormat  image_format = GetDefaultImageFormat(options.HasAnyBit(ImageOption::SrgbColorSpace));
 
     Rhi::Texture texture(target_cmd_queue.GetContext(),
@@ -192,7 +188,7 @@ Rhi::Texture ImageLoader::LoadImagesToTextureCube(const Rhi::CommandQueue& targe
     META_FUNCTION_TASK();
 
     // Load face image data in parallel
-    TracyLockable(std::mutex, data_mutex);
+    TracyLockable(std::mutex, data_mutex)
     std::vector<std::pair<Data::Index, ImageData>> face_images_data;
     face_images_data.reserve(image_paths.size());
 
@@ -201,10 +197,10 @@ Rhi::Texture ImageLoader::LoadImagesToTextureCube(const Rhi::CommandQueue& targe
         [this, &image_paths, &face_images_data, &data_mutex](const uint32_t face_index)
         {
             META_FUNCTION_TASK();
-            // We create a copy of the loaded image data (via 3-rd argument of LoadImage)
+            // We create a copy of the loaded image data (via 3-rd argument of LoadImageData)
             // to resolve a problem of STB image loader which requires an image data to be freed before next image is loaded
             constexpr uint32_t desired_channels_count = 4;
-            ImageData image_data = LoadImage(image_paths[face_index], desired_channels_count, true);
+            ImageData image_data = LoadImageData(image_paths[face_index], desired_channels_count, true);
 
             std::scoped_lock data_lock(data_mutex);
             face_images_data.emplace_back(face_index, std::move(image_data));

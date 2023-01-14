@@ -41,7 +41,8 @@ namespace Methane::Tutorials
 namespace gfx = Methane::Graphics;
 namespace rhi = Methane::Graphics::Rhi;
 
-struct ParallelRenderingFrame final : Graphics::AppFrame
+struct ParallelRenderingFrame final
+    : Graphics::AppFrame
 {
     gfx::InstancedMeshBufferBindings cubes_array;
     rhi::ParallelRenderCommandList   parallel_render_cmd_list;
@@ -53,7 +54,8 @@ struct ParallelRenderingFrame final : Graphics::AppFrame
 
 using UserInterfaceApp = UserInterface::App<ParallelRenderingFrame>;
 
-class ParallelRenderingApp final : public UserInterfaceApp // NOSONAR
+class ParallelRenderingApp final // NOSONAR - destructor required
+    : public UserInterfaceApp
 {
 public:
     struct Settings
