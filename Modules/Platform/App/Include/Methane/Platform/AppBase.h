@@ -37,7 +37,7 @@ Base application interface and platform-independent implementation.
 
 namespace tf // NOSONAR
 {
-// TaskFlow Executor class forward declaration:
+// TaskFlow Executor class forward declaration from <taskflow/core/executor.hpp>
 // #include <taskflow/core/executor.hpp>
 class Executor;
 }

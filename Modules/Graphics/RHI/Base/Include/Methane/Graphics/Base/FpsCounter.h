@@ -50,8 +50,6 @@ public:
     void OnCpuFramePresented() noexcept;
 
 private:
-    void ResetPresentTimer() noexcept;
-
     Timer              m_frame_timer;
     Timer              m_present_timer;
     double             m_present_on_gpu_wait_time_sec = 0.0;

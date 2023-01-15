@@ -39,13 +39,8 @@ namespace Methane::Graphics::Rhi
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderPattern);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderPattern);
 
-RenderPattern::RenderPattern(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 RenderPattern::RenderPattern(const Ptr<IRenderPattern>& interface_ptr)
-    : RenderPattern(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 

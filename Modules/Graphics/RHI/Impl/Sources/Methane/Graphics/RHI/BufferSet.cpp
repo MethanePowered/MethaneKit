@@ -48,13 +48,8 @@ static Refs<IBuffer> GetIBufferRefs(const Refs<Buffer>& buffer_refs)
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(BufferSet);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(BufferSet);
 
-BufferSet::BufferSet(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 BufferSet::BufferSet(const Ptr<IBufferSet>& interface_ptr)
-    : BufferSet(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 

@@ -37,13 +37,8 @@ namespace Methane::Graphics::Rhi
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandKit);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(CommandKit);
 
-CommandKit::CommandKit(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 CommandKit::CommandKit(const Ptr<ICommandKit>& interface_ptr)
-    : CommandKit(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 

@@ -38,7 +38,7 @@ namespace Methane::Graphics::Rhi
 class RenderContext;
 class ResourceBarriers;
 
-class Sampler
+class Sampler // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using Filter        = SamplerFilter;
@@ -95,8 +95,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::Sampler;
-
-    META_RHI_API Sampler(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };

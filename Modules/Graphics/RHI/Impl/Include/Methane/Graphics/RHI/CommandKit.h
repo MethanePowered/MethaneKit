@@ -40,7 +40,7 @@ class RenderContext;
 class RenderCommandList;
 class CommandListSet;
 
-class CommandKit
+class CommandKit // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandKit);
@@ -76,8 +76,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::Base::CommandKit;
-
-    META_RHI_API CommandKit(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };

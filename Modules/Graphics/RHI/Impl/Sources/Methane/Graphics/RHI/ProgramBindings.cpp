@@ -38,13 +38,8 @@ namespace Methane::Graphics::Rhi
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ProgramBindings);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(ProgramBindings);
 
-ProgramBindings::ProgramBindings(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 ProgramBindings::ProgramBindings(const Ptr<IProgramBindings>& interface_ptr)
-    : ProgramBindings(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 

@@ -37,7 +37,7 @@ namespace Methane::Graphics::Rhi
 
 class CommandQueue;
 
-class Fence
+class Fence // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Fence);
@@ -68,8 +68,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::Fence;
-
-    META_RHI_API Fence(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };

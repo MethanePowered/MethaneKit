@@ -45,7 +45,7 @@ public:
 protected:
     void SetDeviceCapabilities(const Rhi::DeviceCaps& device_caps) { m_device_caps = device_caps; }
     void ClearDevices() { m_devices.clear(); }
-    void AddDevice(const Ptr<Rhi::IDevice>& device_ptr) { m_devices.emplace_back(device_ptr); }
+    void AddDevice(Ptr<Rhi::IDevice> device_ptr);
     void RequestRemoveDevice(Rhi::IDevice& device) const;
     void RemoveDevice(Rhi::IDevice& device);
 

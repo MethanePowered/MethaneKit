@@ -38,7 +38,7 @@ namespace Methane::Graphics::Rhi
 class CommandQueue;
 class CommandListDebugGroup;
 
-class TransferCommandList
+class TransferCommandList // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using Type        = CommandListType;
@@ -66,12 +66,10 @@ public:
     META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // ICommandList interface methods
-    META_RHI_API void  PushDebugGroup(DebugGroup& debug_group) const;
+    META_RHI_API void  PushDebugGroup(const DebugGroup& debug_group) const;
     META_RHI_API void  PopDebugGroup() const;
-    META_RHI_API void  Reset(DebugGroup* debug_group_ptr = nullptr) const;
-    META_RHI_API void  ResetOnce(DebugGroup* debug_group_ptr = nullptr) const;
-    META_RHI_API void  SetProgramBindings(IProgramBindings& program_bindings,
-                                          ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
+    META_RHI_API void  Reset(const DebugGroup* debug_group_ptr = nullptr) const;
+    META_RHI_API void  ResetOnce(const DebugGroup* debug_group_ptr = nullptr) const;
     META_RHI_API void  SetResourceBarriers(const IResourceBarriers& resource_barriers) const;
     META_RHI_API void  Commit() const;
     META_RHI_API void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;
@@ -85,8 +83,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::TransferCommandList;
-
-    META_RHI_API TransferCommandList(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };

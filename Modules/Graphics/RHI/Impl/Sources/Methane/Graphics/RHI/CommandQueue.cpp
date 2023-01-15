@@ -45,13 +45,8 @@ namespace Methane::Graphics::Rhi
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandQueue);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(CommandQueue);
 
-CommandQueue::CommandQueue(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 CommandQueue::CommandQueue(const Ptr<ICommandQueue>& interface_ptr)
-    : CommandQueue(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -115,12 +110,12 @@ TransferCommandList CommandQueue::CreateTransferCommandList() const
     return TransferCommandList(GetImpl(m_impl_ptr).CreateTransferCommandList());
 }
 
-RenderCommandList CommandQueue::CreateRenderCommandList(RenderPass& render_pass) const
+RenderCommandList CommandQueue::CreateRenderCommandList(const RenderPass& render_pass) const
 {
     return RenderCommandList(GetImpl(m_impl_ptr).CreateRenderCommandList(render_pass.GetInterface()));
 }
 
-ParallelRenderCommandList CommandQueue::CreateParallelRenderCommandList(RenderPass& render_pass) const
+ParallelRenderCommandList CommandQueue::CreateParallelRenderCommandList(const RenderPass& render_pass) const
 {
     return ParallelRenderCommandList(GetImpl(m_impl_ptr).CreateParallelRenderCommandList(render_pass.GetInterface()));
 }

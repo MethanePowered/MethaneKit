@@ -40,13 +40,8 @@ namespace Methane::Graphics::Rhi
 
 META_PIMPL_METHODS_IMPLEMENT(Device);
 
-Device::Device(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 Device::Device(const Ptr<IDevice>& interface_ptr)
-    : Device(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 

@@ -37,7 +37,7 @@ void ObjectRegistry::AddGraphicsObject(Rhi::IObject& object)
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY_DESCR(object.GetName(), "Can not add graphics object without name to the objects registry.");
 
-    auto& obj = dynamic_cast<Object&>(object);
+    const auto& obj = dynamic_cast<Object&>(object);
     const auto [name_and_object_it, object_added] = m_object_by_name.try_emplace(obj.GetNameRef(), object.GetPtr());
     if (!object_added &&
         !name_and_object_it->second.expired() &&
@@ -52,7 +52,7 @@ void ObjectRegistry::RemoveGraphicsObject(Rhi::IObject& object)
 {
     META_FUNCTION_TASK();
 
-    auto& obj = dynamic_cast<Object&>(object);
+    const auto& obj = dynamic_cast<Object&>(object);
     const std::string& object_name = obj.GetNameRef();
     META_CHECK_ARG_NOT_EMPTY_DESCR(object_name, "Can not remove graphics object without name to the objects registry.");
 

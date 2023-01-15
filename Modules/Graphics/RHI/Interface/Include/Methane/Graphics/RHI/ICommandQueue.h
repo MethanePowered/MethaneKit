@@ -32,7 +32,6 @@ namespace Methane::Graphics::Rhi
 {
 
 struct IContext;
-struct ITimestampQueryPool;
 struct ICommandListSet;
 struct ICommandKit;
 struct IFence;

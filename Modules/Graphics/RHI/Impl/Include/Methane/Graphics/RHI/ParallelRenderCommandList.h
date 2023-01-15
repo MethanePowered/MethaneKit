@@ -44,7 +44,7 @@ class RenderState;
 class ViewState;
 class RenderCommandList;
 
-class ParallelRenderCommandList
+class ParallelRenderCommandList // NOSONAR - class has more than 35 methods, constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using Type        = CommandListType;
@@ -72,10 +72,10 @@ public:
     META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // ICommandList interface methods
-    META_RHI_API void  PushDebugGroup(DebugGroup& debug_group) const;
+    META_RHI_API void  PushDebugGroup(const DebugGroup& debug_group) const;
     META_RHI_API void  PopDebugGroup() const;
-    META_RHI_API void  Reset(DebugGroup* debug_group_ptr = nullptr) const;
-    META_RHI_API void  ResetOnce(DebugGroup* debug_group_ptr = nullptr) const;
+    META_RHI_API void  Reset(const DebugGroup* debug_group_ptr = nullptr) const;
+    META_RHI_API void  ResetOnce(const DebugGroup* debug_group_ptr = nullptr) const;
     META_RHI_API void  SetProgramBindings(IProgramBindings& program_bindings,
                                           ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
     META_RHI_API void  SetResourceBarriers(const ResourceBarriers& resource_barriers) const;
@@ -101,8 +101,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::ParallelRenderCommandList;
-
-    META_RHI_API ParallelRenderCommandList(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
     mutable std::vector<RenderCommandList> m_parallel_command_lists;

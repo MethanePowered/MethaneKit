@@ -35,7 +35,7 @@ Base implementation of the context interface.
 
 namespace tf
 {
-// TaskFlow Executor class forward declaration:
+// TaskFlow Executor class forward declaration from <taskflow/core/executor.hpp>
 class Executor;
 }
 

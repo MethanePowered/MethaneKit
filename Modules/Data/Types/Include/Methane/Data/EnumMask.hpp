@@ -45,11 +45,13 @@ public:
     class Bit
     {
     public:
-        explicit constexpr Bit(M i) noexcept : m_value(static_cast<M>(1) << i) { }
+        explicit constexpr Bit(M i) noexcept
+            : m_value(static_cast<M>(M{1} << i)) { }
+
         constexpr Bit(E e) noexcept // NOSONAR - intentionally not explicit
             : Bit(static_cast<M>(e)) { }
 
-        constexpr M GetValue() const noexcept { return m_value; }
+        constexpr M GetValue() const noexcept          { return m_value; }
         constexpr explicit operator M() const noexcept { return m_value; }
 
         constexpr M GetIndex() const noexcept { return floorLog2(m_value); }

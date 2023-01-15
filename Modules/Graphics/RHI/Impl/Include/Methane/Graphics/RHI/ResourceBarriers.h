@@ -38,7 +38,7 @@ namespace Methane::Graphics::Rhi
 class CommandQueue;
 class RenderPass;
 
-class ResourceBarriers
+class ResourceBarriers // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using State     = IResourceBarriers::State;

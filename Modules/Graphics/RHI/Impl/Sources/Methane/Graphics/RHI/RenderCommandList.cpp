@@ -46,13 +46,8 @@ namespace Methane::Graphics::Rhi
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderCommandList);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderCommandList);
 
-RenderCommandList::RenderCommandList(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 RenderCommandList::RenderCommandList(const Ptr<IRenderCommandList>& interface_ptr)
-    : RenderCommandList(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 

@@ -40,7 +40,7 @@ namespace Methane::Graphics::Rhi
 class ResourceBarriers;
 class CommandQueue;
 
-class Buffer
+class Buffer // NOSONAR - class has more than 35 methods, constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using AllocationError = ResourceAllocationError;
@@ -104,8 +104,6 @@ public:
     
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::Buffer;
-
-    META_RHI_API Buffer(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };

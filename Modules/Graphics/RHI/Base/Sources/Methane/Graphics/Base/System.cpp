@@ -32,6 +32,16 @@ Base implementation of the device interface.
 namespace Methane::Graphics::Base
 {
 
+void System::AddDevice(Ptr<Rhi::IDevice> device_ptr)
+{
+    META_FUNCTION_TASK();
+    if (const Rhi::DeviceFeatureMask device_supported_features = device_ptr->GetCapabilities().features;
+        !GetDeviceCapabilities().features.HasBits(device_supported_features))
+        return;
+
+    m_devices.emplace_back(std::move(device_ptr));
+}
+
 void System::RequestRemoveDevice(Rhi::IDevice& device) const
 {
     META_FUNCTION_TASK();

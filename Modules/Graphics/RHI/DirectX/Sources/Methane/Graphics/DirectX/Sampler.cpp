@@ -116,8 +116,8 @@ static D3D12_FILTER ConvertFilterMinLinearToDirectX(const Rhi::ISampler::Filter&
 
     switch (filter.mag)
     {
-    case FilterMinMag::Nearest: return ConvertFilterMinLinearMagNearestToDirectX(filter); break;
-    case FilterMinMag::Linear:  return ConvertFilterMinLinearMagLinearToDirectX(filter); break;
+    case FilterMinMag::Nearest: return ConvertFilterMinLinearMagNearestToDirectX(filter);
+    case FilterMinMag::Linear:  return ConvertFilterMinLinearMagLinearToDirectX(filter);
     default:                    META_UNEXPECTED_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 }

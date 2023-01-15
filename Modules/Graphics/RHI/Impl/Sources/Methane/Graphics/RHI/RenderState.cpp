@@ -52,13 +52,8 @@ RenderStateSettings RenderStateSettingsImpl::Convert(const RenderStateSettingsIm
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderState);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderState);
 
-RenderState::RenderState(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 RenderState::RenderState(const Ptr<IRenderState>& interface_ptr)
-    : RenderState(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 

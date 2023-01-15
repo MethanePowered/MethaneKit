@@ -22,7 +22,7 @@ DirectX 12 specialization of the resource interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/DirectX/IResource.h>
-#include <Methane/Graphics/Rhi/ITexture.h>
+#include <Methane/Graphics/RHI/ITexture.h>
 #include <Methane/Data/EnumMaskUtil.hpp>
 
 template<>

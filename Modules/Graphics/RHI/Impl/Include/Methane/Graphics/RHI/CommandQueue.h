@@ -44,7 +44,7 @@ class RenderCommandList;
 class ParallelRenderCommandList;
 class TransferCommandList;
 
-class CommandQueue
+class CommandQueue // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandQueue);
@@ -70,8 +70,8 @@ public:
     [[nodiscard]] META_RHI_API CommandKit                CreateCommandKit() const;
     [[nodiscard]] META_RHI_API Fence                     CreateFence() const;
     [[nodiscard]] META_RHI_API TransferCommandList       CreateTransferCommandList() const;
-    [[nodiscard]] META_RHI_API RenderCommandList         CreateRenderCommandList(RenderPass& render_pass) const;
-    [[nodiscard]] META_RHI_API ParallelRenderCommandList CreateParallelRenderCommandList(RenderPass& render_pass) const;
+    [[nodiscard]] META_RHI_API RenderCommandList         CreateRenderCommandList(const RenderPass& render_pass) const;
+    [[nodiscard]] META_RHI_API ParallelRenderCommandList CreateParallelRenderCommandList(const RenderPass& render_pass) const;
     [[nodiscard]] META_RHI_API const IContext&           GetContext() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API CommandListType           GetCommandListType() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_RHI_API uint32_t                  GetFamilyIndex() const META_PIMPL_NOEXCEPT;
@@ -80,8 +80,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::CommandQueue;
-
-    META_RHI_API CommandQueue(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };

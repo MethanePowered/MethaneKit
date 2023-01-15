@@ -37,7 +37,7 @@ namespace Methane::Graphics::Rhi
 
 class RenderContext;
 
-class Shader
+class Shader // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using Type             = ShaderType;

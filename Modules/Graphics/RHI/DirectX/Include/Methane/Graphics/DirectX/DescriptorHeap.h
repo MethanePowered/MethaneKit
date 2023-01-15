@@ -136,7 +136,6 @@ private:
     using ResourcePtrs = std::vector<const Base::Resource*>;
     using RangeSet     = Data::RangeSet<Data::Index>;
 
-    const Base::Context&              m_context;
     const IContext&                   m_dx_context;
     Settings                          m_settings;
     Data::Size                        m_deferred_size;

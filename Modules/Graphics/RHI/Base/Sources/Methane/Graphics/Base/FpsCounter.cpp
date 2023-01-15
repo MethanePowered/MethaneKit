@@ -54,7 +54,7 @@ void FpsCounter::OnGpuFramePresentWait() noexcept
     m_present_timer.Reset();
 }
 
-void FpsCounter::OnCpuFrameReadyToPresent() noexcept
+void FpsCounter::OnCpuFrameReadyToPresent() noexcept // NOSONAR - implementation is intentionally identical to OnGpuFramePresentWait()
 {
     META_FUNCTION_TASK();
     m_present_timer.Reset();

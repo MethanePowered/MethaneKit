@@ -41,7 +41,6 @@ class CommandListSet final
     : public Base::CommandListSet
 {
 public:
-public:
     explicit CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
     // Base::CommandListSet interface

@@ -51,7 +51,7 @@ class RenderContext;
 class Shader;
 class ProgramBindings;
 
-class Program
+class Program // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using Settings                = ProgramSettingsImpl;
@@ -92,8 +92,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::Program;
-
-    META_RHI_API Program(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };

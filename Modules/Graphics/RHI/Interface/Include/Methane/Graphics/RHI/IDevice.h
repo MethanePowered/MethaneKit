@@ -33,7 +33,7 @@ Methane device interface, used to create graphics context for rendering.
 
 namespace tf
 {
-// TaskFlow Executor class forward declaration:
+// TaskFlow Executor class forward declaration from <taskflow/core/executor.hpp>
 // #include <taskflow/core/executor.hpp>
 class Executor;
 }

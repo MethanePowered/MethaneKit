@@ -37,7 +37,7 @@ namespace Methane::Graphics::Rhi
 
 class RenderPattern;
 
-class RenderPass
+class RenderPass // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using Pattern           = RenderPattern;
@@ -82,8 +82,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::RenderPass;
-
-    META_RHI_API RenderPass(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };

@@ -37,7 +37,7 @@ namespace Methane::Graphics::Rhi
 
 class RenderContext;
 
-class Device
+class Device // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
     friend class System;
 
@@ -73,8 +73,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::Device;
-
-    META_RHI_API Device(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };

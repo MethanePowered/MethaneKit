@@ -40,13 +40,8 @@ namespace Methane::Graphics::Rhi
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Texture);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(Texture);
 
-Texture::Texture(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 Texture::Texture(const Ptr<ITexture>& interface_ptr)
-    : Texture(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 

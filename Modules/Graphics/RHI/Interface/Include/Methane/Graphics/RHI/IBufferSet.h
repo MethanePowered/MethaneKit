@@ -38,8 +38,6 @@ struct IBufferSet
     [[nodiscard]] virtual const Refs<IBuffer>& GetRefs() const noexcept = 0;
     [[nodiscard]] virtual std::string          GetNames() const noexcept = 0;
     [[nodiscard]] virtual IBuffer&             operator[](Data::Index index) const = 0;
-
-    virtual ~IBufferSet() = default;
 };
 
 } // namespace Methane::Graphics::Rhi

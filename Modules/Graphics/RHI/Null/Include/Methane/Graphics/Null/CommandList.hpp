@@ -33,11 +33,7 @@ class CommandList
     : public CommandListBaseT
 {
 public:
-    template<typename... ConstructArgs>
-    CommandList(ConstructArgs&&... construct_args)
-        : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
-    {
-    }
+    using CommandListBaseT::CommandListBaseT;
 
     void SetResourceBarriers(const Rhi::IResourceBarriers&) final
     {

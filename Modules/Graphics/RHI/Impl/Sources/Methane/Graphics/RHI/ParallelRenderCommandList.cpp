@@ -44,13 +44,8 @@ namespace Methane::Graphics::Rhi
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ParallelRenderCommandList);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(ParallelRenderCommandList);
 
-ParallelRenderCommandList::ParallelRenderCommandList(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 ParallelRenderCommandList::ParallelRenderCommandList(const Ptr<IParallelRenderCommandList>& interface_ptr)
-    : ParallelRenderCommandList(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -99,7 +94,7 @@ void ParallelRenderCommandList::Disconnect(Data::Receiver<IObjectCallback>& rece
     GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
-void ParallelRenderCommandList::PushDebugGroup(DebugGroup& debug_group) const
+void ParallelRenderCommandList::PushDebugGroup(const DebugGroup& debug_group) const
 {
     GetImpl(m_impl_ptr).PushDebugGroup(debug_group.GetInterface());
 }
@@ -109,12 +104,12 @@ void ParallelRenderCommandList::PopDebugGroup() const
     GetImpl(m_impl_ptr).PopDebugGroup();
 }
 
-void ParallelRenderCommandList::Reset(DebugGroup* debug_group_ptr) const
+void ParallelRenderCommandList::Reset(const DebugGroup* debug_group_ptr) const
 {
     GetImpl(m_impl_ptr).Reset(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
 }
 
-void ParallelRenderCommandList::ResetOnce(DebugGroup* debug_group_ptr) const
+void ParallelRenderCommandList::ResetOnce(const DebugGroup* debug_group_ptr) const
 {
     GetImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
 }

@@ -34,8 +34,7 @@ Methane base context interface: wraps graphics device used for GPU interaction.
 
 namespace tf // NOSONAR
 {
-// TaskFlow Executor class forward declaration:
-// #include <taskflow/core/executor.hpp>
+// TaskFlow Executor class forward declaration from <taskflow/core/executor.hpp>
 class Executor;
 }
 

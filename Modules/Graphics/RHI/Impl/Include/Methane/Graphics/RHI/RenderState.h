@@ -53,7 +53,7 @@ struct RenderStateSettingsImpl
 
 class RenderContext;
 
-class RenderState
+class RenderState // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using Settings   = RenderStateSettingsImpl;
@@ -93,8 +93,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::RenderState;
-
-    META_RHI_API RenderState(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };

@@ -71,7 +71,7 @@ public:
         m_cp_command_list.As(&m_cp_command_list_4);
 
         InitializeTimestampQueries();
-        BeginGpuZone();
+        BeginGpuZoneDx();
 
         SetCommandListState(Rhi::CommandListState::Encoding);
     }
@@ -99,7 +99,7 @@ public:
         const auto state_lock = Base::CommandList::LockStateMutex();
         CommandListBaseT::Commit();
 
-        EndGpuZone();
+        EndGpuZoneDx();
 
         m_cp_command_list->Close();
         m_is_native_committed = true;
@@ -138,7 +138,7 @@ public:
         ThrowIfFailed(m_cp_command_allocator->Reset(), cp_device.Get());
         ThrowIfFailed(m_cp_command_list->Reset(m_cp_command_allocator.Get(), nullptr), cp_device.Get());
 
-        BeginGpuZone();
+        BeginGpuZoneDx();
 
         Base::CommandList::Reset(debug_group_ptr);
     }
@@ -192,7 +192,7 @@ protected:
         return *m_cp_command_list.Get();
     }
 
-    void BeginGpuZone()
+    void BeginGpuZoneDx()
     {
         CommandListBaseT::BeginGpuZone();
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
@@ -207,7 +207,7 @@ protected:
 #endif
     }
 
-    void EndGpuZone()
+    void EndGpuZoneDx()
     {
         CommandListBaseT::EndGpuZone();
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2

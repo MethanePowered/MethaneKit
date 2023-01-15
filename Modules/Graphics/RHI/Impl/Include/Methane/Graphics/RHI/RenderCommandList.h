@@ -45,7 +45,7 @@ class RenderState;
 class ViewState;
 class ProgramBindings;
 
-class RenderCommandList
+class RenderCommandList // NOSONAR - class has more than 35 methods, constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using Primitive   = RenderPrimitive;
@@ -108,8 +108,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::RenderCommandList;
-
-    META_RHI_API RenderCommandList(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };

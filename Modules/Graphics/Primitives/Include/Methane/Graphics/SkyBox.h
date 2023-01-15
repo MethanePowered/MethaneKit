@@ -84,7 +84,7 @@ public:
 
     Rhi::ProgramBindings CreateProgramBindings(const Rhi::Buffer& uniforms_buffer_ptr, Data::Index frame_index) const;
     void Update();
-    void Draw(const Rhi::RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, const Rhi::ViewState& view_state);
+    void Draw(const Rhi::RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, const Rhi::ViewState& view_state) const;
 
 private:
     struct Vertex

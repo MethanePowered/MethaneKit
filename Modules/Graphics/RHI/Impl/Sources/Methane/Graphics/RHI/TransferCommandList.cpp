@@ -39,13 +39,8 @@ namespace Methane::Graphics::Rhi
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(TransferCommandList);
 META_PIMPL_METHODS_COMPARE_IMPLEMENT(TransferCommandList);
 
-TransferCommandList::TransferCommandList(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 TransferCommandList::TransferCommandList(const Ptr<ITransferCommandList>& interface_ptr)
-    : TransferCommandList(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 
@@ -94,7 +89,7 @@ void TransferCommandList::Disconnect(Data::Receiver<IObjectCallback>& receiver) 
     GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
-void TransferCommandList::PushDebugGroup(DebugGroup& debug_group) const
+void TransferCommandList::PushDebugGroup(const DebugGroup& debug_group) const
 {
     GetImpl(m_impl_ptr).PushDebugGroup(debug_group.GetInterface());
 }
@@ -104,19 +99,14 @@ void TransferCommandList::PopDebugGroup() const
     GetImpl(m_impl_ptr).PopDebugGroup();
 }
 
-void TransferCommandList::Reset(DebugGroup* debug_group_ptr) const
+void TransferCommandList::Reset(const DebugGroup* debug_group_ptr) const
 {
     GetImpl(m_impl_ptr).Reset(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
 }
 
-void TransferCommandList::ResetOnce(DebugGroup* debug_group_ptr) const
+void TransferCommandList::ResetOnce(const DebugGroup* debug_group_ptr) const
 {
     GetImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
-}
-
-void TransferCommandList::SetProgramBindings(IProgramBindings& program_bindings, ProgramBindingsApplyBehaviorMask apply_behavior) const
-{
-    GetImpl(m_impl_ptr).SetProgramBindings(program_bindings, apply_behavior);
 }
 
 void TransferCommandList::SetResourceBarriers(const IResourceBarriers& resource_barriers) const

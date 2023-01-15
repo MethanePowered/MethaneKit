@@ -348,7 +348,7 @@ void ProgramBindings::ApplyRootParameterBinding(const RootParameterBinding& root
     }
 }
 
-void ProgramBindings::CopyDescriptorsToGpu()
+void ProgramBindings::CopyDescriptorsToGpu() const
 {
     META_FUNCTION_TASK();
     META_LOG("Copy descriptors to GPU for program bindings '{}'", GetName());

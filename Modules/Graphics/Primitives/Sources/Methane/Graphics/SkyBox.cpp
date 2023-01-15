@@ -121,7 +121,7 @@ void SkyBox::Update()
     });
 }
 
-void SkyBox::Draw(const Rhi::RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, const Rhi::ViewState& view_state)
+void SkyBox::Draw(const Rhi::RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, const Rhi::ViewState& view_state) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE(buffer_bindings.program_bindings.IsInitialized());

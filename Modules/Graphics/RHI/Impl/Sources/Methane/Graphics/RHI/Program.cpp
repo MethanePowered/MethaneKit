@@ -59,13 +59,8 @@ ProgramSettings ProgramSettingsImpl::Convert(const IContext& context, const Prog
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Program);
 
-Program::Program(Ptr<Impl>&& impl_ptr)
-    : m_impl_ptr(std::move(impl_ptr))
-{
-}
-
 Program::Program(const Ptr<IProgram>& interface_ptr)
-    : Program(std::dynamic_pointer_cast<Impl>(interface_ptr))
+    : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
 {
 }
 

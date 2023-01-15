@@ -39,7 +39,7 @@ namespace Methane::Graphics::Rhi
 
 class Buffer;
 
-class BufferSet
+class BufferSet // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using Buffers = std::vector<Buffer>;
@@ -72,8 +72,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::BufferSet;
-
-    META_RHI_API BufferSet(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
     mutable Buffers m_buffers;

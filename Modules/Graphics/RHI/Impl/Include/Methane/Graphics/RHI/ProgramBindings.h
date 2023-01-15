@@ -37,7 +37,7 @@ namespace Methane::Graphics::Rhi
 
 class Program;
 
-class ProgramBindings
+class ProgramBindings // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using IArgumentBindingCallback = IProgramArgumentBindingCallback;
@@ -78,8 +78,6 @@ public:
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::ProgramBindings;
-
-    META_RHI_API ProgramBindings(Ptr<Impl>&& impl_ptr);
 
     Ptr<Impl> m_impl_ptr;
 };
