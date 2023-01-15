@@ -35,7 +35,7 @@ public:
     using Base::RenderState::RenderState;
 
     // Base::RenderState interface
-    void Apply(Base::RenderCommandList&, Groups) override { }
+    void Apply(Base::RenderCommandList&, Groups) override { /* Intentionally unimplemented */ }
 };
 
 } // namespace Methane::Graphics::Null

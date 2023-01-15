@@ -118,7 +118,6 @@ void Buffer::SetData(const Rhi::SubResources& sub_resources, Rhi::ICommandQueue&
     {
         ValidateSubResource(sub_resource);
 
-        // TODO: calculate memory offset by sub-resource index
         const vk::DeviceSize sub_resource_offset = 0U;
         Data::RawPtr sub_resource_data_ptr = nullptr;
         const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},

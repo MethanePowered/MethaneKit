@@ -115,7 +115,7 @@ TextureSettings TextureSettings::ForDepthStencil(const Dimensions& dimensions, P
     settings.usage_mask              = usage_mask;
     settings.pixel_format            = pixel_format;
     settings.dimensions              = dimensions;
-    settings.depth_stencil_clear_opt = std::move(depth_stencil_clear);
+    settings.depth_stencil_clear_opt = depth_stencil_clear;
 
     return settings;
 }

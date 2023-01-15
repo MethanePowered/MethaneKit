@@ -89,7 +89,7 @@ void CommandListDebugGroup::Disconnect(Data::Receiver<IObjectCallback>& receiver
     GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
 }
 
-CommandListDebugGroup CommandListDebugGroup::AddSubGroup(Data::Index id, const std::string& name)
+CommandListDebugGroup CommandListDebugGroup::AddSubGroup(Data::Index id, const std::string& name) const
 {
     return CommandListDebugGroup(GetImpl(m_impl_ptr).AddSubGroup(id, name));
 }

@@ -55,9 +55,7 @@ public:
     }
 
     void RestoreDescriptorViews(const DescriptorByViewId&) final
-    { /* intentionally uninitialized */ }
-
-private:
+    { /* Intentionally unimplemented */ }
 };
 
 } // namespace Methane::Graphics::Null

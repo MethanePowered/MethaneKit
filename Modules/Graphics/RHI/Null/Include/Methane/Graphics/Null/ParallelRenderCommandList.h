@@ -39,10 +39,10 @@ public:
     using Base::ParallelRenderCommandList::ParallelRenderCommandList;
 
     // IParallelRenderCommandList interface
-    void SetBeginningResourceBarriers(const Rhi::IResourceBarriers&) override {}
-    void SetEndingResourceBarriers(const Rhi::IResourceBarriers&) override    {}
+    void SetBeginningResourceBarriers(const Rhi::IResourceBarriers&) override { /* Intentionally unimplemented */ }
+    void SetEndingResourceBarriers(const Rhi::IResourceBarriers&) override    { /* Intentionally unimplemented */ }
 
-protected:
+private:
     // ParallelRenderCommandListBase interface
     [[nodiscard]] Ptr<Rhi::IRenderCommandList> CreateCommandList(bool is_beginning_list) override;
 };

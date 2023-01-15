@@ -40,6 +40,7 @@ namespace Methane::Graphics::Null
 
 void System::CheckForChanges()
 {
+    /* Intentionally unimplemented */
 }
 
 const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Methane::Platform::AppEnvironment&, const Rhi::DeviceCaps& required_device_caps)
