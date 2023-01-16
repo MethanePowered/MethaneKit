@@ -28,8 +28,7 @@ Tutorial demonstrating colored triangle rendering with Methane graphics API
 using namespace Methane;
 using namespace Methane::Graphics;
 
-struct HelloTriangleFrame final
-    : AppFrame
+struct HelloTriangleFrame final : AppFrame
 {
     Rhi::RenderCommandList render_cmd_list;
     Rhi::CommandListSet    execute_cmd_list_set;
