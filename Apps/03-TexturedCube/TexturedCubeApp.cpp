@@ -220,7 +220,7 @@ bool TexturedCubeApp::Render()
     frame.uniforms_buffer.SetData(m_shader_uniforms_subresources, render_cmd_queue);
 
     // Issue commands for cube rendering
-    META_DEBUG_GROUP_VAR(s_debug_group, "ForCubeImage Rendering");
+    META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
     frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
     frame.render_cmd_list.SetViewState(GetViewState());
     frame.render_cmd_list.SetProgramBindings(frame.program_bindings);

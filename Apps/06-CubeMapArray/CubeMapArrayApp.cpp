@@ -265,7 +265,7 @@ bool CubeMapArrayApp::Render()
     frame.cube.uniforms_buffer.SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
     // 1) Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
-    META_DEBUG_GROUP_VAR(s_debug_group, "ForCubeImage Rendering");
+    META_DEBUG_GROUP_VAR(s_debug_group, "Cube Instances Rendering");
     frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
     frame.render_cmd_list.SetViewState(GetViewState());
     m_cube_buffers_ptr->Draw(frame.render_cmd_list, frame.cube.program_bindings, 0U, CUBE_MAP_ARRAY_SIZE);
