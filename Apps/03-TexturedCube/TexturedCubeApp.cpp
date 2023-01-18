@@ -76,8 +76,7 @@ void TexturedCubeApp::Init()
     const gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
     const Data::Size vertex_data_size   = cube_mesh.GetVertexDataSize();
     const Data::Size  vertex_size       = cube_mesh.GetVertexSize();
-    rhi::Buffer vertex_buffer;
-    vertex_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForVertexBuffer(vertex_data_size, vertex_size));
+    rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForVertexBuffer(vertex_data_size, vertex_size));
     vertex_buffer.SetName("ForCubeImage Vertex Buffer");
     vertex_buffer.SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } }, // NOSONAR
@@ -87,7 +86,8 @@ void TexturedCubeApp::Init()
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
-    m_index_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForIndexBuffer(index_data_size, gfx::GetIndexFormat(cube_mesh.GetIndex(0))));
+    const gfx::PixelFormat index_format = gfx::GetIndexFormat(cube_mesh.GetIndex(0));
+    m_index_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForIndexBuffer(index_data_size, index_format));
     m_index_buffer.SetName("ForCubeImage Index Buffer");
     m_index_buffer.SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } }, // NOSONAR
@@ -153,7 +153,6 @@ void TexturedCubeApp::Init()
 
     // Create frame buffer resources
     const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
-    const rhi::CommandQueue& cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     for(TexturedCubeFrame& frame : GetFrames())
     {
         // Create uniforms buffer with volatile parameters for frame rendering
@@ -168,9 +167,9 @@ void TexturedCubeApp::Init()
             { { rhi::ShaderType::Pixel, "g_sampler"   }, { { m_texture_sampler.GetInterface()     } } },
         }, frame.index);
         frame.program_bindings.SetName(IndexedName("ForCubeImage Bindings", frame.index));
-        
+
         // Create command list for rendering
-        frame.render_cmd_list = cmd_queue.CreateRenderCommandList(frame.screen_pass);
+        frame.render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
         frame.render_cmd_list.SetName(IndexedName("ForCubeImage Rendering", frame.index));
         frame.execute_cmd_list_set = rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
     }
@@ -230,9 +229,8 @@ bool TexturedCubeApp::Render()
 
     RenderOverlay(frame.render_cmd_list);
 
-    frame.render_cmd_list.Commit();
-
     // Execute command list on render queue and present frame to screen
+    frame.render_cmd_list.Commit();
     render_cmd_queue.Execute(frame.execute_cmd_list_set);
     GetRenderContext().Present();
 

@@ -87,7 +87,7 @@ private:
     rhi::Texture     m_cube_texture;
     rhi::Sampler     m_texture_sampler;
 
-    const rhi::IResource::SubResources m_shader_uniforms_subresources{
+    const rhi::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
     };
 };
