@@ -104,29 +104,29 @@ void ShadowCubeApp::Init()
 
     // Create sampler for cube and floor textures sampling
     m_texture_sampler = render_context.CreateSampler(
-        rhi::ISampler::Settings
+        rhi::Sampler::Settings
         {
-            rhi::ISampler::Filter  { rhi::ISampler::Filter::MinMag::Linear },
-            rhi::ISampler::Address { rhi::ISampler::Address::Mode::ClampToEdge }
+            rhi::Sampler::Filter  { rhi::Sampler::Filter::MinMag::Linear },
+            rhi::Sampler::Address { rhi::Sampler::Address::Mode::ClampToEdge }
         }
     );
     m_texture_sampler.SetName("Texture Sampler");
 
     // Create sampler for shadow-map texture
     m_shadow_sampler = render_context.CreateSampler(
-        rhi::ISampler::Settings
+        rhi::Sampler::Settings
         {
-            rhi::ISampler::Filter  { rhi::ISampler::Filter::MinMag::Linear },
-            rhi::ISampler::Address { rhi::ISampler::Address::Mode::ClampToEdge }
+            rhi::Sampler::Filter  { rhi::Sampler::Filter::MinMag::Linear },
+            rhi::Sampler::Address { rhi::Sampler::Address::Mode::ClampToEdge }
         }
     );
     m_shadow_sampler.SetName("Shadow Map Sampler");
 
     // ========= Final Pass Render & View States =========
 
-    const rhi::IShader::EntryFunction    vs_main{ "ShadowCube", "CubeVS" };
-    const rhi::IShader::EntryFunction    ps_main{ "ShadowCube", "CubePS" };
-    const rhi::IShader::MacroDefinitions textured_shadows_definitions{ { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
+    const rhi::Shader::EntryFunction    vs_main{ "ShadowCube", "CubeVS" };
+    const rhi::Shader::EntryFunction    ps_main{ "ShadowCube", "CubePS" };
+    const rhi::Shader::MacroDefinitions textured_shadows_definitions{ { "ENABLE_SHADOWS", "" }, { "ENABLE_TEXTURING", "" } };
 
     // Create final pass rendering state with program
     rhi::RenderState::Settings final_state_settings
@@ -173,10 +173,10 @@ void ShadowCubeApp::Init()
     // Create shadow-pass render pattern
     m_shadow_pass_pattern = render_context.CreateRenderPattern({
         { }, // No color attachments
-        rhi::IRenderPattern::DepthAttachment(
+        rhi::RenderPattern::DepthAttachment(
             0U, context_settings.depth_stencil_format, 1U,
-            rhi::IRenderPass::Attachment::LoadAction::Clear,
-            rhi::IRenderPass::Attachment::StoreAction::Store,
+            rhi::RenderPassAttachment::LoadAction::Clear,
+            rhi::RenderPassAttachment::StoreAction::Store,
             context_settings.clear_depth_stencil->first
         ),
         std::nullopt, // No stencil attachment
@@ -185,7 +185,7 @@ void ShadowCubeApp::Init()
     });
 
     // Create shadow-pass rendering state with program
-    const rhi::IShader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
+    const rhi::Shader::MacroDefinitions textured_definitions{ { "ENABLE_TEXTURING", "" } };
     rhi::RenderState::Settings shadow_state_settings
     {
         render_context.CreateProgram(
@@ -217,7 +217,7 @@ void ShadowCubeApp::Init()
 
     // ========= Per-Frame Data =========
 
-    const rhi::ITexture::Settings shadow_texture_settings = rhi::ITexture::Settings::ForDepthStencil(
+    const rhi::Texture::Settings shadow_texture_settings = rhi::Texture::Settings::ForDepthStencil(
         gfx::Dimensions(g_shadow_map_size),
         context_settings.depth_stencil_format, context_settings.clear_depth_stencil,
         rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })

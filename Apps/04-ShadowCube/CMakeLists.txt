@@ -16,7 +16,7 @@ add_methane_application(
 )
 
 set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
-set(TEXTURES
+list(APPEND TEXTURES
     ${TEXTURES_DIR}/MethaneBubbles.jpg
     ${TEXTURES_DIR}/MarbleWhite.jpg
 )
