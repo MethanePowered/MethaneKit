@@ -46,12 +46,12 @@ namespace hlslpp // NOSONAR
 namespace Methane::UserInterface
 {
 
-Text::Text(Context& ui_context, Font& font, const SettingsUtf8&  settings)
+Text::Text(Context& ui_context, const Font& font, const SettingsUtf8&  settings)
     : Text(ui_context, ui_context.GetRenderPattern(), font, settings)
 {
 }
 
-Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, Font& font, const SettingsUtf8& settings)
+Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf8& settings)
     : Text(ui_context, render_pattern, font,
         SettingsUtf32
         {
@@ -70,20 +70,20 @@ Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, Font& 
     META_FUNCTION_TASK();
 }
 
-Text::Text(Context& ui_context, Font& font, SettingsUtf32 settings)
+Text::Text(Context& ui_context, const Font& font, SettingsUtf32 settings)
     : Text(ui_context, ui_context.GetRenderPattern(), font, std::move(settings))
 {
 }
 
-Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, Font& font, SettingsUtf32 settings)
+Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, SettingsUtf32 settings)
     : Item(ui_context, settings.rect)
     , m_settings(std::move(settings))
-    , m_font_ptr(font.shared_from_this())
+    , m_font(font)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY_DESCR(m_settings.state_name, "Text state name can not be empty");
 
-    m_font_ptr->Connect(*this);
+    m_font.Connect(*this);
     m_frame_rect = GetUIContext().ConvertTo<Units::Pixels>(m_settings.rect);
 
     SetRelOrigin(m_settings.rect.GetUnitOrigin());
@@ -176,7 +176,7 @@ Text::~Text()
 
     // Manually disconnect font, so that if it will be released along with text,
     // the destroyed text won't receive font atlas update callback leading to access violation
-    m_font_ptr->Disconnect(*this);
+    m_font.Disconnect(*this);
 }
 
 std::string Text::GetTextUtf8() const
@@ -225,7 +225,7 @@ void Text::SetTextInScreenRect(std::u32string_view text, const UnitRect& ui_rect
         !frame_resources.IsAtlasInitialized())
     {
         // If atlas texture was not initialized it has to be requested for current context first to be properly updated in future
-        frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexture(GetUIContext().GetRenderContext()));
+        frame_resources.UpdateAtlasTexture(m_font.GetAtlasTexture(GetUIContext().GetRenderContext()));
     }
 
     m_is_viewport_dirty = true;
@@ -337,9 +337,9 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     {
         frame_resources.UpdateMeshBuffers(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier);
     }
-    if (frame_resources.IsDirty(FrameResources::DirtyResource::Atlas) && m_font_ptr)
+    if (frame_resources.IsDirty(FrameResources::DirtyResource::Atlas))
     {
-        frame_resources.UpdateAtlasTexture(m_font_ptr->GetAtlasTexture(GetUIContext().GetRenderContext()));
+        frame_resources.UpdateAtlasTexture(m_font.GetAtlasTexture(GetUIContext().GetRenderContext()));
     }
     if (frame_resources.IsDirty(FrameResources::DirtyResource::Uniforms) && m_text_mesh_ptr)
     {
@@ -349,7 +349,7 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     {
         frame_resources.InitializeProgramBindings(m_render_state, m_const_buffer, m_atlas_sampler, m_settings.name);
     }
-    assert(!frame_resources.IsDirty() || !m_text_mesh_ptr || !m_font_ptr);
+    assert(!frame_resources.IsDirty() || !m_text_mesh_ptr);
 }
 
 void Text::Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr)
@@ -374,7 +374,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const rhi::Texture* old_atlas_tex
 {
     META_FUNCTION_TASK();
     META_UNUSED(old_atlas_texture_ptr);
-    if (m_font_ptr.get() != std::addressof(font) || m_frame_resources.empty() ||
+    if (std::addressof(m_font) != std::addressof(font) || m_frame_resources.empty() ||
         (new_atlas_texture_ptr && GetUIContext().GetRenderContext() != new_atlas_texture_ptr->GetRenderContext()))
         return;
 
@@ -596,7 +596,7 @@ void Text::InitializeFrameResources()
         m_const_buffer.SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
     }
 
-    const rhi::Texture& atlas_texture = m_font_ptr->GetAtlasTexture(render_context);
+    const rhi::Texture& atlas_texture = m_font.GetAtlasTexture(render_context);
     for(uint32_t frame_buffer_index = 0U; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
     {
         m_frame_resources.emplace_back(
@@ -641,20 +641,20 @@ void Text::UpdateTextMesh()
         return;
     }
 
-    // Fill font with new text chars strictly before building the text mesh, to be sure that font atlas size is up to date
-    m_font_ptr->AddChars(m_settings.text);
+    // Fill font with new text chars strictly before building the text mesh, to be sure that font atlas size is up-to-date
+    m_font.AddChars(m_settings.text);
 
-    if (!m_font_ptr->GetAtlasSize())
+    if (!m_font.GetAtlasSize())
         return;
 
     if (m_settings.incremental_update && m_text_mesh_ptr &&
-        m_text_mesh_ptr->IsUpdatable(m_settings.text, m_settings.layout, *m_font_ptr, m_frame_rect.size))
+        m_text_mesh_ptr->IsUpdatable(m_settings.text, m_settings.layout, m_font, m_frame_rect.size))
     {
         m_text_mesh_ptr->Update(m_settings.text, m_frame_rect.size);
     }
     else
     {
-        m_text_mesh_ptr = std::make_unique<TextMesh>(m_settings.text, m_settings.layout, *m_font_ptr, m_frame_rect.size);
+        m_text_mesh_ptr = std::make_unique<TextMesh>(m_settings.text, m_settings.layout, m_font, m_frame_rect.size);
     }
 
     if (m_frame_resources.empty() && m_render_state.IsInitialized())

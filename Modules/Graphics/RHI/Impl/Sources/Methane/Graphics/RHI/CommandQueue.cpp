@@ -31,7 +31,7 @@ Methane CommandQueue PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/ParallelRenderCommandList.h>
 #include <Methane/Graphics/RHI/TransferCommandList.h>
 
-#include "Pimpl.hpp"
+#include <Methane/Pimpl.hpp>
 
 #ifdef META_GFX_METAL
 #include <CommandQueue.hh>

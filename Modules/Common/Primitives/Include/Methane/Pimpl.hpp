@@ -16,25 +16,21 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/Pimpl.hpp
+FILE: Methane/Pimpl.hpp
 Methane PIMPL implementation helper functions.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/RHI/Pimpl.h>
+#include <Methane/Pimpl.h>
 #include <Methane/Memory.hpp>
 
 #ifdef META_PIMPL_NULL_CHECK_ENABLED
 #include <Methane/Checks.hpp>
 #endif
 
-#ifndef META_GFX_NAME
-static_assert(false, "Static graphics API macro-definition is missing.");
-#endif
-
-namespace Methane::Graphics::Rhi
+namespace Methane
 {
 
 template<typename ImplType>
@@ -46,4 +42,4 @@ ImplType& GetImpl(const Ptr<ImplType>& impl_ptr) META_PIMPL_NOEXCEPT
     return *impl_ptr;
 }
 
-} // namespace Methane::Graphics::Rhi
+} // namespace Methane

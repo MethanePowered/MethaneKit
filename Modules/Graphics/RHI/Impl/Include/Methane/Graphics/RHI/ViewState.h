@@ -23,7 +23,7 @@ Methane ViewState PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
-#include "Pimpl.h"
+#include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/IViewState.h>
 
@@ -43,19 +43,19 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ViewState);
     META_PIMPL_METHODS_COMPARE_DECLARE(ViewState);
 
-    META_RHI_API explicit ViewState(const Ptr<IViewState>& interface_ptr);
-    META_RHI_API explicit ViewState(IViewState& interface_ref);
-    META_RHI_API explicit ViewState(const Settings& settings);
+    META_PIMPL_API explicit ViewState(const Ptr<IViewState>& interface_ptr);
+    META_PIMPL_API explicit ViewState(IViewState& interface_ref);
+    META_PIMPL_API explicit ViewState(const Settings& settings);
 
-    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    META_RHI_API IViewState& GetInterface() const META_PIMPL_NOEXCEPT;
-    META_RHI_API Ptr<IViewState> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API IViewState& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API Ptr<IViewState> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IViewState interface methods
-    [[nodiscard]] META_RHI_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
-    META_RHI_API bool Reset(const Settings& settings) const;
-    META_RHI_API bool SetViewports(const Viewports& viewports) const;
-    META_RHI_API bool SetScissorRects(const ScissorRects& scissor_rects) const;
+    [[nodiscard]] META_PIMPL_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool Reset(const Settings& settings) const;
+    META_PIMPL_API bool SetViewports(const Viewports& viewports) const;
+    META_PIMPL_API bool SetScissorRects(const ScissorRects& scissor_rects) const;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::ViewState;
@@ -65,8 +65,8 @@ private:
 
 } // namespace Methane::Graphics::Rhi
 
-#ifdef META_RHI_PIMPL_INLINE
+#ifdef META_PIMPL_INLINE
 
 #include <Methane/Graphics/RHI/ViewState.cpp>
 
-#endif // META_RHI_PIMPL_INLINE
+#endif // META_PIMPL_INLINE

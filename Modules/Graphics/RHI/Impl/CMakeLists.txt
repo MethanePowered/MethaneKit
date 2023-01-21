@@ -6,7 +6,6 @@ get_module_dirs("Methane/Graphics/RHI")
 
 list(APPEND HEADERS
     ${INCLUDE_DIR}/Implementations.h
-    ${INCLUDE_DIR}/Pimpl.h
     ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/System.h
     ${INCLUDE_DIR}/CommandListSet.h
@@ -33,7 +32,6 @@ list(APPEND HEADERS
 )
 
 list(APPEND SOURCES
-    ${SOURCES_DIR}/Pimpl.hpp
     ${SOURCES_DIR}/Device.cpp
     ${SOURCES_DIR}/System.cpp
     ${SOURCES_DIR}/CommandListSet.cpp
@@ -101,7 +99,7 @@ if(METHANE_RHI_PIMPL_INLINE_ENABLED)
 
     target_compile_definitions(${TARGET}
         PUBLIC
-            META_RHI_PIMPL_INLINE
+            META_PIMPL_INLINE
             META_GFX_NAME=${METHANE_GRAPHICS_API_NAME}
             $<$<EQUAL:${METHANE_GFX_API},${METHANE_GFX_METAL}>:META_GFX_METAL>
     )

@@ -28,7 +28,7 @@ Renders text labels to the faces of cube-map texture array
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/ScreenQuad.h>
 #include <Methane/UserInterface/Context.h>
-#include <Methane/UserInterface/Font.h>
+#include <Methane/UserInterface/FontLibrary.h>
 #include <Methane/UserInterface/Text.h>
 #include <Methane/Checks.hpp>
 
@@ -76,7 +76,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider&
                                const Settings& settings)
     : m_gui_context(gui_context)
     , m_rt_texture(rt_texture)
-    , m_font(gui::Font::Library::Get().GetFont(font_provider, gui::Font::Settings{
+    , m_font(gui_context.GetFontLibrary().GetFont(font_provider, gui::Font::Settings{
         { "Face Labels",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", settings.font_size_pt }, 96U, U"XYZ+-:0123456789"
     }))
 {

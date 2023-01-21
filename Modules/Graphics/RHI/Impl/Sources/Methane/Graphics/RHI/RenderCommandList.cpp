@@ -32,7 +32,7 @@ Methane RenderCommandList PIMPL wrappers for direct calls to final implementatio
 #include <Methane/Graphics/RHI/ViewState.h>
 #include <Methane/Graphics/RHI/ProgramBindings.h>
 
-#include "Pimpl.hpp"
+#include <Methane/Pimpl.hpp>
 
 #ifdef META_GFX_METAL
 #include <RenderCommandList.hh>

@@ -23,7 +23,7 @@ Methane CommandKit PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
-#include "Pimpl.h"
+#include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/ICommandKit.h>
 
@@ -46,33 +46,33 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandKit);
     META_PIMPL_METHODS_COMPARE_DECLARE(CommandKit);
 
-    META_RHI_API explicit CommandKit(const Ptr<ICommandKit>& interface_ptr);
-    META_RHI_API explicit CommandKit(ICommandKit& interface_ref);
-    META_RHI_API explicit CommandKit(const CommandQueue& command_queue);
-    META_RHI_API CommandKit(const RenderContext& context, CommandListType command_lists_type);
+    META_PIMPL_API explicit CommandKit(const Ptr<ICommandKit>& interface_ptr);
+    META_PIMPL_API explicit CommandKit(ICommandKit& interface_ref);
+    META_PIMPL_API explicit CommandKit(const CommandQueue& command_queue);
+    META_PIMPL_API CommandKit(const RenderContext& context, CommandListType command_lists_type);
 
-    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    META_RHI_API ICommandKit& GetInterface() const META_PIMPL_NOEXCEPT;
-    META_RHI_API Ptr<ICommandKit> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API ICommandKit& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API Ptr<ICommandKit> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    META_RHI_API bool SetName(std::string_view name) const;
-    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool SetName(std::string_view name) const;
+    META_PIMPL_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     // Data::IEmitter<IObjectCallback> interface methods
-    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
-    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // ICommandKit interface methods
-    [[nodiscard]] META_RHI_API const IContext&   GetContext() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API CommandQueue      GetQueue() const;
-    [[nodiscard]] META_RHI_API CommandListType   GetListType() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API bool              HasList(CommandListId cmd_list_id = 0U) const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API bool              HasListWithState(CommandListState cmd_list_state, CommandListId cmd_list_id = 0U) const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API RenderCommandList GetRenderList(CommandListId cmd_list_id = 0U) const;
-    [[nodiscard]] META_RHI_API RenderCommandList GetRenderListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const;
-    [[nodiscard]] META_RHI_API CommandListSet    GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const;
-    [[nodiscard]] META_RHI_API IFence&           GetFence(CommandListId fence_id = 0U) const;
+    [[nodiscard]] META_PIMPL_API const IContext&   GetContext() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API CommandQueue      GetQueue() const;
+    [[nodiscard]] META_PIMPL_API CommandListType   GetListType() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API bool              HasList(CommandListId cmd_list_id = 0U) const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API bool              HasListWithState(CommandListState cmd_list_state, CommandListId cmd_list_id = 0U) const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API RenderCommandList GetRenderList(CommandListId cmd_list_id = 0U) const;
+    [[nodiscard]] META_PIMPL_API RenderCommandList GetRenderListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const;
+    [[nodiscard]] META_PIMPL_API CommandListSet    GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const;
+    [[nodiscard]] META_PIMPL_API IFence&           GetFence(CommandListId fence_id = 0U) const;
 
 private:
     using Impl = Methane::Graphics::Base::CommandKit;
@@ -82,8 +82,8 @@ private:
 
 } // namespace Methane::Graphics::Rhi
 
-#ifdef META_RHI_PIMPL_INLINE
+#ifdef META_PIMPL_INLINE
 
 #include <Methane/Graphics/RHI/CommandKit.cpp>
 
-#endif // META_RHI_PIMPL_INLINE
+#endif // META_PIMPL_INLINE

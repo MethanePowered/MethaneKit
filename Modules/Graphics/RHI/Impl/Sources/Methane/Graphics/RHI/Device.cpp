@@ -24,7 +24,7 @@ Methane Device PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/Device.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 
-#include "Pimpl.hpp"
+#include <Methane/Pimpl.hpp>
 
 #ifdef META_GFX_METAL
 #include <Device.hh>

@@ -24,7 +24,7 @@ Methane ProgramBindings PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/ProgramBindings.h>
 #include <Methane/Graphics/RHI/Program.h>
 
-#include "Pimpl.hpp"
+#include <Methane/Pimpl.hpp>
 
 #ifdef META_GFX_METAL
 #include <ProgramBindings.hh>

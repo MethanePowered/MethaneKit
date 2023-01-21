@@ -23,7 +23,7 @@ Methane Device PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
-#include "Pimpl.h"
+#include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/IDevice.h>
 
@@ -49,27 +49,27 @@ public:
     META_PIMPL_METHODS_DECLARE(Device);
     META_PIMPL_METHODS_COMPARE_DECLARE(Device);
 
-    META_RHI_API explicit Device(const Ptr<IDevice>& interface_ptr);
-    META_RHI_API explicit Device(IDevice& interface_ref);
+    META_PIMPL_API explicit Device(const Ptr<IDevice>& interface_ptr);
+    META_PIMPL_API explicit Device(IDevice& interface_ref);
 
-    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT { return true; }
-    META_RHI_API IDevice& GetInterface() const META_PIMPL_NOEXCEPT;
-    META_RHI_API Ptr<IDevice> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT { return true; }
+    META_PIMPL_API IDevice& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API Ptr<IDevice> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    META_RHI_API bool SetName(std::string_view name) const;
-    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool SetName(std::string_view name) const;
+    META_PIMPL_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     // IDevice interface methods
-    [[nodiscard]] META_RHI_API RenderContext       CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) const;
-    [[nodiscard]] META_RHI_API const std::string&  GetAdapterName() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API bool                IsSoftwareAdapter() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API const Capabilities& GetCapabilities() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API std::string         ToString() const;
+    [[nodiscard]] META_PIMPL_API RenderContext       CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) const;
+    [[nodiscard]] META_PIMPL_API const std::string&  GetAdapterName() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API bool                IsSoftwareAdapter() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API const Capabilities& GetCapabilities() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API std::string         ToString() const;
 
     // Data::IEmitter<IDeviceCallback> interface methods
-    META_RHI_API void Connect(Data::Receiver<IDeviceCallback>& receiver) const;
-    META_RHI_API void Disconnect(Data::Receiver<IDeviceCallback>& receiver) const;
+    META_PIMPL_API void Connect(Data::Receiver<IDeviceCallback>& receiver) const;
+    META_PIMPL_API void Disconnect(Data::Receiver<IDeviceCallback>& receiver) const;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::Device;
@@ -81,8 +81,8 @@ using Devices = std::vector<Device>;
 
 } // namespace Methane::Graphics::Rhi
 
-#ifdef META_RHI_PIMPL_INLINE
+#ifdef META_PIMPL_INLINE
 
 #include <Methane/Graphics/RHI/Device.cpp>
 
-#endif // META_RHI_PIMPL_INLINE
+#endif // META_PIMPL_INLINE

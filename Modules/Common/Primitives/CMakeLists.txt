@@ -10,6 +10,8 @@ set(HEADERS
     ${INCLUDE_DIR}/Exceptions.hpp
     ${INCLUDE_DIR}/Checks.hpp
     ${INCLUDE_DIR}/Timer.hpp
+    ${INCLUDE_DIR}/Pimpl.h
+    ${INCLUDE_DIR}/Pimpl.hpp
 )
 
 set(SOURCES

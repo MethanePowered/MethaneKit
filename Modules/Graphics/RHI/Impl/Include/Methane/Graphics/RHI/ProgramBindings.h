@@ -23,7 +23,7 @@ Methane ProgramBindings PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
-#include "Pimpl.h"
+#include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/IProgramBindings.h>
 
@@ -50,31 +50,31 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ProgramBindings);
     META_PIMPL_METHODS_COMPARE_DECLARE(ProgramBindings);
 
-    META_RHI_API explicit ProgramBindings(const Ptr<IProgramBindings>& interface_ptr);
-    META_RHI_API explicit ProgramBindings(IProgramBindings& interface_ref);
-    META_RHI_API ProgramBindings(const Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);
-    META_RHI_API ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument = {},
+    META_PIMPL_API explicit ProgramBindings(const Ptr<IProgramBindings>& interface_ptr);
+    META_PIMPL_API explicit ProgramBindings(IProgramBindings& interface_ref);
+    META_PIMPL_API ProgramBindings(const Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);
+    META_PIMPL_API ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument = {},
                                  const Opt<Data::Index>& frame_index = {});
 
-    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    META_RHI_API IProgramBindings& GetInterface() const META_PIMPL_NOEXCEPT;
-    META_RHI_API Ptr<IProgramBindings> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API IProgramBindings& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API Ptr<IProgramBindings> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    META_RHI_API bool SetName(std::string_view name) const;
-    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool SetName(std::string_view name) const;
+    META_PIMPL_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     // Data::IEmitter<IObjectCallback> interface methods
-    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
-    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IProgramBindings interface methods
-    [[nodiscard]] META_RHI_API Program                 GetProgram() const;
-    [[nodiscard]] META_RHI_API IArgumentBinding&       Get(const ProgramArgument& shader_argument) const;
-    [[nodiscard]] META_RHI_API const ProgramArguments& GetArguments() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API Data::Index             GetFrameIndex() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API Data::Index             GetBindingsIndex() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API explicit operator       std::string() const;
+    [[nodiscard]] META_PIMPL_API Program                 GetProgram() const;
+    [[nodiscard]] META_PIMPL_API IArgumentBinding&       Get(const ProgramArgument& shader_argument) const;
+    [[nodiscard]] META_PIMPL_API const ProgramArguments& GetArguments() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API Data::Index             GetFrameIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API Data::Index             GetBindingsIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API explicit operator       std::string() const;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::ProgramBindings;
@@ -84,8 +84,8 @@ private:
 
 } // namespace Methane::Graphics::Rhi
 
-#ifdef META_RHI_PIMPL_INLINE
+#ifdef META_PIMPL_INLINE
 
 #include <Methane/Graphics/RHI/ProgramBindings.cpp>
 
-#endif // META_RHI_PIMPL_INLINE
+#endif // META_PIMPL_INLINE

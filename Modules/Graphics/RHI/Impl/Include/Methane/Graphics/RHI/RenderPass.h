@@ -23,7 +23,7 @@ Methane RenderPass PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
-#include "Pimpl.h"
+#include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/IRenderPass.h>
 
@@ -54,31 +54,31 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderPass);
     META_PIMPL_METHODS_COMPARE_DECLARE(RenderPass);
 
-    META_RHI_API explicit RenderPass(const Ptr<IRenderPass>& interface_ptr);
-    META_RHI_API explicit RenderPass(IRenderPass& interface_ref);
-    META_RHI_API RenderPass(const Pattern& render_pattern, const Settings& settings);
+    META_PIMPL_API explicit RenderPass(const Ptr<IRenderPass>& interface_ptr);
+    META_PIMPL_API explicit RenderPass(IRenderPass& interface_ref);
+    META_PIMPL_API RenderPass(const Pattern& render_pattern, const Settings& settings);
 
-    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    META_RHI_API IRenderPass& GetInterface() const META_PIMPL_NOEXCEPT;
-    META_RHI_API Ptr<IRenderPass> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API IRenderPass& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API Ptr<IRenderPass> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    META_RHI_API bool SetName(std::string_view name) const;
-    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool SetName(std::string_view name) const;
+    META_PIMPL_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     // Data::IEmitter<IObjectCallback> interface methods
-    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
-    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IRenderPass interface methods
-    META_RHI_API RenderPattern GetPattern() const META_PIMPL_NOEXCEPT;
-    META_RHI_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
-    META_RHI_API bool Update(const Settings& settings) const META_PIMPL_NOEXCEPT;
-    META_RHI_API void ReleaseAttachmentTextures() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API RenderPattern GetPattern() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool Update(const Settings& settings) const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API void ReleaseAttachmentTextures() const META_PIMPL_NOEXCEPT;
 
     // Data::IEmitter<IRenderPassCallback> interface methods
-    META_RHI_API void Connect(Data::Receiver<IRenderPassCallback>& receiver) const;
-    META_RHI_API void Disconnect(Data::Receiver<IRenderPassCallback>& receiver) const;
+    META_PIMPL_API void Connect(Data::Receiver<IRenderPassCallback>& receiver) const;
+    META_PIMPL_API void Disconnect(Data::Receiver<IRenderPassCallback>& receiver) const;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::RenderPass;
@@ -88,8 +88,8 @@ private:
 
 } // namespace Methane::Graphics::Rhi
 
-#ifdef META_RHI_PIMPL_INLINE
+#ifdef META_PIMPL_INLINE
 
 #include <Methane/Graphics/RHI/RenderPass.cpp>
 
-#endif // META_RHI_PIMPL_INLINE
+#endif // META_PIMPL_INLINE

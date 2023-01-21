@@ -24,7 +24,7 @@ Methane RenderState PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 
-#include "Pimpl.hpp"
+#include <Methane/Pimpl.hpp>
 
 #ifdef META_GFX_METAL
 #include <RenderState.hh>

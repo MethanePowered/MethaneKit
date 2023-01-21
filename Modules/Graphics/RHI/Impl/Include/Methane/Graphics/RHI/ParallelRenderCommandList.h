@@ -23,7 +23,7 @@ Methane ParallelRenderCommandList PIMPL wrappers for direct calls to final imple
 
 #pragma once
 
-#include "Pimpl.h"
+#include <Methane/Pimpl.h>
 #include "RenderCommandList.h"
 
 #include <Methane/Graphics/RHI/IParallelRenderCommandList.h>
@@ -55,49 +55,49 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ParallelRenderCommandList);
     META_PIMPL_METHODS_COMPARE_DECLARE(ParallelRenderCommandList);
 
-    META_RHI_API explicit ParallelRenderCommandList(const Ptr<IParallelRenderCommandList>& interface_ptr);
-    META_RHI_API explicit ParallelRenderCommandList(IParallelRenderCommandList& interface_ref);
-    META_RHI_API ParallelRenderCommandList(const CommandQueue& command_queue, const RenderPass& render_pass);
+    META_PIMPL_API explicit ParallelRenderCommandList(const Ptr<IParallelRenderCommandList>& interface_ptr);
+    META_PIMPL_API explicit ParallelRenderCommandList(IParallelRenderCommandList& interface_ref);
+    META_PIMPL_API ParallelRenderCommandList(const CommandQueue& command_queue, const RenderPass& render_pass);
 
-    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    META_RHI_API IParallelRenderCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
-    META_RHI_API Ptr<IParallelRenderCommandList> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API IParallelRenderCommandList& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API Ptr<IParallelRenderCommandList> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    META_RHI_API bool SetName(std::string_view name) const;
-    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool SetName(std::string_view name) const;
+    META_PIMPL_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     // Data::IEmitter<IObjectCallback> interface methods
-    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
-    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // ICommandList interface methods
-    META_RHI_API void  PushDebugGroup(const DebugGroup& debug_group) const;
-    META_RHI_API void  PopDebugGroup() const;
-    META_RHI_API void  Reset(const DebugGroup* debug_group_ptr = nullptr) const;
-    META_RHI_API void  ResetOnce(const DebugGroup* debug_group_ptr = nullptr) const;
-    META_RHI_API void  SetProgramBindings(IProgramBindings& program_bindings,
+    META_PIMPL_API void  PushDebugGroup(const DebugGroup& debug_group) const;
+    META_PIMPL_API void  PopDebugGroup() const;
+    META_PIMPL_API void  Reset(const DebugGroup* debug_group_ptr = nullptr) const;
+    META_PIMPL_API void  ResetOnce(const DebugGroup* debug_group_ptr = nullptr) const;
+    META_PIMPL_API void  SetProgramBindings(IProgramBindings& program_bindings,
                                           ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
-    META_RHI_API void  SetResourceBarriers(const ResourceBarriers& resource_barriers) const;
-    META_RHI_API void  Commit() const;
-    META_RHI_API void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;
-    [[nodiscard]] META_RHI_API Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const;
-    [[nodiscard]] META_RHI_API State GetState() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API CommandQueue GetCommandQueue() const;
+    META_PIMPL_API void  SetResourceBarriers(const ResourceBarriers& resource_barriers) const;
+    META_PIMPL_API void  Commit() const;
+    META_PIMPL_API void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;
+    [[nodiscard]] META_PIMPL_API Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const;
+    [[nodiscard]] META_PIMPL_API State GetState() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API CommandQueue GetCommandQueue() const;
 
     // Data::IEmitter<ICommandListCallback> interface methods
-    META_RHI_API void Connect(Data::Receiver<ICommandListCallback>& receiver) const;
-    META_RHI_API void Disconnect(Data::Receiver<ICommandListCallback>& receiver) const;
+    META_PIMPL_API void Connect(Data::Receiver<ICommandListCallback>& receiver) const;
+    META_PIMPL_API void Disconnect(Data::Receiver<ICommandListCallback>& receiver) const;
 
     // IParallelRenderCommandList interface methods
-    [[nodiscard]] META_RHI_API bool IsValidationEnabled() const META_PIMPL_NOEXCEPT;
-    META_RHI_API void SetValidationEnabled(bool is_validation_enabled) const;
-    META_RHI_API void ResetWithState(const RenderState& render_state, const DebugGroup* debug_group_ptr = nullptr) const;
-    META_RHI_API void SetViewState(const ViewState& view_state) const;
-    META_RHI_API void SetBeginningResourceBarriers(const ResourceBarriers& resource_barriers) const;
-    META_RHI_API void SetEndingResourceBarriers(const ResourceBarriers& resource_barriers) const;
-    META_RHI_API void SetParallelCommandListsCount(uint32_t count) const;
-    [[nodiscard]] META_RHI_API const std::vector<RenderCommandList>& GetParallelCommandLists() const;
+    [[nodiscard]] META_PIMPL_API bool IsValidationEnabled() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API void SetValidationEnabled(bool is_validation_enabled) const;
+    META_PIMPL_API void ResetWithState(const RenderState& render_state, const DebugGroup* debug_group_ptr = nullptr) const;
+    META_PIMPL_API void SetViewState(const ViewState& view_state) const;
+    META_PIMPL_API void SetBeginningResourceBarriers(const ResourceBarriers& resource_barriers) const;
+    META_PIMPL_API void SetEndingResourceBarriers(const ResourceBarriers& resource_barriers) const;
+    META_PIMPL_API void SetParallelCommandListsCount(uint32_t count) const;
+    [[nodiscard]] META_PIMPL_API const std::vector<RenderCommandList>& GetParallelCommandLists() const;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::ParallelRenderCommandList;
@@ -108,8 +108,8 @@ private:
 
 } // namespace Methane::Graphics::Rhi
 
-#ifdef META_RHI_PIMPL_INLINE
+#ifdef META_PIMPL_INLINE
 
 #include <Methane/Graphics/RHI/ParallelRenderCommandList.cpp>
 
-#endif // META_RHI_PIMPL_INLINE
+#endif // META_PIMPL_INLINE

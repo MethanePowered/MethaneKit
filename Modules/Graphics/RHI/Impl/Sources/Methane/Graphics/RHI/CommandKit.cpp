@@ -29,7 +29,7 @@ Methane CommandKit PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/Base/CommandKit.h>
 
-#include "Pimpl.hpp"
+#include <Methane/Pimpl.hpp>
 
 namespace Methane::Graphics::Rhi
 {

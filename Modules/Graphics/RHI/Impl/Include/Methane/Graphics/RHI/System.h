@@ -25,7 +25,7 @@ Methane System PIMPL wrappers for direct calls to final implementation.
 
 #include "Device.h"
 
-#include "Pimpl.h"
+#include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/ISystem.h>
 
@@ -40,28 +40,28 @@ namespace Methane::Graphics::Rhi
 class System // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
-    [[nodiscard]] META_RHI_API static NativeApi GetNativeApi() noexcept;
-    [[nodiscard]] META_RHI_API static System& Get();
+    [[nodiscard]] META_PIMPL_API static NativeApi GetNativeApi() noexcept;
+    [[nodiscard]] META_PIMPL_API static System& Get();
 
     META_PIMPL_METHODS_DECLARE(System);
 
-    META_RHI_API explicit System(const Ptr<ISystem>& interface_ptr);
+    META_PIMPL_API explicit System(const Ptr<ISystem>& interface_ptr);
 
-    META_RHI_API ISystem& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API ISystem& GetInterface() const META_PIMPL_NOEXCEPT;
 
     // ISystem interface methods
-    META_RHI_API void CheckForChanges() const;
-    META_RHI_API const Devices& UpdateGpuDevices(const DeviceCaps& required_device_caps = {}) const;
-    META_RHI_API const Devices& UpdateGpuDevices(const Platform::AppEnvironment& app_env,
+    META_PIMPL_API void CheckForChanges() const;
+    META_PIMPL_API const Devices& UpdateGpuDevices(const DeviceCaps& required_device_caps = {}) const;
+    META_PIMPL_API const Devices& UpdateGpuDevices(const Platform::AppEnvironment& app_env,
                                                  const DeviceCaps& required_device_caps = {}) const;
-    [[nodiscard]] META_RHI_API const Devices&    GetGpuDevices() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API Device            GetNextGpuDevice(const Device& device) const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API Device            GetSoftwareGpuDevice() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API const DeviceCaps& GetDeviceCapabilities() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API std::string       ToString() const;
+    [[nodiscard]] META_PIMPL_API const Devices&    GetGpuDevices() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API Device            GetNextGpuDevice(const Device& device) const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API Device            GetSoftwareGpuDevice() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API const DeviceCaps& GetDeviceCapabilities() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API std::string       ToString() const;
 
 private:
-    META_RHI_API const Devices& UpdateDevices(const Ptrs<Rhi::IDevice>& devices) const;
+    META_PIMPL_API const Devices& UpdateDevices(const Ptrs<Rhi::IDevice>& devices) const;
 
     using Impl = Methane::Graphics::META_GFX_NAME::System;
 
@@ -71,8 +71,8 @@ private:
 
 } // namespace Methane::Graphics::Rhi
 
-#ifdef META_RHI_PIMPL_INLINE
+#ifdef META_PIMPL_INLINE
 
 #include <Methane/Graphics/RHI/System.cpp>
 
-#endif // META_RHI_PIMPL_INLINE
+#endif // META_PIMPL_INLINE

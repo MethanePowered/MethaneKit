@@ -73,18 +73,10 @@ AppBase::AppBase(const IApp::Settings& ui_app_settings)
     m_parameters.text_name          = "Parameters";
 }
 
-AppBase::~AppBase()
-{
-    META_FUNCTION_TASK();
-
-    // Clear static signleton fonts library to guarantee atlas textures destruction before descriptor heaps release
-    Font::Library::Get().Clear();
-}
-
 void AppBase::InitUI(const Platform::IApp& app, const rhi::CommandQueue& render_cmd_queue, const rhi::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
-    m_ui_context_ptr = std::make_unique<Context>(app, render_cmd_queue, render_pattern);
+    m_ui_context_ptr = std::make_unique<Context>(app, render_cmd_queue, render_pattern, m_font_lib);
     m_frame_size     = UnitSize(Units::Pixels, frame_size);
     m_text_margins   = m_ui_context_ptr->ConvertTo<Units::Pixels>(m_app_settings.text_margins);
     m_window_padding = m_ui_context_ptr->ConvertTo<Units::Pixels>(m_app_settings.window_padding);
@@ -124,7 +116,7 @@ void AppBase::ReleaseUI()
     META_FUNCTION_TASK();
     m_logo_badge_ptr.reset();
     m_hud_ptr.reset();
-    m_main_font_ptr.reset();
+    m_main_font_opt.reset();
     m_help_columns.first.Reset(false);
     m_help_columns.second.Reset(false);
     m_parameters.Reset(false);
@@ -228,8 +220,8 @@ bool AppBase::SetHeadsUpDisplayUIMode(HeadsUpDisplayMode heads_up_display_mode)
     else
     {
         m_hud_ptr.reset();
-        Font::Library::Get().RemoveFont(m_app_settings.hud_settings.major_font.name);
-        Font::Library::Get().RemoveFont(m_app_settings.hud_settings.minor_font.name);
+        m_font_lib.RemoveFont(m_app_settings.hud_settings.major_font.name);
+        m_font_lib.RemoveFont(m_app_settings.hud_settings.minor_font.name);
     }
     return true;
 }
@@ -308,10 +300,10 @@ bool AppBase::UpdateTextItem(TextItem& item)
         item.Reset(true);
 
         // If main font is hold only by this class and Font::Library, then it can be removed as unused
-        if (m_main_font_ptr.use_count() == 2)
+        if (m_main_font_opt->GetUseCount() == 2)
         {
-            Font::Library::Get().RemoveFont(m_app_settings.main_font.name);
-            m_main_font_ptr.reset();
+            m_font_lib.RemoveFont(m_app_settings.main_font.name);
+            m_main_font_opt.reset();
         }
         return false;
     }
@@ -396,15 +388,15 @@ void AppBase::UpdateParametersTextPosition() const
 Font& AppBase::GetMainFont()
 {
     META_FUNCTION_TASK();
-    if (m_main_font_ptr)
-        return *m_main_font_ptr;
+    if (m_main_font_opt)
+        return *m_main_font_opt;
 
     META_CHECK_ARG_NOT_NULL_DESCR(m_ui_context_ptr, "main font can not be initialized without render context");
-    m_main_font_ptr = Font::Library::Get().GetFont(
+    m_main_font_opt = m_font_lib.GetFont(
         Data::FontProvider::Get(),
         Font::Settings{ m_app_settings.main_font, m_ui_context_ptr->GetFontResolutionDpi(), Font::GetAlphabetDefault() }
-    ).GetPtr();
-    return *m_main_font_ptr;
+    );
+    return *m_main_font_opt;
 }
 
 const Data::IProvider& AppBase::GetFontProvider() const noexcept

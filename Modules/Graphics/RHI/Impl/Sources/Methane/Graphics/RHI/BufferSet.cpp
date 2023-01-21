@@ -30,7 +30,7 @@ Methane Buffer PIMPL wrappers for direct calls to final implementation.
 #include <BufferSet.h>
 #endif
 
-#include "Pimpl.hpp"
+#include <Methane/Pimpl.hpp>
 
 namespace Methane::Graphics::Rhi
 {

@@ -23,7 +23,7 @@ Methane CommandListSet PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
-#include "Pimpl.h"
+#include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/ICommandListSet.h>
 
@@ -41,19 +41,19 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandListSet);
     META_PIMPL_METHODS_COMPARE_DECLARE(CommandListSet);
 
-    META_RHI_API explicit CommandListSet(const Ptr<ICommandListSet>& interface_ptr);
-    META_RHI_API explicit CommandListSet(ICommandListSet& interface_ref);
-    META_RHI_API CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt = {});
+    META_PIMPL_API explicit CommandListSet(const Ptr<ICommandListSet>& interface_ptr);
+    META_PIMPL_API explicit CommandListSet(ICommandListSet& interface_ref);
+    META_PIMPL_API CommandListSet(const Refs<ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt = {});
 
-    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    META_RHI_API ICommandListSet& GetInterface() const META_PIMPL_NOEXCEPT;
-    META_RHI_API Ptr<ICommandListSet> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API ICommandListSet& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API Ptr<ICommandListSet> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // ICommandListSet interface methods
-    [[nodiscard]] META_RHI_API Data::Size                GetCount() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API const Refs<ICommandList>& GetRefs() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API ICommandList&             operator[](Data::Index index) const;
-    [[nodiscard]] META_RHI_API const Opt<Data::Index>&   GetFrameIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API Data::Size                GetCount() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API const Refs<ICommandList>& GetRefs() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API ICommandList&             operator[](Data::Index index) const;
+    [[nodiscard]] META_PIMPL_API const Opt<Data::Index>&   GetFrameIndex() const META_PIMPL_NOEXCEPT;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::CommandListSet;
@@ -63,8 +63,8 @@ private:
 
 } // namespace Methane::Graphics::Rhi
 
-#ifdef META_RHI_PIMPL_INLINE
+#ifdef META_PIMPL_INLINE
 
 #include <Methane/Graphics/RHI/CommandListSet.cpp>
 
-#endif // META_RHI_PIMPL_INLINE
+#endif // META_PIMPL_INLINE

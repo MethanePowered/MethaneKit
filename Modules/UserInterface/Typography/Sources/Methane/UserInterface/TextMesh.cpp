@@ -22,9 +22,9 @@ Methane text mesh generation helper.
 ******************************************************************************/
 
 #include "TextMesh.h"
+#include "FontImpl.hpp"
 
 #include <Methane/Graphics/RHI/IRenderCommandList.h>
-#include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Data/TypeFormatters.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -43,18 +43,18 @@ enum class CharAction
 
 using IndexRange = std::pair<size_t, size_t>;
 
-template<typename FuncType> // function CharAction(const Font::Char& text_char, const TextMesh::CharPosition& char_pos, size_t char_index)
-void ForEachTextCharacterInRange(const Font& font, const Font::Chars& text_chars, const IndexRange& index_range,
+template<typename FuncType> // function CharAction(const FontChar& text_char, const TextMesh::CharPosition& char_pos, size_t char_index)
+void ForEachTextCharacterInRange(const Font::Impl& font, const FontChars& text_chars, const IndexRange& index_range,
                                  TextMesh::CharPositions& char_positions, uint32_t frame_width, Text::Wrap wrap,
                                  FuncType process_char_at_position)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(char_positions);
-    const Font::Char* p_prev_text_char = nullptr;
+    const FontChar* p_prev_text_char = nullptr;
 
     for (size_t char_index = index_range.first; char_index < index_range.second; ++char_index)
     {
-        const Font::Char& text_char = text_chars[char_index].get();
+        const FontChar& text_char = text_chars[char_index].get();
         META_CHECK_ARG_NOT_ZERO(text_char);
 
         TextMesh::CharPosition& char_pos = char_positions.back();
@@ -107,18 +107,18 @@ void ForEachTextCharacterInRange(const Font& font, const Font::Chars& text_chars
     }
 }
 
-template<typename FuncType> // function CharAction(const Font::Char& text_char, const TextMesh::CharPosition& char_pos, size_t char_index)
-static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMesh::CharPositions& char_positions,
+template<typename FuncType> // function CharAction(const FontChar& text_char, const TextMesh::CharPosition& char_pos, size_t char_index)
+static void ForEachTextCharacter(const std::u32string& text, Font::Impl& font, TextMesh::CharPositions& char_positions,
                                  uint32_t frame_width, Text::Wrap wrap, FuncType process_char_at_position)
 {
     META_FUNCTION_TASK();
-    const Font::Chars text_chars = font.GetTextChars(text);
+    const FontChars text_chars = font.GetTextChars(text);
     const IndexRange  text_range { 0, text_chars.size() };
     if (wrap == Text::Wrap::Word && frame_width)
     {
         ForEachTextCharacterInRange(font, text_chars, text_range, char_positions, frame_width, wrap,
             [&font, &text_chars, &char_positions, &frame_width, &process_char_at_position] // NOSONAR - lambda function lines count is greater than 20
-            (const Font::Char& text_char, const TextMesh::CharPosition& cur_char_pos, size_t char_index)
+            (const FontChar& text_char, const TextMesh::CharPosition& cur_char_pos, size_t char_index)
             {
                 if (text_char.IsWhiteSpace())
                 {
@@ -128,7 +128,7 @@ static void ForEachTextCharacter(const std::u32string& text, Font& font, TextMes
                     char_positions.emplace_back(cur_char_pos.GetX() + text_char.GetAdvance().GetX(), cur_char_pos.GetY());
                     ForEachTextCharacterInRange(font, text_chars, { char_index + 1, text_chars.size() }, char_positions, frame_width, Text::Wrap::Anywhere,
                         [&word_wrap_required, &cur_char_pos, &text_chars]
-                        (const Font::Char& inner_text_char, const gfx::FramePoint& char_pos, size_t inner_char_index)
+                        (const FontChar& inner_text_char, const gfx::FramePoint& char_pos, size_t inner_char_index)
                         {
                             // Word has ended if whitespace character is received or line break character was passed
                             if (inner_text_char.IsWhiteSpace() || (inner_char_index && text_chars[inner_char_index - 1].get().IsLineBreak()))
@@ -319,8 +319,8 @@ void TextMesh::AppendChars(std::u32string added_text)
     }
     m_char_positions.reserve(m_char_positions.size() + added_text.length());
 
-    ForEachTextCharacter(added_text, m_font, m_char_positions, m_frame_size.GetWidth(), m_layout.wrap,
-        [this, init_text_length, &atlas_size](const Font::Char& font_char, const TextMesh::CharPosition& char_pos, size_t char_index)
+    ForEachTextCharacter(added_text, m_font.GetImplementation(), m_char_positions, m_frame_size.GetWidth(), m_layout.wrap,
+        [this, init_text_length, &atlas_size](const FontChar& font_char, const TextMesh::CharPosition& char_pos, size_t char_index)
         {
             if (font_char.IsWhiteSpace())
                 m_last_whitespace_index = init_text_length + char_index;
@@ -461,7 +461,7 @@ float TextMesh::GetJustifiedWhitespaceWidth(size_t line_start_index) const
     return static_cast<float>(static_cast<int32_t>(m_content_size.GetWidth()) - GetLineWidth(line_start_index)) / static_cast<float>(white_spaces_count);
 }
 
-void TextMesh::AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& char_pos, const gfx::FrameSize& atlas_size)
+void TextMesh::AddCharQuad(const FontChar& font_char, const gfx::FramePoint& char_pos, const gfx::FrameSize& atlas_size)
 {
     META_FUNCTION_TASK();
 
@@ -533,7 +533,7 @@ void TextMesh::UpdateContentSize()
         m_content_size.SetWidth(m_frame_size.GetWidth());
 }
 
-void TextMesh::UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos)
+void TextMesh::UpdateContentSizeWithChar(const FontChar& font_char, const gfx::FramePoint& char_pos)
 {
     META_FUNCTION_TASK();
     m_content_top_offset  = std::min(m_content_top_offset,  static_cast<uint32_t>(char_pos.GetY() + font_char.GetOffset().GetY()));

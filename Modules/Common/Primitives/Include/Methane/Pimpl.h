@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/Pimpl.h
+FILE: Methane/Pimpl.h
 Methane PIMPL common header.
 
 ******************************************************************************/
@@ -25,17 +25,17 @@ Methane PIMPL common header.
 
 #include <Methane/Memory.hpp>
 
-#ifdef META_RHI_PIMPL_INLINE
+#ifdef META_PIMPL_INLINE
 
 #include <Methane/Inline.hpp>
 
-#define META_RHI_API META_INLINE
+#define META_PIMPL_API META_INLINE
 
-#else // META_RHI_PIMPL_INLINE
+#else // META_PIMPL_INLINE
 
-#define META_RHI_API
+#define META_PIMPL_API
 
-#endif // META_RHI_PIMPL_INLINE
+#endif // META_PIMPL_INLINE
 
 #ifdef _DEBUG
 // Comment this define to disable checks of pointer to implementation in all PIMPL methods
@@ -49,20 +49,27 @@ Methane PIMPL common header.
 #endif
 
 #define META_PIMPL_METHODS_DECLARE(Class) \
-    META_RHI_API ~Class(); \
-    META_RHI_API Class(const Class& other); \
-    META_RHI_API Class(Class&& other) noexcept; \
-    META_RHI_API Class& operator=(const Class& other); \
-    META_RHI_API Class& operator=(Class&& other) noexcept
+    META_PIMPL_API ~Class(); \
+    META_PIMPL_API Class(const Class& other); \
+    META_PIMPL_API Class(Class&& other) noexcept; \
+    META_PIMPL_API Class& operator=(const Class& other); \
+    META_PIMPL_API Class& operator=(Class&& other) noexcept
+
+#define META_PIMPL_METHODS_DECLARE_NO_INLINE(Class) \
+    ~Class(); \
+    Class(const Class& other); \
+    Class(Class&& other) noexcept; \
+    Class& operator=(const Class& other); \
+    Class& operator=(Class&& other) noexcept
 
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Class) \
-    META_RHI_API Class(); \
+    META_PIMPL_API Class(); \
     META_PIMPL_METHODS_DECLARE(Class)
 
 #define META_PIMPL_METHODS_COMPARE_DECLARE(Class) \
-    META_RHI_API bool operator==(const Class& other) const noexcept; \
-    META_RHI_API bool operator!=(const Class& other) const noexcept; \
-    META_RHI_API bool operator<(const Class& other) const noexcept
+    META_PIMPL_API bool operator==(const Class& other) const noexcept; \
+    META_PIMPL_API bool operator!=(const Class& other) const noexcept; \
+    META_PIMPL_API bool operator<(const Class& other) const noexcept
 
 #define META_PIMPL_METHODS_IMPLEMENT(Class) \
     Class::~Class() = default; \

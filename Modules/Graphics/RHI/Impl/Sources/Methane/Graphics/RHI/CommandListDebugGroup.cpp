@@ -25,7 +25,7 @@ Methane CommandListDebugGroup PIMPL wrappers for direct calls to final implement
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
 
-#include "Pimpl.hpp"
+#include <Methane/Pimpl.hpp>
 
 #ifdef META_GFX_METAL
 #include <CommandListDebugGroup.hh>

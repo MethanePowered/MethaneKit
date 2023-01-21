@@ -125,11 +125,10 @@ public:
     using SettingsUtf8  = Settings<std::string>;
     using SettingsUtf32 = Settings<std::u32string>;
 
-
-    Text(Context& ui_context, const rhi::RenderPattern& render_pattern, Font& font, const SettingsUtf8& settings);
-    Text(Context& ui_context, Font& font, const SettingsUtf8& settings);
-    Text(Context& ui_context, const rhi::RenderPattern& render_pattern, Font& font, SettingsUtf32 settings);
-    Text(Context& ui_context, Font& font, SettingsUtf32 settings);
+    Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf8& settings);
+    Text(Context& ui_context, const Font& font, const SettingsUtf8& settings);
+    Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, SettingsUtf32 settings);
+    Text(Context& ui_context, const Font& font, SettingsUtf32 settings);
     ~Text() override;
 
     [[nodiscard]] const SettingsUtf32&  GetSettings() const noexcept  { return m_settings; }
@@ -230,7 +229,7 @@ private:
     SettingsUtf32               m_settings;
     UnitRect                    m_frame_rect;
     FrameSize                   m_render_attachment_size = FrameSize::Max();
-    Ptr<Font>                   m_font_ptr;
+    Font                        m_font;
     UniquePtr<TextMesh>         m_text_mesh_ptr;
     rhi::RenderState            m_render_state;
     rhi::ViewState              m_view_state;

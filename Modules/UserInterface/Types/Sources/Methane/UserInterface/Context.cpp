@@ -16,25 +16,23 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/UserInterface/IContext.cpp
+FILE: Methane/UserInterface/Context.cpp
 Methane user interface context used by all widgets for rendering.
 
 ******************************************************************************/
 
 #include <Methane/UserInterface/Context.h>
 #include <Methane/Platform/IApp.h>
-#include <Methane/Graphics/RHI/IRenderContext.h>
-#include <Methane/Graphics/RHI/ICommandQueue.h>
-#include <Methane/Graphics/RHI/IRenderPass.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::UserInterface
 {
 
-Context::Context(const pal::IApp& app, const rhi::CommandQueue& render_cmd_queue, const rhi::RenderPattern& render_pattern)
+Context::Context(const pal::IApp& app, const rhi::CommandQueue& render_cmd_queue, const rhi::RenderPattern& render_pattern, const FontLibrary& font_lib)
     : m_render_context(render_pattern.GetRenderContext())
     , m_render_cmd_queue(render_cmd_queue)
     , m_render_pattern(render_pattern)
+    , m_font_lib(font_lib)
     , m_dots_to_pixels_factor(app.GetContentScalingFactor())
     , m_font_resolution_dpi(app.GetFontResolutionDpi())
 {

@@ -25,7 +25,7 @@ Methane RenderPass PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderPattern.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 
-#include "Pimpl.hpp"
+#include <Methane/Pimpl.hpp>
 
 #ifdef META_GFX_METAL
 #include <RenderPass.hh>

@@ -137,7 +137,7 @@ TypographyApp::TypographyApp()
 
     GetHeadsUpDisplaySettings().position = gui::UnitPoint(gui::Units::Dots, g_margin_size_in_dots, g_margin_size_in_dots);
 
-    gui::Font::Library::Get().Connect(*this);
+    GetFontLibrary().Connect(*this);
     AddInputControllers({
         std::make_shared<TypographyAppController>(*this, g_typography_action_by_keyboard_state)
     });
@@ -156,7 +156,7 @@ TypographyApp::~TypographyApp()
     WaitForRenderComplete();
 
     // Clear the font library to release all atlas textures
-    gui::Font::Library::Get().Clear();
+    GetFontLibrary().Clear();
     m_font_atlas_badges.clear();
 }
 
@@ -176,7 +176,7 @@ void TypographyApp::Init()
 
         // Add font to library
         m_fonts.push_back(
-            gui::Font::Library::Get().AddFont(
+            GetFontLibrary().AddFont(
                 Data::FontProvider::Get(),
                 gui::Font::Settings
                 {
@@ -184,12 +184,12 @@ void TypographyApp::Init()
                     GetUIContext().GetFontResolutionDpi(),
                     gui::Font::GetAlphabetFromText(displayed_text_block)
                 }
-            ).GetPtr()
+            )
         );
 
         // Add text element
         m_texts.push_back(
-            std::make_shared<gui::Text>(GetUIContext(), *m_fonts.back(),
+            std::make_shared<gui::Text>(GetUIContext(), m_fonts.back(),
                 gui::Text::SettingsUtf32
                 {
                     font_settings.desc.name,
@@ -245,17 +245,17 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const
 
 void TypographyApp::UpdateFontAtlasBadges()
 {
-    const Refs<gui::Font> font_refs = gui::Font::Library::Get().GetFonts();
-    const rhi::RenderContext& context = GetRenderContext();
+    const std::vector<gui::Font> fonts = GetFontLibrary().GetFonts();
+    const rhi::RenderContext&  context = GetRenderContext();
 
     // Remove obsolete font atlas badges
     for(auto badge_it = m_font_atlas_badges.begin(); badge_it != m_font_atlas_badges.end();)
     {
         META_CHECK_ARG_NOT_NULL(*badge_it);
         if (const gui::Badge& badge = **badge_it;
-            std::any_of(font_refs.begin(), font_refs.end(),
-                [&badge, &context](const Ref<gui::Font>& font_ref)
-                { return badge.GetTexture() == font_ref.get().GetAtlasTexture(context); }))
+            std::any_of(fonts.begin(), fonts.end(),
+                [&badge, &context](const gui::Font& font)
+                { return badge.GetTexture() == font.GetAtlasTexture(context); }))
         {
             ++badge_it;
             continue;
@@ -265,9 +265,9 @@ void TypographyApp::UpdateFontAtlasBadges()
     }
 
     // Add new font atlas badges
-    for(const Ref<gui::Font>& font_ref : font_refs)
+    for(const gui::Font& font : fonts)
     {
-        const rhi::Texture& font_atlas_texture = font_ref.get().GetAtlasTexture(context);
+        const rhi::Texture& font_atlas_texture = font.GetAtlasTexture(context);
         if (!font_atlas_texture.IsInitialized() ||
             std::any_of(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
                         [&font_atlas_texture](const Ptr<gui::Badge>& font_atlas_badge_ptr)
@@ -276,7 +276,7 @@ void TypographyApp::UpdateFontAtlasBadges()
                         }))
             continue;
 
-        m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font_ref.get(), font_atlas_texture));
+        m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, font_atlas_texture));
     }
 
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
@@ -409,7 +409,7 @@ void TypographyApp::ResetAnimation()
         const std::u32string displayed_text = full_text.substr(0, displayed_text_length);
         m_displayed_text_lengths[block_index] = displayed_text_length;
         m_texts[block_index]->SetText(displayed_text);
-        m_fonts[block_index]->ResetChars(displayed_text);
+        m_fonts[block_index].ResetChars(displayed_text);
     }
     
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
@@ -524,7 +524,7 @@ void TypographyApp::SetIncrementalTextUpdate(bool is_incremental_text_update)
 
 void TypographyApp::OnContextReleased(rhi::IContext& context)
 {
-    gui::Font::Library::Get().Clear();
+    GetFontLibrary().Clear();
 
     m_fonts.clear();
     m_texts.clear();

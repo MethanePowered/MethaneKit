@@ -30,7 +30,7 @@ Methane ParallelRenderCommandList PIMPL wrappers for direct calls to final imple
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 
-#include "Pimpl.hpp"
+#include <Methane/Pimpl.hpp>
 
 #ifdef META_GFX_METAL
 #include <ParallelRenderCommandList.hh>

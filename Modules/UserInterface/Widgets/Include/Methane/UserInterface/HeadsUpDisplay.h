@@ -24,7 +24,6 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #pragma once
 
 #include <Methane/UserInterface/Panel.h>
-#include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Font.h>
 #include <Methane/Graphics/Color.hpp>
 #include <Methane/Graphics/RHI/IRenderCommandList.h>
@@ -35,7 +34,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 namespace Methane::UserInterface
 {
 
-class Font;
+class Text;
 
 namespace pin = Methane::Platform::Input;
 
@@ -101,8 +100,8 @@ private:
     void UpdateAllTextBlocks(const FrameSize& render_attachment_size) const;
 
     Settings            m_settings;
-    const Ptr<Font>     m_major_font_ptr;
-    const Ptr<Font>     m_minor_font_ptr;
+    const Font          m_major_font;
+    const Font          m_minor_font;
     const TextBlockPtrs m_text_blocks;
     Timer               m_update_timer;
 };

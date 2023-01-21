@@ -25,6 +25,7 @@ Base implementation of the Methane user interface application.
 
 #include "IApp.h"
 
+#include <Methane/UserInterface/FontLibrary.h>
 #include <Methane/UserInterface/HeadsUpDisplay.h>
 #include <Methane/Checks.hpp>
 
@@ -54,7 +55,6 @@ class AppBase // NOSONAR - custom destructor is required
 public:
     explicit AppBase(const IApp::Settings& ui_app_settings);
     AppBase(const AppBase&) = delete;
-    ~AppBase();
 
     AppBase& operator=(const AppBase&) = delete;
     AppBase& operator=(AppBase&&) = delete;
@@ -71,8 +71,10 @@ protected:
     bool SetParametersText(std::string_view parameters_str);
 
     [[nodiscard]] const Data::IProvider& GetFontProvider() const noexcept;
+    [[nodiscard]] FontLibrary& GetFontLibrary()                                { return m_font_lib; }
     [[nodiscard]] bool IsHelpTextDisplayed() const noexcept                    { return !m_help_columns.first.text_str.empty(); }
     [[nodiscard]] bool IsParametersTextDisplayed() const noexcept              { return !m_parameters.text_str.empty(); }
+    [[nodiscard]] const FontLibrary& GetFontLibrary() const noexcept           { return m_font_lib; }
     [[nodiscard]] Font& GetMainFont();
 
     [[nodiscard]] const IApp::Settings& GetAppSettings() const noexcept        { return m_app_settings; }
@@ -101,6 +103,7 @@ private:
     void UpdateHelpTextPosition() const;
     void UpdateParametersTextPosition() const;
 
+    FontLibrary                    m_font_lib;
     UniquePtr<Context>             m_ui_context_ptr;
     IApp::Settings                 m_app_settings;
     UnitSize                       m_frame_size;
@@ -108,7 +111,7 @@ private:
     UnitPoint                      m_window_padding;
     Ptr<Badge>                     m_logo_badge_ptr;
     Ptr<HeadsUpDisplay>            m_hud_ptr;
-    Ptr<Font>                      m_main_font_ptr;
+    Opt<Font>                      m_main_font_opt;
     std::string                    m_help_text_str;
     std::pair<TextItem, TextItem>  m_help_columns;
     TextItem                       m_parameters;

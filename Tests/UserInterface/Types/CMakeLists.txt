@@ -12,6 +12,7 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethaneGraphicsRhiNullImpl
         MethaneUserInterfaceNullTypes
+        MethaneUserInterfaceNullTypography
         MethanePlatformApp
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2WithMain

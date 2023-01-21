@@ -25,7 +25,7 @@ Methane TransferCommandList PIMPL wrappers for direct calls to final implementat
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 
-#include "Pimpl.hpp"
+#include <Methane/Pimpl.hpp>
 
 #ifdef META_GFX_METAL
 #include <TransferCommandList.hh>

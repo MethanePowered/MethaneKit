@@ -32,7 +32,8 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 ******************************************************************************/
 
 #include <Methane/UserInterface/HeadsUpDisplay.h>
-#include <Methane/UserInterface/Font.h>
+#include <Methane/UserInterface/FontLibrary.h>
+#include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Context.h>
 
 #include <Methane/Graphics/RHI/RenderContext.h>
@@ -144,93 +145,93 @@ HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetUpdateIntervalSec(double 
 HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_data_provider, const Settings& settings)
     : Panel(ui_context, { }, { "Heads Up Display" })
     , m_settings(settings)
-    , m_major_font_ptr(
-        Font::Library::Get().GetFont(font_data_provider,
+    , m_major_font(
+        ui_context.GetFontLibrary().GetFont(font_data_provider,
             Font::Settings
             {
                 m_settings.major_font,
                 GetUIContext().GetFontResolutionDpi(),
                 U"FPS0123456789",
             }
-        ).GetPtr()
+        )
     )
-    , m_minor_font_ptr(
-        Font::Library::Get().GetFont(font_data_provider,
+    , m_minor_font(
+        ui_context.GetFontLibrary().GetFont(font_data_provider,
             Font::Settings
             {
                 m_settings.minor_font,
                 GetUIContext().GetFontResolutionDpi(),
                 Font::GetAlphabetDefault()
             }
-        ).GetPtr()
+        )
     )
     , m_text_blocks({
-        std::make_shared<Text>(ui_context, *m_major_font_ptr,
+        std::make_shared<Text>(ui_context, m_major_font,
             Text::SettingsUtf8
             {
                 "FPS",
                 "000 FPS",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetFpsTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetFpsTextHeightInDots(ui_context, m_major_font, m_minor_font, m_settings.text_margins) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<Text>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "Frame Time",
                 "00.00 ms",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTimingTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTimingTextHeightInDots(ui_context, m_major_font, m_minor_font, m_settings.text_margins) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<Text>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "CPU Time",
                 "00.00% cpu",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTimingTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTimingTextHeightInDots(ui_context, m_major_font, m_minor_font, m_settings.text_margins) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<Text>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "GPU",
                 "Graphics Adapter",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) - g_first_line_height_decrement } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, m_minor_font) - g_first_line_height_decrement } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<Text>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "Help",
                 m_settings.help_shortcut ? m_settings.help_shortcut.ToString() + " - Help" : "",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) - g_first_line_height_decrement } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, m_minor_font) - g_first_line_height_decrement } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.help_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<Text>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "Frame Buffers",
                 "0000 x 0000   3 FB   DirectX",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, m_minor_font) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Justify, Text::VerticalAlignment::Top },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<Text>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "VSync",
                 "VSync ON",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, m_minor_font) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.on_color
             }

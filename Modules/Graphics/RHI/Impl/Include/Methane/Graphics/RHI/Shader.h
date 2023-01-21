@@ -23,7 +23,7 @@ Methane Shader PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
-#include "Pimpl.h"
+#include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/IShader.h>
 
@@ -50,17 +50,17 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Shader);
     META_PIMPL_METHODS_COMPARE_DECLARE(Shader);
 
-    META_RHI_API explicit Shader(const Ptr<IShader>& interface_ptr);
-    META_RHI_API explicit Shader(IShader& interface_ref);
-    META_RHI_API Shader(Type type, const RenderContext& context, const Settings& settings);
+    META_PIMPL_API explicit Shader(const Ptr<IShader>& interface_ptr);
+    META_PIMPL_API explicit Shader(IShader& interface_ref);
+    META_PIMPL_API Shader(Type type, const RenderContext& context, const Settings& settings);
 
-    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    META_RHI_API IShader& GetInterface() const META_PIMPL_NOEXCEPT;
-    META_RHI_API Ptr<IShader> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API IShader& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API Ptr<IShader> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IShader interface methods
-    [[nodiscard]] META_RHI_API Type            GetType() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API Type            GetType() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::Shader;
@@ -70,8 +70,8 @@ private:
 
 } // namespace Methane::Graphics::Rhi
 
-#ifdef META_RHI_PIMPL_INLINE
+#ifdef META_PIMPL_INLINE
 
 #include <Methane/Graphics/RHI/Shader.cpp>
 
-#endif // META_RHI_PIMPL_INLINE
+#endif // META_PIMPL_INLINE

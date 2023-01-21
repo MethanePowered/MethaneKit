@@ -23,7 +23,7 @@ Methane CommandListDebugGroup PIMPL wrappers for direct calls to final implement
 
 #pragma once
 
-#include "Pimpl.h"
+#include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/ICommandList.h>
 
@@ -44,26 +44,26 @@ public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandListDebugGroup);
     META_PIMPL_METHODS_COMPARE_DECLARE(CommandListDebugGroup);
 
-    META_RHI_API explicit CommandListDebugGroup(const Ptr<ICommandListDebugGroup>& interface_ptr);
-    META_RHI_API explicit CommandListDebugGroup(ICommandListDebugGroup& interface_ref);
-    META_RHI_API explicit CommandListDebugGroup(std::string_view name);
+    META_PIMPL_API explicit CommandListDebugGroup(const Ptr<ICommandListDebugGroup>& interface_ptr);
+    META_PIMPL_API explicit CommandListDebugGroup(ICommandListDebugGroup& interface_ref);
+    META_PIMPL_API explicit CommandListDebugGroup(std::string_view name);
 
-    META_RHI_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
-    META_RHI_API ICommandListDebugGroup& GetInterface() const META_PIMPL_NOEXCEPT;
-    META_RHI_API Ptr<ICommandListDebugGroup> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API ICommandListDebugGroup& GetInterface() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API Ptr<ICommandListDebugGroup> GetInterfacePtr() const META_PIMPL_NOEXCEPT;
 
     // IObject interface methods
-    META_RHI_API bool SetName(std::string_view name) const;
-    META_RHI_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool SetName(std::string_view name) const;
+    META_PIMPL_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
     // Data::IEmitter<IObjectCallback> interface methods
-    META_RHI_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
-    META_RHI_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // ICommandListDebugGroup interface methods
-    META_RHI_API CommandListDebugGroup AddSubGroup(Data::Index id, const std::string& name) const;
-    [[nodiscard]] META_RHI_API Opt<CommandListDebugGroup> GetSubGroup(Data::Index id) const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_RHI_API bool HasSubGroups() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API CommandListDebugGroup AddSubGroup(Data::Index id, const std::string& name) const;
+    [[nodiscard]] META_PIMPL_API Opt<CommandListDebugGroup> GetSubGroup(Data::Index id) const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API bool HasSubGroups() const META_PIMPL_NOEXCEPT;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::CommandListDebugGroup;
@@ -73,11 +73,11 @@ private:
 
 } // namespace Methane::Graphics::Rhi
 
-#ifdef META_RHI_PIMPL_INLINE
+#ifdef META_PIMPL_INLINE
 
 #include <Methane/Graphics/RHI/CommandListDebugGroup.cpp>
 
-#endif // META_RHI_PIMPL_INLINE
+#endif // META_PIMPL_INLINE
 
 #ifdef METHANE_COMMAND_DEBUG_GROUPS_ENABLED
 

@@ -30,6 +30,7 @@ Unit-tests of the User Interface IContext
 #include <Methane/Graphics/RHI/CommandQueue.h>
 
 #include <Methane/UserInterface/Context.h>
+#include <Methane/UserInterface/FontLibrary.h>
 #include <Methane/UserInterface/TypeTraits.hpp>
 
 #include <catch2/catch_template_test_macros.hpp>
@@ -45,12 +46,13 @@ namespace tf
 class Executor { public: Executor() = default; };
 }
 
-static const float    g_dot_to_px_factor = 2.F;
-static const uint32_t g_font_resolution_dpi = 96;
-static const FakeApp  g_fake_app(2.F, 96);
-static const UnitSize g_frame_size_dot { Units::Dots, 960U, 540U };
-static const UnitSize g_frame_size_px  { Units::Pixels, 1920U, 1080U };
-static tf::Executor   g_fake_executor;
+static const float       g_dot_to_px_factor = 2.F;
+static const uint32_t    g_font_resolution_dpi = 96;
+static const FakeApp     g_fake_app(2.F, 96);
+static const UnitSize    g_frame_size_dot { Units::Dots, 960U, 540U };
+static const UnitSize    g_frame_size_px  { Units::Pixels, 1920U, 1080U };
+static const FontLibrary g_font_lib;
+static tf::Executor      g_fake_executor;
 
 static Rhi::Device GetTestDevice()
 {
@@ -64,7 +66,7 @@ TEST_CASE("UI Context Accessors", "[ui][context][accessor]")
     const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
     const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
     const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
-    UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
+    UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern, g_font_lib);
 
     SECTION("Get UI render context")
     {
@@ -94,7 +96,7 @@ TEMPLATE_TEST_CASE("UI Context Convertors of Unit Types", "[ui][context][unit][c
 const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
 const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
 const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
-UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
+UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern, g_font_lib);
 
     const UnitType<TestType> item_1pix = CreateUnitItem<TestType>(Units::Pixels, 1);
     const UnitType<TestType> item_2pix = CreateUnitItem<TestType>(Units::Pixels, 2);
@@ -186,7 +188,7 @@ TEMPLATE_TEST_CASE("UI Context Comparison of Unit Types", "[ui][context][unit][c
     const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
     const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
     const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
-    UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
+    UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern, g_font_lib);
 
     const UnitType<TestType> item_1pix = CreateUnitItem<TestType>(Units::Pixels, 1);
     const UnitType<TestType> item_2pix = CreateUnitItem<TestType>(Units::Pixels, 2);
@@ -212,7 +214,7 @@ TEMPLATE_TEST_CASE("UI Context Convertors of Scalar Types", "[ui][context][unit]
     const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
     const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
     const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
-    UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
+    UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern, g_font_lib);
     const TestType scalar_value = 640;
 
     SECTION("Convert scalar Dots to Pixels")

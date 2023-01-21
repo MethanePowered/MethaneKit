@@ -34,6 +34,8 @@ namespace Methane::UserInterface
 namespace gfx = Methane::Graphics;
 namespace rhi = Methane::Graphics::Rhi;
 
+class FontChar;
+
 class TextMesh
 {
 public:
@@ -86,13 +88,13 @@ public:
 private:
     void EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespace, bool update_alignment_and_content_size);
     void AppendChars(std::u32string added_text);
-    void AddCharQuad(const Font::Char& font_char, const gfx::FramePoint& char_pos, const gfx::FrameSize& atlas_size);
+    void AddCharQuad(const FontChar& font_char, const gfx::FramePoint& char_pos, const gfx::FrameSize& atlas_size);
     void ApplyAlignmentOffset(const size_t aligned_text_length, const size_t line_start_index);
     int32_t GetLineWidth(size_t line_start_index) const;
     int32_t GetHorizontalLineAlignmentOffset(size_t line_start_index) const;
     float GetJustifiedWhitespaceWidth(size_t line_start_index) const;
     void UpdateContentSize();
-    void UpdateContentSizeWithChar(const Font::Char& font_char, const gfx::FramePoint& char_pos);
+    void UpdateContentSizeWithChar(const FontChar& font_char, const gfx::FramePoint& char_pos);
 
     [[nodiscard]] bool IsNewTextStartsWithOldOne(std::u32string_view text) const noexcept
     { return m_text.empty() || (m_text.length() < text.length()   && text.find(m_text) == 0); }
