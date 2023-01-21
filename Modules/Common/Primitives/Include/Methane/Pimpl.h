@@ -37,6 +37,8 @@ Methane PIMPL common header.
 
 #endif // META_PIMPL_INLINE
 
+#define META_PIMPL_NO_INLINE
+
 #ifdef _DEBUG
 // Comment this define to disable checks of pointer to implementation in all PIMPL methods
 #define META_PIMPL_NULL_CHECK_ENABLED
@@ -48,28 +50,30 @@ Methane PIMPL common header.
 #define META_PIMPL_NOEXCEPT noexcept
 #endif
 
-#define META_PIMPL_METHODS_DECLARE(Class) \
-    META_PIMPL_API ~Class(); \
-    META_PIMPL_API Class(const Class& other); \
-    META_PIMPL_API Class(Class&& other) noexcept; \
-    META_PIMPL_API Class& operator=(const Class& other); \
-    META_PIMPL_API Class& operator=(Class&& other) noexcept
+#define META_PIMPL_METHODS_DECLARE_MACRO(Class, API_MACRO) \
+    API_MACRO ~Class(); \
+    API_MACRO Class(const Class& other); \
+    API_MACRO Class(Class&& other) noexcept; \
+    API_MACRO Class& operator=(const Class& other); \
+    API_MACRO Class& operator=(Class&& other) noexcept
 
-#define META_PIMPL_METHODS_DECLARE_NO_INLINE(Class) \
-    ~Class(); \
-    Class(const Class& other); \
-    Class(Class&& other) noexcept; \
-    Class& operator=(const Class& other); \
-    Class& operator=(Class&& other) noexcept
+#define META_PIMPL_METHODS_DECLARE(Class) META_PIMPL_METHODS_DECLARE_MACRO(Class, META_PIMPL_API)
+#define META_PIMPL_METHODS_DECLARE_NO_INLINE(Class) META_PIMPL_METHODS_DECLARE_MACRO(Class, META_PIMPL_NO_INLINE)
 
-#define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Class) \
-    META_PIMPL_API Class(); \
-    META_PIMPL_METHODS_DECLARE(Class)
+#define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_MACRO(Class, API_MACRO) \
+    API_MACRO Class(); \
+    META_PIMPL_METHODS_DECLARE_MACRO(Class, API_MACRO)
 
-#define META_PIMPL_METHODS_COMPARE_DECLARE(Class) \
-    META_PIMPL_API bool operator==(const Class& other) const noexcept; \
-    META_PIMPL_API bool operator!=(const Class& other) const noexcept; \
-    META_PIMPL_API bool operator<(const Class& other) const noexcept
+#define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Class) META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_MACRO(Class, META_PIMPL_API)
+#define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_NO_INLINE(Class) META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_MACRO(Class, META_PIMPL_NO_INLINE)
+
+#define META_PIMPL_METHODS_COMPARE_DECLARE_MACRO(Class, API_MACRO) \
+    API_MACRO bool operator==(const Class& other) const noexcept; \
+    API_MACRO bool operator!=(const Class& other) const noexcept; \
+    API_MACRO bool operator<(const Class& other) const noexcept
+
+#define META_PIMPL_METHODS_COMPARE_DECLARE(Class) META_PIMPL_METHODS_COMPARE_DECLARE_MACRO(Class, META_PIMPL_API)
+#define META_PIMPL_METHODS_COMPARE_DECLARE_NO_INLINE(Class) META_PIMPL_METHODS_COMPARE_DECLARE_MACRO(Class, META_PIMPL_NO_INLINE)
 
 #define META_PIMPL_METHODS_IMPLEMENT(Class) \
     Class::~Class() = default; \

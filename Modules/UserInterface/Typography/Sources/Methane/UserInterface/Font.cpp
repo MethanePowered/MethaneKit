@@ -116,6 +116,21 @@ Font::Font(const Library& font_lib, const Data::IProvider& data_provider, const 
 {
 }
 
+bool Font::operator==(const Font& other) const noexcept
+{
+    return m_impl_ptr.get() == other.m_impl_ptr.get();
+}
+
+bool Font::operator!=(const Font& other) const noexcept
+{
+    return m_impl_ptr.get() != other.m_impl_ptr.get();
+}
+
+bool Font::operator<(const Font& other) const noexcept
+{
+    return m_impl_ptr.get() < other.m_impl_ptr.get();
+}
+
 const Font::Settings& Font::GetSettings() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetSettings();

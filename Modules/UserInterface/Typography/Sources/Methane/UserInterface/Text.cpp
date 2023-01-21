@@ -376,7 +376,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const rhi::Texture* old_atlas_tex
 {
     META_FUNCTION_TASK();
     META_UNUSED(old_atlas_texture_ptr);
-    if (std::addressof(m_font) != std::addressof(font) || m_frame_resources.empty() ||
+    if (m_font != font || m_frame_resources.empty() ||
         (new_atlas_texture_ptr && GetUIContext().GetRenderContext() != new_atlas_texture_ptr->GetRenderContext()))
         return;
 

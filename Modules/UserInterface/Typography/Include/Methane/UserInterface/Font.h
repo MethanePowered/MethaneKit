@@ -101,6 +101,7 @@ public:
     [[nodiscard]] static std::u32string GetAlphabetFromText(const std::u32string& text);
 
     META_PIMPL_METHODS_DECLARE_NO_INLINE(Font);
+    META_PIMPL_METHODS_COMPARE_DECLARE_NO_INLINE(Font);
 
     Font(const Library& font_lib, const Data::IProvider& data_provider, const Settings& settings);
 
