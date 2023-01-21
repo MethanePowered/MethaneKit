@@ -30,6 +30,7 @@ Font atlas textures generation and fonts library management classes.
 #include FT_FREETYPE_H
 
 #include <codecvt>
+#include <locale>
 
 namespace Methane::UserInterface
 {

@@ -38,6 +38,7 @@ Fonts library to manage created font instances.
 #include <map>
 #include <string>
 #include <cctype>
+#include <cassert>
 
 #include <ft2build.h>
 #include <freetype/ftglyph.h>

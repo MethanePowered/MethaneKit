@@ -43,6 +43,8 @@ namespace hlslpp // NOSONAR
 #pragma pack(pop)
 }
 
+#include <cassert>
+
 namespace Methane::UserInterface
 {
 
