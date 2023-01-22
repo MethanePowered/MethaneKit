@@ -78,7 +78,7 @@ Text::Text(Context& ui_context, const Font& font, SettingsUtf32 settings)
 }
 
 Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, SettingsUtf32 settings)
-    : Item(ui_context, settings.rect)
+    : m_ui_context(ui_context)
     , m_settings(std::move(settings))
     , m_font(font)
 {
@@ -86,9 +86,7 @@ Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const 
     META_CHECK_ARG_NOT_EMPTY_DESCR(m_settings.state_name, "Text state name can not be empty");
 
     m_font.Connect(*this);
-    m_frame_rect = GetUIContext().ConvertTo<Units::Pixels>(m_settings.rect);
-
-    SetRelOrigin(m_settings.rect.GetUnitOrigin());
+    m_frame_rect = m_ui_context.ConvertTo<Units::Pixels>(m_settings.rect);
 
     rhi::IObjectRegistry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectRegistry();
     if (const auto render_state_ptr = std::dynamic_pointer_cast<rhi::IRenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
@@ -102,7 +100,7 @@ Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const 
     {
         rhi::RenderState::Settings state_settings
         {
-            rhi::Program(GetUIContext().GetRenderContext(),
+            rhi::Program(m_ui_context.GetRenderContext(),
             rhi::Program::Settings
             {
                 rhi::Program::ShaderSet
@@ -138,7 +136,7 @@ Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const 
         state_settings.blending.render_targets[0].source_alpha_blend_factor = rhi::IRenderState::Blending::Factor::Zero;
         state_settings.blending.render_targets[0].dest_alpha_blend_factor   = rhi::IRenderState::Blending::Factor::Zero;
 
-        m_render_state = GetUIContext().GetRenderContext().CreateRenderState(state_settings);
+        m_render_state = m_ui_context.GetRenderContext().CreateRenderState(state_settings);
         m_render_state.SetName(m_settings.state_name);
 
         gfx_objects_registry.AddGraphicsObject(m_render_state.GetInterface());
@@ -160,7 +158,7 @@ Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const 
     }
     else
     {
-        m_atlas_sampler = GetUIContext().GetRenderContext().CreateSampler({
+        m_atlas_sampler = m_ui_context.GetRenderContext().CreateSampler({
             rhi::ISampler::Filter(rhi::ISampler::Filter::MinMag::Linear),
             rhi::ISampler::Address(rhi::ISampler::Address::Mode::ClampToZero),
         });
@@ -168,8 +166,6 @@ Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const 
 
         gfx_objects_registry.AddGraphicsObject(m_atlas_sampler.GetInterface());
     }
-
-    Item::SetRect(m_frame_rect);
 }
 
 Text::~Text()
@@ -227,14 +223,13 @@ void Text::SetTextInScreenRect(std::u32string_view text, const UnitRect& ui_rect
         !frame_resources.IsAtlasInitialized())
     {
         // If atlas texture was not initialized it has to be requested for current context first to be properly updated in future
-        frame_resources.UpdateAtlasTexture(m_font.GetAtlasTexture(GetUIContext().GetRenderContext()));
+        frame_resources.UpdateAtlasTexture(m_font.GetAtlasTexture(m_ui_context.GetRenderContext()));
     }
 
     m_is_viewport_dirty = true;
-    Item::SetRect(GetUIContext().ConvertTo<Units::Pixels>(m_frame_rect));
 }
 
-bool Text::SetRect(const UnitRect& ui_rect)
+bool Text::SetFrameRect(const UnitRect& ui_rect)
 {
     META_FUNCTION_TASK();
     const UpdateRectResult update_result = UpdateRect(ui_rect, false);
@@ -247,17 +242,17 @@ bool Text::SetRect(const UnitRect& ui_rect)
     }
 
     m_is_viewport_dirty = true;
-    return Item::SetRect(GetUIContext().ConvertTo<Units::Pixels>(m_frame_rect));
+    return true;
 }
 
 Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_content_rect)
 {
     META_FUNCTION_TASK();
-    const UnitRect& ui_curr_rect_px  = GetRectInPixels();
-    const UnitRect  ui_rect_in_units = GetUIContext().ConvertToUnits(ui_rect, m_settings.rect.GetUnits());
-    const UnitRect  ui_rect_in_px    = GetUIContext().ConvertTo<Units::Pixels>(ui_rect);
-    const bool      ui_rect_changed  = ui_curr_rect_px != ui_rect_in_px;
-    const bool      ui_size_changed  = ui_rect_changed && ui_curr_rect_px.size != ui_rect_in_px.size;
+    const UnitRect ui_rect_in_units = m_ui_context.ConvertToUnits(ui_rect, m_settings.rect.GetUnits());
+    const UnitRect ui_curr_rect_px  = m_ui_context.ConvertTo<Units::Pixels>(m_settings.rect);
+    const UnitRect ui_rect_in_px    = m_ui_context.ConvertTo<Units::Pixels>(ui_rect);
+    const bool     ui_rect_changed  = ui_curr_rect_px != ui_rect_in_px;
+    const bool     ui_size_changed  = ui_rect_changed && ui_curr_rect_px.size != ui_rect_in_px.size;
 
     m_settings.rect.origin = ui_rect_in_units.origin;
     if (ui_size_changed)
@@ -267,6 +262,11 @@ Text::UpdateRectResult Text::UpdateRect(const UnitRect& ui_rect, bool reset_cont
         m_frame_rect = ui_rect_in_px;
     else
         m_frame_rect.origin = ui_rect_in_px.origin;
+
+    if (ui_rect_changed)
+    {
+        OnFrameRectUpdated(m_frame_rect);
+    }
 
     return { ui_rect_changed, ui_size_changed };
 }
@@ -292,7 +292,6 @@ void Text::SetLayout(const Layout& layout)
     UpdateTextMesh();
 
     m_is_viewport_dirty = true;
-    Item::SetRect(UnitRect(Units::Pixels, m_frame_rect));
 }
 
 void Text::SetWrap(Wrap wrap)
@@ -337,15 +336,15 @@ void Text::Update(const gfx::FrameSize& render_attachment_size)
     }
     if (frame_resources.IsDirty(FrameResources::DirtyResource::Mesh) && m_text_mesh_ptr)
     {
-        frame_resources.UpdateMeshBuffers(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier);
+        frame_resources.UpdateMeshBuffers(m_ui_context.GetRenderContext(), *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier);
     }
     if (frame_resources.IsDirty(FrameResources::DirtyResource::Atlas))
     {
-        frame_resources.UpdateAtlasTexture(m_font.GetAtlasTexture(GetUIContext().GetRenderContext()));
+        frame_resources.UpdateAtlasTexture(m_font.GetAtlasTexture(m_ui_context.GetRenderContext()));
     }
     if (frame_resources.IsDirty(FrameResources::DirtyResource::Uniforms) && m_text_mesh_ptr)
     {
-        frame_resources.UpdateUniformsBuffer(GetUIContext().GetRenderContext(), *m_text_mesh_ptr, m_settings.name);
+        frame_resources.UpdateUniformsBuffer(m_ui_context.GetRenderContext(), *m_text_mesh_ptr, m_settings.name);
     }
     if (m_render_state.IsInitialized())
     {
@@ -377,7 +376,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const rhi::Texture* old_atlas_tex
     META_FUNCTION_TASK();
     META_UNUSED(old_atlas_texture_ptr);
     if (m_font != font || m_frame_resources.empty() ||
-        (new_atlas_texture_ptr && GetUIContext().GetRenderContext() != new_atlas_texture_ptr->GetRenderContext()))
+        (new_atlas_texture_ptr && m_ui_context.GetRenderContext() != new_atlas_texture_ptr->GetRenderContext()))
         return;
 
     MakeFrameResourcesDirty(FrameResources::DirtyResourceMask(FrameResources::DirtyResource::Atlas));
@@ -389,7 +388,7 @@ void Text::OnFontAtlasTextureReset(Font& font, const rhi::Texture* old_atlas_tex
         UpdateTextMesh();
     }
 
-    if (GetUIContext().GetRenderContext().IsCompletingInitialization())
+    if (m_ui_context.GetRenderContext().IsCompletingInitialization())
     {
         // If font atlas was auto-updated on context initialization complete,
         // the atlas texture and mesh buffers need to be updated now for current frame rendering
@@ -588,7 +587,7 @@ void Text::InitializeFrameResources()
     META_CHECK_ARG_TRUE_DESCR(m_render_state.IsInitialized(), "text render state is not initialized");
     META_CHECK_ARG_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh is not initialized");
 
-    const rhi::RenderContext& render_context = GetUIContext().GetRenderContext();
+    const rhi::RenderContext& render_context = m_ui_context.GetRenderContext();
     const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
     m_frame_resources.reserve(frame_buffers_count);
 
@@ -619,7 +618,7 @@ void Text::InitializeFrameResources()
 Text::FrameResources& Text::GetCurrentFrameResources()
 {
     META_FUNCTION_TASK();
-    const uint32_t frame_index = GetUIContext().GetRenderContext().GetFrameBufferIndex();
+    const uint32_t frame_index = m_ui_context.GetRenderContext().GetFrameBufferIndex();
     META_CHECK_ARG_LESS_DESCR(frame_index, m_frame_resources.size(), "no resources available for the current frame buffer index");
     return m_frame_resources[frame_index];
 }
@@ -649,6 +648,7 @@ void Text::UpdateTextMesh()
     if (!m_font.GetAtlasSize())
         return;
 
+    const FrameRect::Size prev_frame_size = m_frame_rect.size;
     if (m_settings.incremental_update && m_text_mesh_ptr &&
         m_text_mesh_ptr->IsUpdatable(m_settings.text, m_settings.layout, m_font, m_frame_rect.size))
     {
@@ -657,6 +657,11 @@ void Text::UpdateTextMesh()
     else
     {
         m_text_mesh_ptr = std::make_unique<TextMesh>(m_settings.text, m_settings.layout, m_font, m_frame_rect.size);
+    }
+
+    if (m_frame_rect.size != prev_frame_size)
+    {
+        OnFrameRectUpdated(m_frame_rect);
     }
 
     if (m_frame_resources.empty() && m_render_state.IsInitialized())
@@ -685,7 +690,7 @@ void Text::UpdateConstantsBuffer()
             rhi::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
                                        static_cast<Data::Size>(sizeof(constants)))
         },
-        GetUIContext().GetRenderContext().GetRenderCommandKit().GetQueue()
+        m_ui_context.GetRenderContext().GetRenderCommandKit().GetQueue()
     );
     m_is_const_buffer_dirty = false;
 }

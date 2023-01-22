@@ -67,4 +67,20 @@ private:
     const Ptr<Impl> m_impl_ptr;
 };
 
+class FontContext
+{
+public:
+    explicit FontContext(const Data::IProvider& font_data_provider);
+    FontContext(const FontLibrary& font_lib, const Data::IProvider& font_data_provider);
+
+    const FontLibrary&     GetFontLibrary() const noexcept      { return m_font_lib; }
+    const Data::IProvider& GetFontDataProvider() const noexcept { return m_font_data_provider; }
+
+    [[nodiscard]] Font& GetFont(const FontSettings& font_settings) const;
+
+private:
+    FontLibrary            m_font_lib;
+    const Data::IProvider& m_font_data_provider;
+};
+
 } // namespace Methane::UserInterface

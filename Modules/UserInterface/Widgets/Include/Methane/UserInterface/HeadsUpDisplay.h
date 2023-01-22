@@ -24,9 +24,9 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #pragma once
 
 #include <Methane/UserInterface/Panel.h>
-#include <Methane/UserInterface/Font.h>
+#include <Methane/UserInterface/TextItem.h>
+#include <Methane/UserInterface/FontLibrary.h>
 #include <Methane/Graphics/Color.hpp>
-#include <Methane/Graphics/RHI/IRenderCommandList.h>
 #include <Methane/Platform/Input/Keyboard.h>
 #include <Methane/Timer.hpp>
 #include <Methane/Memory.hpp>
@@ -69,7 +69,7 @@ public:
         Settings& SetUpdateIntervalSec(double new_update_interval_sec) noexcept;
     };
 
-    HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_data_provider, const Settings& settings);
+    HeadsUpDisplay(Context& ui_context, const FontContext& font_context, const Settings& settings);
 
     const Settings& GetHudSettings() const { return m_settings; }
 
@@ -93,17 +93,17 @@ private:
         Count
     };
 
-    using TextBlockPtrs = std::array<Ptr<Text>, static_cast<size_t>(TextBlock::Count)>;
-    Text& GetTextBlock(TextBlock block) const;
+    using TextItemPtrs = std::array<Ptr<TextItem>, static_cast<size_t>(TextBlock::Count)>;
+    TextItem& GetTextBlock(TextBlock block) const;
 
     void LayoutTextBlocks();
     void UpdateAllTextBlocks(const FrameSize& render_attachment_size) const;
 
-    Settings            m_settings;
-    const Font          m_major_font;
-    const Font          m_minor_font;
-    const TextBlockPtrs m_text_blocks;
-    Timer               m_update_timer;
+    Settings           m_settings;
+    const Font         m_major_font;
+    const Font         m_minor_font;
+    const TextItemPtrs m_text_blocks;
+    Timer              m_update_timer;
 };
 
 } // namespace Methane::UserInterface

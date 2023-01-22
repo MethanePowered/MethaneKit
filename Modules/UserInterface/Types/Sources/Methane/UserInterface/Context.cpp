@@ -28,11 +28,10 @@ Methane user interface context used by all widgets for rendering.
 namespace Methane::UserInterface
 {
 
-Context::Context(const pal::IApp& app, const rhi::CommandQueue& render_cmd_queue, const rhi::RenderPattern& render_pattern, const FontLibrary& font_lib)
+Context::Context(const pal::IApp& app, const rhi::CommandQueue& render_cmd_queue, const rhi::RenderPattern& render_pattern)
     : m_render_context(render_pattern.GetRenderContext())
     , m_render_cmd_queue(render_cmd_queue)
     , m_render_pattern(render_pattern)
-    , m_font_lib(font_lib)
     , m_dots_to_pixels_factor(app.GetContentScalingFactor())
     , m_font_resolution_dpi(app.GetFontResolutionDpi())
 {

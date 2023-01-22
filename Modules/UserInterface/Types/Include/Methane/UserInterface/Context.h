@@ -45,17 +45,14 @@ struct IApp;
 namespace Methane::UserInterface
 {
 
-class FontLibrary;
-
 class Context
 {
 public:
-    Context(const pal::IApp& app, const rhi::CommandQueue& render_cmd_queue, const rhi::RenderPattern& render_pattern, const FontLibrary& font_lib);
+    Context(const pal::IApp& app, const rhi::CommandQueue& render_cmd_queue, const rhi::RenderPattern& render_pattern);
 
     const rhi::RenderContext& GetRenderContext() const noexcept      { return m_render_context; }
     const rhi::CommandQueue&  GetRenderCommandQueue() const noexcept { return m_render_cmd_queue; }
     const rhi::RenderPattern& GetRenderPattern() const noexcept      { return m_render_pattern; }
-    const FontLibrary&        GetFontLibrary() const noexcept        { return m_font_lib; }
 
     double           GetDotsToPixelsFactor() const noexcept { return m_dots_to_pixels_factor; }
     uint32_t         GetFontResolutionDpi() const noexcept  { return m_font_resolution_dpi; }
@@ -154,7 +151,6 @@ private:
     const rhi::RenderContext m_render_context;
     const rhi::CommandQueue  m_render_cmd_queue;
     const rhi::RenderPattern m_render_pattern;
-    const FontLibrary&       m_font_lib;
     double                   m_dots_to_pixels_factor;
     uint32_t                 m_font_resolution_dpi;
 };

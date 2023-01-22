@@ -192,4 +192,19 @@ void FontLibrary::Clear() const
     GetImpl(m_impl_ptr).Clear();
 }
 
+FontContext::FontContext(const Data::IProvider& font_data_provider)
+    : m_font_data_provider(font_data_provider)
+{
+}
+
+FontContext::FontContext(const FontLibrary& font_lib, const Data::IProvider& font_data_provider)
+    : m_font_lib(font_lib)
+    , m_font_data_provider(font_data_provider)
+{ }
+
+Font& FontContext::GetFont(const FontSettings& font_settings) const
+{
+    return m_font_lib.GetFont(m_font_data_provider, font_settings);
+}
+
 } // namespace Methane::UserInterface

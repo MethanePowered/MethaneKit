@@ -112,7 +112,7 @@ static gui::UnitRect GetTextBlockRectInDots(size_t block_index, int32_t vertical
     );
 }
 
-inline Timer::TimeDuration UpdateTextRect(gui::Text& text, const gui::UnitRect& text_block_rect)
+inline Timer::TimeDuration UpdateTextRect(gui::TextItem& text, const gui::UnitRect& text_block_rect)
 {
     Methane::ScopeTimer scope_timer("Text update");
     text.SetRect(text_block_rect);
@@ -131,13 +131,14 @@ TypographyApp::TypographyApp()
         GetGraphicsTutorialAppSettings("Methane Typography", AppOptions::GetDefaultWithColorOnlyAndAnim()),
         { gui::HeadsUpDisplayMode::UserInterface },
         "Dynamic text rendering and fonts management tutorial.")
+    , m_font_context(UserInterfaceApp::GetFontContext().GetFontLibrary(), Data::FontProvider::Get())
 {
     m_displayed_text_lengths.resize(g_text_blocks_count, 0);
     m_displayed_text_lengths[0] = 1;
 
     GetHeadsUpDisplaySettings().position = gui::UnitPoint(gui::Units::Dots, g_margin_size_in_dots, g_margin_size_in_dots);
 
-    GetFontLibrary().Connect(*this);
+    m_font_context.GetFontLibrary().Connect(*this);
     AddInputControllers({
         std::make_shared<TypographyAppController>(*this, g_typography_action_by_keyboard_state)
     });
@@ -156,7 +157,7 @@ TypographyApp::~TypographyApp()
     WaitForRenderComplete();
 
     // Clear the font library to release all atlas textures
-    GetFontLibrary().Clear();
+    m_font_context.GetFontLibrary().Clear();
     m_font_atlas_badges.clear();
 }
 
@@ -176,8 +177,7 @@ void TypographyApp::Init()
 
         // Add font to library
         m_fonts.push_back(
-            GetFontLibrary().AddFont(
-                Data::FontProvider::Get(),
+            m_font_context.GetFont(
                 gui::Font::Settings
                 {
                     font_settings.desc,
@@ -189,7 +189,7 @@ void TypographyApp::Init()
 
         // Add text element
         m_texts.push_back(
-            std::make_shared<gui::Text>(GetUIContext(), m_fonts.back(),
+            std::make_shared<gui::TextItem>(GetUIContext(), m_fonts.back(),
                 gui::Text::SettingsUtf32
                 {
                     font_settings.desc.name,
@@ -245,7 +245,7 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const
 
 void TypographyApp::UpdateFontAtlasBadges()
 {
-    const std::vector<gui::Font> fonts = GetFontLibrary().GetFonts();
+    const std::vector<gui::Font> fonts = m_font_context.GetFontLibrary().GetFonts();
     const rhi::RenderContext&  context = GetRenderContext();
 
     // Remove obsolete font atlas badges
@@ -315,7 +315,7 @@ bool TypographyApp::Resize(const gfx::FrameSize& frame_size, bool is_minimized)
 
     for (size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
-        const Ptr<gui::Text>& text_ptr = m_texts[block_index];
+        const Ptr<gui::TextItem>& text_ptr = m_texts[block_index];
         const gui::UnitRect text_block_rect = GetTextBlockRectInDots(block_index, vertical_text_pos_in_dots, frame_size_in_dots);
         m_text_update_duration = UpdateTextRect(*text_ptr, text_block_rect);
         vertical_text_pos_in_dots += text_ptr->GetRectInDots().size.GetHeight() + g_margin_size_in_dots;
@@ -345,7 +345,7 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
 
 void TypographyApp::AnimateTextBlock(size_t block_index, int32_t& vertical_text_pos_in_dots)
 {
-    gui::Text& text                 = *m_texts[block_index];
+    gui::TextItem& text             = *m_texts[block_index];
     const std::u32string& full_text = g_text_blocks[block_index];
     const size_t text_block_length  = full_text.length();
     size_t& displayed_text_length   = m_displayed_text_lengths[block_index];
@@ -421,7 +421,7 @@ bool TypographyApp::Update()
         return false;
 
     // Update text block resources
-    for(const Ptr<gui::Text>& text_ptr : m_texts)
+    for(const Ptr<gui::TextItem>& text_ptr : m_texts)
     {
         text_ptr->Update(GetFrameSize());
     }
@@ -438,7 +438,7 @@ bool TypographyApp::Render()
 
     // Draw text blocks
     META_DEBUG_GROUP_VAR(s_text_debug_group, "Text Blocks Rendering");
-    for(const Ptr<gui::Text>& text_ptr : m_texts)
+    for(const Ptr<gui::TextItem>& text_ptr : m_texts)
     {
         text_ptr->Draw(frame.render_cmd_list, &s_text_debug_group);
     }
@@ -482,7 +482,7 @@ void TypographyApp::SetTextLayout(const gui::Text::Layout& text_layout)
         return;
 
     m_settings.text_layout = text_layout;
-    for (const Ptr<gui::Text>& text_ptr : m_texts)
+    for (const Ptr<gui::TextItem>& text_ptr : m_texts)
     {
         text_ptr->SetLayout(text_layout);
     }
@@ -514,7 +514,7 @@ void TypographyApp::SetIncrementalTextUpdate(bool is_incremental_text_update)
         return;
 
     m_settings.is_incremental_text_update = is_incremental_text_update;
-    for(const Ptr<gui::Text>& text_ptr : m_texts)
+    for(const Ptr<gui::TextItem>& text_ptr : m_texts)
     {
         text_ptr->SetIncrementalUpdate(is_incremental_text_update);
     }
@@ -524,7 +524,7 @@ void TypographyApp::SetIncrementalTextUpdate(bool is_incremental_text_update)
 
 void TypographyApp::OnContextReleased(rhi::IContext& context)
 {
-    GetFontLibrary().Clear();
+    m_font_context.GetFontLibrary().Clear();
 
     m_fonts.clear();
     m_texts.clear();

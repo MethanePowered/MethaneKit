@@ -196,7 +196,7 @@ void CubeMapArrayApp::Init()
     }
     
     // Create all resources for texture labels rendering before resources upload in UserInterfaceApp::CompleteInitialization()
-    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_cube_buffers_ptr->GetTexture(),
+    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontContext(), m_cube_buffers_ptr->GetTexture(),
                                         rhi::ResourceState::Undefined, { g_cube_texture_size / 4U, 10U });
 
     // Upload all resources, including font texture and text mesh buffers required for rendering

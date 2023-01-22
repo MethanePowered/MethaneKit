@@ -8,12 +8,14 @@ set(HEADERS
     ${INCLUDE_DIR}/Widgets.h
     ${INCLUDE_DIR}/Badge.h
     ${INCLUDE_DIR}/Panel.h
+    ${INCLUDE_DIR}/TextItem.h
     ${INCLUDE_DIR}/HeadsUpDisplay.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/Badge.cpp
     ${SOURCES_DIR}/Panel.cpp
+    ${SOURCES_DIR}/TextItem.cpp
     ${SOURCES_DIR}/HeadsUpDisplay.cpp
 )
 

@@ -243,7 +243,7 @@ void ParallelRenderingApp::Init()
     TextureLabeler::Settings texture_labeler_settings;
     texture_labeler_settings.font_size_pt = g_texture_size.GetWidth() / 4U;
     texture_labeler_settings.border_width_px = 10U;
-    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), m_texture_array,
+    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontContext(), m_texture_array,
                                         rhi::ResourceState::ShaderResource, texture_labeler_settings);
 
     // Upload all resources, including font texture and text mesh buffers required for rendering

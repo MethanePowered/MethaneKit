@@ -23,6 +23,7 @@ Renders text labels to the faces of cube-map texture array
 
 #pragma once
 
+#include <Methane/UserInterface/FontLibrary.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
 #include <Methane/Graphics/RHI/RenderPattern.h>
@@ -101,7 +102,7 @@ public:
         }};
     };
 
-    TextureLabeler(gui::Context& gui_context, const Data::IProvider& font_provider,
+    TextureLabeler(gui::Context& gui_context, const gui::FontContext& font_context,
                    const rhi::Texture& rt_texture, rhi::ResourceState rt_texture_final_state, const Settings& settings);
 
     void Render() const;

@@ -142,13 +142,11 @@ HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetUpdateIntervalSec(double 
     return *this;
 }
 
-HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_data_provider, const Settings& settings)
+HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const FontContext& font_context, const Settings& settings)
     : Panel(ui_context, { }, { "Heads Up Display" })
     , m_settings(settings)
     , m_major_font(
-        ui_context.GetFontLibrary().GetFont(font_data_provider,
-            Font::Settings
-            {
+        font_context.GetFont(Font::Settings {
                 m_settings.major_font,
                 GetUIContext().GetFontResolutionDpi(),
                 U"FPS0123456789",
@@ -156,8 +154,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_
         )
     )
     , m_minor_font(
-        ui_context.GetFontLibrary().GetFont(font_data_provider,
-            Font::Settings
+        font_context.GetFont(Font::Settings
             {
                 m_settings.minor_font,
                 GetUIContext().GetFontResolutionDpi(),
@@ -166,7 +163,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_
         )
     )
     , m_text_blocks({
-        std::make_shared<Text>(ui_context, m_major_font,
+        std::make_shared<TextItem>(ui_context, m_major_font,
             Text::SettingsUtf8
             {
                 "FPS",
@@ -176,7 +173,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, m_minor_font,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "Frame Time",
@@ -186,7 +183,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, m_minor_font,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "CPU Time",
@@ -196,7 +193,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, m_minor_font,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "GPU",
@@ -206,7 +203,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, m_minor_font,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "Help",
@@ -216,7 +213,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_
                 m_settings.help_color
             }
         ),
-        std::make_shared<Text>(ui_context, m_minor_font,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "Frame Buffers",
@@ -226,7 +223,7 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, m_minor_font,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "VSync",
@@ -241,9 +238,9 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::IProvider& font_
     META_FUNCTION_TASK();
 
     // Add HUD text blocks as children to the base panel container
-    for(const Ptr<Text>& text_ptr : m_text_blocks)
+    for(const Ptr<TextItem>& text_item_ptr : m_text_blocks)
     {
-        AddChild(*text_ptr); // NOSONAR - method is not overridable in final class
+        AddChild(*text_item_ptr); // NOSONAR - method is not overridable in final class
     }
 
     // Reset timer behind so that HUD is filled with actual values on first update
@@ -258,7 +255,7 @@ void HeadsUpDisplay::SetTextColor(const gfx::Color4F& text_color)
 
     m_settings.text_color = text_color;
 
-    for(const Ptr<Text>& text_ptr : m_text_blocks)
+    for(const Ptr<TextItem>& text_ptr : m_text_blocks)
     {
         text_ptr->SetColor(text_color);
     }
@@ -304,18 +301,18 @@ void HeadsUpDisplay::Draw(const rhi::RenderCommandList& cmd_list, const rhi::Com
     META_FUNCTION_TASK();
     Panel::Draw(cmd_list, debug_group_ptr);
 
-    for(const Ptr<Text>& text_ptr : m_text_blocks)
+    for(const Ptr<TextItem>& text_ptr : m_text_blocks)
     {
         text_ptr->Draw(cmd_list, debug_group_ptr);
     }
 }
 
-Text& HeadsUpDisplay::GetTextBlock(TextBlock block) const
+TextItem& HeadsUpDisplay::GetTextBlock(TextBlock block) const
 {
     META_FUNCTION_TASK();
-    const Ptr<Text>& text_block_ptr = m_text_blocks[static_cast<size_t>(block)];
-    META_CHECK_ARG_NOT_NULL(text_block_ptr);
-    return *text_block_ptr;
+    const Ptr<TextItem>& text_item_ptr = m_text_blocks[static_cast<size_t>(block)];
+    META_CHECK_ARG_NOT_NULL(text_item_ptr);
+    return *text_item_ptr;
 }
 
 void HeadsUpDisplay::LayoutTextBlocks()
@@ -374,7 +371,7 @@ void HeadsUpDisplay::LayoutTextBlocks()
 void HeadsUpDisplay::UpdateAllTextBlocks(const FrameSize& render_attachment_size) const
 {
     META_FUNCTION_TASK();
-    for(const Ptr<Text>& text_ptr : m_text_blocks)
+    for(const Ptr<TextItem>& text_ptr : m_text_blocks)
     {
         text_ptr->Update(render_attachment_size);
     }

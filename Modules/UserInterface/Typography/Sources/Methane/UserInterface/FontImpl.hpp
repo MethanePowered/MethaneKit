@@ -188,6 +188,7 @@ class Font::Impl // NOSONAR - class destructor is required, class has more than 
         const bool        m_has_kerning;
     };
 
+    Library                m_font_lib;
     Font&                  m_font;
     Settings               m_settings;
     Face                   m_face;
@@ -202,7 +203,8 @@ class Font::Impl // NOSONAR - class destructor is required, class has more than 
 public:
 
     Impl(const Library& font_lib, Font& font, const Data::IProvider& data_provider, const Settings& settings)
-        : m_font(font)
+        : m_font_lib(font_lib)
+        , m_font(font)
         , m_settings(settings)
         , m_face(font_lib, data_provider.GetData(m_settings.description.path))
     {
@@ -224,6 +226,11 @@ public:
             META_LOG("WARNING: Unexpected error during Font destruction: {}", e.what());
             assert(false);
         }
+    }
+
+    const Library& GetLibrary()
+    {
+        return m_font_lib;
     }
 
     [[nodiscard]] const Settings& GetSettings() const

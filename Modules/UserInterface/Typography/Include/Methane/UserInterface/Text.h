@@ -50,78 +50,84 @@ class RenderCommandList;
 namespace Methane::UserInterface
 {
 
+enum class TextWrap : uint32_t
+{
+    None = 0U,
+    Anywhere,
+    Word
+};
+
+enum class TextHorizontalAlignment : uint32_t
+{
+    Left = 0U,
+    Right,
+    Center,
+    Justify
+};
+
+enum class TextVerticalAlignment : uint32_t
+{
+    Top = 0U,
+    Bottom,
+    Center
+};
+
+struct TextLayout
+{
+    TextWrap                wrap                 = TextWrap::Anywhere;
+    TextHorizontalAlignment horizontal_alignment = TextHorizontalAlignment::Left;
+    TextVerticalAlignment   vertical_alignment   = TextVerticalAlignment::Top;
+
+    [[nodiscard]]
+    bool operator==(const TextLayout& other) const noexcept
+    {
+        return std::tie(wrap, horizontal_alignment, vertical_alignment) ==
+               std::tie(other.wrap, other.horizontal_alignment, other.vertical_alignment);
+    }
+};
+
+template<typename StringType>
+struct TextSettings // NOSONAR
+{
+    std::string name;
+    StringType  text;
+    UnitRect    rect;
+    TextLayout  layout;
+    Color4F     color { 1.F, 1.F, 1.F, 1.F };
+    bool        incremental_update = true;
+    bool        adjust_vertical_content_offset = true;
+
+    // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
+    Data::Size  mesh_buffers_reservation_multiplier = 2U;
+
+    // Text render state object name for using as a key in graphics object cache
+    // NOTE: State name should be different in case of render state incompatibility between Text objects
+    std::string state_name = "Screen Text Render State";
+
+    TextSettings& SetName(std::string_view new_name) noexcept                                         { name = new_name; return *this; }
+    TextSettings& SetText(const StringType& new_text) noexcept                                        { text = new_text; return *this; }
+    TextSettings& SetRect(const UnitRect& new_rect) noexcept                                          { rect = new_rect; return *this; }
+    TextSettings& SetLayout(const TextLayout& new_layout) noexcept                                    { layout = new_layout; return *this; }
+    TextSettings& SetColor(const Color4F& new_color) noexcept                                         { color = new_color; return *this; }
+    TextSettings& SetIncrementalUpdate(bool new_incremental_update) noexcept                          { incremental_update = new_incremental_update; return *this; }
+    TextSettings& SetAdjustVerticalContentOffset(bool new_adjust_offset) noexcept                     { adjust_vertical_content_offset = new_adjust_offset; return *this; }
+    TextSettings& SetMeshBuffersReservationMultiplier(Data::Size new_reservation_multiplier) noexcept { mesh_buffers_reservation_multiplier = new_reservation_multiplier; return *this; }
+    TextSettings& SetStateName(std::string_view new_state_name) noexcept                              { state_name = new_state_name; return *this; }
+};
+
 class TextMesh;
 
 class Text // NOSONAR - class destructor is required
-    : public Item
-    , protected Data::Receiver<IFontCallback> //NOSONAR
+    : protected Data::Receiver<IFontCallback> //NOSONAR
 {
 public:
-    enum class Wrap : uint32_t
-    {
-        None = 0U,
-        Anywhere,
-        Word
-    };
-
-    enum class HorizontalAlignment : uint32_t
-    {
-        Left = 0U,
-        Right,
-        Center,
-        Justify
-    };
-
-    enum class VerticalAlignment : uint32_t
-    {
-        Top = 0U,
-        Bottom,
-        Center
-    };
-
-    struct Layout
-    {
-        Wrap                wrap                 = Wrap::Anywhere;
-        HorizontalAlignment horizontal_alignment = HorizontalAlignment::Left;
-        VerticalAlignment   vertical_alignment   = VerticalAlignment::Top;
-
-        [[nodiscard]]
-        bool operator==(const Layout& other) const noexcept
-        {
-            return std::tie(wrap, horizontal_alignment, vertical_alignment) ==
-                   std::tie(other.wrap, other.horizontal_alignment, other.vertical_alignment);
-        }
-    };
+    using Wrap                = TextWrap;
+    using HorizontalAlignment = TextHorizontalAlignment;
+    using VerticalAlignment   = TextVerticalAlignment;
+    using Layout              = TextLayout;
 
     template<typename StringType>
-    struct Settings // NOSONAR
-    {
-        std::string name;
-        StringType  text;
-        UnitRect    rect;
-        Layout      layout;
-        Color4F     color { 1.F, 1.F, 1.F, 1.F };
-        bool        incremental_update = true;
-        bool        adjust_vertical_content_offset = true;
-
-        // Minimize number of vertex/index buffer re-allocations on dynamic text updates by reserving additional size with multiplication of required size
-        Data::Size  mesh_buffers_reservation_multiplier = 2U;
-
-        // Text render state object name for using as a key in graphics object cache
-        // NOTE: State name should be different in case of render state incompatibility between Text objects
-        std::string state_name = "Screen Text Render State";
-
-        Settings& SetName(std::string_view new_name) noexcept                                         { name = new_name; return *this; }
-        Settings& SetText(const StringType& new_text) noexcept                                        { text = new_text; return *this; }
-        Settings& SetRect(const UnitRect& new_rect) noexcept                                          { rect = new_rect; return *this; }
-        Settings& SetLayout(const Layout& new_layout) noexcept                                        { layout = new_layout; return *this; }
-        Settings& SetColor(const Color4F& new_color) noexcept                                         { color = new_color; return *this; }
-        Settings& SetIncrementalUpdate(bool new_incremental_update) noexcept                          { incremental_update = new_incremental_update; return *this; }
-        Settings& SetAdjustVerticalContentOffset(bool new_adjust_offset) noexcept                     { adjust_vertical_content_offset = new_adjust_offset; return *this; }
-        Settings& SetMeshBuffersReservationMultiplier(Data::Size new_reservation_multiplier) noexcept { mesh_buffers_reservation_multiplier = new_reservation_multiplier; return *this; }
-        Settings& SetStateName(std::string_view new_state_name) noexcept                            { state_name = new_state_name; return *this; }
-    };
-
+    using Settings      = TextSettings<StringType>;
     using SettingsUtf8  = Settings<std::string>;
     using SettingsUtf32 = Settings<std::u32string>;
 
@@ -131,6 +137,7 @@ public:
     Text(Context& ui_context, const Font& font, SettingsUtf32 settings);
     ~Text() override;
 
+    [[nodiscard]] const UnitRect&       GetFrameRect() const noexcept { return m_frame_rect; }
     [[nodiscard]] const SettingsUtf32&  GetSettings() const noexcept  { return m_settings; }
     [[nodiscard]] const std::u32string& GetTextUtf32() const noexcept { return m_settings.text; }
     [[nodiscard]] std::string           GetTextUtf8() const;
@@ -146,8 +153,7 @@ public:
     void SetVerticalAlignment(VerticalAlignment alignment);
     void SetIncrementalUpdate(bool incremental_update) noexcept { m_settings.incremental_update = incremental_update; }
 
-    // Item overrides
-    bool SetRect(const UnitRect& ui_rect) override;
+    bool SetFrameRect(const UnitRect& ui_rect);
 
     void Update(const gfx::FrameSize& render_attachment_size);
     void Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr = nullptr);
@@ -156,6 +162,8 @@ protected:
     // IFontCallback interface
     void OnFontAtlasTextureReset(Font& font, const rhi::Texture* old_atlas_texture_ptr, const rhi::Texture* new_atlas_texture_ptr) override;
     void OnFontAtlasUpdated(Font&) override { /* not handled in this class */ }
+
+    virtual void OnFrameRectUpdated(const UnitRect&) { /* implemented in derived class */ }
 
 private:
     struct CommonResourceRefs
@@ -226,6 +234,7 @@ private:
     FrameRect GetAlignedViewportRect() const;
     void UpdateViewport(const gfx::FrameSize& render_attachment_size);
 
+    Context&                    m_ui_context;
     SettingsUtf32               m_settings;
     UnitRect                    m_frame_rect;
     FrameSize                   m_render_attachment_size = FrameSize::Max();

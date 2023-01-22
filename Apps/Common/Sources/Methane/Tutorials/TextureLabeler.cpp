@@ -71,12 +71,12 @@ static TextureLabeler::SliceDesc GetSliceDesc(Data::Size array_index, Data::Size
     return slice_desc;
 }
 
-TextureLabeler::TextureLabeler(gui::Context& gui_context, const Data::IProvider& font_provider,
+TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext& font_context,
                                const rhi::Texture& rt_texture, rhi::ResourceState rt_texture_final_state,
                                const Settings& settings)
     : m_gui_context(gui_context)
     , m_rt_texture(rt_texture)
-    , m_font(gui_context.GetFontLibrary().GetFont(font_provider, gui::Font::Settings{
+    , m_font(font_context.GetFont(gui::Font::Settings{
         { "Face Labels",  "Fonts/RobotoMono/RobotoMono-Regular.ttf", settings.font_size_pt }, 96U, U"XYZ+-:0123456789"
     }))
 {

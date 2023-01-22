@@ -98,8 +98,9 @@ private:
     void LayoutFontAtlasBadges(const gfx::FrameSize& frame_size);
 
     Settings               m_settings;
+    gui::FontContext       m_font_context;
     std::vector<gui::Font> m_fonts;
-    Ptrs<gui::Text>        m_texts;
+    Ptrs<gui::TextItem>    m_texts;
     Ptrs<gui::Badge>       m_font_atlas_badges;
     std::vector<size_t>    m_displayed_text_lengths;
     double                 m_text_update_elapsed_sec = 0.0;
