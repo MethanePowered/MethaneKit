@@ -23,7 +23,7 @@ Renders text labels to the faces of cube-map texture array
 
 #pragma once
 
-#include <Methane/UserInterface/FontLibrary.h>
+#include <Methane/UserInterface/Text.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
 #include <Methane/Graphics/RHI/RenderPattern.h>
@@ -46,8 +46,8 @@ namespace Methane::UserInterface
 {
 
 class Context;
+class FontContext;
 class Font;
-class Text;
 
 } // namespace Methane::UserInterface
 
@@ -116,7 +116,7 @@ private:
 
         rhi::RenderPass        render_pass;
         rhi::RenderCommandList render_cmd_list;
-        Ptr<gui::Text>         label_text_ptr;
+        gui::Text              label_text;
         Ptr<gfx::ScreenQuad>   bg_quad_ptr;
     };
 

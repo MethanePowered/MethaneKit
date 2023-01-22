@@ -23,28 +23,19 @@ Methane text rendering primitive.
 
 #pragma once
 
-#include "Font.h"
-
-#include <Methane/UserInterface/Item.h>
-#include <Methane/Graphics/RHI/CommandListDebugGroup.h>
-#include <Methane/Graphics/RHI/RenderState.h>
-#include <Methane/Graphics/RHI/RenderPass.h>
-#include <Methane/Graphics/RHI/ViewState.h>
-#include <Methane/Graphics/RHI/ProgramBindings.h>
-#include <Methane/Graphics/RHI/Buffer.h>
-#include <Methane/Graphics/RHI/BufferSet.h>
-#include <Methane/Graphics/RHI/Texture.h>
-#include <Methane/Graphics/RHI/Sampler.h>
+#include <Methane/UserInterface/Types.hpp>
 #include <Methane/Graphics/Color.hpp>
-#include <Methane/Data/Receiver.hpp>
-#include <Methane/Data/EnumMask.hpp>
+#include <Methane/Data/Types.h>
+#include <Methane/Pimpl.h>
 
 #include <string_view>
 
 namespace Methane::Graphics::Rhi
 {
 class RenderContext;
+class RenderPattern;
 class RenderCommandList;
+class CommandListDebugGroup;
 }
 
 namespace Methane::UserInterface
@@ -115,10 +106,12 @@ struct TextSettings // NOSONAR
     TextSettings& SetStateName(std::string_view new_state_name) noexcept                              { state_name = new_state_name; return *this; }
 };
 
-class TextMesh;
+class Context;
+class Font;
 
-class Text // NOSONAR - class destructor is required
-    : protected Data::Receiver<IFontCallback> //NOSONAR
+namespace rhi = Methane::Graphics::Rhi;
+
+class Text
 {
 public:
     using Wrap                = TextWrap;
@@ -131,122 +124,42 @@ public:
     using SettingsUtf8  = Settings<std::string>;
     using SettingsUtf32 = Settings<std::u32string>;
 
+    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_NO_INLINE(Text);
+
     Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf8& settings);
     Text(Context& ui_context, const Font& font, const SettingsUtf8& settings);
-    Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, SettingsUtf32 settings);
-    Text(Context& ui_context, const Font& font, SettingsUtf32 settings);
-    ~Text() override;
+    Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf32& settings);
+    Text(Context& ui_context, const Font& font, const SettingsUtf32& settings);
 
-    [[nodiscard]] const UnitRect&       GetFrameRect() const noexcept { return m_frame_rect; }
-    [[nodiscard]] const SettingsUtf32&  GetSettings() const noexcept  { return m_settings; }
-    [[nodiscard]] const std::u32string& GetTextUtf32() const noexcept { return m_settings.text; }
+    bool IsInitialized() const noexcept { return static_cast<bool>(m_impl_ptr); }
+
+    [[nodiscard]] const UnitRect&       GetFrameRect() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] const SettingsUtf32&  GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] const std::u32string& GetTextUtf32() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] std::string           GetTextUtf8() const;
 
-    void SetText(std::string_view text);
-    void SetText(std::u32string_view text);
-    void SetTextInScreenRect(std::string_view text, const UnitRect& ui_rect);
-    void SetTextInScreenRect(std::u32string_view text, const UnitRect& ui_rect);
-    void SetColor(const gfx::Color4F& color);
-    void SetLayout(const Layout& layout);
-    void SetWrap(Wrap wrap);
-    void SetHorizontalAlignment(HorizontalAlignment alignment);
-    void SetVerticalAlignment(VerticalAlignment alignment);
-    void SetIncrementalUpdate(bool incremental_update) noexcept { m_settings.incremental_update = incremental_update; }
+    void SetText(std::string_view text) const;
+    void SetText(std::u32string_view text) const;
+    void SetTextInScreenRect(std::string_view text, const UnitRect& ui_rect) const;
+    void SetTextInScreenRect(std::u32string_view text, const UnitRect& ui_rect) const;
+    void SetColor(const gfx::Color4F& color) const;
+    void SetLayout(const Layout& layout) const;
+    void SetWrap(Wrap wrap) const;
+    void SetHorizontalAlignment(HorizontalAlignment alignment) const;
+    void SetVerticalAlignment(VerticalAlignment alignment) const;
+    void SetIncrementalUpdate(bool incremental_update) const META_PIMPL_NOEXCEPT;
+    bool SetFrameRect(const UnitRect& ui_rect) const;
 
-    bool SetFrameRect(const UnitRect& ui_rect);
-
-    void Update(const gfx::FrameSize& render_attachment_size);
-    void Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr = nullptr);
+    void Update(const gfx::FrameSize& frame_size) const;
+    void Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr = nullptr) const;
 
 protected:
-    // IFontCallback interface
-    void OnFontAtlasTextureReset(Font& font, const rhi::Texture* old_atlas_texture_ptr, const rhi::Texture* new_atlas_texture_ptr) override;
-    void OnFontAtlasUpdated(Font&) override { /* not handled in this class */ }
-
     virtual void OnFrameRectUpdated(const UnitRect&) { /* implemented in derived class */ }
 
 private:
-    struct CommonResourceRefs
-    {
-        const rhi::RenderContext& render_context;
-        const rhi::RenderState&   render_state;
-        const rhi::Buffer&        const_buffer;
-        const rhi::Texture&       atlas_texture;
-        const rhi::Sampler&       atlas_sampler;
-        const TextMesh&           text_mesh;
-    };
+    class Impl;
 
-    class FrameResources
-    {
-    public:
-        enum class DirtyResource : uint32_t
-        {
-            Mesh,
-            Uniforms,
-            Atlas,
-        };
-
-        using DirtyResourceMask = Data::EnumMask<DirtyResource>;
-
-        FrameResources(uint32_t frame_index, const CommonResourceRefs& common_resources);
-
-        void SetDirty(DirtyResourceMask dirty_mask) noexcept;
-
-        [[nodiscard]] bool IsDirty(DirtyResource resource) const noexcept;
-        [[nodiscard]] bool IsDirty() const noexcept;
-        [[nodiscard]] bool IsInitialized() const noexcept;
-        [[nodiscard]] bool IsAtlasInitialized() const noexcept;
-
-        [[nodiscard]] const rhi::BufferSet&       GetVertexBufferSet() const noexcept;
-        [[nodiscard]] const rhi::Buffer&          GetIndexBuffer() const noexcept;
-        [[nodiscard]] const rhi::ProgramBindings& GetProgramBindings() const noexcept;
-
-        bool UpdateAtlasTexture(const rhi::Texture& new_atlas_texture); // returns true if program bindings were updated, false if bindings have to be initialized
-        void UpdateMeshBuffers(const rhi::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name, Data::Size reservation_multiplier);
-        void UpdateUniformsBuffer(const rhi::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name);
-        void InitializeProgramBindings(const rhi::RenderState& state, const rhi::Buffer& const_buffer_ptr,
-                                       const rhi::Sampler& atlas_sampler_ptr, std::string_view text_name);
-
-    private:
-        uint32_t             m_frame_index;
-        DirtyResourceMask    m_dirty_mask { ~0U };
-        rhi::BufferSet       m_vertex_buffer_set;
-        rhi::Buffer          m_index_buffer;
-        rhi::Buffer          m_uniforms_buffer;
-        rhi::Texture         m_atlas_texture;
-        rhi::ProgramBindings m_program_bindings;
-    };
-
-    void InitializeFrameResources();
-    void MakeFrameResourcesDirty(FrameResources::DirtyResourceMask resource);
-    FrameResources& GetCurrentFrameResources();
-
-    void UpdateTextMesh();
-    void UpdateConstantsBuffer();
-
-    struct UpdateRectResult
-    {
-        bool rect_changed = false;
-        bool size_changed = false;
-    };
-
-    UpdateRectResult UpdateRect(const UnitRect& ui_rect, bool reset_content_rect);
-    FrameRect GetAlignedViewportRect() const;
-    void UpdateViewport(const gfx::FrameSize& render_attachment_size);
-
-    Context&                    m_ui_context;
-    SettingsUtf32               m_settings;
-    UnitRect                    m_frame_rect;
-    FrameSize                   m_render_attachment_size = FrameSize::Max();
-    Font                        m_font;
-    UniquePtr<TextMesh>         m_text_mesh_ptr;
-    rhi::RenderState            m_render_state;
-    rhi::ViewState              m_view_state;
-    rhi::Buffer                 m_const_buffer;
-    rhi::Sampler                m_atlas_sampler;
-    std::vector<FrameResources> m_frame_resources;
-    bool                        m_is_viewport_dirty = true;
-    bool                        m_is_const_buffer_dirty = true;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics

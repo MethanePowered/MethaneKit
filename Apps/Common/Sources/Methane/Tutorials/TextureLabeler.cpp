@@ -146,8 +146,8 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
             slice_text_settings.name = fmt::format("Texture '{}' Slice {}:{} Label Text", rt_texture_name, array_index, depth_index);
             slice_text_settings.text = gui::Font::ConvertUtf8To32(slice.label);
 
-            slice.label_text_ptr = std::make_shared<gui::Text>(m_gui_context, m_texture_face_render_pattern, m_font, slice_text_settings);
-            slice.label_text_ptr->Update(rt_texture_settings.dimensions.AsRectSize());
+            slice.label_text = gui::Text(m_gui_context, m_texture_face_render_pattern, m_font, slice_text_settings);
+            slice.label_text.Update(rt_texture_settings.dimensions.AsRectSize());
 
             slice.bg_quad_ptr = std::make_shared<gfx::ScreenQuad>(m_gui_context.GetRenderCommandQueue(), m_texture_face_render_pattern,
                 gfx::ScreenQuad::Settings
@@ -190,11 +190,10 @@ void TextureLabeler::Render() const
     for (const Slice& slice : m_slices)
     {
         META_CHECK_ARG_NOT_NULL(slice.bg_quad_ptr);
-        META_CHECK_ARG_NOT_NULL(slice.label_text_ptr);
         META_CHECK_ARG_TRUE(slice.render_cmd_list.IsInitialized());
 
         slice.bg_quad_ptr->Draw(slice.render_cmd_list, &s_debug_group);
-        slice.label_text_ptr->Draw(slice.render_cmd_list, &s_debug_group);
+        slice.label_text.Draw(slice.render_cmd_list, &s_debug_group);
         slice.render_cmd_list.Commit();
     }
 
