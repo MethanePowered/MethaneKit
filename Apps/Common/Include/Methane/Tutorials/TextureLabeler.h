@@ -30,17 +30,11 @@ Renders text labels to the faces of cube-map texture array
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/RHI/Texture.h>
+#include <Methane/Graphics/ScreenQuad.h>
 #include <Methane/Graphics/Color.hpp>
 
 #include <string>
 #include <array>
-
-namespace Methane::Graphics
-{
-
-class  ScreenQuad;
-
-} // namespace Methane::Graphics
 
 namespace Methane::UserInterface
 {
@@ -117,7 +111,7 @@ private:
         rhi::RenderPass        render_pass;
         rhi::RenderCommandList render_cmd_list;
         gui::Text              label_text;
-        Ptr<gfx::ScreenQuad>   bg_quad_ptr;
+        gfx::ScreenQuad        bg_quad;
     };
 
     gui::Context&          m_gui_context;

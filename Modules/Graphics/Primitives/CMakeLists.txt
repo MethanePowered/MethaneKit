@@ -7,7 +7,7 @@ get_module_dirs("Methane/Graphics")
 set(SHADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Shaders)
 
 set(HEADERS
-    ${INCLUDE_DIR}/Extensions.h
+    ${INCLUDE_DIR}/Primitives.h
     ${INCLUDE_DIR}/ImageLoader.h
     ${INCLUDE_DIR}/MeshBuffersBase.h
     ${INCLUDE_DIR}/MeshBuffers.hpp

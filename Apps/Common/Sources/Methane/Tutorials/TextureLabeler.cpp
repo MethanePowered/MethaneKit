@@ -26,7 +26,6 @@ Renders text labels to the faces of cube-map texture array
 #include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
-#include <Methane/Graphics/ScreenQuad.h>
 #include <Methane/UserInterface/Context.h>
 #include <Methane/UserInterface/FontLibrary.h>
 #include <Methane/UserInterface/Text.h>
@@ -149,7 +148,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
             slice.label_text = gui::Text(m_gui_context, m_texture_face_render_pattern, m_font, slice_text_settings);
             slice.label_text.Update(rt_texture_settings.dimensions.AsRectSize());
 
-            slice.bg_quad_ptr = std::make_shared<gfx::ScreenQuad>(m_gui_context.GetRenderCommandQueue(), m_texture_face_render_pattern,
+            slice.bg_quad = gfx::ScreenQuad(m_gui_context.GetRenderCommandQueue(), m_texture_face_render_pattern,
                 gfx::ScreenQuad::Settings
                 {
                     fmt::format("Texture '{}' Slice BG Quad {}:{}", rt_texture_name, array_index, depth_index),
@@ -189,10 +188,9 @@ void TextureLabeler::Render() const
     META_DEBUG_GROUP_VAR(s_debug_group, "Texture Faces Rendering");
     for (const Slice& slice : m_slices)
     {
-        META_CHECK_ARG_NOT_NULL(slice.bg_quad_ptr);
         META_CHECK_ARG_TRUE(slice.render_cmd_list.IsInitialized());
 
-        slice.bg_quad_ptr->Draw(slice.render_cmd_list, &s_debug_group);
+        slice.bg_quad.Draw(slice.render_cmd_list, &s_debug_group);
         slice.label_text.Draw(slice.render_cmd_list, &s_debug_group);
         slice.render_cmd_list.Commit();
     }

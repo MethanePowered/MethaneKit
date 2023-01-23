@@ -26,6 +26,7 @@ Badge widget displaying texture in specific corner of the screen.
 #include <Methane/UserInterface/Item.h>
 
 #include <Methane/Graphics/ScreenQuad.h>
+#include <Methane/Data/IProvider.h>
 
 #include <string_view>
 
