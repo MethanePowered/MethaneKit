@@ -74,12 +74,12 @@ private:
 
     using TexturedMeshBuffers = gfx::TexturedMeshBuffers<hlslpp::Uniforms>;
 
-    hlslpp::float4x4  m_model_matrix;
-    gfx::Camera       m_camera;
-    rhi::RenderState  m_render_state;
-    rhi::Sampler      m_texture_sampler;
+    hlslpp::float4x4         m_model_matrix;
+    gfx::Camera              m_camera;
+    rhi::RenderState         m_render_state;
+    rhi::Sampler             m_texture_sampler;
     Ptr<TexturedMeshBuffers> m_cube_buffers_ptr;
-    Ptr<gfx::SkyBox>         m_sky_box_ptr;
+    gfx::SkyBox              m_sky_box;
 };
 
 } // namespace Methane::Tutorials

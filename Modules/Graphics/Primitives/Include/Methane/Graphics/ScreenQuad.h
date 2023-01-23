@@ -68,10 +68,10 @@ public:
     ScreenQuad(const Rhi::CommandQueue& render_cmd_queue, const Rhi::RenderPattern& render_pattern, const Rhi::Texture& texture, const Settings& settings);
     virtual ~ScreenQuad() = default;
 
-    void SetBlendColor(const Color4F& blend_color);
-    void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size);
-    void SetAlphaBlendingEnabled(bool alpha_blending_enabled);
-    void SetTexture(Rhi::Texture texture);
+    void SetBlendColor(const Color4F& blend_color) const;
+    void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size) const;
+    void SetAlphaBlendingEnabled(bool alpha_blending_enabled) const;
+    void SetTexture(Rhi::Texture texture) const;
 
     [[nodiscard]] const Settings& GetQuadSettings() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] const Rhi::Texture& GetTexture() const META_PIMPL_NOEXCEPT;

@@ -391,22 +391,22 @@ ScreenQuad::ScreenQuad(const Rhi::CommandQueue& render_cmd_queue, const Rhi::Ren
 {
 }
 
-void ScreenQuad::SetBlendColor(const Color4F& blend_color)
+void ScreenQuad::SetBlendColor(const Color4F& blend_color) const
 {
     GetImpl(m_impl_ptr).SetBlendColor(blend_color);
 }
 
-void ScreenQuad::SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size)
+void ScreenQuad::SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size) const
 {
     GetImpl(m_impl_ptr).SetScreenRect(screen_rect, render_attachment_size);
 }
 
-void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled)
+void ScreenQuad::SetAlphaBlendingEnabled(bool alpha_blending_enabled) const
 {
     GetImpl(m_impl_ptr).SetAlphaBlendingEnabled(alpha_blending_enabled);
 }
 
-void ScreenQuad::SetTexture(Rhi::Texture texture)
+void ScreenQuad::SetTexture(Rhi::Texture texture) const
 {
     GetImpl(m_impl_ptr).SetTexture(texture);
 }

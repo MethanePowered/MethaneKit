@@ -157,7 +157,7 @@ void CubeMapArrayApp::Init()
     );
 
     // Create sky-box
-    m_sky_box_ptr = std::make_shared<gfx::SkyBox>(render_cmd_queue, GetScreenRenderPattern(), sky_box_texture,
+    m_sky_box = gfx::SkyBox(render_cmd_queue, GetScreenRenderPattern(), sky_box_texture,
         gfx::SkyBox::Settings
         {
             m_camera,
@@ -182,11 +182,11 @@ void CubeMapArrayApp::Init()
         frame.cube.program_bindings.SetName(IndexedName("ForCubeImage Bindings", frame.index));
 
         // Create uniforms buffer for Sky-Box rendering
-        frame.sky_box.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(sizeof(gfx::SkyBox::Uniforms), false, true));
+        frame.sky_box.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(gfx::SkyBox::GetUniformsSize(), false, true));
         frame.sky_box.uniforms_buffer.SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
 
         // Resource bindings for Sky-Box rendering
-        frame.sky_box.program_bindings = m_sky_box_ptr->CreateProgramBindings(frame.sky_box.uniforms_buffer, frame.index);
+        frame.sky_box.program_bindings = m_sky_box.CreateProgramBindings(frame.sky_box.uniforms_buffer, frame.index);
         frame.sky_box.program_bindings.SetName(IndexedName("Space Sky-Box Bindings {}", frame.index));
         
         // Create command list for rendering
@@ -249,7 +249,7 @@ bool CubeMapArrayApp::Update()
     }
 
     m_cube_buffers_ptr->SetFinalPassUniforms(std::move(uniforms));
-    m_sky_box_ptr->Update();
+    m_sky_box.Update();
 
     return true;
 }
@@ -271,7 +271,7 @@ bool CubeMapArrayApp::Render()
     m_cube_buffers_ptr->Draw(frame.render_cmd_list, frame.cube.program_bindings, 0U, CUBE_MAP_ARRAY_SIZE);
 
     // 2) Render sky-box after cubes to minimize overdraw
-    m_sky_box_ptr->Draw(frame.render_cmd_list, frame.sky_box, GetViewState());
+    m_sky_box.Draw(frame.render_cmd_list, frame.sky_box, GetViewState());
 
     RenderOverlay(frame.render_cmd_list);
 
@@ -286,7 +286,7 @@ bool CubeMapArrayApp::Render()
 
 void CubeMapArrayApp::OnContextReleased(rhi::IContext& context)
 {
-    m_sky_box_ptr.reset();
+    m_sky_box = {};
     m_cube_buffers_ptr.reset();
     m_texture_sampler = {};
     m_render_state = {};

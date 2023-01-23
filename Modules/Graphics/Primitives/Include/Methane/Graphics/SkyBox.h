@@ -23,36 +23,28 @@ SkyBox rendering primitive
 
 #pragma once
 
-#include "ImageLoader.h"
-#include "MeshBuffers.hpp"
-
-#include <Methane/Graphics/RHI/CommandQueue.h>
-#include <Methane/Graphics/RHI/RenderPass.h>
-#include <Methane/Graphics/RHI/RenderState.h>
-#include <Methane/Graphics/RHI/ViewState.h>
-#include <Methane/Graphics/RHI/RenderContext.h>
-#include <Methane/Graphics/RHI/RenderCommandList.h>
-#include <Methane/Graphics/RHI/Texture.h>
-#include <Methane/Graphics/RHI/Sampler.h>
-#include <Methane/Graphics/Types.h>
+#include <Methane/Data/Types.h>
 #include <Methane/Data/EnumMask.hpp>
+#include <Methane/Pimpl.h>
 
-#include <hlsl++_matrix_float.h>
-
-namespace hlslpp // NOSONAR
+namespace Methane::Graphics::Rhi
 {
-#pragma pack(push, 16)
-#include <SkyBoxUniforms.h> // NOSONAR
-#pragma pack(pop)
-}
 
-#include <memory>
-#include <array>
+class Texture;
+class Buffer;
+class ViewState;
+class CommandQueue;
+class ProgramBindings;
+class RenderPattern;
+class RenderCommandList;
+
+} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics
 {
 
 class Camera;
+struct MeshBufferBindings;
 
 class SkyBox
 {
@@ -75,39 +67,22 @@ public:
         float         lod_bias = 0.F;
     };
 
-    struct META_UNIFORM_ALIGN Uniforms
-    {
-        hlslpp::float4x4 mvp_matrix;
-    };
+    static Data::Size GetUniformsSize();
+
+    META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_NO_INLINE(SkyBox);
 
     SkyBox(const Rhi::CommandQueue& render_cmd_queue, const Rhi::RenderPattern& render_pattern, const Rhi::Texture& cube_map_texture, const Settings& settings);
 
-    Rhi::ProgramBindings CreateProgramBindings(const Rhi::Buffer& uniforms_buffer_ptr, Data::Index frame_index) const;
+    Rhi::ProgramBindings CreateProgramBindings(const Rhi::Buffer& uniforms_buffer, Data::Index frame_index) const;
     void Update();
-    void Draw(const Rhi::RenderCommandList& cmd_list, const MeshBufferBindings& buffer_bindings, const Rhi::ViewState& view_state) const;
+    void Draw(const Rhi::RenderCommandList& render_cmd_list, const MeshBufferBindings& buffer_bindings, const Rhi::ViewState& view_state) const;
+
+    bool IsInitialized() const noexcept { return static_cast<bool>(m_impl_ptr); }
 
 private:
-    struct Vertex
-    {
-        Mesh::Position position;
+    class Impl;
 
-        inline static const Mesh::VertexLayout layout{
-            Mesh::VertexField::Position,
-        };
-    };
-
-    SkyBox(const Rhi::CommandQueue& render_cmd_queue, const Rhi::RenderPattern& render_pattern, const Rhi::Texture& cube_map_texture,
-           const Settings& settings, const BaseMesh<Vertex>& mesh);
-
-    using TexMeshBuffers = TexturedMeshBuffers<hlslpp::SkyBoxUniforms>;
-
-    Settings                m_settings;
-    const Rhi::CommandQueue m_render_cmd_queue;
-    Rhi::RenderContext      m_context;
-    Rhi::Program            m_program;
-    TexMeshBuffers          m_mesh_buffers;
-    Rhi::Sampler            m_texture_sampler;
-    Rhi::RenderState        m_render_state;
+    Ptr<Impl> m_impl_ptr;
 };
 
 } // namespace Methane::Graphics
