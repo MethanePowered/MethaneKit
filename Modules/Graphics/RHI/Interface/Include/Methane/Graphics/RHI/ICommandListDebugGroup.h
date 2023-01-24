@@ -61,7 +61,7 @@ struct ICommandListDebugGroup
 #else
 
 #define META_DEBUG_GROUP_CREATE(/*const std::string& */group_name) \
-    nullptr
+    Methane::Ptr<Methane::Graphics::Rhi::ICommandListDebugGroup>()
 
 #define META_DEBUG_GROUP_PUSH(/*ICommandList& */cmd_list, /*const std::string& */group_name) \
     META_UNUSED(cmd_list); META_UNUSED(group_name)
