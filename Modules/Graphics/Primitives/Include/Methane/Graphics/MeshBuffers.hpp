@@ -59,7 +59,7 @@ public:
     }
 
     template<typename VertexType>
-    MeshBuffers(Rhi::CommandQueue& render_cmd_queue, const UberMesh<VertexType>& uber_mesh_data, std::string_view mesh_name)
+    MeshBuffers(const Rhi::CommandQueue& render_cmd_queue, const UberMesh<VertexType>& uber_mesh_data, std::string_view mesh_name)
         : MeshBuffers(render_cmd_queue, uber_mesh_data, mesh_name, uber_mesh_data.GetSubsets())
     {
         META_FUNCTION_TASK();
