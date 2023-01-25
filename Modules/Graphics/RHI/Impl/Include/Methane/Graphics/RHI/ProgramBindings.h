@@ -40,12 +40,12 @@ class Program;
 class ProgramBindings // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
-    using IArgumentBindingCallback = IProgramArgumentBindingCallback;
-    using IArgumentBinding = IProgramArgumentBinding;
-    using ApplyBehavior = ProgramBindingsApplyBehavior;
-    using ApplyBehaviorMask = ProgramBindingsApplyBehaviorMask;
+    using IArgumentBindingCallback  = IProgramArgumentBindingCallback;
+    using IArgumentBinding          = IProgramArgumentBinding;
+    using ApplyBehavior             = ProgramBindingsApplyBehavior;
+    using ApplyBehaviorMask         = ProgramBindingsApplyBehaviorMask;
     using UnboundArgumentsException = ProgramBindingsUnboundArgumentsException;
-    using ResourceViewsByArgument = std::unordered_map<ProgramArgument, IResource::Views, ProgramArgument::Hash>;
+    using ResourceViewsByArgument   = IProgramBindings::ResourceViewsByArgument;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ProgramBindings);
     META_PIMPL_METHODS_COMPARE_DECLARE(ProgramBindings);
@@ -54,7 +54,7 @@ public:
     META_PIMPL_API explicit ProgramBindings(IProgramBindings& interface_ref);
     META_PIMPL_API ProgramBindings(const Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);
     META_PIMPL_API ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument = {},
-                                 const Opt<Data::Index>& frame_index = {});
+                                   const Opt<Data::Index>& frame_index = {});
 
     META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API IProgramBindings& GetInterface() const META_PIMPL_NOEXCEPT;

@@ -27,6 +27,8 @@ and resource view used in program bindings.
 #include <Methane/Data/Chunk.hpp>
 #include <Methane/Data/Range.hpp>
 #include <Methane/Data/EnumMask.hpp>
+#include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 #include <optional>
 
@@ -230,14 +232,44 @@ private:
 
 using ResourceViews = std::vector<ResourceView>;
 
-template<typename TResource>
-static ResourceViews CreateResourceViews(const Ptrs<TResource>& resources)
+template<typename IResourceType>
+static ResourceViews CreateResourceViews(const Ptrs<IResourceType>& resource_ptrs)
 {
+    META_FUNCTION_TASK();
+    ResourceViews resource_views;
+    std::transform(resource_ptrs.begin(), resource_ptrs.end(), std::back_inserter(resource_views),
+                   [](const Ptr<IResourceType>& resource_ptr)
+                       {
+                           META_CHECK_ARG_NOT_NULL(resource_ptr);
+                           return ResourceView(*resource_ptr);
+                       });
+    return resource_views;
+}
+
+template<typename IResourceType>
+static ResourceViews CreateResourceViews(const Ptr<IResourceType>& resource_ptr)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(resource_ptr);
+    return { ResourceView(*resource_ptr) };
+}
+
+template<typename ResourceType>
+static ResourceViews CreateResourceViews(const std::vector<ResourceType>& resources)
+{
+    META_FUNCTION_TASK();
     ResourceViews resource_views;
     std::transform(resources.begin(), resources.end(), std::back_inserter(resource_views),
-                   [](const Ptr<TResource>& resource_ptr)
-                   { META_CHECK_ARG_NOT_NULL(resource_ptr); return ResourceView(*resource_ptr); });
+                   [](const ResourceType& resource)
+                       { return ResourceView(resource.GetInterface()); });
     return resource_views;
+}
+
+template<typename ResourceType>
+static ResourceViews CreateResourceViews(const ResourceType& resource)
+{
+    META_FUNCTION_TASK();
+    return { ResourceView(resource.GetInterface()) };
 }
 
 } // namespace Methane::Graphics::Rhi
