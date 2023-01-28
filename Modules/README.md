@@ -58,10 +58,10 @@ Diagram generated with CMake using integrated GraphViz support shows detailed re
 - [x] Parallel command lists
 - [x] Improved shaders toolset (use DXC & HLSL 6 instead of FXC, GLSLang & HLSL 5.1)
 - [x] Text rendering
-- [ ] Mesh loader
+- [x] Vulkan API implementation
+- [x] Linux platform implementation
+- [.] User-interface library
 - [ ] Compute pipeline
-- [ ] Vulkan API implementation
-- [ ] Linux platform implementation
-- [ ] Post-processing pipeline
-- [ ] User-interface library
-- [ ] Dynamic linking support
+- [ ] Mesh loader
+- [ ] Scene graph
+- [ ] Rendering pipeline
