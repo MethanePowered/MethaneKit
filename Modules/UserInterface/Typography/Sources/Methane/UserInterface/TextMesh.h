@@ -64,10 +64,10 @@ public:
 
     using CharPositions = std::vector<CharPosition>;
 
-    TextMesh(const std::u32string& text, Text::Layout layout, Font& font, gfx::FrameSize& viewport_size);
+    TextMesh(const std::u32string& text, Text::Layout layout, Font& font, gfx::FrameSize& frame_size);
 
-    [[nodiscard]] bool IsUpdatable(const std::u32string& text, const Text::Layout& layout, Font& font, const gfx::FrameSize& viewport_size) const noexcept;
-    void Update(const std::u32string& text, gfx::FrameSize& viewport_size);
+    [[nodiscard]] bool IsUpdatable(const std::u32string& text, const Text::Layout& layout, Font& font, const gfx::FrameSize& frame_size) const noexcept;
+    void Update(const std::u32string& text, gfx::FrameSize& frame_size);
 
     [[nodiscard]] const std::u32string& GetText() const noexcept              { return m_text; }
     [[nodiscard]] Font&                 GetFont() noexcept                    { return m_font; }

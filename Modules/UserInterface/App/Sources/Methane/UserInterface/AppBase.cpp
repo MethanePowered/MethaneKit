@@ -323,7 +323,8 @@ bool AppBase::UpdateTextPanel(TextPanel& text_panel)
 
     if (text_panel.text_ptr)
     {
-        text_panel.text_ptr->SetText(text_panel.text_str);
+        // Enforce TextItem rect update by resetting text frame rect
+        text_panel.text_ptr->SetTextInScreenRect(text_panel.text_str, UnitRect(text_panel.text_ptr->GetFrameRect().GetUnitOrigin()));
     }
     else
     {

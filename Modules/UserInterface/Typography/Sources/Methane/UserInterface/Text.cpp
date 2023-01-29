@@ -42,7 +42,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/RHI/Program.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/EnumMask.hpp>
-#include <Methane/Data/Receiver.hpp>
+#include <Methane/Data/Emitter.hpp>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
@@ -278,13 +278,13 @@ public:
 };
 
 class Text::Impl // NOSONAR - class destructor is required
-    : public Data::Receiver<IFontCallback>
+    : public Data::Emitter<ITextCallback>
+    , public Data::Receiver<IFontCallback>
 {
 private:
     using FrameResources = TextFrameResources;
     using PerFrameResources = std::vector<TextFrameResources>;
 
-    Text&               m_text;
     Context&            m_ui_context;
     SettingsUtf32       m_settings;
     UnitRect            m_frame_rect;
@@ -300,9 +300,8 @@ private:
     bool                m_is_const_buffer_dirty = true;
 
 public:
-    Impl(Text& text, Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf32& settings)
-        : m_text(text)
-        , m_ui_context(ui_context)
+    Impl(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf32& settings)
+        : m_ui_context(ui_context)
         , m_settings(std::move(settings))
         , m_font(font)
     {
@@ -392,12 +391,12 @@ public:
         }
     }
 
-    Impl(Text& text, Context& ui_context, const Font& font, const SettingsUtf32& settings)
-        : Impl(text, ui_context, ui_context.GetRenderPattern(), font, std::move(settings))
+    Impl(Context& ui_context, const Font& font, const SettingsUtf32& settings)
+        : Impl(ui_context, ui_context.GetRenderPattern(), font, std::move(settings))
     { }
 
-    Impl(Text& text, Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf8& settings)
-    : Impl(text, ui_context, render_pattern, font,
+    Impl(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf8& settings)
+    : Impl(ui_context, render_pattern, font,
         SettingsUtf32
         {
             settings.name,
@@ -413,8 +412,8 @@ public:
     )
     { }
 
-    Impl(Text& text, Context& ui_context, const Font& font, const SettingsUtf8& settings)
-        : Impl(text, ui_context, ui_context.GetRenderPattern(), font, std::move(settings))
+    Impl(Context& ui_context, const Font& font, const SettingsUtf8& settings)
+        : Impl(ui_context, ui_context.GetRenderPattern(), font, std::move(settings))
     { }
 
     ~Impl() override
@@ -716,7 +715,7 @@ private:
 
         if (m_frame_rect.size != prev_frame_size)
         {
-            m_text.OnFrameRectUpdated(m_frame_rect);
+            Emit(&ITextCallback::OnTextFrameRectChanged, m_frame_rect);
         }
 
         if (m_frame_resources.empty() && m_render_state.IsInitialized())
@@ -774,11 +773,10 @@ private:
         else
             m_frame_rect.origin = ui_rect_in_px.origin;
 
-        if (ui_rect_changed)
+        if (ui_rect_changed && m_frame_rect.size)
         {
-            m_text.OnFrameRectUpdated(m_frame_rect);
+            Emit(&ITextCallback::OnTextFrameRectChanged, m_frame_rect);
         }
-
         return { ui_rect_changed, ui_size_changed };
     }
 
@@ -832,12 +830,14 @@ private:
     void UpdateViewport(const gfx::FrameSize& render_attachment_size)
     {
         META_FUNCTION_TASK();
+        m_render_attachment_size = render_attachment_size;
+
         if (!m_text_mesh_ptr)
             return;
 
         const FrameRect viewport_rect = GetAlignedViewportRect();
         m_view_state.SetViewports({ gfx::GetFrameViewport(viewport_rect) });
-        m_view_state.SetScissorRects({ gfx::GetFrameScissorRect(viewport_rect, render_attachment_size) });
+        m_view_state.SetScissorRects({ gfx::GetFrameScissorRect(viewport_rect, m_render_attachment_size) });
         m_is_viewport_dirty = false;
     }
 };
@@ -850,7 +850,7 @@ Text::Text(Context& ui_context, const Font& font, const SettingsUtf8&  settings)
 }
 
 Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf8& settings)
-    : m_impl_ptr(std::make_shared<Impl>(*this, ui_context, render_pattern, font, settings))
+    : m_impl_ptr(std::make_shared<Impl>(ui_context, render_pattern, font, settings))
 {
 }
 
@@ -860,8 +860,18 @@ Text::Text(Context& ui_context, const Font& font, const SettingsUtf32& settings)
 }
 
 Text::Text(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf32& settings)
-    : m_impl_ptr(std::make_shared<Impl>(*this, ui_context, render_pattern, font, settings))
+    : m_impl_ptr(std::make_shared<Impl>(ui_context, render_pattern, font, settings))
 { }
+
+void Text::Connect(Data::Receiver<ITextCallback>& callback) const
+{
+    GetImpl(m_impl_ptr).Connect(callback);
+}
+
+void Text::Disconnect(Data::Receiver<ITextCallback>& callback) const
+{
+    GetImpl(m_impl_ptr).Disconnect(callback);
+}
 
 const UnitRect& Text::GetFrameRect() const META_PIMPL_NOEXCEPT
 {

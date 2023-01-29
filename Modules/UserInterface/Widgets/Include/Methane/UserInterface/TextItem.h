@@ -25,13 +25,15 @@ UI text item.
 
 #include <Methane/UserInterface/Item.h>
 #include <Methane/UserInterface/Text.h>
+#include <Methane/Data/Receiver.hpp>
 
 namespace Methane::UserInterface
 {
 
-class TextItem
+class TextItem final
     : public Text
     , public Item
+    , protected Data::Receiver<ITextCallback>
 {
 public:
     TextItem(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf8& settings);
@@ -43,8 +45,8 @@ public:
     bool SetRect(const UnitRect& ui_rect) override;
 
 protected:
-    // Text overrides
-    void OnFrameRectUpdated(const UnitRect& frame_rect) final;
+    // ITextCallback overrides
+    void OnTextFrameRectChanged(const UnitRect& frame_rect) override;
 };
 
 } // namespace Methane::UserInterface

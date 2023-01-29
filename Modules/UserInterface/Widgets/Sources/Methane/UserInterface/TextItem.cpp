@@ -31,7 +31,9 @@ TextItem::TextItem(Context& ui_context, const rhi::RenderPattern& render_pattern
     : Text(ui_context, render_pattern, font, settings)
     , Item(ui_context, Text::GetFrameRect())
 {
-    SetRelOrigin(settings.rect.GetUnitOrigin());
+    Item::SetRelOrigin(settings.rect.GetUnitOrigin());
+    Item::SetRect(Text::GetFrameRect());
+    Text::Connect(*this);
 }
 
 TextItem::TextItem(Context& ui_context, const Font& font, const SettingsUtf8& settings)
@@ -43,7 +45,9 @@ TextItem::TextItem(Context& ui_context, const rhi::RenderPattern& render_pattern
     : Text(ui_context, render_pattern, font, settings)
     , Item(ui_context, Text::GetFrameRect())
 {
-    SetRelOrigin(settings.rect.GetUnitOrigin());
+    Item::SetRelOrigin(settings.rect.GetUnitOrigin());
+    Item::SetRect(Text::GetFrameRect());
+    Text::Connect(*this);
 }
 
 TextItem::TextItem(Context& ui_context, const Font& font, SettingsUtf32 settings)
@@ -54,13 +58,11 @@ TextItem::TextItem(Context& ui_context, const Font& font, SettingsUtf32 settings
 bool TextItem::SetRect(const UnitRect& ui_rect)
 {
     META_FUNCTION_TASK();
-    if (!Text::SetFrameRect(ui_rect))
-        return false;
-
+    Text::SetFrameRect(ui_rect);
     return Item::SetRect(Text::GetFrameRect());
 }
 
-void TextItem::OnFrameRectUpdated(const UnitRect& frame_rect)
+void TextItem::OnTextFrameRectChanged(const UnitRect& frame_rect)
 {
     META_FUNCTION_TASK();
     Item::SetRect(frame_rect);

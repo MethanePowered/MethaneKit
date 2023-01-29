@@ -25,6 +25,7 @@ Methane text rendering primitive.
 
 #include <Methane/UserInterface/Types.hpp>
 #include <Methane/Graphics/Color.hpp>
+#include <Methane/Data/Receiver.hpp>
 #include <Methane/Data/Types.h>
 #include <Methane/Pimpl.h>
 
@@ -106,6 +107,13 @@ struct TextSettings // NOSONAR
     TextSettings& SetStateName(std::string_view new_state_name) noexcept                              { state_name = new_state_name; return *this; }
 };
 
+struct ITextCallback
+{
+    virtual void OnTextFrameRectChanged(const UnitRect& frame_rect) = 0;
+
+    virtual ~ITextCallback() = default;
+};
+
 class Context;
 class Font;
 
@@ -133,6 +141,9 @@ public:
 
     bool IsInitialized() const noexcept { return static_cast<bool>(m_impl_ptr); }
 
+    void Connect(Data::Receiver<ITextCallback>& callback) const;
+    void Disconnect(Data::Receiver<ITextCallback>& callback) const;
+
     [[nodiscard]] const UnitRect&       GetFrameRect() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] const SettingsUtf32&  GetSettings() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] const std::u32string& GetTextUtf32() const META_PIMPL_NOEXCEPT;
@@ -152,9 +163,6 @@ public:
 
     void Update(const gfx::FrameSize& frame_size) const;
     void Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr = nullptr) const;
-
-protected:
-    virtual void OnFrameRectUpdated(const UnitRect&) { /* implemented in derived class */ }
 
 private:
     class Impl;
