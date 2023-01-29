@@ -70,12 +70,12 @@ public:
     // UserInterface::App overrides
     std::string GetParametersString() override;
 
+    // Settings accessors
+    const Settings& GetSettings() const noexcept { return m_settings; }
     void SetTextLayout(const gui::Text::Layout& text_layout);
     void SetForwardTypingDirection(bool is_forward_typing_direction);
     void SetTextUpdateInterval(double text_update_interval_sec);
     void SetIncrementalTextUpdate(bool is_incremental_text_update);
-
-    const Settings& GetSettings() const noexcept { return m_settings; }
 
 private:
     // IContextCallback overrides

@@ -4,7 +4,7 @@
 |--------------------------------------------------------------------------------|---------------------------------------------------------------------------|--------------------------------------------------------------------------|------------------------------------------------------------------------|
 | ![ParallelRendering on Windows](Screenshots/ParallelRenderingWinDirectX12.jpg) | ![ParallelRendering on Linux](Screenshots/ParallelRenderingLinVulkan.jpg) | ![ParallelRendering on MacOS](Screenshots/ParallelRenderingMacMetal.jpg) | ![ParallelRendering on iOS](Screenshots/ParallelRenderingIOSMetal.jpg) | 
 
-This tutorial demonstrates multithreaded rendering with `IParallelRenderCommandList` using Methane Kit:
+This tutorial demonstrates multithreaded rendering with `Rhi::ParallelRenderCommandList` using Methane Kit:
   - [ParallelRenderingApp.h](ParallelRenderingApp.h)
   - [ParallelRenderingApp.cpp](ParallelRenderingApp.cpp)
   - [ParallelRenderingAppController.h](ParallelRenderingAppController.h)

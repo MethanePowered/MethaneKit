@@ -6,7 +6,7 @@
 
 This tutorial demonstrates animated text rendering with dynamic font atlas updates using Methane UI.
 Three colored text blocks are animated with continuous characters typing. Each text block is rendered as a single mesh
-displaying character glyphs from the font atlas texture to screen rectanglesq, which are generated on CPU 
+displaying character glyphs from the font atlas texture to screen rectangles, which are generated on CPU 
 using Freetype 2.0 library.
 
 Font atlas texture can be updated dynamically by adding new character glyphs on demand,
@@ -52,7 +52,7 @@ Application setting getters can be changed by user in runtime with keyboard shor
 
 `TypographyApp` class contains the following private members:
 - `gui::Font` objects each one for unique font, size and color;
-- `gui::Text` objects each for one text block;
+- `gui::TextItem` objects each for one text block;
 - `gui::Badge` objects for rendering font atlas textures on screen;
 - `std::vector<size_t>` displayed lengths of text in each text block incremented with animation;
 - `Timer::TimeDuration` holds duration of the last text block update to be displayed on screen.
@@ -67,12 +67,13 @@ namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 namespace gui = Methane::UserInterface;
 
 struct TypographyFrame final : gfx::AppFrame
 {
-    Ptr<gfx::IRenderCommandList> render_cmd_list_ptr;
-    Ptr<gfx::ICommandListSet>    execute_cmd_list_set_ptr;
+    rhi::RenderCommandList render_cmd_list;
+    rhi::CommandListSet    execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -87,7 +88,7 @@ class TypographyApp final
 public:
     struct Settings
     {
-        gui::Text::Layout text_layout{ gui::Text::Wrap::Word, gui::Text::HorizontalAlignment::Center, gui::Text::VerticalAlignment::Top };
+        gui::Text::Layout text_layout { gui::Text::Wrap::Word, gui::Text::HorizontalAlignment::Center, gui::Text::VerticalAlignment::Top };
         bool              is_incremental_text_update  = true;
         bool              is_forward_typing_direction = true;
         double            typing_update_interval_sec  = 0.03;
@@ -112,13 +113,14 @@ public:
 private:
     ...
 
-    Settings            m_settings;
-    Ptrs<gui::Font>     m_fonts;
-    Ptrs<gui::Text>     m_texts;
-    Ptrs<gui::Badge>    m_font_atlas_badges;
-    std::vector<size_t> m_displayed_text_lengths;
-    double              m_text_update_elapsed_sec = 0.0;
-    Timer::TimeDuration m_text_update_duration;
+    Settings               m_settings;
+    gui::FontContext       m_font_context;
+    std::vector<gui::Font> m_fonts;
+    Ptrs<gui::TextItem>    m_texts;
+    Ptrs<gui::Badge>       m_font_atlas_badges;
+    std::vector<size_t>    m_displayed_text_lengths;
+    double                 m_text_update_elapsed_sec = 0.0;
+    Timer::TimeDuration    m_text_update_duration;
 };
 
 } // namespace Methane::Tutorials
@@ -161,18 +163,20 @@ resources. Font settings include:
 - Font resolution DPI
 - Initial alphabet to be rendered and added to font atlas (it is also dynamically extended on demand)
 
+`UserInterface::FontContext` is a helper class which holds references of `FontLibrary` and `Data::IProvider`
+to facilitate font creation and queries via `FontContext::GetFont` method.
+
 ```cpp
         // Add font to library
         m_fonts.push_back(
-            gui::Font::Library::Get().AddFont(
-                Data::FontProvider::Get(),
+            m_font_context.GetFont(
                 gui::Font::Settings
                 {
                     font_settings.desc,
                     GetUIContext().GetFontResolutionDpi(),
                     gui::Font::GetAlphabetFromText(displayed_text_block)
                 }
-            ).GetPtr()
+            )
         );
 ```
 
@@ -191,7 +195,7 @@ method, font object which was created previously and text settings:
 ```cpp
         // Add text element
         m_texts.push_back(
-            std::make_shared<gui::Text>(GetUIContext(), *m_fonts.back(),
+            std::make_shared<gui::TextItem>(GetUIContext(), m_fonts.back(),
                 gui::Text::SettingsUtf32
                 {
                     font_settings.desc.name,
@@ -199,7 +203,7 @@ method, font object which was created previously and text settings:
                     gui::UnitRect
                     {
                         gui::Units::Dots,
-                        gfx::Point2I { g_margin_size_in_dots, vertical_text_pos_in_dots },
+                        gfx::Point2I   { g_margin_size_in_dots, vertical_text_pos_in_dots },
                         gfx::FrameSize { frame_width_without_margins, 0U /* calculated height */ }
                     },
                     m_settings.text_layout,
@@ -216,30 +220,25 @@ created in `TypographyTutorial::UpdateFontAtlasBadges()` method:
 ```cpp
 oid TypographyApp::UpdateFontAtlasBadges()
 {
-    const Refs<gui::Font> font_refs = gui::Font::Library::Get().GetFonts();
-    gfx::RenderContext& context = GetRenderContext();
+    const std::vector<gui::Font> fonts = m_font_context.GetFontLibrary().GetFonts();
+    const rhi::RenderContext&  context = GetRenderContext();
 
     // Remove obsolete font atlas badges
     ...
 
     // Add new font atlas badges
-    for(const Ref<gui::Font>& font_ref : font_refs)
+    for(const gui::Font& font : fonts)
     {
-        const Ptr<gfx::Texture>& font_atlas_texture_ptr = font_ref.get().GetAtlasTexturePtr(context);
-        if (!font_atlas_texture_ptr)
+        const rhi::Texture& font_atlas_texture = font.GetAtlasTexture(context);
+        if (!font_atlas_texture.IsInitialized() ||
+            std::any_of(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
+                        [&font_atlas_texture](const Ptr<gui::Badge>& font_atlas_badge_ptr)
+                        {
+                            return font_atlas_badge_ptr->GetTexture() == font_atlas_texture;
+                        }))
             continue;
 
-        const auto font_atlas_ptr_it = std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-                                                   [&font_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
-            {
-                return std::addressof(font_atlas_badge_ptr->GetTexture()) == font_atlas_texture_ptr.get();
-            }
-        );
-
-        if (font_atlas_ptr_it != m_font_atlas_badges.end())
-            continue;
-
-        m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font_ref.get(), font_atlas_texture_ptr));
+        m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, font_atlas_texture));
     }
 
     LayoutFontAtlasBadges(GetRenderContext().GetSettings().frame_size);
@@ -249,20 +248,20 @@ oid TypographyApp::UpdateFontAtlasBadges()
 Font atlas badge bound to atlas texture is created with helper method `TypographyApp::CreateFontAtlasBadge`:
 
 ```cpp
-Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const Ptr<gfx::Texture>& atlas_texture_ptr)
+Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const rhi::Texture& atlas_texture)
 {
     const auto font_color_by_name_it = g_font_color_by_name.find(font.GetSettings().description.name);
     const gui::Color3F& font_color = font_color_by_name_it != g_font_color_by_name.end()
                                    ? font_color_by_name_it->second : g_misc_font_color;
 
     return std::make_shared<gui::Badge>(
-        GetUIContext(), atlas_texture_ptr,
+        GetUIContext(), atlas_texture,
         gui::Badge::Settings
         {
             font.GetSettings().description.name + " Font Atlas",
-            gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture_ptr->GetSettings().dimensions)),
             gui::Badge::FrameCorner::BottomLeft,
-            gui::UnitPoint(gui::Units::Dots, 16U, 16U),
+            gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture.GetSettings().dimensions)),
+            gui::UnitSize(gui::Units::Dots, 16U, 16U),
             gui::Color4F(font_color, 0.5F),
             gui::Badge::TextureMode::RFloatToAlpha,
         }
@@ -292,15 +291,15 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
 {
     if (elapsed_seconds - m_text_update_elapsed_sec < m_settings.typing_update_interval_sec)
         return true;
-    
+
     m_text_update_elapsed_sec = elapsed_seconds;
-    
+
     int32_t vertical_text_pos_in_dots = g_top_text_pos_in_dots;
     for(size_t block_index = 0; block_index < g_text_blocks_count; ++block_index)
     {
         AnimateTextBlock(block_index, vertical_text_pos_in_dots);
     }
-    
+
     UpdateParametersText();
     return true;
 }
@@ -322,7 +321,7 @@ bool TypographyApp::Update()
         return false;
 
     // Update text block resources
-    for(const Ptr<gui::Text>& text_ptr : m_texts)
+    for(const Ptr<gui::TextItem>& text_ptr : m_texts)
     {
         text_ptr->Update(GetFrameSize());
     }
@@ -343,26 +342,24 @@ bool TypographyApp::Render()
     const TypographyFrame& frame = GetCurrentFrame();
 
     // Draw text blocks
-    META_DEBUG_GROUP_CREATE_VAR(s_text_debug_group, "Text Blocks Rendering");
-    for(const Ptr<gui::Text>& text_ptr : m_texts)
+    META_DEBUG_GROUP_VAR(s_text_debug_group, "Text Blocks Rendering");
+    for(const Ptr<gui::TextItem>& text_ptr : m_texts)
     {
-        text_ptr->Draw(*frame.render_cmd_list_ptr, s_text_debug_group.get());
+        text_ptr->Draw(frame.render_cmd_list, &s_text_debug_group);
     }
 
     // Draw font atlas badges
-    META_DEBUG_GROUP_CREATE_VAR(s_atlas_debug_group, "Font Atlases Rendering");
+    META_DEBUG_GROUP_VAR(s_atlas_debug_group, "Font Atlases Rendering");
     for(const Ptr<gui::Badge>& badge_atlas_ptr : m_font_atlas_badges)
     {
-        badge_atlas_ptr->Draw(*frame.render_cmd_list_ptr, s_atlas_debug_group.get());
+        badge_atlas_ptr->Draw(frame.render_cmd_list, &s_atlas_debug_group);
     }
 
-    RenderOverlay(*frame.render_cmd_list_ptr);
-
-    // Commit command list with present flag
-    frame.render_cmd_list_ptr->Commit();
+    RenderOverlay(frame.render_cmd_list);
+    frame.render_cmd_list.Commit();
 
     // Execute command list on render queue and present frame to screen
-    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(frame.execute_cmd_list_set);
     GetRenderContext().Present();
 
     return true;
