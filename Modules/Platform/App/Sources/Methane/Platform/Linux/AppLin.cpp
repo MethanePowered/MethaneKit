@@ -60,6 +60,10 @@ AppLin::AppLin(const AppBase::Settings& settings)
     xcb_screen_iterator_t screen_iter = xcb_setup_roots_iterator(setup);
     m_env.screen = screen_iter.data;
     m_env.primary_screen_rect = Linux::GetPrimaryMonitorRect(m_env.connection, m_env.screen->root);
+
+    // Check X11 event synchronization support
+    const xcb_query_extension_reply_t* reply = xcb_get_extension_data(m_env.connection, &xcb_sync_id);
+    m_is_sync_supported = reply && reply->present;
 }
 
 AppLin::~AppLin()
@@ -113,6 +117,9 @@ int AppLin::Run(const RunArgs& args)
             EndResizing();
 
         UpdateAndRenderWithErrorHandling();
+
+        if (m_sync_state == SyncState::Processed)
+            UpdateSyncCounter();
     }
 
     return 0;
@@ -229,6 +236,7 @@ Data::FrameSize AppLin::InitWindow()
     const uint32_t value_mask = XCB_CW_EVENT_MASK;
     const std::array<uint32_t, 1> values{{
         XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+        XCB_EVENT_MASK_RESIZE_REDIRECT |
         XCB_EVENT_MASK_PROPERTY_CHANGE |
         XCB_EVENT_MASK_KEY_RELEASE |
         XCB_EVENT_MASK_KEY_PRESS |
@@ -262,13 +270,29 @@ Data::FrameSize AppLin::InitWindow()
                       XCB_WINDOW_CLASS_INPUT_OUTPUT, m_env.screen->root_visual,
                       value_mask, values.data());
 
-    // Create window delete atom used to receive event when window is destroyed
+    m_protocols_atom     = Linux::GetXcbInternAtom(m_env.connection, "WM_PROTOCOLS");
     m_window_delete_atom = Linux::GetXcbInternAtom(m_env.connection, "WM_DELETE_WINDOW");
+    m_sync_request_atom  = m_is_sync_supported ? Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_SYNC_REQUEST") : static_cast<xcb_atom_t>(XCB_ATOM_NONE);
+
+    Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_env.connection, m_env.window, m_protocols_atom, XCB_ATOM_ATOM, {
+        m_window_delete_atom,
+        m_sync_request_atom
+    });
 
     if (settings.is_full_screen)
-        Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, { m_window_delete_atom, m_state_fullscreen_atom });
-    else
-        Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_env.connection, m_env.window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { m_window_delete_atom });
+    {
+        Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, { m_state_fullscreen_atom });
+    }
+
+    m_sync_value.hi = 0;
+    m_sync_value.lo = 0U;
+
+    if (m_is_sync_supported)
+    {
+        m_sync_counter = xcb_generate_id(m_env.connection);
+        xcb_sync_create_counter(m_env.connection, m_sync_counter, m_sync_value);
+        Linux::SetXcbWindowAtomProperty<xcb_sync_counter_t>(m_env.connection, m_env.window, "_NET_WM_SYNC_REQUEST_COUNTER", XCB_ATOM_CARDINAL, { m_sync_counter });
+    }
 
     // Display application name in window title, dash tooltip and application menu on GNOME and other desktop environment
     SetWindowTitle(settings.name);
@@ -392,17 +416,20 @@ void AppLin::HandleEvent(const xcb_generic_event_t& event)
     const uint8_t event_type = event.response_type & 0x7f; // NOSONAR
     switch (event_type)
     {
-    case XCB_CLIENT_MESSAGE:
-        if (m_window_delete_atom && reinterpret_cast<const xcb_client_message_event_t&>(event).data.data32[0] == m_window_delete_atom) // NOSONAR
-            m_is_event_processing = false;
-        break;
-
     case XCB_DESTROY_NOTIFY:
         m_is_event_processing = false;
         break;
 
+    case XCB_CLIENT_MESSAGE:
+        OnClientEvent(reinterpret_cast<const xcb_client_message_event_t&>(event)); // NOSONAR
+        break;
+
+    case XCB_RESIZE_REQUEST:
+        OnWindowResizeRequested(reinterpret_cast<const xcb_resize_request_event_t&>(event)); // NOSONAR
+        break;
+
     case XCB_CONFIGURE_NOTIFY:
-        OnWindowResized(reinterpret_cast<const xcb_configure_notify_event_t&>(event)); // NOSONAR
+        OnWindowConfigured(reinterpret_cast<const xcb_configure_notify_event_t&>(event)); // NOSONAR
         break;
 
     case XCB_PROPERTY_NOTIFY:
@@ -446,23 +473,71 @@ void AppLin::HandleEvent(const xcb_generic_event_t& event)
     }
 }
 
-void AppLin::OnWindowResized(const xcb_configure_notify_event_t& cfg_event)
+void AppLin::OnClientEvent(const xcb_client_message_event_t& event)
 {
     META_FUNCTION_TASK();
-    if (cfg_event.window != m_env.window)
+    if (event.format != 32 || event.type != m_protocols_atom)
+        return;
+
+    const xcb_atom_t protocol_atom = event.data.data32[0];
+
+    if (m_window_delete_atom && protocol_atom == m_window_delete_atom)
+    {
+        m_is_event_processing = false;
+    }
+    else if (m_sync_request_atom && protocol_atom == m_sync_request_atom)
+    {
+        //setTime(event->data.data32[1]);
+        m_sync_value.lo = event.data.data32[2];
+        m_sync_value.hi = event.data.data32[3];
+        if (m_is_sync_supported)
+            m_sync_state = SyncState::Received;
+    }
+}
+
+void AppLin::UpdateSyncCounter()
+{
+    META_FUNCTION_TASK();
+    if (!m_is_sync_supported || (m_sync_value.lo == 0 && m_sync_value.hi == 0U))
+        return;
+
+    META_CHECK_ARG_EQUAL(m_sync_state, SyncState::Processed);
+    xcb_sync_set_counter(m_env.connection, m_sync_counter, m_sync_value);
+    xcb_flush(m_env.connection);
+
+    m_sync_value.lo = 0;
+    m_sync_value.hi = 0U;
+    m_sync_state    = SyncState::NotNeeded;
+}
+
+void AppLin::OnWindowResize(xcb_window_t xcb_window, uint16_t width, uint16_t height)
+{
+    META_FUNCTION_TASK();
+    if (xcb_window != m_env.window)
+        return;
+
+    if (m_is_sync_supported && m_sync_state == SyncState::Received)
+        m_sync_state = SyncState::Processed;
+
+    if (width == 0 || height == 0)
         return;
 
     if (!IsResizing())
         StartResizing();
 
-    if (cfg_event.width == 0 || cfg_event.height == 0 ||
-        !Resize(Data::FrameSize(cfg_event.width, cfg_event.height), false))
-        return;
+    Resize(Data::FrameSize(width, height), false);
+}
 
-    if (IsResizing())
-    {
-        UpdateAndRenderWithErrorHandling();
-    }
+void AppLin::OnWindowResizeRequested(const xcb_resize_request_event_t& resize_event)
+{
+    META_FUNCTION_TASK();
+    OnWindowResize(resize_event.window, resize_event.width, resize_event.height);
+}
+
+void AppLin::OnWindowConfigured(const xcb_configure_notify_event_t& conf_event)
+{
+    META_FUNCTION_TASK();
+    OnWindowResize(conf_event.window, conf_event.width, conf_event.height);
 }
 
 void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& prop_event)

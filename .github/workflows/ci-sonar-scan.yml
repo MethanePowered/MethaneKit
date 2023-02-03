@@ -95,7 +95,7 @@ jobs:
 
       - name: Install Linux prerequisites
         if: ${{ matrix.os_name == 'linux' }}
-        run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev lcov
+        run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev lcov
 
       - name: Install Testspace
         uses: testspace-com/setup-testspace@v1

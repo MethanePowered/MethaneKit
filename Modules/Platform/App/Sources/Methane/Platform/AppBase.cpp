@@ -210,6 +210,8 @@ void AppBase::StartResizing()
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE(m_is_resizing);
     m_is_resizing = true;
+
+    META_LOG("\n========================== START RESIZING ==========================");
 }
 
 void AppBase::EndResizing()
@@ -217,6 +219,8 @@ void AppBase::EndResizing()
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE(m_is_resizing);
     m_is_resizing = false;
+
+    META_LOG("\n========================== END RESIZING ==========================");
 }
 
 bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)

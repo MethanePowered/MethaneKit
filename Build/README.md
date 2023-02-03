@@ -27,7 +27,7 @@
   - GCC 9 or later
   - X11, XCB, LCov (optional for code coverage) libraries
   ```console
-  sudo apt-get update && sudo apt-get install build-essential git cmake lcov xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
+  sudo apt-get update && sudo apt-get install build-essential git cmake lcov xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev
   ```
 - **MacOS**
   - MacOS 10.15 "Catalina" or later

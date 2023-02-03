@@ -177,7 +177,7 @@ jobs:
 
     - name: Install Linux prerequisites
       if: ${{ matrix.os_name == 'Ubuntu' }}
-      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev p7zip
+      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev p7zip
 
     - name: Checkout repository
       uses: actions/checkout@v3
