@@ -41,7 +41,7 @@ TextItem::TextItem(Context& ui_context, const Font& font, const SettingsUtf8& se
 {
 }
 
-TextItem::TextItem(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, SettingsUtf32 settings)
+TextItem::TextItem(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf32& settings)
     : Text(ui_context, render_pattern, font, settings)
     , Item(ui_context, Text::GetFrameRect())
 {
@@ -50,7 +50,7 @@ TextItem::TextItem(Context& ui_context, const rhi::RenderPattern& render_pattern
     Text::Connect(*this);
 }
 
-TextItem::TextItem(Context& ui_context, const Font& font, SettingsUtf32 settings)
+TextItem::TextItem(Context& ui_context, const Font& font, const SettingsUtf32& settings)
     : TextItem(ui_context, ui_context.GetRenderPattern(), font, settings)
 {
 }

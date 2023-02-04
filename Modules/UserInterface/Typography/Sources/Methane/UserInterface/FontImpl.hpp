@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/UserInterface/FontLibrary.h
-Fonts library to manage created font instances.
+FILE: Methane/UserInterface/FontImpl.hpp
+Font implementation.
 
 ******************************************************************************/
 
@@ -213,7 +213,7 @@ public:
         AddChars(m_settings.characters);
     }
 
-    ~Impl()
+    ~Impl() override
     {
         META_FUNCTION_TASK();
         try
@@ -228,7 +228,7 @@ public:
         }
     }
 
-    const Library& GetLibrary()
+    const Library& GetLibrary() const
     {
         return m_font_lib;
     }

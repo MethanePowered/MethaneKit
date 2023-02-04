@@ -302,7 +302,7 @@ private:
 public:
     Impl(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf32& settings)
         : m_ui_context(ui_context)
-        , m_settings(std::move(settings))
+        , m_settings(settings)
         , m_font(font)
     {
         META_FUNCTION_TASK();
@@ -392,7 +392,7 @@ public:
     }
 
     Impl(Context& ui_context, const Font& font, const SettingsUtf32& settings)
-        : Impl(ui_context, ui_context.GetRenderPattern(), font, std::move(settings))
+        : Impl(ui_context, ui_context.GetRenderPattern(), font, settings)
     { }
 
     Impl(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf8& settings)
@@ -413,7 +413,7 @@ public:
     { }
 
     Impl(Context& ui_context, const Font& font, const SettingsUtf8& settings)
-        : Impl(ui_context, ui_context.GetRenderPattern(), font, std::move(settings))
+        : Impl(ui_context, ui_context.GetRenderPattern(), font, settings)
     { }
 
     ~Impl() override

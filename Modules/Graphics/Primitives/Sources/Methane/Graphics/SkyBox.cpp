@@ -209,7 +209,7 @@ Rhi::ProgramBindings SkyBox::CreateProgramBindings(const Rhi::Buffer& uniforms_b
     return GetImpl(m_impl_ptr).CreateProgramBindings(uniforms_buffer, frame_index);
 }
 
-void SkyBox::Update()
+void SkyBox::Update() const
 {
     GetImpl(m_impl_ptr).Update();
 }

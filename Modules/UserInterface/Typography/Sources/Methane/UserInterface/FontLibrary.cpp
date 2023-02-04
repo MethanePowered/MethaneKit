@@ -41,14 +41,14 @@ class FontLibrary::Impl // NOSONAR - custom destructor is required
     : public Data::Emitter<IFontLibraryCallback>
 {
 public:
-    Impl(FontLibrary& font_lib)
+    explicit Impl(FontLibrary& font_lib)
         : m_font_lib(font_lib)
     {
         META_FUNCTION_TASK();
         ThrowFreeTypeError(FT_Init_FreeType(&m_ft_library));
     }
 
-    ~Impl()
+    ~Impl() override
     {
         META_FUNCTION_TASK();
         FT_Done_FreeType(m_ft_library);
@@ -129,7 +129,7 @@ public:
     }
 
 private:
-    using FontByName = std::map<std::string, Font>;
+    using FontByName = std::map<std::string, Font, std::less<std::string_view>>;
 
     FontLibrary& m_font_lib;
     FT_Library   m_ft_library;

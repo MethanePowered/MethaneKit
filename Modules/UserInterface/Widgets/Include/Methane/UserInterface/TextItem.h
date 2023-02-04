@@ -33,18 +33,18 @@ namespace Methane::UserInterface
 class TextItem final
     : public Text
     , public Item
-    , protected Data::Receiver<ITextCallback>
+    , private Data::Receiver<ITextCallback>
 {
 public:
     TextItem(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf8& settings);
     TextItem(Context& ui_context, const Font& font, const SettingsUtf8& settings);
-    TextItem(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, SettingsUtf32 settings);
-    TextItem(Context& ui_context, const Font& font, SettingsUtf32 settings);
+    TextItem(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf32& settings);
+    TextItem(Context& ui_context, const Font& font, const SettingsUtf32& settings);
 
     // Item overrides
     bool SetRect(const UnitRect& ui_rect) override;
 
-protected:
+private:
     // ITextCallback overrides
     void OnTextFrameRectChanged(const UnitRect& frame_rect) override;
 };

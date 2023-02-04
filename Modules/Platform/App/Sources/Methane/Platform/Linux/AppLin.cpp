@@ -486,7 +486,6 @@ void AppLin::OnClientEvent(const xcb_client_message_event_t& event)
     }
     else if (m_sync_request_atom && protocol_atom == m_sync_request_atom)
     {
-        //setTime(event->data.data32[1]);
         m_sync_value.lo = event.data.data32[2];
         m_sync_value.hi = event.data.data32[3];
         if (m_is_sync_supported)

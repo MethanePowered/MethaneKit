@@ -119,7 +119,7 @@ class Font;
 
 namespace rhi = Methane::Graphics::Rhi;
 
-class Text
+class Text // NOSONAR - manual copy, move constructors and assignment operators
 {
 public:
     using Wrap                = TextWrap;

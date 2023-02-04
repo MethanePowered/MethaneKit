@@ -119,7 +119,7 @@ inline Timer::TimeDuration UpdateTextRect(gui::TextItem& text, const gui::UnitRe
     return scope_timer.GetElapsedDuration();
 }
 
-inline Timer::TimeDuration UpdateText(gui::Text& text, const std::u32string& displayed_text, const gui::UnitRect& text_block_rect)
+inline Timer::TimeDuration UpdateText(const gui::Text& text, const std::u32string& displayed_text, const gui::UnitRect& text_block_rect)
 {
     Methane::ScopeTimer scope_timer("Text update");
     text.SetTextInScreenRect(displayed_text, text_block_rect);

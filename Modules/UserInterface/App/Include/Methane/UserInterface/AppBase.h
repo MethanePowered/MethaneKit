@@ -71,7 +71,7 @@ protected:
     bool SetParametersText(std::string_view parameters_str);
 
     [[nodiscard]] const Data::IProvider& GetFontProvider() const noexcept;
-    [[nodiscard]] const FontContext& GetFontContext()                          { return m_font_context; }
+    [[nodiscard]] const FontContext& GetFontContext() const noexcept           { return m_font_context; }
     [[nodiscard]] bool IsHelpTextDisplayed() const noexcept                    { return !m_help_columns.first.text_str.empty(); }
     [[nodiscard]] bool IsParametersTextDisplayed() const noexcept              { return !m_parameters.text_str.empty(); }
     [[nodiscard]] Font& GetMainFont();

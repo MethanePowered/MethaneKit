@@ -66,7 +66,7 @@ static void SplitTextToColumns(std::string_view text_str, std::string& left_colu
 
 AppBase::AppBase(const IApp::Settings& ui_app_settings)
     : m_app_settings(ui_app_settings)
-    , m_font_context(Data::FontProvider::Get())
+    , m_font_context(Data::FontProvider::Get()) // NOSONAR
 {
     META_FUNCTION_TASK();
     m_help_columns.first.text_name  = "Help Left";

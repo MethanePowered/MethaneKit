@@ -46,7 +46,7 @@ namespace Methane::Graphics
 class Camera;
 struct MeshBufferBindings;
 
-class SkyBox
+class SkyBox // NOSONAR - manual copy, move constructors and assignment operators
 {
 public:
     enum class Option : uint32_t
@@ -74,7 +74,7 @@ public:
     SkyBox(const Rhi::CommandQueue& render_cmd_queue, const Rhi::RenderPattern& render_pattern, const Rhi::Texture& cube_map_texture, const Settings& settings);
 
     Rhi::ProgramBindings CreateProgramBindings(const Rhi::Buffer& uniforms_buffer, Data::Index frame_index) const;
-    void Update();
+    void Update() const;
     void Draw(const Rhi::RenderCommandList& render_cmd_list, const MeshBufferBindings& buffer_bindings, const Rhi::ViewState& view_state) const;
 
     bool IsInitialized() const noexcept { return static_cast<bool>(m_impl_ptr); }

@@ -30,7 +30,7 @@ Font char internal implementation.
 #include <Methane/Memory.hpp>
 
 #ifndef FT_Glyph
-typedef struct FT_GlyphRec_*  FT_Glyph;
+typedef struct FT_GlyphRec_*  FT_Glyph; // NOSONAR - typedef instead of using
 #endif
 
 namespace Methane::UserInterface

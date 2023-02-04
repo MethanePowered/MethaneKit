@@ -84,7 +84,7 @@ struct IFontCallback
 
 class FontLibrary;
 
-class Font
+class Font // NOSONAR - manual copy, move constructors and assignment operators
 {
 public:
     class Impl;
