@@ -50,7 +50,7 @@ constexpr float    g_model_scale = 6.F;
 CubeMapArrayApp::CubeMapArrayApp()
     : UserInterfaceApp(
         []() {
-            Graphics::CombinedAppSettings settings = GetGraphicsTutorialAppSettings("Methane ForCubeImage Map Array", AppOptions::GetDefaultWithColorDepthAndAnim());
+            Graphics::CombinedAppSettings settings = GetGraphicsTutorialAppSettings("Methane Cube Map Array", AppOptions::GetDefaultWithColorDepthAndAnim());
             settings.graphics_app.device_capabilities.features.SetBitOn(rhi::DeviceFeature::ImageCubeArray);
             settings.render_context.clear_depth_stencil = gfx::DepthStencilValues(0.F, {}); // Clear depth with 0.F to support reversed depth rendering
             settings.render_context.clear_color = {}; // Disable color clearing, use sky-box instead
@@ -121,7 +121,7 @@ void CubeMapArrayApp::Init()
     m_render_state = GetRenderContext().CreateRenderState( render_state_settings);
 
     // Create cube mesh buffer resources
-    m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, std::move(cube_mesh), "ForCubeImage");
+    m_cube_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube");
 
     // Create cube-map render target texture
     m_cube_buffers_ptr->SetTexture(
@@ -179,7 +179,7 @@ void CubeMapArrayApp::Init()
             { { rhi::ShaderType::Pixel, "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture().GetInterface() } } },
             { { rhi::ShaderType::Pixel, "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
         }, frame.index);
-        frame.cube.program_bindings.SetName(IndexedName("ForCubeImage Bindings", frame.index));
+        frame.cube.program_bindings.SetName(IndexedName("Cube Bindings", frame.index));
 
         // Create uniforms buffer for Sky-Box rendering
         frame.sky_box.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(gfx::SkyBox::GetUniformsSize(), false, true));
@@ -191,7 +191,7 @@ void CubeMapArrayApp::Init()
         
         // Create command list for rendering
         frame.render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
-        frame.render_cmd_list.SetName(IndexedName("ForCubeImage Rendering", frame.index));
+        frame.render_cmd_list.SetName(IndexedName("Cube Rendering", frame.index));
         frame.execute_cmd_list_set = rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
     }
     

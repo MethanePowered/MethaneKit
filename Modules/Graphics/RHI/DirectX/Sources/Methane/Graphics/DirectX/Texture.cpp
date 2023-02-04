@@ -125,11 +125,11 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
         break;
 
     case Rhi::TextureDimensionType::Cube:
-        META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single ForCubeImage texture must have array length equal to 1");
+        META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single Cube texture must have array length equal to 1");
         [[fallthrough]];
 
     case Rhi::TextureDimensionType::CubeArray:
-        META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 6, "ForCubeImage textures depth dimension must be equal to 6");
+        META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 6, "Cube textures depth dimension must be equal to 6");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
             TypeConverter::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.GetWidth(),

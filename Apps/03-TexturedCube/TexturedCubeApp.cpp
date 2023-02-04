@@ -46,7 +46,7 @@ struct CubeVertex
 
 TexturedCubeApp::TexturedCubeApp()
     : UserInterfaceApp(
-        GetGraphicsTutorialAppSettings("Methane Textured ForCubeImage", AppOptions::GetDefaultWithColorOnlyAndAnim()),
+        GetGraphicsTutorialAppSettings("Methane Textured Cube", AppOptions::GetDefaultWithColorOnlyAndAnim()),
         GetUserInterfaceTutorialAppSettings(AppOptions::GetDefaultWithColorOnlyAndAnim()),
         "Methane tutorial of textured cube rendering")
 {
@@ -77,7 +77,7 @@ void TexturedCubeApp::Init()
     const Data::Size vertex_data_size   = cube_mesh.GetVertexDataSize();
     const Data::Size  vertex_size       = cube_mesh.GetVertexSize();
     rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForVertexBuffer(vertex_data_size, vertex_size));
-    vertex_buffer.SetName("ForCubeImage Vertex Buffer");
+    vertex_buffer.SetName("Cube Vertex Buffer");
     vertex_buffer.SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } }, // NOSONAR
         render_cmd_queue
@@ -88,7 +88,7 @@ void TexturedCubeApp::Init()
     const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
     const gfx::PixelFormat index_format = gfx::GetIndexFormat(cube_mesh.GetIndex(0));
     m_index_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForIndexBuffer(index_data_size, index_format));
-    m_index_buffer.SetName("ForCubeImage Index Buffer");
+    m_index_buffer.SetName("Cube Index Buffer");
     m_index_buffer.SetData(
         { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } }, // NOSONAR
         render_cmd_queue
@@ -140,7 +140,7 @@ void TexturedCubeApp::Init()
 
     // Load texture image from file
     constexpr gfx::ImageOptionMask image_options({ gfx::ImageOption::Mipmapped, gfx::ImageOption::SrgbColorSpace });
-    m_cube_texture = GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MethaneBubbles.jpg", image_options, "ForCubeImage Face Texture");
+    m_cube_texture = GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MethaneBubbles.jpg", image_options, "Cube Face Texture");
 
     // Create sampler for image texture
     m_texture_sampler = GetRenderContext().CreateSampler(
@@ -166,11 +166,11 @@ void TexturedCubeApp::Init()
             { { rhi::ShaderType::Pixel, "g_texture"   }, { { m_cube_texture.GetInterface()        } } },
             { { rhi::ShaderType::Pixel, "g_sampler"   }, { { m_texture_sampler.GetInterface()     } } },
         }, frame.index);
-        frame.program_bindings.SetName(IndexedName("ForCubeImage Bindings", frame.index));
+        frame.program_bindings.SetName(IndexedName("Cube Bindings", frame.index));
 
         // Create command list for rendering
         frame.render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
-        frame.render_cmd_list.SetName(IndexedName("ForCubeImage Rendering", frame.index));
+        frame.render_cmd_list.SetName(IndexedName("Cube Rendering", frame.index));
         frame.execute_cmd_list_set = rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
     }
 

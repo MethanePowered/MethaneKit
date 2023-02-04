@@ -38,7 +38,7 @@ namespace hlslpp // NOSONAR
 
 static const std::string g_app_name = "Methane Hello Cube Uniforms";
 #else
-static const std::string g_app_name = "Methane Hello ForCubeImage Simple";
+static const std::string g_app_name = "Methane Hello Cube Simple";
 #endif
 
 using namespace Methane;
@@ -171,14 +171,14 @@ public:
                 GetScreenRenderPattern()
             }
         );
-        m_render_state.GetSettings().program_ptr->SetName("Colored ForCubeImage Shading");
-        m_render_state.SetName("Colored ForCubeImage Pipeline State");
+        m_render_state.GetSettings().program_ptr->SetName("Colored Cube Shading");
+        m_render_state.SetName("Colored Cube Pipeline State");
 
         m_render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
 
         // Create index buffer for cube mesh
         m_index_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForIndexBuffer(m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0))));
-        m_index_buffer.SetName("ForCubeImage Index Buffer");
+        m_index_buffer.SetName("Cube Index Buffer");
         m_index_buffer.SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }, // NOSONAR
             m_render_cmd_queue
@@ -213,13 +213,13 @@ public:
 #else
             // Create vertex buffers for each frame
             Rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true));
-            vertex_buffer.SetName(IndexedName("ForCubeImage Vertex Buffer", frame.index));
+            vertex_buffer.SetName(IndexedName("Cube Vertex Buffer", frame.index));
             frame.vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
 #endif
 
             // Create command list for rendering
             frame.render_cmd_list = m_render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
-            frame.render_cmd_list.SetName(IndexedName("ForCubeImage Rendering", frame.index));
+            frame.render_cmd_list.SetName(IndexedName("Cube Rendering", frame.index));
             frame.execute_cmd_list_set = Rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
         }
 
