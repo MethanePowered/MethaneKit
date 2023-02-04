@@ -113,6 +113,10 @@ int AppLin::Run(const RunArgs& args)
         if (!init_success || !m_is_event_processing)
             break;
 
+        // Wait for the next resize/configure event to update swapchain and continue rendering
+        if (IsResizeRequiredToRender())
+            continue;
+
         if (IsResizing())
             EndResizing();
 
@@ -236,7 +240,6 @@ Data::FrameSize AppLin::InitWindow()
     const uint32_t value_mask = XCB_CW_EVENT_MASK;
     const std::array<uint32_t, 1> values{{
         XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-        XCB_EVENT_MASK_RESIZE_REDIRECT |
         XCB_EVENT_MASK_PROPERTY_CHANGE |
         XCB_EVENT_MASK_KEY_RELEASE |
         XCB_EVENT_MASK_KEY_PRESS |
@@ -424,10 +427,6 @@ void AppLin::HandleEvent(const xcb_generic_event_t& event)
         OnClientEvent(reinterpret_cast<const xcb_client_message_event_t&>(event)); // NOSONAR
         break;
 
-    case XCB_RESIZE_REQUEST:
-        OnWindowResizeRequested(reinterpret_cast<const xcb_resize_request_event_t&>(event)); // NOSONAR
-        break;
-
     case XCB_CONFIGURE_NOTIFY:
         OnWindowConfigured(reinterpret_cast<const xcb_configure_notify_event_t&>(event)); // NOSONAR
         break;
@@ -510,34 +509,20 @@ void AppLin::UpdateSyncCounter()
     m_sync_state    = SyncState::NotNeeded;
 }
 
-void AppLin::OnWindowResize(xcb_window_t xcb_window, uint16_t width, uint16_t height)
+void AppLin::OnWindowConfigured(const xcb_configure_notify_event_t& conf_event)
 {
     META_FUNCTION_TASK();
-    if (xcb_window != m_env.window)
+    if (conf_event.window != m_env.window ||
+        conf_event.width == 0 || conf_event.height == 0)
         return;
 
     if (m_is_sync_supported && m_sync_state == SyncState::Received)
         m_sync_state = SyncState::Processed;
 
-    if (width == 0 || height == 0)
-        return;
-
     if (!IsResizing())
         StartResizing();
 
-    Resize(Data::FrameSize(width, height), false);
-}
-
-void AppLin::OnWindowResizeRequested(const xcb_resize_request_event_t& resize_event)
-{
-    META_FUNCTION_TASK();
-    OnWindowResize(resize_event.window, resize_event.width, resize_event.height);
-}
-
-void AppLin::OnWindowConfigured(const xcb_configure_notify_event_t& conf_event)
-{
-    META_FUNCTION_TASK();
-    OnWindowResize(conf_event.window, conf_event.width, conf_event.height);
+    Resize(Data::FrameSize(conf_event.width, conf_event.height), false);
 }
 
 void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& prop_event)

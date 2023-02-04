@@ -228,6 +228,7 @@ bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
     META_FUNCTION_TASK();
     const bool is_resizing = !is_minimized && m_frame_size != frame_size;
 
+    m_is_resize_required_to_render = false;
     m_is_minimized = is_minimized;
     if (!m_is_minimized)
     {
@@ -362,11 +363,22 @@ const AppBase::Message& AppBase::GetDeferredMessage() const
 bool AppBase::UpdateAndRender()
 {
     META_FUNCTION_TASK();
-    if (HasError())
+    if (HasError() || m_is_resize_required_to_render)
         return false;
 
     Update();
-    Render();
+
+    try
+    {
+        Render();
+    }
+    catch(const AppViewResizeRequiredError&)
+    {
+        // Prevent further rendering until next Resize event.
+        // This is a fix for dirty X11/NVidia Vulkan error vk::OutOfDateKHRError:
+        // see https://github.com/MethanePowered/MethaneKit/issues/105
+        m_is_resize_required_to_render = true;
+    }
     return true;
 }
 

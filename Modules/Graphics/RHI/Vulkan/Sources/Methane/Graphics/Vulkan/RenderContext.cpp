@@ -205,9 +205,18 @@ void RenderContext::Present()
         render_command_queue.GetWaitForFrameExecutionCompleted(image_index).semaphores,
         GetNativeSwapchain(), image_index
     );
-    if (const vk::Result present_result = render_command_queue.GetNativeQueue().presentKHR(present_info);
-        present_result != vk::Result::eSuccess &&
-        present_result != vk::Result::eSuboptimalKHR)
+
+    vk::Result present_result = vk::Result::eSuccess;
+    try
+    {
+        present_result = render_command_queue.GetNativeQueue().presentKHR(present_info);
+    }
+    catch(const vk::OutOfDateKHRError&)
+    {
+        throw Methane::Platform::AppViewResizeRequiredError();
+    }
+
+    if (present_result != vk::Result::eSuccess && present_result != vk::Result::eSuboptimalKHR)
         throw InvalidArgumentException<vk::Result>("RenderContext::Present", "present_result", present_result, "failed to present frame image on screen");
 
     render_command_queue.ResetWaitForFrameExecution(image_index);

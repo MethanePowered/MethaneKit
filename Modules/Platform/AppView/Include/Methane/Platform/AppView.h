@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2023 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ and by Methane App implementations.
 
 #endif // __OBJC__
 
+#include <stdexcept>
+
 namespace Methane::Platform
 {
 
@@ -52,6 +54,13 @@ using NativeAppViewPtr = NativeAppView*;
 struct AppView
 {
     NativeAppViewPtr p_native_view;
+};
+
+class AppViewResizeRequiredError
+    : public std::runtime_error
+{
+public:
+    AppViewResizeRequiredError();
 };
 
 } // namespace Methane::Platform

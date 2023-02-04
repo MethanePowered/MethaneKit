@@ -65,8 +65,6 @@ private:
     void HandleEvent(const xcb_generic_event_t& event);
     void OnClientEvent(const xcb_client_message_event_t& event);
     void UpdateSyncCounter();
-    void OnWindowResize(xcb_window_t xcb_window, uint16_t width, uint16_t height);
-    void OnWindowResizeRequested(const xcb_resize_request_event_t& resize_event);
     void OnWindowConfigured(const xcb_configure_notify_event_t& conf_event);
     void OnPropertyChanged(const xcb_property_notify_event_t& prop_event);
     void OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Input::Keyboard::KeyState key_state);
@@ -93,7 +91,6 @@ private:
     xcb_atom_t            m_state_fullscreen_atom = XCB_ATOM_NONE;
     bool                  m_is_event_processing   = false;
     bool                  m_is_sync_supported     = false;
-    bool                  m_is_resize_handled     = false;
     SyncState             m_sync_state            = SyncState::NotNeeded;
     xcb_sync_int64_t      m_sync_value            { 0, 0U };
     xcb_sync_counter_t    m_sync_counter          = 0U;
