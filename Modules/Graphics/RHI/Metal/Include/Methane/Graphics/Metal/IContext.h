@@ -39,7 +39,7 @@ struct IContext
 {
     virtual const Device& GetMetalDevice() const noexcept = 0;
     virtual CommandQueue& GetMetalDefaultCommandQueue(Rhi::CommandListType type) = 0;
-    virtual const Ptr<ProgramLibrary>& GetMetalLibrary(const std::string& library_name = "") const = 0;
+    virtual const Ptr<ProgramLibrary>& GetMetalLibrary(std::string_view library_name = "") const = 0;
 
     virtual ~IContext() = default;
 };

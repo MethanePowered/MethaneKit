@@ -71,13 +71,13 @@ public:
         return fonts;
     }
 
-    [[nodiscard]] bool HasFont(const std::string& font_name) const
+    [[nodiscard]] bool HasFont(std::string_view font_name) const
     {
         META_FUNCTION_TASK();
         return m_font_by_name.count(font_name);
     }
 
-    [[nodiscard]] Font& GetFont(const std::string& font_name)
+    [[nodiscard]] Font& GetFont(std::string_view font_name)
     {
         META_FUNCTION_TASK();
         const auto font_by_name_it = m_font_by_name.find(font_name);
@@ -106,7 +106,7 @@ public:
         return name_and_font_it->second;
     }
 
-    void RemoveFont(const std::string& font_name)
+    void RemoveFont(std::string_view font_name)
     {
         META_FUNCTION_TASK();
         const auto font_by_name_it = m_font_by_name.find(font_name);
@@ -129,7 +129,7 @@ public:
     }
 
 private:
-    using FontByName = std::map<std::string, Font, std::less<std::string_view>>;
+    using FontByName = std::map<std::string, Font, std::less<>>;
 
     FontLibrary& m_font_lib;
     FT_Library   m_ft_library;
@@ -162,12 +162,12 @@ std::vector<Font> FontLibrary::GetFonts() const
     return GetImpl(m_impl_ptr).GetFonts();
 }
 
-bool FontLibrary::HasFont(const std::string& font_name) const
+bool FontLibrary::HasFont(std::string_view font_name) const
 {
     return GetImpl(m_impl_ptr).HasFont(font_name);
 }
 
-Font& FontLibrary::GetFont(const std::string& font_name) const
+Font& FontLibrary::GetFont(std::string_view font_name) const
 {
     return GetImpl(m_impl_ptr).GetFont(font_name);
 }
@@ -182,7 +182,7 @@ Font& FontLibrary::AddFont(const Data::IProvider& data_provider, const FontSetti
     return GetImpl(m_impl_ptr).AddFont(data_provider, font_settings);
 }
 
-void FontLibrary::RemoveFont(const std::string& font_name) const
+void FontLibrary::RemoveFont(std::string_view font_name) const
 {
     GetImpl(m_impl_ptr).RemoveFont(font_name);
 }

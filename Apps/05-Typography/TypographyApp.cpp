@@ -345,7 +345,7 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
 
 void TypographyApp::AnimateTextBlock(size_t block_index, int32_t& vertical_text_pos_in_dots)
 {
-    gui::TextItem& text             = *m_texts[block_index];
+    const gui::TextItem& text       = *m_texts[block_index];
     const std::u32string& full_text = g_text_blocks[block_index];
     const size_t text_block_length  = full_text.length();
     size_t& displayed_text_length   = m_displayed_text_lengths[block_index];

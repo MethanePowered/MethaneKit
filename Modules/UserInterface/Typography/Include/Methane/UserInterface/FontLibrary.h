@@ -54,11 +54,11 @@ public:
 
     [[nodiscard]] FT_Library GetFreeTypeLibrary() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] std::vector<Font> GetFonts() const;
-    [[nodiscard]] bool HasFont(const std::string& font_name) const;
-    [[nodiscard]] Font& GetFont(const std::string& font_name) const;
+    [[nodiscard]] bool HasFont(std::string_view font_name) const;
+    [[nodiscard]] Font& GetFont(std::string_view font_name) const;
     [[nodiscard]] Font& GetFont(const Data::IProvider& data_provider, const FontSettings& font_settings) const;
     Font& AddFont(const Data::IProvider& data_provider, const FontSettings& font_settings) const;
-    void RemoveFont(const std::string& font_name) const;
+    void RemoveFont(std::string_view font_name) const;
     void Clear() const;
 
 private:

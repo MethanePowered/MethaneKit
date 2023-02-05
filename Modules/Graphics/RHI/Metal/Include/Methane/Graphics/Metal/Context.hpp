@@ -66,14 +66,14 @@ public:
         return static_cast<CommandQueue&>(Base::Context::GetDefaultCommandKit(type).GetQueue());
     }
 
-    const Ptr<ProgramLibrary>& GetMetalLibrary(const std::string& library_name) const override
+    const Ptr<ProgramLibrary>& GetMetalLibrary(std::string_view library_name) const override
     {
         META_FUNCTION_TASK();
         const auto library_by_name_it = m_library_by_name.find(library_name);
         if (library_by_name_it != m_library_by_name.end())
             return library_by_name_it->second;
 
-        return m_library_by_name.try_emplace(library_name, std::make_shared<ProgramLibrary>(GetMetalDevice(), library_name)).first->second;
+        return m_library_by_name.try_emplace(std::string(library_name), std::make_shared<ProgramLibrary>(GetMetalDevice(), library_name)).first->second;
     }
 
     // IObject overrides
@@ -92,7 +92,7 @@ protected:
     NSString* GetNsName() noexcept { return m_ns_name; }
 
 private:
-    using LibraryByName = std::map<std::string, Ptr<ProgramLibrary>>;
+    using LibraryByName = std::map<std::string, Ptr<ProgramLibrary>, std::less<>>;
 
     mutable LibraryByName m_library_by_name;
     NSString* m_ns_name;
