@@ -295,7 +295,9 @@ System::~System()
 }
 
 void System::CheckForChanges()
-{ }
+{
+    // TODO: add check of GPU devices configuration change
+}
 
 const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Methane::Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps)
 {

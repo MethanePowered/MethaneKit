@@ -64,10 +64,6 @@ RenderContext::RenderContext(const Platform::AppEnvironment& env, Base::Device& 
     , m_platform_env(env)
 { }
 
-RenderContext::~RenderContext()
-{ }
-
-
 Ptr<Rhi::ICommandQueue> RenderContext::CreateCommandQueue(Rhi::CommandListType type) const
 {
     META_FUNCTION_TASK();

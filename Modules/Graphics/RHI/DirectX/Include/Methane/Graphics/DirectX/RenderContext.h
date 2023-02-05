@@ -39,7 +39,6 @@ class RenderContext final // NOSONAR - manual destructor is required, inheritanc
 public:
     RenderContext(const Platform::AppEnvironment& env, Base::Device& device, tf::Executor& parallel_executor,
                   const Rhi::RenderContextSettings& settings);
-    ~RenderContext() override;
 
     // IContext interface
     [[nodiscard]] Ptr<Rhi::ICommandQueue> CreateCommandQueue(Rhi::CommandListType type) const override;
