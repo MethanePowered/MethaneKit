@@ -576,7 +576,7 @@
             "name": "VS2022-Win64-DX-Scan",
             "displayName": "Scan - VS2022 - Windows x64 (DirectX)",
             "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
-            "generator": "Visual Studio 16 2019",
+            "generator": "Visual Studio 17 2022",
             "inherits": [
                 "Ninja-Scan",
                 "VS2022-Win64-DX-Default"
