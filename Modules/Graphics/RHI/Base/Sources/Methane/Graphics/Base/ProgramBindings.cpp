@@ -31,7 +31,6 @@ Base implementation of the program bindings interface.
 #include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
-#include <Methane/Platform/Utils.h>
 
 #include <magic_enum.hpp>
 #include <fmt/format.h>

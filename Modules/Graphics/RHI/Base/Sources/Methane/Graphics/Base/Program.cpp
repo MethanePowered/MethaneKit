@@ -25,7 +25,6 @@ Base implementation of the program interface.
 #include <Methane/Graphics/Base/RenderContext.h>
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Platform/Utils.h>
 
 #include <magic_enum.hpp>
 #include <algorithm>

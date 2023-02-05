@@ -48,7 +48,6 @@ target_link_libraries(${TARGET}
         TaskFlow
     PRIVATE
         MethaneBuildOptions
-        MethanePlatformUtils
         MethaneGraphicsCamera
         MethaneDataProvider
 )

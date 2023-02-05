@@ -89,7 +89,6 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethaneCommonPrecompiledHeaders
         MethaneDataPrimitives
-        MethanePlatformUtils
         MethaneInstrumentation
         MethaneMathPrecompiledHeaders
         TaskFlow

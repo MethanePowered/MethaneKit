@@ -27,7 +27,6 @@ Vulkan implementation of the device interface.
 #include <Methane/Graphics/Vulkan/Utils.hpp>
 
 #include <Methane/Graphics/TypeFormatters.hpp>
-#include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 

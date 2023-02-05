@@ -35,7 +35,6 @@ Metal implementation of the render context interface.
 #include <Methane/Graphics/Metal/RenderContextAppView.hh>
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Platform/Utils.h>
 #include <Methane/Platform/Apple/Types.hh>
 
 // Either use dispatch queue semaphore or fence primitives for CPU-GPU frames rendering synchronization
