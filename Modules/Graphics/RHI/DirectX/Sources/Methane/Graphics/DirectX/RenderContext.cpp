@@ -62,14 +62,10 @@ RenderContext::RenderContext(const Platform::AppEnvironment& env, Base::Device& 
                              tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
     : Context<Base::RenderContext>(device, parallel_executor, settings)
     , m_platform_env(env)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 RenderContext::~RenderContext()
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 
 Ptr<Rhi::ICommandQueue> RenderContext::CreateCommandQueue(Rhi::CommandListType type) const

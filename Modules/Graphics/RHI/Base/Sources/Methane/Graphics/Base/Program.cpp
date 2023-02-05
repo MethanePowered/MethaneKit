@@ -62,9 +62,7 @@ Program::Program(const Context& context, const Settings& settings)
     , m_settings(settings)
     , m_shaders_by_type(CreateShadersByType(settings.shaders))
     , m_shader_types(CreateShaderTypes(settings.shaders))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 const Ptr<Rhi::IShader>& Program::GetShader(Rhi::ShaderType shader_type) const
 {

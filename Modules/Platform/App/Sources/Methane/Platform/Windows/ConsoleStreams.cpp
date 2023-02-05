@@ -41,9 +41,7 @@ static bool IsMappedToFile(FILE* std_stream)
 IOStream::IOStream(FILE* std_stream, DWORD std_handle)
     : m_std_stream(std_stream)
     , m_std_handle(std_handle)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 IOStream::~IOStream()
 {

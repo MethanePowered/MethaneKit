@@ -60,8 +60,6 @@ BufferSet::BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buf
     : Base::BufferSet(buffers_type, buffer_refs)
     , m_vk_buffers(GetVulkanBuffers(buffer_refs))
     , m_vk_offsets(m_vk_buffers.size(), 0U)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 } // namespace Methane::Graphics::Vulkan

@@ -48,17 +48,13 @@ namespace Methane::Graphics::Rhi
 ProgramArgumentConstantModificationException::ProgramArgumentConstantModificationException(const Rhi::IProgram::Argument& argument)
     : std::logic_error(fmt::format("Can not modify constant argument binding '{}' of {} shaders.",
                                    argument.GetName(), magic_enum::enum_name(argument.GetShaderType())))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ProgramBindingsUnboundArgumentsException::ProgramBindingsUnboundArgumentsException(const Rhi::IProgram& program, const Rhi::IProgram::Arguments& unbound_arguments)
     : std::runtime_error(fmt::format("Some arguments of program '{}' are not bound to any resource:\n{}", program.GetName(), unbound_arguments))
     , m_program(program)
     , m_unbound_arguments(unbound_arguments)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Ptr<IProgramBindings> IProgramBindings::Create(IProgram& program, const IProgram::ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {

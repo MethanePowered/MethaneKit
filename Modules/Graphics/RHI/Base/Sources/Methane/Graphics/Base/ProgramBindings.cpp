@@ -69,9 +69,7 @@ static Rhi::ResourceState GetBoundResourceTargetState(const Rhi::IResource& reso
 ProgramBindings::ResourceAndState::ResourceAndState(Ptr<Resource> resource_ptr, Rhi::ResourceState state)
     : resource_ptr(std::move(resource_ptr))
     , state(state)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ProgramBindings::ProgramBindings(Program& program, Data::Index frame_index)
     : m_program_ptr(program.GetDerivedPtr<Rhi::IProgram>())

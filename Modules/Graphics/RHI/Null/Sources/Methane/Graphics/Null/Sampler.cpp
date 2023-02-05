@@ -31,8 +31,6 @@ namespace Methane::Graphics::Null
 
 Sampler::Sampler(const Base::Context& context, const Settings& settings)
     : Resource(context, settings)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 } // namespace Methane::Graphics::Null

@@ -165,15 +165,11 @@ void SetMetalResourcesForAll(Rhi::ShaderType shader_type, const Rhi::IProgram& p
 
 ProgramBindings::ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
     : Base::ProgramBindings(program, resource_views_by_argument, frame_index)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
     : Base::ProgramBindings(other_program_bindings, replace_resource_views_by_argument, frame_index)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
 {

@@ -39,9 +39,7 @@ ResourceView::ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsageM
     , m_id(usage, GetSettings())
     , m_vulkan_resource_ref(dynamic_cast<IResource&>(GetResource()))
     , m_view_desc_var_ptr(m_vulkan_resource_ref.get().InitializeNativeViewDescriptor(m_id))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 IResource& ResourceView::GetVulkanResource() const
 {

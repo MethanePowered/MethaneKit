@@ -32,8 +32,6 @@ namespace Methane::Graphics::Rhi
 
 NameConflictException::NameConflictException(std::string_view name)
     : std::invalid_argument(fmt::format("Can not add graphics object with name {} to the registry because another object with the same name is already registered.", name))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 } // namespace Methane::Graphics::Rhi

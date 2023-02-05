@@ -35,9 +35,7 @@ CommandQueue::CommandQueue(const Context& context, Rhi::CommandListType command_
     : m_context(context)
     , m_device_ptr(context.GetBaseDevicePtr())
     , m_command_lists_type(command_lists_type)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool CommandQueue::SetName(std::string_view name)
 {

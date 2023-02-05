@@ -54,9 +54,7 @@ Buffer::Buffer(const Base::Context& context, const Settings& settings)
     : Resource(context, settings)
     , m_mtl_buffer([GetMetalContext().GetMetalDevice().GetNativeDevice() newBufferWithLength:settings.size
                                                                                      options:GetNativeResourceOptions(settings.storage_mode)])
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool Buffer::SetName(std::string_view name)
 {

@@ -40,9 +40,7 @@ Query::Query(QueryPool& buffer, CommandList& command_list, Data::Index index, Ra
     , m_command_list(command_list)
     , m_index(index)
     , m_data_range(data_range)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Query::~Query()
 {
@@ -108,9 +106,7 @@ QueryPool::QueryPool(CommandQueue& command_queue, Type type,
     , m_free_data_ranges({ { 0U, buffer_size } })
     , m_command_queue(command_queue)
     , m_context(dynamic_cast<const Rhi::IContext&>(command_queue.GetContext()))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Rhi::ICommandQueue& QueryPool::GetCommandQueue() noexcept
 {

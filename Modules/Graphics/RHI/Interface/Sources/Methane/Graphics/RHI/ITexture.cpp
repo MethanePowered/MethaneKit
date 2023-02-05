@@ -33,9 +33,7 @@ TextureView::TextureView(ITexture& texture, const SubResource::Index& subresourc
                          Opt<TextureDimensionType> texture_dimension_type_opt)
     : ResourceView(texture, subresource_index, subresource_count, texture_dimension_type_opt)
     , m_texture_ptr(std::dynamic_pointer_cast<ITexture>(GetResourcePtr()))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Rhi::ITexture& TextureView::GetTexture() const
 {

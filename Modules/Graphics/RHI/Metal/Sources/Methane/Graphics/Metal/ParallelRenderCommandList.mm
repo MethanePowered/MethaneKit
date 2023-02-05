@@ -34,9 +34,7 @@ namespace Methane::Graphics::Metal
 
 ParallelRenderCommandList::ParallelRenderCommandList(Base::CommandQueue& command_queue, Base::RenderPass& render_pass)
     : CommandList<id<MTLParallelRenderCommandEncoder>, Base::ParallelRenderCommandList>(true, command_queue, render_pass)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void ParallelRenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {

@@ -91,9 +91,7 @@ ViewState::ViewState(const Settings& settings)
     : Base::ViewState(settings)
     , m_vk_viewports(ViewportsToVulkan(settings.viewports))
     , m_vk_scissor_rects(ScissorRectsToVulkan(settings.scissor_rects))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool ViewState::Reset(const Settings& settings)
 {

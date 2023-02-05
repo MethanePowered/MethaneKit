@@ -172,9 +172,7 @@ QueueFamilyReservation::QueueFamilyReservation(uint32_t family_index, vk::QueueF
     , m_can_present_to_window(can_present_to_window)
     , m_priorities(m_queues_count, 0.F)
     , m_free_indices({ { 0U, m_queues_count } })
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 QueueFamilyReservation::~QueueFamilyReservation()
 {

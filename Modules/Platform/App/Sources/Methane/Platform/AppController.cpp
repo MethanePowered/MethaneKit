@@ -33,9 +33,7 @@ AppController::AppController(AppBase& application, const std::string& applicatio
     : Controller(application_help)
     , Input::Keyboard::ActionControllerBase<AppAction>(action_by_keyboard_state, {})
     , m_application(application)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void AppController::OnKeyboardChanged(Input::Keyboard::Key key, Input::Keyboard::KeyState key_state, const Input::Keyboard::StateChange& state_change)
 {

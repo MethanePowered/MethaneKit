@@ -79,9 +79,7 @@ RenderPass::AccessDesc::AccessDesc(const Attachment* attachment_ptr, const Resou
 
 RenderPass::AccessDesc::AccessDesc(const ColorAttachment& color_attachment, const RenderPass& render_pass)
     : AccessDesc(color_attachment, render_pass.GetDirectAttachmentTextureView(color_attachment))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 RenderPass::AccessDesc::AccessDesc(const ColorAttachment& color_attachment, const ResourceView& texture_location)
     : AccessDesc(static_cast<const Attachment&>(color_attachment), texture_location)
@@ -148,9 +146,7 @@ D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPass::AccessDesc::GetEndingAccessType
 RenderPass::RTClearInfo::RTClearInfo(const ColorAttachment& color_attach, const RenderPass& render_pass)
     : cpu_handle(render_pass.GetDirectAttachmentTextureView(color_attach).GetNativeCpuDescriptorHandle())
     , clear_color(color_attach.clear_color.AsArray())
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 RenderPass::DSClearInfo::DSClearInfo(const Opt<DepthAttachment>& depth_attach_opt, const Opt<StencilAttachment>& stencil_attach_opt, const RenderPass& render_pass)
     : cpu_handle(depth_attach_opt ? render_pass.GetDirectAttachmentTextureView(*depth_attach_opt).GetNativeCpuDescriptorHandle() : D3D12_CPU_DESCRIPTOR_HANDLE())

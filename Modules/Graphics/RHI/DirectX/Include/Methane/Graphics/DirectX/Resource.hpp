@@ -56,9 +56,7 @@ public:
     Resource(const Base::Context& context, const SettingsType& settings)
         : ResourceBaseType(context, settings, State::Common, State::Common)
         , m_dx_context(dynamic_cast<const IContext&>(context))
-    {
-        META_FUNCTION_TASK();
-    }
+    { }
 
     ~Resource() override
     {

@@ -51,9 +51,7 @@ namespace Methane::UserInterface
 FreeTypeError::FreeTypeError(FT_Error error)
     : std::runtime_error(fmt::format("Unexpected FreeType error occurred '{}'", GetFTErrorMessage(error)))
     , m_error(error)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 std::u32string Font::ConvertUtf8To32(std::string_view text)
 {

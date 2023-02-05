@@ -86,9 +86,7 @@ static vk::CommandBufferInheritanceInfo CreateRenderCommandBufferInheritanceInfo
 
 RenderCommandList::RenderCommandList(CommandQueue& command_queue)
     : CommandList(vk::CommandBufferInheritanceInfo(), command_queue)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 RenderCommandList::RenderCommandList(CommandQueue& command_queue, RenderPass& render_pass)
     : CommandList(CreateRenderCommandBufferInheritanceInfo(render_pass), command_queue, render_pass)

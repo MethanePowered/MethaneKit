@@ -36,9 +36,7 @@ AppCameraController::AppCameraController(ActionCamera& action_camera, const std:
     , pin::Mouse::ActionControllerBase<ActionCamera::MouseAction>(mouse_actions_by_button)
     , pin::Keyboard::ActionControllerBase<ActionCamera::KeyboardAction>(keyboard_actions_by_state, keyboard_actions_by_key)
     , m_action_camera(action_camera)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void AppCameraController::OnMouseButtonChanged(pin::Mouse::Button button, pin::Mouse::ButtonState button_state, const pin::Mouse::StateChange& state_change)
 {

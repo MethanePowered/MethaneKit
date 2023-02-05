@@ -32,16 +32,12 @@ namespace Methane::Graphics
 ActionCamera::ActionCamera(Data::AnimationsPool& animations, Pivot pivot) noexcept
     : ArcBallCamera(pivot)
     , m_animations(animations)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ActionCamera::ActionCamera(const Camera& view_camera, Data::AnimationsPool& animations, Pivot pivot) noexcept
     : ArcBallCamera(view_camera, pivot)
     , m_animations(animations)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void ActionCamera::OnMousePressed(const Data::Point2I& mouse_screen_pos, MouseAction mouse_action) noexcept
 {

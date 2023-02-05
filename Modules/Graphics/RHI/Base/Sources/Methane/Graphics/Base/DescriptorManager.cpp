@@ -35,9 +35,7 @@ namespace Methane::Graphics::Base
 DescriptorManager::DescriptorManager(Context& context, bool is_parallel_bindings_processing_enabled)
     : m_context(context)
     , m_is_parallel_bindings_processing_enabled(is_parallel_bindings_processing_enabled)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void DescriptorManager::CompleteInitialization()
 {

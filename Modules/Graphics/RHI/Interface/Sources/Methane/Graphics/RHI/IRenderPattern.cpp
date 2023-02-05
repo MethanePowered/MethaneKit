@@ -47,9 +47,7 @@ RenderPassAttachment::RenderPassAttachment(Data::Index attachment_index, PixelFo
     , samples_count(samples_count)
     , load_action(load_action)
     , store_action(store_action)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool RenderPassAttachment::operator==(const RenderPassAttachment& other) const
 {
@@ -80,9 +78,7 @@ RenderPassColorAttachment::RenderPassColorAttachment(Data::Index attachment_inde
                                                      LoadAction load_action, StoreAction store_action, const Color4F& clear_color)
     : RenderPassAttachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_color(clear_color)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool RenderPassColorAttachment::operator==(const RenderPassColorAttachment& other) const
 {
@@ -108,9 +104,7 @@ RenderPassDepthAttachment::RenderPassDepthAttachment(Data::Index attachment_inde
                                                      LoadAction load_action, StoreAction store_action, Depth clear_value)
     : RenderPassAttachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_value(clear_value)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool RenderPassDepthAttachment::operator==(const RenderPassDepthAttachment& other) const
 {
@@ -136,9 +130,7 @@ RenderPassStencilAttachment::RenderPassStencilAttachment(Data::Index attachment_
                                                          LoadAction load_action, StoreAction store_action, Stencil clear_value)
     : RenderPassAttachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_value(clear_value)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool RenderPassStencilAttachment::operator==(const RenderPassStencilAttachment& other) const
 {

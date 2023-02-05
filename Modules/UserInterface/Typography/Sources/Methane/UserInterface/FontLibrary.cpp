@@ -138,9 +138,7 @@ private:
 
 FontLibrary::FontLibrary()
     : m_impl_ptr(std::make_unique<Impl>(*this)) // NOSONAR
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void FontLibrary::Connect(Data::Receiver<IFontLibraryCallback>& receiver) const
 {

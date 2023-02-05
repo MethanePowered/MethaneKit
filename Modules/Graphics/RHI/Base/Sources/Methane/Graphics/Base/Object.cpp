@@ -108,9 +108,7 @@ void ObjectRegistry::OnObjectDestroyed(Rhi::IObject& object)
 
 Object::Object(std::string_view name)
     : m_name(name)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Object::~Object()
 {

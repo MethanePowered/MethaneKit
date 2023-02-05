@@ -34,9 +34,7 @@ namespace Methane::Graphics::Rhi
 ResourceBarrierId::ResourceBarrierId(Type type, Rhi::IResource& resource) noexcept
     : m_type(type)
     , m_resource_ref(resource)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool ResourceBarrierId::operator<(const ResourceBarrierId& other) const noexcept
 {
@@ -63,9 +61,7 @@ bool ResourceBarrierId::operator!=(const ResourceBarrierId& other) const noexcep
 ResourceStateChange::ResourceStateChange(ResourceState before, ResourceState after) noexcept
     : m_before(before)
     , m_after(after)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool ResourceStateChange::operator<(const ResourceStateChange& other) const noexcept
 {
@@ -88,9 +84,7 @@ bool ResourceStateChange::operator!=(const ResourceStateChange& other) const noe
 ResourceOwnerChange::ResourceOwnerChange(uint32_t queue_family_before, uint32_t queue_family_after) noexcept
     : m_queue_family_before(queue_family_before)
     , m_queue_family_after(queue_family_after)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool ResourceOwnerChange::operator<(const ResourceOwnerChange& other) const noexcept
 {
@@ -115,28 +109,20 @@ bool ResourceOwnerChange::operator!=(const ResourceOwnerChange& other) const noe
 ResourceBarrier::ResourceBarrier(IResource& resource, const StateChange& state_change)
     : m_id(Type::StateTransition, resource)
     , m_change(state_change)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ResourceBarrier::ResourceBarrier(IResource& resource, const OwnerChange& owner_change)
     : m_id(Type::OwnerTransition, resource)
     , m_change(owner_change)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ResourceBarrier::ResourceBarrier(IResource& resource, ResourceState state_before, ResourceState state_after)
     : ResourceBarrier(resource, StateChange(state_before, state_after))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ResourceBarrier::ResourceBarrier(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after)
     : ResourceBarrier(resource, OwnerChange(queue_family_before, queue_family_after))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool ResourceBarrier::operator<(const ResourceBarrier& other) const noexcept
 {

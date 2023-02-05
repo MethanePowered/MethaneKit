@@ -46,9 +46,7 @@ public:
     explicit CommandList(bool is_command_buffer_enabled, ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_is_cmd_buffer_enabled(is_command_buffer_enabled)
-    {
-        META_FUNCTION_TASK();
-    }
+    { }
 
     // ICommandList interface
     void PushDebugGroup(Rhi::ICommandListDebugGroup& debug_group) override

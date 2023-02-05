@@ -37,9 +37,7 @@ using NativeOffsets       = ProgramArgumentBinding::NativeOffsets;
 ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, const Settings& settings)
     : Base::ProgramArgumentBinding(context, settings)
     , m_settings_mt(settings)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Ptr<Base::ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy() const
 {

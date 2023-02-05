@@ -55,9 +55,7 @@ static Tracy::GpuContext::Type ConvertSystemGraphicsApiToTracyGpuContextType(Rhi
 CommandQueueTracking::CommandQueueTracking(const Context& context, Rhi::CommandListType command_lists_type)
     : CommandQueue(context, command_lists_type)
     , m_execution_waiting_thread(&CommandQueueTracking::WaitForExecution, this)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 CommandQueueTracking::~CommandQueueTracking()
 {

@@ -61,9 +61,7 @@ DescriptorHeapReservation::DescriptorHeapReservation(const Ref<DescriptorHeap>& 
 DescriptorHeapReservation::DescriptorHeapReservation(const Ref<DescriptorHeap>& heap, const Ranges& ranges)
     : heap(heap)
     , ranges(ranges)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 DescriptorHeap::DescriptorHeap(const Base::Context& context, const Settings& settings)
     : m_dx_context(dynamic_cast<const IContext&>(context))

@@ -36,9 +36,7 @@ Shader::Shader(Type type, const Context& context, const Settings& settings)
     : m_type(type)
     , m_context(context)
     , m_settings(settings)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 uint32_t Shader::GetProgramInputBufferIndexByArgumentSemantic(const Program& program, const std::string& argument_semantic) const
 {

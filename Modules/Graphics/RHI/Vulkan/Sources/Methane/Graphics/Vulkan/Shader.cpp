@@ -202,9 +202,7 @@ Shader::Shader(Rhi::ShaderType shader_type, const Base::Context& context, const 
     : Base::Shader(shader_type, context, settings)
     , m_vk_context(dynamic_cast<const IContext&>(context))
     , m_byte_code_chunk(settings.data_provider.GetData(fmt::format("{}.spirv", GetCompiledEntryFunctionName(settings))))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Shader::~Shader() = default;
 

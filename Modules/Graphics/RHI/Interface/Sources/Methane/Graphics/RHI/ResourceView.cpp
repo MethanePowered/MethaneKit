@@ -37,17 +37,13 @@ SubResource::SubResource(Data::Bytes&& data, const Index& index, BytesRangeOpt d
     : Data::Chunk(std::move(data))
     , m_index(index)
     , m_data_range(std::move(data_range))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index, BytesRangeOpt data_range) noexcept
     : Data::Chunk(p_data, size)
     , m_index(index)
     , m_data_range(std::move(data_range))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 SubResourceCount::SubResourceCount(Data::Size depth, Data::Size array_size, Data::Size mip_levels_count)
     : m_depth(depth)
@@ -103,9 +99,7 @@ SubResourceIndex::SubResourceIndex(Data::Index depth_slice, Data::Index array_in
     : m_depth_slice(depth_slice)
     , m_array_index(array_index)
     , m_mip_level(mip_level)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 SubResourceIndex::SubResourceIndex(Data::Index raw_index, const SubResourceCount& count)
 {
@@ -122,9 +116,7 @@ SubResourceIndex::SubResourceIndex(const SubResourceCount& count)
     : m_depth_slice(count.GetDepth())
     , m_array_index(count.GetArraySize())
     , m_mip_level(count.GetMipLevelsCount())
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool SubResourceIndex::operator==(const SubResourceIndex& other) const noexcept
 {
@@ -191,9 +183,7 @@ bool ResourceViewSettings::operator!=(const ResourceViewSettings& other) const n
 ResourceViewId::ResourceViewId(ResourceUsageMask usage, const ResourceViewSettings& settings)
     : ResourceViewSettings(settings)
     , usage(usage)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool ResourceViewId::operator<(const ResourceViewId& other) const noexcept
 {
@@ -219,15 +209,11 @@ bool ResourceViewId::operator!=(const ResourceViewId& other) const noexcept
 ResourceView::ResourceView(IResource& resource, const Settings& settings)
     : m_resource_ptr(resource.GetDerivedPtr<IResource>())
     , m_settings(settings)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ResourceView::ResourceView(IResource& resource, Data::Size offset, Data::Size size)
     : ResourceView(resource, SubResourceIndex(), resource.GetSubresourceCount(), offset, size)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ResourceView::ResourceView(IResource& resource,
                            const SubResourceIndex& subresource_index,
@@ -240,9 +226,7 @@ ResourceView::ResourceView(IResource& resource,
         offset,
         size
     })
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ResourceView::ResourceView(IResource& resource,
                            const SubResourceIndex& subresource_index,
@@ -255,9 +239,7 @@ ResourceView::ResourceView(IResource& resource,
         0U, // size
         texture_dimension_type_opt
     })
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool ResourceView::operator==(const ResourceView& other) const noexcept
 {

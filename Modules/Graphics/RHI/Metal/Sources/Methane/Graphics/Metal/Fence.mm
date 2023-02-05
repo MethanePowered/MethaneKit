@@ -44,9 +44,7 @@ Fence::Fence(Base::CommandQueue& command_queue)
     : Base::Fence(command_queue)
     , m_mtl_event([GetMetalCommandQueue().GetMetalContext().GetMetalDevice().GetNativeDevice() newSharedEvent])
     , m_mtl_event_listener([[MTLSharedEventListener alloc] initWithDispatchQueue:GetDispatchQueue()])
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void Fence::Signal()
 {

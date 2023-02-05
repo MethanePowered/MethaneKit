@@ -44,9 +44,7 @@ namespace Methane::Graphics::DirectX
 CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
     : Base::CommandListDebugGroup(name)
     , m_wide_name(nowide::widen(Base::Object::GetName()))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 const std::wstring& CommandListDebugGroup::GetWideName() const noexcept
 {

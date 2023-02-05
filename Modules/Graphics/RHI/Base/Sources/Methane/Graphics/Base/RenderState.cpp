@@ -32,9 +32,7 @@ namespace Methane::Graphics::Base
 RenderState::RenderState(const RenderContext& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void RenderState::Reset(const Settings& settings)
 {

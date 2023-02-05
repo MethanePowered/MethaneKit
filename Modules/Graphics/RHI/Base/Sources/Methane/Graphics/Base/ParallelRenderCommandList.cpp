@@ -45,9 +45,7 @@ namespace Methane::Graphics::Base
 ParallelRenderCommandList::ParallelRenderCommandList(CommandQueue& command_queue, RenderPass& render_pass)
     : CommandList(command_queue, Type::ParallelRender)
     , m_render_pass_ptr(render_pass.GetPtr<RenderPass>())
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void ParallelRenderCommandList::SetValidationEnabled(bool is_validation_enabled)
 {

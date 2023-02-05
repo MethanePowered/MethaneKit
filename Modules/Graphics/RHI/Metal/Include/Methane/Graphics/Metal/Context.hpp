@@ -48,9 +48,7 @@ class Context
 public:
     Context(Base::Device& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, std::make_unique<DescriptorManager>(), parallel_executor, settings)
-    {
-        META_FUNCTION_TASK();
-    }
+    { }
 
     // IContext overrides
 

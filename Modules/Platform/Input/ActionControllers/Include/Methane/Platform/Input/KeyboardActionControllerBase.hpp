@@ -45,9 +45,7 @@ public:
                          const ActionByKeyboardKey&   action_by_keyboard_key)
         : m_action_by_keyboard_key(action_by_keyboard_key)
         , m_action_by_keyboard_state(action_by_keyboard_state)
-    {
-        META_FUNCTION_TASK();
-    }
+    { }
 
     virtual ~ActionControllerBase() = default;
 

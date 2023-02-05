@@ -44,9 +44,7 @@ Rhi::DeviceFeatureMask Device::GetSupportedFeatures(const id<MTLDevice>& mtl_dev
 Device::Device(const id<MTLDevice>& mtl_device, const Capabilities& capabilities)
     : Base::Device(MacOS::ConvertFromNsString(mtl_device.name), false, capabilities)
     , m_mtl_device(mtl_device)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Ptr<Rhi::IRenderContext> Device::CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
 {

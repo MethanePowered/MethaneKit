@@ -40,9 +40,7 @@ public:
     
     explicit ActionControllerBase(const ActionByMouseButton& action_by_mouse_button)
         : m_action_by_mouse_button(action_by_mouse_button)
-    {
-        META_FUNCTION_TASK();
-    }
+    { }
 
     virtual ~ActionControllerBase() = default;
 

@@ -69,9 +69,7 @@ Resource::Resource(const Context& context, Type type, UsageMask usage_mask,
     , m_usage_mask(usage_mask)
     , m_state(initial_state)
     , m_auto_transition_source_state_opt(auto_transition_source_state_opt)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void Resource::SetData(const SubResources& sub_resources, Rhi::ICommandQueue&)
 {

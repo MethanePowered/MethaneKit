@@ -46,9 +46,7 @@ Fence::Fence(CommandQueue& command_queue)
     : Base::Fence(command_queue)
     , m_vk_device(GetVulkanCommandQueue().GetVulkanContext().GetVulkanDevice().GetNativeDevice())
     , m_vk_unique_semaphore(CreateTimelineSemaphore(m_vk_device, GetValue()))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void Fence::Signal()
 {

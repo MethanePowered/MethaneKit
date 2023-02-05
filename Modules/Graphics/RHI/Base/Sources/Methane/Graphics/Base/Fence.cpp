@@ -32,9 +32,7 @@ namespace Methane::Graphics::Base
 
 Fence::Fence(CommandQueue& command_queue)
     : m_command_queue(command_queue)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void Fence::Signal()
 {

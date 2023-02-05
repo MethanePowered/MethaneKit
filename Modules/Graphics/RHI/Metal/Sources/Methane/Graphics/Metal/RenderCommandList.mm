@@ -71,17 +71,13 @@ static bool GetDeviceSupportOfGpuFamilyApple3(CommandQueue& command_queue)
 RenderCommandList::RenderCommandList(CommandQueue& command_queue, Base::RenderPass& render_pass)
     : CommandList<id<MTLRenderCommandEncoder>, Base::RenderCommandList>(true, command_queue, render_pass)
     , m_device_supports_gpu_family_apple_3(GetDeviceSupportOfGpuFamilyApple3(command_queue))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_command_list)
     : CommandList<id<MTLRenderCommandEncoder>, Base::RenderCommandList>(false, parallel_render_command_list)
     , m_parallel_render_command_list_ptr(&parallel_render_command_list)
     , m_device_supports_gpu_family_apple_3(GetDeviceSupportOfGpuFamilyApple3(parallel_render_command_list.GetMetalCommandQueue()))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void RenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {

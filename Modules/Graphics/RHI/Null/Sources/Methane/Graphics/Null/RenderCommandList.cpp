@@ -45,21 +45,15 @@ namespace Methane::Graphics::Null
 
 RenderCommandList::RenderCommandList(CommandQueue& command_queue)
     : CommandList(command_queue)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 RenderCommandList::RenderCommandList(CommandQueue& command_queue, RenderPass& render_pass)
     : CommandList(command_queue, render_pass)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_command_list)
     : CommandList(parallel_render_command_list)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void RenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {

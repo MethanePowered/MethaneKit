@@ -60,9 +60,7 @@ AppIOS::AppIOS(const AppBase::Settings& settings)
 }
 
 void AppIOS::InitContext(const Platform::AppEnvironment& /*env*/, const Data::FrameSize& /*frame_size*/)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 int AppIOS::Run(const RunArgs& args)
 {
@@ -144,8 +142,6 @@ uint32_t AppIOS::GetFontResolutionDpi() const
 }
 
 void AppIOS::Close()
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 } // namespace Methane::Platform

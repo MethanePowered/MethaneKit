@@ -40,18 +40,14 @@ namespace Methane::Graphics::DirectX
 ResourceDescriptor::ResourceDescriptor(DescriptorHeap& in_heap, Data::Index in_index)
     : heap(in_heap)
     , index(in_index)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ResourceView::ResourceView(const Rhi::ResourceView& view_id, Rhi::ResourceUsageMask usage)
     : Rhi::ResourceView(view_id)
     , m_id(usage, GetSettings())
     , m_resource_dx(dynamic_cast<IResource&>(GetResource()))
     , m_descriptor_opt(m_resource_dx.InitializeNativeViewDescriptor(m_id))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 D3D12_GPU_VIRTUAL_ADDRESS ResourceView::GetNativeGpuAddress() const noexcept
 {

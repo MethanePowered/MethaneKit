@@ -102,9 +102,7 @@ Sampler::Sampler(const Base::Context& context, const Settings& settings)
             ConvertSamplerBorderColorToVulkan(settings.border_color),
             false // un-normalized coordinates
         )))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Ptr<ResourceView::ViewDescriptorVariant> Sampler::CreateNativeViewDescriptor(const ResourceView::Id&)
 {

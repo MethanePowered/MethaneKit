@@ -41,24 +41,18 @@ namespace Methane::Graphics::Base
 
 RenderCommandList::RenderCommandList(CommandQueue& command_queue)
     : CommandList(command_queue, Type::Render)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 RenderCommandList::RenderCommandList(CommandQueue& command_queue, RenderPass& pass)
     : CommandList(command_queue, Type::Render)
     , m_render_pass_ptr(pass.GetPtr<RenderPass>())
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_command_list)
     : CommandList(static_cast<CommandQueue&>(parallel_render_command_list.GetCommandQueue()), Type::Render)
     , m_is_parallel(true)
     , m_render_pass_ptr(parallel_render_command_list.GetPass().GetPtr<RenderPass>())
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Rhi::IRenderPass& RenderCommandList::GetRenderPass() const
 {

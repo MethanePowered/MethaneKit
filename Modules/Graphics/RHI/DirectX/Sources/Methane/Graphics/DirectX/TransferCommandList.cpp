@@ -40,8 +40,6 @@ static D3D12_COMMAND_LIST_TYPE GetTransferCommandListNativeType(Rhi::ContextOpti
 
 TransferCommandList::TransferCommandList(Base::CommandQueue& cmd_queue)
     : CommandList<Base::CommandList>(GetTransferCommandListNativeType(cmd_queue.GetContext().GetOptions()), cmd_queue, Type::Transfer)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 } // namespace Methane::Graphics::DirectX

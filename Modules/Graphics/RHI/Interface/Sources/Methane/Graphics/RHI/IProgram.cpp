@@ -38,9 +38,7 @@ ProgramArgument::ProgramArgument(ShaderType shader_type, std::string_view argume
     : m_shader_type(shader_type)
     , m_name(argument_name)
     , m_hash(g_argument_name_hash(m_name) ^ (magic_enum::enum_index(shader_type).value() << 1))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool ProgramArgument::operator==(const ProgramArgument& other) const noexcept
 {
@@ -59,17 +57,13 @@ ProgramArgumentAccessor::ProgramArgumentAccessor(ShaderType shader_type, std::st
     : ProgramArgument(shader_type, argument_name)
     , m_accessor_type(accessor_type)
     , m_addressable(addressable)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ProgramArgumentAccessor::ProgramArgumentAccessor(const ProgramArgument& argument, Type accessor_type, bool addressable) noexcept
     : ProgramArgument(argument)
     , m_accessor_type(accessor_type)
     , m_addressable(addressable)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 size_t ProgramArgumentAccessor::GetAccessorIndex() const noexcept
 {
@@ -98,9 +92,7 @@ ProgramArgumentNotFoundException::ProgramArgumentNotFoundException(const IProgra
                                         program.GetName(), argument.GetName(), magic_enum::enum_name(argument.GetShaderType())))
     , m_program(program)
     , m_argument_ptr(std::make_unique<IProgram::Argument>(argument))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
 {

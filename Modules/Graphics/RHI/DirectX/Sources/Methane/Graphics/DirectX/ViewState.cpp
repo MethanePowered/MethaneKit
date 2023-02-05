@@ -91,9 +91,7 @@ ViewState::ViewState(const Settings& settings)
     : Base::ViewState(settings)
     , m_dx_viewports(ViewportsToD3D(settings.viewports))
     , m_dx_scissor_rects(ScissorRectsToD3D(settings.scissor_rects))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool ViewState::Reset(const Settings& settings)
 {

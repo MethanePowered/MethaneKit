@@ -33,9 +33,7 @@ TypographyAppController::TypographyAppController(TypographyApp& typography_app, 
     : Controller("TYPOGRAPHY SETTINGS")
     , pin::Keyboard::ActionControllerBase<TypographyAppAction>(action_by_keyboard_state, {})
     , m_typography_app(typography_app)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void TypographyAppController::OnKeyboardChanged(pin::Keyboard::Key key, pin::Keyboard::KeyState key_state,
                                                const pin::Keyboard::StateChange& state_change)

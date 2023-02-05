@@ -42,9 +42,7 @@ public:
     template<typename SettingsType>
     Resource(const Base::Context& context, const SettingsType& settings)
         : ReourceBaseType(context, settings)
-    {
-        META_FUNCTION_TASK();
-    }
+    { }
 
     ~Resource() override
     {

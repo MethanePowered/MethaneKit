@@ -29,8 +29,6 @@ namespace Methane::Graphics::Null
 
 TransferCommandList::TransferCommandList(CommandQueue& command_queue)
     : CommandList(command_queue, Rhi::CommandListType::Transfer)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 } // namespace Methane::Graphics::Null

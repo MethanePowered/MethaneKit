@@ -102,24 +102,18 @@ static vk::AccessFlags GetAccessFlagsByQueueFlags(vk::QueueFlags vk_queue_flags)
 
 CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type)
     : CommandQueue(context, command_lists_type, dynamic_cast<const IContext&>(context).GetVulkanDevice())
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type, const Device& device)
     : CommandQueue(context, command_lists_type, device,
                      device.GetQueueFamilyReservation(command_lists_type))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type, const Device& device,
                                const QueueFamilyReservation& family_reservation)
     : CommandQueue(context, command_lists_type, device, family_reservation,
                      device.GetNativeQueueFamilyProperties(family_reservation.GetFamilyIndex()))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type, const Device& device,
                                const QueueFamilyReservation& family_reservation, const vk::QueueFamilyProperties& family_properties)
@@ -130,9 +124,7 @@ CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType co
     , m_vk_queue(device.GetNativeDevice().getQueue(m_queue_family_index, m_queue_index))
     , m_vk_supported_stage_flags(GetPipelineStageFlagsByQueueFlags(family_properties.queueFlags))
     , m_vk_supported_access_flags(GetAccessFlagsByQueueFlags(family_properties.queueFlags))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 CommandQueue::~CommandQueue()
 {

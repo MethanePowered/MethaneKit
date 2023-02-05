@@ -60,18 +60,14 @@ ImageData::ImageData(const Dimensions& dimensions, uint32_t channels_count, Data
     , m_channels_count(channels_count)
     , m_pixels(std::move(pixels))
     , m_pixels_release_required(!m_pixels.IsDataStored() && !m_pixels.IsEmptyOrNull())
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ImageData::ImageData(ImageData&& other) noexcept
     : m_dimensions(other.m_dimensions)
     , m_channels_count(other.m_channels_count)
     , m_pixels(std::move(other.m_pixels))
     , m_pixels_release_required(other.m_pixels_release_required)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ImageData::~ImageData()
 {
@@ -88,9 +84,7 @@ ImageData::~ImageData()
 
 ImageLoader::ImageLoader(Data::IProvider& data_provider)
     : m_data_provider(data_provider)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ImageData ImageLoader::LoadImageData(const std::string& image_path, Data::Size channels_count, bool create_copy) const
 {

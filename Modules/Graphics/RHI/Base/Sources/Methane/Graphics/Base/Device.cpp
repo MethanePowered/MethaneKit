@@ -37,9 +37,7 @@ Device::Device(const std::string& adapter_name, bool is_software_adapter, const 
     , m_adapter_name(adapter_name)
     , m_is_software_adapter(is_software_adapter)
     , m_capabilities(capabilities)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 std::string Device::ToString() const
 {

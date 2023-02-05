@@ -75,9 +75,7 @@ Query::Query(Base::QueryPool& buffer, Base::CommandList& command_list, Index ind
     , m_vk_command_buffer(dynamic_cast<ICommandList&>(command_list).GetNativeCommandBuffer(CommandBufferType::Primary))
     , m_query_results(buffer.GetSlotsCountPerQuery(), 0U)
     , m_query_results_byte_size(m_query_results.size() * sizeof(QueryResults::value_type))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void Query::Begin()
 {
@@ -123,9 +121,7 @@ QueryPool::QueryPool(CommandQueue& command_queue, Type type,
     : Base::QueryPool(command_queue, type, max_query_count, slots_count_per_query, buffer_size, query_size)
     , m_context_vk(dynamic_cast<const IContext&>(GetContext()))
     , m_vk_query_pool(command_queue.GetVulkanDevice().GetNativeDevice().createQueryPool(vk::QueryPoolCreateInfo({}, GetQueryTypeVk(type), max_query_count)))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 CommandQueue& QueryPool::GetVulkanCommandQueue() noexcept
 {
@@ -202,9 +198,7 @@ Rhi::ITimestampQueryPool::CalibratedTimestamps TimestampQueryPool::Calibrate()
 
 TimestampQuery::TimestampQuery(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range)
     : Query(buffer, command_list, index, data_range)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void TimestampQuery::InsertTimestamp()
 {

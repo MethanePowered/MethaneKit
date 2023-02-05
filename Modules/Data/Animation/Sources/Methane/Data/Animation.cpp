@@ -33,9 +33,7 @@ namespace Methane::Data
 Animation::Animation(double duration_sec) noexcept
     : Timer()
     , m_duration_sec(duration_sec)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void Animation::IncreaseDuration(double duration_sec)
 {

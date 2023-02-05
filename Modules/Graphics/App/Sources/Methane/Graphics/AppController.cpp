@@ -35,9 +35,7 @@ AppController::AppController(IApp& application, const std::string& application_h
     : Platform::AppController(dynamic_cast<Platform::AppBase&>(application), application_help, platform_action_by_keyboard_state)
     , pin::Keyboard::ActionControllerBase<AppAction>(graphics_action_by_keyboard_state, {})
     , m_application(application)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void AppController::OnKeyboardChanged(pin::Keyboard::Key key, pin::Keyboard::KeyState key_state, const pin::Keyboard::StateChange& state_change)
 {

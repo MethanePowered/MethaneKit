@@ -87,9 +87,7 @@ ViewState::ViewState(const Settings& settings)
     : Base::ViewState(settings)
     , m_mtl_viewports(ConvertViewportsToMetal(settings.viewports))
     , m_mtl_scissor_rects(ConvertScissorRectsToMetal(settings.scissor_rects))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool ViewState::Reset(const Settings& settings)
 {

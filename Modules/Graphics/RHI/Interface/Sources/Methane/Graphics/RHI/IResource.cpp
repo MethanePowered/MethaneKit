@@ -31,8 +31,6 @@ namespace Methane::Graphics::Rhi
 ResourceAllocationError::ResourceAllocationError(const Rhi::IResource& resource, std::string_view error_message)
     : std::runtime_error(fmt::format("Failed to allocate memory for GPU resource '{}': {}", resource.GetName(), error_message))
     , m_resource(resource)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 } // namespace Methane::Graphics::Rhi

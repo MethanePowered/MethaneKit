@@ -33,9 +33,7 @@ namespace Methane::Graphics::Base
 RenderPattern::RenderPattern(RenderContext& render_context, const Settings& settings)
     : m_render_context_ptr(render_context.GetDerivedPtr<RenderContext>())
     , m_settings(settings)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 const Rhi::IRenderContext& RenderPattern::GetRenderContext() const noexcept
 {

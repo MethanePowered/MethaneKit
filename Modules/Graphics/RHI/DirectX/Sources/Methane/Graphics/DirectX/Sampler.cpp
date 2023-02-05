@@ -206,9 +206,7 @@ static void ConvertBorderColorToDXColor(Rhi::ISampler::BorderColor border_color,
 
 Sampler::Sampler(const Base::Context& context, const Settings& settings)
     : Resource(context, settings)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Opt<ResourceDescriptor> Sampler::InitializeNativeViewDescriptor(const View::Id& view_id)
 {

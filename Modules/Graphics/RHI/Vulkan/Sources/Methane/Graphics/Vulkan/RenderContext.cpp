@@ -54,9 +54,7 @@ RenderContext::RenderContext(const Methane::Platform::AppEnvironment& app_env, D
     : Context<Base::RenderContext>(device, parallel_executor, settings)
     , m_vk_device(device.GetNativeDevice())
     , m_vk_unique_surface(Platform::CreateVulkanSurfaceForWindow(static_cast<System&>(Rhi::ISystem::Get()).GetNativeInstance(), app_env))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 #endif // #ifndef __APPLE__
 

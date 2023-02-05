@@ -99,9 +99,7 @@ Badge::Badge(Context& ui_context, const rhi::Texture& texture, const Settings& s
     )
     , m_settings(settings)
     , m_frame_size(ui_context.GetFrameSizeIn<Units::Pixels>())
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void Badge::FrameResize(const UnitSize& frame_size, Opt<UnitSize> badge_size, Opt<UnitSize> margins)
 {

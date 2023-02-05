@@ -85,9 +85,7 @@ FontChar::TypeMask FontChar::GetTypeMask(FontChar::Code char_code)
 FontChar::FontChar(Code code)
     : m_code(code)
     , m_type_mask(GetTypeMask(code))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 FontChar::FontChar(Code code, gfx::FrameRect rect, gfx::Point2I offset, gfx::Point2I advance,
                    FT_Glyph ft_glyph, uint32_t face_index)
@@ -99,9 +97,7 @@ FontChar::FontChar(Code code, gfx::FrameRect rect, gfx::Point2I offset, gfx::Poi
     , m_visual_size(IsWhiteSpace() ? m_advance.GetX() : m_offset.GetX() + m_rect.size.GetWidth(),
                     IsWhiteSpace() ? m_advance.GetY() : m_offset.GetY() + m_rect.size.GetHeight())
     , m_glyph_ptr(std::make_shared<Glyph>(ft_glyph, face_index))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void FontChar::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride) const
 {

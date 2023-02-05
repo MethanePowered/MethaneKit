@@ -83,9 +83,7 @@ class Font::Impl // NOSONAR - class destructor is required, class has more than 
             , m_ft_face(LoadFace(font_lib.GetFreeTypeLibrary(), m_font_data))
             , m_ft_face_rec(GetFaceRec())
             , m_has_kerning(FT_HAS_KERNING(m_ft_face))
-        {
-            META_FUNCTION_TASK();
-        }
+        { }
 
         ~Face()
         {

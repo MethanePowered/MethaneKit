@@ -46,23 +46,17 @@ static ModifierMask GetModifierMask(Opt<Modifier> modifier_opt)
 KeyConverter::KeyConverter(Key key)
     : m_key(key)
     , m_modifiers(GetModifierMask(GetModifierKey()))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 KeyConverter::KeyConverter(Key key, ModifierMask modifiers)
     : m_key(key)
     , m_modifiers(modifiers)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 KeyConverter::KeyConverter(const NativeKey& native_key)
     : m_key(GetKeyByNativeCode(native_key))
     , m_modifiers(GetModifiersByNativeCode(native_key))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Opt<Modifier> KeyConverter::GetModifierKey() const noexcept
 {

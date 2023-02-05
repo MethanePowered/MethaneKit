@@ -65,9 +65,7 @@ public:
         : ResourceBaseType(context, settings, State::Undefined)
         , m_vk_device(GetVulkanContext().GetVulkanDevice().GetNativeDevice())
         , m_vk_resource(std::forward<T>(vk_resource))
-    {
-        META_FUNCTION_TASK();
-    }
+    { }
 
     ~Resource() override
     {

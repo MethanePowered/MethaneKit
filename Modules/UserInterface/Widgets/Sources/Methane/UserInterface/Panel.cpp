@@ -45,9 +45,7 @@ Panel::Panel(Context& ui_context, const UnitRect& ui_rect, Settings settings)
         }
     )
     , m_settings(std::move(settings))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 // Item overrides
 bool Panel::SetRect(const UnitRect& ui_rect)

@@ -43,18 +43,14 @@ static constexpr uint32_t g_max_cmd_lists_count = 32U;
 CommandKit::CommandKit(const Rhi::IContext& context, Rhi::CommandListType cmd_list_type)
     : m_context(context)
     , m_cmd_list_type(cmd_list_type)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 CommandKit::CommandKit(Rhi::ICommandQueue& cmd_queue)
     : Object(cmd_queue.GetName())
     , m_context(cmd_queue.GetContext())
     , m_cmd_list_type(cmd_queue.GetCommandListType())
     , m_cmd_queue_ptr(static_cast<CommandQueue&>(cmd_queue).GetPtr<CommandQueue>())
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool CommandKit::SetName(std::string_view name)
 {

@@ -91,9 +91,7 @@ Query::Query(Base::QueryPool& buffer, Base::CommandList& command_list, Index ind
     : Base::Query(buffer, command_list, index, data_range)
     , m_native_command_list(dynamic_cast<ICommandList&>(command_list).GetNativeCommandList())
     , m_native_query_type(GetQueryTypeDx(buffer.GetType()))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void Query::Begin()
 {
@@ -146,9 +144,7 @@ QueryPool::QueryPool(CommandQueue& command_queue, Type type,
     , m_result_resource_dx(dynamic_cast<IResource&>(*m_result_buffer_ptr))
     , m_native_query_type(GetQueryTypeDx(type))
     , m_native_query_heap(m_context_dx.GetNativeQueryHeap(GetQueryHeapTypeDx(type, command_queue.GetNativeCommandQueue().GetDesc().Type), max_query_count))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 CommandQueue& QueryPool::GetDirectCommandQueue() noexcept
 {
@@ -185,9 +181,7 @@ Rhi::ITimestampQueryPool::CalibratedTimestamps TimestampQueryPool::Calibrate()
 
 TimestampQuery::TimestampQuery(Base::QueryPool& buffer, Base::CommandList& command_list, Index index, Range data_range)
     : Query(buffer, command_list, index, data_range)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void TimestampQuery::InsertTimestamp()
 {

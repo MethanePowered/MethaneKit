@@ -36,9 +36,7 @@ AppContextController::AppContextController(Rhi::IRenderContext& context, const A
     : Controller("GRAPHICS SETTINGS")
     , pin::Keyboard::ActionControllerBase<AppContextAction>(action_by_keyboard_state, {})
     , m_context(context)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void AppContextController::OnKeyboardChanged(pin::Keyboard::Key key, pin::Keyboard::KeyState key_state,
                                              const pin::Keyboard::StateChange& state_change)

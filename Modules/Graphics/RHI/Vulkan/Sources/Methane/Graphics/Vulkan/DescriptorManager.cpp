@@ -38,9 +38,7 @@ DescriptorManager::DescriptorManager(Base::Context& context, uint32_t pool_sets_
     : Base::DescriptorManager(context, false)
     , m_pool_sets_count(pool_sets_count)
     , m_pool_size_ratio_by_desc_type(pool_size_ratio_by_desc_type)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void DescriptorManager::Release()
 {

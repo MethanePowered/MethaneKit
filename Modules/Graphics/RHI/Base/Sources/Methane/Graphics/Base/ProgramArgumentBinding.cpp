@@ -61,9 +61,7 @@ namespace Methane::Graphics::Base
 ProgramArgumentBinding::ProgramArgumentBinding(const Context& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void ProgramArgumentBinding::MergeSettings(const ProgramArgumentBinding& other)
 {

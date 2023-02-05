@@ -32,8 +32,6 @@ namespace Methane::Graphics::Vulkan
 
 TransferCommandList::TransferCommandList(CommandQueue& command_queue)
     : CommandList(vk::CommandBufferLevel::ePrimary, {}, command_queue, Rhi::CommandListType::Transfer)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 } // namespace Methane::Graphics::Vulkan

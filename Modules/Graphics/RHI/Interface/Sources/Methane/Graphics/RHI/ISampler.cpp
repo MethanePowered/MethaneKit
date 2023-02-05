@@ -38,17 +38,13 @@ SamplerSettings::SamplerSettings(const SamplerFilter& filter, const SamplerAddre
     , max_anisotropy(max_anisotropy)
     , border_color(border_color)
     , compare_function(compare_function)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 SamplerLevelOfDetail::SamplerLevelOfDetail(float bias, float min, float max)
     : min(min)
     , max(max)
     , bias(bias)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Ptr<ISampler> ISampler::Create(const IContext& context, const Settings& settings)
 {

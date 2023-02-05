@@ -31,9 +31,7 @@ namespace Methane::Platform::Input
 
 State::State(const ControllersPool& controllers)
     : m_controllers(controllers)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 const ControllersPool& State::GetControllers() const noexcept
 {

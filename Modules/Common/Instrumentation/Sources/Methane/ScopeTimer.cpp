@@ -118,9 +118,7 @@ void ScopeTimer::Aggregator::AddScopeTiming(const Registration& scope_registrati
 ScopeTimer::ScopeTimer(const char* scope_name)
     : Timer()
     , m_registration(Aggregator::Get().RegisterScope(scope_name))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ScopeTimer::~ScopeTimer()
 {

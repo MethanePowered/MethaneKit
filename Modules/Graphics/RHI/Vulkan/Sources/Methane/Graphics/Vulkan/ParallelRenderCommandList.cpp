@@ -41,9 +41,7 @@ ParallelRenderCommandList::ParallelRenderCommandList(CommandQueue& command_queue
     , m_ending_command_list(vk::CommandBufferLevel::eSecondary, // Ending command list creates Primary command buffer with Secondary level
                             vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit, &m_vk_ending_inheritance_info),
                             static_cast<CommandQueue&>(command_queue), Rhi::CommandListType::Render)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool ParallelRenderCommandList::SetName(std::string_view name)
 {

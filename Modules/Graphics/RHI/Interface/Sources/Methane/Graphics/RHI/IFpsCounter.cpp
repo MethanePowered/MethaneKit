@@ -32,9 +32,7 @@ FrameTiming::FrameTiming(double total_time_sec, double present_time_sec, double 
     : m_total_time_sec(total_time_sec)
     , m_present_time_sec(present_time_sec)
     , m_gpu_wait_time_sec(gpu_wait_time_sec)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 FrameTiming& FrameTiming::operator+=(const FrameTiming& other) noexcept
 {

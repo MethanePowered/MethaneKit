@@ -28,9 +28,7 @@ namespace Methane::Graphics::Base
 
 CommandListDebugGroup::CommandListDebugGroup(std::string_view name)
     : Object(name)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool CommandListDebugGroup::SetName(std::string_view)
 {

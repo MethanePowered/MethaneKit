@@ -43,9 +43,7 @@ inline void AddDescriptorHeap(UniquePtrs<DescriptorHeap>& desc_heaps, const Base
 
 DescriptorManager::DescriptorManager(Base::Context& context)
     : Base::DescriptorManager(context)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void DescriptorManager::Initialize(const Settings& settings)
 {

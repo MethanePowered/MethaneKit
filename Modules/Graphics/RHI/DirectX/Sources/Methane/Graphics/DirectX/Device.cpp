@@ -48,7 +48,6 @@ namespace Methane::Graphics::DirectX
 static std::string GetAdapterNameDxgi(IDXGIAdapter& adapter)
 {
     META_FUNCTION_TASK();
-
     DXGI_ADAPTER_DESC desc{};
     adapter.GetDesc(&desc);
     return nowide::narrow(desc.Description);
@@ -57,7 +56,6 @@ static std::string GetAdapterNameDxgi(IDXGIAdapter& adapter)
 bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter)
 {
     META_FUNCTION_TASK();
-
     DXGI_ADAPTER_DESC1 desc{};
     adapter.GetDesc1(&desc);
     return desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE;
@@ -109,9 +107,7 @@ Device::Device(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL fe
                    capabilities)
     , m_cp_adapter(cp_adapter)
     , m_feature_level(feature_level)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Ptr<Rhi::IRenderContext> Device::CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
 {

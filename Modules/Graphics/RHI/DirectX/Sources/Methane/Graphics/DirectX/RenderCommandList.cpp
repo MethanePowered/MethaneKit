@@ -67,21 +67,15 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(Rhi::RenderPrimitive primi
 
 RenderCommandList::RenderCommandList(Base::CommandQueue& cmd_queue)
     : CommandList<Base::RenderCommandList>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_queue)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 RenderCommandList::RenderCommandList(Base::CommandQueue& cmd_queue, Base::RenderPass& render_pass)
     : CommandList<Base::RenderCommandList>(D3D12_COMMAND_LIST_TYPE_DIRECT, cmd_queue, render_pass)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 RenderCommandList::RenderCommandList(Base::ParallelRenderCommandList& parallel_render_command_list)
     : CommandList<Base::RenderCommandList>(D3D12_COMMAND_LIST_TYPE_DIRECT, parallel_render_command_list)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void RenderCommandList::ResetNative(const Ptr<RenderState>& render_state_ptr)
 {

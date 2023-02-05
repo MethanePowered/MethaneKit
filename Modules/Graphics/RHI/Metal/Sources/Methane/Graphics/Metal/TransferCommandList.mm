@@ -30,9 +30,7 @@ namespace Methane::Graphics::Metal
 
 TransferCommandList::TransferCommandList(Base::CommandQueue& command_queue)
     : CommandList<id<MTLBlitCommandEncoder>, Base::CommandList>(true, command_queue, Rhi::CommandListType::Transfer)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void TransferCommandList::Reset(Rhi::ICommandListDebugGroup* debug_group_ptr)
 {

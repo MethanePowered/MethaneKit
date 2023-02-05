@@ -33,9 +33,7 @@ namespace Methane::Graphics::Vulkan
 ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, const Settings& settings)
     : Base::ProgramArgumentBinding(context, settings)
     , m_settings_vk(settings)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void ProgramArgumentBinding::SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t binding_value) noexcept
 {

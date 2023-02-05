@@ -58,9 +58,7 @@ using namespace Methane::Platform;
 }
 
 - (void) run
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 - (void) alert : (NSString*) ns_title withInformation: (NSString*) ns_info andStyle: (UIAlertActionStyle) ns_alert_style
 {

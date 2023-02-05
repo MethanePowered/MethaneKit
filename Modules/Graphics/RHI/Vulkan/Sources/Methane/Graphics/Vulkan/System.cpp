@@ -284,9 +284,7 @@ System::System()
 #ifndef NDEBUG
     , m_vk_unique_debug_utils_messanger(m_vk_unique_instance.get().createDebugUtilsMessengerEXTUnique(MakeDebugUtilsMessengerCreateInfoEXT()))
 #endif
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 System::~System()
 {
@@ -297,9 +295,7 @@ System::~System()
 }
 
 void System::CheckForChanges()
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Methane::Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps)
 {
