@@ -281,6 +281,8 @@ jobs:
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.coverageReportPaths=$TESTS_DIR/Coverage/Report/SonarQube.xml"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.scm.revision=${{ github.sha }}"
           if [ "${{ github.event_name }}" == "pull_request" ]; then
+            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.provider=GitHub"
+            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.github.repository=MethanePowered/MethaneKit"
             SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.key=${{ github.event.pull_request.number }}"
             SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }}"
             SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}"
