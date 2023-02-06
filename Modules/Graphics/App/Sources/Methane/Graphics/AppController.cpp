@@ -22,7 +22,6 @@ Base graphics application controller
 ******************************************************************************/
 
 #include <Methane/Graphics/AppController.h>
-#include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -33,17 +32,15 @@ AppController::AppController(IApp& application, const std::string& application_h
                              const Platform::AppController::ActionByKeyboardState& platform_action_by_keyboard_state,
                              const Graphics::AppController::ActionByKeyboardState& graphics_action_by_keyboard_state)
     : Platform::AppController(dynamic_cast<Platform::AppBase&>(application), application_help, platform_action_by_keyboard_state)
-    , Platform::Keyboard::ActionControllerBase<AppAction>(graphics_action_by_keyboard_state, {})
+    , pin::Keyboard::ActionControllerBase<AppAction>(graphics_action_by_keyboard_state, {})
     , m_application(application)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
-void AppController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Platform::Keyboard::StateChange& state_change)
+void AppController::OnKeyboardChanged(pin::Keyboard::Key key, pin::Keyboard::KeyState key_state, const pin::Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
     Platform::AppController::OnKeyboardChanged(key, key_state, state_change);
-    Platform::Keyboard::ActionControllerBase<AppAction>::OnKeyboardChanged(key, key_state, state_change);
+    pin::Keyboard::ActionControllerBase<AppAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AppController::OnKeyboardStateAction(AppAction action)
@@ -71,12 +68,12 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     }
 }
 
-Platform::Input::IHelpProvider::HelpLines AppController::GetHelp() const
+pin::IHelpProvider::HelpLines AppController::GetHelp() const
 {
     META_FUNCTION_TASK();
 
     HelpLines help_lines = Platform::AppController::GetHelp();
-    const HelpLines gfx_help_lines = Platform::Keyboard::ActionControllerBase<AppAction>::GetKeyboardHelp();
+    const HelpLines gfx_help_lines = pin::Keyboard::ActionControllerBase<AppAction>::GetKeyboardHelp();
     help_lines.insert(help_lines.end(), std::make_move_iterator(gfx_help_lines.begin()), std::make_move_iterator(gfx_help_lines.end()));
     return help_lines;
 }

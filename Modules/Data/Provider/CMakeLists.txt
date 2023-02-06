@@ -5,7 +5,7 @@ include(MethaneModules)
 get_module_dirs("Methane/Data")
 
 set(HEADERS
-    ${INCLUDE_DIR}/Provider.h
+    ${INCLUDE_DIR}/IProvider.h
     ${INCLUDE_DIR}/FileProvider.hpp
     ${INCLUDE_DIR}/ResourceProvider.hpp
     ${INCLUDE_DIR}/AppResourceProviders.h

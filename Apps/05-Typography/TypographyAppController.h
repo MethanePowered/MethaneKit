@@ -24,7 +24,7 @@ Typography application controller.
 #pragma once
 
 #include <Methane/Platform/Input/Controller.h>
-#include <Methane/Platform/KeyboardActionControllerBase.hpp>
+#include <Methane/Platform/Input/KeyboardActionControllerBase.hpp>
 
 namespace Methane::Tutorials
 {
@@ -43,20 +43,22 @@ enum class TypographyAppAction
     SlowdownTyping
 };
 
+namespace pin = Methane::Platform::Input;
+
 class TypographyAppController final
-    : public Platform::Input::Controller
-    , public Platform::Keyboard::ActionControllerBase<TypographyAppAction>
+    : public pin::Controller
+    , public pin::Keyboard::ActionControllerBase<TypographyAppAction>
 {
 public:
     TypographyAppController(TypographyApp& asteroids_app, const ActionByKeyboardState& action_by_keyboard_state);
 
     // Input::Controller implementation
-    void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
+    void OnKeyboardChanged(pin::Keyboard::Key, pin::Keyboard::KeyState, const pin::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
     
 protected:
-    // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(TypographyAppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
+    // Input::Keyboard::ActionControllerBase interface
+    void        OnKeyboardKeyAction(TypographyAppAction, pin::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(TypographyAppAction action) override;
     std::string GetKeyboardActionName(TypographyAppAction action) const override;
 

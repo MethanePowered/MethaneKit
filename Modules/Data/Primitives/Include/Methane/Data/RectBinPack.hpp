@@ -40,9 +40,7 @@ public:
     explicit RectBinPack(TSize size, TSize char_margins = TSize())
         : m_root_bin(TRect{ TPoint(), std::move(size) })
         , m_rect_margins(std::move(char_margins))
-    {
-        META_FUNCTION_TASK();
-    }
+    { }
 
     const TSize& GetSize() const { return m_root_bin.GetRect().size; }
 

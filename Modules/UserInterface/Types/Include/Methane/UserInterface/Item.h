@@ -33,8 +33,6 @@ namespace Methane::UserInterface
 class Item;
 class Context;
 
-namespace gfx = Methane::Graphics;
-
 struct IItemCallback
 {
     virtual void RectChanged(Item& item) = 0;

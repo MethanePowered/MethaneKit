@@ -24,42 +24,37 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #pragma once
 
 #include <Methane/UserInterface/Panel.h>
-#include <Methane/UserInterface/Text.h>
-#include <Methane/UserInterface/Font.h>
+#include <Methane/UserInterface/TextItem.h>
+#include <Methane/UserInterface/FontLibrary.h>
 #include <Methane/Graphics/Color.hpp>
-#include <Methane/Graphics/CommandList.h>
-#include <Methane/Platform/Keyboard.h>
+#include <Methane/Platform/Input/Keyboard.h>
 #include <Methane/Timer.hpp>
 #include <Methane/Memory.hpp>
-
-#include <magic_enum.hpp>
-
-namespace Methane::Graphics
-{
-struct RenderCommandList;
-}
 
 namespace Methane::UserInterface
 {
 
-class Font;
+class Text;
 
-class HeadsUpDisplay final : public Panel
+namespace pin = Methane::Platform::Input;
+
+class HeadsUpDisplay final
+    : public Panel
 {
 public:
     struct Settings
     {
-        Font::Description         major_font          { "Major", "Fonts/RobotoMono/RobotoMono-Bold.ttf",    24U };
-        Font::Description         minor_font          { "Minor", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 9U };
-        UnitPoint                 position            { Units::Dots, 20, 20 };
-        UnitSize                  text_margins        { Units::Dots, 16, 8  };
-        Color4F                   text_color          { 1.F,  1.F,  1.F,  1.F   };
-        Color4F                   on_color            { 0.3F, 1.F,  0.3F, 1.F   };
-        Color4F                   off_color           { 1.F,  0.3F, 0.3F, 1.F   };
-        Color4F                   help_color          { 1.F,  1.F,  0.0F, 1.F   };
-        Color4F                   background_color    { 0.F,  0.F,  0.F,  0.66F };
-        Platform::Keyboard::State help_shortcut       { Platform::Keyboard::Key::F1 };
-        double                    update_interval_sec = 0.33;
+        Font::Description    major_font          { "Major", "Fonts/RobotoMono/RobotoMono-Bold.ttf",    24U };
+        Font::Description    minor_font          { "Minor", "Fonts/RobotoMono/RobotoMono-Regular.ttf", 9U };
+        UnitPoint            position            { Units::Dots, 20, 20 };
+        UnitSize             text_margins        { Units::Dots, 16, 8  };
+        Color4F              text_color          { 1.F,  1.F,  1.F,  1.F   };
+        Color4F              on_color            { 0.3F, 1.F,  0.3F, 1.F   };
+        Color4F              off_color           { 1.F,  0.3F, 0.3F, 1.F   };
+        Color4F              help_color          { 1.F,  1.F,  0.0F, 1.F   };
+        Color4F              background_color    { 0.F,  0.F,  0.F,  0.66F };
+        pin::Keyboard::State help_shortcut       { pin::Keyboard::Key::F1 };
+        double               update_interval_sec = 0.33;
 
         Settings& SetMajorFont(const Font::Description& new_major_font) noexcept;
         Settings& SetMinorFont(const Font::Description& new_minor_font) noexcept;
@@ -70,11 +65,11 @@ public:
         Settings& SetOffColor(const Color4F& new_off_color) noexcept;
         Settings& SetHelpColor(const Color4F& new_help_color) noexcept;
         Settings& SetBackgroundColor(const Color4F& new_background_color) noexcept;
-        Settings& SetHelpShortcut(const Platform::Keyboard::State& new_help_shortcut) noexcept;
+        Settings& SetHelpShortcut(const pin::Keyboard::State& new_help_shortcut) noexcept;
         Settings& SetUpdateIntervalSec(double new_update_interval_sec) noexcept;
     };
 
-    HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings);
+    HeadsUpDisplay(Context& ui_context, const FontContext& font_context, const Settings& settings);
 
     const Settings& GetHudSettings() const { return m_settings; }
 
@@ -82,7 +77,7 @@ public:
     void SetUpdateInterval(double update_interval_sec);
 
     void Update(const FrameSize& render_attachment_size);
-    void Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group = nullptr) const override;
+    void Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr = nullptr) const override;
 
 private:
     enum class TextBlock : size_t
@@ -93,20 +88,22 @@ private:
         GpuName,
         HelpKey,
         FrameBuffersAndApi,
-        VSync
+        VSync,
+
+        Count
     };
 
-    using TextBlockPtrs = std::array<Ptr<Text>, magic_enum::enum_count<TextBlock>()>;
-    Text& GetTextBlock(TextBlock block) const;
+    using TextItemPtrs = std::array<Ptr<TextItem>, static_cast<size_t>(TextBlock::Count)>;
+    TextItem& GetTextBlock(TextBlock block) const;
 
     void LayoutTextBlocks();
     void UpdateAllTextBlocks(const FrameSize& render_attachment_size) const;
 
-    Settings            m_settings;
-    const Ptr<Font>     m_major_font_ptr;
-    const Ptr<Font>     m_minor_font_ptr;
-    const TextBlockPtrs m_text_blocks;
-    Timer               m_update_timer;
+    Settings           m_settings;
+    const Font         m_major_font;
+    const Font         m_minor_font;
+    const TextItemPtrs m_text_blocks;
+    Timer              m_update_timer;
 };
 
 } // namespace Methane::UserInterface

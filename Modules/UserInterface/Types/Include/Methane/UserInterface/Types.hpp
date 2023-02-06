@@ -29,7 +29,8 @@ Methane user interface types root header.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+
+namespace gfx = Methane::Graphics;
 
 namespace Methane::UserInterface
 {
@@ -50,9 +51,19 @@ using Point2T      = Data::Point<T, 2>;
 
 enum class Units : uint8_t
 {
-    Pixels = 0U,
+    Pixels,
     Dots,
 };
+
+constexpr std::string_view GetUnitsName(Units units) noexcept
+{
+    switch(units)
+    {
+    case Units::Pixels: return "pixels";
+    case Units::Dots:   return "dots";
+    default:            return "???";
+    }
+}
 
 template<typename BaseType>
 class UnitType : public BaseType
@@ -110,7 +121,7 @@ public:
     template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
     EnableReturnTypeIf<T, Data::Rect<C, D>, UnitType<Data::RectSize<D>>>  GetUnitSize() const noexcept { return UnitType<Data::RectSize<D>>(m_units, BaseType::size); }
 
-    explicit operator std::string() const { return fmt::format("{:s} in {:s}", BaseType::operator std::string(), magic_enum::enum_name(m_units)); }
+    explicit operator std::string() const { return fmt::format("{:s} in {:s}", BaseType::operator std::string(), GetUnitsName(m_units)); }
 
 private:
     Units m_units = Units::Pixels;

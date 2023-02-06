@@ -26,7 +26,8 @@ Base implementation of the Methane user interface application.
 #include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Panel.h>
 #include <Methane/UserInterface/Badge.h>
-#include <Methane/Graphics/CommandList.h>
+#include <Methane/Graphics/RHI/RenderCommandList.h>
+#include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/ImageLoader.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
@@ -63,64 +64,9 @@ static void SplitTextToColumns(std::string_view text_str, std::string& left_colu
     right_column_str = text_str.substr(middle_line_break_position + 1);
 };
 
-IApp::Settings& IApp::Settings::SetHeadsUpDisplayMode(HeadsUpDisplayMode new_heads_up_display_mode) noexcept
-{
-    META_FUNCTION_TASK();
-    heads_up_display_mode = new_heads_up_display_mode;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetLogoBadgeVisible(bool new_logo_badge_visible) noexcept
-{
-    META_FUNCTION_TASK();
-    logo_badge_visible = new_logo_badge_visible;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetLogoBadgeColor(const Color4F& new_logo_badge_color) noexcept
-{
-    META_FUNCTION_TASK();
-    logo_badge_color = new_logo_badge_color;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetTextColor(const Color4F& new_text_color) noexcept
-{
-    META_FUNCTION_TASK();
-    text_color = new_text_color;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetTextMargins(const UnitPoint& new_text_margings) noexcept
-{
-    META_FUNCTION_TASK();
-    text_margins = new_text_margings;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetWindowPadding(const UnitPoint& new_window_padding) noexcept
-{
-    META_FUNCTION_TASK();
-    window_padding = new_window_padding;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetMainFont(const Font::Description& new_main_font) noexcept
-{
-    META_FUNCTION_TASK();
-    main_font = new_main_font;
-    return *this;
-}
-
-IApp::Settings& IApp::Settings::SetHudSettings(const HeadsUpDisplay::Settings& new_hud_settings) noexcept
-{
-    META_FUNCTION_TASK();
-    hud_settings = new_hud_settings;
-    return *this;
-}
-
 AppBase::AppBase(const IApp::Settings& ui_app_settings)
     : m_app_settings(ui_app_settings)
+    , m_font_context(Data::FontProvider::Get()) // NOSONAR
 {
     META_FUNCTION_TASK();
     m_help_columns.first.text_name  = "Help Left";
@@ -128,15 +74,7 @@ AppBase::AppBase(const IApp::Settings& ui_app_settings)
     m_parameters.text_name          = "Parameters";
 }
 
-AppBase::~AppBase()
-{
-    META_FUNCTION_TASK();
-
-    // Clear static signleton fonts library to guarantee atlas textures destruction before descriptor heaps release
-    Font::Library::Get().Clear();
-}
-
-void AppBase::InitUI(const Platform::IApp& app, gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
+void AppBase::InitUI(const Platform::IApp& app, const rhi::CommandQueue& render_cmd_queue, const rhi::RenderPattern& render_pattern, const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
     m_ui_context_ptr = std::make_unique<Context>(app, render_cmd_queue, render_pattern);
@@ -156,19 +94,19 @@ void AppBase::InitUI(const Platform::IApp& app, gfx::CommandQueue& render_cmd_qu
 
     // Create heads-up-display (HUD)
     m_app_settings.hud_settings.position = m_app_settings.window_padding;
-    if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
+    if (m_app_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
     {
-        m_hud_ptr = std::make_shared<HeadsUpDisplay>(*m_ui_context_ptr, Data::FontProvider::Get(), m_app_settings.hud_settings);
+        m_hud_ptr = std::make_shared<HeadsUpDisplay>(*m_ui_context_ptr, m_font_context, m_app_settings.hud_settings);
     }
 
     // Update displayed text blocks
-    if (!m_help_columns.first.text_str.empty()  && UpdateTextItem(m_help_columns.first) &&
-        (m_help_columns.second.text_str.empty() || UpdateTextItem(m_help_columns.second)))
+    if (!m_help_columns.first.text_str.empty()  && UpdateTextPanel(m_help_columns.first) &&
+        (m_help_columns.second.text_str.empty() || UpdateTextPanel(m_help_columns.second)))
     {
         UpdateHelpTextPosition();
     }
 
-    if (!m_parameters.text_str.empty() && UpdateTextItem(m_parameters))
+    if (!m_parameters.text_str.empty() && UpdateTextPanel(m_parameters))
     {
         UpdateParametersTextPosition();
     }
@@ -179,7 +117,7 @@ void AppBase::ReleaseUI()
     META_FUNCTION_TASK();
     m_logo_badge_ptr.reset();
     m_hud_ptr.reset();
-    m_main_font_ptr.reset();
+    m_main_font_opt.reset();
     m_help_columns.first.Reset(false);
     m_help_columns.second.Reset(false);
     m_parameters.Reset(false);
@@ -207,7 +145,7 @@ bool AppBase::ResizeUI(const gfx::FrameSize& frame_size, bool)
 bool AppBase::UpdateUI() const
 {
     META_FUNCTION_TASK();
-    if (m_hud_ptr && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
+    if (m_hud_ptr && m_app_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
         m_hud_ptr->Update(m_frame_size);
 
     m_help_columns.first.Update(m_frame_size);
@@ -216,23 +154,23 @@ bool AppBase::UpdateUI() const
     return true;
 }
 
-void AppBase::RenderOverlay(gfx::RenderCommandList& cmd_list) const
+void AppBase::RenderOverlay(const rhi::RenderCommandList& cmd_list) const
 {
     META_FUNCTION_TASK();
-    META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Overlay Rendering");
+    META_DEBUG_GROUP_VAR(s_debug_group, "Overlay Rendering");
 
-    if (m_hud_ptr && m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface)
-        m_hud_ptr->Draw(cmd_list, s_debug_group.get());
+    if (m_hud_ptr && m_app_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface)
+        m_hud_ptr->Draw(cmd_list, &s_debug_group);
 
-    m_help_columns.first.Draw(cmd_list, s_debug_group.get());
-    m_help_columns.second.Draw(cmd_list, s_debug_group.get());
-    m_parameters.Draw(cmd_list, s_debug_group.get());
+    m_help_columns.first.Draw(cmd_list, &s_debug_group);
+    m_help_columns.second.Draw(cmd_list, &s_debug_group);
+    m_parameters.Draw(cmd_list, &s_debug_group);
 
     if (m_logo_badge_ptr)
-        m_logo_badge_ptr->Draw(cmd_list, s_debug_group.get());
+        m_logo_badge_ptr->Draw(cmd_list, &s_debug_group);
 }
 
-void AppBase::TextItem::Update(const FrameSize& frame_size) const
+void AppBase::TextPanel::Update(const FrameSize& frame_size) const
 {
     META_FUNCTION_TASK();
     if (text_ptr)
@@ -241,20 +179,20 @@ void AppBase::TextItem::Update(const FrameSize& frame_size) const
     }
 }
 
-void AppBase::TextItem::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group) const
+void AppBase::TextPanel::Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr) const
 {
     META_FUNCTION_TASK();
     if (panel_ptr)
     {
-        panel_ptr->Draw(cmd_list, p_debug_group);
+        panel_ptr->Draw(cmd_list, debug_group_ptr);
     }
     if (text_ptr)
     {
-        text_ptr->Draw(cmd_list, p_debug_group);
+        text_ptr->Draw(cmd_list, debug_group_ptr);
     }
 }
 
-void AppBase::TextItem::Reset(bool forget_text_string)
+void AppBase::TextPanel::Reset(bool forget_text_string)
 {
     META_FUNCTION_TASK();
 
@@ -265,7 +203,7 @@ void AppBase::TextItem::Reset(bool forget_text_string)
         text_str.clear();
 }
 
-bool AppBase::SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_mode)
+bool AppBase::SetHeadsUpDisplayUIMode(HeadsUpDisplayMode heads_up_display_mode)
 {
     META_FUNCTION_TASK();
     if (m_app_settings.heads_up_display_mode == heads_up_display_mode)
@@ -274,17 +212,17 @@ bool AppBase::SetHeadsUpDisplayUIMode(IApp::HeadsUpDisplayMode heads_up_display_
     m_app_settings.heads_up_display_mode = heads_up_display_mode;
 
     // Wait for all in-flight rendering to complete before creating and releasing GPU resources
-    m_ui_context_ptr->GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+    m_ui_context_ptr->GetRenderContext().WaitForGpu(rhi::RenderContext::WaitFor::RenderComplete);
 
-    if (m_app_settings.heads_up_display_mode == IApp::HeadsUpDisplayMode::UserInterface && m_ui_context_ptr)
+    if (m_app_settings.heads_up_display_mode == HeadsUpDisplayMode::UserInterface && m_ui_context_ptr)
     {
-        m_hud_ptr = std::make_shared<HeadsUpDisplay>(*m_ui_context_ptr, Data::FontProvider::Get(), m_app_settings.hud_settings);
+        m_hud_ptr = std::make_shared<HeadsUpDisplay>(*m_ui_context_ptr, m_font_context, m_app_settings.hud_settings);
     }
     else
     {
         m_hud_ptr.reset();
-        Font::Library::Get().RemoveFont(m_app_settings.hud_settings.major_font.name);
-        Font::Library::Get().RemoveFont(m_app_settings.hud_settings.minor_font.name);
+        m_font_context.GetFontLibrary().RemoveFont(m_app_settings.hud_settings.major_font.name);
+        m_font_context.GetFontLibrary().RemoveFont(m_app_settings.hud_settings.minor_font.name);
     }
     return true;
 }
@@ -296,12 +234,12 @@ bool AppBase::SetHelpText(std::string_view help_str)
         return false;
 
     // Wait for all in-flight rendering to complete before creating and releasing GPU resources
-    m_ui_context_ptr->GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+    m_ui_context_ptr->GetRenderContext().WaitForGpu(rhi::RenderContext::WaitFor::RenderComplete);
 
     m_help_text_str = help_str;
     m_help_columns.first.text_str = help_str;
 
-    if (!UpdateTextItem(m_help_columns.first))
+    if (!UpdateTextPanel(m_help_columns.first))
     {
         m_help_columns.second.Reset(true);
         return false;
@@ -317,8 +255,8 @@ bool AppBase::SetHelpText(std::string_view help_str)
         SplitTextToColumns(m_help_text_str, m_help_columns.first.text_str, m_help_columns.second.text_str);
         if (!m_help_columns.second.text_str.empty())
         {
-            UpdateTextItem(m_help_columns.first);
-            UpdateTextItem(m_help_columns.second);
+            UpdateTextPanel(m_help_columns.first);
+            UpdateTextPanel(m_help_columns.second);
         }
     }
     else
@@ -343,63 +281,64 @@ bool AppBase::SetParametersText(std::string_view parameters_str)
         return true;
 
     // Wait for all in-flight rendering to complete before creating and releasing GPU resources
-    m_ui_context_ptr->GetRenderContext().WaitForGpu(gfx::RenderContext::WaitFor::RenderComplete);
+    m_ui_context_ptr->GetRenderContext().WaitForGpu(rhi::RenderContext::WaitFor::RenderComplete);
 
-    if (!UpdateTextItem(m_parameters))
+    if (!UpdateTextPanel(m_parameters))
         return false;
 
     UpdateParametersTextPosition();
     return true;
 }
 
-bool AppBase::UpdateTextItem(TextItem& item)
+bool AppBase::UpdateTextPanel(TextPanel& text_panel)
 {
-    if ((!item.text_ptr && item.text_str.empty()) ||
-        (item.text_ptr  && item.text_ptr->GetTextUtf8() == item.text_str))
+    if ((!text_panel.text_ptr && text_panel.text_str.empty()) ||
+        (text_panel.text_ptr && text_panel.text_ptr->GetTextUtf8() == text_panel.text_str))
         return false;
 
-    if (item.text_str.empty())
+    if (text_panel.text_str.empty())
     {
-        item.Reset(true);
+        text_panel.Reset(true);
 
         // If main font is hold only by this class and Font::Library, then it can be removed as unused
-        if (m_main_font_ptr.use_count() == 2)
+        if (m_main_font_opt->GetUseCount() == 2)
         {
-            Font::Library::Get().RemoveFont(m_app_settings.main_font.name);
-            m_main_font_ptr.reset();
+            m_font_context.GetFontLibrary().RemoveFont(m_app_settings.main_font.name);
+            m_main_font_opt.reset();
         }
         return false;
     }
 
     META_CHECK_ARG_NOT_NULL_DESCR(m_ui_context_ptr, "help text can not be initialized without render context");
 
-    if (!item.panel_ptr)
+    if (!text_panel.panel_ptr)
     {
-        item.panel_ptr = std::make_shared<Panel>(*m_ui_context_ptr, UnitRect(),
+        text_panel.panel_ptr = std::make_shared<Panel>(*m_ui_context_ptr, UnitRect(),
             Panel::Settings
             {
-                item.text_name + " Panel"
+                text_panel.text_name + " Panel"
             }
         );
     }
 
-    if (item.text_ptr)
+    if (text_panel.text_ptr)
     {
-        item.text_ptr->SetText(item.text_str);
+        // Enforce TextItem rect update by resetting text frame rect
+        text_panel.text_ptr->SetTextInScreenRect(text_panel.text_str, UnitRect(text_panel.text_ptr->GetFrameRect().GetUnitOrigin()));
     }
     else
     {
-        item.text_ptr = std::make_shared<Text>(*m_ui_context_ptr, GetMainFont(),
+        text_panel.text_ptr = std::make_shared<TextItem>(*m_ui_context_ptr, GetMainFont(),
              Text::SettingsUtf8
              {
-                 item.text_name,
-                 item.text_str,
+                 text_panel.text_name,
+                 text_panel.text_str,
                  UnitRect(m_app_settings.text_margins),
                  Text::Layout{ Text::Wrap::None },
                  m_app_settings.text_color
              }
         );
-        item.panel_ptr->AddChild(*item.text_ptr);
+        text_panel.panel_ptr->AddChild(*text_panel.text_ptr);
     }
 
     return true;
@@ -451,18 +390,18 @@ void AppBase::UpdateParametersTextPosition() const
 Font& AppBase::GetMainFont()
 {
     META_FUNCTION_TASK();
-    if (m_main_font_ptr)
-        return *m_main_font_ptr;
+    if (m_main_font_opt)
+        return *m_main_font_opt;
 
     META_CHECK_ARG_NOT_NULL_DESCR(m_ui_context_ptr, "main font can not be initialized without render context");
-    m_main_font_ptr = Font::Library::Get().GetFont(
+    m_main_font_opt = m_font_context.GetFontLibrary().GetFont(
         Data::FontProvider::Get(),
         Font::Settings{ m_app_settings.main_font, m_ui_context_ptr->GetFontResolutionDpi(), Font::GetAlphabetDefault() }
-    ).GetPtr();
-    return *m_main_font_ptr;
+    );
+    return *m_main_font_opt;
 }
 
-const Data::Provider& AppBase::GetFontProvider() const noexcept
+const Data::IProvider& AppBase::GetFontProvider() const noexcept
 {
     META_FUNCTION_TASK();
     return Data::FontProvider::Get();

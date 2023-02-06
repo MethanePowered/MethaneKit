@@ -8,12 +8,14 @@ set(HEADERS
     ${INCLUDE_DIR}/Widgets.h
     ${INCLUDE_DIR}/Badge.h
     ${INCLUDE_DIR}/Panel.h
+    ${INCLUDE_DIR}/TextItem.h
     ${INCLUDE_DIR}/HeadsUpDisplay.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/Badge.cpp
     ${SOURCES_DIR}/Panel.cpp
+    ${SOURCES_DIR}/TextItem.cpp
     ${SOURCES_DIR}/HeadsUpDisplay.cpp
 )
 
@@ -26,16 +28,18 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethaneUserInterfaceTypes
         MethaneUserInterfaceTypography
-        MethaneGraphicsExtensions
-        MethanePlatformInput
+        MethaneGraphicsPrimitives
+        MethanePlatformInputKeyboard
     PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledExtraHeaders
-        MethaneGraphicsPrimitives
+        MethaneMathPrecompiledHeaders
         MethaneInstrumentation
+        magic_enum
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneMathPrecompiledHeaders)
+endif()
 
 target_include_directories(${TARGET}
     PRIVATE

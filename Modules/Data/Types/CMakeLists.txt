@@ -12,6 +12,8 @@ set(HEADERS
     ${INCLUDE_DIR}/Point.hpp
     ${INCLUDE_DIR}/Rect.hpp
     ${INCLUDE_DIR}/Chunk.hpp
+    ${INCLUDE_DIR}/EnumMask.hpp
+    ${INCLUDE_DIR}/EnumMaskUtil.hpp
     ${INCLUDE_DIR}/TimeRange.hpp
     ${INCLUDE_DIR}/TypeTraits.hpp
     ${INCLUDE_DIR}/TypeFormatters.hpp
@@ -35,7 +37,6 @@ target_include_directories(${TARGET}
 
 target_link_libraries(${TARGET}
     PUBLIC
-        MethanePrecompiledExtraHeaders
         MethaneDataRangeSet
         HLSLpp
     PRIVATE

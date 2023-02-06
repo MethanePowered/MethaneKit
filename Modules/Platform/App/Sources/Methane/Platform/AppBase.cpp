@@ -141,7 +141,7 @@ IApp::Settings& IApp::Settings::SetFullScreen(bool new_full_screen) noexcept
     return *this;
 }
 
-IApp::Settings& IApp::Settings::SetIconProvider(Data::Provider* new_icon_provider) noexcept
+IApp::Settings& IApp::Settings::SetIconProvider(Data::IProvider* new_icon_provider) noexcept
 {
     META_FUNCTION_TASK();
     icon_provider = new_icon_provider;
@@ -210,6 +210,8 @@ void AppBase::StartResizing()
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE(m_is_resizing);
     m_is_resizing = true;
+
+    META_LOG("\n========================== START RESIZING ==========================");
 }
 
 void AppBase::EndResizing()
@@ -217,6 +219,8 @@ void AppBase::EndResizing()
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE(m_is_resizing);
     m_is_resizing = false;
+
+    META_LOG("\n========================== END RESIZING ==========================");
 }
 
 bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
@@ -224,6 +228,7 @@ bool AppBase::Resize(const Data::FrameSize& frame_size, bool is_minimized)
     META_FUNCTION_TASK();
     const bool is_resizing = !is_minimized && m_frame_size != frame_size;
 
+    m_is_resize_required_to_render = false;
     m_is_minimized = is_minimized;
     if (!m_is_minimized)
     {
@@ -358,11 +363,22 @@ const AppBase::Message& AppBase::GetDeferredMessage() const
 bool AppBase::UpdateAndRender()
 {
     META_FUNCTION_TASK();
-    if (HasError())
+    if (HasError() || m_is_resize_required_to_render)
         return false;
 
     Update();
-    Render();
+
+    try
+    {
+        Render();
+    }
+    catch(const AppViewResizeRequiredError&)
+    {
+        // Prevent further rendering until next Resize event.
+        // This is a fix for dirty X11/NVidia Vulkan error vk::OutOfDateKHRError:
+        // see https://github.com/MethanePowered/MethaneKit/issues/105
+        m_is_resize_required_to_render = true;
+    }
     return true;
 }
 

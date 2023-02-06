@@ -36,9 +36,7 @@ public:
 
     explicit UberMesh(const Mesh::VertexLayout& vertex_layout)
         : BaseMeshT(Mesh::Type::Uber, vertex_layout)
-    {
-        META_FUNCTION_TASK();
-    }
+    { }
 
     void AddSubMesh(const BaseMeshT& sub_mesh, bool adjust_indices)
     {

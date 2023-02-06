@@ -5,17 +5,20 @@ add_executable(${TARGET}
     MouseTest.cpp
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
-
 target_link_libraries(${TARGET}
     PRIVATE
-        MethanePlatformInput
+        MethanePlatformInputKeyboard
+        MethanePlatformInputMouse
         MethaneBuildOptions
-        MethanePrecompiledHeaders
+        MethaneMathPrecompiledHeaders
+        magic_enum
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2WithMain
-        magic_enum
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneMathPrecompiledHeaders)
+endif()
 
 set_target_properties(${TARGET}
     PROPERTIES

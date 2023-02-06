@@ -3,7 +3,7 @@
 #   - Linux:   https://sonarcloud.io/project/overview?id=methane-powered-kit-linux
 #   - MacOS:   https://sonarcloud.io/project/overview?id=methane-powered-kit-macos
 
-name: 'CI Sonar Scan'
+name: '🎯 CI Sonar Scan'
 
 on:
   push:
@@ -13,6 +13,7 @@ on:
       - 'sonar-project.properties'
       - 'Apps/**'
       - 'Modules/**'
+      - 'Tests/**'
       - 'Externals/**'
       - 'CMake/**'
       - 'CMakeLists.txt'
@@ -26,6 +27,7 @@ on:
       - 'sonar-project.properties'
       - 'Apps/**'
       - 'Modules/**'
+      - 'Tests/**'
       - 'Externals/**'
       - 'CMake/**'
       - 'CMakeLists.txt'
@@ -34,13 +36,10 @@ on:
 env:
   product_ver_major: 0
   product_ver_minor: 7
-  product_ver_patch: 0
+  product_ver_patch: 1
   product_ver_build: ${{ github.run_number }}
-  # Find the latest sonar-scanner version here: https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
-  sonar_scanner_version: 4.7.0.2747
   sonar_server_url: "https://sonarcloud.io"
   sonar_organization: methane-powered
-  build_wrapper_out_dir: Build/Output/BuildWrapperOutput
   TRACY_NO_INVARIANT_CHECK: 1
 
 jobs:
@@ -51,79 +50,70 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-2019
+          - os: windows-latest
             os_name: windows
             name: "Win64_DX_SonarScan"
             named_logo: Windows
-            config_preset: "VS2019-Win64-DX-Scan"
-            build_preset: "VS2019-Win64-DX-Scan"
+            config_preset: "Ninja-Win-DX-Scan"
+            build_preset: "Ninja-Win-DX-Scan"
             sonar_project_key: "methane-powered-kit-windows"
-            build_wrapper_zip: "build-wrapper-win-x86"
-            build_wrapper_exe: "build-wrapper-win-x86-64"
-            tests_coverage_reports: "Build/Output/VS2019-Win64-DX-Scan/Install/Tests/Coverage/*.xml"
+            tests_coverage_reports: "Build/Output/Ninja-Win-DX-Scan/Install/Tests/Coverage/*.xml"
 
           - os: ubuntu-latest
             os_name: linux
             name: "Ubuntu_VK_SonarScan"
             named_logo: Linux
-            config_preset: "Make-Lin-VK-Scan"
-            build_preset: "Make-Lin-VK-Scan"
+            config_preset: "Ninja-Lin-VK-Scan"
+            build_preset: "Ninja-Lin-VK-Scan"
             sonar_project_key: "methane-powered-kit-linux"
-            build_wrapper_zip: "build-wrapper-linux-x86"
-            build_wrapper_exe: "build-wrapper-linux-x86-64"
-            tests_coverage_reports: "Build/Output/Make-Lin-VK-Scan/Build/MethaneTestCoverage.info"
+            tests_coverage_reports: "Build/Output/Ninja-Lin-VK-Scan/Build/MethaneTestCoverage.info"
 
           - os: macos-latest
             os_name: macosx
             name: "MacOS_MTL_SonarScan"
             named_logo: Apple
-            config_preset: "Xcode-Mac-MTL-Scan"
-            build_preset: "Xcode-Mac-MTL-Scan"
+            config_preset: "Ninja-Mac-MTL-Scan"
+            build_preset: "Ninja-Mac-MTL-Scan"
             sonar_project_key: "methane-powered-kit-macos"
-            build_wrapper_zip: "build-wrapper-macosx-x86"
-            build_wrapper_exe: "build-wrapper-macosx-x86"
-            tests_coverage_reports: "Build/Output/Xcode-Mac-MTL-Scan/Install/Tests/Coverage/*.lcov"
+            tests_coverage_reports: "Build/Output/Ninja-Mac-MTL-Scan/Install/Tests/Coverage/*.lcov"
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      BUILD_DIR: Build/Output/${{ matrix.config_preset }}/Build
+      INSTALL_DIR: Build/Output/${{ matrix.config_preset }}/Install
+      BUILD_LOG_FILE: Build/Output/${{ matrix.config_preset }}/Install/Build.log
+      COVERAGE_LOG_FILE: Build/Output/${{ matrix.config_preset }}/Install/Coverage.log
+      SCAN_LOG_FILE: Build/Output/${{ matrix.config_preset }}/Install/SonarScan.log
+      COMPILE_COMMANDS_FILE: Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Install Linux prerequisites
         if: ${{ matrix.os_name == 'linux' }}
-        run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev lcov
+        run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev lcov
 
       - name: Install Testspace
         uses: testspace-com/setup-testspace@v1
         with:
           domain: ${{ github.repository_owner }}
 
-      - name: Install JDK 11 # Required to use Sonar Scanner
-        uses: actions/setup-java@v3
-        with:
-          java-version: 11
-          distribution: 'zulu'
-
       - name: Install .NET Core # Required to use ReportGenerator
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.400
 
-      - name: Download sonar-scanner
-        shell: bash
-        run: |
-          mkdir -p $HOME/.sonar
-          curl -sSLo $HOME/.sonar/sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}.zip
-          unzip -o $HOME/.sonar/sonar-scanner.zip -d $HOME/.sonar/
+      - name: Install Sonar-Scanner
+        uses: sonarsource/sonarcloud-github-c-cpp@v1
 
-      - name: Download build-wrapper
-        shell: bash
-        run: |
-          curl -sSLo $HOME/.sonar/build-wrapper.zip ${{ env.sonar_server_url }}/static/cpp/${{ matrix.build_wrapper_zip }}.zip
-          unzip -o $HOME/.sonar/build-wrapper.zip -d $HOME/.sonar/
+      - name: Install Ninja
+        uses: MethanePowered/gha-setup-ninja@master
+        with:
+          version: 1.11.1
 
       - name: Initialize Externals Cache
         uses: actions/cache@v3
@@ -134,21 +124,33 @@ jobs:
       - name: Initialize Sonar Cache
         uses: actions/cache@v3
         with:
-          path: ~/.sonar/cache
-          key: SonarCache-${{ runner.os }}
+          path: .sonar/cache
+          key: SonarCache-v2-${{ runner.os }}
+
+      - name: Setup Developer Command Prompt for MSVC (VS2022 x64) to build with Ninja
+        if: ${{ matrix.os_name == 'windows' }}
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
       - name: CMake Configure Preset ${{ matrix.config_preset }}
         shell: bash
         run: |
           set -o pipefail
-          mkdir -p "Build/Output/${{ matrix.config_preset }}"
-          cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Build.log
+          mkdir -p "$INSTALL_DIR"
+          cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee $BUILD_LOG_FILE
+          ls -la "$BUILD_DIR" 2>&1 | tee -a $BUILD_LOG_FILE
+          if [ -f $COMPILE_COMMANDS_FILE ]; then
+            cp "$COMPILE_COMMANDS_FILE" "$INSTALL_DIR"
+          else
+            echo "Compile commands file was not found!"
+          fi
 
-      - name: CMake Build Preset ${{ matrix.build_preset }} under Build-Wrapper
+      - name: CMake Build Preset ${{ matrix.build_preset }}
         shell: bash
         run: |
           set -o pipefail
-          "$HOME/.sonar/${{ matrix.build_wrapper_zip }}/${{ matrix.build_wrapper_exe }}" --out-dir "${{ env.build_wrapper_out_dir }}" cmake --build --preset ${{ matrix.build_preset }} --target install 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Build.log
+          cmake --build --preset ${{ matrix.build_preset }} --target install 2>&1 | tee -a $BUILD_LOG_FILE
 
       - name: Download OpenCppCoverage
         if: ${{ matrix.os_name == 'windows' }}
@@ -202,9 +204,9 @@ jobs:
 
       - name: Collect tests code coverage using ctest and gcov/lcov on Linux
         if: ${{ matrix.os_name == 'linux' }}
-        working-directory: 'Build/Output/${{ matrix.config_preset }}/Build'
         run: |
-          make MethaneTestCoverage
+          set -o pipefail
+          cmake --build --preset ${{ matrix.build_preset }} --target MethaneTestCoverage 2>&1 | tee $COVERAGE_LOG_FILE
 
       - name: Run all unit-tests from install directory with LCov code coverage on MacOS
         if: ${{ matrix.os_name == 'macosx' }}
@@ -233,7 +235,7 @@ jobs:
           ls -la ./Coverage
 
       - name: Generate Code Coverage Reports
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.10
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.13
         with:
           reports: ${{ matrix.tests_coverage_reports }}
           targetdir: 'Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report'
@@ -269,14 +271,13 @@ jobs:
           else
               SONAR_SCANNER_EXE=sonar-scanner
           fi
-          SONAR_SCANNER_PATH=$HOME/.sonar/sonar-scanner-${{ env.sonar_scanner_version }}-${{ matrix.os_name }}/bin/$SONAR_SCANNER_EXE
-          chmod a+x "$SONAR_SCANNER_PATH"
+          # SONAR_SCANNER_EXE="$SONAR_SCANNER_EXE -X" # Uncomment to enable debug output
           TESTS_DIR=Build/Output/${{ matrix.config_preset }}/Install/Tests
-          SONAR_SCAN_CMD="$SONAR_SCANNER_PATH --define sonar.host.url=${{ env.sonar_server_url }}"
+          SONAR_SCAN_CMD="$SONAR_SCANNER_EXE --define sonar.host.url=${{ env.sonar_server_url }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.organization=${{ env.sonar_organization }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectKey=${{ matrix.sonar_project_key }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectVersion=${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.cfamily.build-wrapper-output=${{ env.build_wrapper_out_dir }}"
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.cfamily.compile-commands=Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.testExecutionReportPaths=$TESTS_DIR/Results/MethaneDataTypesTest.xml,$TESTS_DIR/Results/MethaneDataEventsTest.xml,$TESTS_DIR/Results/MethaneDataRangeSetTest.xml,$TESTS_DIR/Results/MethanePlatformInputTest.xml,$TESTS_DIR/Results/MethaneGraphicsTypesTest.xml,$TESTS_DIR/Results/MethaneGraphicsCameraTest.xml,$TESTS_DIR/Results/MethaneUserInterfaceTypesTest.xml"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.coverageReportPaths=$TESTS_DIR/Coverage/Report/SonarQube.xml"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.scm.revision=${{ github.sha }}"
@@ -287,36 +288,54 @@ jobs:
             SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }}"
             SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}"
           fi
-          echo "$SONAR_SCAN_CMD"
-          eval "$SONAR_SCAN_CMD"
+          set -o pipefail
+          echo "$SONAR_SCAN_CMD" | tee $SCAN_LOG_FILE
+          eval "$SONAR_SCAN_CMD" 2>&1 | tee -a $SCAN_LOG_FILE
+          cp sonar-project.properties $INSTALL_DIR
+          prop_files=(`find .sonar -name "sonar-scanner.properties"`)
+          for prop_file in "${prop_files[@]}"; do
+            cp $prop_file $INSTALL_DIR
+          done
+
+      - name: Archive Scan Artifacts
+        if: ${{ always() }}
+        shell: bash
+        working-directory: Build/Output/${{ matrix.config_preset }}/Install
+        run: 7z a -t7z -mx=9 MethaneKit_${{ matrix.name }}.7z *
+
+      - name: Upload Archived Scan Artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
+          path: Build/Output/${{ matrix.config_preset }}/Install/MethaneKit_${{ matrix.name }}.7z
 
       - name: Update Badge Parameters
-        id: badge-params
         if: ${{ github.event_name == 'push' && always() }}
         shell: bash
         run: |
           case "${{ job.status }}" in
             "success")
-              echo "::set-output name=message::passed"
-              echo "::set-output name=color::#56a93c"
+              echo "badge_message=passed" >> $GITHUB_ENV
+              echo "badge_color=#56a93c"  >> $GITHUB_ENV
               ;;
             "failure")
-              echo "::set-output name=message::failed"
-              echo "::set-output name=color::#cd6e57"
+              echo "badge_message=failed" >> $GITHUB_ENV
+              echo "badge_color=#cd6e57"  >> $GITHUB_ENV
               ;;
             "cancelled")
-              echo "::set-output name=message::cancelled"
-              echo "::set-output name=color::#9b9b9c"
+              echo "badge_message=cancelled" >> $GITHUB_ENV
+              echo "badge_color=#9b9b9c"     >> $GITHUB_ENV
               ;;
             *)
-              echo "::set-output name=message::undefined"
-              echo "::set-output name=color::purple"
+              echo "badge_message=undefined" >> $GITHUB_ENV
+              echo "badge_color=purple"      >> $GITHUB_ENV
               ;;
           esac
 
       - name: Update Badge JSON
         if: ${{ github.event_name == 'push' && always() }}
-        uses: schneegans/dynamic-badges-action@v1.4.0 # https://github.com/marketplace/actions/dynamic-badges
+        uses: schneegans/dynamic-badges-action@v1.6.0 # https://github.com/marketplace/actions/dynamic-badges
         with:
           auth: ${{ secrets.GIST_TOKEN }}
           gistID: 96d788046ccd52b45b3354a99f8569c3
@@ -325,5 +344,5 @@ jobs:
           label: ${{ matrix.name }}
           labelColor: #f5f5f5
           logoColor: #f5f5f5
-          message: ${{ steps.badge-params.outputs.message }}
-          color: ${{ steps.badge-params.outputs.color }}
+          message: ${{ env.badge_message }}
+          color: ${{ env.badge_color }}

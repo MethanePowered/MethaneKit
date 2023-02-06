@@ -37,6 +37,7 @@ Template vector type for arithmetic scalar type and fixed size:
 #include <hlsl++_vector_uint.h>
 #include <hlsl++_vector_float.h>
 #include <hlsl++_vector_double.h>
+#include <hlsl++_dependent.h>
 #include <fmt/format.h>
 #include <string>
 

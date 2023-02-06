@@ -31,15 +31,15 @@ namespace Methane::Tutorials
 
 ParallelRenderingAppController::ParallelRenderingAppController(ParallelRenderingApp& app, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller("PARALLEL RENDERING SETTINGS")
-    , Platform::Keyboard::ActionControllerBase<ParallelRenderingAppAction>(action_by_keyboard_state, {})
+    , pin::Keyboard::ActionControllerBase<ParallelRenderingAppAction>(action_by_keyboard_state, {})
     , m_app(app)
 {
 }
 
-void ParallelRenderingAppController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state,
-                                               const Platform::Keyboard::StateChange& state_change)
+void ParallelRenderingAppController::OnKeyboardChanged(pin::Keyboard::Key key, pin::Keyboard::KeyState key_state,
+                                               const pin::Keyboard::StateChange& state_change)
 {
-    Platform::Keyboard::ActionControllerBase<ParallelRenderingAppAction>::OnKeyboardChanged(key, key_state, state_change);
+    pin::Keyboard::ActionControllerBase<ParallelRenderingAppAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void ParallelRenderingAppController::OnKeyboardStateAction(ParallelRenderingAppAction action)
@@ -88,7 +88,7 @@ std::string ParallelRenderingAppController::GetKeyboardActionName(ParallelRender
     }
 }
 
-Platform::Input::IHelpProvider::HelpLines ParallelRenderingAppController::GetHelp() const
+pin::IHelpProvider::HelpLines ParallelRenderingAppController::GetHelp() const
 {
     return GetKeyboardHelp();
 }

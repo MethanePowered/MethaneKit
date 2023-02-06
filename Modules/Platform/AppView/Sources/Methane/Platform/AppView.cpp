@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2023 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ Methane application view.
 
 ******************************************************************************/
 
-namespace Methane::Platform::AppView
+#include <Methane/Platform/AppView.h>
+
+namespace Methane::Platform
 {
 
-void Dummy()
-{
-    // Prevents libtool warning for library: 
-    // the table of contents is empty (no object file members in the library define global symbols)
-}
+AppViewResizeRequiredError::AppViewResizeRequiredError()
+    : std::runtime_error("Render Context swap chain requires resizing.")
+{ }
 
 } // namespace Methane::Platform::AppView

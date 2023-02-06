@@ -31,16 +31,14 @@ namespace Methane::Platform
 
 AppController::AppController(AppBase& application, const std::string& application_help, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller(application_help)
-    , Keyboard::ActionControllerBase<AppAction>(action_by_keyboard_state, {})
+    , Input::Keyboard::ActionControllerBase<AppAction>(action_by_keyboard_state, {})
     , m_application(application)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
-void AppController::OnKeyboardChanged(Keyboard::Key key, Platform::Keyboard::KeyState key_state, const Keyboard::StateChange& state_change)
+void AppController::OnKeyboardChanged(Input::Keyboard::Key key, Input::Keyboard::KeyState key_state, const Input::Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    Keyboard::ActionControllerBase<AppAction>::OnKeyboardChanged(key, key_state, state_change);
+    Input::Keyboard::ActionControllerBase<AppAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AppController::OnKeyboardStateAction(AppAction action)

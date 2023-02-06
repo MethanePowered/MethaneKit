@@ -27,7 +27,7 @@
   - GCC 9 or later
   - X11, XCB, LCov (optional for code coverage) libraries
   ```console
-  sudo apt-get update && sudo apt-get install build-essential git cmake lcov xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
+  sudo apt-get update && sudo apt-get install build-essential git cmake lcov xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev
   ```
 - **MacOS**
   - MacOS 10.15 "Catalina" or later
@@ -76,7 +76,7 @@ cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTA
 cmake --build %OUTPUT_DIR%\Build --config Release --target install
 ```
 
-[Methane Graphics Core](/Modules/Graphics/Core) is built using **DirectX 12** graphics API by default on Windows.
+[Methane Graphics RHI](/Modules/Graphics/RHI) is built using **DirectX 12** graphics API by default on Windows.
 Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON`.
 Auxiliary build script [Build/Windows/Build.bat](/Build/Windows/Build.bat) can make it more simple for you:
 
@@ -99,7 +99,7 @@ cmake -S . -B $OUTPUT_DIR/Build -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="$(pw
 cmake --build $OUTPUT_DIR/Build --config Release --target install --parallel 8
 ```
 
-[Methane Graphics Core](/Modules/Graphics/Core) is built using **Vulkan** graphics API on Linux.
+[Methane Graphics RHI](/Modules/Graphics/RHI) is built using **Vulkan** graphics API on Linux.
 Auxiliary build script [Build/Unix/Build.sh](/Build/Unix/Build.sh) can make it more simple for you:
 
 ```console
@@ -136,7 +136,7 @@ Auxiliary build script [Build/Unix/Build.sh](/Build/Unix/Build.sh) can make it m
 Alternatively root [CMakeLists.txt](/CMakeLists.txt) can be opened directly in Visual Studio or 
 [any other IDE with native CMake support](/README.md#development-environments) and [built using CMake presets](#cmake-presets).
 
-[Methane Graphics Core](/Modules/Graphics/Core) is built using **Metal** graphics API on MacOS by default.
+[Methane Graphics RHI](/Modules/Graphics/RHI) is built using **Metal** graphics API on MacOS by default.
 Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON` or
 by running `Build/Unix/Build.sh --vulkan`, but it requires Vulkan SDK installation with MoltenVK driver implementation
 on top of Metal, which is not currently supporting all extensions required by Methane Kit.
@@ -188,27 +188,28 @@ Build options listed in table below can be used in cmake generator command line:
 cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=[ON|OFF]
 ```
 
-| Build Option Name                               | Initial Value           | Default Preset          | Profiling Preset        | Description                                                                         |
-|-------------------------------------------------|-------------------------|-------------------------|-------------------------|-------------------------------------------------------------------------------------|
-| <sub>METHANE_GFX_VULKAN_ENABLED</sub>           | <sub><b>OFF</b></sub>   | <sub><b>...</b></sub>   | <sub><b>...</b></sub>   | <sub>Enable Vulkan graphics API instead of platform native API</sub>                |
-| <sub>METHANE_APPS_BUILD_ENABLED</sub>           | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable applications build</sub>                                                |
-| <sub>METHANE_TESTS_BUILD_ENABLED</sub>          | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>OFF</b></sub>   | <sub>Enable tests build</sub>                                                       |
-| <sub>METHANE_CHECKS_ENABLED</sub>               | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable runtime checks of input arguments</sub>                                 |
-| <sub>METHANE_RUN_TESTS_DURING_BUILD</sub>       | <sub><b>ON</b></sub>    | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub>Enable test auto-run after module build</sub>                                  |
-| <sub>METHANE_UNITY_BUILD_ENABLED</sub>          | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable unity build speedup for some modules</sub>                              |
-| <sub>METHANE_CODE_COVERAGE_ENABLED</sub>        | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub>Enable code coverage data collection with GCC and Clang</sub>                  |
-| <sub>METHANE_SHADERS_CODEVIEW_ENABLED</sub>     | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable shaders code symbols viewing in debug tools</sub>                       |
-| <sub>METHANE_SHADERS_VALIDATION_ENABLED</sub>   | <sub><em>ON</em></sub>  | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable shaders DXIL code signature validation</sub>                            |
-| <sub>METHANE_OPEN_IMAGE_IO_ENABLED</sub>        | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub>Enable using OpenImageIO library for images loading</sub>                      |
-| <sub>METHANE_COMMAND_DEBUG_GROUPS_ENABLED</sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable command list debug groups with frame markup</sub>                       |
-| <sub>METHANE_LOGGING_ENABLED</sub>              | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub>Enable debug logging</sub>                                                     |
-| <sub>METHANE_SCOPE_TIMERS_ENABLED</sub>         | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable low-overhead profiling with scope-timers</sub>                          |
-| <sub>METHANE_ITT_INSTRUMENTATION_ENABLED</sub>  | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub><b>ON</b></sub>    | <sub>Enable ITT instrumentation for trace capture with Intel GPA or VTune</sub>     |
-| <sub>METHANE_ITT_METADATA_ENABLED</sub>         | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable ITT metadata for tasks and events like function source locations</sub>  |
-| <sub>METHANE_GPU_INSTRUMENTATION_ENABLED</sub>  | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable GPU instrumentation to collect command list execution timings</sub>     |
-| <sub>METHANE_TRACY_PROFILING_ENABLED</sub>      | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable realtime profiling with Tracy</sub>                                     |
-| <sub>METHANE_TRACY_PROFILING_ON_DEMAND</sub>    | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>ON</b></sub>    | <sub>Enable Tracy data collection on demand, after client connection</sub>          |
-| <sub>METHANE_APPLE_CODE_SIGNING_ENABLED</sub>   | <sub><em>OFF</em></sub> | <sub><em>OFF</em></sub> | <sub><b>OFF</b></sub>   | <sub>Enable code signing on Apple platforms (requires APPLE_DEVELOPMENT_TEAM)</sub> |
+| Build Option Name                               | Initial Value                     | Default Preset                    | Profiling Preset                 | Description                                                                         |
+|-------------------------------------------------|-----------------------------------|-----------------------------------|----------------------------------|-------------------------------------------------------------------------------------|
+| <sub>METHANE_GFX_VULKAN_ENABLED</sub>           | <sub><b>OFF</b></sub>             | <sub><b>...</b></sub>             | <sub><b>...</b></sub>            | <sub>Enable Vulkan graphics API instead of platform native API</sub>                |
+| <sub>METHANE_APPS_BUILD_ENABLED</sub>           | <sub><b>ON</b></sub>              | <sub><b>ON</b></sub>              | <sub><b>ON</b></sub>             | <sub>Enable applications build</sub>                                                |
+| <sub>METHANE_TESTS_BUILD_ENABLED</sub>          | <sub><b>ON</b></sub>              | <sub><b>ON</b></sub>              | <sub><b>OFF</b></sub>            | <sub>Enable tests build</sub>                                                       |
+| <sub>METHANE_RHI_PIMPL_INLINE_ENABLED</sub>     | <sub><b>ON (in Release)</b></sub> | <sub><b>ON (in Release)</b></sub> | <sub><b>ON</b></sub>             | <sub>Enable RHI PIMPL implementation inlining</sub>                                 |
+| <sub>METHANE_PRECOMPILED_HEADERS_ENABLED</sub>  | <sub><b>ON (not Apple)</b></sub>  | <sub><b>ON (not Apple)</b></sub>  | <sub><b>ON (not Apple)</b></sub> | <sub>Enable precompiled headers</sub>                                               |
+| <sub>METHANE_CHECKS_ENABLED</sub>               | <sub><b>ON</b></sub>              | <sub><b>ON</b></sub>              | <sub><b>ON</b></sub>             | <sub>Enable runtime checks of input arguments</sub>                                 |
+| <sub>METHANE_RUN_TESTS_DURING_BUILD</sub>       | <sub><b>ON</b></sub>              | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>          | <sub>Enable test auto-run after module build</sub>                                  |
+| <sub>METHANE_UNITY_BUILD_ENABLED</sub>          | <sub><b>ON</b></sub>              | <sub><b>ON</b></sub>              | <sub><b>ON</b></sub>             | <sub>Enable unity build speedup for some modules</sub>                              |
+| <sub>METHANE_CODE_COVERAGE_ENABLED</sub>        | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>          | <sub>Enable code coverage data collection with GCC and Clang</sub>                  |
+| <sub>METHANE_SHADERS_CODEVIEW_ENABLED</sub>     | <sub><em>OFF</em></sub>           | <sub><b>ON</b></sub>              | <sub><b>ON</b></sub>             | <sub>Enable shaders code symbols viewing in debug tools</sub>                       |
+| <sub>METHANE_OPEN_IMAGE_IO_ENABLED</sub>        | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>          | <sub>Enable using OpenImageIO library for images loading</sub>                      |
+| <sub>METHANE_COMMAND_DEBUG_GROUPS_ENABLED</sub> | <sub><em>OFF</em></sub>           | <sub><b>ON</b></sub>              | <sub><b>ON</b></sub>             | <sub>Enable command list debug groups with frame markup</sub>                       |
+| <sub>METHANE_LOGGING_ENABLED</sub>              | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>          | <sub>Enable debug logging</sub>                                                     |
+| <sub>METHANE_SCOPE_TIMERS_ENABLED</sub>         | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>ON</b></sub>             | <sub>Enable low-overhead profiling with scope-timers</sub>                          |
+| <sub>METHANE_ITT_INSTRUMENTATION_ENABLED</sub>  | <sub><em>OFF</em></sub>           | <sub><b>ON</b></sub>              | <sub><b>ON</b></sub>             | <sub>Enable ITT instrumentation for trace capture with Intel GPA or VTune</sub>     |
+| <sub>METHANE_ITT_METADATA_ENABLED</sub>         | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>ON</b></sub>             | <sub>Enable ITT metadata for tasks and events like function source locations</sub>  |
+| <sub>METHANE_GPU_INSTRUMENTATION_ENABLED</sub>  | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>ON</b></sub>             | <sub>Enable GPU instrumentation to collect command list execution timings</sub>     |
+| <sub>METHANE_TRACY_PROFILING_ENABLED</sub>      | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>ON</b></sub>             | <sub>Enable realtime profiling with Tracy</sub>                                     |
+| <sub>METHANE_TRACY_PROFILING_ON_DEMAND</sub>    | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>ON</b></sub>             | <sub>Enable Tracy data collection on demand, after client connection</sub>          |
+| <sub>METHANE_APPLE_CODE_SIGNING_ENABLED</sub>   | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>OFF</b></sub>            | <sub>Enable code signing on Apple platforms (requires APPLE_DEVELOPMENT_TEAM)</sub> |
 
 ### CMake Presets
 

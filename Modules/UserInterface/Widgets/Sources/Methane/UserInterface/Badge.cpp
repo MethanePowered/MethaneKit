@@ -76,18 +76,18 @@ Badge::Settings& Badge::Settings::SetTextureMode(TextureMode new_texture_mode) n
     return *this;
 }
 
-Badge::Badge(Context& ui_context, Data::Provider& data_provider, const std::string& image_path, const Settings& settings)
+Badge::Badge(Context& ui_context, Data::IProvider& data_provider, const std::string& image_path, const Settings& settings)
     : Badge(ui_context,
             gfx::ImageLoader(data_provider).LoadImageToTexture2D(ui_context.GetRenderCommandQueue(),
-                                                                 image_path, gfx::ImageLoader::Options::None,
+                                                                 image_path, gfx::ImageLoader::OptionMask{},
                                                                  fmt::format("{} Texture", settings.name)),
             settings)
 {
 }
 
-Badge::Badge(Context& ui_context, const Ptr<gfx::Texture>& texture_ptr, const Settings& settings)
+Badge::Badge(Context& ui_context, const rhi::Texture& texture, const Settings& settings)
     : Item(ui_context, GetBadgeRectInFrame(ui_context, ui_context.GetFrameSizeIn<Units::Pixels>(), settings))
-    , ScreenQuad(ui_context.GetRenderCommandQueue(), ui_context.GetRenderPattern(), texture_ptr,
+    , ScreenQuad(ui_context.GetRenderCommandQueue(), ui_context.GetRenderPattern(), texture,
         ScreenQuad::Settings
         {
             settings.name,
@@ -99,9 +99,7 @@ Badge::Badge(Context& ui_context, const Ptr<gfx::Texture>& texture_ptr, const Se
     )
     , m_settings(settings)
     , m_frame_size(ui_context.GetFrameSizeIn<Units::Pixels>())
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void Badge::FrameResize(const UnitSize& frame_size, Opt<UnitSize> badge_size, Opt<UnitSize> margins)
 {

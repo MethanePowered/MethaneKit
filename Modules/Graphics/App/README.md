@@ -1,35 +1,35 @@
 # Graphics App
 
 Graphics application rendering infrastructure implemented on top of [application platform abstraction](../../Platform/App)
-and [graphics Core API](../Core).
+and [graphics RHI API](../RHI).
 
 ## Graphics Application Base Class
 
-### [Graphics::IApp](Include/Methane/Graphics/App.h)
+### [Graphics::IApp](Include/Methane/Graphics/IApp.h)
 
 `Graphics::IApp` interface contains declaration of `Settings` structure and abstract methods
 to get current graphics application settings and methods to modify individual setting values.
 The following settings are available:
 
-| IApp Setting             | Type                 | Default Value | Cmd-Line Option | Description           |
-|--------------------------|----------------------|---------------|-----------------|-----------------------|
-| screen_pass_access       | RenderPass::Access   | None          |                 | Render pass access mask Graphics::RenderPass::Access |
-| animations_enabled       | bool                 | true          | -a,--animations | Flag to enable or disable all animations |
-| show_hud_in_window_title | bool                 | true          |                 | Flag to display or hide graphics runtime parameters in window title |
-| default_device_index     | int32_t              | 0             | -d,--device     | Default GPU device used at startup: 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device |
-| device_capabilities      | Device::Capabilities | Default       |                 | Device capabilities |
+| IApp Setting             | Type               | Default Value | Cmd-Line Option | Description                                                                                            |
+|--------------------------|--------------------|---------------|-----------------|--------------------------------------------------------------------------------------------------------|
+| screen_pass_access       | IRenderPass::AccessMask | None          |                 | Render pass access mask Graphics::IRenderPass::AccessMask                                                   |
+| animations_enabled       | bool               | true          | -a,--animations | Flag to enable or disable all animations                                                               |
+| show_hud_in_window_title | bool               | true          |                 | Flag to display or hide graphics runtime parameters in window title                                    |
+| default_device_index     | int32_t            | 0             | -d,--device     | Default GPU device used at startup: 0 - default h/w GPU, 1 - second h/w GPU, -1 - emulated WARP device |
+| device_capabilities      | DeviceCaps         | Default       |                 | Device capabilities                                                                                    |
 
-| Device::Capabilities     | Type                 | Default Value | Description     |
-|--------------------------|----------------------|---------------|-----------------|
-| features                 | Features             | All           | Required device features mask |
-| present_to_window        | bool                 | true          | Flag of device is going to be used for presenting to window |
-| render_queues_count      | uint32_t             | 1             | Count of render command queues used by application |  
-| blit_queues_count        | uint32_t             | 1             | Count of BLIT command queues used by application |
+| DeviceCaps            | Type                 | Default Value | Description                                                 |
+|-----------------------|----------------------|---------------|-------------------------------------------------------------|
+| features              | Features             | All           | Required device features mask                               |
+| present_to_window     | bool                 | true          | Flag of device is going to be used for presenting to window |
+| render_queues_count   | uint32_t             | 1             | Count of render command queues used by application          |  
+| transfer_queues_count | uint32_t             | 1             | Count of Transfer command queues used by application        |
 
 ### [Graphics::App](Include/Methane/Graphics/App.hpp)
 
 Graphics application base template class `Graphics::App<Graphics::AppFrame>` is derived from [Platform::App](../../Platform/App)
-extending it with common graphics application functionality implemented with [Graphics::Core](../Core) API:
+extending it with common graphics application functionality implemented with [Graphics::RHI](../RHI) API:
 - Parsing graphics app and context settings from command line arguments.
 - Graphics render context initialization using provided settings.
 - Initialization of the common graphics resources, such as frame-buffers and m_depth textures, final view state.
@@ -45,16 +45,16 @@ and extended with other frame-dependent resources in final applications.
 `Graphics::AppSettings` structure aggregates 3 setting structures passed all together to the `Graphics::App` constructor:
 - [Graphics::IApp::Settings](#graphicsiappincludemethanegraphicsapph) - graphics app settings described above
 - [Platform::AppBase::Settings](../../Platform/App/README.md#platformappbaseincludemethaneplatformappbaseh) - platform app settings
-- [Graphics::RenderContext::Settings](../Core) - render context settings
+- [Graphics::RenderContextSettings](../RHI/Interface/Include/Methane/Graphics/IRenderContext.h) - render context settings
 
 Some parameters of the render context settings can be also changed with command line flags:
 
-| Render Context Setting                               | Type     | Default Value | Cmd-Line Option             | Description           |
-|------------------------------------------------------|----------|---------------|-----------------------------|-----------------------|
-| vsync_enabled                                        | bool     | true          | -v,--vsync                  | Vertical synchronization |
-| frame_buffers_count                                  | uint32_t | 3             | -b,--frame-buffers          | Frame buffers count in swap-chain |
-| options_mask & Options::EmulatedRenderPassOnWindows  | bool     | false         | -e,--emulated-render-pass   | Render pass emulation on Windows |
-| options_mask & Options::BlitWithDirectQueueOnWindows | bool     | false         | -q,--blit-with-direct-queue | BLIT command lists and queues use DIRECT instead of COPY type in DX API |
+| Render Context Setting                                         | Type     | Default Value | Cmd-Line Option                 | Description                                                                 |
+|----------------------------------------------------------------|----------|---------------|---------------------------------|-----------------------------------------------------------------------------|
+| vsync_enabled                                                  | bool     | true          | -v,--vsync                      | Vertical synchronization                                                    |
+| frame_buffers_count                                            | uint32_t | 3             | -b,--frame-buffers              | Frame buffers count in swap-chain                                           |
+| options_mask & ContextOption::EmulatedRenderPassOnWindows      | bool     | false         | -e,--emulated-render-pass       | Render pass emulation on Windows                                            |
+| options_mask & ContextOption::TransferWithDirectQueueOnWindows | bool     | false         | -q,--transfer-with-direct-queue | Transfer command lists and queues use DIRECT instead of COPY type in DX API |
 
 ## Graphics Application Controllers
 

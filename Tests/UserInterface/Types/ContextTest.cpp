@@ -17,15 +17,20 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Tests/UserInterface/Types/ContextTest.cpp
-Unit-tests of the User Interface Context
+Unit-tests of the User Interface IContext
 
 ******************************************************************************/
 
-#include "FakeRenderContext.hpp"
-#include "FakePlatformApp.hpp"
 #include "UnitTypeCatchHelpers.hpp"
+#include "FakePlatformApp.hpp"
+
+#include <Methane/Graphics/RHI/System.h>
+#include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/RenderPattern.h>
+#include <Methane/Graphics/RHI/CommandQueue.h>
 
 #include <Methane/UserInterface/Context.h>
+#include <Methane/UserInterface/FontLibrary.h>
 #include <Methane/UserInterface/TypeTraits.hpp>
 
 #include <catch2/catch_template_test_macros.hpp>
@@ -36,24 +41,37 @@ using namespace Methane::Graphics;
 using namespace Methane::Platform;
 using namespace Methane::UserInterface;
 
-static const float    g_dot_to_px_factor = 2.F;
-static const uint32_t g_font_resolution_dpi = 96;
-static const FakeApp  g_fake_app(2.F, 96);
-static const UnitSize g_frame_size_dot { Units::Dots, 960U, 540U };
-static const UnitSize g_frame_size_px  { Units::Pixels, 1920U, 1080U };
+namespace tf
+{
+class Executor { public: Executor() = default; };
+}
+
+static const float       g_dot_to_px_factor = 2.F;
+static const uint32_t    g_font_resolution_dpi = 96;
+static const FakeApp     g_fake_app(2.F, 96);
+static const UnitSize    g_frame_size_dot { Units::Dots, 960U, 540U };
+static const UnitSize    g_frame_size_px  { Units::Pixels, 1920U, 1080U };
+static tf::Executor      g_fake_executor;
+
+static Rhi::Device GetTestDevice()
+{
+    const Rhi::Devices& devices = Rhi::System::Get().UpdateGpuDevices();
+    CHECK(devices.size() > 0);
+    return devices[0];
+}
 
 TEST_CASE("UI Context Accessors", "[ui][context][accessor]")
 {
-    const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() });
-    const auto render_cmd_queue_ptr = std::make_shared<FakeCommandQueue>(*render_context_ptr, CommandList::Type::Render);
-    const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
-    UserInterface::Context ui_context(g_fake_app, *render_cmd_queue_ptr, *render_pattern_ptr);
+    const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
+    const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
+    const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
+    UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
 
     SECTION("Get UI render context")
     {
         const UserInterface::Context& const_ui_context = ui_context;
-        CHECK(std::addressof(ui_context.GetRenderContext()) == render_context_ptr.get());
-        CHECK(std::addressof(const_ui_context.GetRenderContext()) == render_context_ptr.get());
+        CHECK(std::addressof(ui_context.GetRenderContext().GetInterface())       == std::addressof(render_context.GetInterface()));
+        CHECK(std::addressof(const_ui_context.GetRenderContext().GetInterface()) == std::addressof(render_context.GetInterface()));
     }
 
     SECTION("Get UI content scale factor and font DPI")
@@ -74,10 +92,10 @@ TEST_CASE("UI Context Accessors", "[ui][context][accessor]")
 
 TEMPLATE_TEST_CASE("UI Context Convertors of Unit Types", "[ui][context][unit][convert]", ALL_BASE_TYPES)
 {
-    const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() });
-    const auto render_cmd_queue_ptr = std::make_shared<FakeCommandQueue>(*render_context_ptr, CommandList::Type::Render);
-    const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
-    const UserInterface::Context ui_context(g_fake_app, *render_cmd_queue_ptr, *render_pattern_ptr);
+const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
+const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
+const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
+UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
 
     const UnitType<TestType> item_1pix = CreateUnitItem<TestType>(Units::Pixels, 1);
     const UnitType<TestType> item_2pix = CreateUnitItem<TestType>(Units::Pixels, 2);
@@ -166,10 +184,10 @@ TEMPLATE_TEST_CASE("UI Context Convertors of Unit Types", "[ui][context][unit][c
 
 TEMPLATE_TEST_CASE("UI Context Comparison of Unit Types", "[ui][context][unit][convert]", ALL_BASE_TYPES)
 {
-    const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() });
-    const auto render_cmd_queue_ptr = std::make_shared<FakeCommandQueue>(*render_context_ptr, CommandList::Type::Render);
-    const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
-    const UserInterface::Context ui_context(g_fake_app, *render_cmd_queue_ptr, *render_pattern_ptr);
+    const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
+    const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
+    const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
+    UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
 
     const UnitType<TestType> item_1pix = CreateUnitItem<TestType>(Units::Pixels, 1);
     const UnitType<TestType> item_2pix = CreateUnitItem<TestType>(Units::Pixels, 2);
@@ -192,10 +210,10 @@ TEMPLATE_TEST_CASE("UI Context Comparison of Unit Types", "[ui][context][unit][c
 
 TEMPLATE_TEST_CASE("UI Context Convertors of Scalar Types", "[ui][context][unit][convert]", int32_t, uint32_t, float, double)
 {
-    const auto render_context_ptr = std::make_shared<FakeRenderContext>(RenderContext::Settings{ g_frame_size_px.AsBase() });
-    const auto render_cmd_queue_ptr = std::make_shared<FakeCommandQueue>(*render_context_ptr, CommandList::Type::Render);
-    const auto render_pattern_ptr = std::make_shared<FakeRenderPattern>(*render_context_ptr);
-    const UserInterface::Context ui_context(g_fake_app, *render_cmd_queue_ptr, *render_pattern_ptr);
+    const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
+    const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
+    const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
+    UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
     const TestType scalar_value = 640;
 
     SECTION("Convert scalar Dots to Pixels")

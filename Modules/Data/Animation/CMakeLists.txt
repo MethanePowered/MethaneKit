@@ -29,14 +29,16 @@ target_include_directories(${TARGET}
         Include
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneCommonPrecompiledHeaders)
+endif()
 
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneInstrumentation
     PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledHeaders
+        MethaneCommonPrecompiledHeaders
         MethanePrimitives
 )
 

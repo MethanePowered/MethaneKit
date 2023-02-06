@@ -28,6 +28,7 @@ Point type wrapper around HLSL++ vector type
 #include <fmt/format.h>
 
 #include <string>
+#include <array>
 #include <cstdint>
 
 namespace Methane::Data

@@ -171,7 +171,9 @@ function(add_methane_application)
             $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
     )
 
-    target_precompile_headers(${APP_TARGET} REUSE_FROM MethaneKit)
+    if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+        target_precompile_headers(${APP_TARGET} REUSE_FROM MethaneKit)
+    endif()
 
     target_include_directories(${APP_TARGET}
         PRIVATE

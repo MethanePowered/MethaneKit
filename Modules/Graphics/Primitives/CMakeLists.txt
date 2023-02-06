@@ -1,49 +1,116 @@
 set(TARGET MethaneGraphicsPrimitives)
 
-include(MethaneModules)
+include(MethaneShaders)
 
 get_module_dirs("Methane/Graphics")
 
-list(APPEND HEADERS
-    ${INCLUDE_DIR}/FpsCounter.h
+set(SHADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Shaders)
+
+set(HEADERS
+    ${INCLUDE_DIR}/Primitives.h
+    ${INCLUDE_DIR}/ImageLoader.h
+    ${INCLUDE_DIR}/MeshBuffersBase.h
+    ${INCLUDE_DIR}/MeshBuffers.hpp
+    ${INCLUDE_DIR}/SkyBox.h
+    ${INCLUDE_DIR}/ScreenQuad.h
 )
 
-list(APPEND SOURCES
-    ${SOURCES_DIR}/FpsCounter.cpp
+set(SOURCES
+    ${SOURCES_DIR}/ImageLoader.cpp
+    ${SOURCES_DIR}/MeshBuffersBase.cpp
+    ${SOURCES_DIR}/SkyBox.cpp
+    ${SOURCES_DIR}/ScreenQuad.cpp
+    ${SHADERS_DIR}/ScreenQuadConstants.h
+    ${SHADERS_DIR}/SkyBoxUniforms.h
 )
 
-if(METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)
-    list(APPEND HEADERS
-        ${INCLUDE_PLATFORM_DIR}/DirectXErrorHandling.h
-    )
-    list(APPEND SOURCES
-        ${SOURCES_PLATFORM_DIR}/DirectXErrorHandling.cpp
-    )
-endif()
+set(HLSL_SOURCES
+    ${SHADERS_DIR}/SkyBox.hlsl
+    ${SHADERS_DIR}/ScreenQuad.hlsl
+)
 
 add_library(${TARGET} STATIC
     ${HEADERS}
     ${SOURCES}
 )
 
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhiImpl)
+endif()
+
+target_link_libraries(${TARGET}
+    PUBLIC
+        MethaneGraphicsRhiImpl
+        MethaneGraphicsMesh
+        MethaneDataPrimitives
+        MethaneDataTypes
+        MethaneInstrumentation
+        TaskFlow
+    PRIVATE
+        MethaneBuildOptions
+        MethaneGraphicsCamera
+        MethaneDataProvider
+)
+
+if (METHANE_OPEN_IMAGE_IO_ENABLED)
+    target_link_libraries(${TARGET} PRIVATE OpenImageIO)
+    target_compile_definitions(${TARGET}
+        PRIVATE
+            USE_OPEN_IMAGE_IO
+    )
+    set_target_properties(${TARGET}
+        PROPERTIES
+            PREREQUISITE_MODULES "OpenImageIO"
+    )
+else()
+    target_link_libraries(${TARGET} PRIVATE STB)
+endif()
+
 target_include_directories(${TARGET}
     PRIVATE
         Sources
     PUBLIC
         Include
+        Shaders
 )
 
-target_link_libraries(${TARGET}
-    PUBLIC
-        MethaneDataAnimation
-        MethaneInstrumentation
-    PRIVATE
-        MethaneBuildOptions
-        MethanePrecompiledExtraHeaders
-        MethanePlatformUtils
+add_methane_shaders_source(
+    TARGET ${TARGET}
+    SOURCE Shaders/ScreenQuad.hlsl
+    VERSION 6_0
+    TYPES
+    "vert=QuadVS"
+    "frag=QuadPS"
+    "frag=QuadPS:TTEXEL=float,RMASK=r,WMASK=a"
+    "frag=QuadPS:TEXTURE_DISABLED"
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
+add_methane_shaders_source(
+    TARGET ${TARGET}
+    SOURCE Shaders/SkyBox.hlsl
+    VERSION 6_0
+    TYPES
+    frag=SkyboxPS
+    vert=SkyboxVS
+)
+
+add_methane_shaders_library(${TARGET})
+
+# Disable GCC/Clang warnings produced by external code from 'stb_image.h'
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set_source_files_properties(${SOURCES_DIR}/ImageLoader.cpp
+        PROPERTIES
+            COMPILE_FLAGS "-Wno-sign-compare -Wno-unused-but-set-variable"
+    )
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
+    CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    set_source_files_properties(${SOURCES_DIR}/ImageLoader.cpp
+        PROPERTIES
+        COMPILE_FLAGS "-Wno-sign-compare"
+    )
+endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})
 

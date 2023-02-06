@@ -25,6 +25,9 @@ IOStream class is used for standard and error output redirection
 
 #include <Windows.h>
 
+#include <stdio.h>
+#include <string_view>
+
 namespace Methane::Platform
 {
 

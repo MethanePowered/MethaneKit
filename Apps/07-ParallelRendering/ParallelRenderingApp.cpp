@@ -24,15 +24,14 @@ Tutorial demonstrating parallel rendering with Methane graphics API
 #include "ParallelRenderingApp.h"
 #include "ParallelRenderingAppController.h"
 
-#include <Methane/Samples/TextureLabeler.h>
-#include <Methane/Samples/AppSettings.hpp>
+#include <Methane/Tutorials/TextureLabeler.h>
+#include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Data/TimeAnimation.h>
 #include <Methane/Instrumentation.h>
 
 #include <taskflow/taskflow.hpp>
 #include <taskflow/algorithm/sort.hpp>
-#include <magic_enum.hpp>
 #include <cmath>
 #include <random>
 #include <algorithm>
@@ -58,13 +57,13 @@ struct CubeVertex
 static const gfx::Dimensions g_texture_size{ 320U, 320U };
 static const float           g_scene_scale  = 22.F;
 
-namespace pal = Methane::Platform;
-static const std::map<pal::Keyboard::State, ParallelRenderingAppAction> g_parallel_rendering_action_by_keyboard_state{
-    { { pal::Keyboard::Key::P            }, ParallelRenderingAppAction::SwitchParallelRendering },
-    { { pal::Keyboard::Key::Equal        }, ParallelRenderingAppAction::IncreaseCubesGridSize },
-    { { pal::Keyboard::Key::Minus        }, ParallelRenderingAppAction::DecreaseCubesGridSize },
-    { { pal::Keyboard::Key::RightBracket }, ParallelRenderingAppAction::IncreaseRenderThreadsCount },
-    { { pal::Keyboard::Key::LeftBracket  }, ParallelRenderingAppAction::DecreaseRenderThreadsCount },
+namespace pin = Methane::Platform::Input;
+static const std::map<pin::Keyboard::State, ParallelRenderingAppAction> g_parallel_rendering_action_by_keyboard_state{
+    { { pin::Keyboard::Key::P            }, ParallelRenderingAppAction::SwitchParallelRendering },
+    { { pin::Keyboard::Key::Equal        }, ParallelRenderingAppAction::IncreaseCubesGridSize },
+    { { pin::Keyboard::Key::Minus        }, ParallelRenderingAppAction::DecreaseCubesGridSize },
+    { { pin::Keyboard::Key::RightBracket }, ParallelRenderingAppAction::IncreaseRenderThreadsCount },
+    { { pin::Keyboard::Key::LeftBracket  }, ParallelRenderingAppAction::DecreaseRenderThreadsCount },
 };
 
 bool ParallelRenderingApp::Settings::operator==(const Settings& other) const noexcept
@@ -88,8 +87,8 @@ uint32_t ParallelRenderingApp::Settings::GetActiveRenderThreadCount() const noex
 
 ParallelRenderingApp::ParallelRenderingApp()
     : UserInterfaceApp(
-        GetGraphicsTutorialAppSettings("Methane Parallel Rendering", g_default_app_options_color_with_depth_and_anim),
-        GetUserInterfaceTutorialAppSettings(g_default_app_options_color_with_depth_and_anim),
+        GetGraphicsTutorialAppSettings("Methane Parallel Rendering", AppOptions::GetDefaultWithColorDepthAndAnim()),
+        GetUserInterfaceTutorialAppSettings(AppOptions::GetDefaultWithColorDepthAndAnim()),
         "Methane tutorial of parallel rendering")
 {
     META_FUNCTION_TASK();
@@ -123,42 +122,44 @@ void ParallelRenderingApp::Init()
     META_FUNCTION_TASK();
     UserInterfaceApp::Init();
 
-    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
     m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
     // Create cube mesh
     gfx::CubeMesh<CubeVertex> cube_mesh(CubeVertex::layout);
 
     // Create render state with program
-    gfx::RenderState::Settings render_state_settings;
-    render_state_settings.program_ptr = gfx::Program::Create(GetRenderContext(),
-        gfx::Program::Settings
-        {
-            gfx::Program::Shaders
+    rhi::RenderState::Settings render_state_settings
+    {
+        GetRenderContext().CreateProgram(
+            rhi::Program::Settings
             {
-                gfx::Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "ParallelRendering", "CubeVS" } }),
-                gfx::Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "ParallelRendering", "CubePS" } }),
-            },
-            gfx::Program::InputBufferLayouts
-            {
-                gfx::Program::InputBufferLayout
+                rhi::Program::ShaderSet
                 {
-                    gfx::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
-                }
-            },
-            gfx::Program::ArgumentAccessors
-            {
-                { { gfx::Shader::Type::All,   "g_uniforms"      }, gfx::Program::ArgumentAccessor::Type::Mutable, true },
-                { { gfx::Shader::Type::Pixel, "g_texture_array" }, gfx::Program::ArgumentAccessor::Type::Constant },
-                { { gfx::Shader::Type::Pixel, "g_sampler"       }, gfx::Program::ArgumentAccessor::Type::Constant },
-            },
-            GetScreenRenderPattern().GetAttachmentFormats()
-        }
-    );
-    render_state_settings.program_ptr->SetName("Render Pipeline State");
-    render_state_settings.render_pattern_ptr = GetScreenRenderPatternPtr();
+                    { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "ParallelRendering", "CubeVS" } } },
+                    { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "ParallelRendering", "CubePS" } } },
+                },
+                rhi::ProgramInputBufferLayouts
+                {
+                    rhi::Program::InputBufferLayout
+                    {
+                        rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
+                    }
+                },
+                rhi::ProgramArgumentAccessors
+                {
+                    { { rhi::ShaderType::All,   "g_uniforms"      }, rhi::ProgramArgumentAccessor::Type::Mutable, true },
+                    { { rhi::ShaderType::Pixel, "g_texture_array" }, rhi::ProgramArgumentAccessor::Type::Constant },
+                    { { rhi::ShaderType::Pixel, "g_sampler"       }, rhi::ProgramArgumentAccessor::Type::Constant },
+                },
+                GetScreenRenderPattern().GetAttachmentFormats()
+            }
+        ),
+        GetScreenRenderPattern()
+    };
+    render_state_settings.program.SetName("Render Pipeline State");
     render_state_settings.depth.enabled = true;
-    m_render_state_ptr = gfx::RenderState::Create(GetRenderContext(), render_state_settings);
+    m_render_state = GetRenderContext().CreateRenderState( render_state_settings);
 
     // Create cube mesh buffer resources
     const uint32_t cubes_count = m_settings.GetTotalCubesCount();
@@ -170,18 +171,17 @@ void ParallelRenderingApp::Init()
     m_cube_array_buffers_ptr = std::make_unique<MeshBuffers>(render_cmd_queue, std::move(cube_mesh), "Cube", mesh_subsets);
 
     // Create cube-map render target texture
-    using namespace magic_enum::bitwise_operators;
-    m_texture_array_ptr = gfx::Texture::CreateRenderTarget(GetRenderContext(),
-            gfx::Texture::Settings::Image(g_texture_size, m_settings.render_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
-                                          gfx::Texture::Usage::RenderTarget | gfx::Texture::Usage::ShaderRead));
-    m_texture_array_ptr->SetName("Per-Thread Texture Array");
+    m_texture_array = GetRenderContext().CreateTexture(
+                         rhi::Texture::Settings::ForImage(g_texture_size, m_settings.render_thread_count, gfx::PixelFormat::RGBA8Unorm, false,
+                                                          rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget, rhi::ResourceUsage::ShaderRead })));
+    m_texture_array.SetName("Per-Thread Texture Array");
 
     // Create sampler for image texture
-    m_texture_sampler_ptr = gfx::Sampler::Create(GetRenderContext(),
-        gfx::Sampler::Settings
+    m_texture_sampler = GetRenderContext().CreateSampler(
+        rhi::Sampler::Settings
         {
-            gfx::Sampler::Filter  { gfx::Sampler::Filter::MinMag::Linear },
-            gfx::Sampler::Address { gfx::Sampler::Address::Mode::ClampToEdge }
+            rhi::Sampler::Filter  { rhi::Sampler::Filter::MinMag::Linear },
+            rhi::Sampler::Address { rhi::Sampler::Address::Mode::ClampToEdge }
         }
     );
 
@@ -192,47 +192,47 @@ void ParallelRenderingApp::Init()
     for(ParallelRenderingFrame& frame : GetFrames())
     {
         // Create buffer for uniforms array related to all cube instances
-        frame.cubes_array.uniforms_buffer_ptr = gfx::Buffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, true, true);
-        frame.cubes_array.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
+        frame.cubes_array.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, true, true));
+        frame.cubes_array.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
         // Configure program resource bindings
         frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
-        frame.cubes_array.program_bindings_per_instance[0] = gfx::ProgramBindings::Create(render_state_settings.program_ptr, {
-            { { gfx::Shader::Type::All,   "g_uniforms"      }, { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size } } },
-            { { gfx::Shader::Type::Pixel, "g_texture_array" }, { { *m_texture_array_ptr   } } },
-            { { gfx::Shader::Type::Pixel, "g_sampler"       }, { { *m_texture_sampler_ptr } } },
+        frame.cubes_array.program_bindings_per_instance[0] = render_state_settings.program.CreateBindings({
+            { { rhi::ShaderType::All,   "g_uniforms"      }, { { frame.cubes_array.uniforms_buffer.GetInterface(), m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size } } },
+            { { rhi::ShaderType::Pixel, "g_texture_array" }, { { m_texture_array.GetInterface()   } } },
+            { { rhi::ShaderType::Pixel, "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
         }, frame.index);
-        frame.cubes_array.program_bindings_per_instance[0]->SetName(fmt::format("Cube 0 Bindings {}", frame.index));
+        frame.cubes_array.program_bindings_per_instance[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 
         program_bindings_task_flow.for_each_index(1U, cubes_count, 1U,
             [this, &frame, uniform_data_size](const uint32_t cube_index)
             {
-                Ptr<gfx::ProgramBindings> cube_program_bindings_ptr = gfx::ProgramBindings::CreateCopy(*frame.cubes_array.program_bindings_per_instance[0], {
-                        {
-                          { gfx::Shader::Type::All, "g_uniforms" },
-                          { { *frame.cubes_array.uniforms_buffer_ptr, m_cube_array_buffers_ptr->GetUniformsBufferOffset(cube_index), uniform_data_size } }
-                        }
-                    }, frame.index);
-                cube_program_bindings_ptr->SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
-                frame.cubes_array.program_bindings_per_instance[cube_index] = cube_program_bindings_ptr;
+                rhi::ProgramBindings& cube_program_bindings = frame.cubes_array.program_bindings_per_instance[cube_index];
+                cube_program_bindings = rhi::ProgramBindings(frame.cubes_array.program_bindings_per_instance[0], {
+                    {
+                      { rhi::ShaderType::All, "g_uniforms" },
+                      { { frame.cubes_array.uniforms_buffer.GetInterface(), m_cube_array_buffers_ptr->GetUniformsBufferOffset(cube_index), uniform_data_size } }
+                    }
+                }, frame.index);
+                cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
             });
 
         if (m_settings.parallel_rendering_enabled)
         {
             // Create parallel command list for rendering to the screen pass
-            frame.parallel_render_cmd_list_ptr = gfx::ParallelRenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-            frame.parallel_render_cmd_list_ptr->SetParallelCommandListsCount(m_settings.GetActiveRenderThreadCount());
-            frame.parallel_render_cmd_list_ptr->SetValidationEnabled(false);
-            frame.parallel_render_cmd_list_ptr->SetName(IndexedName("Parallel Cubes Rendering", frame.index));
-            frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.parallel_render_cmd_list_ptr }, frame.index);
+            frame.parallel_render_cmd_list = render_cmd_queue.CreateParallelRenderCommandList(frame.screen_pass);
+            frame.parallel_render_cmd_list.SetParallelCommandListsCount(m_settings.GetActiveRenderThreadCount());
+            frame.parallel_render_cmd_list.SetValidationEnabled(false);
+            frame.parallel_render_cmd_list.SetName(IndexedName("Parallel Cubes Rendering", frame.index));
+            frame.execute_cmd_list_set = rhi::CommandListSet({ frame.parallel_render_cmd_list.GetInterface() }, frame.index);
         }
         else
         {
             // Create serial command list for rendering to the screen pass
-            frame.serial_render_cmd_list_ptr = gfx::RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-            frame.serial_render_cmd_list_ptr->SetName(IndexedName("Serial Cubes Rendering", frame.index));
-            frame.serial_render_cmd_list_ptr->SetValidationEnabled(false);
-            frame.execute_cmd_list_set_ptr = gfx::CommandListSet::Create({ *frame.serial_render_cmd_list_ptr }, frame.index);
+            frame.serial_render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
+            frame.serial_render_cmd_list.SetName(IndexedName("Serial Cubes Rendering", frame.index));
+            frame.serial_render_cmd_list.SetValidationEnabled(false);
+            frame.execute_cmd_list_set = rhi::CommandListSet({ frame.serial_render_cmd_list.GetInterface() }, frame.index);
         }
     }
     
@@ -243,7 +243,8 @@ void ParallelRenderingApp::Init()
     TextureLabeler::Settings texture_labeler_settings;
     texture_labeler_settings.font_size_pt = g_texture_size.GetWidth() / 4U;
     texture_labeler_settings.border_width_px = 10U;
-    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontProvider(), *m_texture_array_ptr, gfx::ResourceState::ShaderResource, texture_labeler_settings);
+    TextureLabeler cube_texture_labeler(GetUIContext(), GetFontContext(), m_texture_array,
+                                        rhi::ResourceState::ShaderResource, texture_labeler_settings);
 
     // Upload all resources, including font texture and text mesh buffers required for rendering
     UserInterfaceApp::CompleteInitialization();
@@ -255,9 +256,9 @@ void ParallelRenderingApp::Init()
     m_cube_array_parameters = InitializeCubeArrayParameters();
 
     // Update initial resource states before asteroids drawing without applying barriers on GPU to let automatic state propagation from Common state work
-    m_cube_array_buffers_ptr->CreateBeginningResourceBarriers()->ApplyTransitions();   
+    m_cube_array_buffers_ptr->CreateBeginningResourceBarriers().ApplyTransitions();
 
-    GetRenderContext().WaitForGpu(gfx::Context::WaitFor::RenderComplete);
+    GetRenderContext().WaitForGpu(rhi::IContext::WaitFor::RenderComplete);
 }
 
 ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeArrayParameters() const
@@ -385,19 +386,19 @@ bool ParallelRenderingApp::Render()
         return false;
 
     // Update uniforms buffer related to current frame
-    const ParallelRenderingFrame& frame = GetCurrentFrame();
-    gfx::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.cubes_array.uniforms_buffer_ptr->SetData(m_cube_array_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
+    const ParallelRenderingFrame& frame  = GetCurrentFrame();
+    const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+    frame.cubes_array.uniforms_buffer.SetData(m_cube_array_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
 
     // Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     if (m_settings.parallel_rendering_enabled)
     {
-        META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Parallel Cubes Rendering");
-        frame.parallel_render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
-        frame.parallel_render_cmd_list_ptr->SetViewState(GetViewState());
+        META_DEBUG_GROUP_VAR(s_debug_group, "Parallel Cubes Rendering");
+        frame.parallel_render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
+        frame.parallel_render_cmd_list.SetViewState(GetViewState());
 
 #ifdef EXPLICIT_PARALLEL_RENDERING_ENABLED
-        const Refs<gfx::RenderCommandList>& render_cmd_lists = frame.parallel_render_cmd_list_ptr->GetParallelCommandLists();
+        const std::vector<rhi::RenderCommandList>& render_cmd_lists = frame.parallel_render_cmd_list.GetParallelCommandLists();
         const uint32_t instance_count_per_command_list = Data::DivCeil(m_cube_array_buffers_ptr->GetInstanceCount(), static_cast<uint32_t>(render_cmd_lists.size()));
 
         // Generate thread tasks for each of parallel render command lists to encode cubes rendering commands
@@ -407,7 +408,7 @@ bool ParallelRenderingApp::Render()
             {
                 const uint32_t begin_instance_index = cmd_list_index * instance_count_per_command_list;
                 const uint32_t end_instance_index = std::min(begin_instance_index + instance_count_per_command_list, m_cube_array_buffers_ptr->GetInstanceCount());
-                RenderCubesRange(render_cmd_lists[cmd_list_index].get(), frame.cubes_array.program_bindings_per_instance, begin_instance_index, end_instance_index);
+                RenderCubesRange(render_cmd_lists[cmd_list_index], frame.cubes_array.program_bindings_per_instance, begin_instance_index, end_instance_index);
             }
         );
 
@@ -418,32 +419,33 @@ bool ParallelRenderingApp::Render()
         m_cube_array_buffers_ptr->DrawParallel(*frame.parallel_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance);
 #endif
 
-        RenderOverlay(frame.parallel_render_cmd_list_ptr->GetParallelCommandLists().back().get());
-        frame.parallel_render_cmd_list_ptr->Commit();
+        RenderOverlay(frame.parallel_render_cmd_list.GetParallelCommandLists().back());
+        frame.parallel_render_cmd_list.Commit();
     }
     else
     {
-        META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Serial Cubes Rendering");
-        frame.serial_render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
-        frame.serial_render_cmd_list_ptr->SetViewState(GetViewState());
+        META_DEBUG_GROUP_VAR(s_debug_group, "Serial Cubes Rendering");
+        frame.serial_render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
+        frame.serial_render_cmd_list.SetViewState(GetViewState());
 
 #ifdef EXPLICIT_PARALLEL_RENDERING_ENABLED
-        RenderCubesRange(*frame.serial_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance, 0U, m_cube_array_buffers_ptr->GetInstanceCount());
+        RenderCubesRange(frame.serial_render_cmd_list, frame.cubes_array.program_bindings_per_instance, 0U, m_cube_array_buffers_ptr->GetInstanceCount());
 #else
-        m_cube_array_buffers_ptr->Draw(*frame.serial_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance);
+        m_cube_array_buffers_ptr->Draw(frame.serial_render_cmd_list, frame.cubes_array.program_bindings_per_instance);
 #endif
 
-        RenderOverlay(*frame.serial_render_cmd_list_ptr);
-        frame.serial_render_cmd_list_ptr->Commit();
+        RenderOverlay(frame.serial_render_cmd_list);
+        frame.serial_render_cmd_list.Commit();
     }
 
     // Execute command lists on render queue and present frame to screen
-    render_cmd_queue.Execute(*frame.execute_cmd_list_set_ptr);
+    render_cmd_queue.Execute(frame.execute_cmd_list_set);
     GetRenderContext().Present();
     return true;
 }
 
-void ParallelRenderingApp::RenderCubesRange(gfx::RenderCommandList& render_cmd_list, const Ptrs<gfx::ProgramBindings>& program_bindings_per_instance,
+void ParallelRenderingApp::RenderCubesRange(const rhi::RenderCommandList& render_cmd_list,
+                                            const std::vector<rhi::ProgramBindings>& program_bindings_per_instance,
                                             uint32_t begin_instance_index, const uint32_t end_instance_index) const
 {
     META_FUNCTION_TASK();
@@ -453,18 +455,15 @@ void ParallelRenderingApp::RenderCubesRange(gfx::RenderCommandList& render_cmd_l
 
     for (uint32_t instance_index = begin_instance_index; instance_index < end_instance_index; ++instance_index)
     {
-        const Ptr<gfx::ProgramBindings>& program_bindings_ptr = program_bindings_per_instance[instance_index];
-        META_CHECK_ARG_NOT_NULL(program_bindings_ptr);
-
         // Constant argument bindings are applied once per command list, mutables are applied always
         // Bound resources are retained by command list during its lifetime, but only for the first binding instance (since all binding instances use the same resource objects)
-        using namespace magic_enum::bitwise_operators;
-        gfx::ProgramBindings::ApplyBehavior bindings_apply_behavior = gfx::ProgramBindings::ApplyBehavior::ConstantOnce;
+        rhi::ProgramBindingsApplyBehaviorMask bindings_apply_behavior;
+        bindings_apply_behavior.SetBitOn(rhi::ProgramBindingsApplyBehavior::ConstantOnce);
         if (instance_index == begin_instance_index)
-            bindings_apply_behavior |= gfx::ProgramBindings::ApplyBehavior::RetainResources;
+            bindings_apply_behavior.SetBitOn(rhi::ProgramBindingsApplyBehavior::RetainResources);
 
-        render_cmd_list.SetProgramBindings(*program_bindings_ptr, bindings_apply_behavior);
-        render_cmd_list.DrawIndexed(gfx::RenderCommandList::Primitive::Triangle);
+        render_cmd_list.SetProgramBindings(program_bindings_per_instance[instance_index], bindings_apply_behavior);
+        render_cmd_list.DrawIndexed(rhi::RenderPrimitive::Triangle);
     }
 }
 
@@ -495,13 +494,13 @@ void ParallelRenderingApp::SetSettings(const Settings& settings)
     GetRenderContext().Reset();
 }
 
-void ParallelRenderingApp::OnContextReleased(gfx::Context& context)
+void ParallelRenderingApp::OnContextReleased(rhi::IContext& context)
 {
     META_FUNCTION_TASK();
     m_cube_array_buffers_ptr.reset();
-    m_texture_array_ptr.reset();
-    m_texture_sampler_ptr.reset();
-    m_render_state_ptr.reset();
+    m_texture_array = {};
+    m_texture_sampler = {};
+    m_render_state = {};
 
     UserInterfaceApp::OnContextReleased(context);
 }

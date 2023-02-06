@@ -23,28 +23,25 @@ Graphics context controller for switching parameters in runtime.
 
 #include <Methane/Graphics/AppContextController.h>
 
-#include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/Device.h>
-#include <Methane/Platform/Utils.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/ISystem.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 namespace Methane::Graphics
 {
 
-AppContextController::AppContextController(RenderContext& context, const ActionByKeyboardState& action_by_keyboard_state)
+AppContextController::AppContextController(Rhi::IRenderContext& context, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller("GRAPHICS SETTINGS")
-    , Platform::Keyboard::ActionControllerBase<AppContextAction>(action_by_keyboard_state, {})
+    , pin::Keyboard::ActionControllerBase<AppContextAction>(action_by_keyboard_state, {})
     , m_context(context)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
-void AppContextController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state,
-                                             const Platform::Keyboard::StateChange& state_change)
+void AppContextController::OnKeyboardChanged(pin::Keyboard::Key key, pin::Keyboard::KeyState key_state,
+                                             const pin::Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    Platform::Keyboard::ActionControllerBase<AppContextAction>::OnKeyboardChanged(key, key_state, state_change);
+    pin::Keyboard::ActionControllerBase<AppContextAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void AppContextController::OnKeyboardStateAction(AppContextAction action)
@@ -86,7 +83,7 @@ std::string AppContextController::GetKeyboardActionName(AppContextAction action)
     }
 }
 
-Platform::Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
+pin::IHelpProvider::HelpLines AppContextController::GetHelp() const
 {
     META_FUNCTION_TASK();
     return GetKeyboardHelp();
@@ -95,7 +92,7 @@ Platform::Input::IHelpProvider::HelpLines AppContextController::GetHelp() const
 void AppContextController::ResetContextWithNextDevice()
 {
     META_FUNCTION_TASK();
-    const Ptr<Device> next_device_ptr = System::Get().GetNextGpuDevice(m_context.GetDevice());
+    const Ptr<Rhi::IDevice> next_device_ptr = Rhi::ISystem::Get().GetNextGpuDevice(m_context.GetDevice());
     if (!next_device_ptr)
         return;
 

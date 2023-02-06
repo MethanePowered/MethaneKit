@@ -10,6 +10,8 @@ set(HEADERS
     ${INCLUDE_DIR}/Exceptions.hpp
     ${INCLUDE_DIR}/Checks.hpp
     ${INCLUDE_DIR}/Timer.hpp
+    ${INCLUDE_DIR}/Pimpl.h
+    ${INCLUDE_DIR}/Pimpl.hpp
 )
 
 set(SOURCES
@@ -28,15 +30,10 @@ target_include_directories(${TARGET}
         Include
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
-
 target_link_libraries(${TARGET}
     PUBLIC
-        fmt
-        magic_enum
-    PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledHeaders
+        fmt
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

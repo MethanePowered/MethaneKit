@@ -24,14 +24,19 @@ Graphics context controller for switching parameters in runtime.
 #pragma once
 
 #include <Methane/Platform/Input/Controller.h>
-#include <Methane/Platform/KeyboardActionControllerBase.hpp>
+#include <Methane/Platform/Input/KeyboardActionControllerBase.hpp>
 
 #include <map>
 
-namespace Methane::Graphics
+namespace Methane::Graphics::Rhi
 {
 
-struct RenderContext;
+struct IRenderContext;
+
+} // namespace Methane::Graphics::Rhi
+
+namespace Methane::Graphics
+{
 
 enum class AppContextAction
 {
@@ -42,34 +47,36 @@ enum class AppContextAction
     RemoveFrameBufferFromSwapChain
 };
 
+namespace pin = Methane::Platform::Input;
+
 class AppContextController final
-    : public Platform::Input::Controller
-    , public Platform::Keyboard::ActionControllerBase<AppContextAction>
+    : public pin::Controller
+    , public pin::Keyboard::ActionControllerBase<AppContextAction>
 {
 public:
     inline static const ActionByKeyboardState default_action_by_keyboard_state{
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::V     }, AppContextAction::SwitchVSync                    },
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::X     }, AppContextAction::SwitchDevice                   },
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Equal }, AppContextAction::AddFrameBufferToSwapChain      },
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::Minus }, AppContextAction::RemoveFrameBufferFromSwapChain },
+        { { pin::Keyboard::Key::LeftControl, pin::Keyboard::Key::V     }, AppContextAction::SwitchVSync                    },
+        { { pin::Keyboard::Key::LeftControl, pin::Keyboard::Key::X     }, AppContextAction::SwitchDevice                   },
+        { { pin::Keyboard::Key::LeftControl, pin::Keyboard::Key::Equal }, AppContextAction::AddFrameBufferToSwapChain      },
+        { { pin::Keyboard::Key::LeftControl, pin::Keyboard::Key::Minus }, AppContextAction::RemoveFrameBufferFromSwapChain },
     };
 
-    AppContextController(RenderContext& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
+    AppContextController(Rhi::IRenderContext& context, const ActionByKeyboardState& action_by_keyboard_state = default_action_by_keyboard_state);
 
     // Input::Controller implementation
-    void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
+    void OnKeyboardChanged(pin::Keyboard::Key, pin::Keyboard::KeyState, const pin::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
     
 protected:
-    // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AppContextAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
+    // Input::Keyboard::ActionControllerBase interface
+    void        OnKeyboardKeyAction(AppContextAction, pin::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(AppContextAction action) override;
     std::string GetKeyboardActionName(AppContextAction action) const override;
 
 private:
     void ResetContextWithNextDevice();
 
-    RenderContext& m_context;
+    Rhi::IRenderContext& m_context;
 };
 
 } // namespace Methane::Graphics

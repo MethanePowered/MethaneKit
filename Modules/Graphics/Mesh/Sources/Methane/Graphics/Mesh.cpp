@@ -25,6 +25,7 @@ Abstract mesh class
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <magic_enum.hpp>
 #include <array>
 
 namespace Methane::Graphics
@@ -123,9 +124,7 @@ std::string_view Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex
 Mesh::VertexLayout::IncompatibleException::IncompatibleException(VertexField missing_field)
     : std::logic_error(fmt::format("Mesh vertex layout is incompatible, field {} is missing.", VertexLayout::GetSemanticByVertexField(missing_field)))
     , m_missing_field(missing_field)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 std::vector<std::string_view> Mesh::VertexLayout::GetSemantics() const
 {
@@ -145,9 +144,7 @@ Mesh::Subset::Subset(Type in_mesh_type, const Slice& in_vertices, const Slice& i
     , vertices(in_vertices)
     , indices(in_indices)
     , indices_adjusted(in_indices_adjusted)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_layout)
 {

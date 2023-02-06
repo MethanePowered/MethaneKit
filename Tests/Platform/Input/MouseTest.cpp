@@ -23,9 +23,19 @@ Unit tests of the Mouse data types
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <Methane/Platform/Mouse.h>
+#include <Methane/Platform/Input/Mouse.h>
+#include <Methane/Data/EnumMaskUtil.hpp>
 
-using namespace Methane::Platform::Mouse;
+using namespace Methane::Platform::Input::Mouse;
+
+template<typename E, typename M>
+struct Catch::StringMaker<Methane::Data::EnumMask<E, M>>
+{
+    static std::string convert(const Methane::Data::EnumMask<E, M>& mask)
+    {
+        return Methane::Data::GetEnumMaskName(mask);
+    }
+};
 
 static const Position g_test_position { 12, 34 };
 static const Scroll   g_test_scroll   { 2.f, 3.f };
@@ -120,7 +130,7 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left }, g_test_position, g_test_scroll, true);
         const State mouse_state_b({ Button::Left }, g_test_position, g_test_scroll, true);
         CHECK(mouse_state_a == mouse_state_b);
-        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Properties::None);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::PropertyMask{});
     }
 
     SECTION("States inequality in buttons")
@@ -128,7 +138,7 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left },  g_test_position, g_test_scroll, true);
         const State mouse_state_b({ Button::Right }, g_test_position, g_test_scroll, true);
         CHECK(mouse_state_a != mouse_state_b);
-        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Properties::Buttons);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::PropertyMask(State::Property::Buttons));
     }
 
     SECTION("States inequality in position")
@@ -136,7 +146,7 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left }, g_test_position, g_test_scroll, true);
         const State mouse_state_b({ Button::Left }, { 56, 78 }, g_test_scroll, true);
         CHECK(mouse_state_a != mouse_state_b);
-        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Properties::Position);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::PropertyMask(State::Property::Position));
     }
 
     SECTION("States inequality in scroll")
@@ -144,7 +154,7 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left }, g_test_position, g_test_scroll, true);
         const State mouse_state_b({ Button::Left }, g_test_position, { 4.f, 5.f }, true);
         CHECK(mouse_state_a != mouse_state_b);
-        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Properties::Scroll);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::PropertyMask(State::Property::Scroll));
     }
 
     SECTION("States inequality in window")
@@ -152,7 +162,7 @@ TEST_CASE("Mouse state comparison", "[mouse-state]")
         const State mouse_state_a({ Button::Left }, g_test_position, g_test_scroll, true);
         const State mouse_state_b({ Button::Left }, g_test_position, g_test_scroll, false);
         CHECK(mouse_state_a != mouse_state_b);
-        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::Properties::InWindow);
+        CHECK(mouse_state_a.GetDiff(mouse_state_b) == State::PropertyMask(State::Property::InWindow));
     }
 }
 

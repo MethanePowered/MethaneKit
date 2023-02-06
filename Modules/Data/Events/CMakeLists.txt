@@ -7,6 +7,7 @@ get_module_dirs("Methane/Data")
 set(HEADERS
     ${INCLUDE_DIR}/IEmitter.h
     ${INCLUDE_DIR}/Emitter.hpp
+    ${INCLUDE_DIR}/Transmitter.hpp
     ${INCLUDE_DIR}/Receiver.hpp
 )
 

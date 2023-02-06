@@ -30,7 +30,9 @@ target_include_directories(${TARGET}
         Include
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneMathPrecompiledHeaders)
+endif()
 
 target_link_libraries(${TARGET}
     PUBLIC
@@ -39,7 +41,7 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethaneInstrumentation
-        MethanePrecompiledExtraHeaders
+        MethaneMathPrecompiledHeaders
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES  ${HEADERS} ${SOURCES})

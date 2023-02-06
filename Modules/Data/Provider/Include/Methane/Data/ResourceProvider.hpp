@@ -42,7 +42,7 @@ namespace RESOURCE_NAMESPACE
 class ResourceProvider final : public Methane::Data::FileProvider
 {
 public:
-    [[nodiscard]] static Provider& Get()
+    [[nodiscard]] static IProvider& Get()
     {
         META_FUNCTION_TASK();
         static ResourceProvider s_instance;

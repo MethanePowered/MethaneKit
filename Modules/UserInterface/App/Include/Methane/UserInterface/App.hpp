@@ -23,7 +23,7 @@ Base template class of the Methane user interface application.
 
 #pragma once
 
-#include "App.h"
+#include "IApp.h"
 #include "AppBase.h"
 #include "AppController.h"
 
@@ -35,6 +35,7 @@ namespace Methane::UserInterface
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 
 template<typename FrameT>
 class App
@@ -44,7 +45,7 @@ class App
 public:
     using GraphicsApp = Graphics::App<FrameT, UserInterface::IApp>;
 
-    explicit App(const Graphics::AppSettings& graphics_app_settings,
+    explicit App(const Graphics::CombinedAppSettings& graphics_app_settings,
                  const IApp::Settings& ui_app_settings = { },
                  const std::string& help_description = "Methane Graphics Application")
         : GraphicsApp(graphics_app_settings)
@@ -53,7 +54,7 @@ public:
         META_FUNCTION_TASK();
         CLI::App::add_option("-i,--hud", AppBase::GetAppSettings().heads_up_display_mode, "HUD display mode (0 - hidden, 1 - in window title, 2 - in UI)");
         Platform::App::AddInputControllers({ std::make_shared<AppController>(*this, help_description) });
-        GraphicsApp::SetShowHudInWindowTitle(AppBase::GetAppSettings().heads_up_display_mode == IApp::HeadsUpDisplayMode::WindowTitle);
+        GraphicsApp::SetShowHudInWindowTitle(AppBase::GetAppSettings().heads_up_display_mode == HeadsUpDisplayMode::WindowTitle);
     }
 
     void Init() override
@@ -92,13 +93,13 @@ public:
 
     const IApp::Settings& GetUserInterfaceAppSettings() const noexcept final { return AppBase::GetAppSettings(); }
 
-    bool SetHeadsUpDisplayMode(UserInterface::IApp::HeadsUpDisplayMode heads_up_display_mode) final
+    bool SetHeadsUpDisplayMode(UserInterface::HeadsUpDisplayMode heads_up_display_mode) final
     {
         META_FUNCTION_TASK();
         if (AppBase::GetAppSettings().heads_up_display_mode == heads_up_display_mode)
             return false;
 
-        GraphicsApp::SetShowHudInWindowTitle(heads_up_display_mode == UserInterface::IApp::HeadsUpDisplayMode::WindowTitle);
+        GraphicsApp::SetShowHudInWindowTitle(heads_up_display_mode == UserInterface::HeadsUpDisplayMode::WindowTitle);
         GraphicsApp::WaitForRenderComplete();
 
         return AppBase::SetHeadsUpDisplayUIMode(heads_up_display_mode);
@@ -149,7 +150,7 @@ protected:
     }
 
     // IContextCallback override
-    void OnContextReleased(gfx::Context& context) override
+    void OnContextReleased(rhi::IContext& context) override
     {
         META_FUNCTION_TASK();
         AppBase::ReleaseUI();

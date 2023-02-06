@@ -42,15 +42,17 @@ target_include_directories(${TARGET}
         Include
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
-
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneBuildOptions
-        MethanePrecompiledHeaders
+        MethaneCommonPrecompiledHeaders
         MethaneInstrumentation
         nowide
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneCommonPrecompiledHeaders)
+endif()
 
 if(APPLE)
 
@@ -79,6 +81,7 @@ if (APPLE)
     set_source_files_properties(
         ${PLATFORM_SOURCES}
         PROPERTIES
+            COMPILE_FLAGS -fobjc-arc
             SKIP_PRECOMPILE_HEADERS ON
     )
 endif()

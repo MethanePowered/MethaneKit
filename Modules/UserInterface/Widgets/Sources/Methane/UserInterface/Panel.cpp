@@ -23,7 +23,7 @@ Panel widget with opaque background containing other widgets.
 
 #include <Methane/UserInterface/Panel.h>
 #include <Methane/UserInterface/Context.h>
-#include <Methane/Graphics/CommandKit.h>
+#include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Instrumentation.h>
 
 #include <cmath>
@@ -45,9 +45,7 @@ Panel::Panel(Context& ui_context, const UnitRect& ui_rect, Settings settings)
         }
     )
     , m_settings(std::move(settings))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 // Item overrides
 bool Panel::SetRect(const UnitRect& ui_rect)

@@ -25,7 +25,7 @@ Windows application implementation.
 
 #include <Methane/Platform/AppBase.h>
 #include <Methane/Platform/AppEnvironment.h>
-#include <Methane/Platform/Mouse.h>
+#include <Methane/Platform/Input/Mouse.h>
 #include <Methane/Memory.hpp>
 
 #include <Windows.h>
@@ -75,7 +75,7 @@ protected:
 
 private:
     AppEnvironment            m_env;
-    Mouse::State              m_mouse_state;
+    Input::Mouse::State       m_mouse_state;
     RECT                      m_window_rect {};
     bool                      m_is_message_processing = true;
     UniquePtr<ConsoleStreams> m_console_streams_ptr;

@@ -1,7 +1,8 @@
 CPMAddPackage(
     NAME CMakeModules
     GITHUB_REPOSITORY MethanePowered/CMakeModules
-    GIT_TAG 9de6ddab101ee6778bda388ae6a807d18cec91ac # last commit from 'methane' branch
+    GIT_TAG b319f6b6b0b2bc3bd3cfcd51418dc2084872e965 # last commit from 'methane' branch
+    DOWNLOAD_ONLY YES
 )
 
 list(APPEND CMAKE_MODULE_PATH "${CMakeModules_SOURCE_DIR}")

@@ -23,23 +23,20 @@ Methane user interface context used by all widgets for rendering.
 
 #include <Methane/UserInterface/Context.h>
 #include <Methane/Platform/IApp.h>
-#include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/CommandQueue.h>
-#include <Methane/Graphics/RenderPass.h>
 #include <Methane/Instrumentation.h>
 
 namespace Methane::UserInterface
 {
 
-Context::Context(const pal::IApp& app, gfx::CommandQueue& render_cmd_queue, gfx::RenderPattern& render_pattern)
+Context::Context(const pal::IApp& app, const rhi::CommandQueue& render_cmd_queue, const rhi::RenderPattern& render_pattern)
     : m_render_context(render_pattern.GetRenderContext())
-    , m_render_cmd_queue_ptr(std::dynamic_pointer_cast<gfx::CommandQueue>(render_cmd_queue.GetPtr()))
-    , m_render_pattern_ptr(std::dynamic_pointer_cast<gfx::RenderPattern>(render_pattern.GetPtr()))
+    , m_render_cmd_queue(render_cmd_queue)
+    , m_render_pattern(render_pattern)
     , m_dots_to_pixels_factor(app.GetContentScalingFactor())
     , m_font_resolution_dpi(app.GetFontResolutionDpi())
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(render_cmd_queue.GetCommandListType(), gfx::CommandList::Type::Render);
+    META_CHECK_ARG_EQUAL(render_cmd_queue.GetCommandListType(), rhi::CommandListType::Render);
 }
 
 UnitSize Context::GetFrameSizeInUnits(Units units) const noexcept

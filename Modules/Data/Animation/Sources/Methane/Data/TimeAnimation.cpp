@@ -30,9 +30,7 @@ namespace Methane::Data
 TimeAnimation::TimeAnimation(const FunctionType& update_function, double duration_sec)
     : Animation(duration_sec)
     , m_update_function(update_function)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void TimeAnimation::Restart() noexcept
 {

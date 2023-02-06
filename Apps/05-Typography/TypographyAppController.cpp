@@ -31,17 +31,15 @@ namespace Methane::Tutorials
 
 TypographyAppController::TypographyAppController(TypographyApp& typography_app, const ActionByKeyboardState& action_by_keyboard_state)
     : Controller("TYPOGRAPHY SETTINGS")
-    , Platform::Keyboard::ActionControllerBase<TypographyAppAction>(action_by_keyboard_state, {})
+    , pin::Keyboard::ActionControllerBase<TypographyAppAction>(action_by_keyboard_state, {})
     , m_typography_app(typography_app)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
-void TypographyAppController::OnKeyboardChanged(Platform::Keyboard::Key key, Platform::Keyboard::KeyState key_state,
-                                               const Platform::Keyboard::StateChange& state_change)
+void TypographyAppController::OnKeyboardChanged(pin::Keyboard::Key key, pin::Keyboard::KeyState key_state,
+                                               const pin::Keyboard::StateChange& state_change)
 {
     META_FUNCTION_TASK();
-    Platform::Keyboard::ActionControllerBase<TypographyAppAction>::OnKeyboardChanged(key, key_state, state_change);
+    pin::Keyboard::ActionControllerBase<TypographyAppAction>::OnKeyboardChanged(key, key_state, state_change);
 }
 
 void TypographyAppController::OnKeyboardStateAction(TypographyAppAction action)
@@ -108,7 +106,7 @@ std::string TypographyAppController::GetKeyboardActionName(TypographyAppAction a
     }
 }
 
-Platform::Input::IHelpProvider::HelpLines TypographyAppController::GetHelp() const
+pin::IHelpProvider::HelpLines TypographyAppController::GetHelp() const
 {
     META_FUNCTION_TASK();
     return GetKeyboardHelp();

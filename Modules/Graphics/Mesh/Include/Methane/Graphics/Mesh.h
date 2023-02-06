@@ -26,7 +26,6 @@ Abstract mesh class
 #include <Methane/Data/Types.h>
 #include <Methane/Data/Vector.hpp>
 
-#include <magic_enum.hpp>
 #include <vector>
 #include <array>
 #include <string_view>
@@ -80,10 +79,12 @@ public:
 
     enum class VertexField : size_t
     {
-        Position = 0,
+        Position,
         Normal,
         TexCoord,
-        Color
+        Color,
+
+        Count
     };
 
     class VertexLayout : public std::vector<VertexField>
@@ -108,6 +109,7 @@ public:
     };
 
     Mesh(Type type, const VertexLayout& vertex_layout);
+    virtual ~Mesh() = default;
 
     [[nodiscard]] Type                GetType() const noexcept               { return m_type; }
     [[nodiscard]] const VertexLayout& GetVertexLayout() const noexcept       { return m_vertex_layout; }
@@ -116,6 +118,11 @@ public:
     [[nodiscard]] Index               GetIndex(Data::Index i) const noexcept { return i < m_indices.size() ? m_indices[i] : 0; }
     [[nodiscard]] Data::Size          GetIndexCount() const noexcept         { return static_cast<Data::Size>(m_indices.size()); }
     [[nodiscard]] Data::Size          GetIndexDataSize() const noexcept      { return static_cast<Data::Size>(m_indices.size() * sizeof(Index)); }
+
+    // Mesh interface methods
+    [[nodiscard]] virtual Data::Size        GetVertexCount() const noexcept = 0;
+    [[nodiscard]] virtual Data::Size        GetVertexDataSize() const noexcept = 0;
+    [[nodiscard]] virtual Data::ConstRawPtr GetVertexData() const noexcept = 0;
 
 protected:
     using HlslPosition   = Position::HlslVectorType;
@@ -134,7 +141,7 @@ protected:
         [[nodiscard]] bool operator<(const Edge& other) const;
     };
     
-    using VertexFieldOffsets = std::array<int32_t, magic_enum::enum_count<VertexField>()>;
+    using VertexFieldOffsets = std::array<int32_t, static_cast<size_t>(VertexField::Count)>;
 
     void CheckLayoutHasVertexField(VertexField field) const;
     [[nodiscard]] bool HasVertexField(VertexField field) const noexcept;

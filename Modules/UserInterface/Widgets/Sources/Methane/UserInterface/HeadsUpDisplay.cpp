@@ -32,12 +32,14 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 ******************************************************************************/
 
 #include <Methane/UserInterface/HeadsUpDisplay.h>
-#include <Methane/UserInterface/Font.h>
+#include <Methane/UserInterface/FontLibrary.h>
+#include <Methane/UserInterface/Text.h>
 #include <Methane/UserInterface/Context.h>
 
-#include <Methane/Graphics/RenderContext.h>
-#include <Methane/Graphics/FpsCounter.h>
-#include <Methane/Graphics/Device.h>
+#include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/System.h>
+#include <Methane/Graphics/RHI/IFpsCounter.h>
+#include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
@@ -126,7 +128,7 @@ HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetBackgroundColor(const Col
     return *this;
 }
 
-HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetHelpShortcut(const Platform::Keyboard::State& new_help_shortcut) noexcept
+HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetHelpShortcut(const pin::Keyboard::State& new_help_shortcut) noexcept
 {
     META_FUNCTION_TASK();
     help_shortcut = new_help_shortcut;
@@ -140,96 +142,93 @@ HeadsUpDisplay::Settings& HeadsUpDisplay::Settings::SetUpdateIntervalSec(double 
     return *this;
 }
 
-HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_data_provider, const Settings& settings)
+HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const FontContext& font_context, const Settings& settings)
     : Panel(ui_context, { }, { "Heads Up Display" })
     , m_settings(settings)
-    , m_major_font_ptr(
-        Font::Library::Get().GetFont(font_data_provider,
-            Font::Settings
-            {
+    , m_major_font(
+        font_context.GetFont(Font::Settings {
                 m_settings.major_font,
                 GetUIContext().GetFontResolutionDpi(),
                 U"FPS0123456789",
             }
-        ).GetPtr()
+        )
     )
-    , m_minor_font_ptr(
-        Font::Library::Get().GetFont(font_data_provider,
-            Font::Settings
+    , m_minor_font(
+        font_context.GetFont(Font::Settings
             {
                 m_settings.minor_font,
                 GetUIContext().GetFontResolutionDpi(),
                 Font::GetAlphabetDefault()
             }
-        ).GetPtr()
+        )
     )
     , m_text_blocks({
-        std::make_shared<Text>(ui_context, *m_major_font_ptr,
+        std::make_shared<TextItem>(ui_context, m_major_font,
             Text::SettingsUtf8
             {
                 "FPS",
                 "000 FPS",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetFpsTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetFpsTextHeightInDots(ui_context, m_major_font, m_minor_font, m_settings.text_margins) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "Frame Time",
                 "00.00 ms",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTimingTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTimingTextHeightInDots(ui_context, m_major_font, m_minor_font, m_settings.text_margins) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "CPU Time",
                 "00.00% cpu",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTimingTextHeightInDots(ui_context, *m_major_font_ptr, *m_minor_font_ptr, m_settings.text_margins) } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTimingTextHeightInDots(ui_context, m_major_font, m_minor_font, m_settings.text_margins) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Center },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "GPU",
                 "Graphics Adapter",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) - g_first_line_height_decrement } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, m_minor_font) - g_first_line_height_decrement } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "Help",
                 m_settings.help_shortcut ? m_settings.help_shortcut.ToString() + " - Help" : "",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) - g_first_line_height_decrement } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, m_minor_font) - g_first_line_height_decrement } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.help_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "Frame Buffers",
                 "0000 x 0000   3 FB   DirectX",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, m_minor_font) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Justify, Text::VerticalAlignment::Top },
                 m_settings.text_color
             }
         ),
-        std::make_shared<Text>(ui_context, *m_minor_font_ptr,
+        std::make_shared<TextItem>(ui_context, m_minor_font,
             Text::SettingsUtf8
             {
                 "VSync",
                 "VSync ON",
-                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, *m_minor_font_ptr) } },
+                UnitRect{ Units::Dots, gfx::Point2I{ }, gfx::FrameSize{ 0U, GetTextHeightInDots(ui_context, m_minor_font) } },
                 Text::Layout{ Text::Wrap::None, Text::HorizontalAlignment::Left, Text::VerticalAlignment::Top },
                 m_settings.on_color
             }
@@ -239,9 +238,9 @@ HeadsUpDisplay::HeadsUpDisplay(Context& ui_context, const Data::Provider& font_d
     META_FUNCTION_TASK();
 
     // Add HUD text blocks as children to the base panel container
-    for(const Ptr<Text>& text_ptr : m_text_blocks)
+    for(const Ptr<TextItem>& text_item_ptr : m_text_blocks)
     {
-        AddChild(*text_ptr); // NOSONAR - method is not overridable in final class
+        AddChild(*text_item_ptr); // NOSONAR - method is not overridable in final class
     }
 
     // Reset timer behind so that HUD is filled with actual values on first update
@@ -256,7 +255,7 @@ void HeadsUpDisplay::SetTextColor(const gfx::Color4F& text_color)
 
     m_settings.text_color = text_color;
 
-    for(const Ptr<Text>& text_ptr : m_text_blocks)
+    for(const Ptr<TextItem>& text_ptr : m_text_blocks)
     {
         text_ptr->SetColor(text_color);
     }
@@ -277,8 +276,8 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
         return;
     }
 
-    const gfx::FpsCounter& fps_counter = GetUIContext().GetRenderContext().GetFpsCounter();
-    const gfx::RenderContext::Settings& context_settings = GetUIContext().GetRenderContext().GetSettings();
+    const rhi::IFpsCounter&           fps_counter      = GetUIContext().GetRenderContext().GetFpsCounter();
+    const rhi::RenderContextSettings& context_settings = GetUIContext().GetRenderContext().GetSettings();
 
     GetTextBlock(TextBlock::Fps).SetText(fmt::format("{:d} FPS", fps_counter.GetFramesPerSecond()));
     GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
@@ -288,7 +287,7 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
                                                                     context_settings.frame_size.GetWidth(),
                                                                     context_settings.frame_size.GetHeight(),
                                                                     context_settings.frame_buffers_count,
-                                                                    magic_enum::enum_name(Graphics::System::GetGraphicsApi())));
+                                                                    magic_enum::enum_name(rhi::ISystem::GetNativeApi())));
     GetTextBlock(TextBlock::VSync).SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
     GetTextBlock(TextBlock::VSync).SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
 
@@ -297,23 +296,23 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     m_update_timer.Reset();
 }
 
-void HeadsUpDisplay::Draw(gfx::RenderCommandList& cmd_list, gfx::CommandList::DebugGroup* p_debug_group) const
+void HeadsUpDisplay::Draw(const rhi::RenderCommandList& cmd_list, const rhi::CommandListDebugGroup* debug_group_ptr) const
 {
     META_FUNCTION_TASK();
-    Panel::Draw(cmd_list, p_debug_group);
+    Panel::Draw(cmd_list, debug_group_ptr);
 
-    for(const Ptr<Text>& text_ptr : m_text_blocks)
+    for(const Ptr<TextItem>& text_ptr : m_text_blocks)
     {
-        text_ptr->Draw(cmd_list, p_debug_group);
+        text_ptr->Draw(cmd_list, debug_group_ptr);
     }
 }
 
-Text& HeadsUpDisplay::GetTextBlock(TextBlock block) const
+TextItem& HeadsUpDisplay::GetTextBlock(TextBlock block) const
 {
     META_FUNCTION_TASK();
-    const Ptr<Text>& text_block_ptr = m_text_blocks[static_cast<size_t>(block)];
-    META_CHECK_ARG_NOT_NULL(text_block_ptr);
-    return *text_block_ptr;
+    const Ptr<TextItem>& text_item_ptr = m_text_blocks[static_cast<size_t>(block)];
+    META_CHECK_ARG_NOT_NULL(text_item_ptr);
+    return *text_item_ptr;
 }
 
 void HeadsUpDisplay::LayoutTextBlocks()
@@ -372,7 +371,7 @@ void HeadsUpDisplay::LayoutTextBlocks()
 void HeadsUpDisplay::UpdateAllTextBlocks(const FrameSize& render_attachment_size) const
 {
     META_FUNCTION_TASK();
-    for(const Ptr<Text>& text_ptr : m_text_blocks)
+    for(const Ptr<TextItem>& text_ptr : m_text_blocks)
     {
         text_ptr->Update(render_attachment_size);
     }

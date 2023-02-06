@@ -12,7 +12,6 @@ target_include_directories(${TARGET} INTERFACE
 
 target_link_libraries(${TARGET} INTERFACE
     MethaneBuildOptions
-    MethanePrecompiledHeaders
     MethaneDataTypes
     Catch2
     HLSLpp

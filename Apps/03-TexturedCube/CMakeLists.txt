@@ -16,7 +16,7 @@ add_methane_application(
 )
 
 set(TEXTURES_DIR ${RESOURCES_DIR}/Textures)
-set(TEXTURES ${TEXTURES_DIR}/MethaneBubbles.jpg)
+list(APPEND TEXTURES ${TEXTURES_DIR}/MethaneBubbles.jpg)
 add_methane_embedded_textures(${TARGET} "${TEXTURES_DIR}" "${TEXTURES}")
 
 add_methane_shaders_source(

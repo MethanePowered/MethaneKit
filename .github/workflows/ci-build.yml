@@ -1,6 +1,6 @@
 # Cross-platform and multi-configuration build of the Methane Kit
 
-name: 'CI Build'
+name: '🏗️ CI Build'
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
     - '.github/workflows/ci-build.yml'
     - 'Apps/**'
     - 'Modules/**'
+    - 'Tests/**'
     - 'Externals/**'
     - 'CMake/**'
     - 'CMakeLists.txt'
@@ -19,6 +20,7 @@ on:
     - '.github/workflows/ci-build.yml'
     - 'Apps/**'
     - 'Modules/**'
+    - 'Tests/**'
     - 'Externals/**'
     - 'CMake/**'
     - 'CMakeLists.txt'
@@ -29,8 +31,10 @@ on:
 env:
   product_ver_major: 0
   product_ver_minor: 7
-  product_ver_patch: 0
+  product_ver_patch: 1
   product_ver_build: ${{ github.run_number }}
+  tracy_release_version: "0.9"
+  # TSC Invariant check is disabled to allow running Catch test executables only for tests list query by CTest
   TRACY_NO_INVARIANT_CHECK: 1
 
 jobs:
@@ -41,114 +45,142 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-2019
+          - os: windows-latest
+            os_name: Windows
             name: "Win64_DX_Release"
-            config_preset: "VS2019-Win64-DX-Default"
-            build_preset: "VS2019-Win64-DX-Release"
+            config_preset: "VS2022-Win64-DX-Default"
+            build_preset: "VS2022-Win64-DX-Release"
             named_logo: Windows
             run_tests: true
+            add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
+            os_name: Windows
             name: "Win64_VK_Release"
-            config_preset: "VS2019-Win64-VK-Default"
-            build_preset: "VS2019-Win64-VK-Release"
+            config_preset: "VS2022-Win64-VK-Default"
+            build_preset: "VS2022-Win64-VK-Release"
             named_logo: Windows
             run_tests: true
+            add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
+            os_name: Windows
             name: "Win64_DX_Profile"
-            config_preset: "VS2019-Win64-DX-Profile"
-            build_preset: "VS2019-Win64-DX-Profile"
+            config_preset: "VS2022-Win64-DX-Profile"
+            build_preset: "VS2022-Win64-DX-Profile"
             named_logo: Windows
             run_tests: false
+            add_tracy_app: true
 
-          - os: windows-2019
+          - os: windows-latest
+            os_name: Windows
             name: "Win64_VK_Profile"
-            config_preset: "VS2019-Win64-VK-Profile"
-            build_preset: "VS2019-Win64-VK-Profile"
+            config_preset: "VS2022-Win64-VK-Profile"
+            build_preset: "VS2022-Win64-VK-Profile"
             named_logo: Windows
             run_tests: false
+            add_tracy_app: true
 
-          - os: windows-2019
+          - os: windows-latest
+            os_name: Windows
             name: "Win32_DX_Release"
-            config_preset: "VS2019-Win32-DX-Default"
-            build_preset: "VS2019-Win32-DX-Release"
+            config_preset: "VS2022-Win32-DX-Default"
+            build_preset: "VS2022-Win32-DX-Release"
             named_logo: Windows
             run_tests: true
+            add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
+            os_name: Windows
             name: "Win32_VK_Release"
-            config_preset: "VS2019-Win32-VK-Default"
-            build_preset: "VS2019-Win32-VK-Release"
+            config_preset: "VS2022-Win32-VK-Default"
+            build_preset: "VS2022-Win32-VK-Release"
             named_logo: Windows
             run_tests: true
+            add_tracy_app: false
 
-          - os: windows-2019
+          - os: windows-latest
+            os_name: Windows
             name: "Win32_DX_Profile"
-            config_preset: "VS2019-Win32-DX-Profile"
-            build_preset: "VS2019-Win32-DX-Profile"
+            config_preset: "VS2022-Win32-DX-Profile"
+            build_preset: "VS2022-Win32-DX-Profile"
             named_logo: Windows
             run_tests: false
+            add_tracy_app: true
 
-          - os: windows-2019
+          - os: windows-latest
+            os_name: Windows
             name: "Win32_VK_Profile"
-            config_preset: "VS2019-Win32-VK-Profile"
-            build_preset: "VS2019-Win32-VK-Profile"
+            config_preset: "VS2022-Win32-VK-Profile"
+            build_preset: "VS2022-Win32-VK-Profile"
             named_logo: Windows
             run_tests: false
+            add_tracy_app: true
 
           - os: ubuntu-latest
+            os_name: Ubuntu
             name: "Ubuntu_VK_Release"
             config_preset: "Make-Lin-VK-Release"
             build_preset: "Make-Lin-VK-Release"
             named_logo: Linux
             run_tests: true
+            add_tracy_app: false
 
           - os: ubuntu-latest
+            os_name: Ubuntu
             name: "Ubuntu_VK_Profile"
             config_preset: "Make-Lin-VK-Profile"
             build_preset: "Make-Lin-VK-Profile"
             named_logo: Linux
             run_tests: false
+            add_tracy_app: true
 
           - os: macos-latest
+            os_name: MacOS
             name: "MacOS_MTL_Release"
             config_preset: "Xcode-Mac-MTL-Default"
             build_preset: "Xcode-Mac-MTL-Release"
             named_logo: Apple
             run_tests: true
+            add_tracy_app: false
 
           - os: macos-latest
+            os_name: MacOS
             name: "MacOS_MTL_Profile"
             config_preset: "Xcode-Mac-MTL-Profile"
             build_preset: "Xcode-Mac-MTL-Profile"
             named_logo: Apple
             run_tests: false
+            add_tracy_app: true
 
           - os: macos-latest
+            os_name: MacOS
             name: "iOS_Sim_MTL_Release"
             config_preset: "Xcode-iOS-Sim-MTL-Default"
             build_preset: "Xcode-iOS-Sim-MTL-Release"
             named_logo: Apple
             run_tests: false
+            add_tracy_app: false
 
           - os: macos-latest
+            os_name: MacOS
             name: "tvOS_Sim_MTL_Release"
             config_preset: "Xcode-tvOS-Sim-MTL-Default"
             build_preset: "Xcode-tvOS-Sim-MTL-Release"
             named_logo: Apple
             run_tests: false
+            add_tracy_app: false
 
     runs-on: ${{ matrix.os }}
 
     steps:
 
     - name: Install Linux prerequisites
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev p7zip
+      if: ${{ matrix.os_name == 'Ubuntu' }}
+      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev p7zip
 
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Testspace
       uses: testspace-com/setup-testspace@v1
@@ -165,17 +197,17 @@ jobs:
       shell: bash
       run: |
         set -o pipefail
-        mkdir -p "Build/Output/${{ matrix.config_preset }}"
-        cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Build.log
+        mkdir -p "Build/Output/${{ matrix.config_preset }}/Install"
+        cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Install/Build.log
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
       shell: bash
       run: |
         set -o pipefail
-        cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Build.log
+        cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Install/Build.log
 
     - name: Run Unit-Tests on Unix
-      if: ${{ matrix.run_tests && matrix.os != 'windows-2019'}}
+      if: ${{ matrix.run_tests && matrix.os_name != 'Windows'}}
       working-directory: Build/Output/${{ matrix.config_preset }}/Install/Tests
       shell: bash
       run: |
@@ -188,7 +220,7 @@ jobs:
         done
 
     - name: Run Unit-Tests on Windows
-      if: ${{ matrix.run_tests && matrix.os == 'windows-2019' }}
+      if: ${{ matrix.run_tests && matrix.os_name == 'Windows' }}
       working-directory: Build/Output/${{ matrix.config_preset }}/Install/Tests
       shell: cmd
       run: |
@@ -201,7 +233,7 @@ jobs:
         exit 0
 
     - name: Upload Test Results Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: ${{ matrix.run_tests && (success() || failure()) }}
       with:
         name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
@@ -209,24 +241,34 @@ jobs:
 
     - name: Upload Build Log and Test Tesults to Testspace server
       if: ${{ matrix.run_tests && (success() || failure()) }}
-      run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Build.log"
+      run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Build.log"
 
     - name: Add README and BUILD files
       shell: bash
       run: |
         INSTALL_DIR=Build/Output/${{ matrix.config_preset }}/Install
         cp README.md $INSTALL_DIR/README.md
-        echo Methane Kit v.${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}, GitHub repository: ${{ github.repositoryUrl }}, GitHub build number: ${{ github.run_id }}, git branch: ${{ github.ref_name }}, commit SHA: ${{ github.sha }} > $INSTALL_DIR/BUILD.txt
-        echo   - Built with CMake configure preset ${{ matrix.config_preset }} and build preset ${{ matrix.build_preset }} >> $INSTALL_DIR/BUILD.txt
-        echo   - Built on agent ${{ runner.name }}, ${{ runner.os }}, ${{ runner.arch }}: >> $INSTALL_DIR/BUILD.txt
+        echo Methane Kit v.${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }} https://github.com/${{ github.repository }} > $INSTALL_DIR/Build-Info.txt
+        echo   - Git repository: ${{ github.repositoryUrl }}, branch: ${{ github.ref_name }}, commit SHA: ${{ github.sha }} >> $INSTALL_DIR/Build-Info.txt
+        echo   - GitHub Actions build url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} >> $INSTALL_DIR/Build-Info.txt
+        echo   - Built with CMake configure preset ${{ matrix.config_preset }} and build preset ${{ matrix.build_preset }} >> $INSTALL_DIR/Build-Info.txt
+        echo   - Built on agent ${{ runner.name }}, ${{ runner.os }}, ${{ runner.arch }}: >> $INSTALL_DIR/Build-Info.txt
+        echo   - Builder agent ${{ matrix.os }} system information: >> $INSTALL_DIR/Build-Info.txt
 
     - name: Add Windows System Information to BUILD file
-      if: ${{ matrix.os == 'windows-2019' }}
-      run: systeminfo >> Build\Output\${{ matrix.config_preset }}\Install\Build.txt
+      if: ${{ matrix.os_name == 'Windows' }}
+      run: systeminfo >> Build\Output\${{ matrix.config_preset }}\Install\Build-Info.txt
 
     - name: Add Unix System Information to BUILD file
-      if: ${{ matrix.os != 'windows-2019' }}
-      run: uname -a >>Build/Output/${{ matrix.config_preset }}/Install/Build.txt
+      if: ${{ matrix.os_name != 'Windows' }}
+      run: uname -a >>Build/Output/${{ matrix.config_preset }}/Install/Build-Info.txt
+
+    - name: Download Tracy release
+      if: ${{ matrix.add_tracy_app }}
+      shell: bash
+      run: |
+        curl -sSLo Tracy.7z https://github.com/MethanePowered/Tracy/releases/download/v${{ env.tracy_release_version }}/Tracy-${{ matrix.os_name }}-v${{ env.tracy_release_version }}.7z
+        7z x Tracy.7z -oBuild/Output/${{ matrix.config_preset }}/Install/Apps
 
     - name: Archive Build Artifacts
       shell: bash
@@ -246,26 +288,26 @@ jobs:
       run: |
         case "${{ job.status }}" in
           "success")
-            echo "::set-output name=message::passed"
-            echo "::set-output name=color::#56a93c"
+            echo "badge_message=passed" >> $GITHUB_ENV
+            echo "badge_color=#56a93c"  >> $GITHUB_ENV
             ;;
           "failure")
-            echo "::set-output name=message::failed"
-            echo "::set-output name=color::#cd6e57"
+            echo "badge_message=failed" >> $GITHUB_ENV
+            echo "badge_color=#cd6e57"  >> $GITHUB_ENV
             ;;
           "cancelled")
-            echo "::set-output name=message::cancelled"
-            echo "::set-output name=color::#9b9b9c"
+            echo "badge_message=cancelled" >> $GITHUB_ENV
+            echo "badge_color=#9b9b9c"     >> $GITHUB_ENV
             ;;
           *)
-            echo "::set-output name=message::undefined"
-            echo "::set-output name=color::purple"
+            echo "badge_message=undefined" >> $GITHUB_ENV
+            echo "badge_color=purple"      >> $GITHUB_ENV
             ;;
         esac
 
     - name: Update Badge JSON
       if: ${{ github.event_name == 'push' && always() }}
-      uses: schneegans/dynamic-badges-action@v1.4.0 # https://github.com/marketplace/actions/dynamic-badges
+      uses: schneegans/dynamic-badges-action@v1.6.0 # https://github.com/marketplace/actions/dynamic-badges
       with:
         auth: ${{ secrets.GIST_TOKEN }}
         gistID: 96d788046ccd52b45b3354a99f8569c3
@@ -274,5 +316,9 @@ jobs:
         label: ${{ matrix.name }}
         labelColor: #f5f5f5
         logoColor: #f5f5f5
-        message: ${{ steps.badge-params.outputs.message }}
-        color: ${{ steps.badge-params.outputs.color }}
+        message: ${{ env.badge_message }}
+        color: ${{ env.badge_color }}
+
+    - name: Windows disk space report
+      if: ${{ matrix.os_name == 'Windows' && always() }}
+      run: Get-PSDrive

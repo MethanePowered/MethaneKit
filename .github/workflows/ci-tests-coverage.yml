@@ -1,11 +1,11 @@
 # Tests coverage report generator using test results published by CI Sonar Scan workflow
 # https://github.com/irongut/CodeCoverageSummary
 
-name: 'CI Tests Coverage'
+name: '📊 CI Tests Coverage'
 
 on:
   workflow_run:
-    workflows: [ 'CI Sonar Scan' ]
+    workflows: [ '🎯 CI Sonar Scan' ]
     types:
       - completed
 

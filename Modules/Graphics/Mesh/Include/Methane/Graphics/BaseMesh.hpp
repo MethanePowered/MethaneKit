@@ -31,7 +31,8 @@ namespace Methane::Graphics
 {
 
 template<typename VType>
-class BaseMesh : public Mesh
+class BaseMesh
+    : public Mesh
 {
 public:
     using Vertices = std::vector<VType>;
@@ -43,9 +44,10 @@ public:
         META_CHECK_ARG_EQUAL_DESCR(GetVertexSize(), sizeof(VType), "size of vertex structure differs from vertex size calculated by vertex layout");
     }
 
-    [[nodiscard]] const Vertices& GetVertices() const noexcept       { return m_vertices; }
-    [[nodiscard]] Data::Size      GetVertexCount() const noexcept    { return static_cast<Data::Size>(m_vertices.size()); }
-    [[nodiscard]] Data::Size      GetVertexDataSize() const noexcept { return static_cast<Data::Size>(m_vertices.size() * GetVertexSize()); }
+    [[nodiscard]] const Vertices&   GetVertices() const noexcept             { return m_vertices; }
+    [[nodiscard]] Data::Size        GetVertexCount() const noexcept final    { return static_cast<Data::Size>(m_vertices.size()); }
+    [[nodiscard]] Data::Size        GetVertexDataSize() const noexcept final { return static_cast<Data::Size>(m_vertices.size() * GetVertexSize()); }
+    [[nodiscard]] Data::ConstRawPtr GetVertexData() const noexcept final     { return reinterpret_cast<Data::ConstRawPtr>(m_vertices.data()); } // NOSONAR
 
 protected:
     template<typename FType>

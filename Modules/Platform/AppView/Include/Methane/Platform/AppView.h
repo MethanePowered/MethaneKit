@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2023 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Platform/AppView.h
-Methane application view used both by RenderContext in Core API
+Methane application view used both by IRenderContext in RHI
 and by Methane App implementations.
 
 ******************************************************************************/
@@ -27,19 +27,21 @@ and by Methane App implementations.
 #ifdef __OBJC__
 
 #ifdef APPLE_MACOS
-#import "MacOS/AppViewMT.hh"
+#import "MacOS/AppViewMetal.hh"
 #else
-#import "iOS/AppViewMT.hh"
+#import "iOS/AppViewMetal.hh"
 #endif
 
 #endif // __OBJC__
+
+#include <stdexcept>
 
 namespace Methane::Platform
 {
 
 #ifdef __OBJC__
 
-using NativeAppView = AppViewMT;
+using NativeAppView = AppViewMetal;
 using NativeAppViewPtr = NativeAppView* _Nonnull;
 
 #else // __OBJC__
@@ -52,6 +54,13 @@ using NativeAppViewPtr = NativeAppView*;
 struct AppView
 {
     NativeAppViewPtr p_native_view;
+};
+
+class AppViewResizeRequiredError
+    : public std::runtime_error
+{
+public:
+    AppViewResizeRequiredError();
 };
 
 } // namespace Methane::Platform

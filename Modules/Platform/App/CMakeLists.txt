@@ -66,7 +66,7 @@ else(LINUX)
     )
 
     # TODO: replace "xcb-randr" with "X11::xcb_randr" when supported by CMake 3.24
-    set(PLATFORM_LIBRARIES X11::X11 X11::X11_xcb X11::xcb xcb-randr STB)
+    set(PLATFORM_LIBRARIES X11::X11 X11::X11_xcb X11::xcb xcb-randr xcb-sync STB)
 
 endif()
 
@@ -78,6 +78,7 @@ list(APPEND HEADERS ${PLATFORM_HEADERS}
 )
 
 list(APPEND SOURCES ${PLATFORM_SOURCES}
+    ${SOURCES_DIR}/IApp.cpp
     ${SOURCES_DIR}/AppBase.cpp
     ${SOURCES_DIR}/AppController.cpp
 )
@@ -94,10 +95,10 @@ target_link_libraries(${TARGET}
         MethaneInstrumentation
         MethaneDataTypes
         MethanePlatformAppView
-        MethanePlatformInput
+        MethanePlatformInputActionControllers
     PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledHeaders
+        MethaneCommonPrecompiledHeaders
         MethanePlatformUtils
         MethaneDataProvider
         TaskFlow
@@ -111,7 +112,9 @@ target_compile_definitions(${TARGET}
         METHANE_RENDER_APP
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneCommonPrecompiledHeaders)
+endif()
 
 target_include_directories(${TARGET}
     PRIVATE
@@ -133,6 +136,7 @@ if (APPLE)
     set_source_files_properties(
         ${PLATFORM_SOURCES}
         PROPERTIES
+            COMPILE_FLAGS -fobjc-arc
             SKIP_PRECOMPILE_HEADERS ON
     )
 endif()

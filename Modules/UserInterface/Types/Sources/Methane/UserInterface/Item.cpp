@@ -32,9 +32,7 @@ namespace Methane::UserInterface
 Item::Item(Context& ui_context, const UnitRect& ui_rect)
     : m_ui_context(ui_context)
     , m_abs_rect_px(m_ui_context.ConvertTo<Units::Pixels>(ui_rect))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 UnitPoint Item::GetRelOriginInDots() const noexcept
 {

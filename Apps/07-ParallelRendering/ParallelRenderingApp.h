@@ -26,6 +26,8 @@ Tutorial demonstrating parallel rendering with Methane graphics API
 #include <Methane/Kit.h>
 #include <Methane/UserInterface/App.hpp>
 
+#include <thread>
+
 namespace hlslpp // NOSONAR
 {
 #pragma pack(push, 16)
@@ -37,20 +39,23 @@ namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 
-struct ParallelRenderingFrame final : Graphics::AppFrame
+struct ParallelRenderingFrame final
+    : Graphics::AppFrame
 {
-    gfx::InstancedMeshBufferBindings    cubes_array;
-    Ptr<gfx::ParallelRenderCommandList> parallel_render_cmd_list_ptr;
-    Ptr<gfx::RenderCommandList>         serial_render_cmd_list_ptr;
-    Ptr<gfx::CommandListSet>            execute_cmd_list_set_ptr;
+    gfx::InstancedMeshBufferBindings cubes_array;
+    rhi::ParallelRenderCommandList   parallel_render_cmd_list;
+    rhi::RenderCommandList           serial_render_cmd_list;
+    rhi::CommandListSet              execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };
 
 using UserInterfaceApp = UserInterface::App<ParallelRenderingFrame>;
 
-class ParallelRenderingApp final : public UserInterfaceApp // NOSONAR
+class ParallelRenderingApp final // NOSONAR - destructor required
+    : public UserInterfaceApp
 {
 public:
     struct Settings
@@ -82,7 +87,7 @@ public:
 
 protected:
     // IContextCallback override
-    void OnContextReleased(gfx::Context& context) override;
+    void OnContextReleased(rhi::IContext& context) override;
 
 private:
     struct CubeParameters
@@ -98,16 +103,17 @@ private:
 
     CubeArrayParameters InitializeCubeArrayParameters() const;
     bool Animate(double elapsed_seconds, double delta_seconds);
-    void RenderCubesRange(gfx::RenderCommandList& remder_cmd_list, const Ptrs<gfx::ProgramBindings>& program_bindings_per_instance,
+    void RenderCubesRange(const rhi::RenderCommandList& remder_cmd_list,
+                          const std::vector<rhi::ProgramBindings>& program_bindings_per_instance,
                           uint32_t begin_instance_index, const uint32_t end_instance_index) const;
 
-    Settings              m_settings;
-    gfx::Camera           m_camera;
-    Ptr<gfx::RenderState> m_render_state_ptr;
-    Ptr<gfx::Texture>     m_texture_array_ptr;
-    Ptr<gfx::Sampler>     m_texture_sampler_ptr;
-    Ptr<MeshBuffers>      m_cube_array_buffers_ptr;
-    CubeArrayParameters   m_cube_array_parameters;
+    Settings            m_settings;
+    gfx::Camera         m_camera;
+    rhi::RenderState    m_render_state;
+    rhi::Texture        m_texture_array;
+    rhi::Sampler        m_texture_sampler;
+    Ptr<MeshBuffers>    m_cube_array_buffers_ptr;
+    CubeArrayParameters m_cube_array_parameters;
 };
 
 } // namespace Methane::Tutorials

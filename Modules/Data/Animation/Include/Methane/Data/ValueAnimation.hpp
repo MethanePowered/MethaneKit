@@ -45,9 +45,7 @@ public:
         , m_value(value)
         , m_start_value(value)
         , m_update_function(update_function)
-    {
-        META_FUNCTION_TASK();
-    }
+    { }
 
     // Animation overrides
 

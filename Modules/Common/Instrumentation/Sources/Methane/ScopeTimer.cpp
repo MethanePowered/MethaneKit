@@ -23,10 +23,10 @@ Code scope measurement timer with aggregating and averaging of timings.
 
 #include <Methane/ScopeTimer.h>
 #include <Methane/Instrumentation.h>
-#include <Methane/Checks.hpp>
 
 #include <sstream>
 #include <chrono>
+#include <cassert>
 
 namespace Methane
 {
@@ -93,7 +93,7 @@ ScopeTimer::Registration ScopeTimer::Aggregator::RegisterScope(const char* scope
         m_new_scope_id++;
         m_timing_by_scope_id.resize(m_new_scope_id);
         m_counters_by_scope_id.emplace_back(ITT_COUNTER_INIT(scope_name_and_id_it->first, g_methane_itt_domain_name));
-        TracyPlotConfig(scope_name_and_id_it->first, tracy::PlotFormatType::Number);
+        TracyPlotConfig(scope_name_and_id_it->first, tracy::PlotFormatType::Number, false, false, 0);
     }
     return Registration{ scope_name_and_id_it->first, scope_name_and_id_it->second };
 }
@@ -118,9 +118,7 @@ void ScopeTimer::Aggregator::AddScopeTiming(const Registration& scope_registrati
 ScopeTimer::ScopeTimer(const char* scope_name)
     : Timer()
     , m_registration(Aggregator::Get().RegisterScope(scope_name))
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ScopeTimer::~ScopeTimer()
 {

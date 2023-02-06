@@ -14,12 +14,19 @@ set(GRAPHVIZ_GRAPH_HEADER "    node [ fontsize = \"16\" ];")
 set(GRAPHVIZ_IGNORE_TARGETS
     ^MethaneBuildOptions$
     ^MethaneInstrumentation$
+    ^MethaneMathPrecompiledHeaders$
+    ^MethaneTestsCatchHelpers$
     ^TracyInstrumentation$
     ^TracyClient$
     ^ittnotify$
     ^cmrc-base$
+    ^magic_enum$
     ^CLI11_warnings$
-    ^Catch$
+    ^Catch2.*$
+    ^nowide$
+    ^fmt.*$
+    ^default_settings.*$
+    ^error_settings.*$
     ^.*_Shaders$
     ^.*_Textures$
     ^.*_Fonts$

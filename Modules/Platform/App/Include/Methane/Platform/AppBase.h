@@ -37,8 +37,7 @@ Base application interface and platform-independent implementation.
 
 namespace tf // NOSONAR
 {
-// TaskFlow Executor class forward declaration:
-// #include <taskflow/core/executor.hpp>
+// TaskFlow Executor class forward declaration from <taskflow/core/executor.hpp>
 class Executor;
 }
 
@@ -102,6 +101,7 @@ protected:
 
     void AddInputControllers(const Ptrs<Input::Controller>& controllers) { m_input_state.AddControllers(controllers); }
     void Deinitialize() { m_initialized = false; }
+    bool IsResizeRequiredToRender() const noexcept { return m_is_resize_required_to_render; }
 
     bool HasDeferredMessage() const noexcept { return !!m_deferred_message_ptr; }
     const Message& GetDeferredMessage() const;
@@ -154,6 +154,7 @@ private:
     bool            m_is_minimized = false;
     bool            m_initialized = false;
     bool            m_is_resizing = false;
+    bool            m_is_resize_required_to_render = false;
     bool            m_has_keyboard_focus = false;
     Input::State    m_input_state;
 

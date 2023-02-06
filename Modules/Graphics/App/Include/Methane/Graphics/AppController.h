@@ -23,10 +23,10 @@ Base graphics application controller.
 
 #pragma once
 
-#include "App.h"
+#include "IApp.h"
 
 #include <Methane/Platform/AppController.h>
-#include <Methane/Platform/KeyboardActionControllerBase.hpp>
+#include <Methane/Platform/Input/KeyboardActionControllerBase.hpp>
 
 namespace Methane::Graphics
 {
@@ -37,14 +37,16 @@ enum class AppAction : uint32_t
     SwitchAnimations
 };
 
+namespace pin = Methane::Platform::Input;
+
 class AppController
     : public Platform::AppController
-    , public Platform::Keyboard::ActionControllerBase<AppAction>
+    , public pin::Keyboard::ActionControllerBase<AppAction>
 {
 public:
-    using ActionByKeyboardState = Platform::Keyboard::ActionControllerBase<AppAction>::ActionByKeyboardState;
+    using ActionByKeyboardState = pin::Keyboard::ActionControllerBase<AppAction>::ActionByKeyboardState;
     inline static const ActionByKeyboardState default_action_by_keyboard_state{
-        { { Platform::Keyboard::Key::LeftControl, Platform::Keyboard::Key::P }, AppAction::SwitchAnimations  }
+        { { pin::Keyboard::Key::LeftControl, pin::Keyboard::Key::P }, AppAction::SwitchAnimations  }
     };
     
     AppController(IApp& application, const std::string& application_help,
@@ -52,7 +54,7 @@ public:
                   const Graphics::AppController::ActionByKeyboardState& graphics_action_by_keyboard_state = Graphics::AppController::default_action_by_keyboard_state);
     
     // Input::Controller implementation
-    void OnKeyboardChanged(Platform::Keyboard::Key, Platform::Keyboard::KeyState, const Platform::Keyboard::StateChange& state_change) override;
+    void OnKeyboardChanged(pin::Keyboard::Key, pin::Keyboard::KeyState, const pin::Keyboard::StateChange& state_change) override;
     HelpLines GetHelp() const override;
 
 protected:
@@ -60,8 +62,8 @@ protected:
     using Platform::AppController::OnKeyboardStateAction;
     using Platform::AppController::GetKeyboardActionName;
     
-    // Keyboard::ActionControllerBase interface
-    void        OnKeyboardKeyAction(AppAction, Platform::Keyboard::KeyState) override { /* not handled in this controller */ }
+    // Input::Keyboard::ActionControllerBase interface
+    void        OnKeyboardKeyAction(AppAction, pin::Keyboard::KeyState) override { /* not handled in this controller */ }
     void        OnKeyboardStateAction(AppAction action) override;
     std::string GetKeyboardActionName(AppAction action) const override;
 

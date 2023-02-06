@@ -23,6 +23,8 @@ Unit tests of event connections with Emitter and Receiver classes
 
 #include "EventWrappers.hpp"
 
+#include <Methane/Data/Transmitter.hpp>
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <array>
@@ -39,13 +41,13 @@ TEST_CASE("Connect one emitter to one receiver", "[events]")
 
         receiver.CheckBind(emitter);
 
-        CHECK(!receiver.IsFooCalled());
-        CHECK(!receiver.IsBarCalled());
+        CHECK_FALSE(receiver.IsFooCalled());
+        CHECK_FALSE(receiver.IsBarCalled());
 
         CHECK_NOTHROW(emitter.EmitFoo());
 
         CHECK(receiver.IsFooCalled());
-        CHECK(!receiver.IsBarCalled());
+        CHECK_FALSE(receiver.IsBarCalled());
     }
 
     SECTION("Emit with arguments")
@@ -55,15 +57,15 @@ TEST_CASE("Connect one emitter to one receiver", "[events]")
 
         receiver.CheckBind(emitter);
 
-        CHECK(!receiver.IsFooCalled());
-        CHECK(!receiver.IsBarCalled());
+        CHECK_FALSE(receiver.IsFooCalled());
+        CHECK_FALSE(receiver.IsBarCalled());
         CHECK(receiver.GetBarA() == 0);
         CHECK(receiver.GetBarB() == false);
         CHECK(receiver.GetBarC() == 0.f);
 
         CHECK_NOTHROW(emitter.EmitBar(g_bar_a, g_bar_b, g_bar_c));
 
-        CHECK(!receiver.IsFooCalled());
+        CHECK_FALSE(receiver.IsFooCalled());
         CHECK(receiver.IsBarCalled());
         CHECK(receiver.GetBarA() == g_bar_a);
         CHECK(receiver.GetBarB() == g_bar_b);
@@ -77,14 +79,14 @@ TEST_CASE("Connect one emitter to one receiver", "[events]")
 
         receiver.CheckBind(emitter);
 
-        CHECK(!receiver.IsFooCalled());
-        CHECK(!receiver.IsBarCalled());
+        CHECK_FALSE(receiver.IsFooCalled());
+        CHECK_FALSE(receiver.IsBarCalled());
 
         receiver.CheckUnbind(emitter);
         CHECK_NOTHROW(emitter.EmitFoo());
 
-        CHECK(!receiver.IsFooCalled());
-        CHECK(!receiver.IsBarCalled());
+        CHECK_FALSE(receiver.IsFooCalled());
+        CHECK_FALSE(receiver.IsBarCalled());
     }
 
     SECTION("Emit after receiver destroyed")
@@ -117,8 +119,8 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         for(TestReceiver& receiver : receivers)
         {
             receiver.CheckBind(emitter);
-            CHECK(!receiver.IsFooCalled());
-            CHECK(!receiver.IsBarCalled());
+            CHECK_FALSE(receiver.IsFooCalled());
+            CHECK_FALSE(receiver.IsBarCalled());
         }
 
         CHECK_NOTHROW(emitter.EmitFoo());
@@ -126,7 +128,7 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         for(TestReceiver& receiver : receivers)
         {
             CHECK(receiver.IsFooCalled());
-            CHECK(!receiver.IsBarCalled());
+            CHECK_FALSE(receiver.IsBarCalled());
         }
     }
 
@@ -138,8 +140,8 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         for(TestReceiver& receiver : receivers)
         {
             receiver.CheckBind(emitter);
-            CHECK(!receiver.IsFooCalled());
-            CHECK(!receiver.IsBarCalled());
+            CHECK_FALSE(receiver.IsFooCalled());
+            CHECK_FALSE(receiver.IsBarCalled());
             CHECK(receiver.GetBarA() == 0);
             CHECK(receiver.GetBarB() == false);
             CHECK(receiver.GetBarC() == 0.f);
@@ -149,7 +151,7 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
 
         for(TestReceiver& receiver : receivers)
         {
-            CHECK(!receiver.IsFooCalled());
+            CHECK_FALSE(receiver.IsFooCalled());
             CHECK(receiver.IsBarCalled());
             CHECK(receiver.GetBarA() == g_bar_a);
             CHECK(receiver.GetBarB() == g_bar_b);
@@ -269,8 +271,8 @@ TEST_CASE("Connect many emitters to one receiver", "[events]")
             receiver.CheckBind(emitter);
         }
 
-        CHECK(!receiver.IsFooCalled());
-        CHECK(!receiver.IsBarCalled());
+        CHECK_FALSE(receiver.IsFooCalled());
+        CHECK_FALSE(receiver.IsBarCalled());
 
         uint32_t emit_count = 0U;
         for(TestEmitter& emitter : emitters)
@@ -281,7 +283,7 @@ TEST_CASE("Connect many emitters to one receiver", "[events]")
             CHECK(receiver.GetFooCallCount() == emit_count);
         }
 
-        CHECK(!receiver.IsBarCalled());
+        CHECK_FALSE(receiver.IsBarCalled());
     }
 
     SECTION("Emit with arguments")
@@ -294,8 +296,8 @@ TEST_CASE("Connect many emitters to one receiver", "[events]")
             receiver.CheckBind(emitter);
         }
 
-        CHECK(!receiver.IsFooCalled());
-        CHECK(!receiver.IsBarCalled());
+        CHECK_FALSE(receiver.IsFooCalled());
+        CHECK_FALSE(receiver.IsBarCalled());
         CHECK(receiver.GetBarA() == 0);
         CHECK(receiver.GetBarB() == false);
         CHECK(receiver.GetBarC() == 0.f);
@@ -320,7 +322,7 @@ TEST_CASE("Connect many emitters to one receiver", "[events]")
             bar_c *= 2.f;
         }
 
-        CHECK(!receiver.IsFooCalled());
+        CHECK_FALSE(receiver.IsFooCalled());
     }
 
     SECTION("Copied emitters are connected to receiver")
@@ -412,5 +414,86 @@ TEST_CASE("Connect many emitters to one receiver", "[events]")
 
         CHECK(receiver.GetFuncCallCount() == emits_count);
         CHECK(receiver.GetConnectedEmittersCount() == emits_count);
+    }
+}
+
+TEST_CASE("Connect emitter to receiver through the transmitter", "[events]")
+{
+    TestEmitter  emitter;
+    TestReceiver receiver;
+
+    SECTION("Emit Foo through transmitter connection")
+    {
+        TestTransmitter transmitter(emitter);
+        CHECK_NOTHROW(transmitter.Connect(receiver));
+
+        CHECK_FALSE(receiver.IsFooCalled());
+        CHECK_FALSE(receiver.IsBarCalled());
+
+        CHECK_NOTHROW(emitter.EmitFoo());
+
+        CHECK(receiver.IsFooCalled());
+        CHECK_FALSE(receiver.IsBarCalled());
+    }
+
+    SECTION("Emit Bar through transmitter connection")
+    {
+        TestTransmitter transmitter(emitter);
+        CHECK_NOTHROW(transmitter.Connect(receiver));
+
+        CHECK_FALSE(receiver.IsFooCalled());
+        CHECK_FALSE(receiver.IsBarCalled());
+        CHECK(receiver.GetBarA() == 0);
+        CHECK(receiver.GetBarB() == false);
+        CHECK(receiver.GetBarC() == 0.f);
+
+        CHECK_NOTHROW(emitter.EmitBar(g_bar_a, g_bar_b, g_bar_c));
+
+        CHECK_FALSE(receiver.IsFooCalled());
+        CHECK(receiver.IsBarCalled());
+        CHECK(receiver.GetBarA() == g_bar_a);
+        CHECK(receiver.GetBarB() == g_bar_b);
+        CHECK(receiver.GetBarC() == g_bar_c);
+    }
+
+    SECTION("Transmitter can disconnect from receiver")
+    {
+        TestTransmitter transmitter(emitter);
+        CHECK_NOTHROW(transmitter.Connect(receiver));
+        CHECK_NOTHROW(transmitter.Disconnect(receiver));
+        CHECK_NOTHROW(emitter.EmitFoo());
+        CHECK_FALSE(receiver.IsFooCalled());
+    }
+
+    SECTION("Transmitter can be reset to other emitter")
+    {
+        TestTransmitter transmitter(emitter);
+        TestEmitter other_emitter;
+        transmitter.Reset(&other_emitter);
+
+        CHECK_NOTHROW(transmitter.Connect(receiver));
+        CHECK_FALSE(receiver.IsFooCalled());
+        CHECK_NOTHROW(emitter.EmitFoo());
+        CHECK_FALSE(receiver.IsFooCalled());
+        CHECK_NOTHROW(other_emitter.EmitFoo());
+        CHECK(receiver.IsFooCalled());
+    }
+
+    SECTION("Connect/Disconnect through default constructed transmitter throws error")
+    {
+        TestTransmitter transmitter;
+        CHECK_FALSE(transmitter.IsTransmitting());
+        CHECK_THROWS_AS(transmitter.Connect(receiver), TestTransmitter::NoTargetError);
+        CHECK_THROWS_AS(transmitter.Disconnect(receiver), TestTransmitter::NoTargetError);
+    }
+
+    SECTION("Connect/Disconnect through disconnected transmitter throws error")
+    {
+        TestTransmitter transmitter(emitter);
+        CHECK(transmitter.IsTransmitting());
+        transmitter.Reset();
+        CHECK_FALSE(transmitter.IsTransmitting());
+        CHECK_THROWS_AS(transmitter.Connect(receiver), TestTransmitter::NoTargetError);
+        CHECK_THROWS_AS(transmitter.Disconnect(receiver), TestTransmitter::NoTargetError);
     }
 }

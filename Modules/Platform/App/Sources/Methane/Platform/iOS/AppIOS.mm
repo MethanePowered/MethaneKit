@@ -60,9 +60,7 @@ AppIOS::AppIOS(const AppBase::Settings& settings)
 }
 
 void AppIOS::InitContext(const Platform::AppEnvironment& /*env*/, const Data::FrameSize& /*frame_size*/)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 int AppIOS::Run(const RunArgs& args)
 {
@@ -115,8 +113,8 @@ void AppIOS::ShowAlert(const Message& msg)
     AppDelegate* app_delegate = static_cast<AppDelegate*>([UIApplication sharedApplication].delegate);
     META_CHECK_ARG_NOT_NULL(app_delegate);
 
-    [app_delegate alert: MacOS::ConvertToNsType<std::string, NSString*>(msg.title)
-        withInformation: MacOS::ConvertToNsType<std::string, NSString*>(msg.information)
+    [app_delegate alert: MacOS::ConvertToNsString(msg.title)
+        withInformation: MacOS::ConvertToNsString(msg.information)
                andStyle: ConvertMessageTypeToNsAlertStyle(msg.type)];
 
     AppBase::ShowAlert(msg);
@@ -144,8 +142,6 @@ uint32_t AppIOS::GetFontResolutionDpi() const
 }
 
 void AppIOS::Close()
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 } // namespace Methane::Platform

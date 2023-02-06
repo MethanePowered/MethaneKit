@@ -22,7 +22,7 @@ Overloading "new" and "delete" operators with additional instrumentation:
 
 ******************************************************************************/
 
-#include <Tracy.hpp>
+#include <tracy/Tracy.hpp>
 
 #include <cstdlib>
 #include <new>
@@ -45,7 +45,7 @@ void* operator new(std::size_t size)
     if (!ptr)
         throw std::bad_alloc();
 
-    TRACY_ALLOC(ptr, size)
+    TRACY_ALLOC(ptr, size);
     return ptr;
 }
 
@@ -65,25 +65,25 @@ void* operator new(std::size_t size, std::align_val_t align)
     if (!ptr)
         throw std::bad_alloc{};
 
-    TRACY_ALLOC(ptr, size)
+    TRACY_ALLOC(ptr, size);
     return ptr;
 }
 
 void operator delete(void* ptr) noexcept
 {
-    TRACY_FREE(ptr)
+    TRACY_FREE(ptr);
     std::free(ptr);
 }
 
 void operator delete(void* ptr, size_t) noexcept
 {
-    TRACY_FREE(ptr)
+    TRACY_FREE(ptr);
     std::free(ptr);
 }
 
 void operator delete(void* ptr, std::align_val_t) noexcept
 {
-    TRACY_FREE(ptr)
+    TRACY_FREE(ptr);
 #if defined(_WIN32)
     _aligned_free(ptr);
 #else

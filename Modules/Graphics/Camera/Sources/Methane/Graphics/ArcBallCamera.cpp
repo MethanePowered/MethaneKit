@@ -41,17 +41,13 @@ static inline float UnitSign(float x)   { return x >= 0.F ? 1.F : -1.F; }
 ArcBallCamera::ArcBallCamera(Pivot pivot) noexcept
     : Camera()
     , m_pivot(pivot)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 ArcBallCamera::ArcBallCamera(const Camera& view_camera, Pivot pivot) noexcept
     : Camera()
     , m_p_view_camera(&view_camera)
     , m_pivot(pivot)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 void ArcBallCamera::MousePress(const Point2I& mouse_screen_pos) noexcept
 {

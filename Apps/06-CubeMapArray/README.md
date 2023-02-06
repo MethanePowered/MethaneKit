@@ -28,4 +28,4 @@ Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInte
 ## Continue learning
 
 Continue learning Methane Graphics programming in the next tutorial [ParallelRendering](../07-ParallelRendering),
-which is demonstrating multi-threaded rendering with `ParallelRenderCommandList`.
+which is demonstrating multi-threaded rendering with `IParallelRenderCommandList`.

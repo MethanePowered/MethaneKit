@@ -2,34 +2,39 @@ set(TARGET MethaneKit)
 
 get_module_dirs("Methane")
 
-set(SOURCES
+list(APPEND HEADERS
+    ${INCLUDE_DIR}/Kit.h
+)
+list(APPEND SOURCES
     ${SOURCES_DIR}/Kit.cpp
 )
 
-set(HEADERS
-    ${INCLUDE_DIR}/Kit.h
-)
-
 add_library(${TARGET} STATIC
-    ${SOURCES}
     ${HEADERS}
+    ${SOURCES}
 )
 
 target_include_directories(${TARGET}
-    PRIVATE
-        Sources
     PUBLIC
         Include
+    PRIVATE
+        Sources
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET}
+        PUBLIC
+            <Methane/Kit.h>
+    )
+endif()
 
 target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsTypes
-        MethaneGraphicsPrimitives
         MethaneGraphicsMesh
         MethaneGraphicsCamera
-        MethaneGraphicsCore
-        MethaneGraphicsExtensions
+        MethaneGraphicsRhiImpl
+        MethaneGraphicsPrimitives
         MethaneGraphicsApp
         MethaneUserInterfaceTypes
         MethaneUserInterfaceTypography
@@ -37,18 +42,14 @@ target_link_libraries(${TARGET}
         MethaneUserInterfaceApp
 )
 
-target_precompile_headers(${TARGET}
-    PUBLIC
-        ${HEADERS}
-)
-
 set(PREREQUISITE_TARGETS
-    MethaneGraphicsCore
-    MethaneGraphicsExtensions
+    MethaneGraphicsRhiImpl
+    MethaneGraphicsPrimitives
     MethaneUserInterfaceTypography
     MethaneUserInterfaceWidgets
     MethaneUserInterfaceApp
 )
+
 add_prerequisite_modules(${TARGET} "${PREREQUISITE_TARGETS}")
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

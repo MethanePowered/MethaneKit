@@ -13,12 +13,12 @@ if (WIN32)
 elseif(APPLE)
 
     list(APPEND PLATFORM_HEADERS
-        ${INCLUDE_PLATFORM_OS_DIR}/AppViewMT.hh
+        ${INCLUDE_PLATFORM_OS_DIR}/AppViewMetal.hh
         ${INCLUDE_PLATFORM_OS_DIR}/AppEnvironment.hh
     )
 
     list(APPEND PLATFORM_SOURCES
-        ${SOURCES_PLATFORM_OS_DIR}/AppViewMT.mm
+        ${SOURCES_PLATFORM_OS_DIR}/AppViewMetal.mm
     )
 
     list(APPEND PLATFORM_LIBRARIES
@@ -87,10 +87,11 @@ set_target_properties(${TARGET}
 )
 
 if (APPLE)
-    # Disable precompiled headers on MacOS for Objective-C files:
+    # Disable precompiled headers and enable ARC on MacOS for Objective-C files:
     set_source_files_properties(
         ${PLATFORM_SOURCES}
         PROPERTIES
+            COMPILE_FLAGS -fobjc-arc
             SKIP_PRECOMPILE_HEADERS ON
     )
 endif()

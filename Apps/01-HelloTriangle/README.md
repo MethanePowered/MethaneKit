@@ -35,29 +35,33 @@ Destroying of application along with its resources is delayed until all renderin
 ```cpp
 #include <Methane/Kit.h>
 #include <Methane/Graphics/App.hpp>
-#include <Methane/Samples/AppSettings.hpp>
+#include <Methane/Tutorials/AppSettings.h>
 
 using namespace Methane;
 using namespace Methane::Graphics;
 
 struct HelloTriangleFrame final : AppFrame
 {
-    Ptr<RenderCommandList> render_cmd_list_ptr;
-    Ptr<CommandListSet>    execute_cmd_list_set_ptr;
+    Rhi::RenderCommandList render_cmd_list;
+    Rhi::CommandListSet    execute_cmd_list_set;
     using AppFrame::AppFrame;
 };
 
-using GraphicsApp = App<HelloTriangleFrame>;
+using GraphicsApp = Graphics::App<HelloTriangleFrame>;
 class HelloTriangleApp final : public GraphicsApp
 {
+private:
+    Rhi::RenderState m_render_state;
+
 public:
     HelloTriangleApp()
         : GraphicsApp(
             []() {
-                Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Triangle", Tutorials::g_default_app_options_color_only);
-                settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
+                Graphics::CombinedAppSettings settings = Tutorials::GetGraphicsTutorialAppSettings("Methane Hello Triangle", Tutorials::AppOptions::GetDefaultWithColorOnly());
+                settings.graphics_app.SetScreenPassAccess({});
                 return settings;
-            }())
+            }(),
+            "Tutorial demonstrating colored triangle rendering with Methane Kit.")
     { }
 
     ~HelloTriangleApp() override
@@ -72,30 +76,35 @@ public:
 ## Graphics Resources Initialization
 
 Application class `HelloTriangleApp` keeps frame independent resources in private class members.
-In this tutorial it is only render state `m_render_state_ptr` which is initialized in `HelloTriangleApp::Init` method.
-Render state is created with `RenderState::Create(...)` factory by passing render context and setting, which encapsulate 
-program created inline with `Program::Create(...)`. Program is created with a set of vertex and pixel shaders
-created with `Shader::CreateVertex` and `Shader::CreatePixel` factory methods taking `Data::Provider` and 
-`Shader::EntryPoint` structure consisting of file and function names. Compiled shader data is embedded in executable resources
+In this tutorial it is only render state `m_render_state` which is initialized in `HelloTriangleApp::Init` method.
+Render state is created with `GetRenderContext().CreateRenderState(...)` factory method of the render context, which encapsulate 
+program created inline with `GetRenderContext().CreateProgram(...)`. Program is created with a set of vertex and pixel shaders
+created by `Rhi::Program::ShaderSet` shaders set description which takes `Data::IProvider` and 
+`IShader::EntryPoint` structure consisting of file and function names. Compiled shader data is embedded in executable resources
 and is accessed via shader data provider singleton available with `Data::ShaderProvider::Get()`.
 Program also defines input buffer layout using argument semantic names from HLSL shaders. Methane graphics abstraction 
 uses shader reflection to automatically identify argument types and offset sizes to build underlying DirectX, Metal or Vulkan
-layout description. Render target color formats are also required for program creation, these formats are taken from 
-`RenderPattern` object provided by the base class `Graphics::App` and describing general configuration of color/depth/stencil
-attachments used for final drawing to window on screen. `RenderState::Settings` requires a pointer to `RenderPattern`
-object and also contains settings of rasterizer, depth, stencil, blending states which are left with default values 
-for simplicity of this tutorial.
+layout description. Render target color formats `GetScreenRenderPattern().GetAttachmentFormats()` are also required for program creation,
+these formats are taken from `Rhi::RenderPattern` object provided by the base class `Graphics::App` and describing general 
+configuration of color/depth/stencil attachments used for final drawing to window on screen.
+`RenderState::Settings` requires `Rhi::RenderPattern` object and also contains settings of rasterizer, depth, stencil, 
+blending states which are skipped with default values for simplicity of this tutorial.
 
-Render command lists are created for each frame using `RenderCommandList::Create(...)` factory function which is taking
-`CommandQueue` and `RenderPass` as its arguments. So the created command list can be used for rendering only to that particular
-render pass. Finally, at the end of `Init()` function `GraphicsApp::CompleteInitialization()` is called to complete graphics
+Render command lists are created from the rendering command queue `cmd_queue` acquired from render context 
+`GetRenderContext().GetRenderCommandKit().GetQueue()`. Command lists `frame.render_cmd_list` are created for each frame using 
+`cmd_queue.CreateRenderCommandList(frame.screen_pass)` factory method of the `Rhi::CommandQueue` taking `Rhi::RenderPass` as an argument.
+So the created command list can be used for rendering only to that particular render pass. Command lists are executed as a
+part of command list sets `Rhi::CommandListSet` which include only one command list in this example and are also created for each frame
+`frame.execute_cmd_list_set`.
+
+Finally, at the end of `Init()` function `GraphicsApp::CompleteInitialization()` is called to complete graphics
 resources initialization and prepare for rendering.
 
 ```cpp
 class HelloTriangleApp final : public GraphicsApp
 {
 private:
-    Ptr<RenderState> m_render_state_ptr;
+    Rhi::RenderState m_render_state;
     
 public:
     ...
@@ -104,30 +113,33 @@ public:
     {
         GraphicsApp::Init();
 
-        m_render_state_ptr = RenderState::Create(GetRenderContext(),
-            RenderState::Settings
+        m_render_state = GetRenderContext().CreateRenderState(
+            Rhi::RenderState::Settings
             {
-                Program::Create(GetRenderContext(),
-                    Program::Settings
+                GetRenderContext().CreateProgram(
+                    Rhi::Program::Settings
                     {
-                        Program::Shaders
+                        Rhi::Program::ShaderSet
                         {
-                            Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } }),
-                            Shader::CreatePixel(GetRenderContext(),  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } }),
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } } },
+                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } } },
                         },
-                        Program::InputBufferLayouts{ },
-                        Program::ArgumentAccessors{ },
+                        Rhi::ProgramInputBufferLayouts{ },
+                        Rhi::ProgramArgumentAccessors{ },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
-                GetScreenRenderPatternPtr()
+                GetScreenRenderPattern()
             }
         );
+        m_render_state.SetName("Triangle Render State");
 
+        const Rhi::CommandQueue& cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
         for (HelloTriangleFrame& frame : GetFrames())
         {
-            frame.render_cmd_list_ptr      = RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-            frame.execute_cmd_list_set_ptr = CommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
+            frame.render_cmd_list = cmd_queue.CreateRenderCommandList(frame.screen_pass);
+            frame.render_cmd_list.SetName(IndexedName("Render Triangle", frame.index));
+            frame.execute_cmd_list_set = Rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
         }
 
         GraphicsApp::CompleteInitialization();
@@ -144,14 +156,14 @@ rendering is executed first with `GraphicsApp::Render()` and rendering is contin
 it waits for previous iteration of rendering cycle completion and availability of all frame resources.
 Then current frame resources are requested with `GraphicsApp::GetCurrentFrame()` and used for render commands encoding.
 
-To begin encoding, command list has to be reset with render state using `CommandList::Reset(...)` method.
-Default view state is set with full frame viewport and scissor rect using `RenderCommandList::SetViewState(...)`.
-Drawing of 3 vertices is submitted as `Triangle` primitive using `RenderCommandList::Draw` call.
+To begin encoding, command list has to be reset with render state using `Rhi::RenderCommandList::Reset(...)` method.
+Default view state is set with full frame viewport and scissor rect using `Rhi::RenderCommandList::SetViewState(...)`.
+Drawing of 3 vertices is submitted as `Rhi::RenderPrimitive::Triangle` primitive using `Rhi::RenderCommandList::Draw(...)` call.
 Vertex buffers are not used for simplification, so the vertex shader will receive only `vertex_id` and 
-will need to provide vertex coordinates based on that. Finally, `CommandList::Commit` method is called 
+will need to provide vertex coordinates based on that. Finally, `ICommandList::Commit` method is called 
 to complete render commands encoding.
 
-Execution of GPU rendering is started with `CommandQueue::Execute(...)` method called on the same command queue
+Execution of GPU rendering is started with `ICommandQueue::Execute(...)` method called on the same command queue
 which was used to create the command list submitted for execution. Frame buffer with the result image is presented by
 swap-chain with `RenderContext::Present()` method call.
 
@@ -166,12 +178,12 @@ class HelloTriangleApp final : public GraphicsApp
             return false;
 
         const HelloTriangleFrame& frame = GetCurrentFrame();
-        frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr);
-        frame.render_cmd_list_ptr->SetViewState(GetViewState());
-        frame.render_cmd_list_ptr->Draw(RenderCommandList::Primitive::Triangle, 3);
-        frame.render_cmd_list_ptr->Commit();
+        frame.render_cmd_list.ResetWithState(m_render_state);
+        frame.render_cmd_list.SetViewState(GetViewState());
+        frame.render_cmd_list.Draw(Rhi::RenderPrimitive::Triangle, 3);
+        frame.render_cmd_list.Commit();
 
-        GetRenderContext().GetRenderCommandKit().GetQueue().Execute(*frame.execute_cmd_list_set_ptr);
+        GetRenderContext().GetRenderCommandKit().GetQueue().Execute(frame.execute_cmd_list_set);
         GetRenderContext().Present();
 
         return true;
@@ -238,29 +250,31 @@ is powered by the included Methane CMake modules:
 include(MethaneApplications)
 include(MethaneShaders)
 
+set(TARGET MethaneHelloTriangle)
+
 add_methane_application(
     TARGET ${TARGET}
     NAME "Methane Hello Triangle"
     DESCRIPTION "Tutorial demonstrating colored triangle rendering with Methane Kit."
     INSTALL_DIR "Apps"
     SOURCES
-        HelloTriangleApp.cpp
+    HelloTriangleApp.cpp
 )
 
 add_methane_shaders_source(
-    TARGET MethaneHelloTriangle
+    TARGET ${TARGET}
     SOURCE Shaders/HelloTriangle.hlsl
     VERSION 6_0
     TYPES
-        vert=TriangleVS
-        frag=TrianglePS
+    vert=TriangleVS
+    frag=TrianglePS
 )
 
-add_methane_shaders_library(MethaneHelloTriangle)
+add_methane_shaders_library(${TARGET})
 
-target_link_libraries(MethaneHelloTriangle
+target_link_libraries(${TARGET}
     PRIVATE
-        MethaneAppsCommon
+    MethaneAppsCommon
 )
 ```
 
@@ -269,8 +283,6 @@ shaders. Every usable shader entry point is described in TYPES parameter in form
 After all shader sources are added to build target, `add_methane_shaders_library` function is called to pack compiled shader
 binaries to resource library and link it to the given build target. This makes all compiled shaders available in 
 C++ code of target using `Data::ShaderProvider` singleton class.
-
-
 
 Now you have all in one application executable/bundle running on Windows & MacOS, which is rendering colored triangle in window with support of resizing the frame buffer.
 

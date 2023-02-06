@@ -19,16 +19,18 @@ target_compile_definitions(${TARGET}
         $<$<NOT:$<CONFIG:Debug>>:CATCH_CONFIG_ENABLE_BENCHMARKING>
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledHeaders)
-
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneDataEvents
         MethaneBuildOptions
-        MethanePrecompiledHeaders
+        MethaneCommonPrecompiledHeaders
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2WithMain
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneCommonPrecompiledHeaders)
+endif()
 
 set_target_properties(${TARGET}
     PROPERTIES

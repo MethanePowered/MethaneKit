@@ -15,7 +15,7 @@
 
 Download [release builds](https://github.com/MethanePowered/MethaneKit/releases) with pre-built samples, tutorials and tests to try them out. 
 Check latest build status, tests, code coverage and analysis results or get build artifacts from [GitHub Actions](https://github.com/MethanePowered/MethaneKit/actions) CI and [Sonar Cloud](https://sonarcloud.io/organizations/methane-powered).
-See [Build Instructions](/Build/README.md) topic for manual build instructions and start learning [Methane Graphics Core](Modules/Graphics/Core) API with [Hello Triangle](/Apps/01-HelloTriangle) and other tutorials' documentation.
+See [Build Instructions](/Build/README.md) topic for manual build instructions and start learning [Methane Graphics RHI](/Modules/Graphics/RHI) API with [Hello Triangle](/Apps/01-HelloTriangle) and other tutorials' documentation.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/MethanePowered/MethaneKit)
 
@@ -73,11 +73,11 @@ with up-to-date results published on [Sonar Cloud](https://sonarcloud.io/organiz
 Methane Kit architecture is clearly distributing library modules between 5 layers from low to high level of abstraction.
 ![High Level Architecture](Docs/Diagrams/MethaneKit_HighLevel_Architecture.svg)
 
-### Graphics Core Interfaces
+### Rendering Hardware Interface (RHI)
 
-[Methane Graphics Core](Modules/Graphics/Core) module implements a set of public object-oriented interfaces, 
+[Methane Graphics RHI](Modules/Graphics/RHI) module implements a set of public object-oriented interfaces, 
 which make modern graphics programming easy and convenient in a platform and API independent way.
-![Graphics Core Interfaces](Docs/Diagrams/MethaneKit_GraphicsCore_Interfaces.svg)
+![Graphics RHI](Docs/Diagrams/MethaneKit_Graphics_RHI.svg)
 
 ### Tutorials
 

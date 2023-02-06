@@ -37,20 +37,22 @@ namespace Methane::Tutorials
 {
 
 namespace gfx = Methane::Graphics;
+namespace rhi = Methane::Graphics::Rhi;
 
 struct TexturedCubeFrame final : Graphics::AppFrame
 {
-    Ptr<gfx::Buffer>            uniforms_buffer_ptr;
-    Ptr<gfx::ProgramBindings>   program_bindings_ptr;
-    Ptr<gfx::RenderCommandList> render_cmd_list_ptr;
-    Ptr<gfx::CommandListSet>    execute_cmd_list_set_ptr;
+    rhi::Buffer            uniforms_buffer;
+    rhi::ProgramBindings   program_bindings;
+    rhi::RenderCommandList render_cmd_list;
+    rhi::CommandListSet    execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };
 
 using UserInterfaceApp = UserInterface::App<TexturedCubeFrame>;
 
-class TexturedCubeApp final : public UserInterfaceApp // NOSONAR
+class TexturedCubeApp final // NOSONAR - destructor required
+    : public UserInterfaceApp
 {
 public:
     TexturedCubeApp();
@@ -64,7 +66,7 @@ public:
 
 protected:
     // IContextCallback override
-    void OnContextReleased(gfx::Context& context) override;
+    void OnContextReleased(rhi::IContext& context) override;
 
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);
@@ -76,16 +78,16 @@ private:
         0.04F,                     // - light_ambient_factor
         30.F                       // - light_specular_factor
     };
-    hlslpp::Uniforms        m_shader_uniforms { };
-    gfx::Camera             m_camera;
-    Ptr<gfx::RenderState>   m_render_state_ptr;
-    Ptr<gfx::BufferSet>     m_vertex_buffer_set_ptr;
-    Ptr<gfx::Buffer>        m_index_buffer_ptr;
-    Ptr<gfx::Buffer>        m_const_buffer_ptr;
-    Ptr<gfx::Texture>       m_cube_texture_ptr;
-    Ptr<gfx::Sampler>       m_texture_sampler_ptr;
+    hlslpp::Uniforms m_shader_uniforms { };
+    gfx::Camera      m_camera;
+    rhi::RenderState m_render_state;
+    rhi::BufferSet   m_vertex_buffer_set;
+    rhi::Buffer      m_index_buffer;
+    rhi::Buffer      m_const_buffer;
+    rhi::Texture     m_cube_texture;
+    rhi::Sampler     m_texture_sampler;
 
-    const gfx::Resource::SubResources m_shader_uniforms_subresources{
+    const rhi::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
     };
 };

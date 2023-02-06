@@ -28,7 +28,9 @@ target_include_directories(${TARGET}
         Include
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneMathPrecompiledHeaders)
+endif()
 
 target_link_libraries(${TARGET}
     PUBLIC
@@ -36,7 +38,7 @@ target_link_libraries(${TARGET}
         MethaneGraphicsTypes
     PRIVATE
         MethaneBuildOptions
-        MethanePrecompiledExtraHeaders
+        MethaneMathPrecompiledHeaders
         MethaneInstrumentation
 )
 

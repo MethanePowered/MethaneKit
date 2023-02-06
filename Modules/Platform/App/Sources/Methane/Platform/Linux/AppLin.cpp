@@ -26,7 +26,7 @@ Linux application implementation.
 
 #include <Methane/Platform/Linux/AppLin.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Data/Provider.h>
+#include <Methane/Data/IProvider.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -60,6 +60,10 @@ AppLin::AppLin(const AppBase::Settings& settings)
     xcb_screen_iterator_t screen_iter = xcb_setup_roots_iterator(setup);
     m_env.screen = screen_iter.data;
     m_env.primary_screen_rect = Linux::GetPrimaryMonitorRect(m_env.connection, m_env.screen->root);
+
+    // Check X11 event synchronization support
+    const xcb_query_extension_reply_t* reply = xcb_get_extension_data(m_env.connection, &xcb_sync_id);
+    m_is_sync_supported = reply && reply->present;
 }
 
 AppLin::~AppLin()
@@ -109,10 +113,17 @@ int AppLin::Run(const RunArgs& args)
         if (!init_success || !m_is_event_processing)
             break;
 
+        // Wait for the next resize/configure event to update swapchain and continue rendering
+        if (IsResizeRequiredToRender())
+            continue;
+
         if (IsResizing())
             EndResizing();
 
         UpdateAndRenderWithErrorHandling();
+
+        if (m_sync_state == SyncState::Processed)
+            UpdateSyncCounter();
     }
 
     return 0;
@@ -262,13 +273,29 @@ Data::FrameSize AppLin::InitWindow()
                       XCB_WINDOW_CLASS_INPUT_OUTPUT, m_env.screen->root_visual,
                       value_mask, values.data());
 
-    // Create window delete atom used to receive event when window is destroyed
+    m_protocols_atom     = Linux::GetXcbInternAtom(m_env.connection, "WM_PROTOCOLS");
     m_window_delete_atom = Linux::GetXcbInternAtom(m_env.connection, "WM_DELETE_WINDOW");
+    m_sync_request_atom  = m_is_sync_supported ? Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_SYNC_REQUEST") : static_cast<xcb_atom_t>(XCB_ATOM_NONE);
+
+    Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_env.connection, m_env.window, m_protocols_atom, XCB_ATOM_ATOM, {
+        m_window_delete_atom,
+        m_sync_request_atom
+    });
 
     if (settings.is_full_screen)
-        Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, { m_window_delete_atom, m_state_fullscreen_atom });
-    else
-        Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_env.connection, m_env.window, "WM_PROTOCOLS", XCB_ATOM_ATOM, { m_window_delete_atom });
+    {
+        Linux::SetXcbWindowAtomProperty<xcb_atom_t>(m_env.connection, m_env.window, m_state_atom, XCB_ATOM_ATOM, { m_state_fullscreen_atom });
+    }
+
+    m_sync_value.hi = 0;
+    m_sync_value.lo = 0U;
+
+    if (m_is_sync_supported)
+    {
+        m_sync_counter = xcb_generate_id(m_env.connection);
+        xcb_sync_create_counter(m_env.connection, m_sync_counter, m_sync_value);
+        Linux::SetXcbWindowAtomProperty<xcb_sync_counter_t>(m_env.connection, m_env.window, "_NET_WM_SYNC_REQUEST_COUNTER", XCB_ATOM_CARDINAL, { m_sync_counter });
+    }
 
     // Display application name in window title, dash tooltip and application menu on GNOME and other desktop environment
     SetWindowTitle(settings.name);
@@ -332,7 +359,7 @@ static void AddIconData(const Data::Chunk& icon_data, std::vector<uint32_t>& com
         }
 }
 
-void AppLin::SetWindowIcon(const Data::Provider& icon_provider)
+void AppLin::SetWindowIcon(const Data::IProvider& icon_provider)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_env.window);
@@ -392,17 +419,16 @@ void AppLin::HandleEvent(const xcb_generic_event_t& event)
     const uint8_t event_type = event.response_type & 0x7f; // NOSONAR
     switch (event_type)
     {
-    case XCB_CLIENT_MESSAGE:
-        if (m_window_delete_atom && reinterpret_cast<const xcb_client_message_event_t&>(event).data.data32[0] == m_window_delete_atom) // NOSONAR
-            m_is_event_processing = false;
-        break;
-
     case XCB_DESTROY_NOTIFY:
         m_is_event_processing = false;
         break;
 
+    case XCB_CLIENT_MESSAGE:
+        OnClientEvent(reinterpret_cast<const xcb_client_message_event_t&>(event)); // NOSONAR
+        break;
+
     case XCB_CONFIGURE_NOTIFY:
-        OnWindowResized(reinterpret_cast<const xcb_configure_notify_event_t&>(event)); // NOSONAR
+        OnWindowConfigured(reinterpret_cast<const xcb_configure_notify_event_t&>(event)); // NOSONAR
         break;
 
     case XCB_PROPERTY_NOTIFY:
@@ -414,19 +440,19 @@ void AppLin::HandleEvent(const xcb_generic_event_t& event)
         break;
 
     case XCB_KEY_PRESS:
-        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Keyboard::KeyState::Pressed); // NOSONAR
+        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Input::Keyboard::KeyState::Pressed); // NOSONAR
         break;
 
     case XCB_KEY_RELEASE:
-        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Keyboard::KeyState::Released); // NOSONAR
+        OnKeyboardChanged(reinterpret_cast<const xcb_key_release_event_t&>(event), Input::Keyboard::KeyState::Released); // NOSONAR
         break;
 
     case XCB_BUTTON_PRESS:
-        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Mouse::ButtonState::Pressed); // NOSONAR
+        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Input::Mouse::ButtonState::Pressed); // NOSONAR
         break;
 
     case XCB_BUTTON_RELEASE:
-        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Mouse::ButtonState::Released); // NOSONAR
+        OnMouseButtonChanged(reinterpret_cast<const xcb_button_press_event_t&>(event), Input::Mouse::ButtonState::Released); // NOSONAR
         break;
 
     case XCB_MOTION_NOTIFY:
@@ -446,23 +472,56 @@ void AppLin::HandleEvent(const xcb_generic_event_t& event)
     }
 }
 
-void AppLin::OnWindowResized(const xcb_configure_notify_event_t& cfg_event)
+void AppLin::OnClientEvent(const xcb_client_message_event_t& event)
 {
     META_FUNCTION_TASK();
-    if (cfg_event.window != m_env.window)
+    if (event.format != 32 || event.type != m_protocols_atom)
         return;
+
+    const xcb_atom_t protocol_atom = event.data.data32[0];
+
+    if (m_window_delete_atom && protocol_atom == m_window_delete_atom)
+    {
+        m_is_event_processing = false;
+    }
+    else if (m_sync_request_atom && protocol_atom == m_sync_request_atom)
+    {
+        m_sync_value.lo = event.data.data32[2];
+        m_sync_value.hi = event.data.data32[3];
+        if (m_is_sync_supported)
+            m_sync_state = SyncState::Received;
+    }
+}
+
+void AppLin::UpdateSyncCounter()
+{
+    META_FUNCTION_TASK();
+    if (!m_is_sync_supported || (m_sync_value.lo == 0 && m_sync_value.hi == 0U))
+        return;
+
+    META_CHECK_ARG_EQUAL(m_sync_state, SyncState::Processed);
+    xcb_sync_set_counter(m_env.connection, m_sync_counter, m_sync_value);
+    xcb_flush(m_env.connection);
+
+    m_sync_value.lo = 0;
+    m_sync_value.hi = 0U;
+    m_sync_state    = SyncState::NotNeeded;
+}
+
+void AppLin::OnWindowConfigured(const xcb_configure_notify_event_t& conf_event)
+{
+    META_FUNCTION_TASK();
+    if (conf_event.window != m_env.window ||
+        conf_event.width == 0 || conf_event.height == 0)
+        return;
+
+    if (m_is_sync_supported && m_sync_state == SyncState::Received)
+        m_sync_state = SyncState::Processed;
 
     if (!IsResizing())
         StartResizing();
 
-    if (cfg_event.width == 0 || cfg_event.height == 0 ||
-        !Resize(Data::FrameSize(cfg_event.width, cfg_event.height), false))
-        return;
-
-    if (IsResizing())
-    {
-        UpdateAndRenderWithErrorHandling();
-    }
+    Resize(Data::FrameSize(conf_event.width, conf_event.height), false);
 }
 
 void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& prop_event)
@@ -487,10 +546,10 @@ void AppLin::OnPropertyChanged(const xcb_property_notify_event_t& prop_event)
     }
 }
 
-void AppLin::OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Keyboard::KeyState key_state)
+void AppLin::OnKeyboardChanged(const xcb_key_press_event_t& key_press_event, Input::Keyboard::KeyState key_state)
 {
     META_FUNCTION_TASK();
-    const Keyboard::Key key = Linux::ConvertXcbKey(m_env.display, m_env.window, key_press_event.detail, key_press_event.state);
+    const Input::Keyboard::Key key = Linux::ConvertXcbKey(m_env.display, m_env.window, key_press_event.detail, key_press_event.state);
     ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, key_state);
 }
 
@@ -509,23 +568,23 @@ void AppLin::OnKeyboardMappingChanged(const xcb_mapping_notify_event_t& mapping_
     XRefreshKeyboardMapping(&x_mapping_event);
 }
 
-void AppLin::OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, Mouse::ButtonState button_state)
+void AppLin::OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, Input::Mouse::ButtonState button_state)
 {
     META_FUNCTION_TASK();
-    Mouse::Button button = Mouse::Button::Unknown;
+    Input::Mouse::Button button = Input::Mouse::Button::Unknown;
     int delta_sign = -1;
     std::tie(button, delta_sign) = Linux::ConvertXcbMouseButton(button_press_event.detail);
 
     ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, button, button_state);
 
-    if ((button == Mouse::Button::HScroll || button == Mouse::Button::VScroll) && button_state == Mouse::ButtonState::Released)
+    if ((button == Input::Mouse::Button::HScroll || button == Input::Mouse::Button::VScroll) && button_state == Input::Mouse::ButtonState::Released)
     {
         const float scroll_value = button_press_event.state
                                  ? static_cast<float>(delta_sign * button_press_event.state / 1024)
                                  : static_cast<float>(delta_sign);
-        const Mouse::Scroll mouse_scroll(
-            button == Mouse::Button::HScroll ? scroll_value : 0.F,
-            button == Mouse::Button::VScroll ? scroll_value : 0.F
+        const Input::Mouse::Scroll mouse_scroll(
+            button == Input::Mouse::Button::HScroll ? scroll_value : 0.F,
+            button == Input::Mouse::Button::VScroll ? scroll_value : 0.F
         );
         ProcessInputWithErrorHandling(&Input::IActionController::OnMouseScrollChanged, mouse_scroll);
     }
@@ -534,7 +593,7 @@ void AppLin::OnMouseButtonChanged(const xcb_button_press_event_t& button_press_e
 void AppLin::OnMouseMoved(const xcb_motion_notify_event_t& motion_event)
 {
     META_FUNCTION_TASK();
-    const Mouse::Position mouse_pos(motion_event.event_x, motion_event.event_y);
+    const Input::Mouse::Position mouse_pos(motion_event.event_x, motion_event.event_y);
     ProcessInputWithErrorHandling(&Input::IActionController::OnMousePositionChanged, mouse_pos);
 }
 

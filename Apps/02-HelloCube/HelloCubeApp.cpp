@@ -24,7 +24,8 @@ Tutorial demonstrating colored cube rendering with Methane graphics API
 #include <Methane/Kit.h>
 #include <Methane/Graphics/App.hpp>
 #include <Methane/Graphics/CubeMesh.hpp>
-#include <Methane/Samples/AppSettings.hpp>
+#include <Methane/Graphics/TypeConverters.hpp>
+#include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Data/TimeAnimation.h>
 
 #ifdef UNIFORMS_BUFFER_ENABLED
@@ -46,19 +47,20 @@ using namespace Methane::Graphics;
 struct HelloCubeFrame final : AppFrame
 {
 #ifdef UNIFORMS_BUFFER_ENABLED
-    Ptr<Buffer>            uniforms_buffer_ptr;
-    Ptr<ProgramBindings>   program_bindings_ptr;
+    Rhi::Buffer            uniforms_buffer;
+    Rhi::ProgramBindings   program_bindings;
 #else
-    Ptr<BufferSet>         vertex_buffer_set_ptr;
+    Rhi::BufferSet         vertex_buffer_set;
 #endif
-    Ptr<RenderCommandList> render_cmd_list_ptr;
-    Ptr<CommandListSet>    execute_cmd_list_set_ptr;
+    Rhi::RenderCommandList render_cmd_list;
+    Rhi::CommandListSet    execute_cmd_list_set;
 
     using AppFrame::AppFrame;
 };
 
 using GraphicsApp = App<HelloCubeFrame>;
-class HelloCubeApp final : public GraphicsApp // NOSONAR
+class HelloCubeApp final // NOSONAR - destructor required
+    : public GraphicsApp
 {
 private:
     struct CubeVertex
@@ -77,27 +79,28 @@ private:
     Camera                     m_camera;
 
 #ifdef UNIFORMS_BUFFER_ENABLED
-    hlslpp::Uniforms             m_shader_uniforms { };
-    const Resource::SubResources m_shader_uniforms_subresources{
+    hlslpp::Uniforms        m_shader_uniforms { };
+    const Rhi::SubResources m_shader_uniforms_subresources{
         { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
     };
-    Ptr<BufferSet>               m_vertex_buffer_set_ptr;
+    Rhi::BufferSet m_vertex_buffer_set;
 #else
-    std::vector<CubeVertex>      m_proj_vertices;
+    std::vector<CubeVertex> m_proj_vertices;
 #endif
 
-    Ptr<RenderState> m_render_state_ptr;
-    Ptr<Buffer>      m_index_buffer_ptr;
+    Rhi::CommandQueue m_render_cmd_queue;
+    Rhi::RenderState  m_render_state;
+    Rhi::Buffer       m_index_buffer;
 
 public:
     HelloCubeApp()
         : GraphicsApp(
             []() {
-                Graphics::AppSettings settings = Tutorials::GetGraphicsTutorialAppSettings(g_app_name, Tutorials::g_default_app_options_color_only_and_anim);
+                Graphics::CombinedAppSettings settings = Tutorials::GetGraphicsTutorialAppSettings(g_app_name, Tutorials::AppOptions::GetDefaultWithColorOnlyAndAnim());
 #ifdef UNIFORMS_BUFFER_ENABLED
-                settings.graphics_app.SetScreenPassAccess(RenderPass::Access::ShaderResources);
+                settings.graphics_app.SetScreenPassAccess(Rhi::RenderPassAccessMask(Rhi::RenderPassAccess::ShaderResources));
 #else
-                settings.graphics_app.SetScreenPassAccess(RenderPass::Access::None);
+                settings.graphics_app.SetScreenPassAccess({});
 #endif
                 return settings;
             }(),
@@ -130,64 +133,66 @@ public:
         m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
 #ifdef UNIFORMS_BUFFER_ENABLED
-        const Shader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_BUFFER_ENABLED", "" } };
+        const Rhi::Shader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_BUFFER_ENABLED", "" } };
 #else
-        const Shader::MacroDefinitions vertex_shader_definitions;
+        const Rhi::Shader::MacroDefinitions vertex_shader_definitions;
 #endif
 
         // Create render state with program
-        m_render_state_ptr = RenderState::Create(GetRenderContext(),
-            RenderState::Settings
+        m_render_state = GetRenderContext().CreateRenderState(
+            Rhi::RenderState::Settings
             {
-                Program::Create(GetRenderContext(),
-                    Program::Settings
+                GetRenderContext().CreateProgram(
+                    Rhi::Program::Settings
                     {
-                        Program::Shaders
+                        Rhi::Program::ShaderSet
                         {
-                            Shader::CreateVertex(GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions }),
-                            Shader::CreatePixel( GetRenderContext(), { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } }),
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions } },
+                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
                         },
-                        Program::InputBufferLayouts
+                        Rhi::ProgramInputBufferLayouts
                         {
-                            Program::InputBufferLayout
+                            Rhi::ProgramInputBufferLayout
                             {
-                                Program::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
+                                Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION" , "COLOR" }
                             }
                         },
 #ifdef UNIFORMS_BUFFER_ENABLED
-                        Program::ArgumentAccessors
+                        Rhi::ProgramArgumentAccessors
                         {
-                            { { Shader::Type::Vertex, "g_uniforms" }, Program::ArgumentAccessor::Type::FrameConstant }
+                            { { Rhi::ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccessType::FrameConstant }
                         },
 #else
-                        Program::ArgumentAccessors{ },
+                        Rhi::ProgramArgumentAccessors{ },
 #endif
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
-                GetScreenRenderPatternPtr()
+                GetScreenRenderPattern()
             }
         );
-        m_render_state_ptr->GetSettings().program_ptr->SetName("Colored Cube Shading");
-        m_render_state_ptr->SetName("Colored Cube Pipeline State");
+        m_render_state.GetSettings().program_ptr->SetName("Colored Cube Shading");
+        m_render_state.SetName("Colored Cube Pipeline State");
+
+        m_render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
 
         // Create index buffer for cube mesh
-        m_index_buffer_ptr = Buffer::CreateIndexBuffer(GetRenderContext(), m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0)));
-        m_index_buffer_ptr->SetName("Cube Index Buffer");
-        m_index_buffer_ptr->SetData(
+        m_index_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForIndexBuffer(m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0))));
+        m_index_buffer.SetName("Cube Index Buffer");
+        m_index_buffer.SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }, // NOSONAR
-            GetRenderContext().GetRenderCommandKit().GetQueue()
+            m_render_cmd_queue
         );
 
 #ifdef UNIFORMS_BUFFER_ENABLED
         // Create constant vertex buffer
-        Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize());
-        vertex_buffer_ptr->SetName("Cube Vertex Buffer");
-        vertex_buffer_ptr->SetData(
+        Rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize()));
+        vertex_buffer.SetName("Cube Vertex Buffer");
+        vertex_buffer.SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
-            GetRenderContext().GetRenderCommandKit().GetQueue()
+            m_render_cmd_queue
         );
-        m_vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+        m_vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
 
         const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
 #endif
@@ -197,25 +202,25 @@ public:
         {
 #ifdef UNIFORMS_BUFFER_ENABLED
             // Create uniforms buffer with volatile parameters for frame rendering
-            frame.uniforms_buffer_ptr = Buffer::CreateConstantBuffer(GetRenderContext(), uniforms_data_size, false, true);
-            frame.uniforms_buffer_ptr->SetName(IndexedName("Uniforms Buffer", frame.index));
+            frame.uniforms_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
+            frame.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
 
             // Configure program resource bindings
-            frame.program_bindings_ptr = ProgramBindings::Create(m_render_state_ptr->GetSettings().program_ptr, {
-                { { Shader::Type::Vertex, "g_uniforms"  }, { { *frame.uniforms_buffer_ptr } } }
+            frame.program_bindings = m_render_state.GetProgram().CreateBindings({
+                { { Rhi::ShaderType::Vertex, "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } }
             }, frame.index);
-            frame.program_bindings_ptr->SetName(IndexedName("Cube Bindings {}", frame.index));
+            frame.program_bindings.SetName(IndexedName("Cube Bindings {}", frame.index));
 #else
             // Create vertex buffers for each frame
-            Ptr<Buffer> vertex_buffer_ptr = Buffer::CreateVertexBuffer(GetRenderContext(), m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true);
-            vertex_buffer_ptr->SetName(IndexedName("Cube Vertex Buffer", frame.index));
-            frame.vertex_buffer_set_ptr = BufferSet::CreateVertexBuffers({ *vertex_buffer_ptr });
+            Rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true));
+            vertex_buffer.SetName(IndexedName("Cube Vertex Buffer", frame.index));
+            frame.vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
 #endif
 
             // Create command list for rendering
-            frame.render_cmd_list_ptr = RenderCommandList::Create(GetRenderContext().GetRenderCommandKit().GetQueue(), *frame.screen_pass_ptr);
-            frame.render_cmd_list_ptr->SetName(IndexedName("Cube Rendering", frame.index));
-            frame.execute_cmd_list_set_ptr = CommandListSet::Create({ *frame.render_cmd_list_ptr }, frame.index);
+            frame.render_cmd_list = m_render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
+            frame.render_cmd_list.SetName(IndexedName("Cube Rendering", frame.index));
+            frame.execute_cmd_list_set = Rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
         }
 
         GraphicsApp::CompleteInitialization();
@@ -260,47 +265,47 @@ public:
             return false;
 
         const HelloCubeFrame& frame = GetCurrentFrame();
-        CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
 
 #ifdef UNIFORMS_BUFFER_ENABLED
-        // Update uniforms buffer on GPU and apply model-view-projection tranformation in vertex shader on GPU
-        frame.uniforms_buffer_ptr->SetData(m_shader_uniforms_subresources, render_cmd_queue);
+        // Update uniforms buffer on GPU and apply model-view-projection transformation in vertex shader on GPU
+        frame.uniforms_buffer.SetData(m_shader_uniforms_subresources, m_render_cmd_queue);
 #else
         // Update vertex buffer with vertices in camera's projection view
-        (*frame.vertex_buffer_set_ptr)[0].SetData(
+        frame.vertex_buffer_set[0].SetData(
             { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
-            render_cmd_queue
+            m_render_cmd_queue
         );
 #endif
 
         // Issue commands for cube rendering
-        META_DEBUG_GROUP_CREATE_VAR(s_debug_group, "Cube Rendering");
-        frame.render_cmd_list_ptr->ResetWithState(*m_render_state_ptr, s_debug_group.get());
-        frame.render_cmd_list_ptr->SetViewState(GetViewState());
+        static META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
+        frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
+        frame.render_cmd_list.SetViewState(GetViewState());
 #ifdef UNIFORMS_BUFFER_ENABLED
-        frame.render_cmd_list_ptr->SetProgramBindings(*frame.program_bindings_ptr);
-        frame.render_cmd_list_ptr->SetVertexBuffers(*m_vertex_buffer_set_ptr);
+        frame.render_cmd_list.SetProgramBindings(frame.program_bindings);
+        frame.render_cmd_list.SetVertexBuffers(m_vertex_buffer_set);
 #else
-        frame.render_cmd_list_ptr->SetVertexBuffers(*frame.vertex_buffer_set_ptr);
+        frame.render_cmd_list.SetVertexBuffers(frame.vertex_buffer_set);
 #endif
-        frame.render_cmd_list_ptr->SetIndexBuffer(*m_index_buffer_ptr);
-        frame.render_cmd_list_ptr->DrawIndexed(RenderCommandList::Primitive::Triangle);
-        frame.render_cmd_list_ptr->Commit();
+        frame.render_cmd_list.SetIndexBuffer(m_index_buffer);
+        frame.render_cmd_list.DrawIndexed(Rhi::RenderPrimitive::Triangle);
+        frame.render_cmd_list.Commit();
 
         // Execute command list on render queue and present frame to screen
-        render_cmd_queue.Execute(*frame.execute_cmd_list_set_ptr);
+        m_render_cmd_queue.Execute(frame.execute_cmd_list_set);
         GetRenderContext().Present();
 
         return true;
     }
 
-    void OnContextReleased(Context& context) override
+    void OnContextReleased(Rhi::IContext& context) override
     {
 #ifdef UNIFORMS_BUFFER_EANBLED
-        m_vertex_buffer_set_ptr.reset();
+        m_vertex_buffer_set = {};
 #endif
-        m_index_buffer_ptr.reset();
-        m_render_state_ptr.reset();
+        m_index_buffer     = {};
+        m_render_state     = {};
+        m_render_cmd_queue = {};
 
         GraphicsApp::OnContextReleased(context);
     }

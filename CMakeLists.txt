@@ -25,7 +25,7 @@ endif()
 # Methane version, build & product info
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
 set(METHANE_VERSION_MINOR 7 CACHE STRING "Methane minor version")
-set(METHANE_VERSION_PATCH 0 CACHE STRING "Methane patch version")
+set(METHANE_VERSION_PATCH 1 CACHE STRING "Methane patch version")
 set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 
 project(METHANE_KIT
@@ -44,8 +44,12 @@ endif()
 
 set(DEFAULT_APPS_BUILD_ENABLED ${IS_TOP_LEVEL_PROJECT})
 set(DEFAULT_TESTS_BUILD_ENABLED ON)
+set(DEFAULT_PRECOMPILED_HEADERS_ENABLED ON)
 
 if(APPLE)
+    # Disable precompiled headers in Apple builds because multi-language (C++/Obj-C) compilation is not supported
+    set(DEFAULT_PRECOMPILED_HEADERS_ENABLED OFF)
+
     if (NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         # Disable tests build on Apple mobile systems, because they do not support running unbundled executables
         set(DEFAULT_TESTS_BUILD_ENABLED OFF)
@@ -58,18 +62,29 @@ if(APPLE)
     endif()
 endif()
 
+if (CMAKE_BUILD_TYPE EQUAL "Release" OR
+    CMAKE_BUILD_TYPE EQUAL "RelWithDebInfo")
+    set(DEFAULT_RHI_INLINING_ENABLED ON)
+else()
+    set(DEFAULT_RHI_INLINING_ENABLED OFF)
+endif()
+
 # Build configuration
 option(METHANE_GFX_VULKAN_ENABLED           "Enable Vulkan graphics API instead of platform native API" OFF)
 option(METHANE_APPS_BUILD_ENABLED           "Enable applications build" ${DEFAULT_APPS_BUILD_ENABLED})
 option(METHANE_TESTS_BUILD_ENABLED          "Enable tests build" ${DEFAULT_TESTS_BUILD_ENABLED})
+option(METHANE_RHI_PIMPL_INLINE_ENABLED     "Enable RHI PIMPL implementation inlining" ${DEFAULT_RHI_INLINING_ENABLED})
+option(METHANE_PRECOMPILED_HEADERS_ENABLED  "Enable precompiled headers" ${DEFAULT_PRECOMPILED_HEADERS_ENABLED})
 option(METHANE_CHECKS_ENABLED               "Enable runtime checks of input arguments" ON)
 option(METHANE_RUN_TESTS_DURING_BUILD       "Enable test auto-run after module build" ON)
 option(METHANE_UNITY_BUILD_ENABLED          "Enable unity build speedup for some modules" ON)
 option(METHANE_CODE_COVERAGE_ENABLED        "Enable code coverage data collection with GCC and Clang" OFF)
 option(METHANE_SHADERS_CODEVIEW_ENABLED     "Enable shaders code symbols viewing in debug tools" OFF)
-option(METHANE_SHADERS_VALIDATION_ENABLED   "Enable shaders DXIL code signature validation" ON)
 option(METHANE_OPEN_IMAGE_IO_ENABLED        "Enable using OpenImageIO library for images loading" OFF)
-option(METHANE_APPLE_CODE_SIGNING_ENABLED   "Enable code signing on Apple platforms" ${DEFAULT_APPLE_CODE_SIGNING_ENABLED})
+
+if(APPLE)
+    option(METHANE_APPLE_CODE_SIGNING_ENABLED   "Enable code signing on Apple platforms" ${DEFAULT_APPLE_CODE_SIGNING_ENABLED})
+endif()
 
 # Profiling and instrumentation configuration
 option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
@@ -112,16 +127,37 @@ if(MSVC)
     set(VS_STARTUP_PROJECT "MethaneShadowCube")
 endif()
 
-message(STATUS "Methane Kit version ${METHANE_VERSION_FULL}")
-
 # METHANE_GFX_API is platform dependent and is selected in CMake/MethaneModules.cmake
 get_graphics_dir(GRAPHICS_API_NAME)
-message(STATUS "Methane is built with ${GRAPHICS_API_NAME} graphics API")
+
+# Print Methane Kit configuration options
+message(STATUS "METHANE KIT version.............................. ${METHANE_VERSION_FULL}")
+message(STATUS "METHANE RHI graphics API......................... ${GRAPHICS_API_NAME}")
+message(STATUS "METHANE RHI PIMPL implementation inlining........ ${METHANE_RHI_PIMPL_INLINE_ENABLED}")
+message(STATUS "METHANE build with precompiled headers........... ${METHANE_PRECOMPILED_HEADERS_ENABLED}")
+message(STATUS "METHANE applications build....................... ${METHANE_APPS_BUILD_ENABLED}")
+message(STATUS "METHANE tests build.............................. ${METHANE_TESTS_BUILD_ENABLED}")
+message(STATUS "METHANE tests running during build............... ${METHANE_RUN_TESTS_DURING_BUILD}")
+message(STATUS "METHANE runtime validation checks................ ${METHANE_CHECKS_ENABLED}")
+message(STATUS "METHANE debug logging............................ ${METHANE_LOGGING_ENABLED}")
+message(STATUS "METHANE command list debug groups................ ${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}")
+message(STATUS "METHANE shaders code symbols..................... ${METHANE_SHADERS_CODEVIEW_ENABLED}")
+message(STATUS "METHANE image loading with OpenImageIO library... ${METHANE_OPEN_IMAGE_IO_ENABLED}")
+message(STATUS "METHANE profiling scope timers................... ${METHANE_SCOPE_TIMERS_ENABLED}")
+message(STATUS "METHANE ITT instrumentation...................... ${METHANE_ITT_INSTRUMENTATION_ENABLED}")
+message(STATUS "METHANE ITT metadata............................. ${METHANE_ITT_METADATA_ENABLED}")
+message(STATUS "METHANE GPU instrumentation...................... ${METHANE_GPU_INSTRUMENTATION_ENABLED}")
+message(STATUS "METHANE Tracy profiling.......................... ${METHANE_TRACY_PROFILING_ENABLED}")
+message(STATUS "METHANE Tracy profiling on demand................ ${METHANE_TRACY_PROFILING_ON_DEMAND}")
+
+if (APPLE)
+    message(STATUS "METHANE Apple code signing....................... ${METHANE_APPLE_CODE_SIGNING_ENABLED} (dev.team: '${APPLE_DEVELOPMENT_TEAM}')")
+endif()
 
 if (APPLE AND METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
     # On Windows and Linux, only Vulkan-Headers are required to build Methane Kit,
     # because it is dynamically loading Vulkan library in runtime. Vulkan SDK is not required for build.
-    message(AUTHOR_WARNING "Vulkan API is not supported on MacOS, because MoltenVK does not support extension 'VK_EXT_extended_dynamic_state'")
+    message(WARNING "METHANE RHI: Vulkan API is not supported on MacOS, because MoltenVK does not support extension 'VK_EXT_extended_dynamic_state'")
     # To enable Vulkan API on MacOS we link statically with MoltenVK framework (translation layer to Metal).
     # in order to enable finding Vulkan SDK with MoltenVK framework, set environment variable
     # - VULKAN_SDK to full installation path before running CMake generator ($USER_HOME$/VulkanSDK/1.2.182.0/macOS)
@@ -131,73 +167,8 @@ if (APPLE AND METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
     # - VK_LAYER_PATH=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/explicit_layer.d
 endif()
 
-if (METHANE_APPS_BUILD_ENABLED)
-    message(STATUS "Methane applications build is enabled")
-endif()
-
 if (METHANE_TESTS_BUILD_ENABLED)
-    message(STATUS "Methane tests build is enabled")
     enable_testing()
-endif()
-
-if (METHANE_CHECKS_ENABLED)
-    message(STATUS "Methane runtime checks of input arguments are enabled")
-endif()
-
-if(METHANE_RUN_TESTS_DURING_BUILD)
-    message(STATUS "Methane tests running during build is enabled")
-endif()
-
-if(METHANE_SHADERS_CODEVIEW_ENABLED)
-    message(STATUS "Methane shaders code symbols are enabled")
-endif()
-
-if (METHANE_SHADERS_VALIDATION_ENABLED)
-    message(STATUS "Methane shaders DXIL code signature validation is enabled")
-endif()
-
-if(METHANE_OPEN_IMAGE_IO_ENABLED)
-    message(STATUS "Methane Kit OpenImageIO media-library is enabled.")
-endif()
-
-if(METHANE_COMMAND_DEBUG_GROUPS_ENABLED)
-    message(STATUS "Methane command list debug groups are enabled")
-endif()
-
-if(METHANE_SCOPE_TIMERS_ENABLED)
-    message(STATUS "Methane scope timers are enabled")
-endif()
-
-if(METHANE_ITT_INSTRUMENTATION_ENABLED)
-    message(STATUS "Methane ITT instrumentation is enabled")
-    if(METHANE_ITT_METADATA_ENABLED)
-        message(STATUS "Methane ITT metadata is enabled")
-    endif()
-endif()
-
-if(METHANE_GPU_INSTRUMENTATION_ENABLED)
-    message(STATUS "Methane GPU instrumentation is enabled")
-endif()
-
-if (METHANE_TRACY_PROFILING_ENABLED)
-    if(METHANE_TRACY_PROFILING_ON_DEMAND)
-        message(STATUS "Methane Tracy profiling enabled with data collection on demand (when client connected)")
-    else()
-        message(STATUS "Methane Tracy profiling enabled with data collection from application start")
-    endif()
-endif()
-
-if(METHANE_LOGGING_ENABLED)
-    message(STATUS "Methane debug logging is enabled")
-endif()
-
-if(METHANE_APPLE_CODE_SIGNING_ENABLED)
-    if (DEFINED APPLE_DEVELOPMENT_TEAM)
-        message(STATUS "Methane code signing on Apple platforms is enabled for APPLE_DEVELOPMENT_TEAM: ${APPLE_DEVELOPMENT_TEAM}")
-    else()
-        message(WARNING "Methane code signing on Apple platform is enabled, but APPLE_DEVELOPMENT_TEAM is not defined!")
-    endif()
-
 endif()
 
 if (CMAKE_INSTALL_PREFIX AND EXISTS "${CMAKE_INSTALL_PREFIX}/bin/ctest")

@@ -31,9 +31,7 @@ namespace Methane::UserInterface
 Container::Container(Context& ui_context, const UnitRect& ui_rect, const Ptrs<Item>& children)
     : Item(ui_context, ui_rect)
     , m_children(children)
-{
-    META_FUNCTION_TASK();
-}
+{ }
 
 bool Container::AddChild(Item& item)
 {

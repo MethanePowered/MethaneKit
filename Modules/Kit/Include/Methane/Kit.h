@@ -26,8 +26,9 @@ Methane kit interfaces: all headers under one umbrella.
 // Methane Graphics Headers
 
 #include <Methane/Graphics/Types.h>
-#include <Methane/Graphics/Core.h>
-#include <Methane/Graphics/Extensions.h>
+#include <Methane/Graphics/RHI/Interfaces.h>
+#include <Methane/Graphics/RHI/Implementations.h>
+#include <Methane/Graphics/Primitives.h>
 #include <Methane/Graphics/ActionCamera.h>
 
 // Methane User Interface Headers

@@ -1,6 +1,6 @@
 # Static code analysis workflow with CodeQL
 
-name: "CI CodeQL Scan"
+name: "🔮 CI CodeQL Scan"
 
 on:
   push:
@@ -37,10 +37,10 @@ jobs:
       matrix:
         include:
          # FIXME: Windows CodeQL analysis is DISABLED because it fails with IOException "There is not enough space on the disk"
-         #- os: windows-2019
-         #  name: "Win64_DX_CodeQL-Scan"
-         #  config_preset: "VS2019-Win64-DX-Scan"
-         #  build_preset: "VS2019-Win64-DX-Scan"
+          - os: windows-latest
+            name: "Win64_DX_CodeQL-Scan"
+            config_preset: "VS2022-Win64-DX-Scan"
+            build_preset: "VS2022-Win64-DX-Scan"
           - os: ubuntu-latest
             name: "Ubuntu_VK_CodeQL-Scan"
             config_preset: "Make-Lin-VK-Scan"
@@ -59,10 +59,10 @@ jobs:
 
     - name: Install Linux prerequisites
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-randr0-dev
+      run: sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev
 
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2

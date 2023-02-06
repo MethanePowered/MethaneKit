@@ -28,6 +28,7 @@ Unit-tests of the RawVector data type
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 #include <sstream>
+#include <array>
 
 using namespace Methane::Data;
 using Catch::Approx;

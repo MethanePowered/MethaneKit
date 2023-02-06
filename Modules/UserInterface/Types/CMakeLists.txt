@@ -29,19 +29,20 @@ target_include_directories(${TARGET}
         Include
 )
 
-target_precompile_headers(${TARGET} REUSE_FROM MethanePrecompiledExtraHeaders)
-
 target_link_libraries(${TARGET}
     PUBLIC
+        MethaneGraphicsRhiImpl
         MethaneGraphicsTypes
         MethaneDataEvents
     PRIVATE
         MethanePlatformApp
-        MethaneGraphicsCore
         MethaneBuildOptions
-        MethanePrecompiledExtraHeaders
         MethaneInstrumentation
 )
+
+if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+    target_precompile_headers(${TARGET} REUSE_FROM MethaneGraphicsRhiImpl)
+endif()
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES  ${HEADERS} ${SOURCES})
 
@@ -60,3 +61,41 @@ install(TARGETS ${TARGET}
         COMPONENT Development
 )
 
+if(METHANE_TESTS_BUILD_ENABLED)
+
+    set(TEST_TARGET MethaneUserInterfaceNullTypes)
+
+    add_library(${TEST_TARGET} STATIC
+        ${HEADERS}
+        ${SOURCES}
+    )
+
+    target_include_directories(${TEST_TARGET}
+        PRIVATE
+            Sources
+        PUBLIC
+            Include
+    )
+
+    target_link_libraries(${TEST_TARGET}
+        PUBLIC
+            MethaneGraphicsRhiNullImpl
+            MethaneGraphicsTypes
+            MethaneDataEvents
+        PRIVATE
+            MethanePlatformApp
+
+            MethaneBuildOptions
+            MethaneInstrumentation
+    )
+
+    if(METHANE_PRECOMPILED_HEADERS_ENABLED)
+        target_precompile_headers(${TEST_TARGET} REUSE_FROM MethaneGraphicsRhiNullImpl)
+    endif()
+
+    set_target_properties(${TEST_TARGET}
+        PROPERTIES
+        FOLDER Tests
+    )
+
+endif() # METHANE_TESTS_BUILD_ENABLED

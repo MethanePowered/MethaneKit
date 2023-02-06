@@ -91,6 +91,16 @@ if (MSVC)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
         target_compile_options(MethaneBuildOptions INTERFACE
+            # /Ox - Enable Most Speed Optimizations, including following flags:
+            #   /Ob2 - Inline Function Expansion, Any Suitable;
+            #   /Oi  - Generate Intrinsic Functions;
+            #   /Ot  - Favor Fast Code;
+            #   /Oy  - Frame-Pointer Omission.
+            # /GL - Whole program optimization
+            # /GF - Eliminate duplicate strings
+            # /GS - Disable buffer security checks
+            # /fp:except- - Disable floating point exceptions
+            $<$<CONFIG:Release>:/Ox /GL /GF /GS- /fp:except->
             # Exception handling mode
             /EHsc
             # Set maximum warnings level and treat warnings as errors
@@ -98,6 +108,13 @@ if (MSVC)
             # Disable useless warnings
             /wd4250 # - C4250: inheritance via dominance (used only with abstract interfaces)
             /wd4324 # - C4324: structure was padded due to alignment specifier
+            /wd4201 # - C4201: nonstandard extension used : nameless struct/union (used for bitfields with mask)
+            /wd4714 # - C4714: function marked as __forceinline not inlined
+        )
+
+        target_link_options(MethaneBuildOptions INTERFACE
+            # /LTCG - Link-time code generation to perform whole-program optimization
+            $<$<CONFIG:Release>:/LTCG>
         )
 
     else() # Clang compiler on Windows
@@ -128,10 +145,17 @@ if (MSVC)
 else() # Clang or GCC on Linux/MacOS
 
     target_compile_options(MethaneBuildOptions INTERFACE
+        # -flto - use the link-time optimizer
+        $<$<CONFIG:Release>:-flto>
         # Set maximum warnings level & treat warnings as errors
         -Wall -Wextra -Werror
         # Disable useless Clang and GCC warnings
         -Wno-missing-field-initializers
+    )
+
+    target_link_options(MethaneBuildOptions INTERFACE
+        # -flto - use the link-time optimizer
+        $<$<CONFIG:Release>:-flto>
     )
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # GCC
@@ -141,12 +165,28 @@ else() # Clang or GCC on Linux/MacOS
             -Wno-ignored-qualifiers
         )
 
-    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
         target_compile_options(MethaneBuildOptions INTERFACE
-            # Enable automatic reference counting in Objective-C
-            "-fobjc-arc"
+            # -fwhole-program-vtables - whole-program vtable optimizations, such as single-implementation devirtualization
+            $<$<CONFIG:Release>:-fwhole-program-vtables>
         )
+
+        target_link_options(MethaneBuildOptions INTERFACE
+            # -fwhole-program-vtables - whole-program vtable optimizations, such as single-implementation devirtualization
+            $<$<CONFIG:Release>:-fwhole-program-vtables>
+        )
+
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+
+        if(METHANE_RHI_PIMPL_INLINE_ENABLED AND METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+            target_compile_options(MethaneBuildOptions INTERFACE
+                # Compile all C++ sources as Objective-C++ in case of RHI PIMPL inlining
+                -x objective-c++
+                # Enable automatic reference counting in Objective-C
+                -fobjc-arc
+            )
+        endif()
 
     endif()
 
