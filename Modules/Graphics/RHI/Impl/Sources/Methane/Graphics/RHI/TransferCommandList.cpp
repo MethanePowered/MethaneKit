@@ -101,12 +101,12 @@ void TransferCommandList::PopDebugGroup() const
 
 void TransferCommandList::Reset(const DebugGroup* debug_group_ptr) const
 {
-    GetImpl(m_impl_ptr).Reset(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+    GetImpl(m_impl_ptr).Reset(debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
 void TransferCommandList::ResetOnce(const DebugGroup* debug_group_ptr) const
 {
-    GetImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+    GetImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
 void TransferCommandList::SetResourceBarriers(const IResourceBarriers& resource_barriers) const

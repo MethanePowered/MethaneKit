@@ -106,12 +106,12 @@ void ParallelRenderCommandList::PopDebugGroup() const
 
 void ParallelRenderCommandList::Reset(const DebugGroup* debug_group_ptr) const
 {
-    GetImpl(m_impl_ptr).Reset(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+    GetImpl(m_impl_ptr).Reset(debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
 void ParallelRenderCommandList::ResetOnce(const DebugGroup* debug_group_ptr) const
 {
-    GetImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+    GetImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
 void ParallelRenderCommandList::SetProgramBindings(IProgramBindings& program_bindings, ProgramBindingsApplyBehaviorMask apply_behavior) const
@@ -171,7 +171,7 @@ void ParallelRenderCommandList::SetValidationEnabled(bool is_validation_enabled)
 
 void ParallelRenderCommandList::ResetWithState(const RenderState& render_state, const DebugGroup* debug_group_ptr) const
 {
-    GetImpl(m_impl_ptr).ResetWithState(render_state.GetInterface(), debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+    GetImpl(m_impl_ptr).ResetWithState(render_state.GetInterface(), debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
 void ParallelRenderCommandList::SetViewState(const ViewState& view_state) const

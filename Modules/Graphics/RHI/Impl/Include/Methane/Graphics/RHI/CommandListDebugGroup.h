@@ -82,7 +82,7 @@ private:
 #ifdef METHANE_COMMAND_DEBUG_GROUPS_ENABLED
 
 #define META_DEBUG_GROUP_VAR(variable, /*const std::string& */group_name) \
-    const Methane::Graphics::Rhi::CommandListDebugGroup variable(group_name)
+    static const Methane::Graphics::Rhi::CommandListDebugGroup variable(group_name)
 
 #define META_DEBUG_GROUP_VAR_PUSH(/*ICommandList& */cmd_list, /*const std::string& */group_name) \
     { \
@@ -93,7 +93,7 @@ private:
 #else
 
 #define META_DEBUG_GROUP_VAR(variable, /*const std::string& */group_name) \
-    const Methane::Graphics::Rhi::CommandListDebugGroup variable
+    static const Methane::Graphics::Rhi::CommandListDebugGroup variable
 
 #define META_DEBUG_GROUP_VAR_PUSH(/*ICommandList& */cmd_list, /*const std::string& */group_name) \
     META_UNUSED(cmd_list); META_UNUSED(group_name)

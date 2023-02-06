@@ -108,12 +108,12 @@ void RenderCommandList::PopDebugGroup() const
 
 void RenderCommandList::Reset(const DebugGroup* debug_group_ptr) const
 {
-    GetImpl(m_impl_ptr).Reset(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+    GetImpl(m_impl_ptr).Reset(debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
 void RenderCommandList::ResetOnce(const DebugGroup* debug_group_ptr) const
 {
-    GetImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+    GetImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
 void RenderCommandList::SetProgramBindings(const ProgramBindings& program_bindings, ProgramBindingsApplyBehaviorMask apply_behavior) const
@@ -178,12 +178,12 @@ RenderPass RenderCommandList::GetRenderPass() const
 
 void RenderCommandList::ResetWithState(const RenderState& render_state, const DebugGroup* debug_group_ptr) const
 {
-    GetImpl(m_impl_ptr).ResetWithState(render_state.GetInterface(), debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+    GetImpl(m_impl_ptr).ResetWithState(render_state.GetInterface(), debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
 void RenderCommandList::ResetWithStateOnce(const RenderState& render_state, const DebugGroup* debug_group_ptr) const
 {
-    GetImpl(m_impl_ptr).ResetWithStateOnce(render_state.GetInterface(), debug_group_ptr ? &debug_group_ptr->GetInterface() : nullptr);
+    GetImpl(m_impl_ptr).ResetWithStateOnce(render_state.GetInterface(), debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
 void RenderCommandList::SetRenderState(const RenderState& render_state, RenderStateGroupMask state_groups) const

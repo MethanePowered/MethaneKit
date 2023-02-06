@@ -278,7 +278,7 @@ public:
 #endif
 
         // Issue commands for cube rendering
-        static META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
+        META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
         frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
         frame.render_cmd_list.SetViewState(GetViewState());
 #ifdef UNIFORMS_BUFFER_ENABLED

@@ -296,7 +296,7 @@ class HelloCubeApp final : public GraphicsApp
         );
 
         // Issue commands for cube rendering
-        static META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
+        META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
         frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
         frame.render_cmd_list.SetViewState(GetViewState());
         frame.render_cmd_list.SetVertexBuffers(frame.vertex_buffer_set);
@@ -604,7 +604,7 @@ class HelloCubeApp final : public GraphicsApp
         frame.uniforms_buffer.SetData(m_shader_uniforms_subresources, m_render_cmd_queue);
 
         // Issue commands for cube rendering
-        static META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
+        META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
         frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
         frame.render_cmd_list.SetViewState(GetViewState());
         frame.render_cmd_list.SetProgramBindings(frame.program_bindings);
