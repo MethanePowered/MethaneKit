@@ -251,7 +251,7 @@ jobs:
 
       - name: Upload Build Log and Code Coverage to Testspace server
         if: ${{ always() }}
-        run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Build.log"
+        run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
       - name: Upload Code Coverage to CodeCov server
         uses: codecov/codecov-action@v3
