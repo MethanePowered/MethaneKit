@@ -173,6 +173,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      INSTALL_DIR: Build/Output/${{ matrix.config_preset }}/Install
+      BUILD_LOG_FILE: Build/Output/${{ matrix.config_preset }}/Install/Build.log
+
     steps:
 
     - name: Install Linux prerequisites
@@ -197,18 +201,18 @@ jobs:
       shell: bash
       run: |
         set -o pipefail
-        mkdir -p "Build/Output/${{ matrix.config_preset }}/Install"
-        cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee Build/Output/${{ matrix.config_preset }}/Install/Build.log
+        mkdir -p "$INSTALL_DIR"
+        cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee $BUILD_LOG_FILE
 
     - name: CMake Build Preset ${{ matrix.build_preset }}
       shell: bash
       run: |
         set -o pipefail
-        cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4 2>&1 | tee -a Build/Output/${{ matrix.config_preset }}/Install/Build.log
+        cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4 2>&1 | tee -a $BUILD_LOG_FILE
 
     - name: Run Unit-Tests on Unix
       if: ${{ matrix.run_tests && matrix.os_name != 'Windows'}}
-      working-directory: Build/Output/${{ matrix.config_preset }}/Install/Tests
+      working-directory: ${{ env.INSTALL_DIR }}/Tests
       shell: bash
       run: |
         result_ext='_result.xml'
@@ -221,7 +225,7 @@ jobs:
 
     - name: Run Unit-Tests on Windows
       if: ${{ matrix.run_tests && matrix.os_name == 'Windows' }}
-      working-directory: Build/Output/${{ matrix.config_preset }}/Install/Tests
+      working-directory: ${{ env.INSTALL_DIR }}/Tests
       shell: cmd
       run: |
         setlocal enabledelayedexpansion
@@ -237,16 +241,15 @@ jobs:
       if: ${{ matrix.run_tests && (success() || failure()) }}
       with:
         name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
-        path: Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml
+        path: ${{ env.INSTALL_DIR }}/Tests/*_result.xml
 
     - name: Upload Build Log and Test Tesults to Testspace server
       if: ${{ matrix.run_tests && (success() || failure()) }}
-      run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/*_result.xml" "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Build.log"
+      run: testspace "[ ${{ matrix.name }} ]${{ env.INSTALL_DIR }}/Tests/*_result.xml" "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
     - name: Add README and BUILD files
       shell: bash
       run: |
-        INSTALL_DIR=Build/Output/${{ matrix.config_preset }}/Install
         cp README.md $INSTALL_DIR/README.md
         echo Methane Kit v.${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }} https://github.com/${{ github.repository }} > $INSTALL_DIR/Build-Info.txt
         echo   - Git repository: ${{ github.repositoryUrl }}, branch: ${{ github.ref_name }}, commit SHA: ${{ github.sha }} >> $INSTALL_DIR/Build-Info.txt
@@ -261,25 +264,25 @@ jobs:
 
     - name: Add Unix System Information to BUILD file
       if: ${{ matrix.os_name != 'Windows' }}
-      run: uname -a >>Build/Output/${{ matrix.config_preset }}/Install/Build-Info.txt
+      run: uname -a >>$INSTALL_DIR/Build-Info.txt
 
     - name: Download Tracy release
       if: ${{ matrix.add_tracy_app }}
       shell: bash
       run: |
         curl -sSLo Tracy.7z https://github.com/MethanePowered/Tracy/releases/download/v${{ env.tracy_release_version }}/Tracy-${{ matrix.os_name }}-v${{ env.tracy_release_version }}.7z
-        7z x Tracy.7z -oBuild/Output/${{ matrix.config_preset }}/Install/Apps
+        7z x Tracy.7z -o$INSTALL_DIR/Apps
 
     - name: Archive Build Artifacts
       shell: bash
-      working-directory: Build/Output/${{ matrix.config_preset }}/Install
+      working-directory: ${{ env.INSTALL_DIR }}
       run: 7z a -t7z -mx=9 MethaneKit_${{ matrix.name }}.7z *
 
     - name: Upload Archived Build Artifacts
       uses: actions/upload-artifact@v3
       with:
         name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
-        path: Build/Output/${{ matrix.config_preset }}/Install/MethaneKit_${{ matrix.name }}.7z
+        path: ${{ env.INSTALL_DIR }}/MethaneKit_${{ matrix.name }}.7z
 
     - name: Update Badge Parameters
       id: badge-params
