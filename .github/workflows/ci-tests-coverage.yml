@@ -11,7 +11,7 @@ on:
 
 jobs:
   coverage-report:
-    name: Coverage Report ${{ matrix.name }}
+    name: ${{ matrix.name }} Coverage Report
 
     strategy:
       fail-fast: false

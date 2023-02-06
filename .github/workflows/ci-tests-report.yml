@@ -11,7 +11,7 @@ on:
 
 jobs:
   test-report:
-    name: Test Report ${{ matrix.name }}
+    name: ${{ matrix.name }} Test Report
 
     strategy:
       fail-fast: false
