@@ -76,12 +76,7 @@ RenderContext::~RenderContext()
 Ptr<Rhi::ICommandQueue> RenderContext::CreateCommandQueue(Rhi::CommandListType type) const
 {
     META_FUNCTION_TASK();
-    auto command_queue_ptr = std::make_shared<CommandQueue>(*this, type);
-#ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
-    // Base::TimestampQueryPool construction uses command queue and requires it to be fully constructed
-    command_queue_ptr->InitializeTimestampQueryPool();
-#endif
-    return command_queue_ptr;
+    return std::make_shared<CommandQueue>(*this, type);
 }
 
 Ptr<Rhi::IShader> RenderContext::CreateShader(Rhi::ShaderType type, const Rhi::ShaderSettings& settings) const

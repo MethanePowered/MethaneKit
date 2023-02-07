@@ -63,9 +63,7 @@ public:
     virtual void CompleteExecution(const Opt<Data::Index>& frame_index = { });
 
     Ptr<CommandListSet>       GetLastExecutingCommandListSet() const;
-    Rhi::ITimestampQueryPool* GetTimestampQueryPool() const noexcept final { return m_timestamp_query_pool_ptr.get(); }
-
-    void InitializeTimestampQueryPool();
+    Rhi::ITimestampQueryPool& GetTimestampQueryPool() final;
 
 protected:
     using CommandListSetsQueue = std::queue<Ptr<CommandListSet>>;
@@ -97,20 +95,21 @@ protected:
     void ShutdownQueueExecution();
 
 private:
+    void InitializeTimestampQueryPool();
     void CompleteExecutionSafely();
     void WaitForExecution() noexcept;
 
     const Ptr<CommandListSet>& GetNextExecutingCommandListSet() const;
 
-    CommandListSetsQueue                m_executing_command_lists;
-    mutable TracyLockable(std::mutex,   m_executing_command_lists_mutex);
-    TracyLockable(std::mutex,           m_execution_waiting_mutex);
-    std::condition_variable_any         m_execution_waiting_condition_var;
-    std::atomic<bool>                   m_execution_waiting{ true };
-    std::thread                         m_execution_waiting_thread;
-    std::exception_ptr                  m_execution_waiting_exception_ptr;
-    std::atomic<bool>                   m_name_changed{ true };
-    Ptr<Rhi::ITimestampQueryPool>       m_timestamp_query_pool_ptr;
+    CommandListSetsQueue                  m_executing_command_lists;
+    mutable TracyLockable(std::mutex,     m_executing_command_lists_mutex);
+    TracyLockable(std::mutex,             m_execution_waiting_mutex);
+    std::condition_variable_any           m_execution_waiting_condition_var;
+    std::atomic<bool>                     m_execution_waiting{ true };
+    std::thread                           m_execution_waiting_thread;
+    std::exception_ptr                    m_execution_waiting_exception_ptr;
+    std::atomic<bool>                     m_name_changed{ true };
+    mutable Ptr<Rhi::ITimestampQueryPool> m_timestamp_query_pool_ptr;
 };
 
 } // namespace Methane::Graphics::Base

@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX/QueryPool.hpp
+FILE: Methane/Graphics/DirectX/QueryPool.h
 DirectX 12 GPU query pool implementation.
 
 ******************************************************************************/

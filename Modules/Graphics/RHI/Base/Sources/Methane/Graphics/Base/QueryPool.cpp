@@ -96,8 +96,8 @@ Rhi::ICommandList& Query::GetCommandList() const noexcept
 }
 
 QueryPool::QueryPool(CommandQueue& command_queue, Type type,
-                             Rhi::IQuery::Count max_query_count, Rhi::IQuery::Count slots_count_per_query,
-                             Data::Size buffer_size, Data::Size query_size)
+                     Rhi::IQuery::Count max_query_count, Rhi::IQuery::Count slots_count_per_query,
+                     Data::Size buffer_size, Data::Size query_size)
     : m_type(type)
     , m_pool_size(buffer_size)
     , m_query_size(query_size)

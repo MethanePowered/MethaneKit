@@ -154,8 +154,8 @@ CommandQueue& QueryPool::GetDirectCommandQueue() noexcept
 
 TimestampQueryPool::TimestampQueryPool(CommandQueue& command_queue, uint32_t max_timestamps_per_frame)
     : QueryPool(command_queue, Type::Timestamp, 1U << 15U, 1U,
-                  GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
-                  sizeof(Timestamp))
+                GetMaxTimestampsCount(command_queue.GetContext(), max_timestamps_per_frame) * sizeof(Timestamp),
+                sizeof(Timestamp))
 {
     META_FUNCTION_TASK();
     SetGpuFrequency(DirectX::GetGpuFrequency(GetDirectCommandQueue().GetNativeCommandQueue(), *GetDirectContext().GetDirectDevice().GetNativeDevice().Get()));

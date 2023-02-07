@@ -135,7 +135,7 @@ ParallelRenderCommandList CommandQueue::CreateParallelRenderCommandList(const Re
     return GetImpl(m_impl_ptr).GetFamilyIndex();
 }
 
-[[nodiscard]] ITimestampQueryPool* CommandQueue::GetTimestampQueryPool() const META_PIMPL_NOEXCEPT
+[[nodiscard]] ITimestampQueryPool& CommandQueue::GetTimestampQueryPool()
 {
     return GetImpl(m_impl_ptr).GetTimestampQueryPool();
 }

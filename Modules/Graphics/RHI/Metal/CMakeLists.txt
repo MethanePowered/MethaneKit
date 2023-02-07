@@ -27,6 +27,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/BufferSet.hh
     ${INCLUDE_DIR}/Texture.hh
     ${INCLUDE_DIR}/Sampler.hh
+    ${INCLUDE_DIR}/QueryPool.hh
     ${INCLUDE_DIR}/RenderPattern.hh
     ${INCLUDE_DIR}/RenderPass.hh
     ${INCLUDE_DIR}/CommandQueue.hh
@@ -56,6 +57,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/BufferSet.mm
     ${SOURCES_DIR}/Texture.mm
     ${SOURCES_DIR}/Sampler.mm
+    ${SOURCES_DIR}/QueryPool.mm
     ${SOURCES_DIR}/RenderPattern.mm
     ${SOURCES_DIR}/RenderPass.mm
     ${SOURCES_DIR}/CommandQueue.mm
