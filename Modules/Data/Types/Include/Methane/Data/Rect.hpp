@@ -141,7 +141,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "rectangle size divisor can not be less than zero");
+            META_CHECK_ARG_GREATER_DESCR(divisor, 0, "rectangle size divisor can not be less or equal to zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             return RectSize(RoundCast<D>(static_cast<M>(m_width) / divisor), RoundCast<D>(static_cast<M>(m_height) / divisor));
@@ -174,7 +174,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "rectangle size divisor can not be less than zero");
+            META_CHECK_ARG_GREATER_DESCR(divisor, 0, "rectangle size divisor can not be less or equal to zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
         {

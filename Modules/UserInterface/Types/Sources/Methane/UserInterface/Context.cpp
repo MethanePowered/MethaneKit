@@ -39,7 +39,7 @@ Context::Context(const pal::IApp& app, const rhi::CommandQueue& render_cmd_queue
     META_CHECK_ARG_EQUAL(render_cmd_queue.GetCommandListType(), rhi::CommandListType::Render);
 }
 
-UnitSize Context::GetFrameSizeInUnits(Units units) const noexcept
+UnitSize Context::GetFrameSizeInUnits(Units units) const
 {
     META_FUNCTION_TASK();
     switch(units)

@@ -67,7 +67,8 @@ public:
         else
             return UnitSize(Units::Dots, GetFrameSize() / m_dots_to_pixels_factor);
     }
-    [[nodiscard]] UnitSize  GetFrameSizeInUnits(Units units) const noexcept;
+
+    [[nodiscard]] UnitSize  GetFrameSizeInUnits(Units units) const;
 
     template<Units units, typename BaseType>
     [[nodiscard]] UnitType<BaseType> ConvertTo(const UnitType<BaseType>& value) const noexcept
