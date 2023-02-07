@@ -203,7 +203,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER SHADER_TYPES O
             set(WIN_ARCH "x86")
         endif()
         # GitHub Actions Windows agents do not have DXIL.dll in PATH, so we add this DXIL location to let DXC find it
-        set(DXIL_PATH "C:/Program Files (x86)/Windows Kits/10/Redist/D3D/${WIN_ARCH}")
+        set(DXIL_PATH "C:/Program Files (x86)/Windows Kits/10/Redist/D3D/${WIN_ARCH};")
     else()
         set(DXC_EXE "LD_LIBRARY_PATH=.;${DXC_EXE}")
     endif()
@@ -257,7 +257,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER SHADER_TYPES O
             DEPENDS "${SHADERS_HLSL}" "${SHADERS_CONFIG}"
             WORKING_DIRECTORY "${DXC_BINARY_DIR}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${TARGET_SHADERS_DIR}"
-            COMMAND ${CMAKE_COMMAND} -E env "PATH=${DXIL_PATH};$ENV{PATH}"
+            COMMAND ${CMAKE_COMMAND} -E env "PATH=${DXIL_PATH}$ENV{PATH}"
                     ${DXC_EXE} ${OUTPUT_TYPE_ARG} ${EXTRA_OPTIONS} /T ${SHADER_PROFILE} /E ${ORIG_ENTRY_POINT} /Fo ${SHADER_OBJ_PATH} ${EXTRA_COMPILE_FLAGS} ${SHADER_DEFINITION_ARGUMENTS} ${SHADERS_HLSL}
         )
 
