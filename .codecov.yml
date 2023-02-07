@@ -12,3 +12,4 @@ coverage:
     patch:
       default:
         informational: true
+        only_pulls: true
