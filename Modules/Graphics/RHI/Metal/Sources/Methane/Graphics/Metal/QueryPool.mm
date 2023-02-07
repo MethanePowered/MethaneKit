@@ -21,8 +21,8 @@ Metal GPU query pool dummy implementation (currently is not used in Metal)
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Metal/QueryPool.h>
-#include <Methane/Graphics/Metal/CommandQueue.h>
+#include <Methane/Graphics/Metal/QueryPool.hh>
+#include <Methane/Graphics/Metal/CommandQueue.hh>
 
 namespace Methane::Graphics::Metal
 {
