@@ -36,11 +36,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-         # FIXME: Windows CodeQL analysis is DISABLED because it fails with IOException "There is not enough space on the disk"
-          - os: windows-latest
-            name: "Win64_DX_CodeQL-Scan"
-            config_preset: "VS2022-Win64-DX-Scan"
-            build_preset: "VS2022-Win64-DX-Scan"
+          # FIXME: Windows CodeQL analysis is DISABLED because it fails with compiler "error C1060: compiler is out of heap space"
+          #- os: windows-latest
+          #  name: "Win64_DX_CodeQL-Scan"
+          #  config_preset: "VS2022-Win64-DX-Scan"
+          #  build_preset: "VS2022-Win64-DX-Scan"
           - os: ubuntu-latest
             name: "Ubuntu_VK_CodeQL-Scan"
             config_preset: "Make-Lin-VK-Scan"
