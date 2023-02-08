@@ -60,7 +60,7 @@ class ProgramArgumentBinding final  // NOSONAR - custom destructor is required
     : public Base::ProgramArgumentBinding
 {
 public:
-    using Type = ProgramArgumentBindingType;
+    using Type     = ProgramArgumentBindingType;
     using Settings = ProgramArgumentBindingSettings;
 
     struct DescriptorRange

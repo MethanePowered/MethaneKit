@@ -52,7 +52,7 @@ class ProgramArgumentBinding final
     : public Base::ProgramArgumentBinding
 {
 public:
-    using Settings = ProgramArgumentBindingSettings;
+    using Settings    = ProgramArgumentBindingSettings;
     using ByteCodeMap = ProgramArgumentBindingSettings::ByteCodeMap;
 
     ProgramArgumentBinding(const Base::Context& context, const Settings& settings);

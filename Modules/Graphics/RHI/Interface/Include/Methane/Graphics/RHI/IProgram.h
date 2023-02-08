@@ -150,14 +150,14 @@ struct IProgramBindings;
 struct IProgram
     : virtual IObject // NOSONAR
 {
-    using Shaders = ProgramShaders;
-    using Settings = ProgramSettings;
-    using InputBufferLayout = ProgramInputBufferLayout;
-    using InputBufferLayouts = ProgramInputBufferLayouts;
-    using Argument = ProgramArgument;
-    using Arguments = ProgramArguments;
-    using ArgumentAccessor = ProgramArgumentAccessor;
-    using ArgumentAccessors = ProgramArgumentAccessors;
+    using Shaders                 = ProgramShaders;
+    using Settings                = ProgramSettings;
+    using InputBufferLayout       = ProgramInputBufferLayout;
+    using InputBufferLayouts      = ProgramInputBufferLayouts;
+    using Argument                = ProgramArgument;
+    using Arguments               = ProgramArguments;
+    using ArgumentAccessor        = ProgramArgumentAccessor;
+    using ArgumentAccessors       = ProgramArgumentAccessors;
     using ResourceViewsByArgument = std::unordered_map<Argument, ResourceViews, Argument::Hash>;
 
     static ArgumentAccessors::const_iterator FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const Argument& argument);

@@ -282,7 +282,7 @@ class Text::Impl // NOSONAR - class destructor is required
     , public Data::Receiver<IFontCallback>
 {
 private:
-    using FrameResources = TextFrameResources;
+    using FrameResources    = TextFrameResources;
     using PerFrameResources = std::vector<TextFrameResources>;
 
     Context&            m_ui_context;

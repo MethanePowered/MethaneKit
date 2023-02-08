@@ -77,7 +77,7 @@ public:
     META_PIMPL_API void  Reset(const DebugGroup* debug_group_ptr = nullptr) const;
     META_PIMPL_API void  ResetOnce(const DebugGroup* debug_group_ptr = nullptr) const;
     META_PIMPL_API void  SetProgramBindings(IProgramBindings& program_bindings,
-                                          ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
+                                            ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
     META_PIMPL_API void  SetResourceBarriers(const ResourceBarriers& resource_barriers) const;
     META_PIMPL_API void  Commit() const;
     META_PIMPL_API void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;

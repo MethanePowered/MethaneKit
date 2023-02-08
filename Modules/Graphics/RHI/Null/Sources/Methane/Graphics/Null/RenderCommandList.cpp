@@ -89,7 +89,7 @@ bool RenderCommandList::SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_reso
 }
 
 void RenderCommandList::DrawIndexed(Primitive primitive, uint32_t index_count, uint32_t start_index, uint32_t start_vertex,
-                                      uint32_t instance_count, uint32_t start_instance)
+                                    uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
     if (const DrawingState& drawing_state = GetDrawingState();
@@ -102,7 +102,7 @@ void RenderCommandList::DrawIndexed(Primitive primitive, uint32_t index_count, u
 }
 
 void RenderCommandList::Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
-                               uint32_t instance_count, uint32_t start_instance)
+                             uint32_t instance_count, uint32_t start_instance)
 {
     META_FUNCTION_TASK();
     Base::RenderCommandList::Draw(primitive, vertex_count, start_vertex, instance_count, start_instance);

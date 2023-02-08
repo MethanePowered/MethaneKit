@@ -72,8 +72,8 @@ struct SkyBoxVertex
 class SkyBox::Impl
 {
 private:
-    using Uniforms = SkyBoxUniforms;
-    using Vertex   = SkyBoxVertex;
+    using Uniforms       = SkyBoxUniforms;
+    using Vertex         = SkyBoxVertex;
     using TexMeshBuffers = TexturedMeshBuffers<hlslpp::SkyBoxUniforms>;
 
     Settings                m_settings;

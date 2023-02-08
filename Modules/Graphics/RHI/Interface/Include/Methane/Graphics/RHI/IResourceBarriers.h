@@ -165,10 +165,10 @@ private:
 
 struct IResourceBarriers
 {
-    using State = ResourceState;
+    using State   = ResourceState;
     using Barrier = ResourceBarrier;
-    using Set = std::set<ResourceBarrier>;
-    using Map = std::map<ResourceBarrier::Id, ResourceBarrier>;
+    using Set     = std::set<ResourceBarrier>;
+    using Map     = std::map<ResourceBarrier::Id, ResourceBarrier>;
 
     enum class AddResult
     {

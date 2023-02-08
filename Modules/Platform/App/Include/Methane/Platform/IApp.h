@@ -75,8 +75,8 @@ struct IApp
 {
 public:
     using Settings = AppSettings;
-    using RunArgs = AppRunArgs;
-    using Message = AppMessage;
+    using RunArgs  = AppRunArgs;
+    using Message  = AppMessage;
 
     // IApp interface
     virtual int      Run(const RunArgs& args) = 0;

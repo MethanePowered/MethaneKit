@@ -63,9 +63,9 @@ struct ProgramArgumentBindingSettings
 struct IProgramArgumentBinding
     : virtual Data::IEmitter<IProgramArgumentBindingCallback> // NOSONAR
 {
-    using ICallback = IProgramArgumentBindingCallback;
+    using ICallback                     = IProgramArgumentBindingCallback;
     using ConstantModificationException = ProgramArgumentConstantModificationException;
-    using Settings = ProgramArgumentBindingSettings;
+    using Settings                      = ProgramArgumentBindingSettings;
 
     // IProgramArgumentBinding interface
     [[nodiscard]] virtual const Settings&         GetSettings() const noexcept = 0;

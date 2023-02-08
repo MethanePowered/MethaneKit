@@ -45,9 +45,9 @@ public:
         Data::RawVector2F texcoord;
     };
 
-    using Index         = uint16_t;
-    using Indices       = std::vector<Index>;
-    using Vertices      = std::vector<Vertex>;
+    using Index    = uint16_t;
+    using Indices  = std::vector<Index>;
+    using Vertices = std::vector<Vertex>;
 
     struct CharPosition : gfx::FramePoint
     {

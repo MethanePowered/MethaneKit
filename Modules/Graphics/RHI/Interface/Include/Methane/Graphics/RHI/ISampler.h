@@ -81,9 +81,9 @@ struct SamplerLevelOfDetail
 {
     SamplerLevelOfDetail(float bias = 0.F, float min = 0.F, float max = std::numeric_limits<float>::max());
 
-    float min     = 0.F;
-    float max     = std::numeric_limits<float>::max();
-    float bias    = 0.F;
+    float min  = 0.F;
+    float max  = std::numeric_limits<float>::max();
+    float bias = 0.F;
 };
 
 enum class SamplerBorderColor : uint32_t
@@ -115,11 +115,11 @@ struct IContext;
 struct ISampler
     : virtual IResource // NOSONAR
 {
-    using Filter = SamplerFilter;
-    using Address = SamplerAddress;
+    using Filter        = SamplerFilter;
+    using Address       = SamplerAddress;
     using LevelOfDetail = SamplerLevelOfDetail;
-    using BorderColor = SamplerBorderColor;
-    using Settings = SamplerSettings;
+    using BorderColor   = SamplerBorderColor;
+    using Settings      = SamplerSettings;
 
     // Create ISampler instance
     [[nodiscard]] static Ptr<ISampler> Create(const IContext& context, const Settings& settings);

@@ -79,7 +79,7 @@ public:
     META_PIMPL_API void  Reset(const DebugGroup* debug_group_ptr = nullptr) const;
     META_PIMPL_API void  ResetOnce(const DebugGroup* debug_group_ptr = nullptr) const;
     META_PIMPL_API void  SetProgramBindings(const ProgramBindings& program_bindings,
-                                          ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
+                                            ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
     META_PIMPL_API void  SetResourceBarriers(const ResourceBarriers& resource_barriers) const;
     META_PIMPL_API void  Commit() const;
     META_PIMPL_API void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;
@@ -102,9 +102,9 @@ public:
     META_PIMPL_API bool SetVertexBuffers(const BufferSet& vertex_buffers, bool set_resource_barriers = true) const;
     META_PIMPL_API bool SetIndexBuffer(const Buffer& index_buffer, bool set_resource_barriers = true) const;
     META_PIMPL_API void DrawIndexed(Primitive primitive, uint32_t index_count = 0U, uint32_t start_index = 0U, uint32_t start_vertex = 0U,
-                                  uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
+                                    uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
     META_PIMPL_API void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex = 0U,
-                           uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
+                             uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::RenderCommandList;

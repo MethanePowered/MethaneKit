@@ -66,9 +66,9 @@ struct BufferSettings
 struct IBuffer
     : virtual IResource // NOSONAR
 {
-    using Type = BufferType;
+    using Type        = BufferType;
     using StorageMode = BufferStorageMode;
-    using Settings = BufferSettings;
+    using Settings    = BufferSettings;
 
     // Create IBuffer instance
     [[nodiscard]] static Ptr<IBuffer> Create(const IContext& context, const Settings& settings);

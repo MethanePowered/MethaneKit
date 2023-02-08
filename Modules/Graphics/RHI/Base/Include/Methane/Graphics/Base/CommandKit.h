@@ -55,10 +55,10 @@ public:
     [[nodiscard]] Rhi::IFence&          GetFence(Rhi::CommandListId fence_id) const override;
 
 private:
-    using CommandListIndex = uint32_t;
-    using CommandListSetId = std::pair<Opt<Data::Index>, uint32_t>;
+    using CommandListIndex     = uint32_t;
+    using CommandListSetId     = std::pair<Opt<Data::Index>, uint32_t>;
     using CommandListIndexById = std::map<Rhi::CommandListId, uint32_t>;
-    using CommandListSetById = std::map<CommandListSetId, Ptr<Rhi::ICommandListSet>>;
+    using CommandListSetById   = std::map<CommandListSetId, Ptr<Rhi::ICommandListSet>>;
 
     CommandListIndex GetCommandListIndexById(Rhi::CommandListId cmd_list_id) const noexcept;
     CommandListSetId GetCommandListSetId(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const;

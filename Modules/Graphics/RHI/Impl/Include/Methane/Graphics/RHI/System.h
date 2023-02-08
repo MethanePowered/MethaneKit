@@ -53,7 +53,7 @@ public:
     META_PIMPL_API void CheckForChanges() const;
     META_PIMPL_API const Devices& UpdateGpuDevices(const DeviceCaps& required_device_caps = {}) const;
     META_PIMPL_API const Devices& UpdateGpuDevices(const Platform::AppEnvironment& app_env,
-                                                 const DeviceCaps& required_device_caps = {}) const;
+                                                   const DeviceCaps& required_device_caps = {}) const;
     [[nodiscard]] META_PIMPL_API const Devices&    GetGpuDevices() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API Device            GetNextGpuDevice(const Device& device) const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API Device            GetSoftwareGpuDevice() const META_PIMPL_NOEXCEPT;

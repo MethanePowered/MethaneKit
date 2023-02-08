@@ -85,12 +85,12 @@ struct IContext;
 
 struct IShader
 {
-    using Type = ShaderType;
-    using Types = ShaderTypes;
-    using MacroDefinition = ShaderMacroDefinition;
+    using Type             = ShaderType;
+    using Types            = ShaderTypes;
+    using MacroDefinition  = ShaderMacroDefinition;
     using MacroDefinitions = ShaderMacroDefinitions;
-    using EntryFunction = ShaderEntryFunction;
-    using Settings = ShaderSettings;
+    using EntryFunction    = ShaderEntryFunction;
+    using Settings         = ShaderSettings;
 
     // Create IShader instance
     [[nodiscard]] static Ptr<IShader> Create(Type type, const IContext& context, const Settings& settings);

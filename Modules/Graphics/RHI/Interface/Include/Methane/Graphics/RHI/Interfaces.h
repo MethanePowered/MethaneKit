@@ -38,6 +38,7 @@ Methane graphics RHI interfaces: all headers under one umbrella.
 #include "IBufferSet.h"
 #include "ITexture.h"
 #include "ISampler.h"
+#include "IQueryPool.h"
 #include "ICommandKit.h"
 #include "ICommandListSet.h"
 #include "ICommandListDebugGroup.h"
