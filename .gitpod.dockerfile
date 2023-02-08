@@ -10,7 +10,7 @@ RUN apt-get update \
     && mkdir /opt/cmake-3.25.2 \
     && /tmp/cmake-install.sh --skip-license --prefix=/opt/cmake-3.25.2 \
     && rm /tmp/cmake-install.sh \
-    && ln -s /opt/cmake-3.25.2/bin/* /usr/local/bin
+    && ln -s /opt/cmake-3.25.2/bin/* /usr/local/bin \
     && apt-get clean && rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/*
 
 USER gitpod
