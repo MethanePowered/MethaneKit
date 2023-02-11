@@ -36,7 +36,7 @@ namespace Methane::Graphics::Metal
 class CommandQueue;
 
 class ComputeCommandList final
-    : public CommandList<id<MTLBlitCommandEncoder>, Base::CommandList>
+    : public CommandList<id<MTLComputeCommandEncoder>, Base::CommandList>
     , public Rhi::IComputeCommandList
 {
 public:
