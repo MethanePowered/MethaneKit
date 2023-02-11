@@ -37,6 +37,7 @@ struct ICommandKit;
 struct IFence;
 struct IRenderPass;
 struct ITransferCommandList;
+struct IComputeCommandList;
 struct IRenderCommandList;
 struct IParallelRenderCommandList;
 struct ITimestampQueryPool;
@@ -51,6 +52,7 @@ struct ICommandQueue
     [[nodiscard]] virtual Ptr<ICommandKit>                CreateCommandKit() = 0;
     [[nodiscard]] virtual Ptr<IFence>                     CreateFence() = 0;
     [[nodiscard]] virtual Ptr<ITransferCommandList>       CreateTransferCommandList() = 0;
+    [[nodiscard]] virtual Ptr<IComputeCommandList>        CreateComputeCommandList() = 0;
     [[nodiscard]] virtual Ptr<IRenderCommandList>         CreateRenderCommandList(IRenderPass& render_pass) = 0;
     [[nodiscard]] virtual Ptr<IParallelRenderCommandList> CreateParallelRenderCommandList(IRenderPass& render_pass) = 0;
     [[nodiscard]] virtual Ptr<ITimestampQueryPool>        CreateTimestampQueryPool(uint32_t max_timestamps_per_frame) = 0;

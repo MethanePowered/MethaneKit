@@ -31,6 +31,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ICommandListDebugGroup.h
     ${INCLUDE_DIR}/ICommandListSet.h
     ${INCLUDE_DIR}/ITransferCommandList.h
+    ${INCLUDE_DIR}/IComputeCommandList.h
     ${INCLUDE_DIR}/IRenderCommandList.h
     ${INCLUDE_DIR}/IParallelRenderCommandList.h
     ${INCLUDE_DIR}/IQueryPool.h
@@ -62,6 +63,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/ICommandKit.cpp
     ${SOURCES_DIR}/ICommandQueue.cpp
     ${SOURCES_DIR}/ITransferCommandList.cpp
+    ${SOURCES_DIR}/IComputeCommandList.cpp
     ${SOURCES_DIR}/IRenderCommandList.cpp
     ${SOURCES_DIR}/IParallelRenderCommandList.cpp
     ${SOURCES_DIR}/ResourceView.cpp

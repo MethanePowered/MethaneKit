@@ -30,6 +30,7 @@ Methane CommandQueue PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/ParallelRenderCommandList.h>
 #include <Methane/Graphics/RHI/TransferCommandList.h>
+#include <Methane/Graphics/RHI/ComputeCommandList.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -108,6 +109,11 @@ Fence CommandQueue::CreateFence() const
 TransferCommandList CommandQueue::CreateTransferCommandList() const
 {
     return TransferCommandList(GetImpl(m_impl_ptr).CreateTransferCommandList());
+}
+
+ComputeCommandList CommandQueue::CreateComputeCommandList() const
+{
+    return ComputeCommandList(GetImpl(m_impl_ptr).CreateComputeCommandList());
 }
 
 RenderCommandList CommandQueue::CreateRenderCommandList(const RenderPass& render_pass) const

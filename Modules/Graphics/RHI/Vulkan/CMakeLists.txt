@@ -37,6 +37,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ICommandList.h
     ${INCLUDE_DIR}/CommandList.hpp
     ${INCLUDE_DIR}/TransferCommandList.h
+    ${INCLUDE_DIR}/ComputeCommandList.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
     ${INCLUDE_DIR}/Utils.hpp
@@ -71,6 +72,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/CommandListSet.cpp
     ${SOURCES_DIR}/CommandListDebugGroup.cpp
     ${SOURCES_DIR}/TransferCommandList.cpp
+    ${SOURCES_DIR}/ComputeCommandList.cpp
     ${SOURCES_DIR}/RenderCommandList.cpp
     ${SOURCES_DIR}/ParallelRenderCommandList.cpp
 )

@@ -29,6 +29,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
     ${INCLUDE_DIR}/TransferCommandList.h
+    ${INCLUDE_DIR}/ComputeCommandList.h
 )
 
 list(APPEND SOURCES
@@ -55,6 +56,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderCommandList.cpp
     ${SOURCES_DIR}/ParallelRenderCommandList.cpp
     ${SOURCES_DIR}/TransferCommandList.cpp
+    ${SOURCES_DIR}/ComputeCommandList.cpp
 )
 
 if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)

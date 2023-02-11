@@ -25,6 +25,7 @@ Metal implementation of the command queue interface.
 #include <Methane/Graphics/Metal/Device.hh>
 #include <Methane/Graphics/Metal/Fence.hh>
 #include <Methane/Graphics/Metal/TransferCommandList.hh>
+#include <Methane/Graphics/Metal/ComputeCommandList.hh>
 #include <Methane/Graphics/Metal/RenderCommandList.hh>
 #include <Methane/Graphics/Metal/ParallelRenderCommandList.hh>
 #include <Methane/Graphics/Metal/RenderContext.hh>
@@ -62,6 +63,12 @@ Ptr<Rhi::ITransferCommandList> CommandQueue::CreateTransferCommandList()
 {
     META_FUNCTION_TASK();
     return std::make_shared<TransferCommandList>(*this);
+}
+
+Ptr<Rhi::IComputeCommandList> CommandQueue::CreateComputeCommandList()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ComputeCommandList>(*this);
 }
 
 Ptr<Rhi::IRenderCommandList> CommandQueue::CreateRenderCommandList(Rhi::IRenderPass& render_pass)

@@ -35,6 +35,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/CommandListDebugGroup.hh
     ${INCLUDE_DIR}/CommandList.hpp
     ${INCLUDE_DIR}/TransferCommandList.hh
+    ${INCLUDE_DIR}/ComputeCommandList.hh
     ${INCLUDE_DIR}/RenderCommandList.hh
     ${INCLUDE_DIR}/ParallelRenderCommandList.hh
 )
@@ -64,6 +65,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/CommandListSet.mm
     ${SOURCES_DIR}/CommandListDebugGroup.mm
     ${SOURCES_DIR}/TransferCommandList.mm
+    ${SOURCES_DIR}/ComputeCommandList.mm
     ${SOURCES_DIR}/RenderCommandList.mm
     ${SOURCES_DIR}/ParallelRenderCommandList.mm
 )

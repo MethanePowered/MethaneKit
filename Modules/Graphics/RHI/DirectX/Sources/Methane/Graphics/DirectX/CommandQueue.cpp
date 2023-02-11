@@ -25,6 +25,7 @@ DirectX 12 implementation of the command queue interface.
 #include <Methane/Graphics/DirectX/Device.h>
 #include <Methane/Graphics/DirectX/Fence.h>
 #include <Methane/Graphics/DirectX/TransferCommandList.h>
+#include <Methane/Graphics/DirectX/ComputeCommandList.h>
 #include <Methane/Graphics/DirectX/RenderCommandList.h>
 #include <Methane/Graphics/DirectX/ParallelRenderCommandList.h>
 #include <Methane/Graphics/DirectX/QueryPool.h>
@@ -120,6 +121,12 @@ Ptr<Rhi::ITransferCommandList> CommandQueue::CreateTransferCommandList()
 {
     META_FUNCTION_TASK();
     return std::make_shared<TransferCommandList>(*this);
+}
+
+Ptr<Rhi::IComputeCommandList> CommandQueue::CreateComputeCommandList()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ComputeCommandList>(*this);
 }
 
 Ptr<Rhi::IRenderCommandList> CommandQueue::CreateRenderCommandList(Rhi::IRenderPass& render_pass)
