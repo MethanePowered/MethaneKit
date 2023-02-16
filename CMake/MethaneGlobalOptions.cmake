@@ -38,6 +38,16 @@ if(WIN32)
 
 elseif(APPLE)
 
+    if (NOT CMAKE_OSX_ARCHITECTURES)
+        # Warn about requirement to set OSX architectures for fat-binary starting with XCode & Clang v12.0
+        # Build architectures have to be set with cmake generator command line option -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+        EXECUTE_PROCESS(COMMAND clang --version OUTPUT_VARIABLE CLANG_FULL_VERSION_STRING)
+        string(REGEX REPLACE ".*clang version ([0-9]+\\.[0-9]+).*" "\\1" CLANG_VERSION_STRING ${CLANG_FULL_VERSION_STRING})
+        if (CLANG_VERSION_STRING VERSION_GREATER_EQUAL 12.0)
+            message(WARNING "Apple Clang v12.0 requires build architectures to be set explicitly with cmake generator option -DCMAKE_OSX_ARCHITECTURES=\"arm64;x86_64\"")
+        endif()
+    endif()
+
     # Apple platform specific definitions
     if (CMAKE_SYSTEM_NAME STREQUAL "iOS")
         set(APPLE_IOS 1)
@@ -75,6 +85,19 @@ elseif(APPLE)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
     set(CMAKE_INSTALL_RPATH "@executable_path")
     set(CMAKE_XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path")
+
+    if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
+        # On Windows and Linux, only Vulkan-Headers are required to build Methane Kit,
+        # because it is dynamically loading Vulkan library in runtime. Vulkan SDK is not required for build.
+        message(WARNING "METHANE RHI: Vulkan API is not supported on MacOS, because MoltenVK does not support extension 'VK_EXT_extended_dynamic_state'")
+        # To enable Vulkan API on MacOS we link statically with MoltenVK framework (translation layer to Metal).
+        # in order to enable finding Vulkan SDK with MoltenVK framework, set environment variable
+        # - VULKAN_SDK to full installation path before running CMake generator ($USER_HOME$/VulkanSDK/1.2.182.0/macOS)
+        find_package(Vulkan REQUIRED)
+        # To run Vulkan application on MacOS, additional environment variables need to be set for application:
+        # - VK_ICD_FILENAMES=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/icd.d/MoltenVK_icd.json
+        # - VK_LAYER_PATH=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/explicit_layer.d
+    endif()
 
 else(UNIX)
 
