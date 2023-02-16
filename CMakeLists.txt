@@ -155,7 +155,8 @@ if (METHANE_APPS_BUILD_ENABLED)
 endif()
 
 if (METHANE_TESTS_BUILD_ENABLED)
-    # Add Methane Tests
+    # Add Methane Tests and enable CTest
+    enable_testing()
     add_subdirectory(Tests)
 endif()
 
