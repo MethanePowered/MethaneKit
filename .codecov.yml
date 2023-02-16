@@ -1,5 +1,6 @@
 codecov:
   require_ci_to_pass: true
+
 coverage:
   precision: 2
   range: "20..70"
@@ -13,3 +14,97 @@ coverage:
       default:
         informational: true
         only_pulls: true
+
+component_management:
+  individual_components:
+    - component_id: common-primitives
+      name: Common Primitives
+      paths:
+        - Modules/Common/Primitives/**
+    - component_id: data-animation
+      name: Data Animation
+      paths:
+        - Modules/Data/Animation/**
+    - component_id: data-events
+      name: Data Animation
+      paths:
+        - Modules/Data/Events/**
+        - Tests/Data/Events/**
+    - component_id: data-primitives
+      name: Data Primitives
+      paths:
+        - Modules/Data/Primitives/**
+    - component_id: data-provider
+      name: Data Provider
+      paths:
+        - Modules/Data/Provider/**
+    - component_id: data-range-set
+      name: Data Range-Set
+      paths:
+        - Modules/Data/RangeSet/**
+        - Tests/Data/RangeSet/**
+    - component_id: data-types
+      name: Data Types
+      paths:
+        - Modules/Data/Types/**
+        - Tests/Data/Types/**
+    - component_id: platform-utils
+      name: Platform Utils
+      paths:
+        - Modules/Platform/Utils/**
+    - component_id: platform-input
+      name: Platform Input
+      paths:
+        - Modules/Platform/Input/**
+        - Tests/Platform/Input/**
+    - component_id: platform-app-view
+      name: Platform App-View
+      paths:
+        - Modules/Platform/AppView/**
+    - component_id: platform-app
+      name: Platform App
+      paths:
+        - Modules/Platform/App/**
+    - component_id: graphics-types
+      name: Graphics Types
+      paths:
+        - Modules/Graphics/Types/**
+        - Tests/Graphics/Types/**
+    - component_id: graphics-rhi
+      name: Graphics RHI
+      paths:
+        - Modules/Graphics/RHI/**
+    - component_id: graphics-primitives
+      name: Graphics Primitives
+      paths:
+        - Modules/Graphics/Primitives/**
+    - component_id: graphics-mesh
+      name: Graphics Mesh
+      paths:
+        - Modules/Graphics/Mesh/**
+    - component_id: graphics-camera
+      name: Graphics Camera
+      paths:
+        - Modules/Graphics/Camera/**
+        - Tests/Graphics/Camera/**
+    - component_id: graphics-app
+      name: Graphics App
+      paths:
+        - Modules/Graphics/App/**
+    - component_id: user-interface-types
+      name: User Interface Types
+      paths:
+        - Modules/UserInterface/Types/**
+        - Tests/UserInterface/Types/**
+    - component_id: user-interface-typography
+      name: User Interface Typography
+      paths:
+        - Modules/UserInterface/Typography/**
+    - component_id: user-interface-widgets
+      name: User Interface Widgets
+      paths:
+        - Modules/UserInterface/Widgets/**
+    - component_id: user-interface-app
+      name: User Interface App
+      paths:
+        - Modules/UserInterface/App/**
