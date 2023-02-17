@@ -22,6 +22,7 @@
   - Windows 10 RS5 (build 1809) or later
   - Visual Studio 2019/22 with MSVC v142 or later
   - Windows 10 SDK (latest)
+  - Visual C++ ATL Support (required by DXC)
 - **Linux**
   - Ubuntu 20.04 or later
   - GCC 9 or later
@@ -45,8 +46,10 @@ to fetch dependent repositories during CMake configuration stage, so it should b
 with `git clone` command or to download as ZIP-archive using `Code > Download ZIP` button.
 - All [External](/Externals) dependencies are fetched to the `Build/Output/ExternalsCache/...` directory,
 which can be changed by adding `-DCPM_SOURCE_CACHE=<cache_path>` to the CMake configuration command. 
-- Consider using <ins>short path for repository location on Windows</ins> (for example `c:\Git\`),
-which may be required to resolve problem with support of paths longer than 260 symbols for some of Microsoft build tools.
+- Consider enabling [paths longer than 260 symbols in Windows](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell) to allow CMake generate build subdirectories normally. Long paths can be enabled with this command run from Administrator PowerShell terminal:
+```powershell
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
+```
 
 ### First time initialization
 
