@@ -25,6 +25,7 @@ Metal template implementation of the base context interface.
 
 #include "IContext.h"
 #include "Device.hh"
+#include "ComputeState.hh"
 #include "ProgramLibrary.hh"
 #include "DescriptorManager.h"
 
@@ -54,8 +55,8 @@ public:
 
     [[nodiscard]] Ptr<Rhi::IComputeState> CreateComputeState(const Rhi::ComputeStateSettings& settings) const final
     {
-        META_UNUSED(settings);
-        META_FUNCTION_NOT_IMPLEMENTED();
+        META_FUNCTION_TASK();
+        return std::make_shared<ComputeState>(*this, settings);
     }
 
     const Device& GetMetalDevice() const noexcept final

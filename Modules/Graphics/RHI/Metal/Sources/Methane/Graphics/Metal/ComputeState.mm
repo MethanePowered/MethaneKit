@@ -87,13 +87,6 @@ bool ComputeState::SetName(std::string_view name)
     ResetNativeState();
     return true;
 }
-    
-void ComputeState::InitializeNativeStates()
-{
-    META_FUNCTION_TASK();
-    InitializeNativePipelineState();
-    InitializeNativeDepthStencilState();
-}
 
 void ComputeState::InitializeNativePipelineState()
 {

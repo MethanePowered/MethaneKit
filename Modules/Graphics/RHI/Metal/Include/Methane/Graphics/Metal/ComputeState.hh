@@ -49,10 +49,8 @@ public:
     // IObject interface
     bool SetName(std::string_view name) override;
     
-    void InitializeNativeStates();
     void InitializeNativePipelineState();
-    void InitializeNativeDepthStencilState();
-    
+
     id<MTLComputePipelineState> GetNativePipelineState();
 
 private:
