@@ -16,29 +16,26 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/ComputeCommandList.h
-Vulkan implementation of the compute command list interface.
+FILE: Methane/Graphics/Null/ComputeState.h
+Null implementation of the compute state interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "CommandList.hpp"
+#include <Methane/Graphics/Base/ComputeState.h>
 
-#include <Methane/Graphics/Base/ComputeCommandList.h>
-
-#include <vulkan/vulkan.hpp>
-
-namespace Methane::Graphics::Vulkan
+namespace Methane::Graphics::Null
 {
 
-class CommandQueue;
-
-class ComputeCommandList final
-    : public CommandList<Base::ComputeCommandList, vk::PipelineBindPoint::eCompute>
+class ComputeState final
+    : public Base::ComputeState
 {
 public:
-    explicit ComputeCommandList(CommandQueue& command_queue);
+    using Base::ComputeState::ComputeState;
+
+    // Base::ComputeState interface
+    void Apply(Base::ComputeCommandList&) override { /* Intentionally unimplemented */ }
 };
 
-} // namespace Methane::Graphics::Vulkan
+} // namespace Methane::Graphics::Null

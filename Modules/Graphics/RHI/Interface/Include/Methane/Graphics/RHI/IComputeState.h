@@ -16,27 +16,46 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/IComputeCommandList.h
-Methane compute command list interface.
+FILE: Methane/Graphics/RHI/IComputeState.h
+Methane compute state interface: specifies configuration of the compute pipeline.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "ICommandList.h"
+#include "IObject.h"
 
+#include <Methane/Graphics/Types.h>
 #include <Methane/Memory.hpp>
 
 namespace Methane::Graphics::Rhi
 {
 
-struct IComputeCommandList
-    : virtual ICommandList // NOSONAR
-{
-    static constexpr Type type = Type::Compute;
+struct IProgram;
 
-    // Create IComputeCommandList instance
-    [[nodiscard]] static Ptr<IComputeCommandList> Create(ICommandQueue& command_queue);
+struct ComputeStateSettings
+{
+    Ptr<IProgram> program_ptr;
+
+    [[nodiscard]] bool operator==(const ComputeStateSettings& other) const noexcept;
+    [[nodiscard]] bool operator!=(const ComputeStateSettings& other) const noexcept;
+    [[nodiscard]] explicit operator std::string() const;
+};
+
+struct IContext;
+
+struct IComputeState
+    : virtual IObject // NOSONAR
+{
+public:
+    using Settings = ComputeStateSettings;
+
+    // Create IComputeState instance
+    [[nodiscard]] static Ptr<IComputeState> Create(const IContext& device, const Settings& state_settings);
+
+    // IComputeState interface
+    [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;
+    virtual void Reset(const Settings& settings) = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

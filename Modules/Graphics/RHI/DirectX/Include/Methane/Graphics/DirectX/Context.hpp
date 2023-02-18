@@ -28,6 +28,7 @@ DirectX 12 base template implementation of the context interface.
 #include "System.h"
 #include "IContext.h"
 #include "CommandQueue.h"
+#include "ComputeState.h"
 #include "DescriptorManager.h"
 #include "ErrorHandling.h"
 
@@ -92,10 +93,29 @@ public:
         static_cast<System&>(Rhi::ISystem::Get()).ReportLiveObjects();
     }
 
-    // IContext interface
-    const Device&      GetDirectDevice() const noexcept final                        { return static_cast<const Device&>(Base::Context::GetBaseDevice()); }
-    CommandQueue&      GetDirectDefaultCommandQueue(Rhi::CommandListType type) final { return static_cast<CommandQueue&>(Base::Context::GetDefaultCommandKit(type).GetQueue()); }
-    DescriptorManager& GetDirectDescriptorManager() const noexcept final             { return static_cast<DescriptorManager&>(Base::Context::GetDescriptorManager()); }
+    // IContext overrides
+
+    [[nodiscard]] Ptr<Rhi::IComputeState> CreateComputeState(const Rhi::ComputeStateSettings& settings) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<ComputeState>(*this, settings);
+    }
+
+    const Device& GetDirectDevice() const noexcept final
+    {
+        return static_cast<const Device&>(Base::Context::GetBaseDevice());
+    }
+
+    CommandQueue& GetDirectDefaultCommandQueue(Rhi::CommandListType type) final
+    {
+        META_FUNCTION_TASK();
+        return static_cast<CommandQueue&>(Base::Context::GetDefaultCommandKit(type).GetQueue());
+    }
+
+    DescriptorManager& GetDirectDescriptorManager() const noexcept final
+    {
+        return static_cast<DescriptorManager&>(Base::Context::GetDescriptorManager());
+    }
 
     ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const final
     {
@@ -115,7 +135,10 @@ public:
     }
 
 protected:
-    Device& GetDirectMutableDevice() noexcept { return static_cast<Device&>(GetBaseDevice()); }
+    Device& GetDirectMutableDevice() noexcept
+    {
+        return static_cast<Device&>(GetBaseDevice());
+    }
 
 private:
     using NativeQueryHeaps = std::array<wrl::ComPtr<ID3D12QueryHeap>, D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP + 1>;

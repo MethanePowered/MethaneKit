@@ -39,7 +39,7 @@ static D3D12_COMMAND_LIST_TYPE GetComputeCommandListNativeType(Rhi::ContextOptio
 }
 
 ComputeCommandList::ComputeCommandList(Base::CommandQueue& cmd_queue)
-    : CommandList<Base::CommandList>(GetComputeCommandListNativeType(cmd_queue.GetContext().GetOptions()), cmd_queue, Type::Compute)
+    : CommandList<Base::ComputeCommandList>(GetComputeCommandListNativeType(cmd_queue.GetContext().GetOptions()), cmd_queue)
 { }
 
 } // namespace Methane::Graphics::DirectX

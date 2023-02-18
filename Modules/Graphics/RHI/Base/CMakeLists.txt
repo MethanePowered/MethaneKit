@@ -19,6 +19,7 @@ set(HEADERS
     ${INCLUDE_DIR}/RenderPattern.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
+    ${INCLUDE_DIR}/ComputeState.h
     ${INCLUDE_DIR}/ResourceBarriers.h
     ${INCLUDE_DIR}/Resource.h
     ${INCLUDE_DIR}/Buffer.h
@@ -33,6 +34,7 @@ set(HEADERS
     ${INCLUDE_DIR}/CommandListDebugGroup.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
+    ${INCLUDE_DIR}/ComputeCommandList.h
     ${INCLUDE_DIR}/DescriptorManager.h
     ${INCLUDE_DIR}/QueryPool.h
     ${INCLUDE_DIR}/FpsCounter.h
@@ -51,6 +53,7 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/ProgramBindings.cpp
     ${SOURCES_DIR}/RenderState.cpp
     ${SOURCES_DIR}/ViewState.cpp
+    ${SOURCES_DIR}/ComputeState.cpp
     ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/Resource.cpp
     ${SOURCES_DIR}/Buffer.cpp
@@ -67,6 +70,7 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/CommandListDebugGroup.cpp
     ${SOURCES_DIR}/RenderCommandList.cpp
     ${SOURCES_DIR}/ParallelRenderCommandList.cpp
+    ${SOURCES_DIR}/ComputeCommandList.cpp
     ${SOURCES_DIR}/DescriptorManager.cpp
     ${SOURCES_DIR}/QueryPool.cpp
     ${SOURCES_DIR}/FpsCounter.cpp

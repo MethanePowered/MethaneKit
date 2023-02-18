@@ -16,29 +16,47 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/ComputeCommandList.h
-Vulkan implementation of the compute command list interface.
+FILE: Methane/Graphics/Vulkan/ComputeState.h
+Vulkan implementation of the compute state interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include "CommandList.hpp"
-
-#include <Methane/Graphics/Base/ComputeCommandList.h>
+#include <Methane/Graphics/Base/ComputeState.h>
 
 #include <vulkan/vulkan.hpp>
 
 namespace Methane::Graphics::Vulkan
 {
 
-class CommandQueue;
+struct IContext;
+class Device;
 
-class ComputeCommandList final
-    : public CommandList<Base::ComputeCommandList, vk::PipelineBindPoint::eCompute>
+class ComputeState final
+    : public Base::ComputeState
 {
 public:
-    explicit ComputeCommandList(CommandQueue& command_queue);
+    ComputeState(const Rhi::IContext& context, const Settings& settings);
+    
+    // IComputeState interface
+    void Reset(const Settings& settings) override;
+
+    // Base::ComputeState interface
+    void Apply(Base::ComputeCommandList& compute_command_list) override;
+
+    // IObject interface
+    bool SetName(std::string_view name) override;
+
+    const vk::Pipeline& GetNativePipeline() const noexcept
+    {
+        return m_vk_unique_pipeline.get();
+    }
+
+private:
+    const Device&      m_device;
+    const IContext&    m_vk_context;
+    vk::UniquePipeline m_vk_unique_pipeline;
 };
 
 } // namespace Methane::Graphics::Vulkan

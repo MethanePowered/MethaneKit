@@ -16,29 +16,36 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Vulkan/ComputeCommandList.h
-Vulkan implementation of the compute command list interface.
+FILE: Methane/Graphics/Base/ComputeState.cpp
+Base implementation of the compute state interface.
 
 ******************************************************************************/
 
-#pragma once
+#include <Methane/Graphics/Base/ComputeState.h>
 
-#include "CommandList.hpp"
+#include <Methane/Checks.hpp>
+#include <Methane/Instrumentation.h>
 
-#include <Methane/Graphics/Base/ComputeCommandList.h>
-
-#include <vulkan/vulkan.hpp>
-
-namespace Methane::Graphics::Vulkan
+namespace Methane::Graphics::Base
 {
 
-class CommandQueue;
+ComputeState::ComputeState(const Rhi::IContext& context, const Settings& settings)
+    : m_context(context)
+    , m_settings(settings)
+{ }
 
-class ComputeCommandList final
-    : public CommandList<Base::ComputeCommandList, vk::PipelineBindPoint::eCompute>
+void ComputeState::Reset(const Settings& settings)
 {
-public:
-    explicit ComputeCommandList(CommandQueue& command_queue);
-};
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "program is not initialized in render state settings");
+    m_settings = settings;
+}
 
-} // namespace Methane::Graphics::Vulkan
+Rhi::IProgram& ComputeState::GetProgram()
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_settings.program_ptr);
+    return *m_settings.program_ptr;
+}
+
+} // namespace Methane::Graphics::Base

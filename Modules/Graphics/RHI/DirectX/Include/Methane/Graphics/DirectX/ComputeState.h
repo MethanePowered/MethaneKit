@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2023 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/DirectX/RenderState.h
+FILE: Methane/Graphics/DirectX/ComputeState.h
 DirectX 12 implementation of the render state interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/Base/RenderState.h>
+#include <Methane/Graphics/Base/ComputeState.h>
 
 #include <wrl.h>
 #include <directx/d3d12.h>
@@ -35,18 +35,19 @@ namespace wrl = Microsoft::WRL;
 
 class RenderContext;
 class Program;
+class Device;
 
-class RenderState final
-    : public Base::RenderState
+class ComputeState final
+    : public Base::ComputeState
 {
 public:
-    RenderState(const Base::RenderContext& context, const Settings& settings);
+    ComputeState(const Rhi::IContext& context, const Settings& settings);
 
-    // IRenderState interface
+    // IComputeState interface
     void Reset(const Settings& settings) override;
 
-    // Base::RenderState interface
-    void Apply(Base::RenderCommandList& command_list, Groups state_groups) override;
+    // Base::ComputeState interface
+    void Apply(Base::ComputeCommandList& command_list) override;
 
     // IObject interface
     bool SetName(std::string_view name) override;
@@ -56,11 +57,11 @@ public:
 
 private:
     Program& GetDirectProgram();
-    const RenderContext& GetDirectRenderContext() const noexcept;
+    const Device&  GetDirectDevice() { return m_device; }
 
-    D3D12_GRAPHICS_PIPELINE_STATE_DESC m_pipeline_state_desc{ };
-    wrl::ComPtr<ID3D12PipelineState>   m_cp_pipeline_state;
-    std::array<float, 4>               m_blend_factor{ 0.0, 0.0, 0.0, 0.0 };
+    const Device&                     m_device;
+    D3D12_COMPUTE_PIPELINE_STATE_DESC m_pipeline_state_desc{ };
+    wrl::ComPtr<ID3D12PipelineState>  m_cp_pipeline_state;
 };
 
 } // namespace Methane::Graphics::DirectX

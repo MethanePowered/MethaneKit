@@ -16,6 +16,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderContext.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
+    ${INCLUDE_DIR}/ComputeState.h
     ${INCLUDE_DIR}/ResourceView.h
     ${INCLUDE_DIR}/ResourceBarriers.h
     ${INCLUDE_DIR}/Resource.hpp

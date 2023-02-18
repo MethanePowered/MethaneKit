@@ -31,7 +31,7 @@ namespace Methane::Graphics::Vulkan
 {
 
 ComputeCommandList::ComputeCommandList(CommandQueue& command_queue)
-    : CommandList(vk::CommandBufferLevel::ePrimary, {}, command_queue, Rhi::CommandListType::Compute)
+    : CommandList(vk::CommandBufferLevel::ePrimary, {}, command_queue)
 { }
 
 } // namespace Methane::Graphics::Vulkan

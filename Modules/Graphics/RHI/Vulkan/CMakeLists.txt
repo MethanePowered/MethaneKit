@@ -19,6 +19,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderContext.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
+    ${INCLUDE_DIR}/ComputeState.h
     ${INCLUDE_DIR}/IResource.h
     ${INCLUDE_DIR}/ResourceView.h
     ${INCLUDE_DIR}/ResourceBarriers.h
@@ -57,6 +58,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderContext.cpp
     ${SOURCES_DIR}/RenderState.cpp
     ${SOURCES_DIR}/ViewState.cpp
+    ${SOURCES_DIR}/ComputeState.cpp
     ${SOURCES_DIR}/IResource.cpp
     ${SOURCES_DIR}/ResourceView.cpp
     ${SOURCES_DIR}/ResourceBarriers.cpp

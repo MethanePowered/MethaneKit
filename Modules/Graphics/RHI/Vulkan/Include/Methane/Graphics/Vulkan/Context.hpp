@@ -26,6 +26,7 @@ Vulkan template implementation of the base context interface.
 #include "IContext.h"
 #include "Device.h"
 #include "CommandQueue.h"
+#include "ComputeState.h"
 #include "DescriptorManager.h"
 
 #include <Methane/Graphics/RHI/IRenderContext.h>
@@ -66,7 +67,13 @@ public:
         ContextBaseT::Release();
     }
 
-    // IContext interface
+    // IContext overrides
+
+    [[nodiscard]] Ptr<Rhi::IComputeState> CreateComputeState(const Rhi::ComputeStateSettings& settings) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<ComputeState>(*this, settings);
+    }
 
     const Device& GetVulkanDevice() const noexcept final
     {

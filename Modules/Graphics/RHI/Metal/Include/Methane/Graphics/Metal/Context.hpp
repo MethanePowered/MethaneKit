@@ -52,6 +52,12 @@ public:
 
     // IContext overrides
 
+    [[nodiscard]] Ptr<Rhi::IComputeState> CreateComputeState(const Rhi::ComputeStateSettings& settings) const final
+    {
+        META_UNUSED(settings);
+        META_FUNCTION_NOT_IMPLEMENTED();
+    }
+
     const Device& GetMetalDevice() const noexcept final
     {
         META_FUNCTION_TASK();

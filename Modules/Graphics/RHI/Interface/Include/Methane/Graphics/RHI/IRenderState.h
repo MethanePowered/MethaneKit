@@ -24,7 +24,6 @@ Methane render state interface: specifies configuration of the graphics pipeline
 #pragma once
 
 #include "IObject.h"
-#include "IProgram.h"
 
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Volume.hpp>

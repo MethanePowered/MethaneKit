@@ -25,14 +25,13 @@ DirectX 12 implementation of the compute command list interface.
 
 #include "CommandList.hpp"
 
-#include <Methane/Graphics/RHI/IComputeCommandList.h>
+#include <Methane/Graphics/Base/ComputeCommandList.h>
 
 namespace Methane::Graphics::DirectX
 {
 
 class ComputeCommandList final
-    : public CommandList<Base::CommandList>
-    , public Rhi::IComputeCommandList
+    : public CommandList<Base::ComputeCommandList>
 {
 public:
     explicit ComputeCommandList(Base::CommandQueue& cmd_buffer);

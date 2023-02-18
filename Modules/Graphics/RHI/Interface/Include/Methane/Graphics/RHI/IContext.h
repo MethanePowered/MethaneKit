@@ -91,12 +91,14 @@ struct ICommandQueue;
 struct ICommandKit;
 struct IShader;
 struct IProgram;
+struct IComputeState;
 struct IBuffer;
 struct ITexture;
 struct ISampler;
 
 struct ShaderSettings;
 struct ProgramSettings;
+struct ComputeStateSettings;
 struct BufferSettings;
 struct TextureSettings;
 struct SamplerSettings;
@@ -120,6 +122,7 @@ struct IContext
     [[nodiscard]] virtual Ptr<ICommandKit>   CreateCommandKit(CommandListType type) const = 0;
     [[nodiscard]] virtual Ptr<IShader>       CreateShader(ShaderType type, const ShaderSettings& settings) const = 0;
     [[nodiscard]] virtual Ptr<IProgram>      CreateProgram(const ProgramSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<IComputeState> CreateComputeState(const ComputeStateSettings& settings) const = 0;
     [[nodiscard]] virtual Ptr<IBuffer>       CreateBuffer(const BufferSettings& settings) const = 0;
     [[nodiscard]] virtual Ptr<ITexture>      CreateTexture(const TextureSettings& settings) const = 0;
     [[nodiscard]] virtual Ptr<ISampler>      CreateSampler(const SamplerSettings& settings) const = 0;
