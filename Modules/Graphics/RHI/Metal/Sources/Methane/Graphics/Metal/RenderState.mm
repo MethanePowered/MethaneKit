@@ -301,7 +301,7 @@ void RenderState::InitializeNativePipelineState()
     NSError* ns_error = nil;
     m_mtl_pipeline_state = [GetMetalRenderContext().GetMetalDevice().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_pipeline_state,
-                                  "failed to create Metal pipeline state: {}",
+                                  "failed to create Metal render pipeline state: {}",
                                   MacOS::ConvertFromNsString([ns_error localizedDescription]));
 }
 
@@ -313,7 +313,7 @@ void RenderState::InitializeNativeDepthStencilState()
 
     META_CHECK_ARG_NOT_NULL(m_mtl_depth_stencil_state_desc);
     m_mtl_depth_state = [GetMetalRenderContext().GetMetalDevice().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
-    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_depth_state, "failed to create Metal depth state");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_depth_state, "failed to create Metal depth-stencil state");
 }
 
 id<MTLRenderPipelineState> RenderState::GetNativePipelineState()

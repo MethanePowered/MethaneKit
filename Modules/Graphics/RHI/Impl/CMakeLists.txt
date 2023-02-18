@@ -21,6 +21,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderContext.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
+    ${INCLUDE_DIR}/ComputeState.h
     ${INCLUDE_DIR}/Buffer.h
     ${INCLUDE_DIR}/BufferSet.h
     ${INCLUDE_DIR}/Texture.h
@@ -48,6 +49,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderContext.cpp
     ${SOURCES_DIR}/RenderState.cpp
     ${SOURCES_DIR}/ViewState.cpp
+    ${SOURCES_DIR}/ComputeState.cpp
     ${SOURCES_DIR}/Buffer.cpp
     ${SOURCES_DIR}/BufferSet.cpp
     ${SOURCES_DIR}/Texture.cpp

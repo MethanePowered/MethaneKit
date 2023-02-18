@@ -25,8 +25,7 @@ Metal implementation of the compute command list interface.
 
 #include "CommandList.hpp"
 
-#include <Methane/Graphics/RHI/IComputeCommandList.h>
-#include <Methane/Graphics/Base/CommandList.h>
+#include <Methane/Graphics/Base/ComputeCommandList.h>
 
 #import <Metal/Metal.h>
 
@@ -36,8 +35,7 @@ namespace Methane::Graphics::Metal
 class CommandQueue;
 
 class ComputeCommandList final
-    : public CommandList<id<MTLComputeCommandEncoder>, Base::CommandList>
-    , public Rhi::IComputeCommandList
+    : public CommandList<id<MTLComputeCommandEncoder>, Base::ComputeCommandList>
 {
 public:
     ComputeCommandList(Base::CommandQueue& command_queue);

@@ -20,6 +20,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ProgramBindings.hh
     ${INCLUDE_DIR}/RenderState.hh
     ${INCLUDE_DIR}/ViewState.hh
+    ${INCLUDE_DIR}/ComputeState.hh
     ${INCLUDE_DIR}/Resource.hh
     ${INCLUDE_DIR}/ResourceBarriers.hh
     ${INCLUDE_DIR}/DescriptorManager.h
@@ -53,6 +54,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/ProgramBindings.mm
     ${SOURCES_DIR}/RenderState.mm
     ${SOURCES_DIR}/ViewState.mm
+    ${SOURCES_DIR}/ComputeState.mm
     ${SOURCES_DIR}/Resource.mm
     ${SOURCES_DIR}/Buffer.mm
     ${SOURCES_DIR}/BufferSet.mm

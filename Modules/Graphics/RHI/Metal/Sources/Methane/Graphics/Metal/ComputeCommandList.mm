@@ -29,7 +29,7 @@ namespace Methane::Graphics::Metal
 {
 
 ComputeCommandList::ComputeCommandList(Base::CommandQueue& command_queue)
-    : CommandList<id<MTLComputeCommandEncoder>, Base::CommandList>(true, command_queue, Rhi::CommandListType::Compute)
+    : CommandList(true, command_queue)
 { }
 
 void ComputeCommandList::Reset(Rhi::ICommandListDebugGroup* debug_group_ptr)

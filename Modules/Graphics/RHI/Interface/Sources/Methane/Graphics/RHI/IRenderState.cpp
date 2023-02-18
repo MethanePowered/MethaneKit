@@ -23,6 +23,7 @@ Methane render state interface: specifies configuration of the graphics pipeline
 
 #include <Methane/Graphics/RHI/IRenderState.h>
 #include <Methane/Graphics/RHI/IRenderContext.h>
+#include <Methane/Graphics/RHI/IProgram.h>
 
 #include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
