@@ -187,37 +187,37 @@ void RenderState::Reset(const Settings& settings)
     Program& metal_program = static_cast<Program&>(*settings.program_ptr);
 
     // IProgram state
-    m_mtl_pipeline_state_desc                           = [[MTLRenderPipelineDescriptor alloc] init];
-    m_mtl_pipeline_state_desc.vertexFunction            = metal_program.GetNativeShaderFunction(Rhi::ShaderType::Vertex);
-    m_mtl_pipeline_state_desc.fragmentFunction          = metal_program.GetNativeShaderFunction(Rhi::ShaderType::Pixel);
-    m_mtl_pipeline_state_desc.vertexDescriptor          = metal_program.GetNativeVertexDescriptor();
+    m_mtl_pipeline_state_desc                  = [[MTLRenderPipelineDescriptor alloc] init];
+    m_mtl_pipeline_state_desc.vertexFunction   = metal_program.GetNativeShaderFunction(Rhi::ShaderType::Vertex);
+    m_mtl_pipeline_state_desc.fragmentFunction = metal_program.GetNativeShaderFunction(Rhi::ShaderType::Pixel);
+    m_mtl_pipeline_state_desc.vertexDescriptor = metal_program.GetNativeVertexDescriptor();
     
     // Rasterizer state
-    m_mtl_pipeline_state_desc.sampleCount               = settings.rasterizer.sample_count;
-    m_mtl_pipeline_state_desc.alphaToCoverageEnabled    = settings.rasterizer.alpha_to_coverage_enabled;
-    m_mtl_pipeline_state_desc.alphaToOneEnabled         = NO; // not supported by Methane
+    m_mtl_pipeline_state_desc.sampleCount            = settings.rasterizer.sample_count;
+    m_mtl_pipeline_state_desc.alphaToCoverageEnabled = settings.rasterizer.alpha_to_coverage_enabled;
+    m_mtl_pipeline_state_desc.alphaToOneEnabled      = NO; // not supported by Methane
     
     // Blending state
     const AttachmentFormats attach_formats = settings.render_pattern_ptr->GetAttachmentFormats();
     for (uint32_t rt_index = 0; rt_index < settings.blending.render_targets.size(); ++rt_index)
     {
-        const Blending::RenderTarget& render_target     = settings.blending.is_independent
-                                                        ? settings.blending.render_targets[rt_index]
-                                                        : settings.blending.render_targets[0];
+        const Blending::RenderTarget& render_target = settings.blending.is_independent
+                                                    ? settings.blending.render_targets[rt_index]
+                                                    : settings.blending.render_targets[0];
         
         // Set render target blending state for color attachment
         MTLRenderPipelineColorAttachmentDescriptor* mtl_color_attach = m_mtl_pipeline_state_desc.colorAttachments[rt_index];
-        mtl_color_attach.pixelFormat                    = rt_index < attach_formats.colors.size()
-                                                        ? TypeConverter::DataFormatToMetalPixelType(attach_formats.colors[rt_index])
-                                                        : MTLPixelFormatInvalid;
-        mtl_color_attach.blendingEnabled                = render_target.blend_enabled && rt_index < attach_formats.colors.size();
-        mtl_color_attach.writeMask                      = ConvertRenderTargetColorWriteMaskToMetal(render_target.color_write);
-        mtl_color_attach.rgbBlendOperation              = ConvertBlendingOperationToMetal(render_target.rgb_blend_op);
-        mtl_color_attach.alphaBlendOperation            = ConvertBlendingOperationToMetal(render_target.alpha_blend_op);
-        mtl_color_attach.sourceRGBBlendFactor           = ConvertBlendingFactorToMetal(render_target.source_rgb_blend_factor);
-        mtl_color_attach.sourceAlphaBlendFactor         = ConvertBlendingFactorToMetal(render_target.source_alpha_blend_factor);
-        mtl_color_attach.destinationRGBBlendFactor      = ConvertBlendingFactorToMetal(render_target.dest_rgb_blend_factor);
-        mtl_color_attach.destinationAlphaBlendFactor    = ConvertBlendingFactorToMetal(render_target.dest_alpha_blend_factor);
+        mtl_color_attach.pixelFormat                 = rt_index < attach_formats.colors.size()
+                                                     ? TypeConverter::DataFormatToMetalPixelType(attach_formats.colors[rt_index])
+                                                     : MTLPixelFormatInvalid;
+        mtl_color_attach.blendingEnabled             = render_target.blend_enabled && rt_index < attach_formats.colors.size();
+        mtl_color_attach.writeMask                   = ConvertRenderTargetColorWriteMaskToMetal(render_target.color_write);
+        mtl_color_attach.rgbBlendOperation           = ConvertBlendingOperationToMetal(render_target.rgb_blend_op);
+        mtl_color_attach.alphaBlendOperation         = ConvertBlendingOperationToMetal(render_target.alpha_blend_op);
+        mtl_color_attach.sourceRGBBlendFactor        = ConvertBlendingFactorToMetal(render_target.source_rgb_blend_factor);
+        mtl_color_attach.sourceAlphaBlendFactor      = ConvertBlendingFactorToMetal(render_target.source_alpha_blend_factor);
+        mtl_color_attach.destinationRGBBlendFactor   = ConvertBlendingFactorToMetal(render_target.dest_rgb_blend_factor);
+        mtl_color_attach.destinationAlphaBlendFactor = ConvertBlendingFactorToMetal(render_target.dest_alpha_blend_factor);
     }
     
     // Color, depth, stencil attachment formats state from program settings

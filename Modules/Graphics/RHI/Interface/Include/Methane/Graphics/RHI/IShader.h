@@ -42,6 +42,7 @@ enum class ShaderType : uint32_t
 {
     Vertex,
     Pixel,
+    Compute,
     All
 };
 

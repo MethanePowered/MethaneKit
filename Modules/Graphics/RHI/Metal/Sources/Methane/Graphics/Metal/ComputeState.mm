@@ -62,7 +62,7 @@ void ComputeState::Reset(const Settings& settings)
 
     Program& metal_program = static_cast<Program&>(*settings.program_ptr);
     m_mtl_pipeline_state_desc                 = [[MTLComputePipelineDescriptor alloc] init];
-    m_mtl_pipeline_state_desc.computeFunction = metal_program.GetNativeShaderFunction(Rhi::ShaderType::Vertex);
+    m_mtl_pipeline_state_desc.computeFunction = metal_program.GetNativeShaderFunction(Rhi::ShaderType::Compute);
 
     ResetNativeState();
 }

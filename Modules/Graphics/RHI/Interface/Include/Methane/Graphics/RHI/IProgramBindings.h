@@ -55,8 +55,8 @@ public:
 
 struct ProgramArgumentBindingSettings
 {
-    Rhi::ProgramArgumentAccessor argument;
-    IResource::Type         resource_type;
+    ProgramArgumentAccessor argument;
+    ResourceType            resource_type;
     uint32_t                resource_count = 1;
 };
 
