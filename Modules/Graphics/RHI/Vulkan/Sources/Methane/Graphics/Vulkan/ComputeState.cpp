@@ -66,7 +66,6 @@ void ComputeState::Reset(const Settings& settings)
     Base::ComputeState::Reset(settings);
 
     auto& program = static_cast<Program&>(*GetSettings().program_ptr);
-
     const std::vector<vk::PipelineShaderStageCreateInfo> vk_stages_info = program.GetNativeShaderStageCreateInfos();
 
     const vk::ComputePipelineCreateInfo vk_pipeline_create_info(

@@ -22,6 +22,7 @@ Base implementation of the compute state interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Base/ComputeState.h>
+#include <Methane/Graphics/Rhi/IProgram.h>
 
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
@@ -38,6 +39,8 @@ void ComputeState::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "program is not initialized in render state settings");
+    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr->GetShader(Rhi::ShaderType::Compute), "Program used in compute state must include compute shader");
+
     m_settings = settings;
 }
 

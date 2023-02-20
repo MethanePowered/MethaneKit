@@ -22,6 +22,7 @@ Base implementation of the render state interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Base/RenderState.h>
+#include <Methane/Graphics/Rhi/IProgram.h>
 
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
@@ -39,6 +40,7 @@ void RenderState::Reset(const Settings& settings)
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "program is not initialized in render state settings");
     META_CHECK_ARG_NOT_NULL_DESCR(settings.render_pattern_ptr, "render pass pattern is not initialized in render state settings");
+    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr->GetShader(Rhi::ShaderType::Vertex), "Program used in render state must include vertex shader");
 
     m_settings = settings;
 }
