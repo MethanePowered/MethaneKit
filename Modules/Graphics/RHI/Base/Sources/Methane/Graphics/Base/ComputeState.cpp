@@ -22,7 +22,7 @@ Base implementation of the compute state interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Base/ComputeState.h>
-#include <Methane/Graphics/Rhi/IProgram.h>
+#include <Methane/Graphics/RHI/IProgram.h>
 
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>

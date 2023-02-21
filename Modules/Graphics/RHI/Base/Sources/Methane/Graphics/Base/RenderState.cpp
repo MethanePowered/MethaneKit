@@ -22,7 +22,7 @@ Base implementation of the render state interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Base/RenderState.h>
-#include <Methane/Graphics/Rhi/IProgram.h>
+#include <Methane/Graphics/RHI/IProgram.h>
 
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
