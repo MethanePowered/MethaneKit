@@ -27,6 +27,7 @@ DirectX 12 implementation of the resource interface.
 #include "DescriptorHeap.h"
 #include "TransferCommandList.h"
 #include "Device.h"
+#include "DescriptorManager.h"
 #include "ErrorHandling.h"
 
 #include <Methane/Graphics/Base/Texture.h>
