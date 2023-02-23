@@ -38,7 +38,7 @@ class RenderContext
 {
 public:
     RenderContext(Device& device, UniquePtr<Rhi::IDescriptorManager>&& descriptor_manager_ptr,
-                      tf::Executor& parallel_executor, const Settings& settings);
+                  tf::Executor& parallel_executor, const Settings& settings);
 
     // IContext interface
     [[nodiscard]] OptionMask GetOptions() const noexcept final { return m_settings.options_mask; }

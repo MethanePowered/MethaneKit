@@ -19,6 +19,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderPattern.h
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/ComputeContext.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
     ${INCLUDE_DIR}/ComputeState.h
@@ -47,6 +48,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderPattern.cpp
     ${SOURCES_DIR}/RenderPass.cpp
     ${SOURCES_DIR}/RenderContext.cpp
+    ${SOURCES_DIR}/ComputeContext.cpp
     ${SOURCES_DIR}/RenderState.cpp
     ${SOURCES_DIR}/ViewState.cpp
     ${SOURCES_DIR}/ComputeState.cpp

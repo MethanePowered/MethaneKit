@@ -10,6 +10,7 @@ set(HEADERS
     ${INCLUDE_DIR}/System.h
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/ComputeContext.h
     ${INCLUDE_DIR}/Fence.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
@@ -46,6 +47,7 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/System.cpp
     ${SOURCES_DIR}/Context.cpp
     ${SOURCES_DIR}/RenderContext.cpp
+    ${SOURCES_DIR}/ComputeContext.cpp
     ${SOURCES_DIR}/Fence.cpp
     ${SOURCES_DIR}/Shader.cpp
     ${SOURCES_DIR}/Program.cpp

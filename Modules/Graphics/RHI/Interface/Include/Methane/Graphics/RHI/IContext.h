@@ -44,11 +44,13 @@ namespace Methane::Graphics::Rhi
 enum class ContextType
 {
     Render,
+    Compute
 };
 
 enum class ContextWaitFor
 {
     RenderComplete,
+    ComputeComplete,
     FramePresented,
     ResourcesUploaded
 };

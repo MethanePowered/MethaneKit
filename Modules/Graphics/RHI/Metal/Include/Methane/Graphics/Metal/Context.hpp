@@ -25,7 +25,13 @@ Metal template implementation of the base context interface.
 
 #include "IContext.h"
 #include "Device.hh"
+#include "CommandQueue.hh"
+#include "Shader.hh"
+#include "Program.hh"
 #include "ComputeState.hh"
+#include "Buffer.hh"
+#include "Texture.hh"
+#include "Sampler.hh"
 #include "ProgramLibrary.hh"
 #include "DescriptorManager.h"
 
@@ -53,10 +59,46 @@ public:
 
     // IContext overrides
 
+    [[nodiscard]] Ptr<Rhi::ICommandQueue> CreateCommandQueue(Rhi::CommandListType type) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<CommandQueue>(*this, type);
+    }
+
+    [[nodiscard]] Ptr<Rhi::IShader> CreateShader(Rhi::ShaderType type, const Rhi::ShaderSettings& settings) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<Shader>(type, *this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::IProgram> CreateProgram(const Rhi::ProgramSettings& settings) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<Program>(*this, settings);
+    }
+
     [[nodiscard]] Ptr<Rhi::IComputeState> CreateComputeState(const Rhi::ComputeStateSettings& settings) const final
     {
         META_FUNCTION_TASK();
         return std::make_shared<ComputeState>(*this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::IBuffer> CreateBuffer(const Rhi::BufferSettings& settings) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<Buffer>(*this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::ITexture> CreateTexture(const Rhi::TextureSettings& settings) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<Texture>(*this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::ISampler> CreateSampler(const Rhi::SamplerSettings& settings) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<Sampler>(*this, settings);
     }
 
     const Device& GetMetalDevice() const noexcept final

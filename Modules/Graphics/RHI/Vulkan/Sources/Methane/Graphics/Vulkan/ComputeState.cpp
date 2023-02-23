@@ -24,6 +24,7 @@ Vulkan implementation of the compute state interface.
 #include <Methane/Graphics/Vulkan/ComputeState.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/RenderContext.h>
+#include <Methane/Graphics/Vulkan/ComputeContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
 #include <Methane/Graphics/Vulkan/ComputeCommandList.h>
 #include <Methane/Graphics/Vulkan/Program.h>
@@ -45,8 +46,8 @@ static const Device& GetVulkanDeviceFromContext(const Rhi::IContext& context)
     META_FUNCTION_TASK();
     switch (context.GetType())
     {
-    case Rhi::ContextType::Render:
-        return dynamic_cast<const RenderContext&>(context).GetVulkanDevice();
+    case Rhi::ContextType::Render:  return dynamic_cast<const RenderContext&>(context).GetVulkanDevice();
+    case Rhi::ContextType::Compute: return dynamic_cast<const ComputeContext&>(context).GetVulkanDevice();
     }
     return dynamic_cast<const RenderContext&>(context).GetVulkanDevice();
 }

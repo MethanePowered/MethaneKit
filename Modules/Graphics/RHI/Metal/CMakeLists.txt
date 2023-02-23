@@ -12,6 +12,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/IContext.h
     ${INCLUDE_DIR}/Context.hpp
     ${INCLUDE_DIR}/RenderContext.hh
+    ${INCLUDE_DIR}/ComputeContext.hh
     ${INCLUDE_DIR}/RenderContextAppView.hh
     ${INCLUDE_DIR}/Shader.hh
     ${INCLUDE_DIR}/Program.hh

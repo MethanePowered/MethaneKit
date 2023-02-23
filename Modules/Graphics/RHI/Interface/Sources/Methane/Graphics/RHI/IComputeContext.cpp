@@ -16,27 +16,30 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Null/Device.h
-Null implementation of the device interface.
+FILE: Methane/Graphics/RHI/IComputeContext.cpp
+Methane render context interface: represents graphics device and swap chain,
+provides basic multi-frame rendering synchronization and frame presenting APIs.
 
 ******************************************************************************/
 
-#pragma once
+#include <Methane/Graphics/RHI/IComputeContext.h>
+#include <Methane/Graphics/RHI/IDevice.h>
+#include <Methane/Graphics/RHI/ICommandList.h>
 
-#include <Methane/Graphics/Base/Device.h>
+#include <Methane/Instrumentation.h>
 
-namespace Methane::Graphics::Null
+namespace Methane::Graphics::Rhi
 {
 
-class Device final
-    : public Base::Device
+Ptr<IComputeContext> IComputeContext::Create(IDevice& device, tf::Executor& parallel_executor, const Settings& settings)
 {
-public:
-    using Base::Device::Device;
+    META_FUNCTION_TASK();
+    return device.CreateComputeContext(parallel_executor, settings);
+}
 
-    // IDevice interface
-    [[nodiscard]] Ptr<Rhi::IRenderContext> CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings) override;
-    [[nodiscard]] Ptr<Rhi::IComputeContext> CreateComputeContext(tf::Executor& parallel_executor, const Rhi::ComputeContextSettings& settings) override;
-};
+ICommandKit& IComputeContext::GetComputeCommandKit() const
+{
+    return GetDefaultCommandKit(CommandListType::Compute);
+}
 
-} // namespace Methane::Graphics::Null
+} // namespace Methane::Graphics::Rhi

@@ -26,7 +26,12 @@ Vulkan template implementation of the base context interface.
 #include "IContext.h"
 #include "Device.h"
 #include "CommandQueue.h"
+#include "Shader.h"
+#include "Program.h"
 #include "ComputeState.h"
+#include "Buffer.h"
+#include "Texture.h"
+#include "Sampler.h"
 #include "DescriptorManager.h"
 
 #include <Methane/Graphics/RHI/IRenderContext.h>
@@ -35,13 +40,6 @@ Vulkan template implementation of the base context interface.
 
 #include <string>
 #include <map>
-
-namespace Methane::Graphics::Rhi
-{
-
-struct ICommandQueue;
-
-} // namespace Methane::Graphics::Rhi
 
 namespace Methane::Graphics::Vulkan
 {
@@ -69,10 +67,46 @@ public:
 
     // IContext overrides
 
+    [[nodiscard]] Ptr<Rhi::ICommandQueue> CreateCommandQueue(Rhi::CommandListType type) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<CommandQueue>(*this, type);
+    }
+
+    [[nodiscard]] Ptr<Rhi::IShader> CreateShader(Rhi::ShaderType type, const Rhi::ShaderSettings& settings) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<Shader>(type, *this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::IProgram> CreateProgram(const Rhi::ProgramSettings& settings) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<Program>(*this, settings);
+    }
+
     [[nodiscard]] Ptr<Rhi::IComputeState> CreateComputeState(const Rhi::ComputeStateSettings& settings) const final
     {
         META_FUNCTION_TASK();
         return std::make_shared<ComputeState>(*this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::IBuffer> CreateBuffer(const Rhi::BufferSettings& settings) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<Buffer>(*this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::ITexture> CreateTexture(const Rhi::TextureSettings& settings) const override
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<Texture>(*this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::ISampler> CreateSampler(const Rhi::SamplerSettings& settings) const final
+    {
+        META_FUNCTION_TASK();
+        return std::make_shared<Sampler>(*this, settings);
     }
 
     const Device& GetVulkanDevice() const noexcept final

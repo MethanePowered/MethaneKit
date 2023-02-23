@@ -17,6 +17,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ProgramArgumentBinding.h
     ${INCLUDE_DIR}/ProgramBindings.h
     ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/ComputeContext.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
     ${INCLUDE_DIR}/ComputeState.h

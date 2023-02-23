@@ -16,27 +16,25 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Null/Device.h
-Null implementation of the device interface.
+FILE: Methane/Graphics/DirectX/ComputeContext.h
+DirectX implementation of the compute context interface.
 
 ******************************************************************************/
 
 #pragma once
 
-#include <Methane/Graphics/Base/Device.h>
+#include "Context.hpp"
 
-namespace Methane::Graphics::Null
+#include <Methane/Graphics/Base/ComputeContext.h>
+
+namespace Methane::Graphics::DirectX
 {
 
-class Device final
-    : public Base::Device
+class ComputeContext final
+    : public Context<Base::ComputeContext>
 {
 public:
-    using Base::Device::Device;
-
-    // IDevice interface
-    [[nodiscard]] Ptr<Rhi::IRenderContext> CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings) override;
-    [[nodiscard]] Ptr<Rhi::IComputeContext> CreateComputeContext(tf::Executor& parallel_executor, const Rhi::ComputeContextSettings& settings) override;
+    using Context::Context;
 };
 
-} // namespace Methane::Graphics::Null
+} // namespace Methane::Graphics::DirectX

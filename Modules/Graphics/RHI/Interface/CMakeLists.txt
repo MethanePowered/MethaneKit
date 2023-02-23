@@ -10,6 +10,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ISystem.h
     ${INCLUDE_DIR}/IContext.h
     ${INCLUDE_DIR}/IRenderContext.h
+    ${INCLUDE_DIR}/IComputeContext.h
     ${INCLUDE_DIR}/IFence.h
     ${INCLUDE_DIR}/IShader.h
     ${INCLUDE_DIR}/IProgram.h
@@ -47,6 +48,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/IFence.cpp
     ${SOURCES_DIR}/IContext.cpp
     ${SOURCES_DIR}/IRenderContext.cpp
+    ${SOURCES_DIR}/IComputeContext.cpp
     ${SOURCES_DIR}/IShader.cpp
     ${SOURCES_DIR}/IProgram.cpp
     ${SOURCES_DIR}/IProgramBindings.cpp

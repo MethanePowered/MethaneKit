@@ -23,8 +23,7 @@ Null implementation of the buffer interface.
 
 #include <Methane/Graphics/Null/Device.h>
 #include <Methane/Graphics/Null/RenderContext.h>
-
-#include <iterator>
+#include <Methane/Graphics/Null/ComputeContext.h>
 
 namespace Methane::Graphics::Null
 {
@@ -34,6 +33,13 @@ Ptr<Rhi::IRenderContext> Device::CreateRenderContext(const Platform::AppEnvironm
     auto render_context_ptr = std::make_shared<RenderContext>(env, *this, parallel_executor, settings);
     render_context_ptr->Initialize(*this, true);
     return render_context_ptr;
+}
+
+[[nodiscard]] Ptr<Rhi::IComputeContext> Device::CreateComputeContext(tf::Executor& parallel_executor, const Rhi::ComputeContextSettings& settings)
+{
+    auto compute_context_ptr = std::make_shared<ComputeContext>(*this, parallel_executor, settings);
+    compute_context_ptr->Initialize(*this, true);
+    return compute_context_ptr;
 }
 
 } // namespace Methane::Graphics::Null

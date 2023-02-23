@@ -23,13 +23,9 @@ Metal implementation of the render state interface.
 
 #include <Methane/Graphics/Metal/ComputeState.hh>
 #include <Methane/Graphics/Metal/RenderContext.hh>
-#include <Methane/Graphics/Metal/Device.hh>
+#include <Methane/Graphics/Metal/ComputeContext.hh>
 #include <Methane/Graphics/Metal/ComputeCommandList.hh>
-#include <Methane/Graphics/Metal/Program.hh>
-#include <Methane/Graphics/Metal/Shader.hh>
-#include <Methane/Graphics/Metal/Types.hh>
 
-#include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -43,6 +39,9 @@ static const Device& GetMetalDeviceFromContext(const Rhi::IContext& context)
     {
     case Rhi::ContextType::Render:
         return dynamic_cast<const RenderContext&>(context).GetMetalDevice();
+
+    case Rhi::ContextType::Compute:
+        return dynamic_cast<const ComputeContext&>(context).GetMetalDevice();
     }
     return dynamic_cast<const RenderContext&>(context).GetMetalDevice();
 }

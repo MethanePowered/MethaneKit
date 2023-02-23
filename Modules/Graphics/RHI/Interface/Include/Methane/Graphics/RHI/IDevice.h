@@ -76,7 +76,9 @@ struct IDeviceCallback
 };
 
 struct IRenderContext;
+struct IComputeContext;
 struct RenderContextSettings;
+struct ComputeContextSettings;
 
 struct IDevice
     : virtual IObject // NOSONAR
@@ -86,11 +88,12 @@ struct IDevice
     using Feature      = DeviceFeature;
     using Capabilities = DeviceCaps;
 
-    [[nodiscard]] virtual Ptr<IRenderContext> CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) = 0;
-    [[nodiscard]] virtual const std::string&  GetAdapterName() const noexcept = 0;
-    [[nodiscard]] virtual bool                IsSoftwareAdapter() const noexcept = 0;
-    [[nodiscard]] virtual const Capabilities& GetCapabilities() const noexcept = 0;
-    [[nodiscard]] virtual std::string         ToString() const = 0;
+    [[nodiscard]] virtual Ptr<IRenderContext>  CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) = 0;
+    [[nodiscard]] virtual Ptr<IComputeContext> CreateComputeContext(tf::Executor& parallel_executor, const ComputeContextSettings& settings) = 0;
+    [[nodiscard]] virtual const std::string&   GetAdapterName() const noexcept = 0;
+    [[nodiscard]] virtual bool                 IsSoftwareAdapter() const noexcept = 0;
+    [[nodiscard]] virtual const Capabilities&  GetCapabilities() const noexcept = 0;
+    [[nodiscard]] virtual std::string          ToString() const = 0;
 };
 
 } // namespace Methane::Graphics::Rhi
