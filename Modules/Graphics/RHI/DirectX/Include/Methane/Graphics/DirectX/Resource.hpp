@@ -25,7 +25,6 @@ DirectX 12 implementation of the resource interface.
 
 #include "IResource.h"
 #include "DescriptorHeap.h"
-#include "RenderContext.h"
 #include "TransferCommandList.h"
 #include "Device.h"
 #include "ErrorHandling.h"
@@ -113,13 +112,14 @@ public:
     }
 
     // IResource overrides
-    ID3D12Resource&                    GetNativeResourceRef() const final                                        { META_CHECK_ARG_NOT_NULL(m_cp_resource); return *m_cp_resource.Get(); }
-    ID3D12Resource*                    GetNativeResource() const noexcept final                                  { return m_cp_resource.Get(); }
-    const wrl::ComPtr<ID3D12Resource>& GetNativeResourceComPtr() const noexcept final                            { return m_cp_resource; }
-    D3D12_GPU_VIRTUAL_ADDRESS          GetNativeGpuAddress() const noexcept final                                { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
+    ID3D12Resource&                    GetNativeResourceRef() const final             { META_CHECK_ARG_NOT_NULL(m_cp_resource); return *m_cp_resource.Get(); }
+    ID3D12Resource*                    GetNativeResource() const noexcept final       { return m_cp_resource.Get(); }
+    const wrl::ComPtr<ID3D12Resource>& GetNativeResourceComPtr() const noexcept final { return m_cp_resource; }
+    D3D12_GPU_VIRTUAL_ADDRESS          GetNativeGpuAddress() const noexcept final     { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
 
 protected:
     const IContext& GetDirectContext() const noexcept { return m_dx_context; }
+    void SetNativeResourceComPtr(const wrl::ComPtr<ID3D12Resource>& cp_resource) noexcept { m_cp_resource = cp_resource; }
 
     wrl::ComPtr<ID3D12Resource> CreateCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
                                                         D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
@@ -150,16 +150,6 @@ protected:
         const D3D12_RESOURCE_STATES d3d_resource_state = IResource::GetNativeResourceState(resource_state);
         m_cp_resource = CreateCommittedResource(resource_desc, heap_type, d3d_resource_state, p_clear_value);
         SetState(resource_state);
-    }
-
-    void InitializeFrameBufferResource(uint32_t frame_buffer_index)
-    {
-        META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(m_cp_resource, !m_cp_resource, "committed resource is already initialized");
-        ThrowIfFailed(
-            static_cast<const RenderContext&>(GetDirectContext()).GetNativeSwapChain()->GetBuffer(frame_buffer_index, IID_PPV_ARGS(&m_cp_resource)),
-            GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
-        );
     }
 
     TransferCommandList& PrepareResourceUpload(Rhi::ICommandQueue& target_cmd_queue)

@@ -417,7 +417,13 @@ void Texture::InitializeAsFrameBuffer()
     META_CHECK_ARG_EQUAL(settings.type, Rhi::TextureType::FrameBuffer);
     META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Usage::RenderTarget), "frame-buffer texture supports only 'RenderTarget' usage");
     META_CHECK_ARG_TRUE_DESCR(GetSettings().frame_index_opt.has_value(), "frame-buffer texture requires frame-index to be set in texture settings");
-    InitializeFrameBufferResource(settings.frame_index_opt.value());
+
+    wrl::ComPtr<ID3D12Resource> cp_resource;
+    ThrowIfFailed(
+        static_cast<const RenderContext&>(GetDirectContext()).GetNativeSwapChain()->GetBuffer(settings.frame_index_opt.value(), IID_PPV_ARGS(&cp_resource)),
+        GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
+    );
+    SetNativeResourceComPtr(cp_resource);
 }
 
 void Texture::InitializeAsDepthStencil()

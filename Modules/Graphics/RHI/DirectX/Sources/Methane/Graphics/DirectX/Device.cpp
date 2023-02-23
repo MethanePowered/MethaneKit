@@ -121,7 +121,7 @@ Ptr<Rhi::IRenderContext> Device::CreateRenderContext(const Platform::AppEnvironm
 Ptr<Rhi::IComputeContext> Device::CreateComputeContext(tf::Executor& parallel_executor, const Rhi::ComputeContextSettings& settings)
 {
     META_FUNCTION_TASK();
-    const auto compute_context_ptr = std::make_shared<Vulkan::ComputeContext>(*this, parallel_executor, settings);
+    const auto compute_context_ptr = std::make_shared<ComputeContext>(*this, parallel_executor, settings);
     compute_context_ptr->Initialize(*this, true);
     return compute_context_ptr;
 }
