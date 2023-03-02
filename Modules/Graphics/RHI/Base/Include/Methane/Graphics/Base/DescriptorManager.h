@@ -24,9 +24,8 @@ Base descriptor manager implementation.
 #pragma once
 
 #include <Methane/Graphics/RHI/IDescriptorManager.h>
-
 #include <Methane/Memory.hpp>
-#include <tracy/Tracy.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <mutex>
 

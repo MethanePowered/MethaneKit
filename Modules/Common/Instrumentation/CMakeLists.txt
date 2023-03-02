@@ -40,7 +40,7 @@ target_link_libraries(${TARGET}
         MethanePrimitives
         $<$<BOOL:${METHANE_LOGGING_ENABLED}>:MethanePlatformUtils> # Logging functions
         $<$<BOOL:${METHANE_ITT_INSTRUMENTATION_ENABLED}>:ittnotify>
-        Tracy::TracyClient
+        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:Tracy::TracyClient>
         nowide
     PRIVATE
         MethaneBuildOptions

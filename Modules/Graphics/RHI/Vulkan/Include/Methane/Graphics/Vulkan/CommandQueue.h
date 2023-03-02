@@ -24,10 +24,9 @@ Vulkan implementation of the command queue interface.
 #pragma once
 
 #include <Methane/Graphics/Base/CommandQueueTracking.h>
+#include <Methane/Instrumentation.h>
 
-#include <tracy/Tracy.hpp>
 #include <vulkan/vulkan.hpp>
-
 #include <mutex>
 
 namespace Methane::Graphics::Vulkan

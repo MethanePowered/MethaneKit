@@ -41,8 +41,10 @@ NOTE:
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
+#ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
 #include <tracy/TracyC.h>
+#endif
 
 #ifdef __GCC_COMPILER__
 #pragma GCC diagnostic pop
@@ -82,6 +84,10 @@ ITT_DOMAIN_EXTERN();
 #else // ifdef TRACY_ENABLE
 
 #define TRACY_SET_THREAD_NAME(name)
+
+#define TracyLockable(M, V) M V
+#define TracyMessage(S, N)
+#define LockableBase(M) M
 
 #endif // ifdef TRACY_ENABLE
 

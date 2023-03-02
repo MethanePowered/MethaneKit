@@ -24,10 +24,9 @@ Vulkan descriptor manager with descriptor sets allocator.
 #pragma once
 
 #include <Methane/Graphics/Base/DescriptorManager.h>
+#include <Methane/Instrumentation.h>
 
-#include <tracy/Tracy.hpp>
 #include <vulkan/vulkan.hpp>
-
 #include <map>
 #include <optional>
 #include <mutex>

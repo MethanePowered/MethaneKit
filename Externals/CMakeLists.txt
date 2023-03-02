@@ -38,10 +38,13 @@ include(FreeType2)
 include(HLSLpp)
 include(MagicEnum)
 include(TaskFlow)
-include(Tracy)
 
 if(METHANE_APPS_BUILD_ENABLED)
     include(FTXUI)
+endif()
+
+if(METHANE_TRACY_PROFILING_ENABLED)
+    include(Tracy)
 endif()
 
 if(METHANE_TESTS_BUILD_ENABLED)
