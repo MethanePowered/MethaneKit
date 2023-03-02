@@ -40,6 +40,10 @@ include(MagicEnum)
 include(TaskFlow)
 include(Tracy)
 
+if(METHANE_APPS_BUILD_ENABLED)
+    include(FTXUI)
+endif()
+
 if(METHANE_TESTS_BUILD_ENABLED)
     include(Catch2)
 endif()
