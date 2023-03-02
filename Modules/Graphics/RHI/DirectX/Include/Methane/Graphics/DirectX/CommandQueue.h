@@ -25,10 +25,11 @@ DirectX 12 implementation of the command queue interface.
 
 #include <Methane/Graphics/Base/CommandQueueTracking.h>
 
-#pragma warning(push)
-#pragma warning(disable: 4189)
+#ifdef TRACY_ENABLE
 #include <tracy/TracyD3D12.hpp>
-#pragma warning(pop)
+#else
+struct TracyD3D12Ctx{};
+#endif
 
 #include <wrl.h>
 #include <directx/d3d12.h>
