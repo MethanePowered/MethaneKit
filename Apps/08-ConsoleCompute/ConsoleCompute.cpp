@@ -27,51 +27,87 @@ Tutorial demonstrating "game of life" computing on GPU in console application
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
+#include <magic_enum.hpp>
 #include <fmt/format.h>
 #include <random>
 
 namespace gfx = Methane::Graphics;
 namespace rhi = Methane::Graphics::Rhi;
 
-const rhi::Device* GetComputeDevice()
+static uint32_t g_time = 0;
+static int g_compute_device_index = 0;
+
+const rhi::Devices& GetComputeDevices()
 {
-    rhi::System::Get().UpdateGpuDevices();
-    const rhi::Devices& devices = rhi::System::Get().GetGpuDevices();
-    if (devices.empty())
+    static const rhi::Devices& s_compute_devices = []()
     {
-        return nullptr;
-    }
-    return &devices[0];
+        rhi::System::Get().UpdateGpuDevices(rhi::DeviceCaps{
+            rhi::DeviceFeatureMask{},
+            0U, // render_queues_count
+            1U, // transfer_queues_count
+            1U  // compute_queues_count
+        });
+        return rhi::System::Get().GetGpuDevices();
+    }();
+    return s_compute_devices;
 }
 
-ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen, const rhi::Device& device,
-                                            gfx::FrameSize& frame_size, std::mt19937& random_engine)
+const std::vector<std::string>& GetComputeDeviceNames()
 {
-    auto toolbar = ftxui::Container::Horizontal({
-        ftxui::Renderer([&frame_size, &device]
+    static const std::vector<std::string> s_compute_device_names = []()
+    {
+        std::vector<std::string> device_names;
+        for(const rhi::Device& device : GetComputeDevices())
         {
-            return ftxui::hbox({
-                ftxui::text(fmt::format(" GPU: {} ", device.GetAdapterName())),
-                ftxui::separator(),
-                ftxui::text(" FPS: XXX "),
-                ftxui::separator(),
-                ftxui::text(fmt::format(" Field: {} x {} ", frame_size.GetWidth(), frame_size.GetHeight()))
+            device_names.emplace_back(device.GetAdapterName());
+        }
+        return device_names;
+    }();
+    return s_compute_device_names;
+}
+
+const rhi::Device* GetComputeDevice()
+{
+    const rhi::Devices& devices = GetComputeDevices();
+    return g_compute_device_index < static_cast<int>(devices.size()) ? &devices[g_compute_device_index] : nullptr;
+}
+
+ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen, gfx::FrameSize& frame_size, std::mt19937& random_engine)
+{
+    using namespace ftxui;
+    auto toolbar = Container::Horizontal({
+        Renderer([&frame_size]
+        {
+            return hbox({
+                text(fmt::format(" API: {} ", magic_enum::enum_name(rhi::System::GetNativeApi()))),
+                separator(),
+                text(fmt::format(" GPU: {} ", GetComputeDevice()->GetAdapterName())),
+                separator(),
+                text(" FPS: XXX "),
+                separator(),
+                text(fmt::format(" Field: {} x {} ", frame_size.GetWidth(), frame_size.GetHeight()))
             });
-        }) | ftxui::border | ftxui::xflex,
-        ftxui::Button(" X ", screen.ExitLoopClosure(), ftxui::ButtonOption::Simple()) | ftxui::align_right
+        }) | border | xflex,
+        Button(" X ", screen.ExitLoopClosure(), ButtonOption::Simple()) | align_right
     });
 
-    auto sidebar = ftxui::Renderer([]
-    {
-        return ftxui::vbox({
-            ftxui::vbox() | ftxui::yflex,
-            ftxui::paragraph(fmt::format("Powered by {} v{} {}", METHANE_PRODUCT_NAME, METHANE_VERSION_STR, METHANE_PRODUCT_URL))
-        }) | ftxui::yflex;
+    auto sidebar = Container::Vertical({
+        Renderer([&]{ return text("GPU Devices:") | bold; }),
+        Radiobox(&GetComputeDeviceNames(), &g_compute_device_index),
+        Renderer([&]
+        {
+            return vbox({
+                separator(),
+                vbox() | yflex,
+                separator(),
+                paragraph(fmt::format("Powered by {} v{} {}", METHANE_PRODUCT_NAME, METHANE_VERSION_STR, METHANE_PRODUCT_URL))
+            }) | yflex;
+        }) | yflex
     });
 
-    auto canvas = ftxui::Renderer([&random_engine, &frame_size]
+    auto canvas = Renderer([&random_engine, &frame_size]
     {
-        return ftxui::canvas([&](ftxui::Canvas& c)
+        return ftxui::canvas([&](Canvas& c)
         {
             // Temporary drawing of random points on canvas
             frame_size.SetWidth(c.width());
@@ -85,35 +121,35 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen, co
                 int y = rnd / c.width();
                 c.DrawBlockOn(x, y);
             }
-        }) | ftxui::flex;
+        }) | flex;
     });
 
     static int sidebar_width = 35;
-    auto main_container = ftxui::Container::Vertical(
+    auto main_container = Container::Vertical(
     {
-        toolbar | ftxui::xflex,
-        ftxui::ResizableSplitLeft(sidebar, canvas, &sidebar_width) | ftxui::border | ftxui::flex
+        toolbar | xflex,
+        ResizableSplitLeft(sidebar, canvas, &sidebar_width) | border | flex
     });
 
     return Renderer(main_container, [=]
     {
-        return ftxui::vbox({
-            ftxui::text("Methane Console Compute: Game of Life") | ftxui::bold | ftxui::hcenter,
-            main_container->Render() | ftxui::flex,
+        return vbox({
+            text("Methane Console Compute: Game of Life") | bold | hcenter,
+            main_container->Render() | flex,
         });
     });
 }
 
-void RunEventLoop(ftxui::ScreenInteractive& screen, const ftxui::Component& root, uint32_t& time)
+void RunEventLoop(ftxui::ScreenInteractive& screen, const ftxui::Component& root)
 {
     std::atomic<bool> refresh_ui_continue = true;
-    std::thread refresh_ui([&screen, &time, &refresh_ui_continue]
+    std::thread refresh_ui([&screen, &refresh_ui_continue]
     {
         while (refresh_ui_continue)
         {
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(0.05s);
-            screen.Post([&] { time++; });
+            screen.Post([&] { g_time++; });
             screen.Post(ftxui::Event::Custom);
         }
     });
@@ -128,18 +164,17 @@ int main(int, const char*[])
     std::random_device r;
     std::seed_seq random_seed{r(), r(), r(), r(), r(), r(), r(), r()};
     std::mt19937 random_engine(random_seed);
-    uint32_t time = 0;
     gfx::FrameSize frame_size;
 
     const rhi::Device* device_ptr = GetComputeDevice();
     if (!device_ptr)
     {
-        std::cerr << "ERROR: No GPU device available for computing!";
+        std::cerr << "ERROR: No GPU devices are available for computing!";
         return 1;
     }
 
     ftxui::ScreenInteractive ui_screen = ftxui::ScreenInteractive::Fullscreen();
-    ftxui::Component ui_root = InitializeConsoleInterface(ui_screen, *device_ptr, frame_size, random_engine);
-    RunEventLoop(ui_screen, ui_root, time);
+    ftxui::Component ui_root = InitializeConsoleInterface(ui_screen, frame_size, random_engine);
+    RunEventLoop(ui_screen, ui_root);
     return 0;
 }
