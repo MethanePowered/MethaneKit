@@ -147,8 +147,9 @@ static vk::QueueFlags GetQueueFlagsByType(Rhi::CommandListType cmd_list_type)
     META_FUNCTION_TASK();
     switch(cmd_list_type)
     {
-    case Rhi::CommandListType::Transfer:   return vk::QueueFlagBits::eTransfer;
-    case Rhi::CommandListType::Render: return vk::QueueFlagBits::eGraphics;
+    case Rhi::CommandListType::Transfer: return vk::QueueFlagBits::eTransfer;
+    case Rhi::CommandListType::Render:   return vk::QueueFlagBits::eGraphics;
+    case Rhi::CommandListType::Compute:  return vk::QueueFlagBits::eCompute;
     default: META_UNEXPECTED_ARG_RETURN(cmd_list_type, vk::QueueFlagBits::eGraphics);
     }
 }
@@ -221,11 +222,10 @@ Rhi::DeviceFeatureMask Device::GetSupportedFeatures(const vk::PhysicalDevice& vk
 {
     META_FUNCTION_TASK();
     vk::PhysicalDeviceFeatures vk_device_features = vk_physical_device.getFeatures();
-
     Rhi::DeviceFeatureMask device_features;
-    device_features.SetBit(Rhi::DeviceFeature::PresentToWindow, IsDeviceExtensionSupported(vk_physical_device, g_present_device_extensions));
+    device_features.SetBit(Rhi::DeviceFeature::PresentToWindow,      IsDeviceExtensionSupported(vk_physical_device, g_present_device_extensions));
     device_features.SetBit(Rhi::DeviceFeature::AnisotropicFiltering, vk_device_features.samplerAnisotropy);
-    device_features.SetBit(Rhi::DeviceFeature::ImageCubeArray, vk_device_features.imageCubeArray);
+    device_features.SetBit(Rhi::DeviceFeature::ImageCubeArray,       vk_device_features.imageCubeArray);
     return device_features;
 }
 
@@ -238,15 +238,15 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
 {
     META_FUNCTION_TASK();
     if (const Rhi::DeviceFeatureMask device_supported_features = Device::GetSupportedFeatures(vk_physical_device);
-        !static_cast<bool>(device_supported_features & capabilities.features))
+        !static_cast<bool>(device_supported_features.HasBits(capabilities.features)))
         throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
 
     std::vector<uint32_t> reserved_queues_count_per_family(m_vk_queue_family_properties.size(), 0U);
 
-    ReserveQueueFamily(Rhi::CommandListType::Render, capabilities.render_queues_count, reserved_queues_count_per_family,
+    ReserveQueueFamily(Rhi::CommandListType::Render,   capabilities.render_queues_count,   reserved_queues_count_per_family,
                        capabilities.features.HasBit(Rhi::DeviceFeature::PresentToWindow) ? vk_surface : vk::SurfaceKHR());
-
     ReserveQueueFamily(Rhi::CommandListType::Transfer, capabilities.transfer_queues_count, reserved_queues_count_per_family);
+    ReserveQueueFamily(Rhi::CommandListType::Compute,  capabilities.compute_queues_count,  reserved_queues_count_per_family);
 
     std::vector<vk::DeviceQueueCreateInfo> vk_queue_create_infos;
     std::set<QueueFamilyReservation*> unique_family_reservation_ptrs;
@@ -260,12 +260,19 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     }
 
     std::vector<std::string_view> enabled_extension_names = g_common_device_extensions;
-    if (capabilities.features.HasBit(Rhi::DeviceFeature::PresentToWindow))
+    if (capabilities.render_queues_count)
     {
-        enabled_extension_names.insert(enabled_extension_names.end(), g_present_device_extensions.begin(), g_present_device_extensions.end());
+        if (capabilities.features.HasBit(Rhi::DeviceFeature::PresentToWindow))
+        {
+            enabled_extension_names.insert(enabled_extension_names.end(), g_present_device_extensions.begin(), g_present_device_extensions.end());
+        }
+        enabled_extension_names.insert(enabled_extension_names.end(), g_render_device_extensions.begin(), g_render_device_extensions.end());
     }
 
-    enabled_extension_names.insert(enabled_extension_names.end(), g_render_device_extensions.begin(), g_render_device_extensions.end());
+    if (IsExtensionSupported({ "VK_KHR_portability_subset" }))
+    {
+        enabled_extension_names.emplace_back("VK_KHR_portability_subset");
+    }
 
     std::vector<const char*> raw_enabled_extension_names;
     std::transform(enabled_extension_names.begin(), enabled_extension_names.end(), std::back_inserter(raw_enabled_extension_names),
