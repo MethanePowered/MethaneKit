@@ -259,7 +259,7 @@ void System::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_
         return;
 
     if (const Rhi::DeviceFeatureMask device_supported_features = Device::GetSupportedFeatures(cp_adapter, feature_level);
-        !GetDeviceCapabilities().features.HasBits(device_supported_features))
+        !device_supported_features.HasBits(GetDeviceCapabilities().features))
         return;
 
     Base::System::AddDevice(std::make_shared<Device>(cp_adapter, feature_level, GetDeviceCapabilities()));
