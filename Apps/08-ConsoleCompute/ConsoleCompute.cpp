@@ -92,7 +92,7 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen, gf
     });
 
     auto sidebar = Container::Vertical({
-        Renderer([&]{ return text("GPU Devices:") | bold; }),
+        Renderer([&]{ return text("GPU Devices:") | ftxui::bold; }),
         Radiobox(&GetComputeDeviceNames(), &g_compute_device_index),
         Renderer([&]
         {
@@ -124,17 +124,17 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen, gf
         }) | flex;
     });
 
-    static int sidebar_width = 35;
+    static int s_sidebar_width = 35;
     auto main_container = Container::Vertical(
     {
         toolbar | xflex,
-        ResizableSplitLeft(sidebar, canvas, &sidebar_width) | border | flex
+        ResizableSplitLeft(sidebar, canvas, &s_sidebar_width) | border | flex
     });
 
     return Renderer(main_container, [=]
     {
         return vbox({
-            text("Methane Console Compute: Game of Life") | bold | hcenter,
+            text("Methane Console Compute: Game of Life") | ftxui::bold | hcenter,
             main_container->Render() | flex,
         });
     });
