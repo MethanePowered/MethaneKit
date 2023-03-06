@@ -23,6 +23,7 @@ Methane ComputeState PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/ComputeState.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/ComputeContext.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -57,6 +58,11 @@ ComputeState::ComputeState(IComputeState& interface_ref)
 }
 
 ComputeState::ComputeState(const RenderContext& context, const Settings& settings)
+    : ComputeState(IComputeState::Create(context.GetInterface(), ComputeStateSettingsImpl::Convert(settings)))
+{
+}
+
+ComputeState::ComputeState(const ComputeContext& context, const Settings& settings)
     : ComputeState(IComputeState::Create(context.GetInterface(), ComputeStateSettingsImpl::Convert(settings)))
 {
 }

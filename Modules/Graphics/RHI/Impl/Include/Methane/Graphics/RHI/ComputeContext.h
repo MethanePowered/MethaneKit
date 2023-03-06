@@ -40,14 +40,14 @@ class CommandKit;
 class CommandQueue;
 class Shader;
 class Program;
+class ComputeState;
 class Buffer;
 class Texture;
 class Sampler;
-class RenderState;
-class RenderPattern;
 
 struct ShaderSettings;
 struct ProgramSettingsImpl;
+struct ComputeStateSettingsImpl;
 struct BufferSettings;
 struct TextureSettings;
 struct SamplerSettings;
@@ -90,6 +90,7 @@ public:
     [[nodiscard]] META_PIMPL_API CommandKit       CreateCommandKit(CommandListType type) const;
     [[nodiscard]] META_PIMPL_API Shader           CreateShader(ShaderType type, const ShaderSettings& settings) const;
     [[nodiscard]] META_PIMPL_API Program          CreateProgram(const ProgramSettingsImpl& settings) const;
+    [[nodiscard]] META_PIMPL_API ComputeState     CreateComputeState(const ComputeStateSettingsImpl& settings) const;
     [[nodiscard]] META_PIMPL_API Buffer           CreateBuffer(const BufferSettings& settings) const;
     [[nodiscard]] META_PIMPL_API Texture          CreateTexture(const TextureSettings& settings) const;
     [[nodiscard]] META_PIMPL_API Sampler          CreateSampler(const SamplerSettings& settings) const;

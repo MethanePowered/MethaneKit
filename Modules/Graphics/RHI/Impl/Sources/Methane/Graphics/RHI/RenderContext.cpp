@@ -32,6 +32,7 @@ Methane RenderContext PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/RenderPattern.h>
+#include <Methane/Graphics/RHI/ComputeState.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -135,6 +136,11 @@ Sampler RenderContext::CreateSampler(const SamplerSettings& settings) const
 RenderState RenderContext::CreateRenderState(const RenderStateSettingsImpl& settings) const
 {
     return RenderState(GetImpl(m_impl_ptr).CreateRenderState(RenderStateSettingsImpl::Convert(settings)));
+}
+
+ComputeState RenderContext::CreateComputeState(const ComputeStateSettingsImpl& settings) const
+{
+    return ComputeState(GetImpl(m_impl_ptr).CreateComputeState(ComputeStateSettingsImpl::Convert(settings)));
 }
 
 RenderPattern RenderContext::CreateRenderPattern(const RenderPatternSettings& settings) const

@@ -45,6 +45,7 @@ class Texture;
 class Sampler;
 class RenderState;
 class RenderPattern;
+class ComputeState;
 
 struct ShaderSettings;
 struct ProgramSettingsImpl;
@@ -53,6 +54,7 @@ struct TextureSettings;
 struct SamplerSettings;
 struct RenderStateSettingsImpl;
 struct RenderPatternSettings;
+struct ComputeStateSettingsImpl;
 
 enum class CommandListType;
 enum class ShaderType : uint32_t;
@@ -96,6 +98,7 @@ public:
     [[nodiscard]] META_PIMPL_API Texture          CreateTexture(const TextureSettings& settings) const;
     [[nodiscard]] META_PIMPL_API Sampler          CreateSampler(const SamplerSettings& settings) const;
     [[nodiscard]] META_PIMPL_API RenderState      CreateRenderState(const RenderStateSettingsImpl& settings) const;
+    [[nodiscard]] META_PIMPL_API ComputeState     CreateComputeState(const ComputeStateSettingsImpl& settings) const;
     [[nodiscard]] META_PIMPL_API RenderPattern    CreateRenderPattern(const RenderPatternSettings& settings) const;
     [[nodiscard]] META_PIMPL_API OptionMask       GetOptions() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API tf::Executor&    GetParallelExecutor() const META_PIMPL_NOEXCEPT;

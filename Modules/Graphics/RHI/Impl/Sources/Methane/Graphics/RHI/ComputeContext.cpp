@@ -27,6 +27,7 @@ Methane ComputeContext PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/Shader.h>
 #include <Methane/Graphics/RHI/Program.h>
+#include <Methane/Graphics/RHI/ComputeState.h>
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Sampler.h>
@@ -113,6 +114,11 @@ Shader ComputeContext::CreateShader(ShaderType type, const ShaderSettings& setti
 Program ComputeContext::CreateProgram(const ProgramSettingsImpl& settings) const
 {
     return Program(GetImpl(m_impl_ptr).CreateProgram(ProgramSettingsImpl::Convert(GetInterface(), settings)));
+}
+
+ComputeState ComputeContext::CreateComputeState(const ComputeStateSettingsImpl& settings) const
+{
+    return ComputeState(GetImpl(m_impl_ptr).CreateComputeState(ComputeStateSettingsImpl::Convert(settings)));
 }
 
 Buffer ComputeContext::CreateBuffer(const BufferSettings& settings) const

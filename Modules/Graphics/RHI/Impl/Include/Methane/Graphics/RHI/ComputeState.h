@@ -44,6 +44,7 @@ struct ComputeStateSettingsImpl
 };
 
 class RenderContext;
+class ComputeContext;
 
 class ComputeState // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
@@ -56,6 +57,7 @@ public:
     META_PIMPL_API explicit ComputeState(const Ptr<IComputeState>& interface_ptr);
     META_PIMPL_API explicit ComputeState(IComputeState& interface_ref);
     META_PIMPL_API ComputeState(const RenderContext& context, const Settings& settings);
+    META_PIMPL_API ComputeState(const ComputeContext& context, const Settings& settings);
 
     META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API IComputeState& GetInterface() const META_PIMPL_NOEXCEPT;
