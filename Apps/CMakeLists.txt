@@ -6,6 +6,4 @@ add_subdirectory(04-ShadowCube)
 add_subdirectory(05-Typography)
 add_subdirectory(06-CubeMapArray)
 add_subdirectory(07-ParallelRendering)
-if(NOT APPLE_IOS) # Console applications are not supported on iOS
-    add_subdirectory(08-ConsoleCompute)
-endif()
+add_subdirectory(08-ConsoleCompute)

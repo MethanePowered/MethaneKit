@@ -1,3 +1,8 @@
+if(APPLE_IOS OR APPLE_TVOS)
+    # Console applications are not supported on iOS / tvOS
+    return()
+endif()
+
 set(TARGET MethaneConsoleCompute)
 
 include(MethaneShaders)
