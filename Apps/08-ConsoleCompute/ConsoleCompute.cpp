@@ -23,19 +23,25 @@ Tutorial demonstrating "game of life" computing on GPU in console application
 
 #include <Methane/Kit.h>
 #include <Methane/Version.h>
+#include <Methane/Data/AppShadersProvider.h>
 
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
+#include <taskflow/taskflow.hpp>
 #include <magic_enum.hpp>
 #include <fmt/format.h>
 #include <random>
 
 namespace gfx = Methane::Graphics;
 namespace rhi = Methane::Graphics::Rhi;
+namespace data = Methane::Data;
 
-static uint32_t g_time = 0;
-static int g_compute_device_index = 0;
+static uint32_t            g_time = 0;
+static int                 g_compute_device_index = 0;
+static tf::Executor        g_parallel_executor;
+static rhi::ComputeContext g_compute_context;
+static rhi::ComputeState   g_compute_state;
 
 const rhi::Devices& GetComputeDevices()
 {
@@ -70,6 +76,29 @@ const rhi::Device* GetComputeDevice()
 {
     const rhi::Devices& devices = GetComputeDevices();
     return g_compute_device_index < static_cast<int>(devices.size()) ? &devices[g_compute_device_index] : nullptr;
+}
+
+void InitializeComputeContext()
+{
+    const rhi::Device* device_ptr = GetComputeDevice();
+    if (!device_ptr)
+    {
+        g_compute_state = {};
+        g_compute_context = {};
+        return;
+    }
+
+    g_compute_context = device_ptr->CreateComputeContext(g_parallel_executor, {});
+    g_compute_state   = g_compute_context.CreateComputeState({
+        g_compute_context.CreateProgram({
+            rhi::Program::ShaderSet { { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } } },
+            rhi::ProgramInputBufferLayouts { },
+            rhi::ProgramArgumentAccessors
+            {
+                // { { rhi::ShaderType::All, "g_uniforms" }, rhi::ProgramArgumentAccessor::Type::Constant },
+            },
+        })
+    });
 }
 
 ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen, gfx::FrameSize& frame_size, std::mt19937& random_engine)
@@ -175,6 +204,7 @@ int main(int, const char*[])
 
     ftxui::ScreenInteractive ui_screen = ftxui::ScreenInteractive::Fullscreen();
     ftxui::Component ui_root = InitializeConsoleInterface(ui_screen, frame_size, random_engine);
+    InitializeComputeContext();
     RunEventLoop(ui_screen, ui_root);
     return 0;
 }
