@@ -35,6 +35,9 @@ class ComputeCommandList final
 {
 public:
     explicit ComputeCommandList(Base::CommandQueue& cmd_buffer);
+
+    // IComputeCommandList interface
+    void Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count) override;
 };
 
 } // namespace Methane::Graphics::DirectX

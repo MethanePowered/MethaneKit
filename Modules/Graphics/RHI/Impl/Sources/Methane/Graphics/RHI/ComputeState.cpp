@@ -40,7 +40,8 @@ ComputeStateSettings ComputeStateSettingsImpl::Convert(const ComputeStateSetting
 {
     return ComputeStateSettings
     {
-        settings.program.GetInterfacePtr()
+        settings.program.GetInterfacePtr(),
+        settings.thread_group_size
     };
 }
 

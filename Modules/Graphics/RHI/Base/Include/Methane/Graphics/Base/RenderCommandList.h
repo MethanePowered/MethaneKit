@@ -61,7 +61,7 @@ public:
             PrimitiveType
         };
 
-        using ChangeMask = Methane::Data::EnumMask<Change>;
+        using ChangeMask = Data::EnumMask<Change>;
 
         Ptrs<Texture>             render_pass_attachments_ptr;
         Ptr<RenderState>          render_state_ptr;

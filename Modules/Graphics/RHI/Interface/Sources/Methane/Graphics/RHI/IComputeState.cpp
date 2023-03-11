@@ -24,6 +24,7 @@ Methane render state interface: specifies configuration of the graphics pipeline
 #include <Methane/Graphics/RHI/IComputeState.h>
 #include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/IProgram.h>
+#include <Methane/Graphics/TypeFormatters.hpp>
 
 #include <Methane/Instrumentation.h>
 
@@ -49,7 +50,10 @@ bool ComputeStateSettings::operator!=(const ComputeStateSettings& other) const n
 ComputeStateSettings::operator std::string() const
 {
     META_FUNCTION_TASK();
-    return fmt::format("  - Program '{}'.", program_ptr->GetName());
+    return fmt::format("  - Program '{}';\n"
+                       "  - Thread Group Size: {}.",
+                       program_ptr->GetName(),
+                       thread_group_size);
 }
 
 Ptr<IComputeState> IComputeState::Create(const IContext& context, const Settings& state_settings)

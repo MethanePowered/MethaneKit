@@ -25,8 +25,7 @@ Null implementation of the compute command list interface.
 
 #include "CommandList.hpp"
 
-#include <Methane/Graphics/RHI/IComputeCommandList.h>
-#include <Methane/Graphics/Base/CommandList.h>
+#include <Methane/Graphics/Base/ComputeCommandList.h>
 
 namespace Methane::Graphics::Null
 {
@@ -34,11 +33,12 @@ namespace Methane::Graphics::Null
 class CommandQueue;
 
 class ComputeCommandList final
-    : public CommandList<Base::CommandList>
-    , public Rhi::IComputeCommandList
+    : public CommandList<Base::ComputeCommandList>
 {
 public:
     explicit ComputeCommandList(CommandQueue& command_queue);
+
+    void Dispatch(const Rhi::ThreadGroupsCount&) override;
 };
 
 } // namespace Methane::Graphics::Null

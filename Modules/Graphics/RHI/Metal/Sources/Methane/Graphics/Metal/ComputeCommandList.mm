@@ -22,8 +22,10 @@ Metal implementation of the compute command list interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/ComputeCommandList.hh>
+#include <Methane/Graphics/Metal/ComputeState.hh>
 
 #include <Methane/Instrumentation.h>
+#include <Methane/Checks.hpp>
 
 namespace Methane::Graphics::Metal
 {
@@ -44,6 +46,19 @@ void ComputeCommandList::Reset(Rhi::ICommandListDebugGroup* debug_group_ptr)
     const id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
     InitializeCommandEncoder([mtl_cmd_buffer computeCommandEncoder]);
     Base::CommandList::Reset(debug_group_ptr);
+}
+
+void ComputeCommandList::Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count)
+{
+    META_FUNCTION_TASK();
+    const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
+    META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
+
+    const Rhi::ThreadGroupSize& thread_group_size = GetComputeState().GetSettings().thread_group_size;
+    const MTLSize mtl_thread_groups{ thread_groups_count.GetWidth(), thread_groups_count.GetHeight(), thread_groups_count.GetDepth() };
+    const MTLSize mtl_threads_per_group{ thread_group_size.GetWidth(), thread_group_size.GetHeight(), thread_group_size.GetDepth() };
+    [mtl_cmd_encoder dispatchThreadgroups: mtl_thread_groups
+                    threadsPerThreadgroup: mtl_threads_per_group];
 }
 
 } // namespace Methane::Graphics::Metal

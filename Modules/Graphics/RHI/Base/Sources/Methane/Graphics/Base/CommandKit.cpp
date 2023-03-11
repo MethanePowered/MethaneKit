@@ -24,6 +24,7 @@ Methane command kit implementation.
 #include <Methane/Graphics/Base/CommandKit.h>
 #include <Methane/Graphics/Base/CommandListSet.h>
 #include <Methane/Graphics/Base/RenderCommandList.h>
+#include <Methane/Graphics/Base/ComputeCommandList.h>
 #include <Methane/Graphics/Base/CommandQueue.h>
 
 #include <Methane/Graphics/RHI/IFence.h>
@@ -32,6 +33,9 @@ Methane command kit implementation.
 #include <Methane/Graphics/RHI/ITransferCommandList.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
+
+#include <atomic>
+#include <condition_variable>
 
 #include <fmt/format.h>
 
@@ -117,8 +121,9 @@ Rhi::ICommandList& CommandKit::GetList(Rhi::CommandListId cmd_list_id = 0U) cons
 
     switch (m_cmd_list_type)
     {
-    case Rhi::CommandListType::Transfer: cmd_list_ptr = Rhi::ITransferCommandList::Create(GetQueue()); break;
+    case Rhi::CommandListType::Transfer: cmd_list_ptr = GetQueue().CreateTransferCommandList(); break;
     case Rhi::CommandListType::Render:   cmd_list_ptr = RenderCommandList::CreateForSynchronization(GetQueue()); break;
+    case Rhi::CommandListType::Compute:  cmd_list_ptr = GetQueue().CreateComputeCommandList(); break;
     default: META_UNEXPECTED_ARG(m_cmd_list_type);
     }
 
@@ -187,6 +192,30 @@ Rhi::IFence& CommandKit::GetFence(Rhi::CommandListId fence_id) const
     fence_ptr = Rhi::IFence::Create(GetQueue());
     fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_id));
     return *fence_ptr;
+}
+
+void CommandKit::ExecuteListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+{
+    META_FUNCTION_TASK();
+    GetQueue().Execute(GetListSet(cmd_list_ids, frame_index_opt));
+}
+
+void CommandKit::ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+{
+    META_FUNCTION_TASK();
+    std::mutex                  execution_wait_mutex;
+    size_t                      executing_cmd_list_count = cmd_list_ids.size();
+    std::condition_variable_any executing_cmd_list_set_condition_var;
+    GetQueue().Execute(GetListSet(cmd_list_ids, frame_index_opt),
+                       [&executing_cmd_list_count, &execution_wait_mutex, &executing_cmd_list_set_condition_var](Rhi::ICommandList&)
+                       {
+                           std::lock_guard lock(execution_wait_mutex);
+                           executing_cmd_list_count--;
+                           executing_cmd_list_set_condition_var.notify_one();
+                       });
+
+    std::unique_lock lock(execution_wait_mutex);
+    executing_cmd_list_set_condition_var.wait(lock, [&executing_cmd_list_count]() { return executing_cmd_list_count == 0U; });
 }
 
 CommandKit::CommandListIndex CommandKit::GetCommandListIndexById(Rhi::CommandListId cmd_list_id) const noexcept

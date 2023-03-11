@@ -42,6 +42,9 @@ public:
 
     // ICommandList interface
     void Reset(Rhi::ICommandListDebugGroup* debug_group_ptr = nullptr) override;
+
+    // IComputeCommandList interface
+    void Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count) override;
 };
 
 } // namespace Methane::Graphics::Metal

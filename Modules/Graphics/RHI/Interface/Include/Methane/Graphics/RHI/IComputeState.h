@@ -26,6 +26,7 @@ Methane compute state interface: specifies configuration of the compute pipeline
 #include "IObject.h"
 
 #include <Methane/Graphics/Types.h>
+#include <Methane/Graphics/Volume.hpp>
 #include <Methane/Memory.hpp>
 
 namespace Methane::Graphics::Rhi
@@ -33,9 +34,12 @@ namespace Methane::Graphics::Rhi
 
 struct IProgram;
 
+using ThreadGroupSize = VolumeSize<uint32_t>;
+
 struct ComputeStateSettings
 {
-    Ptr<IProgram> program_ptr;
+    Ptr<IProgram>   program_ptr;
+    ThreadGroupSize thread_group_size; // Duplicated in HLSL attribute [numthreads(x,y,z)] of compute shader, but Metal does not use it
 
     [[nodiscard]] bool operator==(const ComputeStateSettings& other) const noexcept;
     [[nodiscard]] bool operator!=(const ComputeStateSettings& other) const noexcept;

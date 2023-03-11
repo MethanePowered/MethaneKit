@@ -21,7 +21,7 @@ Compute shader for Game of Life
 
 ******************************************************************************/
 
-[numthreads(1, 1, 1)]
+[numthreads(16, 16, 1)]
 void MainCS(uint3 id : SV_DispatchThreadID)
 {
 }

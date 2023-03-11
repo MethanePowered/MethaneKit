@@ -28,7 +28,11 @@ namespace Methane::Graphics::Null
 {
 
 ComputeCommandList::ComputeCommandList(CommandQueue& command_queue)
-    : CommandList(command_queue, Rhi::CommandListType::Transfer)
+    : CommandList(command_queue)
 { }
+
+void ComputeCommandList::Dispatch(const Rhi::ThreadGroupsCount&)
+{
+}
 
 } // namespace Methane::Graphics::Null

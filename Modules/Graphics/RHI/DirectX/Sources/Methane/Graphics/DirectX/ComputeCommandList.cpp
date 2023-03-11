@@ -42,4 +42,9 @@ ComputeCommandList::ComputeCommandList(Base::CommandQueue& cmd_queue)
     : CommandList<Base::ComputeCommandList>(GetComputeCommandListNativeType(cmd_queue.GetContext().GetOptions()), cmd_queue)
 { }
 
+void ComputeCommandList::Dispatch(const Rhi::ThreadGroupsCount&)
+{
+    META_FUNCTION_TASK();
+}
+
 } // namespace Methane::Graphics::DirectX

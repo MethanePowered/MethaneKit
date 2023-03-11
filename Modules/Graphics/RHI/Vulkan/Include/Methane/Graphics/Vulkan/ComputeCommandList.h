@@ -39,6 +39,9 @@ class ComputeCommandList final
 {
 public:
     explicit ComputeCommandList(CommandQueue& command_queue);
+
+    // IComputeCommandList interface
+    void Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count) override;
 };
 
 } // namespace Methane::Graphics::Vulkan

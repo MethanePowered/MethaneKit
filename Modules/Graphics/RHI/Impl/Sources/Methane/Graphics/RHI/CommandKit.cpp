@@ -25,6 +25,7 @@ Methane CommandKit PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/RenderCommandList.h>
+#include <Methane/Graphics/RHI/ComputeCommandList.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 
 #include <Methane/Graphics/Base/CommandKit.h>
@@ -129,6 +130,18 @@ RenderCommandList CommandKit::GetRenderListForEncoding(CommandListId cmd_list_id
     return RenderCommandList(dynamic_cast<IRenderCommandList&>(GetImpl(m_impl_ptr).GetListForEncoding(cmd_list_id, debug_group_name)));
 }
 
+ComputeCommandList CommandKit::GetComputeList(CommandListId cmd_list_id) const
+{
+    META_CHECK_ARG_EQUAL(GetListType(), CommandListType::Compute);
+    return ComputeCommandList(dynamic_cast<IComputeCommandList&>(GetImpl(m_impl_ptr).GetList(cmd_list_id)));
+}
+
+ComputeCommandList CommandKit::GetComputeListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const
+{
+    META_CHECK_ARG_EQUAL(GetListType(), CommandListType::Compute);
+    return ComputeCommandList(dynamic_cast<IComputeCommandList&>(GetImpl(m_impl_ptr).GetListForEncoding(cmd_list_id, debug_group_name)));
+}
+
 CommandListSet CommandKit::GetListSet(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     return CommandListSet(GetImpl(m_impl_ptr).GetListSet(cmd_list_ids, frame_index_opt));
@@ -137,6 +150,16 @@ CommandListSet CommandKit::GetListSet(const std::vector<CommandListId>& cmd_list
 IFence& CommandKit::GetFence(CommandListId fence_id) const
 {
     return GetImpl(m_impl_ptr).GetFence(fence_id);
+}
+
+void CommandKit::ExecuteListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+{
+    GetImpl(m_impl_ptr).ExecuteListSet(cmd_list_ids, frame_index_opt);
+}
+
+void CommandKit::ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+{
+    GetImpl(m_impl_ptr).ExecuteListSetAndWaitForCompletion(cmd_list_ids, frame_index_opt);
 }
 
 } // namespace Methane::Graphics::Rhi

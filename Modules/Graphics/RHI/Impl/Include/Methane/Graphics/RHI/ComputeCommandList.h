@@ -37,6 +37,7 @@ namespace Methane::Graphics::Rhi
 
 class CommandQueue;
 class CommandListDebugGroup;
+class ComputeState;
 
 class ComputeCommandList // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
@@ -80,6 +81,12 @@ public:
     // Data::IEmitter<ICommandListCallback> interface methods
     META_PIMPL_API void Connect(Data::Receiver<ICommandListCallback>& receiver) const;
     META_PIMPL_API void Disconnect(Data::Receiver<ICommandListCallback>& receiver) const;
+
+    // IComputeCommandList interface
+    META_PIMPL_API void ResetWithState(ComputeState& compute_state, const DebugGroup* debug_group_ptr = nullptr) const;
+    META_PIMPL_API void ResetWithStateOnce(ComputeState& compute_state, const DebugGroup* debug_group_ptr = nullptr) const;
+    META_PIMPL_API void SetComputeState(ComputeState& compute_state) const;
+    META_PIMPL_API void Dispatch(const ThreadGroupsCount& thread_groups_count) const;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::ComputeCommandList;

@@ -22,6 +22,7 @@ Methane ComputeCommandList PIMPL wrappers for direct calls to final implementati
 ******************************************************************************/
 
 #include <Methane/Graphics/RHI/ComputeCommandList.h>
+#include <Methane/Graphics/RHI/ComputeState.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 
@@ -149,5 +150,26 @@ void ComputeCommandList::Disconnect(Data::Receiver<ICommandListCallback>& receiv
     GetImpl(m_impl_ptr).Data::Emitter<ICommandListCallback>::Disconnect(receiver);
 }
 
+void ComputeCommandList::ResetWithState(ComputeState& compute_state, const DebugGroup* debug_group_ptr) const
+{
+    GetImpl(m_impl_ptr).ResetWithState(compute_state.GetInterface(),
+                                       debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
+}
+
+void ComputeCommandList::ResetWithStateOnce(ComputeState& compute_state, const DebugGroup* debug_group_ptr) const
+{
+    GetImpl(m_impl_ptr).ResetWithStateOnce(compute_state.GetInterface(),
+                                           debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
+}
+
+void ComputeCommandList::SetComputeState(ComputeState& compute_state) const
+{
+    GetImpl(m_impl_ptr).SetComputeState(compute_state.GetInterface());
+}
+
+void ComputeCommandList::Dispatch(const ThreadGroupsCount& thread_groups_count) const
+{
+    GetImpl(m_impl_ptr).Dispatch(thread_groups_count);
+}
 
 } // namespace Methane::Graphics::Rhi

@@ -38,7 +38,8 @@ namespace Methane::Graphics::Rhi
 
 struct ComputeStateSettingsImpl
 {
-    Program            program;
+    Program         program;
+    ThreadGroupSize thread_group_size; // Duplicated in HLSL attribute [numthreads(x,y,z)] of compute shader, but Metal does not use it
 
     META_PIMPL_API static ComputeStateSettings Convert(const ComputeStateSettingsImpl& settings);
 };

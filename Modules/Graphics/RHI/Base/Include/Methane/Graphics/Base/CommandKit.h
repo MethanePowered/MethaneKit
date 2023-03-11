@@ -53,6 +53,8 @@ public:
     [[nodiscard]] Rhi::ICommandList&    GetListForEncoding(Rhi::CommandListId cmd_list_id, std::string_view debug_group_name) const override;
     [[nodiscard]] Rhi::ICommandListSet& GetListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
     [[nodiscard]] Rhi::IFence&          GetFence(Rhi::CommandListId fence_id) const override;
+    void ExecuteListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
+    void ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
 
 private:
     using CommandListIndex     = uint32_t;

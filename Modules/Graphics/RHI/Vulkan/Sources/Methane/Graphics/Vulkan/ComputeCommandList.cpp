@@ -34,4 +34,10 @@ ComputeCommandList::ComputeCommandList(CommandQueue& command_queue)
     : CommandList(vk::CommandBufferLevel::ePrimary, {}, command_queue)
 { }
 
+void ComputeCommandList::Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count)
+{
+    META_FUNCTION_TASK();
+    GetNativeCommandBufferDefault().dispatch(thread_groups_count.GetWidth(), thread_groups_count.GetHeight(), thread_groups_count.GetDepth());
+}
+
 } // namespace Methane::Graphics::Vulkan

@@ -25,10 +25,15 @@ Methane compute command list interface.
 
 #include "ICommandList.h"
 
+#include <Methane/Graphics/Volume.hpp>
 #include <Methane/Memory.hpp>
 
 namespace Methane::Graphics::Rhi
 {
+
+struct IComputeState;
+
+using ThreadGroupsCount = VolumeSize<uint32_t>;
 
 struct IComputeCommandList
     : virtual ICommandList // NOSONAR
@@ -37,6 +42,12 @@ struct IComputeCommandList
 
     // Create IComputeCommandList instance
     [[nodiscard]] static Ptr<IComputeCommandList> Create(ICommandQueue& command_queue);
+
+    // IComputeCommandList interface
+    virtual void ResetWithState(IComputeState& compute_state, IDebugGroup* debug_group_ptr = nullptr) = 0;
+    virtual void ResetWithStateOnce(IComputeState& compute_state, IDebugGroup* debug_group_ptr = nullptr) = 0;
+    virtual void SetComputeState(IComputeState& compute_state) = 0;
+    virtual void Dispatch(const ThreadGroupsCount& thread_groups_count) = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

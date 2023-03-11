@@ -30,6 +30,8 @@ Base implementation of the compute command list interface.
 namespace Methane::Graphics::Base
 {
 
+class ComputeState;
+
 class ComputeCommandList
     : public Rhi::IComputeCommandList
     , public CommandList
@@ -40,6 +42,15 @@ public:
     using CommandList::Reset;
 
     // IComputeCommandList interface
+    void ResetWithState(Rhi::IComputeState& compute_state, IDebugGroup* debug_group_ptr = nullptr) final;
+    void ResetWithStateOnce(Rhi::IComputeState& compute_state, IDebugGroup* debug_group_ptr = nullptr) final;
+    void SetComputeState(Rhi::IComputeState& compute_state) final;
+
+protected:
+    ComputeState& GetComputeState();
+
+private:
+    Ptr<ComputeState> m_compute_state_ptr;
 };
 
 } // namespace Methane::Graphics::Base

@@ -38,6 +38,7 @@ namespace Methane::Graphics::Rhi
 class CommandQueue;
 class RenderContext;
 class RenderCommandList;
+class ComputeCommandList;
 class CommandListSet;
 
 class CommandKit // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
@@ -64,15 +65,19 @@ public:
     META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // ICommandKit interface methods
-    [[nodiscard]] META_PIMPL_API const IContext&   GetContext() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API CommandQueue      GetQueue() const;
-    [[nodiscard]] META_PIMPL_API CommandListType   GetListType() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API bool              HasList(CommandListId cmd_list_id = 0U) const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API bool              HasListWithState(CommandListState cmd_list_state, CommandListId cmd_list_id = 0U) const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API RenderCommandList GetRenderList(CommandListId cmd_list_id = 0U) const;
-    [[nodiscard]] META_PIMPL_API RenderCommandList GetRenderListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const;
-    [[nodiscard]] META_PIMPL_API CommandListSet    GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const;
-    [[nodiscard]] META_PIMPL_API IFence&           GetFence(CommandListId fence_id = 0U) const;
+    [[nodiscard]] META_PIMPL_API const IContext&    GetContext() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API CommandQueue       GetQueue() const;
+    [[nodiscard]] META_PIMPL_API CommandListType    GetListType() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API bool               HasList(CommandListId cmd_list_id = 0U) const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API bool               HasListWithState(CommandListState cmd_list_state, CommandListId cmd_list_id = 0U) const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API RenderCommandList  GetRenderList(CommandListId cmd_list_id = 0U) const;
+    [[nodiscard]] META_PIMPL_API RenderCommandList  GetRenderListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const;
+    [[nodiscard]] META_PIMPL_API ComputeCommandList GetComputeList(CommandListId cmd_list_id = 0U) const;
+    [[nodiscard]] META_PIMPL_API ComputeCommandList GetComputeListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const;
+    [[nodiscard]] META_PIMPL_API CommandListSet     GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const;
+    [[nodiscard]] META_PIMPL_API IFence&            GetFence(CommandListId fence_id = 0U) const;
+    META_PIMPL_API void ExecuteListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const;
+    META_PIMPL_API void ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const;
 
 private:
     using Impl = Methane::Graphics::Base::CommandKit;
