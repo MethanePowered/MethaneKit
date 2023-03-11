@@ -16,8 +16,8 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Data/ILogger.h
-Abstract logger interface.
+FILE: Methane/Platform/Logger.h
+Logger implementation
 
 ******************************************************************************/
 

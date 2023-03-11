@@ -105,7 +105,6 @@ if(METHANE_TESTS_BUILD_ENABLED)
     target_link_libraries(${TEST_TARGET}
         PUBLIC
             MethaneUserInterfaceNullTypes
-            MethaneGraphicsRhiNullImpl
             MethaneDataProvider
             MethaneDataEvents
         PRIVATE

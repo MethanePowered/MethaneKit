@@ -187,6 +187,11 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
         FOLDER "Build/${FOR_TARGET}/Shaders"
     )
 
+    set_target_properties(${FOR_TARGET}
+        PROPERTIES
+        METAL_LIB_TARGET ${METAL_LIB_TARGET}
+    )
+
     add_dependencies(${METAL_LIB_TARGET} ${_SHADER_COMPILE_TARGETS})
     add_dependencies(${FOR_TARGET} ${METAL_LIB_TARGET})
 endfunction()
