@@ -37,13 +37,23 @@ namespace gfx = Methane::Graphics;
 namespace rhi = Methane::Graphics::Rhi;
 namespace data = Methane::Data;
 
+std::mt19937 g_random_engine = []()
+{
+    std::random_device r;
+    std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
+    return std::mt19937(seed);
+}();
+
 static uint32_t                g_time = 0;
-gfx::FrameSize                 g_frame_size;
+static gfx::FrameSize          g_frame_size;
 static int                     g_compute_device_index = 0;
 static tf::Executor            g_parallel_executor;
 static rhi::ComputeContext     g_compute_context;
 static rhi::ComputeState       g_compute_state;
 static rhi::ComputeCommandList g_compute_command_list;
+static rhi::Texture            g_frame_texture;
+static rhi::ProgramBindings    g_compute_bindings;
+static rhi::SubResource        g_frame_data;
 
 const rhi::Devices& GetComputeDevices()
 {
@@ -80,28 +90,59 @@ const rhi::Device* GetComputeDevice()
     return g_compute_device_index < static_cast<int>(devices.size()) ? &devices[g_compute_device_index] : nullptr;
 }
 
+void InitializeFrameTexture()
+{
+    if (!g_frame_size)
+    {
+        g_frame_texture = {};
+        return;
+    }
+
+    g_frame_texture = g_compute_context.CreateTexture(
+        rhi::TextureSettings::ForImage(
+            gfx::Dimensions(g_frame_size),
+            std::nullopt, gfx::PixelFormat::R8Uint, false,
+            rhi::ResourceUsageMask{ rhi::ResourceUsage::ShaderRead, rhi::ResourceUsage::ShaderWrite })
+    );
+
+    g_compute_bindings = g_compute_state.GetProgram().CreateBindings({
+        { { rhi::ShaderType::All, "g_frame_texture"   }, { { g_frame_texture.GetInterface() } } },
+    });
+
+    if (!g_frame_data.IsEmptyOrNull())
+    {
+        // Restore previous texture data
+        g_frame_texture.SetData({ g_frame_data }, g_compute_context.GetComputeCommandKit().GetQueue());
+    }
+}
+
 void InitializeComputeContext()
 {
     const rhi::Device* device_ptr = GetComputeDevice();
     if (!device_ptr)
     {
-        g_compute_state = {};
-        g_compute_context = {};
+        g_compute_bindings = {};
+        g_frame_texture    = {};
+        g_compute_state    = {};
+        g_compute_context  = {};
         return;
     }
 
     g_compute_context = device_ptr->CreateComputeContext(g_parallel_executor, {});
-    g_compute_state   = g_compute_context.CreateComputeState({
+
+    g_compute_state = g_compute_context.CreateComputeState({
         g_compute_context.CreateProgram({
             rhi::Program::ShaderSet { { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } } },
             rhi::ProgramInputBufferLayouts { },
             rhi::ProgramArgumentAccessors
             {
-                // { { rhi::ShaderType::All, "g_uniforms" }, rhi::ProgramArgumentAccessor::Type::Constant },
+                { { rhi::ShaderType::All, "g_frame_texture" }, rhi::ProgramArgumentAccessor::Type::Constant },
             },
         }),
         rhi::ThreadGroupSize(16U, 16U, 1U)
     });
+
+    InitializeFrameTexture();
 }
 
 void ComputeTurn()
@@ -113,13 +154,32 @@ void ComputeTurn()
 
     rhi::ComputeCommandList compute_cmd_list = g_compute_context.GetComputeCommandKit().GetComputeListForEncoding(0U, "Game of Life Step");
     compute_cmd_list.SetComputeState(g_compute_state);
+    compute_cmd_list.SetProgramBindings(g_compute_bindings);
     compute_cmd_list.Dispatch(thread_groups_count);
     compute_cmd_list.Commit();
 
     g_compute_context.GetComputeCommandKit().ExecuteListSetAndWaitForCompletion();
 }
 
-ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen, std::mt19937& random_engine)
+void DrawFrame(ftxui::Canvas& canvas)
+{
+#if 0
+    g_frame_data = std::move(g_frame_texture.GetData());
+#else
+    // Temporary drawing of random points on canvas
+    const uint32_t points_count = g_frame_size.GetPixelsCount() / 100;
+    std::uniform_int_distribution<> dist(0, g_frame_size.GetPixelsCount() - 1);
+    for(uint32_t i = 0; i < points_count; i++)
+    {
+        int rnd = dist(g_random_engine);
+        int x = rnd % canvas.width();
+        int y = rnd / canvas.width();
+        canvas.DrawBlockOn(x, y);
+    }
+#endif
+}
+
+ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
 {
     using namespace ftxui;
     auto toolbar = Container::Horizontal({
@@ -152,25 +212,21 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen, st
         }) | yflex
     });
 
-    auto canvas = Renderer([&random_engine]
+    auto canvas = Renderer([]
     {
-        return ftxui::canvas([&](Canvas& c)
+        return ftxui::canvas([&](Canvas& canvas)
         {
-            // Compute turn in Game of Life
-            ComputeTurn();
-
-            // Temporary drawing of random points on canvas
-            g_frame_size.SetWidth(c.width());
-            g_frame_size.SetHeight(c.height());
-            const uint32_t points_count = g_frame_size.GetPixelsCount() / 100;
-            std::uniform_int_distribution<> dist(0, g_frame_size.GetPixelsCount() - 1);
-            for(uint32_t i = 0; i < points_count; i++)
+            // Update frame size
+            const gfx::FrameSize fram_size(canvas.width(), canvas.height());
+            if (g_frame_size != fram_size)
             {
-                int rnd = dist(random_engine);
-                int x = rnd % c.width();
-                int y = rnd / c.width();
-                c.DrawBlockOn(x, y);
+                g_frame_size = fram_size;
+                InitializeFrameTexture();
             }
+
+            // Compute turn in Game of Life and draw on frame
+            ComputeTurn();
+            DrawFrame(canvas);
         }) | flex;
     });
 
@@ -211,10 +267,6 @@ void RunEventLoop(ftxui::ScreenInteractive& screen, const ftxui::Component& root
 
 int main(int, const char*[])
 {
-    std::random_device r;
-    std::seed_seq random_seed{r(), r(), r(), r(), r(), r(), r(), r()};
-    std::mt19937 random_engine(random_seed);
-
     const rhi::Device* device_ptr = GetComputeDevice();
     if (!device_ptr)
     {
@@ -223,7 +275,7 @@ int main(int, const char*[])
     }
 
     ftxui::ScreenInteractive ui_screen = ftxui::ScreenInteractive::Fullscreen();
-    ftxui::Component ui_root = InitializeConsoleInterface(ui_screen, random_engine);
+    ftxui::Component ui_root = InitializeConsoleInterface(ui_screen);
     InitializeComputeContext();
     RunEventLoop(ui_screen, ui_root);
     return 0;

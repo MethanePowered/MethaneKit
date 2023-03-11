@@ -41,7 +41,7 @@ public:
     // Context interface
     void Initialize(Device& device, bool is_callback_emitted = true) override;
     void WaitForGpu(WaitFor wait_for) override;
-    [[nodiscard]] OptionMask GetOptions() const noexcept final { return {}; }
+    [[nodiscard]] OptionMask GetOptions() const noexcept final { return m_settings.options; }
 
     // IComputeContext interface
     [[nodiscard]] const Settings& GetSettings() const noexcept override { return m_settings; }

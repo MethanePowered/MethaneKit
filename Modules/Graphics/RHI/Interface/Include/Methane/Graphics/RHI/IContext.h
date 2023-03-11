@@ -64,8 +64,9 @@ enum class ContextDeferredAction : uint32_t
 
 enum class ContextOption : uint32_t
 {
-    TransferWithD3D12DirectQueue, // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
-    EmulateD3D12RenderPass        // Render passes are emulated with traditional DX API, instead of using native DX render pass API
+    DeferredProgramBindingsInitialization, // Defer program bindings initialization on GPU until Context::CompleteInitialization
+    TransferWithD3D12DirectQueue,          // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
+    EmulateD3D12RenderPass                 // Render passes are emulated with traditional DX API, instead of using native DX render pass API
 };
 
 using ContextOptionMask = Data::EnumMask<ContextOption>;

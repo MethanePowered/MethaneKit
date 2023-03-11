@@ -43,11 +43,33 @@ public:
         , m_data_size(static_cast<Size>(m_data_storage.size()))
     { }
 
+    explicit Chunk(const Chunk& other)
+        : m_data_storage(other.m_data_storage)
+        , m_data_ptr(m_data_storage.empty() ? other.m_data_ptr : m_data_storage.data())
+        , m_data_size(m_data_storage.empty() ? other.m_data_size : static_cast<Size>(m_data_storage.size()))
+    { }
+
     explicit Chunk(Chunk&& other) noexcept
         : m_data_storage(std::move(other.m_data_storage))
         , m_data_ptr(m_data_storage.empty() ? other.m_data_ptr : m_data_storage.data())
         , m_data_size(m_data_storage.empty() ? other.m_data_size : static_cast<Size>(m_data_storage.size()))
     { }
+
+    Chunk& operator=(const Chunk& other) noexcept
+    {
+        m_data_storage = other.m_data_storage;
+        m_data_ptr     = m_data_storage.empty() ? other.m_data_ptr : m_data_storage.data();
+        m_data_size    = m_data_storage.empty() ? other.m_data_size : static_cast<Size>(m_data_storage.size());
+        return *this;
+    }
+
+    Chunk& operator=(Chunk&& other) noexcept
+    {
+        m_data_storage = std::move(other.m_data_storage);
+        m_data_ptr     = m_data_storage.empty() ? other.m_data_ptr : m_data_storage.data();
+        m_data_size    = m_data_storage.empty() ? other.m_data_size : static_cast<Size>(m_data_storage.size());
+        return *this;
+    }
 
     [[nodiscard]] bool IsEmptyOrNull() const noexcept { return !m_data_ptr || !m_data_size; }
     [[nodiscard]] bool IsDataStored() const noexcept  { return !m_data_storage.empty(); }
@@ -76,19 +98,12 @@ public:
         return GetDataPtr<T>() + GetDataSize<T>();
     }
 
-protected:
-    explicit Chunk(const Chunk& other) noexcept
-        : m_data_storage(other.m_data_storage)
-        , m_data_ptr(m_data_storage.empty() ? other.m_data_ptr : m_data_storage.data())
-        , m_data_size(m_data_storage.empty() ? other.m_data_size : static_cast<Size>(m_data_storage.size()))
-    { }
-
 private:
     // Data storage is used only when m_data_storage is not managed by m_data_storage provider and
     // returned with chunk (when m_data_storage is loaded from file, for example)
-    Bytes             m_data_storage;
-    const ConstRawPtr m_data_ptr  = nullptr;
-    const Size        m_data_size = 0U;
+    Bytes       m_data_storage;
+    ConstRawPtr m_data_ptr  = nullptr;
+    Size        m_data_size = 0U;
 };
 
 } // namespace Methane::Data

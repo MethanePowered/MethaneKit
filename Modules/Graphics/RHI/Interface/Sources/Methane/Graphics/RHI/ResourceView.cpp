@@ -45,6 +45,21 @@ SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index&
     , m_data_range(std::move(data_range))
 { }
 
+//SubResource::SubResource(SubResource&& other)
+//    : Data::Chunk(other)
+//    , m_index(other.m_index)
+//    , m_data_range(std::move(other.m_data_range))
+//{ }
+//
+//SubResource& SubResource::operator=(SubResource&& other)
+//{
+//    META_FUNCTION_TASK();
+//    m_index      = other.m_index;
+//    m_data_range = std::move(other.m_data_range);
+//    Data::Chunk::operator=(std::move(other));
+//    return *this;
+//}
+
 SubResourceCount::SubResourceCount(Data::Size depth, Data::Size array_size, Data::Size mip_levels_count)
     : m_depth(depth)
     , m_array_size(array_size)

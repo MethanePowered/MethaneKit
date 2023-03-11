@@ -40,6 +40,7 @@ namespace Methane::Graphics::Rhi
 
 struct ComputeContextSettings
 {
+    ContextOptionMask options{ };
 };
 
 struct IComputeContext

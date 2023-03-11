@@ -21,7 +21,30 @@ Compute shader for Game of Life
 
 ******************************************************************************/
 
+RWTexture2D<uint> g_frame_texture;
+
 [numthreads(16, 16, 1)]
 void MainCS(uint3 id : SV_DispatchThreadID)
 {
+    uint sum = 0;
+    for (int x = -1; x <= 1; x++)
+    {
+        for (int y = -1; y <= 1; y++)
+        {
+            if (x == 0 && y == 0)
+                continue;
+
+            if (g_frame_texture[id.xy + float2(x,y)].x > 0)
+                sum++;
+        }
+    }
+
+    if (g_frame_texture[id.xy].x > 0)
+    {
+        g_frame_texture[id.xy] = (sum == 2 || sum == 3) ? 1 : 0;
+    }
+    else
+    {
+        g_frame_texture[id.xy] = (sum == 3) ? 1 : 0;
+    }
 }

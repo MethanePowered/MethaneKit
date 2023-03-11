@@ -25,6 +25,7 @@ Methane ComputeCommandList PIMPL wrappers for direct calls to final implementati
 #include <Methane/Graphics/RHI/ComputeState.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
+#include <Methane/Graphics/RHI/ProgramBindings.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -108,6 +109,11 @@ void ComputeCommandList::Reset(const DebugGroup* debug_group_ptr) const
 void ComputeCommandList::ResetOnce(const DebugGroup* debug_group_ptr) const
 {
     GetImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
+}
+
+void ComputeCommandList::SetProgramBindings(const ProgramBindings& program_bindings, ProgramBindingsApplyBehaviorMask apply_behavior) const
+{
+    GetImpl(m_impl_ptr).SetProgramBindings(program_bindings.GetInterface(), apply_behavior);
 }
 
 void ComputeCommandList::SetResourceBarriers(const IResourceBarriers& resource_barriers) const

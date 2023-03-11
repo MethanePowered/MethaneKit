@@ -70,7 +70,7 @@ Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& 
     using namespace Methane::Graphics;
 
     constexpr rhi::RenderPassAccessMask default_screen_pass_access({ rhi::RenderPassAccess::ShaderResources, rhi::RenderPassAccess::Samplers });
-    constexpr rhi::ContextOptionMask default_context_options;
+    constexpr rhi::ContextOptionMask default_context_options{ rhi::ContextOption::DeferredProgramBindingsInitialization };
     const DepthStencilValues         default_clear_depth_stencil(1.F, Graphics::Stencil(0));
     const Color4F                    default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
 

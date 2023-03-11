@@ -115,11 +115,14 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
     );
 
     // Descriptions are updated on GPU during context initialization complete
-#ifdef DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
-    GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::CompleteInitialization);
-#else
-    UpdateDescriptorSetsOnGpu();
-#endif
+    if (GetContext().GetOptions().HasBit(Rhi::ContextOption::DeferredProgramBindingsInitialization))
+    {
+        GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::CompleteInitialization);
+    }
+    else
+    {
+        UpdateDescriptorSetsOnGpu();
+    }
     return true;
 }
 

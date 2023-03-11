@@ -49,7 +49,7 @@ struct RenderContextSettings
     uint32_t                frame_buffers_count  = 3U;
     bool                    vsync_enabled        = true;
     bool                    is_full_screen       = false;
-    ContextOptionMask       options_mask;
+    ContextOptionMask       options_mask         { ContextOption::DeferredProgramBindingsInitialization };
     uint32_t                unsync_max_fps       = 1000U; // MacOS only
 
     RenderContextSettings& SetFrameSize(FrameSize&& new_frame_size) noexcept;
