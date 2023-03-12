@@ -37,7 +37,7 @@ namespace gfx = Methane::Graphics;
 namespace rhi = Methane::Graphics::Rhi;
 namespace data = Methane::Data;
 
-std::mt19937 g_random_engine = []()
+static std::mt19937 g_random_engine = []()
 {
     std::random_device r;
     std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
@@ -47,10 +47,10 @@ std::mt19937 g_random_engine = []()
 static uint32_t                g_time = 0;
 static gfx::FrameSize          g_frame_size;
 static int                     g_compute_device_index = 0;
+static ftxui::RadioboxOption   g_compute_device_option = ftxui::RadioboxOption::Simple();
 static tf::Executor            g_parallel_executor;
 static rhi::ComputeContext     g_compute_context;
 static rhi::ComputeState       g_compute_state;
-static rhi::ComputeCommandList g_compute_command_list;
 static rhi::Texture            g_frame_texture;
 static rhi::ProgramBindings    g_compute_bindings;
 static rhi::SubResource        g_frame_data;
@@ -104,10 +104,12 @@ void InitializeFrameTexture()
             std::nullopt, gfx::PixelFormat::R8Uint, false,
             rhi::ResourceUsageMask{ rhi::ResourceUsage::ShaderRead, rhi::ResourceUsage::ShaderWrite })
     );
+    g_frame_texture.SetName("Game of Life Frame Texture");
 
     g_compute_bindings = g_compute_state.GetProgram().CreateBindings({
         { { rhi::ShaderType::All, "g_frame_texture"   }, { { g_frame_texture.GetInterface() } } },
     });
+    g_compute_bindings.SetName("Game of Life Compute Bindings");
 
     if (!g_frame_data.IsEmptyOrNull())
     {
@@ -116,19 +118,19 @@ void InitializeFrameTexture()
     }
 }
 
+void ReleaseComputeContext()
+{
+    g_compute_bindings     = {};
+    g_frame_texture        = {};
+    g_compute_state        = {};
+    g_compute_context      = {};
+}
+
 void InitializeComputeContext()
 {
     const rhi::Device* device_ptr = GetComputeDevice();
-    if (!device_ptr)
-    {
-        g_compute_bindings = {};
-        g_frame_texture    = {};
-        g_compute_state    = {};
-        g_compute_context  = {};
-        return;
-    }
-
     g_compute_context = device_ptr->CreateComputeContext(g_parallel_executor, {});
+    g_compute_context.SetName("Game of Life");
 
     g_compute_state = g_compute_context.CreateComputeState({
         g_compute_context.CreateProgram({
@@ -141,6 +143,7 @@ void InitializeComputeContext()
         }),
         rhi::ThreadGroupSize(16U, 16U, 1U)
     });
+    g_compute_state.SetName("Game of Life Compute State");
 
     InitializeFrameTexture();
 }
@@ -165,6 +168,19 @@ void DrawFrame(ftxui::Canvas& canvas)
 {
 #if 0
     g_frame_data = std::move(g_frame_texture.GetData());
+    const uint8_t* cell_values = g_frame_data.GetDataPtr<uint8_t>();
+    const rhi::TextureSettings& frame_texture_settings = g_frame_texture.GetSettings();
+    for(uint32_t y = 0; y < frame_texture_settings.dimensions.GetHeight(); y++)
+        for(uint32_t x = 0; x < frame_texture_settings.dimensions.GetWidth(); x++)
+        {
+            const uint32_t cell_index = x + y * frame_texture_settings.dimensions.GetWidth();
+            const uint8_t  cell_value = cell_values[cell_index];
+            switch(cell_value)
+            {
+            case 1: canvas.DrawPointOn(static_cast<int>(x), static_cast<int>(y)); break;
+            case 2: canvas.DrawBlockOn(static_cast<int>(x), static_cast<int>(y)); break;
+            }
+        }
 #else
     // Temporary drawing of random points on canvas
     const uint32_t points_count = g_frame_size.GetPixelsCount() / 100;
@@ -198,9 +214,15 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
         Button(" X ", screen.ExitLoopClosure(), ButtonOption::Simple()) | align_right
     });
 
+    g_compute_device_option.on_change = []()
+    {
+        ReleaseComputeContext();
+        InitializeComputeContext();
+    };
+
     auto sidebar = Container::Vertical({
         Renderer([&]{ return text("GPU Devices:") | ftxui::bold; }),
-        Radiobox(&GetComputeDeviceNames(), &g_compute_device_index),
+        Radiobox(&GetComputeDeviceNames(), &g_compute_device_index, g_compute_device_option),
         Renderer([&]
         {
             return vbox({
