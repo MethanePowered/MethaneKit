@@ -56,7 +56,11 @@ using DeviceFeatureMask = Data::EnumMask<DeviceFeature>;
 
 struct DeviceCaps
 {
-    DeviceFeatureMask features              { ~0U };
+    DeviceFeatureMask features{
+        DeviceFeature::PresentToWindow,
+        DeviceFeature::AnisotropicFiltering,
+        DeviceFeature::ImageCubeArray,
+    };
     uint32_t          render_queues_count   { 1U };
     uint32_t          transfer_queues_count { 1U };
     uint32_t          compute_queues_count  { 1U };

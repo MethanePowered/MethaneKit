@@ -50,7 +50,7 @@ public:
     AddResult Add(const Barrier::Id& id, const Barrier& barrier) override;
     bool Remove(const Barrier::Id& id) override;
 
-    [[nodiscard]] const std::vector <D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const
+    [[nodiscard]] const std::vector<D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const
     { return m_native_resource_barriers; }
 
 private:

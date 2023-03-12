@@ -30,21 +30,15 @@ DirectX 12 implementation of the transfer command list interface.
 namespace Methane::Graphics::DirectX
 {
 
-static D3D12_COMMAND_LIST_TYPE GetComputeCommandListNativeType(Rhi::ContextOptionMask options)
-{
-    META_FUNCTION_TASK();
-    return options.HasBit(Rhi::ContextOption::TransferWithD3D12DirectQueue)
-         ? D3D12_COMMAND_LIST_TYPE_DIRECT
-         : D3D12_COMMAND_LIST_TYPE_COPY;
-}
-
 ComputeCommandList::ComputeCommandList(Base::CommandQueue& cmd_queue)
-    : CommandList<Base::ComputeCommandList>(GetComputeCommandListNativeType(cmd_queue.GetContext().GetOptions()), cmd_queue)
+    : CommandList<Base::ComputeCommandList>(D3D12_COMMAND_LIST_TYPE_COMPUTE, cmd_queue)
 { }
 
-void ComputeCommandList::Dispatch(const Rhi::ThreadGroupsCount&)
+void ComputeCommandList::Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count)
 {
     META_FUNCTION_TASK();
+    ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
+    dx_command_list.Dispatch(thread_groups_count.GetWidth(), thread_groups_count.GetHeight(), thread_groups_count.GetDepth());
 }
 
 } // namespace Methane::Graphics::DirectX

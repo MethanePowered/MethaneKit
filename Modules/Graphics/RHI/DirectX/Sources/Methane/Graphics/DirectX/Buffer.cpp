@@ -47,7 +47,12 @@ Buffer::Buffer(const Base::Context& context, const Settings& settings)
     const Rhi::ResourceState resource_state = is_read_back_buffer || is_private_storage
                                               ? Rhi::ResourceState::CopyDest
                                               : Rhi::ResourceState::GenericRead;
-    const CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(settings.size);
+
+    D3D12_RESOURCE_FLAGS resource_flags = D3D12_RESOURCE_FLAG_NONE;
+    if (settings.usage_mask.HasAnyBit(Usage::ShaderWrite))
+        resource_flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
+    const CD3DX12_RESOURCE_DESC resource_desc = CD3DX12_RESOURCE_DESC::Buffer(settings.size, resource_flags);
 
     InitializeCommittedResource(resource_desc, heap_type, resource_state);
 

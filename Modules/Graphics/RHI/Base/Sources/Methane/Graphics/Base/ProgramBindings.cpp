@@ -46,18 +46,27 @@ static Rhi::ResourceState GetBoundResourceTargetState(const Rhi::IResource& reso
     switch (resource_type)
     {
     case Rhi::IResource::Type::Buffer:
+    {
         // FIXME: state transition of DX upload heap resources should be reworked properly and made friendly with Vulkan
         // DX resource in upload heap can not be transitioned to any other state but initial GenericRead state
-        if (dynamic_cast<const Rhi::IBuffer&>(resource).GetSettings().storage_mode != Rhi::IBuffer::StorageMode::Private)
+        const Rhi::BufferSettings& buffer_settings = dynamic_cast<const Rhi::IBuffer&>(resource).GetSettings();
+        if (buffer_settings.usage_mask.HasBit(Rhi::ResourceUsage::ShaderWrite))
+            return Rhi::ResourceState::UnorderedAccess;
+        if (buffer_settings.storage_mode != Rhi::IBuffer::StorageMode::Private)
             return resource.GetState();
         else if (is_constant_binding)
             return Rhi::ResourceState::ConstantBuffer;
-        break;
+    } break;
 
     case Rhi::IResource::Type::Texture:
-        if (dynamic_cast<const Rhi::ITexture&>(resource).GetSettings().type == Rhi::ITexture::Type::DepthStencil)
+    {
+        const Rhi::TextureSettings& texture_settings = dynamic_cast<const Rhi::ITexture&>(resource).GetSettings();
+        if (texture_settings.usage_mask.HasBit(Rhi::ResourceUsage::ShaderWrite))
+            return Rhi::ResourceState::UnorderedAccess;
+        if (texture_settings.usage_mask.HasBit(Rhi::ResourceUsage::ShaderRead) &&
+            texture_settings.type == Rhi::ITexture::Type::DepthStencil)
             return Rhi::ResourceState::DepthRead;
-        break;
+    } break;
 
     default:
         break;

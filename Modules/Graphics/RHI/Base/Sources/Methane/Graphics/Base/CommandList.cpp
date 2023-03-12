@@ -144,7 +144,6 @@ void CommandList::SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rh
     auto& program_bindings_base = static_cast<ProgramBindings&>(program_bindings);
     ApplyProgramBindings(program_bindings_base, apply_behavior);
 
-
     if (constexpr Rhi::ProgramBindingsApplyBehaviorMask constant_once_and_changes_only({
             Rhi::ProgramBindingsApplyBehavior::ConstantOnce,
             Rhi::ProgramBindingsApplyBehavior::ChangesOnly

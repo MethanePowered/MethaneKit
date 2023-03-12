@@ -71,6 +71,9 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(Rhi::CommandListType com
     case Rhi::CommandListType::ParallelRender:
         return D3D12_COMMAND_LIST_TYPE_DIRECT;
 
+    case Rhi::CommandListType::Compute:
+        return D3D12_COMMAND_LIST_TYPE_COMPUTE;
+
     default:
         META_UNEXPECTED_ARG_RETURN(command_list_type, D3D12_COMMAND_LIST_TYPE_DIRECT);
     }

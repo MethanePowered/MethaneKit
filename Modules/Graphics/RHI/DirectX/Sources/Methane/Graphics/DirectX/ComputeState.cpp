@@ -23,6 +23,7 @@ DirectX 12 implementation of the render state interface.
 
 #include <Methane/Graphics/DirectX/ComputeState.h>
 #include <Methane/Graphics/DirectX/RenderContext.h>
+#include <Methane/Graphics/DirectX/ComputeContext.h>
 #include <Methane/Graphics/DirectX/Device.h>
 #include <Methane/Graphics/DirectX/Program.h>
 #include <Methane/Graphics/DirectX/Shader.h>
@@ -45,8 +46,13 @@ static const Device& GetDirectDeviceFromContext(const Rhi::IContext& context)
     {
     case Rhi::ContextType::Render:
         return dynamic_cast<const RenderContext&>(context).GetDirectDevice();
+
+    case Rhi::ContextType::Compute:
+        return dynamic_cast<const ComputeContext&>(context).GetDirectDevice();
+
+    default:
+        META_UNEXPECTED_ARG_DESCR(context.GetType(), "Unexpected context type");
     }
-    return dynamic_cast<const RenderContext&>(context).GetDirectDevice();
 }
 
 [[nodiscard]]
@@ -90,7 +96,7 @@ void ComputeState::Apply(Base::ComputeCommandList& command_list)
     ID3D12GraphicsCommandList& d3d12_command_list = dx_compute_command_list.GetNativeCommandList();
 
     d3d12_command_list.SetPipelineState(GetNativePipelineState().Get());
-    d3d12_command_list.SetGraphicsRootSignature(GetDirectProgram().GetNativeRootSignature().Get());
+    d3d12_command_list.SetComputeRootSignature(GetDirectProgram().GetNativeRootSignature().Get());
 }
 
 bool ComputeState::SetName(std::string_view name)

@@ -77,6 +77,10 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
     META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetWidth(), 1);
     META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetHeight(), 1);
 
+    D3D12_RESOURCE_FLAGS resource_flags = D3D12_RESOURCE_FLAG_NONE;
+    if (settings.usage_mask.HasAnyBit(Rhi::ResourceUsage::ShaderWrite))
+        resource_flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
     CD3DX12_RESOURCE_DESC tex_desc{};
     switch (settings.dimension_type)
     {
@@ -91,7 +95,8 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
             TypeConverter::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.GetWidth(),
             static_cast<UINT16>(sub_resource_count.GetArraySize()),
-            static_cast<UINT16>(sub_resource_count.GetMipLevelsCount())
+            static_cast<UINT16>(sub_resource_count.GetMipLevelsCount()),
+            resource_flags
         );
         break;
 
@@ -109,7 +114,8 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
             settings.dimensions.GetWidth(),
             settings.dimensions.GetHeight(),
             static_cast<UINT16>(sub_resource_count.GetArraySize()),
-            static_cast<UINT16>(sub_resource_count.GetMipLevelsCount())
+            static_cast<UINT16>(sub_resource_count.GetMipLevelsCount()),
+            1, 0, resource_flags
         );
         break;
 
@@ -120,7 +126,8 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
             settings.dimensions.GetWidth(),
             settings.dimensions.GetHeight(),
             static_cast<UINT16>(sub_resource_count.GetDepth()),
-            static_cast<UINT16>(sub_resource_count.GetMipLevelsCount())
+            static_cast<UINT16>(sub_resource_count.GetMipLevelsCount()),
+            resource_flags
         );
         break;
 
@@ -135,7 +142,8 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
             settings.dimensions.GetWidth(),
             settings.dimensions.GetHeight(),
             static_cast<UINT16>(sub_resource_count.GetDepth() * sub_resource_count.GetArraySize()),
-            static_cast<UINT16>(sub_resource_count.GetMipLevelsCount())
+            static_cast<UINT16>(sub_resource_count.GetMipLevelsCount()),
+            1, 0, resource_flags
         );
         break;
 

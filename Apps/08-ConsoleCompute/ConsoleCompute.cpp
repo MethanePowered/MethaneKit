@@ -136,7 +136,7 @@ void InitializeComputeContext()
             rhi::ProgramInputBufferLayouts { },
             rhi::ProgramArgumentAccessors
             {
-                { { rhi::ShaderType::All, "g_frame_texture" }, rhi::ProgramArgumentAccessor::Type::Constant },
+                { { rhi::ShaderType::All, "g_frame_texture" }, rhi::ProgramArgumentAccessor::Type::Mutable },
             },
         }),
         rhi::ThreadGroupSize(16U, 16U, 1U)
