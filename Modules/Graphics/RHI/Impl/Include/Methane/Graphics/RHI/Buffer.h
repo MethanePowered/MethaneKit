@@ -83,7 +83,9 @@ public:
     META_PIMPL_API void SetData(const SubResources& sub_resources, const CommandQueue& target_cmd_queue) const;
     META_PIMPL_API void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const;
 
-    [[nodiscard]] META_PIMPL_API SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) const;
+    [[nodiscard]] META_PIMPL_API SubResource               GetData(Rhi::ICommandQueue& target_cmd_queue,
+                                                                   const SubResource::Index& sub_resource_index = SubResource::Index(),
+                                                                   const BytesRangeOpt& data_range = {}) const;
     [[nodiscard]] META_PIMPL_API Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const;
     [[nodiscard]] META_PIMPL_API const SubResource::Count& GetSubresourceCount() const META_PIMPL_NOEXCEPT;

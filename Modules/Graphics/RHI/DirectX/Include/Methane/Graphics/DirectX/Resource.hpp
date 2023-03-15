@@ -119,6 +119,18 @@ public:
     D3D12_GPU_VIRTUAL_ADDRESS          GetNativeGpuAddress() const noexcept final     { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
 
 protected:
+    enum class TransferOperation
+    {
+        Upload,
+        Readback
+    };
+
+    struct TransferBarriers
+    {
+        Ptr<Rhi::IResourceBarriers> sync_barriers_ptr;
+        Ptr<Rhi::IResourceBarriers> begin_barriers_ptr;
+    };
+
     const IContext& GetDirectContext() const noexcept { return m_dx_context; }
     void SetNativeResourceComPtr(const wrl::ComPtr<ID3D12Resource>& cp_resource) noexcept { m_cp_resource = cp_resource; }
 
@@ -153,29 +165,33 @@ protected:
         SetState(resource_state);
     }
 
-    TransferCommandList& PrepareResourceUpload(Rhi::ICommandQueue& target_cmd_queue)
+    TransferCommandList& PrepareResourceTransfer(TransferOperation transfer_operation, Rhi::ICommandQueue& target_cmd_queue, State transfer_state)
     {
         META_FUNCTION_TASK();
-        auto& upload_cmd_list = dynamic_cast<TransferCommandList&>(GetContext().GetUploadCommandKit().GetListForEncoding());
-        upload_cmd_list.RetainResource(*this);
+        auto& transfer_cmd_list = dynamic_cast<TransferCommandList&>(GetContext().GetUploadCommandKit().GetListForEncoding());
+        if (GetState() == transfer_state)
+            return transfer_cmd_list;
+
+        TransferBarriers& transfer_barriers = transfer_operation == TransferOperation::Upload ? m_upload_barriers : m_read_back_barriers;
+        transfer_cmd_list.RetainResource(*this);
 
         // When upload command list has COPY type, before transitioning resource to CopyDest state prior copying,
         // first it has to be transitioned to Common state with synchronization command list of DIRECT type.
         // This is required due to DX12 limitation of using only copy-related resource barrier states in command lists of COPY type.
-        if (upload_cmd_list.GetNativeCommandList().GetType() == D3D12_COMMAND_LIST_TYPE_COPY &&
-            SetState(State::Common, m_upload_sync_transition_barriers_ptr) && m_upload_sync_transition_barriers_ptr)
+        if (transfer_cmd_list.GetNativeCommandList().GetType() == D3D12_COMMAND_LIST_TYPE_COPY &&
+            SetState(State::Common, transfer_barriers.sync_barriers_ptr) && transfer_barriers.sync_barriers_ptr)
         {
             Rhi::ICommandList& sync_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(
                 static_cast<Rhi::CommandListId>(Rhi::CommandListPurpose::PreUploadSync));
-            sync_cmd_list.SetResourceBarriers(*m_upload_sync_transition_barriers_ptr);
+            sync_cmd_list.SetResourceBarriers(*transfer_barriers.sync_barriers_ptr);
         }
 
-        if (SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr) && m_upload_begin_transition_barriers_ptr)
+        if (SetState(transfer_state, transfer_barriers.begin_barriers_ptr) && transfer_barriers.begin_barriers_ptr)
         {
-            upload_cmd_list.SetResourceBarriers(*m_upload_begin_transition_barriers_ptr);
+            transfer_cmd_list.SetResourceBarriers(*transfer_barriers.begin_barriers_ptr);
         }
 
-        return upload_cmd_list;
+        return transfer_cmd_list;
     }
 
     const IResource::Descriptor& GetDescriptorByViewId(const ResourceView::Id& view_id)
@@ -211,8 +227,8 @@ private:
     const IContext&             m_dx_context;
     DescriptorByViewId          m_descriptor_by_view_id;
     wrl::ComPtr<ID3D12Resource> m_cp_resource;
-    Ptr<Rhi::IResourceBarriers> m_upload_sync_transition_barriers_ptr;
-    Ptr<Rhi::IResourceBarriers> m_upload_begin_transition_barriers_ptr;
+    TransferBarriers            m_upload_barriers;
+    TransferBarriers            m_read_back_barriers;
 };
 
 } // namespace Methane::Graphics::DirectX

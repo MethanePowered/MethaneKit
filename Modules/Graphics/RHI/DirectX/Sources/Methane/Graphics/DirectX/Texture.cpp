@@ -223,6 +223,57 @@ static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeShaderResourceViewDesc(const 
 }
 
 [[nodiscard]]
+static D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNativeUnorderedAccessViewDesc(const Rhi::ITexture::Settings& settings, const ResourceView::Id& view_id)
+{
+    META_FUNCTION_TASK();
+    const Rhi::IResource::SubResource::Index& sub_resource_index = view_id.subresource_index;
+    const Rhi::IResource::SubResource::Count& sub_resource_count = view_id.subresource_count;
+
+    D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc{};
+    switch (settings.dimension_type)
+    {
+    case Rhi::TextureDimensionType::Tex1D:
+        uav_desc.Texture1D.MipSlice = sub_resource_index.GetMipLevel();
+        uav_desc.ViewDimension      = D3D12_UAV_DIMENSION_TEXTURE1D;
+        break;
+
+    case Rhi::TextureDimensionType::Tex1DArray:
+        uav_desc.Texture1DArray.MipSlice        = sub_resource_index.GetMipLevel();
+        uav_desc.Texture1DArray.FirstArraySlice = sub_resource_index.GetArrayIndex();
+        uav_desc.Texture1DArray.ArraySize       = sub_resource_count.GetArraySize();
+        uav_desc.ViewDimension                  = D3D12_UAV_DIMENSION_TEXTURE1DARRAY;
+        break;
+
+    case Rhi::TextureDimensionType::Tex2D:
+        uav_desc.Texture2D.PlaneSlice = 0U;
+        uav_desc.Texture2D.MipSlice   = sub_resource_index.GetMipLevel();
+        uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+        break;
+
+    case Rhi::TextureDimensionType::Tex2DArray:
+        uav_desc.Texture2DArray.PlaneSlice      = 0U;
+        uav_desc.Texture2DArray.MipSlice        = sub_resource_index.GetMipLevel();
+        uav_desc.Texture2DArray.FirstArraySlice = sub_resource_index.GetArrayIndex();
+        uav_desc.Texture2DArray.ArraySize       = sub_resource_count.GetArraySize();
+        uav_desc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
+        break;
+
+    case Rhi::TextureDimensionType::Tex3D:
+        uav_desc.Texture3D.FirstWSlice = sub_resource_index.GetDepthSlice();
+        uav_desc.Texture3D.WSize       = sub_resource_count.GetDepth();
+        uav_desc.Texture3D.MipSlice    = sub_resource_index.GetArrayIndex();
+        uav_desc.ViewDimension         = D3D12_UAV_DIMENSION_TEXTURE3D;
+        break;
+
+    default:
+        META_UNEXPECTED_ARG(settings.dimension_type);
+    }
+
+    uav_desc.Format = TypeConverter::PixelFormatToDxgi(settings.pixel_format);
+    return uav_desc;
+}
+
+[[nodiscard]]
 static D3D12_RENDER_TARGET_VIEW_DESC CreateNativeRenderTargetViewDesc(const Rhi::ITexture::Settings& settings,
                                                                       const ResourceView::Id& view_id)
 {
@@ -299,6 +350,11 @@ bool Texture::SetName(std::string_view name)
     {
         m_cp_upload_resource->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
     }
+    if (m_cp_read_back_resource)
+    {
+        m_cp_read_back_resource->SetName(nowide::widen(fmt::format("{} Read-back Resource", name)).c_str());
+    }
+
     return true;
 }
 
@@ -339,11 +395,65 @@ void Texture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& tar
     }
 
     // Upload texture subresources data to GPU via intermediate upload resource
-    const TransferCommandList& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
+    const TransferCommandList& upload_cmd_list = PrepareResourceTransfer(TransferOperation::Upload, target_cmd_queue, State::CopyDest);
     UpdateSubresources(&upload_cmd_list.GetNativeCommandList(),
                        GetNativeResource(), m_cp_upload_resource.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());
     GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
+}
+
+Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& data_range)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
+                              "getting texture data from GPU is allowed for buffers with CPU Read-back flag only");
+    META_CHECK_ARG_NOT_NULL(m_cp_read_back_resource);
+
+    ValidateSubResource(sub_resource_index, data_range);
+
+    const TransferCommandList& transfer_cmd_list = PrepareResourceTransfer(TransferOperation::Readback, target_cmd_queue, State::CopySource);
+
+    const Settings& settings = GetSettings();
+    const Data::Index sub_resource_raw_index = sub_resource_index.GetRawIndex(GetSubresourceCount());
+    const DXGI_FORMAT pixel_format = TypeConverter::PixelFormatToDxgi(settings.pixel_format, TypeConverter::ResourceFormatType::ViewRead);
+
+    const D3D12_PLACED_SUBRESOURCE_FOOTPRINT src_footprint { 0U,
+        D3D12_SUBRESOURCE_FOOTPRINT {
+            pixel_format,
+            settings.dimensions.GetWidth(),
+            settings.dimensions.GetHeight(),
+            settings.dimensions.GetDepth(),
+            static_cast<UINT>(settings.dimensions.GetWidth() * ::DirectX::BitsPerPixel(pixel_format) / 8)
+        }
+    };
+    const CD3DX12_TEXTURE_COPY_LOCATION src_copy_location(GetNativeResource(), sub_resource_raw_index);
+    const CD3DX12_TEXTURE_COPY_LOCATION dst_copy_location(m_cp_read_back_resource.Get(), src_footprint);
+    transfer_cmd_list.GetNativeCommandList().CopyTextureRegion(&dst_copy_location, 0, 0, 0, &src_copy_location, nullptr);
+
+    GetBaseContext().UploadResources();
+
+    const Data::Index data_start             = data_range ? data_range->GetStart() : 0U;
+    const Data::Index data_length            = data_range ? data_range->GetLength() : GetSubResourceDataSize(sub_resource_index);
+    const Data::Index data_end               = data_start + data_length;
+
+    const CD3DX12_RANGE read_range(data_start, data_start + data_length);
+    Data::RawPtr        p_sub_resource_data = nullptr;
+    ThrowIfFailed(
+        m_cp_read_back_resource->Map(sub_resource_raw_index, &read_range,
+                                     reinterpret_cast<void**>(&p_sub_resource_data)), // NOSONAR
+        GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
+    );
+
+    META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
+
+    stdext::checked_array_iterator source_data_it(p_sub_resource_data, data_end);
+    Data::Bytes                    sub_resource_data(data_length, {});
+    std::copy(source_data_it + data_start, source_data_it + data_end, sub_resource_data.begin());
+
+    const CD3DX12_RANGE zero_write_range(0, 0);
+    m_cp_read_back_resource->Unmap(sub_resource_raw_index, &zero_write_range);
+
+    return SubResource(std::move(sub_resource_data), sub_resource_index, data_range);
 }
 
 Opt<Rhi::IResource::Descriptor> Texture::InitializeNativeViewDescriptor(const View::Id& view_id)
@@ -355,7 +465,15 @@ Opt<Rhi::IResource::Descriptor> Texture::InitializeNativeViewDescriptor(const Vi
     switch(settings.type)
     {
     case Rhi::TextureType::Image:
-        CreateShaderResourceView(descriptor, view_id);
+        if (view_id.usage.HasAnyBit(Usage::ShaderWrite))
+            CreateUnorderedAccessView(descriptor, view_id);
+        else if (view_id.usage.HasAnyBit(Usage::ShaderRead))
+            CreateShaderResourceView(descriptor, view_id);
+        else
+        {
+            META_UNEXPECTED_ARG_DESCR_RETURN(view_id.usage.GetValue(), descriptor,
+                                             "unsupported usage {} for Image texture", Data::GetEnumMaskName(view_id.usage));
+        }
         break;
 
     case Rhi::TextureType::FrameBuffer:
@@ -404,8 +522,13 @@ void Texture::InitializeAsImage()
     const CD3DX12_RESOURCE_DESC resource_desc = CreateNativeResourceDesc(settings, sub_resource_count);
     InitializeCommittedResource(resource_desc, D3D12_HEAP_TYPE_DEFAULT, Rhi::ResourceState::CopyDest);
 
-    const UINT64 upload_buffer_size = GetRequiredIntermediateSize(GetNativeResource(), 0, GetSubresourceCount().GetRawCount());
-    m_cp_upload_resource = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(upload_buffer_size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+    const UINT64 texture_buffer_size = GetRequiredIntermediateSize(GetNativeResource(), 0, GetSubresourceCount().GetRawCount());
+    m_cp_upload_resource = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(texture_buffer_size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+
+    if (settings.usage_mask.HasAnyBit(Usage::ReadBack))
+    {
+        m_cp_read_back_resource = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(texture_buffer_size), D3D12_HEAP_TYPE_READBACK, D3D12_RESOURCE_STATE_COPY_DEST);
+    }
 }
 
 void Texture::InitializeAsRenderTarget()
@@ -488,6 +611,13 @@ void Texture::CreateShaderResourceView(const Descriptor& descriptor, const View:
     META_FUNCTION_TASK();
     const D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = CreateNativeShaderResourceViewDesc(GetSettings(), view_id);
     GetDirectContext().GetDirectDevice().GetNativeDevice()->CreateShaderResourceView(GetNativeResource(), &srv_desc, GetNativeCpuDescriptorHandle(descriptor));
+}
+
+void Texture::CreateUnorderedAccessView(const Descriptor& descriptor, const View::Id& view_id) const
+{
+    META_FUNCTION_TASK();
+    const D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = CreateNativeUnorderedAccessViewDesc(GetSettings(), view_id);
+    GetDirectContext().GetDirectDevice().GetNativeDevice()->CreateUnorderedAccessView(GetNativeResource(), nullptr, &uav_desc, GetNativeCpuDescriptorHandle(descriptor));
 }
 
 void Texture::CreateRenderTargetView(const Descriptor& descriptor) const

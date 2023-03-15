@@ -56,7 +56,8 @@ public:
     [[nodiscard]] const Rhi::IContext&      GetContext() const noexcept final;
     [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept final { return m_sub_resource_count; }
     [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
-    [[nodiscard]] SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(),
+    [[nodiscard]] SubResource               GetData(Rhi::ICommandQueue& target_cmd_queue,
+                                                    const SubResource::Index& sub_resource_index = SubResource::Index(),
                                                     const std::optional<BytesRange>& data_range = {}) override;
     bool SetState(State state, Ptr<IBarriers>& out_barriers) final;
     bool SetState(State state) final;

@@ -39,6 +39,11 @@ void MainCS(uint3 id : SV_DispatchThreadID)
         }
     }
 
+    uint2 frame_texture_size;
+    g_frame_texture.GetDimensions(frame_texture_size.x, frame_texture_size.y);
+    if (id.x > frame_texture_size.x || id.y > frame_texture_size.y)
+        return;
+
     if (g_frame_texture[id.xy].x > 0)
     {
         g_frame_texture[id.xy] = (sum == 2 || sum == 3) ? 1 : 0;

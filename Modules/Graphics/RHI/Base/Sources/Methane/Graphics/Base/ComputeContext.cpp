@@ -47,7 +47,9 @@ void ComputeContext::WaitForGpu(WaitFor wait_for)
 
     switch (wait_for)
     {
-    case WaitFor::ComputeComplete: WaitForGpuComputeComplete(); break;
+    case WaitFor::RenderComplete:
+    case WaitFor::ComputeComplete:
+        WaitForGpuComputeComplete(); break;
     case WaitFor::ResourcesUploaded: break; // Handled in Context::WaitForGpu
     default: META_UNEXPECTED_ARG(wait_for);
     }
@@ -91,7 +93,7 @@ void ComputeContext::Initialize(Device& device, bool is_callback_emitted)
     }
 }
 
-bool ComputeContext::UploadResources()
+bool ComputeContext::UploadResources() const
 {
     META_FUNCTION_TASK();
     if (!Context::UploadResources())

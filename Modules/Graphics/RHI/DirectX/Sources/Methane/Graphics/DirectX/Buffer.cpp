@@ -119,12 +119,12 @@ void Buffer::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& targ
         return;
 
     // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
-    const TransferCommandList& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
+    const TransferCommandList& upload_cmd_list = PrepareResourceTransfer(TransferOperation::Upload, target_cmd_queue, State::CopyDest);
     upload_cmd_list.GetNativeCommandList().CopyResource(GetNativeResource(), m_cp_upload_resource.Get());
     GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
 }
 
-Rhi::SubResource Buffer::GetData(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& data_range)
+Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),

@@ -90,6 +90,17 @@ static Rhi::IResource::Type GetResourceTypeByInputAndDimensionType(D3D_SHADER_IN
     }
 }
 
+static bool IsUnorderedAccessInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
+{
+    return input_type == D3D_SIT_UAV_RWTYPED ||
+           input_type == D3D_SIT_UAV_RWSTRUCTURED ||
+           input_type == D3D_SIT_UAV_RWBYTEADDRESS ||
+           input_type == D3D_SIT_UAV_APPEND_STRUCTURED ||
+           input_type == D3D_SIT_UAV_CONSUME_STRUCTURED ||
+           input_type == D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER ||
+           input_type == D3D_SIT_UAV_FEEDBACKTEXTURE;
+}
+
 using StepType = Base::Program::InputBufferLayout::StepType;
 
 [[nodiscard]]
@@ -179,12 +190,19 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                                                    ? Rhi::ProgramArgumentAccessor(shader_argument)
                                                    : *argument_acc_it;
 
-        const ProgramBindings::ArgumentBinding::Type dx_addressable_binding_type = binding_desc.Type == D3D_SIT_CBUFFER
-                                                                                     ? ProgramBindings::ArgumentBinding::Type::ConstantBufferView
-                                                                                     : ProgramBindings::ArgumentBinding::Type::ShaderResourceView;
-        const ProgramBindings::ArgumentBinding::Type dx_binding_type             = argument_acc.IsAddressable()
-                                                                                     ? dx_addressable_binding_type
-                                                                                     : ProgramBindings::ArgumentBinding::Type::DescriptorTable;
+        ProgramBindings::ArgumentBinding::Type dx_binding_type = ProgramBindings::ArgumentBinding::Type::DescriptorTable;
+        if (argument_acc.IsAddressable())
+        {
+            if (IsUnorderedAccessInputType(binding_desc.Type))
+                // SRV or UAV root descriptors can only be Raw or Structured buffers, textures must be bound through DescriptorTable
+                dx_binding_type = binding_desc.Type == D3D_SIT_UAV_RWTYPED
+                                ? ProgramBindings::ArgumentBinding::Type::DescriptorTable
+                                : ProgramBindings::ArgumentBinding::Type::UnorderedAccessView;
+            else
+                dx_binding_type = binding_desc.Type == D3D_SIT_CBUFFER
+                                ? ProgramBindings::ArgumentBinding::Type::ConstantBufferView
+                                : ProgramBindings::ArgumentBinding::Type::ShaderResourceView;
+        }
 
         argument_bindings.push_back(std::make_shared<ProgramBindings::ArgumentBinding>(
             GetContext(),

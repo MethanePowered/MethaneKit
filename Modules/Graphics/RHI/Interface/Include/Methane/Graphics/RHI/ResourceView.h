@@ -242,10 +242,10 @@ static ResourceViews CreateResourceViews(const Ptrs<IResourceType>& resource_ptr
     ResourceViews resource_views;
     std::transform(resource_ptrs.begin(), resource_ptrs.end(), std::back_inserter(resource_views),
                    [](const Ptr<IResourceType>& resource_ptr)
-                       {
-                           META_CHECK_ARG_NOT_NULL(resource_ptr);
-                           return ResourceView(*resource_ptr);
-                       });
+                   {
+                       META_CHECK_ARG_NOT_NULL(resource_ptr);
+                       return ResourceView(*resource_ptr);
+                   });
     return resource_views;
 }
 
@@ -264,7 +264,7 @@ static ResourceViews CreateResourceViews(const std::vector<ResourceType>& resour
     ResourceViews resource_views;
     std::transform(resources.begin(), resources.end(), std::back_inserter(resource_views),
                    [](const ResourceType& resource)
-                       { return ResourceView(resource.GetInterface()); });
+                   { return ResourceView(resource.GetInterface()); });
     return resource_views;
 }
 

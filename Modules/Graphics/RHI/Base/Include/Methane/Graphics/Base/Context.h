@@ -85,6 +85,7 @@ public:
     // Context interface
     virtual void Initialize(Device& device, bool is_callback_emitted = true);
     virtual void Release();
+    virtual bool UploadResources() const;
 
     // IObject interface
     bool SetName(std::string_view name) override;
@@ -100,7 +101,6 @@ protected:
     void SetDevice(Device& device);
 
     // Context interface
-    virtual bool UploadResources();
     virtual void OnGpuWaitStart(WaitFor);
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 

@@ -137,9 +137,9 @@ void Texture::RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_vie
     GetImpl(m_impl_ptr).RestoreDescriptorViews(descriptor_by_view_id);
 }
 
-SubResource Texture::GetData(const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range) const
+SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range) const
 {
-    return GetImpl(m_impl_ptr).GetData(sub_resource_index, data_range);
+    return GetImpl(m_impl_ptr).GetData(target_cmd_queue, sub_resource_index, data_range);
 }
 
 Data::Size Texture::GetDataSize(Data::MemoryState size_type) const META_PIMPL_NOEXCEPT

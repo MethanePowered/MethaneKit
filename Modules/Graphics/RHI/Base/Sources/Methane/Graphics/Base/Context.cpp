@@ -282,7 +282,7 @@ void Context::ExecuteSyncCommandLists(const Rhi::ICommandKit& upload_cmd_kit) co
     }
 }
 
-bool Context::UploadResources()
+bool Context::UploadResources() const
 {
     META_FUNCTION_TASK();
     const Rhi::ICommandKit& upload_cmd_kit = GetUploadCommandKit();

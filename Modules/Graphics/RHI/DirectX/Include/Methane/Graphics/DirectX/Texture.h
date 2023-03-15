@@ -59,6 +59,7 @@ public:
 
     // IResource override
     void SetData(const SubResources&, Rhi::ICommandQueue&) override;
+    SubResource GetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range) override;
 
     // IResource override
     Opt<Descriptor> InitializeNativeViewDescriptor(const View::Id& view_id) override;
@@ -71,13 +72,15 @@ private:
 
     void CreateShaderResourceView(const Descriptor& descriptor) const;
     void CreateShaderResourceView(const Descriptor& descriptor, const View::Id& view_id) const;
+    void CreateUnorderedAccessView(const Descriptor& descriptor, const View::Id& view_id) const;
     void CreateRenderTargetView(const Descriptor& descriptor) const;
     void CreateRenderTargetView(const Descriptor& descriptor, const View::Id& view_id) const;
     void CreateDepthStencilView(const Descriptor& descriptor) const;
     void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, ::DirectX::ScratchImage& scratch_image) const;
 
-    // Upload resource is created for TextureType::Image only
+    // Upload & Read-back resources are created for TextureType::Image only
     wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
+    wrl::ComPtr<ID3D12Resource> m_cp_read_back_resource;
 };
 
 } // namespace Methane::Graphics::DirectX

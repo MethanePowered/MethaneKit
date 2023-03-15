@@ -197,6 +197,10 @@ void Program::InitRootSignature()
             root_parameters.back().InitAsShaderResourceView(bind_settings.point, bind_settings.space, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, shader_visibility);
             break;
 
+        case DirectArgumentBinding::Type::UnorderedAccessView:
+            root_parameters.back().InitAsUnorderedAccessView(bind_settings.point, bind_settings.space, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, shader_visibility);
+            break;
+
         default:
             META_UNEXPECTED_ARG(bind_settings.type);
         }

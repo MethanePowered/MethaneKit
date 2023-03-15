@@ -45,6 +45,7 @@ enum class ProgramArgumentBindingType : uint32_t
     DescriptorTable = 0,
     ConstantBufferView,
     ShaderResourceView,
+    UnorderedAccessView,
 };
 
 struct ProgramArgumentBindingSettings
@@ -96,6 +97,7 @@ public:
 
 private:
     const Settings                   m_settings_dx;
+    const Rhi::ResourceUsageMask     m_shader_usage;
     uint32_t                         m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
     DescriptorRange                  m_descriptor_range;
     const DescriptorHeapReservation* m_p_descriptor_heap_reservation = nullptr;

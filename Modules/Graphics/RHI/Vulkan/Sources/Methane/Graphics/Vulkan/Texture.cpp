@@ -362,19 +362,19 @@ void Texture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& tar
     }
 
     // Copy buffer data from staging upload resource to the device-local GPU resource
-    TransferCommandList&   upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
+    TransferCommandList&   upload_cmd_list = PrepareResourceTransfer(target_cmd_queue, State::CopyDest);
     const vk::CommandBuffer& vk_cmd_buffer = upload_cmd_list.GetNativeCommandBufferDefault();
     vk_cmd_buffer.copyBufferToImage(m_vk_unique_staging_buffer.get(), GetNativeResource(),
                                     vk::ImageLayout::eTransferDstOptimal, m_vk_copy_regions);
 
     if (GetSettings().mipmapped && sub_resources.size() < GetSubresourceCount().GetRawCount())
     {
-        CompleteResourceUpload(upload_cmd_list, GetState(), target_cmd_queue); // ownership transition only
+        CompleteResourceTransfer(upload_cmd_list, GetState(), target_cmd_queue); // ownership transition only
         GenerateMipLevels(target_cmd_queue, State::ShaderResource);
     }
     else
     {
-        CompleteResourceUpload(upload_cmd_list, State::ShaderResource, target_cmd_queue);
+        CompleteResourceTransfer(upload_cmd_list, State::ShaderResource, target_cmd_queue);
     }
     GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
 }

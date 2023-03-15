@@ -24,6 +24,7 @@ Tutorial demonstrating "game of life" computing on GPU in console application
 #include <Methane/Kit.h>
 #include <Methane/Version.h>
 #include <Methane/Data/AppShadersProvider.h>
+#include <Methane/Data/Math.hpp>
 
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/screen_interactive.hpp>
@@ -98,12 +99,13 @@ void InitializeFrameTexture()
         return;
     }
 
-    g_frame_texture = g_compute_context.CreateTexture(
-        rhi::TextureSettings::ForImage(
-            gfx::Dimensions(g_frame_size),
-            std::nullopt, gfx::PixelFormat::R8Uint, false,
-            rhi::ResourceUsageMask{ rhi::ResourceUsage::ShaderRead, rhi::ResourceUsage::ShaderWrite })
+    rhi::TextureSettings frame_texture_settings = rhi::TextureSettings::ForImage(
+        gfx::Dimensions(g_frame_size),
+        std::nullopt, gfx::PixelFormat::R8Uint, false,
+        rhi::ResourceUsageMask{ rhi::ResourceUsage::ShaderRead, rhi::ResourceUsage::ShaderWrite }
     );
+    frame_texture_settings.usage_mask.SetBitOn(rhi::ResourceUsage::ReadBack);
+    g_frame_texture = g_compute_context.CreateTexture(frame_texture_settings);
     g_frame_texture.SetName("Game of Life Frame Texture");
 
     g_compute_bindings = g_compute_state.GetProgram().CreateBindings({
@@ -111,19 +113,32 @@ void InitializeFrameTexture()
     });
     g_compute_bindings.SetName("Game of Life Compute Bindings");
 
-    if (!g_frame_data.IsEmptyOrNull())
+    // Complete bindings initialization
+    g_compute_context.CompleteInitialization();
+
+    // Randomize initial game state
+    Methane::Data::Bytes frame_data(g_frame_size.GetPixelsCount(), std::byte());
+    const uint32_t points_count = g_frame_size.GetPixelsCount() / 10;
+    std::uniform_int_distribution<> dist(0, g_frame_size.GetPixelsCount() - 1);
+    auto* cell_values = reinterpret_cast<uint8_t*>(frame_data.data());
+    for(uint32_t i = 0; i < points_count; i++)
     {
-        // Restore previous texture data
-        g_frame_texture.SetData({ g_frame_data }, g_compute_context.GetComputeCommandKit().GetQueue());
+        cell_values[dist(g_random_engine)] = 1U;
     }
+    g_frame_data = rhi::SubResource(std::move(frame_data));
+
+    // Set frame texture data
+    g_frame_texture.SetData({ g_frame_data }, g_compute_context.GetComputeCommandKit().GetQueue());
 }
 
 void ReleaseComputeContext()
 {
-    g_compute_bindings     = {};
-    g_frame_texture        = {};
-    g_compute_state        = {};
-    g_compute_context      = {};
+    g_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
+
+    g_compute_bindings = {};
+    g_frame_texture    = {};
+    g_compute_state    = {};
+    g_compute_context  = {};
 }
 
 void InitializeComputeContext()
@@ -151,11 +166,12 @@ void InitializeComputeContext()
 void ComputeTurn()
 {
     const rhi::ThreadGroupSize&  thread_group_size = g_compute_state.GetSettings().thread_group_size;
-    const rhi::ThreadGroupsCount thread_groups_count(g_frame_size.GetWidth() / thread_group_size.GetWidth(),
-                                                     g_frame_size.GetHeight() / thread_group_size.GetHeight(),
+    const rhi::ThreadGroupsCount thread_groups_count(data::DivCeil(g_frame_size.GetWidth(), thread_group_size.GetWidth()),
+                                                     data::DivCeil(g_frame_size.GetHeight(), thread_group_size.GetHeight()),
                                                      1U);
 
     rhi::ComputeCommandList compute_cmd_list = g_compute_context.GetComputeCommandKit().GetComputeListForEncoding(0U, "Game of Life Step");
+    compute_cmd_list.Reset(); // FIXME: it should be reset automatically by CommandKit
     compute_cmd_list.SetComputeState(g_compute_state);
     compute_cmd_list.SetProgramBindings(g_compute_bindings);
     compute_cmd_list.Dispatch(thread_groups_count);
@@ -166,33 +182,19 @@ void ComputeTurn()
 
 void DrawFrame(ftxui::Canvas& canvas)
 {
-#if 0
-    g_frame_data = std::move(g_frame_texture.GetData());
+    g_frame_data = std::move(g_frame_texture.GetData(g_compute_context.GetComputeCommandKit().GetQueue().GetInterface()));
+
     const uint8_t* cell_values = g_frame_data.GetDataPtr<uint8_t>();
     const rhi::TextureSettings& frame_texture_settings = g_frame_texture.GetSettings();
     for(uint32_t y = 0; y < frame_texture_settings.dimensions.GetHeight(); y++)
         for(uint32_t x = 0; x < frame_texture_settings.dimensions.GetWidth(); x++)
         {
             const uint32_t cell_index = x + y * frame_texture_settings.dimensions.GetWidth();
-            const uint8_t  cell_value = cell_values[cell_index];
-            switch(cell_value)
+            if (cell_values[cell_index])
             {
-            case 1: canvas.DrawPointOn(static_cast<int>(x), static_cast<int>(y)); break;
-            case 2: canvas.DrawBlockOn(static_cast<int>(x), static_cast<int>(y)); break;
+                canvas.DrawBlockOn(static_cast<int>(x), static_cast<int>(y));
             }
         }
-#else
-    // Temporary drawing of random points on canvas
-    const uint32_t points_count = g_frame_size.GetPixelsCount() / 100;
-    std::uniform_int_distribution<> dist(0, g_frame_size.GetPixelsCount() - 1);
-    for(uint32_t i = 0; i < points_count; i++)
-    {
-        int rnd = dist(g_random_engine);
-        int x = rnd % canvas.width();
-        int y = rnd / canvas.width();
-        canvas.DrawBlockOn(x, y);
-    }
-#endif
 }
 
 ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
@@ -239,10 +241,10 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
         return ftxui::canvas([&](Canvas& canvas)
         {
             // Update frame size
-            const gfx::FrameSize fram_size(canvas.width(), canvas.height());
-            if (g_frame_size != fram_size)
+            const gfx::FrameSize frame_size(canvas.width(), canvas.height());
+            if (g_frame_size != frame_size)
             {
-                g_frame_size = fram_size;
+                g_frame_size = frame_size;
                 InitializeFrameTexture();
             }
 

@@ -98,7 +98,9 @@ struct IResource
     virtual void SetData(const SubResources& sub_resources, ICommandQueue& target_cmd_queue) = 0;
     virtual void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) = 0;
 
-    [[nodiscard]] virtual SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) = 0;
+    [[nodiscard]] virtual SubResource               GetData(ICommandQueue& target_cmd_queue,
+                                                            const SubResource::Index& sub_resource_index = SubResource::Index(),
+                                                            const BytesRangeOpt& data_range = {}) = 0;
     [[nodiscard]] virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
     [[nodiscard]] virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const = 0;
     [[nodiscard]] virtual const SubResource::Count& GetSubresourceCount() const noexcept = 0;

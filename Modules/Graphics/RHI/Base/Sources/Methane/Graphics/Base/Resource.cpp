@@ -104,7 +104,7 @@ void Resource::SetData(const SubResources& sub_resources, Rhi::ICommandQueue&)
     }
 }
 
-Rhi::IResource::SubResource Resource::GetData(const SubResource::Index&, const std::optional<BytesRange>&)
+Rhi::IResource::SubResource Resource::GetData(Rhi::ICommandQueue&, const SubResource::Index&, const std::optional<BytesRange>&)
 {
     META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(IResource::SubResource(), "reading data is not allowed for this type of resource");
 }

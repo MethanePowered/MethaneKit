@@ -51,7 +51,7 @@ protected:
     Rhi::IFence& GetComputeFence() const;
 
     // Context overrides
-    bool UploadResources() override;
+    bool UploadResources() const override;
 
 private:
     void WaitForGpuComputeComplete();

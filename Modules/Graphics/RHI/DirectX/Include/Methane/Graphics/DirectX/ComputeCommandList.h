@@ -36,8 +36,14 @@ class ComputeCommandList final
 public:
     explicit ComputeCommandList(Base::CommandQueue& cmd_buffer);
 
+    // IRenderCommandList interface
+    void Reset(IDebugGroup* debug_group_ptr = nullptr) override;
+
     // IComputeCommandList interface
     void Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count) override;
+
+private:
+    DescriptorHeap& m_gpu_shader_resources_descriptor_heap;
 };
 
 } // namespace Methane::Graphics::DirectX

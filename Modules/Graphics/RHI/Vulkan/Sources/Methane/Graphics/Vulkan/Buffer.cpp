@@ -139,9 +139,9 @@ void Buffer::SetData(const Rhi::SubResources& sub_resources, Rhi::ICommandQueue&
         return;
 
     // In case of private GPU storage, copy buffer data from staging upload resource to the device-local GPU resource
-    TransferCommandList& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
+    TransferCommandList& upload_cmd_list = PrepareResourceTransfer(target_cmd_queue, State::CopyDest);
     upload_cmd_list.GetNativeCommandBufferDefault().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
-    CompleteResourceUpload(upload_cmd_list, GetTargetResourceStateByBufferType(buffer_settings.type), target_cmd_queue);
+    CompleteResourceTransfer(upload_cmd_list, GetTargetResourceStateByBufferType(buffer_settings.type), target_cmd_queue);
     GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources);
 }
 

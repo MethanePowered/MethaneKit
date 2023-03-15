@@ -62,7 +62,7 @@ public:
     {
         // Raw pointer is used for program bindings instead of smart pointer for performance reasons
         // to get rid of shared_from_this() overhead required to acquire smart pointer from reference
-        const ProgramBindings* program_bindings_ptr;
+        const ProgramBindings* program_bindings_ptr = nullptr;
         Ptrs<Object>           retained_resources;
     };
 

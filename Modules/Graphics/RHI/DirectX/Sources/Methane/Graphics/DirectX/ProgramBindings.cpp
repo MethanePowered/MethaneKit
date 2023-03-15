@@ -291,8 +291,7 @@ void ProgramBindings::AddRootParameterBindingsForArgument(ArgumentBinding& argum
 
     for (const ResourceView& resource_view_dx : argument_binding.GetDirectResourceViews())
     {
-        if (binding_settings.type == DXBindingType::ConstantBufferView ||
-            binding_settings.type == DXBindingType::ShaderResourceView)
+        if (binding_settings.type != DXBindingType::DescriptorTable)
         {
             AddRootParameterBinding(binding_settings.argument, {
                 argument_binding,
@@ -372,6 +371,13 @@ void ProgramBindings::RootParameterBinding::Apply(ID3D12GraphicsCommandList& d3d
             d3d12_command_list.SetGraphicsRootShaderResourceView(root_parameter_index, gpu_virtual_address);
         else if constexpr (command_list_type == Rhi::CommandListType::Compute)
             d3d12_command_list.SetComputeRootShaderResourceView(root_parameter_index, gpu_virtual_address);
+        break;
+
+    case ArgumentBinding::Type::UnorderedAccessView:
+        if constexpr (command_list_type == Rhi::CommandListType::Render)
+            d3d12_command_list.SetGraphicsRootUnorderedAccessView(root_parameter_index, gpu_virtual_address);
+        else if constexpr (command_list_type == Rhi::CommandListType::Compute)
+            d3d12_command_list.SetComputeRootUnorderedAccessView(root_parameter_index, gpu_virtual_address);
         break;
 
     default:

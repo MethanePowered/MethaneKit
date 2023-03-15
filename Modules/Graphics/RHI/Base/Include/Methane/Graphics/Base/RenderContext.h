@@ -71,7 +71,7 @@ protected:
     Rhi::IFence& GetRenderFence() const;
 
     // Context overrides
-    bool UploadResources() override;
+    bool UploadResources() const override;
     void OnGpuWaitStart(WaitFor wait_for) override;
     void OnGpuWaitComplete(WaitFor wait_for) override;
 
