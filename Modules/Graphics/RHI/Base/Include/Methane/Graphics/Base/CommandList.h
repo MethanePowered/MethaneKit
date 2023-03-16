@@ -110,8 +110,8 @@ protected:
     virtual void ResetCommandState();
     virtual void ApplyProgramBindings(ProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehaviorMask apply_behavior);
 
-    CommandState&       GetCommandState()               { return m_command_state; }
-    const CommandState& GetCommandState() const         { return m_command_state; }
+    CommandState&       GetCommandState()        { return m_command_state; }
+    const CommandState& GetCommandState() const  { return m_command_state; }
 
     void SetCommandListState(State state);
     void SetCommandListStateNoLock(State state);

@@ -26,7 +26,12 @@ RWTexture2D<uint> g_frame_texture;
 [numthreads(16, 16, 1)]
 void MainCS(uint3 id : SV_DispatchThreadID)
 {
-    uint sum = 0;
+    uint2 frame_texture_size;
+    g_frame_texture.GetDimensions(frame_texture_size.x, frame_texture_size.y);
+    if (id.x > frame_texture_size.x || id.y > frame_texture_size.y)
+        return;
+
+    uint alive_neighbors_count = 0;
     for (int x = -1; x <= 1; x++)
     {
         for (int y = -1; y <= 1; y++)
@@ -34,22 +39,18 @@ void MainCS(uint3 id : SV_DispatchThreadID)
             if (x == 0 && y == 0)
                 continue;
 
-            if (g_frame_texture[id.xy + float2(x,y)].x > 0)
-                sum++;
+            uint2 neighbor_pos = uint2(id.x + x, id.y + y);
+            if (g_frame_texture[neighbor_pos.xy] > 0)
+                alive_neighbors_count++;
         }
     }
 
-    uint2 frame_texture_size;
-    g_frame_texture.GetDimensions(frame_texture_size.x, frame_texture_size.y);
-    if (id.x > frame_texture_size.x || id.y > frame_texture_size.y)
-        return;
-
-    if (g_frame_texture[id.xy].x > 0)
+    if (g_frame_texture[id.xy] > 0)
     {
-        g_frame_texture[id.xy] = (sum == 2 || sum == 3) ? 1 : 0;
+        g_frame_texture[id.xy] = (alive_neighbors_count == 2 || alive_neighbors_count == 3) ? 1 : 0;
     }
     else
     {
-        g_frame_texture[id.xy] = (sum == 3) ? 1 : 0;
+        g_frame_texture[id.xy] = (alive_neighbors_count == 3) ? 1 : 0;
     }
 }

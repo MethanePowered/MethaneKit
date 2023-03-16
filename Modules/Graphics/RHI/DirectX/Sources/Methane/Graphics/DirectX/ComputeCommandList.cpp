@@ -40,7 +40,7 @@ ComputeCommandList::ComputeCommandList(Base::CommandQueue& cmd_queue)
 void ComputeCommandList::Reset(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
-    Base::ComputeCommandList::Reset(debug_group_ptr);
+    CommandList::Reset(debug_group_ptr);
 
     // Set GPU Visible Shader Resources descriptor heap to allow descriptor table resources binding
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();

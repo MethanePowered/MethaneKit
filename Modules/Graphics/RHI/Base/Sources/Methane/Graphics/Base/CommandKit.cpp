@@ -38,11 +38,23 @@ Methane command kit implementation.
 #include <condition_variable>
 
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics::Base
 {
 
 static constexpr uint32_t g_max_cmd_lists_count = 32U;
+
+static std::string GetCommandListNameById(Rhi::CommandListId id)
+{
+    switch(static_cast<Rhi::CommandListPurpose>(id))
+    {
+    case Rhi::CommandListPurpose::Default:        return "Default";
+    case Rhi::CommandListPurpose::PreUploadSync:  return "PreUploadSync";
+    case Rhi::CommandListPurpose::PostUploadSync: return "PostUploadSync";
+    }
+    return std::to_string(id);
+}
 
 CommandKit::CommandKit(const Rhi::IContext& context, Rhi::CommandListType cmd_list_type)
     : m_context(context)
@@ -127,7 +139,7 @@ Rhi::ICommandList& CommandKit::GetList(Rhi::CommandListId cmd_list_id = 0U) cons
     default: META_UNEXPECTED_ARG(m_cmd_list_type);
     }
 
-    cmd_list_ptr->SetName(fmt::format("{} Utility Command List {}", GetName(), cmd_list_id));
+    cmd_list_ptr->SetName(fmt::format("{} Helper List {}", GetName(), GetCommandListNameById(cmd_list_id)));
     return *cmd_list_ptr;
 }
 

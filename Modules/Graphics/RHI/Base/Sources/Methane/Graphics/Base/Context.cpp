@@ -39,12 +39,14 @@ namespace Methane::Graphics::Base
 static const std::array<std::string, magic_enum::enum_count<Rhi::CommandListType>()> g_default_command_kit_names = { {
     "Upload",
     "Render",
-    "Parallel Render"
+    "Parallel Render",
+    "Compute"
 } };
 
 #ifdef METHANE_LOGGING_ENABLED
-static const std::array<std::string, magic_enum::enum_count<Rhi::IContext::WaitFor>()> g_wait_for_names = {{
+static const std::array<std::string, magic_enum::enum_count<Rhi::ContextWaitFor>()> g_wait_for_names = {{
     "Render Complete",
+    "Compute Complete",
     "Frame Present",
     "Resources Upload"
 }};

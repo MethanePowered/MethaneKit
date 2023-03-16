@@ -52,6 +52,8 @@ static ftxui::RadioboxOption   g_compute_device_option = ftxui::RadioboxOption::
 static tf::Executor            g_parallel_executor;
 static rhi::ComputeContext     g_compute_context;
 static rhi::ComputeState       g_compute_state;
+static rhi::ComputeCommandList g_compute_cmd_list;
+static rhi::CommandListSet     g_compute_cmd_list_set;
 static rhi::Texture            g_frame_texture;
 static rhi::ProgramBindings    g_compute_bindings;
 static rhi::SubResource        g_frame_data;
@@ -91,6 +93,19 @@ const rhi::Device* GetComputeDevice()
     return g_compute_device_index < static_cast<int>(devices.size()) ? &devices[g_compute_device_index] : nullptr;
 }
 
+Methane::Data::Bytes GetRandomFrameData(const gfx::FrameSize& frame_size)
+{
+    Methane::Data::Bytes frame_data(frame_size.GetPixelsCount(), std::byte());
+    const uint32_t points_count = frame_size.GetPixelsCount() / 10;
+    std::uniform_int_distribution<> dist(0, frame_size.GetPixelsCount() - 1);
+    auto* cell_values = reinterpret_cast<uint8_t*>(frame_data.data());
+    for(uint32_t i = 0; i < points_count; i++)
+    {
+        cell_values[dist(g_random_engine)] = 1U;
+    }
+    return frame_data;
+}
+
 void InitializeFrameTexture()
 {
     if (!g_frame_size)
@@ -117,15 +132,7 @@ void InitializeFrameTexture()
     g_compute_context.CompleteInitialization();
 
     // Randomize initial game state
-    Methane::Data::Bytes frame_data(g_frame_size.GetPixelsCount(), std::byte());
-    const uint32_t points_count = g_frame_size.GetPixelsCount() / 10;
-    std::uniform_int_distribution<> dist(0, g_frame_size.GetPixelsCount() - 1);
-    auto* cell_values = reinterpret_cast<uint8_t*>(frame_data.data());
-    for(uint32_t i = 0; i < points_count; i++)
-    {
-        cell_values[dist(g_random_engine)] = 1U;
-    }
-    g_frame_data = rhi::SubResource(std::move(frame_data));
+    g_frame_data = rhi::SubResource(GetRandomFrameData(g_frame_size));
 
     // Set frame texture data
     g_frame_texture.SetData({ g_frame_data }, g_compute_context.GetComputeCommandKit().GetQueue());
@@ -158,32 +165,39 @@ void InitializeComputeContext()
         }),
         rhi::ThreadGroupSize(16U, 16U, 1U)
     });
+    g_compute_state.GetProgram().SetName("Game of Life Program");
     g_compute_state.SetName("Game of Life Compute State");
+
+    g_compute_cmd_list = g_compute_context.GetComputeCommandKit().GetQueue().CreateComputeCommandList();
+    g_compute_cmd_list.SetName("Game of Life Compute");
+
+    g_compute_cmd_list_set = rhi::CommandListSet({ g_compute_cmd_list.GetInterface() });
 
     InitializeFrameTexture();
 }
 
-void ComputeTurn()
+void ComputeFrame()
 {
+    const rhi::CommandQueue&     compute_cmd_queue = g_compute_context.GetComputeCommandKit().GetQueue();
     const rhi::ThreadGroupSize&  thread_group_size = g_compute_state.GetSettings().thread_group_size;
     const rhi::ThreadGroupsCount thread_groups_count(data::DivCeil(g_frame_size.GetWidth(), thread_group_size.GetWidth()),
                                                      data::DivCeil(g_frame_size.GetHeight(), thread_group_size.GetHeight()),
                                                      1U);
 
-    rhi::ComputeCommandList compute_cmd_list = g_compute_context.GetComputeCommandKit().GetComputeListForEncoding(0U, "Game of Life Step");
-    compute_cmd_list.Reset(); // FIXME: it should be reset automatically by CommandKit
-    compute_cmd_list.SetComputeState(g_compute_state);
-    compute_cmd_list.SetProgramBindings(g_compute_bindings);
-    compute_cmd_list.Dispatch(thread_groups_count);
-    compute_cmd_list.Commit();
+    META_DEBUG_GROUP_VAR(s_debug_group, "Compute Frame");
+    g_compute_cmd_list.ResetWithState(g_compute_state, &s_debug_group);
+    g_compute_cmd_list.SetProgramBindings(g_compute_bindings);
+    g_compute_cmd_list.Dispatch(thread_groups_count);
+    g_compute_cmd_list.Commit();
 
-    g_compute_context.GetComputeCommandKit().ExecuteListSetAndWaitForCompletion();
+    compute_cmd_queue.Execute(g_compute_cmd_list_set);
+    g_frame_data = std::move(g_frame_texture.GetData(compute_cmd_queue.GetInterface()));
+
+    g_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
 }
 
 void DrawFrame(ftxui::Canvas& canvas)
 {
-    g_frame_data = std::move(g_frame_texture.GetData(g_compute_context.GetComputeCommandKit().GetQueue().GetInterface()));
-
     const uint8_t* cell_values = g_frame_data.GetDataPtr<uint8_t>();
     const rhi::TextureSettings& frame_texture_settings = g_frame_texture.GetSettings();
     for(uint32_t y = 0; y < frame_texture_settings.dimensions.GetHeight(); y++)
@@ -249,7 +263,7 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
             }
 
             // Compute turn in Game of Life and draw on frame
-            ComputeTurn();
+            ComputeFrame();
             DrawFrame(canvas);
         }) | flex;
     });

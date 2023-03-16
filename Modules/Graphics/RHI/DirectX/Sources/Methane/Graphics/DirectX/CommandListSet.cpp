@@ -49,7 +49,7 @@ CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs,
     const Refs<Base::CommandList>& base_command_list_refs = GetBaseRefs();
 
     std::stringstream fence_name_ss;
-    fence_name_ss << "Execution completed for command list set: ";
+    fence_name_ss << "Execution completed for command list set:";
 
     m_native_command_lists.reserve(base_command_list_refs.size());
     for(const Ref<Base::CommandList>& command_list_ref : base_command_list_refs)

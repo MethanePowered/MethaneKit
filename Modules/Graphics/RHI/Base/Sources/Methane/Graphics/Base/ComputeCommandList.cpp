@@ -38,7 +38,7 @@ ComputeCommandList::ComputeCommandList(CommandQueue& command_queue)
 void ComputeCommandList::ResetWithState(Rhi::IComputeState& compute_state, IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
-    CommandList::Reset(debug_group_ptr);
+    Reset(debug_group_ptr);
     SetComputeState(compute_state);
 }
 
