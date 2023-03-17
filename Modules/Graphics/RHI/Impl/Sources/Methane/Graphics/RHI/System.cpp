@@ -39,9 +39,17 @@ namespace Methane::Graphics::Rhi
 
 META_PIMPL_METHODS_IMPLEMENT(System);
 
-NativeApi System::GetNativeApi() noexcept
+constexpr NativeApi System::GetNativeApi() noexcept
 {
-    return ISystem::GetNativeApi();
+#if defined METHANE_GFX_METAL
+    return NativeApi::Metal;
+#elif defined METHANE_GFX_DIRECTX
+    return NativeApi::DirectX;
+#elif defined METHANE_GFX_VULKAN
+    return NativeApi::Vulkan;
+#else
+    return NativeApi::Undefined;
+#endif
 }
 
 System& System::Get()

@@ -40,7 +40,7 @@ namespace Methane::Graphics::Rhi
 class System // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
-    [[nodiscard]] META_PIMPL_API static NativeApi GetNativeApi() noexcept;
+    [[nodiscard]] META_PIMPL_API static constexpr NativeApi GetNativeApi() noexcept;
     [[nodiscard]] META_PIMPL_API static System& Get();
 
     META_PIMPL_METHODS_DECLARE(System);

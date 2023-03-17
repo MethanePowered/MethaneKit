@@ -191,7 +191,12 @@ void ComputeFrame()
     g_compute_cmd_list.Commit();
 
     compute_cmd_queue.Execute(g_compute_cmd_list_set);
-    g_frame_data = std::move(g_frame_texture.GetData(compute_cmd_queue.GetInterface()));
+
+    // FIXME: Temporary disable frame data getter for Vulkan and Metal, to fix unreachable code warning/error
+    if constexpr (rhi::System::GetNativeApi() != rhi::NativeApi::DirectX)
+    {
+        g_frame_data = std::move(g_frame_texture.GetData(compute_cmd_queue.GetInterface()));
+    }
 
     g_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
 }
@@ -264,7 +269,7 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
 
             // Compute turn in Game of Life and draw on frame
             ComputeFrame();
-            DrawFrame(canvas);
+            //DrawFrame(canvas);
         }) | flex;
     });
 
