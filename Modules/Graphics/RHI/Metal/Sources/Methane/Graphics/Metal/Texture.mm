@@ -149,6 +149,48 @@ void Texture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& tar
     GetBaseContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
 }
 
+Rhi::SubResource Texture::GetData(Rhi::ICommandQueue&, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_mtl_texture);
+    META_CHECK_ARG_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
+
+    TransferCommandList& transfer_command_list = dynamic_cast<TransferCommandList&>(GetBaseContext().GetUploadCommandKit().GetListForEncoding());
+    transfer_command_list.RetainResource(*this);
+
+    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
+    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
+
+    const Settings& settings        = GetSettings();
+    const uint32_t  bytes_per_row   = settings.dimensions.GetWidth()  * GetPixelSize(settings.pixel_format);
+    const uint32_t  bytes_per_image = settings.dimensions.GetHeight() * bytes_per_row;
+    const MTLRegion texture_region  = GetTextureRegion(settings.dimensions, settings.dimension_type);
+
+    const id<MTLBuffer> mtl_read_back_buffer = GetReadBackBuffer(bytes_per_image);
+    [mtl_blit_encoder copyFromTexture: m_mtl_texture
+                          sourceSlice: sub_resource_index.GetDepthSlice()
+                          sourceLevel: sub_resource_index.GetMipLevel()
+                         sourceOrigin: texture_region.origin
+                           sourceSize: texture_region.size
+                             toBuffer: mtl_read_back_buffer
+                    destinationOffset: 0U
+               destinationBytesPerRow: bytes_per_row
+             destinationBytesPerImage: bytes_per_image];
+
+    GetBaseContext().UploadResources();
+
+    auto* data_ptr = reinterpret_cast<std::byte*>([mtl_read_back_buffer contents]);
+    Data::Size data_size = static_cast<Data::Size>([mtl_read_back_buffer length]);
+    if (data_range.has_value())
+    {
+        META_CHECK_ARG_LESS_DESCR(data_range->GetEnd(), data_size, "provided texture subresource data range is out of data bounds");
+        data_ptr += data_range->GetStart();
+        data_size = data_range->GetLength();
+    }
+
+    return Rhi::SubResource(Data::Bytes(data_ptr, data_ptr + data_size), sub_resource_index, data_range);
+}
+
 void Texture::UpdateFrameBuffer()
 {
     META_FUNCTION_TASK();

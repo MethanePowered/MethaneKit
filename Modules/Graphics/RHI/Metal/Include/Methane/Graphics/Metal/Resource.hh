@@ -66,7 +66,7 @@ protected:
         return dynamic_cast<const IContext&>(Base::Resource::GetBaseContext());
     }
 
-    id<MTLBuffer> GetUploadSubresourceBuffer(const Rhi::IResource::SubResource& sub_resource)
+    id<MTLBuffer> GetUploadSubresourceBuffer(const Rhi::SubResource& sub_resource)
     {
         META_FUNCTION_TASK();
         const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(Base::Resource::GetSubresourceCount());
@@ -90,8 +90,21 @@ protected:
         return mtl_upload_subresource_buffer;
     }
 
+    id<MTLBuffer> GetReadBackBuffer(Data::Size data_size)
+    {
+        META_FUNCTION_TASK();
+        if (!m_mtl_read_back_buffer || m_mtl_read_back_buffer.length != data_size)
+        {
+            const id<MTLDevice>& mtl_device = GetMetalContext().GetMetalDevice().GetNativeDevice();
+            m_mtl_read_back_buffer = [mtl_device newBufferWithLength:data_size
+                                                             options:MTLResourceStorageModeShared];
+        }
+        return m_mtl_read_back_buffer;
+    }
+
 private:
     std::vector<id<MTLBuffer>> m_upload_subresource_buffers;
+    id<MTLBuffer> m_mtl_read_back_buffer;
 };
 
 } // namespace Methane::Graphics::Metal
