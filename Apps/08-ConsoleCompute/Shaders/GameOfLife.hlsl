@@ -45,12 +45,15 @@ void MainCS(uint3 id : SV_DispatchThreadID)
         }
     }
 
+    uint is_alive = 0;
     if (g_frame_texture[id.xy] > 0)
     {
-        g_frame_texture[id.xy] = (alive_neighbors_count == 2 || alive_neighbors_count == 3) ? 1 : 0;
+        is_alive = (alive_neighbors_count == 2 || alive_neighbors_count == 3) ? 1 : 0;
     }
     else
     {
-        g_frame_texture[id.xy] = (alive_neighbors_count == 3) ? 1 : 0;
+        is_alive = (alive_neighbors_count == 3) ? 1 : 0;
     }
+
+    g_frame_texture[id.xy] = is_alive;
 }
