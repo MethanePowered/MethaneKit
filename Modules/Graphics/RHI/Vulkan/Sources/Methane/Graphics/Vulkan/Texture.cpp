@@ -417,6 +417,8 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const Su
     vk_cmd_buffer.copyImageToBuffer(GetNativeResource(), vk::ImageLayout::eTransferSrcOptimal,
                                     m_vk_unique_staging_buffer.get(), image_to_buffer_copy);
 
+    CompleteResourceTransfer(upload_cmd_list, initial_texture_state, target_cmd_queue);
+
     // Execute resource transfer commands and wait for completion
     GetBaseContext().UploadResources();
 
@@ -439,7 +441,6 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const Su
     Rhi::SubResource sub_resource(Data::Bytes(staging_data_ptr, staging_data_ptr + staging_data_size), sub_resource_index, data_range);
 
     GetNativeDevice().unmapMemory(vk_device_memory);
-    CompleteResourceTransfer(upload_cmd_list, initial_texture_state, target_cmd_queue);
     return sub_resource;
 }
 
