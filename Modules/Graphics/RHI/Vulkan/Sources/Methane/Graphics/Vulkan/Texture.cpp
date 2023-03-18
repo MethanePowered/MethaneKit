@@ -67,6 +67,10 @@ vk::ImageUsageFlags Texture::GetNativeImageUsageFlags(const Rhi::TextureSettings
         break;
 
     case Rhi::TextureType::Image:
+        if (settings.usage_mask.HasAnyBit(Rhi::ResourceUsage::ShaderWrite))
+            usage_flags |= vk::ImageUsageFlagBits::eStorage;
+        [[fallthrough]];
+
     case Rhi::TextureType::RenderTarget:
         if (settings.usage_mask.HasAnyBit(Rhi::ResourceUsage::RenderTarget))
             usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
@@ -131,7 +135,11 @@ static vk::UniqueImage CreateNativeImage(const IContext& context, const Rhi::Tex
 static vk::ImageLayout GetVulkanImageLayoutByUsage(Rhi::TextureType texture_type, Rhi::ResourceUsageMask usage) noexcept
 {
     META_FUNCTION_TASK();
-    if (usage.HasAnyBits({ Rhi::ResourceUsage::ShaderRead, Rhi::ResourceUsage::ShaderWrite }))
+    if (usage.HasAnyBit(Rhi::ResourceUsage::ShaderWrite))
+    {
+        return vk::ImageLayout::eGeneral;
+    }
+    if (usage.HasAnyBit(Rhi::ResourceUsage::ShaderRead))
     {
         return texture_type == Rhi::TextureType::DepthStencil
              ? vk::ImageLayout::eDepthStencilReadOnlyOptimal
@@ -223,7 +231,8 @@ vk::ImageViewType Texture::DimensionTypeToImageViewType(Rhi::TextureDimensionTyp
 }
 
 Texture::Texture(const Base::Context& context, const Settings& settings)
-    : Texture(context, settings, CreateNativeImage(dynamic_cast<const IContext&>(context), settings, vk::ImageUsageFlagBits::eTransferDst))
+    : Texture(context, settings, CreateNativeImage(dynamic_cast<const IContext&>(context), settings,
+                                                   vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eTransferSrc))
 {
 }
 
@@ -266,7 +275,7 @@ void Texture::InitializeAsImage()
     m_vk_unique_staging_buffer = vk_device.createBufferUnique(
         vk::BufferCreateInfo(vk::BufferCreateFlags{},
                              vk_image_memory_requirements.size,
-                             vk::BufferUsageFlagBits::eTransferSrc,
+                             vk::BufferUsageFlagBits::eTransferSrc | vk::BufferUsageFlagBits::eTransferDst,
                              vk::SharingMode::eExclusive)
     );
 
@@ -377,6 +386,61 @@ void Texture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& tar
         CompleteResourceTransfer(upload_cmd_list, State::ShaderResource, target_cmd_queue);
     }
     GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
+}
+
+Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range)
+{
+    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, Rhi::TextureType::Image, "only image textures support data read-back from CPU");
+    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
+                              "getting texture data from GPU is allowed for buffers with CPU Read-back flag only");
+
+    const Settings&           settings          = GetSettings();
+    const uint32_t            bytes_per_row     = settings.dimensions.GetWidth()  * GetPixelSize(settings.pixel_format);
+    const uint32_t            bytes_per_image   = settings.dimensions.GetHeight() * bytes_per_row;
+    const SubResource::Count& subresource_count = GetSubresourceCount();
+    const State           initial_texture_state = GetState();
+
+    // Copy texture data from device-local GPU resource to staging resource for read-back
+    vk::BufferImageCopy image_to_buffer_copy(
+        0U, 0U, 0U,
+        vk::ImageSubresourceLayers(
+            Texture::GetNativeImageAspectFlags(settings),
+            sub_resource_index.GetMipLevel(),
+            sub_resource_index.GetBaseLayerIndex(subresource_count),
+            1U
+        ),
+        vk::Offset3D(),
+        TypeConverter::FrameSizeToExtent3D(GetSettings().dimensions.AsRectSize())
+    );
+    TransferCommandList&   upload_cmd_list = PrepareResourceTransfer(target_cmd_queue, State::CopySource);
+    const vk::CommandBuffer& vk_cmd_buffer = upload_cmd_list.GetNativeCommandBufferDefault();
+    vk_cmd_buffer.copyImageToBuffer(GetNativeResource(), vk::ImageLayout::eTransferSrcOptimal,
+                                    m_vk_unique_staging_buffer.get(), image_to_buffer_copy);
+
+    // Execute resource transfer commands and wait for completion
+    GetBaseContext().UploadResources();
+
+    // Map staging buffer memory and copy texture subresource data
+    const vk::DeviceMemory& vk_device_memory = m_vk_unique_staging_memory.get();
+    Data::Size   staging_data_offset = 0U;
+    Data::Size   staging_data_size   = bytes_per_image;
+    Data::RawPtr staging_data_ptr    = nullptr;
+    if (data_range)
+    {
+        META_CHECK_ARG_LESS_DESCR(data_range->GetEnd(), staging_data_size, "provided texture subresource data range is out of bounds");
+        staging_data_offset = data_range->GetStart();
+        staging_data_size   = data_range->GetLength();
+    }
+    const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, staging_data_offset, staging_data_size, vk::MemoryMapFlags{},
+                                                                 reinterpret_cast<void**>(&staging_data_ptr)); // NOSONAR
+
+    META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map staging buffer subresource");
+    META_CHECK_ARG_NOT_NULL_DESCR(staging_data_ptr, "failed to map buffer subresource");
+    Rhi::SubResource sub_resource(Data::Bytes(staging_data_ptr, staging_data_ptr + staging_data_size), sub_resource_index, data_range);
+
+    GetNativeDevice().unmapMemory(vk_device_memory);
+    CompleteResourceTransfer(upload_cmd_list, initial_texture_state, target_cmd_queue);
+    return sub_resource;
 }
 
 bool Texture::SetName(std::string_view name)

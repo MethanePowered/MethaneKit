@@ -30,6 +30,20 @@ Vulkan implementation of the program argument binding interface.
 namespace Methane::Graphics::Vulkan
 {
 
+static Rhi::ResourceUsageMask GetResourceUsageByDescriptorType(vk::DescriptorType descriptor_type)
+{
+    META_FUNCTION_TASK();
+    Rhi::ResourceUsageMask resource_usage{ Rhi::ResourceUsage::ShaderRead };
+    if (descriptor_type == vk::DescriptorType::eStorageImage         ||
+        descriptor_type == vk::DescriptorType::eStorageTexelBuffer   ||
+        descriptor_type == vk::DescriptorType::eStorageBuffer        ||
+        descriptor_type == vk::DescriptorType::eStorageBufferDynamic)
+    {
+        resource_usage.SetBitOn(Rhi::ResourceUsage::ShaderWrite);
+    }
+    return resource_usage;
+}
+
 ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, const Settings& settings)
     : Base::ProgramArgumentBinding(context, settings)
     , m_settings_vk(settings)
@@ -91,9 +105,11 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
     m_vk_buffer_views.clear();
 
     const size_t total_resources_count = resource_views.size();
-    for(const Rhi::IResource::View& resource_view : resource_views)
+    const Rhi::ResourceUsageMask resource_usage = GetResourceUsageByDescriptorType(m_settings_vk.descriptor_type);
+
+    for(const Rhi::ResourceView& resource_view : resource_views)
     {
-        const IResource::View resource_view_vk(resource_view, Rhi::ResourceUsageMask(Rhi::ResourceUsage::ShaderRead));
+        const ResourceView resource_view_vk(resource_view, resource_usage);
 
         if (AddDescriptor(m_vk_descriptor_images, total_resources_count, resource_view_vk.GetNativeDescriptorImageInfoPtr()))
             continue;

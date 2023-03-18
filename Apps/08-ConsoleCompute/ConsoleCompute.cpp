@@ -128,14 +128,14 @@ void InitializeFrameTexture()
     });
     g_compute_bindings.SetName("Game of Life Compute Bindings");
 
-    // Complete bindings initialization
-    g_compute_context.CompleteInitialization();
-
     // Randomize initial game state
     g_frame_data = rhi::SubResource(GetRandomFrameData(g_frame_size));
 
     // Set frame texture data
     g_frame_texture.SetData({ g_frame_data }, g_compute_context.GetComputeCommandKit().GetQueue());
+
+    // Complete bindings and texture initialization
+    g_compute_context.CompleteInitialization();
 }
 
 void ReleaseComputeContext()

@@ -183,7 +183,7 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue&, const SubResource::Index&
     Data::Size data_size = static_cast<Data::Size>([mtl_read_back_buffer length]);
     if (data_range.has_value())
     {
-        META_CHECK_ARG_LESS_DESCR(data_range->GetEnd(), data_size, "provided texture subresource data range is out of data bounds");
+        META_CHECK_ARG_LESS_DESCR(data_range->GetEnd(), data_size, "provided texture subresource data range is out of bounds");
         data_ptr += data_range->GetStart();
         data_size = data_range->GetLength();
     }
