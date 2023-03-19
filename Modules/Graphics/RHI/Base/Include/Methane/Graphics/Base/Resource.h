@@ -74,7 +74,9 @@ protected:
     void  SetSubResourceCount(const SubResource::Count& sub_resource_count);
     void  ValidateSubResource(const SubResource& sub_resource) const;
     void  ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const;
-    void  SetStateChangeUpdatesBarriers(bool is_state_change_updates_barriers)          { m_is_state_change_updates_barriers = is_state_change_updates_barriers; }
+
+    void  SetStateChangeUpdatesBarriers(bool is_state_change_updates_barriers)
+    { m_is_state_change_updates_barriers = is_state_change_updates_barriers; }
 
     [[nodiscard]] virtual Data::Size CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const;
 

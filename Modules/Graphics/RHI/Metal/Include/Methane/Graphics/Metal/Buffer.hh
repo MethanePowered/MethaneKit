@@ -40,6 +40,9 @@ public:
 
     // IResource interface
     void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override;
+    SubResource GetData(Rhi::ICommandQueue& target_cmd_queue,
+                        const SubResource::Index& sub_resource_index = {},
+                        const BytesRangeOpt& data_range = {}) override;
 
     // IObject interface
     bool SetName(std::string_view name) override;
@@ -50,6 +53,8 @@ public:
 private:
     void SetDataToManagedBuffer(const SubResources& sub_resources);
     void SetDataToPrivateBuffer(const SubResources& sub_resources);
+    Data::Bytes GetDataFromManagedBuffer(const BytesRange& data_range);
+    Data::Bytes GetDataFromPrivateBuffer(const BytesRange& data_range);
 
     id<MTLBuffer> m_mtl_buffer;
 };

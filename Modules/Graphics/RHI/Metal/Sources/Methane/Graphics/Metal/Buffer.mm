@@ -79,6 +79,28 @@ void Buffer::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& targ
     }
 }
 
+Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
+                              "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
+
+    ValidateSubResource(sub_resource_index, data_range);
+
+    const BytesRange buffer_data_range(data_range ? data_range->GetStart() : 0U,
+                                       data_range ? data_range->GetEnd()   : GetSubResourceDataSize(sub_resource_index));
+
+    Data::Bytes data;
+    switch(GetSettings().storage_mode)
+    {
+    case IBuffer::StorageMode::Managed: data = GetDataFromManagedBuffer(buffer_data_range); break;
+    case IBuffer::StorageMode::Private: data = GetDataFromPrivateBuffer(buffer_data_range); break;
+    default: META_UNEXPECTED_ARG_RETURN(GetSettings().storage_mode, SubResource());
+    }
+
+    return Rhi::SubResource(std::move(data), sub_resource_index, data_range);
+}
+
 void Buffer::SetDataToManagedBuffer(const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
@@ -124,7 +146,7 @@ void Buffer::SetDataToPrivateBuffer(const SubResources& sub_resources)
             data_offset = sub_resource.GetDataRange().GetStart();
 
         [mtl_blit_encoder copyFromBuffer:GetUploadSubresourceBuffer(sub_resource)
-                            sourceOffset:0
+                            sourceOffset:0U
                                 toBuffer:m_mtl_buffer
                        destinationOffset:data_offset
                                     size:sub_resource.GetDataSize()];
@@ -133,6 +155,40 @@ void Buffer::SetDataToPrivateBuffer(const SubResources& sub_resources)
     }
     
     GetBaseContext().RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources);
+}
+
+Data::Bytes Buffer::GetDataFromManagedBuffer(const BytesRange& data_range)
+{
+    META_FUNCTION_TASK();
+    auto* data_ptr = reinterpret_cast<std::byte*>([m_mtl_buffer contents]);
+    Data::Size data_size = static_cast<Data::Size>([m_mtl_buffer length]);
+
+    META_CHECK_ARG_LESS_DESCR(data_range.GetEnd(), data_size, "provided subresource data range is out of buffer bounds");
+    data_ptr += data_range.GetStart();
+
+    return Data::Bytes(data_ptr, data_ptr + data_range.GetLength());
+}
+
+Data::Bytes Buffer::GetDataFromPrivateBuffer(const BytesRange& data_range)
+{
+    META_FUNCTION_TASK();
+    TransferCommandList& transfer_command_list = dynamic_cast<TransferCommandList&>(GetBaseContext().GetUploadCommandKit().GetListForEncoding());
+    transfer_command_list.RetainResource(*this);
+
+    const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
+    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
+
+    const id<MTLBuffer> mtl_read_back_buffer = GetReadBackBuffer(data_range.GetLength());
+    [mtl_blit_encoder copyFromBuffer:m_mtl_buffer
+                        sourceOffset:data_range.GetStart()
+                            toBuffer:mtl_read_back_buffer
+                   destinationOffset:0U
+                                size:data_range.GetLength()];
+
+    GetBaseContext().UploadResources();
+
+    auto* data_ptr = reinterpret_cast<std::byte*>([mtl_read_back_buffer contents]) + data_range.GetStart();
+    return Data::Bytes(data_ptr, data_ptr + data_range.GetLength());
 }
 
 MTLIndexType Buffer::GetNativeIndexType() const noexcept

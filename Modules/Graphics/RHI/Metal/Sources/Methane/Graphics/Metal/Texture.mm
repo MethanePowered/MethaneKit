@@ -155,6 +155,8 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue&, const SubResource::Index&
     META_CHECK_ARG_NOT_NULL(m_mtl_texture);
     META_CHECK_ARG_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
 
+    ValidateSubResource(sub_resource_index, data_range);
+
     TransferCommandList& transfer_command_list = dynamic_cast<TransferCommandList&>(GetBaseContext().GetUploadCommandKit().GetListForEncoding());
     transfer_command_list.RetainResource(*this);
 
