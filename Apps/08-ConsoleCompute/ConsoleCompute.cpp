@@ -46,19 +46,22 @@ static std::mt19937 g_random_engine = []()
     return std::mt19937(seed);
 }();
 
-static uint32_t                g_time = 0;
-static gfx::FrameSize          g_frame_size;
-static int                     g_compute_device_index = 0;
-static ftxui::RadioboxOption   g_compute_device_option = ftxui::RadioboxOption::Simple();
-static tf::Executor            g_parallel_executor;
-static rhi::ComputeContext     g_compute_context;
-static rhi::ComputeState       g_compute_state;
-static rhi::ComputeCommandList g_compute_cmd_list;
-static rhi::CommandListSet     g_compute_cmd_list_set;
-static rhi::Texture            g_frame_texture;
-static rhi::ProgramBindings    g_compute_bindings;
-static rhi::SubResource        g_frame_data;
-static data::FpsCounter        g_fps_counter(60U);
+static uint32_t                     g_time = 0;
+static const gfx::FrameSize         g_field_size(2048U, 2048U);
+static gfx::FrameRect               g_frame_rect;
+static int                          g_compute_device_index = 0;
+static ftxui::RadioboxOption        g_compute_device_option = ftxui::RadioboxOption::Simple();
+static tf::Executor                 g_parallel_executor;
+static rhi::ComputeContext          g_compute_context;
+static rhi::ComputeState            g_compute_state;
+static rhi::ComputeCommandList      g_compute_cmd_list;
+static rhi::CommandListSet          g_compute_cmd_list_set;
+static rhi::Texture                 g_frame_texture;
+static rhi::ProgramBindings         g_compute_bindings;
+static rhi::SubResource             g_frame_data;
+static data::FpsCounter             g_fps_counter(60U);
+static std::optional<data::Point2I> g_mouse_pressed_pos;
+static std::optional<data::Point2I> g_frame_pressed_pos;
 
 const rhi::Devices& GetComputeDevices()
 {
@@ -98,7 +101,7 @@ const rhi::Device* GetComputeDevice()
 Methane::Data::Bytes GetRandomFrameData(const gfx::FrameSize& frame_size)
 {
     Methane::Data::Bytes frame_data(frame_size.GetPixelsCount(), std::byte());
-    const uint32_t points_count = frame_size.GetPixelsCount() / 10;
+    const uint32_t points_count = frame_size.GetPixelsCount() * 2U / 3U;
     std::uniform_int_distribution<> dist(0, frame_size.GetPixelsCount() - 1);
     auto* cell_values = reinterpret_cast<uint8_t*>(frame_data.data());
     for(uint32_t i = 0; i < points_count; i++)
@@ -110,18 +113,15 @@ Methane::Data::Bytes GetRandomFrameData(const gfx::FrameSize& frame_size)
 
 void InitializeFrameTexture()
 {
-    if (!g_frame_size)
-    {
-        g_frame_texture = {};
-        return;
-    }
-
     rhi::TextureSettings frame_texture_settings = rhi::TextureSettings::ForImage(
-        gfx::Dimensions(g_frame_size),
+        gfx::Dimensions(g_field_size),
         std::nullopt, gfx::PixelFormat::R8Uint, false,
-        rhi::ResourceUsageMask{ rhi::ResourceUsage::ShaderRead, rhi::ResourceUsage::ShaderWrite }
+        rhi::ResourceUsageMask{
+            rhi::ResourceUsage::ShaderRead,
+            rhi::ResourceUsage::ShaderWrite,
+            rhi::ResourceUsage::ReadBack
+        }
     );
-    frame_texture_settings.usage_mask.SetBitOn(rhi::ResourceUsage::ReadBack);
     g_frame_texture = g_compute_context.CreateTexture(frame_texture_settings);
     g_frame_texture.SetName("Game of Life Frame Texture");
 
@@ -131,7 +131,7 @@ void InitializeFrameTexture()
     g_compute_bindings.SetName("Game of Life Compute Bindings");
 
     // Randomize initial game state
-    g_frame_data = rhi::SubResource(GetRandomFrameData(g_frame_size));
+    g_frame_data = rhi::SubResource(GetRandomFrameData(g_field_size));
 
     // Set frame texture data
     g_frame_texture.SetData({ g_frame_data }, g_compute_context.GetComputeCommandKit().GetQueue());
@@ -172,18 +172,17 @@ void InitializeComputeContext()
 
     g_compute_cmd_list = g_compute_context.GetComputeCommandKit().GetQueue().CreateComputeCommandList();
     g_compute_cmd_list.SetName("Game of Life Compute");
-
     g_compute_cmd_list_set = rhi::CommandListSet({ g_compute_cmd_list.GetInterface() });
 
     InitializeFrameTexture();
 }
 
-void ComputeFrame()
+void ComputeIteration()
 {
     const rhi::CommandQueue&     compute_cmd_queue = g_compute_context.GetComputeCommandKit().GetQueue();
     const rhi::ThreadGroupSize&  thread_group_size = g_compute_state.GetSettings().thread_group_size;
-    const rhi::ThreadGroupsCount thread_groups_count(data::DivCeil(g_frame_size.GetWidth(), thread_group_size.GetWidth()),
-                                                     data::DivCeil(g_frame_size.GetHeight(), thread_group_size.GetHeight()),
+    const rhi::ThreadGroupsCount thread_groups_count(data::DivCeil(g_field_size.GetWidth(), thread_group_size.GetWidth()),
+                                                     data::DivCeil(g_field_size.GetHeight(), thread_group_size.GetHeight()),
                                                      1U);
 
     META_DEBUG_GROUP_VAR(s_debug_group, "Compute Frame");
@@ -193,26 +192,24 @@ void ComputeFrame()
     g_compute_cmd_list.Commit();
 
     compute_cmd_queue.Execute(g_compute_cmd_list_set);
-    g_frame_data = std::move(g_frame_texture.GetData(compute_cmd_queue.GetInterface()));
-
     g_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
+    g_frame_data = std::move(g_frame_texture.GetData(compute_cmd_queue.GetInterface()));
     g_fps_counter.OnCpuFrameReadyToPresent();
 }
 
 void PresentFrame(ftxui::Canvas& canvas)
 {
-    const uint8_t* cell_values = g_frame_data.GetDataPtr<uint8_t>();
-    const rhi::TextureSettings& frame_texture_settings = g_frame_texture.GetSettings();
-    for(uint32_t y = 0; y < frame_texture_settings.dimensions.GetHeight(); y++)
-        for(uint32_t x = 0; x < frame_texture_settings.dimensions.GetWidth(); x++)
+    const uint8_t* cells  = g_frame_data.GetDataPtr<uint8_t>();
+    for (uint32_t y = 0; y < g_frame_rect.size.GetHeight(); y++)
+        for (uint32_t x = 0; x < g_frame_rect.size.GetWidth(); x++)
         {
-            const uint32_t cell_index = x + y * frame_texture_settings.dimensions.GetWidth();
-            if (cell_values[cell_index])
+            uint32_t cell_x = g_frame_rect.origin.GetX() + x;
+            uint32_t cell_y = g_frame_rect.origin.GetY() + y;
+            if (cells[cell_x + cell_y * g_field_size.GetWidth()])
             {
                 canvas.DrawBlockOn(static_cast<int>(x), static_cast<int>(y));
             }
         }
-
     g_fps_counter.OnCpuFramePresented();
 }
 
@@ -229,7 +226,9 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
                 separator(),
                 text(fmt::format(" FPS: {} ", g_fps_counter.GetFramesPerSecond())),
                 separator(),
-                text(fmt::format(" Field: {} x {} ", g_frame_size.GetWidth(), g_frame_size.GetHeight()))
+                text(fmt::format(" Game Field: {} x {} ", g_field_size.GetWidth(), g_field_size.GetHeight())),
+                separator(),
+                text(fmt::format(" Visible Frame: {} ", static_cast<std::string>(g_frame_rect) ))
             });
         }) | border | xflex,
         Button(" X ", screen.ExitLoopClosure(), ButtonOption::Simple()) | align_right
@@ -259,25 +258,57 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
     {
         return ftxui::canvas([&](Canvas& canvas)
         {
-            // Update frame size
-            const gfx::FrameSize frame_size(canvas.width(), canvas.height());
-            if (g_frame_size != frame_size)
+            if (!static_cast<bool>(g_frame_rect.size))
             {
-                g_frame_size = frame_size;
-                InitializeFrameTexture();
+                // Set initial frame position in the center of game field
+                g_frame_rect.origin.SetX((g_field_size.GetWidth() - canvas.width()) / 2);
+                g_frame_rect.origin.SetY((g_field_size.GetHeight() - canvas.height()) / 2);
             }
+            // Update frame size
+            g_frame_rect.size.SetWidth(canvas.width());
+            g_frame_rect.size.SetHeight(canvas.height());
 
             // Compute turn in Game of Life and draw on frame
-            ComputeFrame();
-                                     PresentFrame(canvas);
+            ComputeIteration();
+            PresentFrame(canvas);
         }) | flex;
+    });
+
+    auto canvas_with_mouse = CatchEvent(canvas, [](Event e)
+    {
+        if (!e.is_mouse())
+            return false;
+
+        if (e.mouse().button == Mouse::Button::Left)
+        {
+            const data::Point2I mouse_current_pos(e.mouse().x, e.mouse().y);
+            if (g_mouse_pressed_pos.has_value())
+            {
+                const data::Point2I shift = (*g_mouse_pressed_pos - mouse_current_pos) * 2;
+                g_frame_rect.origin.SetX(std::max(0, std::min(g_frame_pressed_pos->GetX() + shift.GetX(),
+                                                              static_cast<int32_t>(g_field_size.GetWidth() - g_frame_rect.size.GetWidth() - 1))));
+                g_frame_rect.origin.SetY(std::max(0, std::min(g_frame_pressed_pos->GetY() + shift.GetY(),
+                                                              static_cast<int32_t>(g_field_size.GetHeight() - g_frame_rect.size.GetHeight() - 1))));
+            }
+            else
+            {
+                g_mouse_pressed_pos = mouse_current_pos;
+                g_frame_pressed_pos = g_frame_rect.origin;
+            }
+        }
+        else if (g_mouse_pressed_pos.has_value())
+        {
+            g_mouse_pressed_pos.reset();
+            g_frame_pressed_pos.reset();
+        }
+        return false;
     });
 
     static int s_sidebar_width = 35;
     auto main_container = Container::Vertical(
     {
         toolbar | xflex,
-        ResizableSplitLeft(sidebar, canvas, &s_sidebar_width) | border | flex
+        ResizableSplitLeft(sidebar, canvas_with_mouse, &s_sidebar_width) | border | flex
     });
 
     return Renderer(main_container, [=]
