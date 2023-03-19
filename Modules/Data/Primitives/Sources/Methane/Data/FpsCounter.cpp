@@ -21,13 +21,13 @@ FPS counter calculates frame time duration with moving average window algorithm.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/Base/FpsCounter.h>
+#include <Methane/Data/FpsCounter.h>
 
 #include <Methane/Instrumentation.h>
 
 #include <cmath>
 
-namespace Methane::Graphics::Base
+namespace Methane::Data
 {
 
 FpsCounter::FpsCounter(uint32_t averaged_timings_count) noexcept

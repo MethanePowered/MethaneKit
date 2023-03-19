@@ -263,7 +263,7 @@ uint32_t RenderContext::GetFrameIndex() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetFrameIndex();
 }
 
-const IFpsCounter& RenderContext::GetFpsCounter() const META_PIMPL_NOEXCEPT
+const Data::IFpsCounter& RenderContext::GetFpsCounter() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetFpsCounter();
 }

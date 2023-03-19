@@ -24,6 +24,7 @@ Tutorial demonstrating "game of life" computing on GPU in console application
 #include <Methane/Kit.h>
 #include <Methane/Version.h>
 #include <Methane/Data/AppShadersProvider.h>
+#include <Methane/Data/FpsCounter.h>
 #include <Methane/Data/Math.hpp>
 
 #include <ftxui/component/component.hpp>
@@ -57,6 +58,7 @@ static rhi::CommandListSet     g_compute_cmd_list_set;
 static rhi::Texture            g_frame_texture;
 static rhi::ProgramBindings    g_compute_bindings;
 static rhi::SubResource        g_frame_data;
+static data::FpsCounter        g_fps_counter(60U);
 
 const rhi::Devices& GetComputeDevices()
 {
@@ -194,9 +196,10 @@ void ComputeFrame()
     g_frame_data = std::move(g_frame_texture.GetData(compute_cmd_queue.GetInterface()));
 
     g_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
+    g_fps_counter.OnCpuFrameReadyToPresent();
 }
 
-void DrawFrame(ftxui::Canvas& canvas)
+void PresentFrame(ftxui::Canvas& canvas)
 {
     const uint8_t* cell_values = g_frame_data.GetDataPtr<uint8_t>();
     const rhi::TextureSettings& frame_texture_settings = g_frame_texture.GetSettings();
@@ -209,6 +212,8 @@ void DrawFrame(ftxui::Canvas& canvas)
                 canvas.DrawBlockOn(static_cast<int>(x), static_cast<int>(y));
             }
         }
+
+    g_fps_counter.OnCpuFramePresented();
 }
 
 ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
@@ -222,7 +227,7 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
                 separator(),
                 text(fmt::format(" GPU: {} ", GetComputeDevice()->GetAdapterName())),
                 separator(),
-                text(" FPS: XXX "),
+                text(fmt::format(" FPS: {} ", g_fps_counter.GetFramesPerSecond())),
                 separator(),
                 text(fmt::format(" Field: {} x {} ", g_frame_size.GetWidth(), g_frame_size.GetHeight()))
             });
@@ -264,7 +269,7 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
 
             // Compute turn in Game of Life and draw on frame
             ComputeFrame();
-            DrawFrame(canvas);
+                                     PresentFrame(canvas);
         }) | flex;
     });
 

@@ -123,11 +123,11 @@ public:
     [[nodiscard]] META_PIMPL_API bool ReadyToRender() const;
     META_PIMPL_API void Resize(const FrameSize& frame_size) const;
     META_PIMPL_API void Present() const;
-    [[nodiscard]] META_PIMPL_API Platform::AppView  GetAppView() const;
-    [[nodiscard]] META_PIMPL_API const Settings&    GetSettings() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API uint32_t           GetFrameBufferIndex() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API uint32_t           GetFrameIndex() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API const IFpsCounter& GetFpsCounter() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API Platform::AppView GetAppView() const;
+    [[nodiscard]] META_PIMPL_API const Settings&   GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API uint32_t          GetFrameBufferIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API uint32_t          GetFrameIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API const Data::IFpsCounter& GetFpsCounter() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API bool SetVSyncEnabled(bool vsync_enabled) const;
     META_PIMPL_API bool SetFrameBuffersCount(uint32_t frame_buffers_count) const;
     META_PIMPL_API bool SetFullScreen(bool is_full_screen) const;

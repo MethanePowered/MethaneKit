@@ -38,7 +38,6 @@ set(HEADERS
     ${INCLUDE_DIR}/ComputeCommandList.h
     ${INCLUDE_DIR}/DescriptorManager.h
     ${INCLUDE_DIR}/QueryPool.h
-    ${INCLUDE_DIR}/FpsCounter.h
 )
 
 set(SOURCES ${GRAPHICS_API_SOURCES}
@@ -75,7 +74,6 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/ComputeCommandList.cpp
     ${SOURCES_DIR}/DescriptorManager.cpp
     ${SOURCES_DIR}/QueryPool.cpp
-    ${SOURCES_DIR}/FpsCounter.cpp
 )
 
 add_library(${TARGET} STATIC
@@ -94,7 +92,6 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethaneCommonPrecompiledHeaders
-        MethaneDataPrimitives
         MethaneInstrumentation
         MethaneMathPrecompiledHeaders
         TaskFlow

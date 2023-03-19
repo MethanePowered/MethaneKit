@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/RHI/IFpsCounter.h
+FILE: Methane/Data/IFpsCounter.h
 FPS counter interface.
 
 ******************************************************************************/
@@ -25,7 +25,7 @@ FPS counter interface.
 
 #include <cstdint>
 
-namespace Methane::Graphics::Rhi
+namespace Methane::Data
 {
 
 class FrameTiming

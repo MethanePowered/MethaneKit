@@ -7,10 +7,14 @@ get_module_dirs("Methane/Data")
 set(HEADERS
     ${INCLUDE_DIR}/AlignedAllocator.hpp
     ${INCLUDE_DIR}/RectBinPack.hpp
+    ${INCLUDE_DIR}/IFpsCounter.h
+    ${INCLUDE_DIR}/FpsCounter.h
 )
 
 set(SOURCES
     ${SOURCES_DIR}/Primitives.cpp
+    ${SOURCES_DIR}/IFpsCounter.cpp
+    ${SOURCES_DIR}/FpsCounter.cpp
 )
 
 add_library(${TARGET} STATIC

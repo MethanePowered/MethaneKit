@@ -38,7 +38,6 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/IParallelRenderCommandList.h
     ${INCLUDE_DIR}/IQueryPool.h
     ${INCLUDE_DIR}/IDescriptorManager.h
-    ${INCLUDE_DIR}/IFpsCounter.h
 )
 
 list(APPEND SOURCES
@@ -63,7 +62,6 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/IQueryPool.cpp
     ${SOURCES_DIR}/IRenderPattern.cpp
     ${SOURCES_DIR}/IRenderPass.cpp
-    ${SOURCES_DIR}/IFpsCounter.cpp
     ${SOURCES_DIR}/ICommandKit.cpp
     ${SOURCES_DIR}/ICommandQueue.cpp
     ${SOURCES_DIR}/ITransferCommandList.cpp
@@ -84,11 +82,11 @@ target_link_libraries(${TARGET}
         MethaneDataProvider
         MethaneDataRangeSet
         MethaneDataEvents
+        MethaneDataPrimitives
         MethaneGraphicsTypes
         MethanePlatformAppView
     PRIVATE
         MethaneBuildOptions
-        MethaneDataPrimitives
         MethaneInstrumentation
         MethaneMathPrecompiledHeaders
         nowide
