@@ -57,8 +57,9 @@ public:
     [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept final { return m_sub_resource_count; }
     [[nodiscard]] Data::Size                GetSubResourceDataSize(const SubResource::Index& subresource_index = SubResource::Index()) const final;
     [[nodiscard]] SubResource               GetData(Rhi::ICommandQueue& target_cmd_queue,
-                                                    const SubResource::Index& sub_resource_index = SubResource::Index(),
+                                                    const SubResource::Index& sub_resource_index = {},
                                                     const std::optional<BytesRange>& data_range = {}) override;
+
     bool SetState(State state, Ptr<IBarriers>& out_barriers) final;
     bool SetState(State state) final;
     bool SetOwnerQueueFamily(uint32_t family_index) final;

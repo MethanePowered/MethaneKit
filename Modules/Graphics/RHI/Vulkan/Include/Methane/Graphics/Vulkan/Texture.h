@@ -52,7 +52,7 @@ public:
     // IResource interface
     void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
     SubResource GetData(Rhi::ICommandQueue& target_cmd_queue,
-                        const SubResource::Index& sub_resource_index = SubResource::Index(),
+                        const SubResource::Index& sub_resource_index = {},
                         const BytesRangeOpt& data_range = {}) override;
 
     // IObject overide
