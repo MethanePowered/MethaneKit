@@ -69,7 +69,7 @@ protected:
     id<MTLBuffer> GetUploadSubresourceBuffer(const Rhi::SubResource& sub_resource)
     {
         META_FUNCTION_TASK();
-        const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(Base::Resource::GetSubresourceCount());
+        const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(ReourceBaseType::GetSubresourceCount());
         m_upload_subresource_buffers.resize(sub_resource_raw_index + 1);
 
         id<MTLBuffer> mtl_upload_subresource_buffer = m_upload_subresource_buffers[sub_resource_raw_index];
@@ -83,9 +83,9 @@ protected:
         }
         else
         {
-            Data::RawPtr p_resource_data = static_cast<Data::RawPtr>([mtl_upload_subresource_buffer contents]);
-            META_CHECK_ARG_NOT_NULL(p_resource_data);
-            std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), p_resource_data);
+            Data::RawPtr resource_data_ptr = static_cast<Data::RawPtr>([mtl_upload_subresource_buffer contents]);
+            META_CHECK_ARG_NOT_NULL(resource_data_ptr);
+            std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), resource_data_ptr);
         }
         return mtl_upload_subresource_buffer;
     }

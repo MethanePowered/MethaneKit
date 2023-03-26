@@ -92,13 +92,13 @@ bool Texture::SetName(std::string_view name)
     return true;
 }
 
-void Texture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue)
+void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_mtl_texture);
     META_CHECK_ARG_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
 
-    Resource::SetData(sub_resources, target_cmd_queue);
+    Base::Texture::SetData(target_cmd_queue, sub_resources);
 
     TransferCommandList& transfer_command_list = dynamic_cast<TransferCommandList&>(GetBaseContext().GetUploadCommandKit().GetListForEncoding());
     transfer_command_list.RetainResource(*this);
