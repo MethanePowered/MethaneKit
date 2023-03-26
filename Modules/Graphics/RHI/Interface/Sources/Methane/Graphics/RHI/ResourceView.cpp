@@ -51,9 +51,6 @@ SubResourceCount::SubResourceCount(Data::Size depth, Data::Size array_size, Data
     , m_mip_levels_count(mip_levels_count)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_ZERO_DESCR(depth, "subresource count can not be zero");
-    META_CHECK_ARG_NOT_ZERO_DESCR(array_size, "subresource count can not be zero");
-    META_CHECK_ARG_NOT_ZERO_DESCR(mip_levels_count, "subresource count can not be zero");
 }
 
 void SubResourceCount::operator+=(const SubResourceIndex& other) noexcept

@@ -211,13 +211,10 @@ public:
                     s_quad_mesh.GetVertexDataSize(),
                     s_quad_mesh.GetVertexSize()));
             vertex_buffer.SetName(s_vertex_buffer_name);
-            vertex_buffer.SetData({
-                    {
-                        reinterpret_cast<Data::ConstRawPtr>(s_quad_mesh.GetVertices().data()), // NOSONAR
-                        s_quad_mesh.GetVertexDataSize()
-                    }
-                },
-                m_render_cmd_queue);
+            vertex_buffer.SetData(m_render_cmd_queue, {
+                reinterpret_cast<Data::ConstRawPtr>(s_quad_mesh.GetVertices().data()), // NOSONAR
+                s_quad_mesh.GetVertexDataSize()
+            });
             render_context.GetObjectRegistry().AddGraphicsObject(vertex_buffer.GetInterface());
             m_vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
         }
@@ -235,13 +232,10 @@ public:
                     s_quad_mesh.GetIndexDataSize(),
                     GetIndexFormat(s_quad_mesh.GetIndex(0))));
             m_index_buffer.SetName(s_index_buffer_name);
-            m_index_buffer.SetData({
-                    {
-                        reinterpret_cast<Data::ConstRawPtr>(s_quad_mesh.GetIndices().data()), // NOSONAR
-                        s_quad_mesh.GetIndexDataSize()
-                    }
-                },
-                m_render_cmd_queue);
+            m_index_buffer.SetData(m_render_cmd_queue, {
+                reinterpret_cast<Data::ConstRawPtr>(s_quad_mesh.GetIndices().data()), // NOSONAR
+                s_quad_mesh.GetIndexDataSize()
+            });
             render_context.GetObjectRegistry().AddGraphicsObject(m_index_buffer.GetInterface());
         }
 
@@ -342,14 +336,10 @@ private:
             m_settings.blend_color.AsVector()
         };
 
-        m_const_buffer.SetData({
-                {
-                    reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
-                    static_cast<Data::Size>(sizeof(constants))
-                }
-            },
-            m_render_cmd_queue
-        );
+        m_const_buffer.SetData(m_render_cmd_queue, {
+            reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
+            static_cast<Data::Size>(sizeof(constants))
+        });
     }
 
     [[nodiscard]] static Rhi::IShader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode)

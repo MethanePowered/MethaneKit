@@ -40,11 +40,14 @@ public:
                State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
 
     // IResource interface
+    SubResource::Count GetSubresourceCount() const noexcept final { return {}; }
+    Data::Size GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const final;
     Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
-    // Buffer interface
+    // IBuffer interface
     const Settings& GetSettings() const noexcept final { return m_settings; }
-    uint32_t GetFormattedItemsCount() const noexcept final;
+    uint32_t        GetFormattedItemsCount() const noexcept final;
+    void            SetData(Rhi::ICommandQueue&, const SubResource& sub_resource) override;
 
 private:
     Settings m_settings;

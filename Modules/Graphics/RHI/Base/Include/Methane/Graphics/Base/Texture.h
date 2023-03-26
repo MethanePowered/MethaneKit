@@ -39,19 +39,29 @@ public:
                 State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
 
     // ITexture interface
-    const Settings& GetSettings() const override { return m_settings; }
-    Data::Size      GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
+    [[nodiscard]] const Settings&    GetSettings() const override { return m_settings; }
+    [[nodiscard]] Data::Size         GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
+    [[nodiscard]] SubResource::Count GetSubresourceCount() const noexcept final { return m_sub_resource_count; }
+    [[nodiscard]] Data::Size         GetSubResourceDataSize(const SubResource::Index& subresource_index) const final;
+    void SetData(Rhi::ICommandQueue&, const SubResources& sub_resources) override;
 
     static Data::Size GetRequiredMipLevelsCount(const Dimensions& dimensions);
 
 protected:
     // Resource overrides
-    Data::Size CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const override;
+    Data::Size CalculateSubResourceDataSize(const SubResource::Index& sub_resource_index) const;
 
     static void ValidateDimensions(DimensionType dimension_type, const Dimensions& dimensions, bool mipmapped);
 
+    void ValidateSubResource(const Rhi::SubResource& sub_resource) const;
+    void ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const;
+
 private:
-    const Settings m_settings;
+    using SubResourceSizes = std::vector<Data::Size>;
+
+    const Settings     m_settings;
+    SubResource::Count m_sub_resource_count;
+    SubResourceSizes   m_sub_resource_sizes;
 };
 
 } // namespace Methane::Graphics::Base

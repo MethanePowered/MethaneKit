@@ -35,6 +35,8 @@ class Buffer final // NOSONAR - inheritance hierarchy is greater than 5
 {
 public:
     Buffer(const Base::Context& context, const Settings& settings);
+
+    SubResource GetData(Rhi::ICommandQueue&, const BytesRangeOpt&) override;
 };
 
 } // namespace Methane::Graphics::Null

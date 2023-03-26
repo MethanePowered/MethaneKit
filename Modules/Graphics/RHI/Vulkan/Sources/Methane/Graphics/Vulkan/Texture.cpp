@@ -328,12 +328,12 @@ void Texture::ResetNativeFrameImage()
     ResetNativeViewDescriptors();
 }
 
-void Texture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue)
+void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, Rhi::TextureType::Image, "only image textures support data upload from CPU");
 
-    Resource::SetData(sub_resources, target_cmd_queue);
+    Base::Texture::SetData(target_cmd_queue, sub_resources);
 
     m_vk_copy_regions.clear();
     m_vk_copy_regions.reserve(sub_resources.size());

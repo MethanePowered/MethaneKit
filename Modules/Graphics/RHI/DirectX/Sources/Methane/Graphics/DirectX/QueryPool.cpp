@@ -126,9 +126,7 @@ Rhi::IResource::SubResource Query::GetData() const
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), Base::CommandList::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
     META_CHECK_ARG_EQUAL_DESCR(GetState(), Rhi::IQuery::State::Resolved, "query data can not be retrieved for unresolved query");
-    return GetDirectQueryPool().GetDirectResultResource().GetData(GetCommandList().GetCommandQueue(),
-                                                                  Rhi::IResource::SubResource::Index(),
-                                                                  GetDataRange());
+    return GetDirectQueryPool().GetResultBuffer().GetData(GetCommandList().GetCommandQueue(), GetDataRange());
 }
 
 QueryPool& Query::GetDirectQueryPool() const noexcept

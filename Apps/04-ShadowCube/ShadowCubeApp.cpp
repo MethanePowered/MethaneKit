@@ -97,10 +97,10 @@ void ShadowCubeApp::Init()
     // Create constants buffer for frame rendering
     m_const_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(constants_data_size));
     m_const_buffer.SetName("Constants Buffer");
-    m_const_buffer.SetData(
-        { { reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), sizeof(m_scene_constants) } }, // NOSONAR
-        render_cmd_queue
-    );
+    m_const_buffer.SetData(render_cmd_queue, {
+        reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), // NOSONAR
+        sizeof(m_scene_constants)
+    });
 
     // Create sampler for cube and floor textures sampling
     m_texture_sampler = render_context.CreateSampler(
@@ -389,11 +389,11 @@ bool ShadowCubeApp::Render()
     // Upload uniform buffers to GPU
     const ShadowCubeFrame& frame = GetCurrentFrame();
     const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.scene_uniforms_buffer.SetData(m_scene_uniforms_subresources, render_cmd_queue);
-    frame.shadow_pass.floor.uniforms_buffer.SetData(m_floor_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);
-    frame.shadow_pass.cube.uniforms_buffer.SetData(m_cube_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);
-    frame.final_pass.floor.uniforms_buffer.SetData(m_floor_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
-    frame.final_pass.cube.uniforms_buffer.SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
+    frame.scene_uniforms_buffer.SetData(render_cmd_queue, m_scene_uniforms_subresource);
+    frame.shadow_pass.floor.uniforms_buffer.SetData(render_cmd_queue, m_floor_buffers_ptr->GetShadowPassUniformsSubresource());
+    frame.shadow_pass.cube.uniforms_buffer.SetData(render_cmd_queue, m_cube_buffers_ptr->GetShadowPassUniformsSubresource());
+    frame.final_pass.floor.uniforms_buffer.SetData(render_cmd_queue, m_floor_buffers_ptr->GetFinalPassUniformsSubresource());
+    frame.final_pass.cube.uniforms_buffer.SetData(render_cmd_queue, m_cube_buffers_ptr->GetFinalPassUniformsSubresource());
 
     // Record commands for shadow & final render passes
     RenderScene(m_shadow_pass, frame.shadow_pass);

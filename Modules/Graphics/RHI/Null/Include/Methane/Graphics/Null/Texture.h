@@ -38,6 +38,8 @@ class Texture final // NOSONAR - inheritance hierarchy is greater than 5
 public:
     Texture(const Base::Context& context, const Settings& settings);
     Texture(const RenderContext& render_context, const Settings& settings, Data::Index frame_index);
+
+    SubResource GetData(Rhi::ICommandQueue&, const SubResource::Index&, const BytesRangeOpt&) override;
 };
 
 } // namespace Methane::Graphics::Null

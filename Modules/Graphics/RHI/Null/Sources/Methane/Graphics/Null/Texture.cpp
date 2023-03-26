@@ -24,7 +24,6 @@ Null implementation of the texture interface.
 #include <Methane/Graphics/Null/Texture.h>
 #include <Methane/Graphics/Null/RenderContext.h>
 
-#include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 namespace Methane::Graphics::Null
@@ -40,6 +39,11 @@ Texture::Texture(const RenderContext& render_context, const Settings& settings, 
 {
     META_CHECK_ARG_TRUE(settings.frame_index_opt.has_value());
     META_CHECK_ARG_EQUAL(frame_index, settings.frame_index_opt.value());
+}
+
+Rhi::SubResource Texture::GetData(Rhi::ICommandQueue&, const SubResource::Index&, const BytesRangeOpt&)
+{
+    return {};
 }
 
 } // namespace Methane::Graphics::Null

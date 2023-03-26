@@ -189,12 +189,12 @@ public:
             vertex_buffer.SetName(fmt::format("{} Text Vertex Buffer {}", text_name, m_frame_index));
             m_vertex_buffer_set = rhi::BufferSet(rhi::BufferType::Vertex, { vertex_buffer });
         }
-        m_vertex_buffer_set[0].SetData({
+        m_vertex_buffer_set[0].SetData(render_context.GetRenderCommandKit().GetQueue(), {
             rhi::SubResource(
                 reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size, // NOSONAR
                 rhi::SubResource::Index(), rhi::BytesRange(0U, vertices_data_size)
             )
-        }, render_context.GetRenderCommandKit().GetQueue());
+        });
 
         // Update index buffer
         const Data::Size indices_data_size = text_mesh.GetIndicesDataSize();
@@ -207,12 +207,12 @@ public:
             m_index_buffer.SetName(fmt::format("{} Text Index Buffer {}", text_name, m_frame_index));
         }
 
-        m_index_buffer.SetData({
+        m_index_buffer.SetData(render_context.GetRenderCommandKit().GetQueue(), {
             rhi::SubResource(
                 reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size, // NOSONAR
                 rhi::SubResource::Index(), rhi::BytesRange(0U, indices_data_size)
             )
-        }, render_context.GetRenderCommandKit().GetQueue());
+        });
 
         m_dirty_mask.SetBitOff(DirtyResource::Mesh);
     }
@@ -244,14 +244,8 @@ public:
                 m_program_bindings.Get({ rhi::ShaderType::Vertex, "g_uniforms" }).SetResourceViews({ { m_uniforms_buffer.GetInterface() } });
             }
         }
-        m_uniforms_buffer.SetData(
-            rhi::SubResources
-                {
-                    { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } // NOSONAR
-                },
-            render_context.GetRenderCommandKit().GetQueue()
-        );
-
+        m_uniforms_buffer.SetData(render_context.GetRenderCommandKit().GetQueue(),
+                                  { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size }); // NOSONAR
         m_dirty_mask.SetBitOff(DirtyResource::Uniforms);
     }
 
@@ -738,14 +732,8 @@ private:
         const hlslpp::TextConstants constants{
             m_settings.color.AsVector()
         };
-        m_const_buffer.SetData(
-            rhi::SubResources
-            {
-                rhi::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
-                                            static_cast<Data::Size>(sizeof(constants)))
-            },
-            m_ui_context.GetRenderContext().GetRenderCommandKit().GetQueue()
-        );
+        m_const_buffer.SetData(m_ui_context.GetRenderContext().GetRenderCommandKit().GetQueue(),
+                               { reinterpret_cast<Data::ConstRawPtr>(&constants), static_cast<Data::Size>(sizeof(constants)) }); // NOSONAR
         m_is_const_buffer_dirty = false;
     }
 

@@ -180,7 +180,7 @@ public:
         META_CHECK_ARG_TRUE(buffer_bindings.uniforms_buffer.IsInitialized());
         META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), sizeof(Uniforms));
 
-        buffer_bindings.uniforms_buffer.SetData(m_mesh_buffers.GetFinalPassUniformsSubresources(), m_render_cmd_queue);
+        buffer_bindings.uniforms_buffer.SetData(m_render_cmd_queue, m_mesh_buffers.GetFinalPassUniformsSubresource());
 
         META_DEBUG_GROUP_VAR(s_debug_group, "Sky-box rendering");
         render_cmd_list.ResetWithStateOnce(m_render_state, &s_debug_group);

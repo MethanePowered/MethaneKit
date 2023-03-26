@@ -122,9 +122,9 @@ bool Buffer::SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers) 
     return state_changed;
 }
 
-void Buffer::SetData(const SubResources& sub_resources, const CommandQueue& target_cmd_queue) const
+void Buffer::SetData(const CommandQueue& target_cmd_queue, const SubResource& sub_resource) const
 {
-    GetImpl(m_impl_ptr).SetData(sub_resources, target_cmd_queue.GetInterface());
+    GetImpl(m_impl_ptr).SetData(target_cmd_queue.GetInterface(), sub_resource);
 }
 
 void Buffer::RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const
@@ -132,9 +132,9 @@ void Buffer::RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view
     GetImpl(m_impl_ptr).RestoreDescriptorViews(descriptor_by_view_id);
 }
 
-SubResource Buffer::GetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range) const
+SubResource Buffer::GetData(Rhi::ICommandQueue& target_cmd_queue, const BytesRangeOpt& data_range) const
 {
-    return GetImpl(m_impl_ptr).GetData(target_cmd_queue, sub_resource_index, data_range);
+    return GetImpl(m_impl_ptr).GetData(target_cmd_queue, data_range);
 }
 
 Data::Size Buffer::GetDataSize(Data::MemoryState size_type) const META_PIMPL_NOEXCEPT
@@ -147,7 +147,7 @@ Data::Size Buffer::GetSubResourceDataSize(const SubResource::Index& sub_resource
     return GetImpl(m_impl_ptr).GetSubResourceDataSize(sub_resource_index);
 }
 
-const SubResource::Count& Buffer::GetSubresourceCount() const META_PIMPL_NOEXCEPT
+SubResource::Count Buffer::GetSubresourceCount() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetSubresourceCount();
 }

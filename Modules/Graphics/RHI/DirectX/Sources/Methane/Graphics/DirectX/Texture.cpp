@@ -358,12 +358,12 @@ bool Texture::SetName(std::string_view name)
     return true;
 }
 
-void Texture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue)
+void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_cp_upload_resource, "Only ForImage textures support data upload from CPU.");
 
-    Resource::SetData(sub_resources, target_cmd_queue);
+    Base::Texture::SetData(target_cmd_queue, sub_resources);
 
     const Settings&  settings                    = GetSettings();
     const Data::Size pixel_size                  = GetPixelSize(settings.pixel_format);
@@ -402,7 +402,7 @@ void Texture::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& tar
     GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
 }
 
-Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& data_range)
+Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),

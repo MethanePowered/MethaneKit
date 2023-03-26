@@ -82,7 +82,7 @@ public:
     META_PIMPL_API bool SetState(State state, Barriers& out_barriers) const;
     META_PIMPL_API bool SetOwnerQueueFamily(uint32_t family_index) const;
     META_PIMPL_API bool SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers) const;
-    META_PIMPL_API void SetData(const SubResources& sub_resources, const CommandQueue& target_cmd_queue) const;
+    META_PIMPL_API void SetData(const CommandQueue& target_cmd_queue, const SubResources& sub_resources) const;
     META_PIMPL_API void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const;
 
     [[nodiscard]] META_PIMPL_API SubResource               GetData(Rhi::ICommandQueue& target_cmd_queue,
@@ -90,7 +90,7 @@ public:
                                                                    const BytesRangeOpt& data_range = {}) const;
     [[nodiscard]] META_PIMPL_API Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const;
-    [[nodiscard]] META_PIMPL_API const SubResource::Count& GetSubresourceCount() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API SubResource::Count        GetSubresourceCount() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API ResourceType              GetResourceType() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API State                     GetState() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API ResourceUsageMask         GetUsage() const META_PIMPL_NOEXCEPT;

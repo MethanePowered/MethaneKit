@@ -57,9 +57,11 @@ public:
     // IObject overrides
     bool SetName(std::string_view name) override;
 
-    // IResource override
-    void SetData(const SubResources&, Rhi::ICommandQueue&) override;
-    SubResource GetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range) override;
+    // ITexture overrides
+    void SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources) override;
+    SubResource GetData(Rhi::ICommandQueue& target_cmd_queue,
+                        const SubResource::Index& sub_resource_index = {},
+                        const BytesRangeOpt& data_range = {}) override;
 
     // IResource override
     Opt<Descriptor> InitializeNativeViewDescriptor(const View::Id& view_id) override;

@@ -46,7 +46,7 @@ private:
 
     // Uniform buffers are created separately in Frame dependent resources
     InstanceUniforms  m_final_pass_instance_uniforms;
-    Rhi::SubResources m_final_pass_instance_uniforms_subresources;
+    Rhi::SubResource m_final_pass_instance_uniforms_subresource;
 
 public:
     template<typename VertexType>
@@ -68,9 +68,9 @@ public:
         return static_cast<Data::Size>(m_final_pass_instance_uniforms.size());
     }
 
-    [[nodiscard]] const Rhi::SubResources& GetFinalPassUniformsSubresources() const
+    [[nodiscard]] const Rhi::SubResource& GetFinalPassUniformsSubresource() const
     {
-        return m_final_pass_instance_uniforms_subresources;
+        return m_final_pass_instance_uniforms_subresource;
     }
 
     [[nodiscard]]
@@ -120,9 +120,10 @@ protected:
     {
         META_FUNCTION_TASK();
         m_final_pass_instance_uniforms.resize(instance_count);
-        m_final_pass_instance_uniforms_subresources = Rhi::SubResources{
-            { reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), GetUniformsBufferSize() } // NOSONAR
-        };
+        m_final_pass_instance_uniforms_subresource = Rhi::SubResource(
+            reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), // NOSONAR
+            GetUniformsBufferSize()
+        );
     }
 };
 

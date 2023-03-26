@@ -134,7 +134,7 @@ void InitializeFrameTexture()
     g_frame_data = rhi::SubResource(GetRandomFrameData(g_field_size));
 
     // Set frame texture data
-    g_frame_texture.SetData({ g_frame_data }, g_compute_context.GetComputeCommandKit().GetQueue());
+    g_frame_texture.SetData(g_compute_context.GetComputeCommandKit().GetQueue(), { g_frame_data });
 
     // Complete bindings and texture initialization
     g_compute_context.CompleteInitialization();

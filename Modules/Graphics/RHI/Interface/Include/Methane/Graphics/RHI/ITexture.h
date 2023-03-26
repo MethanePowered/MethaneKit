@@ -110,6 +110,10 @@ struct ITexture
 
     // ITexture interface
     [[nodiscard]] virtual const Settings& GetSettings() const = 0;
+    [[nodiscard]] virtual SubResource     GetData(ICommandQueue& target_cmd_queue,
+                                                  const SubResourceIndex& sub_resource_index = {},
+                                                  const BytesRangeOpt& data_range = {}) = 0;
+    virtual void SetData(ICommandQueue& target_cmd_queue, const SubResources& sub_resources) = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

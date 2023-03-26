@@ -127,9 +127,9 @@ bool Texture::SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers)
     return state_changed;
 }
 
-void Texture::SetData(const SubResources& sub_resources, const CommandQueue& target_cmd_queue) const
+void Texture::SetData(const CommandQueue& target_cmd_queue, const SubResources& sub_resources) const
 {
-    GetImpl(m_impl_ptr).SetData(sub_resources, target_cmd_queue.GetInterface());
+    GetImpl(m_impl_ptr).SetData(target_cmd_queue.GetInterface(), sub_resources);
 }
 
 void Texture::RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const
@@ -152,7 +152,7 @@ Data::Size Texture::GetSubResourceDataSize(const SubResource::Index& sub_resourc
     return GetImpl(m_impl_ptr).GetSubResourceDataSize(sub_resource_index);
 }
 
-const SubResource::Count& Texture::GetSubresourceCount() const META_PIMPL_NOEXCEPT
+SubResource::Count Texture::GetSubresourceCount() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetSubresourceCount();
 }

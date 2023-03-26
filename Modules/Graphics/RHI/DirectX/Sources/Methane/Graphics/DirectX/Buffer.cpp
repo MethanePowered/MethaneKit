@@ -79,40 +79,36 @@ bool Buffer::SetName(std::string_view name)
     return true;
 }
 
-void Buffer::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue)
+void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& sub_resource)
 {
     META_FUNCTION_TASK();
-    Resource::SetData(sub_resources, target_cmd_queue);
+    Resource::SetData(target_cmd_queue, sub_resource);
 
     const CD3DX12_RANGE zero_read_range(0U, 0U);
-    const bool          is_private_storage = GetSettings().storage_mode == IBuffer::StorageMode::Private;
-    ID3D12Resource        & d3d12_resource = is_private_storage ? *m_cp_upload_resource.Get() : GetNativeResourceRef();
-    for (const SubResource& sub_resource: sub_resources)
+    const bool       is_private_storage = GetSettings().storage_mode == IBuffer::StorageMode::Private;
+    ID3D12Resource&      d3d12_resource = is_private_storage ? *m_cp_upload_resource.Get() : GetNativeResourceRef();
+
+    // Using zero range, since we're not going to read this resource on CPU
+    const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(GetSubresourceCount());
+    Data::RawPtr      p_sub_resource_data    = nullptr;
+    ThrowIfFailed(
+        d3d12_resource.Map(sub_resource_raw_index, &zero_read_range,
+                           reinterpret_cast<void**>(&p_sub_resource_data)), // NOSONAR
+        GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
+    );
+
+    META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
+    stdext::checked_array_iterator target_data_it(p_sub_resource_data, sub_resource.GetDataSize());
+    std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
+
+    if (sub_resource.HasDataRange())
     {
-        ValidateSubResource(sub_resource);
-
-        // Using zero range, since we're not going to read this resource on CPU
-        const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(GetSubresourceCount());
-        Data::RawPtr      p_sub_resource_data    = nullptr;
-        ThrowIfFailed(
-            d3d12_resource.Map(sub_resource_raw_index, &zero_read_range,
-                               reinterpret_cast<void**>(&p_sub_resource_data)), // NOSONAR
-            GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
-        );
-
-        META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
-        stdext::checked_array_iterator target_data_it(p_sub_resource_data, sub_resource.GetDataSize());
-        std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
-
-        if (sub_resource.HasDataRange())
-        {
-            const CD3DX12_RANGE write_range(sub_resource.GetDataRange().GetStart(), sub_resource.GetDataRange().GetEnd());
-            d3d12_resource.Unmap(sub_resource_raw_index, &write_range);
-        }
-        else
-        {
-            d3d12_resource.Unmap(sub_resource_raw_index, nullptr);
-        }
+        const CD3DX12_RANGE write_range(sub_resource.GetDataRange().GetStart(), sub_resource.GetDataRange().GetEnd());
+        d3d12_resource.Unmap(sub_resource_raw_index, &write_range);
+    }
+    else
+    {
+        d3d12_resource.Unmap(sub_resource_raw_index, nullptr);
     }
 
     if (!is_private_storage)
@@ -124,38 +120,34 @@ void Buffer::SetData(const SubResources& sub_resources, Rhi::ICommandQueue& targ
     GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
 }
 
-Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range)
+Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt& data_range)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
                               "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
-    ValidateSubResource(sub_resource_index, data_range);
-
-    const Data::Index sub_resource_raw_index = sub_resource_index.GetRawIndex(GetSubresourceCount());
-    const Data::Index data_start             = data_range ? data_range->GetStart() : 0U;
-    const Data::Index data_length            = data_range ? data_range->GetLength() : GetSubResourceDataSize(sub_resource_index);
-    const Data::Index data_end               = data_start + data_length;
+    const Data::Index data_start  = data_range ? data_range->GetStart()  : 0U;
+    const Data::Index data_length = data_range ? data_range->GetLength() : GetDataSize();
+    const Data::Index data_end    = data_start + data_length;
 
     ID3D12Resource& d3d12_resource = GetNativeResourceRef();
     const CD3DX12_RANGE read_range(data_start, data_start + data_length);
-    Data::RawPtr        p_sub_resource_data = nullptr;
+    Data::RawPtr sub_resource_data_ptr = nullptr;
     ThrowIfFailed(
-        d3d12_resource.Map(sub_resource_raw_index, &read_range,
-                           reinterpret_cast<void**>(&p_sub_resource_data)), // NOSONAR
+        d3d12_resource.Map(0U, &read_range, reinterpret_cast<void**>(&sub_resource_data_ptr)), // NOSONAR
         GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
     );
 
-    META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
+    META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
 
-    stdext::checked_array_iterator source_data_it(p_sub_resource_data, data_end);
+    stdext::checked_array_iterator source_data_it(sub_resource_data_ptr, data_end);
     Data::Bytes                    sub_resource_data(data_length, {});
     std::copy(source_data_it + data_start, source_data_it + data_end, sub_resource_data.begin());
 
     const CD3DX12_RANGE zero_write_range(0, 0);
-    d3d12_resource.Unmap(sub_resource_raw_index, &zero_write_range);
+    d3d12_resource.Unmap(0U, &zero_write_range);
 
-    return SubResource(std::move(sub_resource_data), sub_resource_index, data_range);
+    return SubResource(std::move(sub_resource_data), Rhi::SubResourceIndex(), data_range);
 }
 
 D3D12_VERTEX_BUFFER_VIEW Buffer::GetNativeVertexBufferView() const
