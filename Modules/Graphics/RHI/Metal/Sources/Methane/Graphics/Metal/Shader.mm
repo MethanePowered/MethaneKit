@@ -78,7 +78,7 @@ static uint32_t GetBindingArrayLength(id<MTLBinding> mtl_binding)
         return 1U;
 
     id<MTLTextureBinding> mtl_texture_binding = static_cast<id<MTLTextureBinding>>(mtl_binding);
-    return mtl_texture_binding.arrayLength;
+    return static_cast<uint32_t>(mtl_texture_binding.arrayLength);
 }
 
 #ifndef NDEBUG
