@@ -251,10 +251,7 @@ if [ "$IS_ANALYZE_BUILD" == true ]; then
         -Dsonar.sources="Apps,Modules" \
         -Dsonar.host.url="https://sonarcloud.io" \
         -Dsonar.login="$SONAR_TOKEN" \
-        -Dsonar.cfamily.build-wrapper-output="$BUILD_DIR" \
-        -Dsonar.cfamily.cache.path="$SONAR_SCANNER_DIR/Cache" \
-        -Dsonar.cfamily.threads=16 \
-        -Dsonar.cfamily.cache.enabled=true; then
+        -Dsonar.cfamily.build-wrapper-output="$BUILD_DIR"; then
         echo "Sonar-scanner build failed."
         exit 1
     fi

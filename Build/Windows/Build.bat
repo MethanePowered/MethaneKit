@@ -180,10 +180,7 @@ IF DEFINED ANALYZE_BUILD (
         -D sonar.sources="Apps,Modules"^
         -D sonar.host.url="https://sonarcloud.io"^
         -D sonar.login="%SONAR_TOKEN%"^
-        -D sonar.cfamily.build-wrapper-output="%BUILD_DIR%"^
-        -D sonar.cfamily.cache.path="%SONAR_SCANNER_DIR%\Cache"^
-        -D sonar.cfamily.threads=16^
-        -D sonar.cfamily.cache.enabled=true
+        -D sonar.cfamily.build-wrapper-output="%BUILD_DIR%"
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR
 
 ) ELSE (
