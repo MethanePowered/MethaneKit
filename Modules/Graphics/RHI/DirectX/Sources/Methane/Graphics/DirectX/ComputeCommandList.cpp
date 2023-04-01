@@ -21,6 +21,7 @@ DirectX 12 implementation of the transfer command list interface.
 
 ******************************************************************************/
 
+#include "Methane/Graphics/Base/ComputeCommandList.h"
 #include <Methane/Graphics/DirectX/ComputeCommandList.h>
 #include <Methane/Graphics/DirectX/DescriptorManager.h>
 
@@ -51,6 +52,7 @@ void ComputeCommandList::Reset(IDebugGroup* debug_group_ptr)
 void ComputeCommandList::Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count)
 {
     META_FUNCTION_TASK();
+    Base::ComputeCommandList::Dispatch(thread_groups_count);
     ID3D12GraphicsCommandList& dx_command_list = GetNativeCommandListRef();
     dx_command_list.Dispatch(thread_groups_count.GetWidth(), thread_groups_count.GetHeight(), thread_groups_count.GetDepth());
 }

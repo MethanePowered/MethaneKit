@@ -25,6 +25,7 @@ Base implementation of the compute command list interface.
 #include <Methane/Graphics/Base/ComputeState.h>
 #include <Methane/Graphics/Base/CommandQueue.h>
 #include <Methane/Graphics/Base/Program.h>
+#include <Methane/Graphics/TypeFormatters.hpp>
 
 #include <Methane/Instrumentation.h>
 
@@ -78,6 +79,13 @@ ComputeState& ComputeCommandList::GetComputeState()
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_compute_state_ptr, "Compute command list '{}' state was not set.", GetName());
     return *m_compute_state_ptr;
+}
+
+void ComputeCommandList::Dispatch([[maybe_unused]] const Rhi::ThreadGroupsCount& thread_groups_count)
+{
+    META_FUNCTION_TASK();
+    META_LOG("{} Command list '{}' DISPATCH {} thread groups count.",
+             magic_enum::enum_name(GetType()), GetName(), thread_groups_count);
 }
 
 } // namespace Methane::Graphics::Base

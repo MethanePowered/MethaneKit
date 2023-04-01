@@ -37,6 +37,7 @@ ComputeCommandList::ComputeCommandList(CommandQueue& command_queue)
 void ComputeCommandList::Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count)
 {
     META_FUNCTION_TASK();
+    Base::ComputeCommandList::Dispatch(thread_groups_count);
     GetNativeCommandBufferDefault().dispatch(thread_groups_count.GetWidth(), thread_groups_count.GetHeight(), thread_groups_count.GetDepth());
 }
 

@@ -26,6 +26,7 @@ Tutorial demonstrating "game of life" computing on GPU in console application
 #include <Methane/Data/AppShadersProvider.h>
 #include <Methane/Data/FpsCounter.h>
 #include <Methane/Data/Math.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/screen_interactive.hpp>
@@ -65,6 +66,7 @@ static std::optional<data::Point2I> g_frame_pressed_pos;
 
 const rhi::Devices& GetComputeDevices()
 {
+    META_FUNCTION_TASK();
     static const rhi::Devices& s_compute_devices = []()
     {
         rhi::System::Get().UpdateGpuDevices(rhi::DeviceCaps{
@@ -80,6 +82,7 @@ const rhi::Devices& GetComputeDevices()
 
 const std::vector<std::string>& GetComputeDeviceNames()
 {
+    META_FUNCTION_TASK();
     static const std::vector<std::string> s_compute_device_names = []()
     {
         std::vector<std::string> device_names;
@@ -94,12 +97,14 @@ const std::vector<std::string>& GetComputeDeviceNames()
 
 const rhi::Device* GetComputeDevice()
 {
+    META_FUNCTION_TASK();
     const rhi::Devices& devices = GetComputeDevices();
     return g_compute_device_index < static_cast<int>(devices.size()) ? &devices[g_compute_device_index] : nullptr;
 }
 
 Methane::Data::Bytes GetRandomFrameData(const gfx::FrameSize& frame_size)
 {
+    META_FUNCTION_TASK();
     Methane::Data::Bytes frame_data(frame_size.GetPixelsCount(), std::byte());
     const uint32_t points_count = frame_size.GetPixelsCount() * 2U / 3U;
     std::uniform_int_distribution<> dist(0, frame_size.GetPixelsCount() - 1);
@@ -113,6 +118,7 @@ Methane::Data::Bytes GetRandomFrameData(const gfx::FrameSize& frame_size)
 
 void InitializeFrameTexture()
 {
+    META_FUNCTION_TASK();
     rhi::TextureSettings frame_texture_settings = rhi::TextureSettings::ForImage(
         gfx::Dimensions(g_field_size),
         std::nullopt, gfx::PixelFormat::R8Uint, false,
@@ -142,6 +148,7 @@ void InitializeFrameTexture()
 
 void ReleaseComputeContext()
 {
+    META_FUNCTION_TASK();
     g_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
 
     g_compute_bindings = {};
@@ -152,6 +159,7 @@ void ReleaseComputeContext()
 
 void InitializeComputeContext()
 {
+    META_FUNCTION_TASK();
     const rhi::Device* device_ptr = GetComputeDevice();
     g_compute_context = device_ptr->CreateComputeContext(g_parallel_executor, {});
     g_compute_context.SetName("Game of Life");
@@ -179,6 +187,7 @@ void InitializeComputeContext()
 
 void ComputeIteration()
 {
+    META_FUNCTION_TASK();
     const rhi::CommandQueue&     compute_cmd_queue = g_compute_context.GetComputeCommandKit().GetQueue();
     const rhi::ThreadGroupSize&  thread_group_size = g_compute_state.GetSettings().thread_group_size;
     const rhi::ThreadGroupsCount thread_groups_count(data::DivCeil(g_field_size.GetWidth(), thread_group_size.GetWidth()),
@@ -199,6 +208,7 @@ void ComputeIteration()
 
 void PresentFrame(ftxui::Canvas& canvas)
 {
+    META_FUNCTION_TASK();
     const uint8_t* cells  = g_frame_data.GetDataPtr<uint8_t>();
     for (uint32_t y = 0; y < g_frame_rect.size.GetHeight(); y++)
         for (uint32_t x = 0; x < g_frame_rect.size.GetWidth(); x++)
@@ -215,6 +225,7 @@ void PresentFrame(ftxui::Canvas& canvas)
 
 ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
 {
+    META_FUNCTION_TASK();
     using namespace ftxui;
     auto toolbar = Container::Horizontal({
         Renderer([]
@@ -276,6 +287,7 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
 
     auto canvas_with_mouse = CatchEvent(canvas, [](Event e)
     {
+        META_SCOPE_TASK("Mouse Handling");
         if (!e.is_mouse())
             return false;
 
@@ -322,13 +334,14 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
 
 void RunEventLoop(ftxui::ScreenInteractive& screen, const ftxui::Component& root)
 {
+    META_FUNCTION_TASK();
     std::atomic<bool> refresh_ui_continue = true;
     std::thread refresh_ui([&screen, &refresh_ui_continue]
     {
         while (refresh_ui_continue)
         {
             using namespace std::chrono_literals;
-            std::this_thread::sleep_for(0.05s);
+            std::this_thread::sleep_for(1ms);
             screen.Post([&] { g_time++; });
             screen.Post(ftxui::Event::Custom);
         }

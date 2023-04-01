@@ -38,7 +38,10 @@ class ComputeCommandList final
 public:
     explicit ComputeCommandList(CommandQueue& command_queue);
 
-    void Dispatch(const Rhi::ThreadGroupsCount&) override;
+    void Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count) override;
+
+private:
+    Rhi::ThreadGroupsCount m_dispatched_thread_groups_count;
 };
 
 } // namespace Methane::Graphics::Null

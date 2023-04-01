@@ -45,6 +45,7 @@ public:
     void ResetWithState(Rhi::IComputeState& compute_state, IDebugGroup* debug_group_ptr = nullptr) final;
     void ResetWithStateOnce(Rhi::IComputeState& compute_state, IDebugGroup* debug_group_ptr = nullptr) final;
     void SetComputeState(Rhi::IComputeState& compute_state) final;
+    void Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count) override;
 
 protected:
     ComputeState& GetComputeState();

@@ -60,6 +60,7 @@ void ComputeContext::WaitForGpuComputeComplete()
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("ComputeContextDX::WaitForGpu::ComputeComplete");
     GetComputeFence().FlushOnCpu();
+    META_CPU_FRAME_DELIMITER(0, 0);
 }
 
 Rhi::IFence& ComputeContext::GetComputeFence() const

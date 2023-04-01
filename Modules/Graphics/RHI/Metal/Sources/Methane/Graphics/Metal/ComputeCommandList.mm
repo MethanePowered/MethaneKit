@@ -51,6 +51,8 @@ void ComputeCommandList::Reset(Rhi::ICommandListDebugGroup* debug_group_ptr)
 void ComputeCommandList::Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count)
 {
     META_FUNCTION_TASK();
+    Base::ComputeCommandList::Dispatch(thread_groups_count);
+
     const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
     META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
 
