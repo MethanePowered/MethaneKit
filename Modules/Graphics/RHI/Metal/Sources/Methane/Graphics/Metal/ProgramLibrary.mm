@@ -50,7 +50,8 @@ ProgramLibrary::ProgramLibrary(const Device& metal_device, std::string_view libr
     else
     {
         NSError* ns_error = nil;
-        m_mtl_library = [metal_device.GetNativeDevice() newLibraryWithFile:GetLibraryFullPath(library_name) error:&ns_error];
+        NSURL* library_url = [NSURL fileURLWithPath:GetLibraryFullPath(library_name)];
+        m_mtl_library = [metal_device.GetNativeDevice() newLibraryWithURL:library_url error:&ns_error];
         META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_library,
                                       "Failed to create {} Metal library: {}",
                                       library_name.empty() ? std::string_view("default") : library_name,

@@ -42,15 +42,15 @@ public:
     // Base::Shader interface
     Ptrs<Base::ProgramArgumentBinding> GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const final;
     
-    id<MTLFunction> GetNativeFunction() noexcept                            { return m_mtl_function; }
+    id<MTLFunction> GetNativeFunction() noexcept                           { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const Program& program) const;
-    void SetNativeArguments(NSArray<MTLArgument*>* mtl_arguments) noexcept  { m_mtl_arguments = mtl_arguments; }
+    void SetNativeBindings(NSArray<id<MTLBinding>>* mtl_bindings) noexcept { m_mtl_bindings = mtl_bindings; }
 
 private:
     const IContext& GetMetalContext() const noexcept;
 
-    id<MTLFunction>        m_mtl_function;
-    NSArray<MTLArgument*>* m_mtl_arguments = nil;
+    id<MTLFunction>          m_mtl_function;
+    NSArray<id<MTLBinding>>* m_mtl_bindings = nil;
 };
 
 } // namespace Methane::Graphics::Metal

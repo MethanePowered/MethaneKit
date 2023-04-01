@@ -51,7 +51,7 @@ private:
     const IContext& GetMetalContext() const noexcept;
     void ReflectRenderPipelineArguments();
     void ReflectComputePipelineArguments();
-    void SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept;
+    void SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<id<MTLBinding>>* mtl_arguments) noexcept;
     
     MTLVertexDescriptor* m_mtl_vertex_desc = nil;
 };

@@ -193,7 +193,7 @@ void RenderState::Reset(const Settings& settings)
     m_mtl_pipeline_state_desc.vertexDescriptor = metal_program.GetNativeVertexDescriptor();
     
     // Rasterizer state
-    m_mtl_pipeline_state_desc.sampleCount            = settings.rasterizer.sample_count;
+    m_mtl_pipeline_state_desc.rasterSampleCount      = settings.rasterizer.sample_count;
     m_mtl_pipeline_state_desc.alphaToCoverageEnabled = settings.rasterizer.alpha_to_coverage_enabled;
     m_mtl_pipeline_state_desc.alphaToOneEnabled      = NO; // not supported by Methane
     

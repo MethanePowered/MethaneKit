@@ -109,8 +109,8 @@ void Program::ReflectRenderPipelineArguments()
     if (!mtl_render_pipeline_reflection)
         return;
 
-    SetNativeShaderArguments(Rhi::ShaderType::Vertex, mtl_render_pipeline_reflection.vertexArguments);
-    SetNativeShaderArguments(Rhi::ShaderType::Pixel,  mtl_render_pipeline_reflection.fragmentArguments);
+    SetNativeShaderArguments(Rhi::ShaderType::Vertex, mtl_render_pipeline_reflection.vertexBindings);
+    SetNativeShaderArguments(Rhi::ShaderType::Pixel,  mtl_render_pipeline_reflection.fragmentBindings);
     InitArgumentBindings(settings.argument_accessors);
 }
 
@@ -139,16 +139,16 @@ void Program::ReflectComputePipelineArguments()
     if (!mtl_compute_pipeline_reflection)
         return;
 
-    SetNativeShaderArguments(Rhi::ShaderType::Compute, mtl_compute_pipeline_reflection.arguments);
+    SetNativeShaderArguments(Rhi::ShaderType::Compute, mtl_compute_pipeline_reflection.bindings);
     InitArgumentBindings(settings.argument_accessors);
 }
 
-void Program::SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept
+void Program::SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<id<MTLBinding>>* mtl_arguments) noexcept
 {
     META_FUNCTION_TASK();
     if (HasShader(shader_type))
     {
-        GetMetalShader(shader_type).SetNativeArguments(mtl_arguments);
+        GetMetalShader(shader_type).SetNativeBindings(mtl_arguments);
     }
 }
 
