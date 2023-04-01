@@ -54,12 +54,12 @@ FreeTypeError::FreeTypeError(FT_Error error)
 
 std::u32string Font::ConvertUtf8To32(std::string_view text)
 {
-    return nowide::utf::convert_string<std::u32string::value_type>(text.begin(), text.end());
+    return nowide::utf::convert_string<std::u32string::value_type>(text.data(), text.data() + text.size());
 }
 
 std::string Font::ConvertUtf32To8(std::u32string_view text)
 {
-    return nowide::utf::convert_string<std::string::value_type>(text.begin(), text.end());
+    return nowide::utf::convert_string<std::string::value_type>(text.data(), text.data() + text.size());
 }
 
 std::u32string Font::GetAlphabetInRange(char32_t from, char32_t to)
