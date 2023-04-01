@@ -31,8 +31,8 @@
   sudo apt-get update && sudo apt-get install build-essential git cmake lcov xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev
   ```
 - **MacOS**
-  - MacOS 10.15 "Catalina" or later
-  - XCode 11 or later with command-line tools
+  - MacOS 13 "Ventura" or later
+  - XCode 14 or later with command-line tools
 - **iOS / tvOS**
   - All MacOS prerequisites from above
   - iOS or tvOS simulator for running app in virtual environment
