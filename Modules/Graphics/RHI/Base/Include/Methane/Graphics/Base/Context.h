@@ -81,19 +81,19 @@ public:
     Rhi::ICommandKit&           GetDefaultCommandKit(Rhi::CommandListType type) const final;
     Rhi::ICommandKit&           GetDefaultCommandKit(Rhi::ICommandQueue& cmd_queue) const final;
     const Rhi::IDevice&         GetDevice() const final;
+    bool                        UploadResources() const override;
 
     // Context interface
     virtual void Initialize(Device& device, bool is_callback_emitted = true);
     virtual void Release();
-    virtual bool UploadResources() const;
 
     // IObject interface
     bool SetName(std::string_view name) override;
 
-    DeferredAction      GetRequestedAction() const noexcept { return m_requested_action; }
-    Ptr<Device>         GetBaseDevicePtr() const noexcept   { return m_device_ptr; }
-    Device&             GetBaseDevice();
-    const Device&       GetBaseDevice() const;
+    DeferredAction           GetRequestedAction() const noexcept { return m_requested_action; }
+    Ptr<Device>              GetBaseDevicePtr() const noexcept   { return m_device_ptr; }
+    Device&                  GetBaseDevice();
+    const Device&            GetBaseDevice() const;
     Rhi::IDescriptorManager& GetDescriptorManager() const;
 
 protected:

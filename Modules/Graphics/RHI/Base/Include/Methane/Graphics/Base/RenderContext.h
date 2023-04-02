@@ -54,6 +54,7 @@ public:
     bool                     SetVSyncEnabled(bool vsync_enabled) override;
     bool                     SetFrameBuffersCount(uint32_t frame_buffers_count) override;
     bool                     SetFullScreen(bool is_full_screen) override;
+    bool                     UploadResources() const final;
 
     // Context interface
     void Initialize(Device& device, bool is_callback_emitted = true) override;
@@ -71,7 +72,6 @@ protected:
     Rhi::IFence& GetRenderFence() const;
 
     // Context overrides
-    bool UploadResources() const override;
     void OnGpuWaitStart(WaitFor wait_for) override;
     void OnGpuWaitComplete(WaitFor wait_for) override;
 

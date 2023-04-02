@@ -151,6 +151,11 @@ IObjectRegistry& ComputeContext::GetObjectRegistry() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetObjectRegistry();
 }
 
+bool ComputeContext::UploadResources() const META_PIMPL_NOEXCEPT
+{
+    return GetImpl(m_impl_ptr).UploadResources();
+}
+
 void ComputeContext::RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT
 {
     GetImpl(m_impl_ptr).RequestDeferredAction(action);

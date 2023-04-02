@@ -163,6 +163,11 @@ IObjectRegistry& RenderContext::GetObjectRegistry() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetObjectRegistry();
 }
 
+bool RenderContext::UploadResources() const META_PIMPL_NOEXCEPT
+{
+    return GetImpl(m_impl_ptr).UploadResources();
+}
+
 void RenderContext::RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT
 {
     GetImpl(m_impl_ptr).RequestDeferredAction(action);

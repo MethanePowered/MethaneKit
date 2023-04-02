@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: MethaneKit/Apps/Tutorials/08-ConsoleCompute/Shaders/GameOfLife.hlsl
-Compute shader for Game of Life
+Compute shader for Conway's Game of Life
 
 ******************************************************************************/
 
@@ -31,6 +31,8 @@ void MainCS(uint3 id : SV_DispatchThreadID)
     if (id.x > frame_texture_size.x || id.y > frame_texture_size.y)
         return;
 
+    // For a cell at id.xy compute number live neighbours,
+    // which are 8 cells that are horizontally, vertically, or diagonally adjacent.
     uint alive_neighbors_count = 0;
     for (int x = -1; x <= 1; x++)
     {
@@ -45,15 +47,16 @@ void MainCS(uint3 id : SV_DispatchThreadID)
         }
     }
 
-    uint is_alive = 0;
     if (g_frame_texture[id.xy] > 0)
     {
-        is_alive = (alive_neighbors_count == 2 || alive_neighbors_count == 3) ? 1 : 0;
+        // Any live cell with two or three live neighbours survives.
+        // All other live cells die in the next generation.
+        g_frame_texture[id.xy] = (alive_neighbors_count == 2 || alive_neighbors_count == 3) ? 1 : 0;
     }
     else
     {
-        is_alive = (alive_neighbors_count == 3) ? 1 : 0;
+        // Any dead cell with three live neighbours becomes a live cell.
+        // All other dead cells stay dead.
+        g_frame_texture[id.xy] = (alive_neighbors_count == 3) ? 1 : 0;
     }
-
-    g_frame_texture[id.xy] = is_alive;
 }

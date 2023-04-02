@@ -42,6 +42,7 @@ public:
     void Initialize(Device& device, bool is_callback_emitted = true) override;
     void WaitForGpu(WaitFor wait_for) override;
     [[nodiscard]] OptionMask GetOptions() const noexcept final { return m_settings.options; }
+    bool UploadResources() const override;
 
     // IComputeContext interface
     [[nodiscard]] const Settings& GetSettings() const noexcept override { return m_settings; }
@@ -49,9 +50,6 @@ public:
 protected:
     void ResetWithSettings(const Settings& settings);
     Rhi::IFence& GetComputeFence() const;
-
-    // Context overrides
-    bool UploadResources() const override;
 
 private:
     void WaitForGpuComputeComplete();

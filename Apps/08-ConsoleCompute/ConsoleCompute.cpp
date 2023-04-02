@@ -35,6 +35,7 @@ Tutorial demonstrating "game of life" computing on GPU in console application
 #include <magic_enum.hpp>
 #include <fmt/format.h>
 #include <random>
+#include <mutex>
 
 namespace gfx = Methane::Graphics;
 namespace rhi = Methane::Graphics::Rhi;
@@ -47,9 +48,11 @@ static std::mt19937 g_random_engine = []()
     return std::mt19937(seed);
 }();
 
-static uint32_t                     g_time = 0;
+static std::mutex                   g_screen_refresh_mutex;
+static std::atomic<bool>            g_screen_refresh_enabled(true);
 static const gfx::FrameSize         g_field_size(2048U, 2048U);
 static gfx::FrameRect               g_frame_rect;
+static uint32_t                     g_cells_count = 0U;
 static int                          g_compute_device_index = 0;
 static ftxui::RadioboxOption        g_compute_device_option = ftxui::RadioboxOption::Simple();
 static tf::Executor                 g_parallel_executor;
@@ -63,6 +66,9 @@ static rhi::SubResource             g_frame_data;
 static data::FpsCounter             g_fps_counter(60U);
 static std::optional<data::Point2I> g_mouse_pressed_pos;
 static std::optional<data::Point2I> g_frame_pressed_pos;
+static bool                         g_30fps_limit_enabled = true;
+static bool                         g_game_paused = false;
+static int                          g_initial_cells_percent = 50U;
 
 const rhi::Devices& GetComputeDevices()
 {
@@ -106,14 +112,31 @@ Methane::Data::Bytes GetRandomFrameData(const gfx::FrameSize& frame_size)
 {
     META_FUNCTION_TASK();
     Methane::Data::Bytes frame_data(frame_size.GetPixelsCount(), std::byte());
-    const uint32_t points_count = frame_size.GetPixelsCount() * 2U / 3U;
-    std::uniform_int_distribution<> dist(0, frame_size.GetPixelsCount() - 1);
+    const uint32_t cells_count = static_cast<uint32_t>(static_cast<double>(frame_size.GetPixelsCount()) * g_initial_cells_percent / 100.0);
+    std::uniform_int_distribution<uint32_t> dist(0U, frame_size.GetPixelsCount() - 1U);
     auto* cell_values = reinterpret_cast<uint8_t*>(frame_data.data());
-    for(uint32_t i = 0; i < points_count; i++)
+    for(uint32_t i = 0; i < cells_count; i++)
     {
-        cell_values[dist(g_random_engine)] = 1U;
+        uint32_t p = 0U;
+        do
+        {
+            p = dist(g_random_engine);
+        }
+        while(cell_values[p]);
+        cell_values[p] = 1U;
     }
     return frame_data;
+}
+
+void RandomizeFrameData()
+{
+    META_FUNCTION_TASK();
+
+    // Randomize initial game state
+    g_frame_data = rhi::SubResource(GetRandomFrameData(g_field_size));
+
+    // Set frame texture data
+    g_frame_texture.SetData(g_compute_context.GetComputeCommandKit().GetQueue(), { g_frame_data });
 }
 
 void InitializeFrameTexture()
@@ -136,25 +159,10 @@ void InitializeFrameTexture()
     });
     g_compute_bindings.SetName("Game of Life Compute Bindings");
 
-    // Randomize initial game state
-    g_frame_data = rhi::SubResource(GetRandomFrameData(g_field_size));
-
-    // Set frame texture data
-    g_frame_texture.SetData(g_compute_context.GetComputeCommandKit().GetQueue(), { g_frame_data });
+    RandomizeFrameData();
 
     // Complete bindings and texture initialization
     g_compute_context.CompleteInitialization();
-}
-
-void ReleaseComputeContext()
-{
-    META_FUNCTION_TASK();
-    g_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
-
-    g_compute_bindings = {};
-    g_frame_texture    = {};
-    g_compute_state    = {};
-    g_compute_context  = {};
 }
 
 void InitializeComputeContext()
@@ -185,6 +193,17 @@ void InitializeComputeContext()
     InitializeFrameTexture();
 }
 
+void ReleaseComputeContext()
+{
+    META_FUNCTION_TASK();
+    g_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
+
+    g_compute_bindings = {};
+    g_frame_texture    = {};
+    g_compute_state    = {};
+    g_compute_context  = {};
+}
+
 void ComputeIteration()
 {
     META_FUNCTION_TASK();
@@ -206,10 +225,26 @@ void ComputeIteration()
     g_fps_counter.OnCpuFrameReadyToPresent();
 }
 
+void RestartSimulation()
+{
+    META_FUNCTION_TASK();
+    std::unique_lock lock(g_screen_refresh_mutex);
+    g_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
+    RandomizeFrameData();
+    g_compute_context.UploadResources();
+}
+
+void PlayPauseToggle()
+{
+    g_game_paused = !g_game_paused;
+    g_screen_refresh_enabled = !g_game_paused;
+}
+
 void PresentFrame(ftxui::Canvas& canvas)
 {
     META_FUNCTION_TASK();
     const uint8_t* cells  = g_frame_data.GetDataPtr<uint8_t>();
+    g_cells_count = 0U;
     for (uint32_t y = 0; y < g_frame_rect.size.GetHeight(); y++)
         for (uint32_t x = 0; x < g_frame_rect.size.GetWidth(); x++)
         {
@@ -218,6 +253,7 @@ void PresentFrame(ftxui::Canvas& canvas)
             if (cells[cell_x + cell_y * g_field_size.GetWidth()])
             {
                 canvas.DrawBlockOn(static_cast<int>(x), static_cast<int>(y));
+                g_cells_count++;
             }
         }
     g_fps_counter.OnCpuFramePresented();
@@ -235,11 +271,13 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
                 separator(),
                 text(fmt::format(" GPU: {} ", GetComputeDevice()->GetAdapterName())),
                 separator(),
-                text(fmt::format(" FPS: {} ", g_fps_counter.GetFramesPerSecond())),
+                text(fmt::format(" FPS: {} ", g_game_paused ? 0 : g_fps_counter.GetFramesPerSecond())),
                 separator(),
-                text(fmt::format(" Game Field: {} x {} ", g_field_size.GetWidth(), g_field_size.GetHeight())),
+                text(fmt::format(" Field: {} x {} ", g_field_size.GetWidth(), g_field_size.GetHeight())),
                 separator(),
-                text(fmt::format(" Visible Frame: {} ", static_cast<std::string>(g_frame_rect) ))
+                text(fmt::format(" Visible {} ", static_cast<std::string>(g_frame_rect) )),
+                separator(),
+                text(fmt::format(" Visible Cells {} ", g_cells_count ))
             });
         }) | border | xflex,
         Button(" X ", screen.ExitLoopClosure(), ButtonOption::Simple()) | align_right
@@ -254,10 +292,26 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
     auto sidebar = Container::Vertical({
         Renderer([&]{ return text("GPU Devices:") | ftxui::bold; }),
         Radiobox(&GetComputeDeviceNames(), &g_compute_device_index, g_compute_device_option),
+        Renderer([&] { return separator(); }),
+        Checkbox("30 FPS limit", &g_30fps_limit_enabled),
+        Container::Horizontal({
+            Button("Restart",      []() { RestartSimulation(); }, ButtonOption::Border()),
+            Button("Play | Pause", []() { PlayPauseToggle(); },   ButtonOption::Border()),
+            Button("Next Step",    []() { ComputeIteration(); },  ButtonOption::Border()),
+        }),
+        Slider("Initial Cells %", &g_initial_cells_percent),
         Renderer([&]
         {
             return vbox({
                 separator(),
+                paragraph("Controls:") | ftxui::bold,
+                paragraph(" ◆ Press mouse left button over game field to drag the visible area."),
+                separator(),
+                paragraph("Conway's Game of Life Rules:") | ftxui::bold,
+                paragraph(" ◆ Any live cell with fewer than two live neighbours dies, as if by underpopulation."),
+                paragraph(" ◆ Any live cell with two or three live neighbours lives on to the next generation."),
+                paragraph(" ◆ Any live cell with more than three live neighbours dies, as if by overpopulation."),
+                paragraph(" ◆ Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction."),
                 vbox() | yflex,
                 separator(),
                 paragraph(fmt::format("Powered by {} v{} {}", METHANE_PRODUCT_NAME, METHANE_VERSION_STR, METHANE_PRODUCT_URL))
@@ -280,7 +334,10 @@ ftxui::Component InitializeConsoleInterface(ftxui::ScreenInteractive& screen)
             g_frame_rect.size.SetHeight(canvas.height());
 
             // Compute turn in Game of Life and draw on frame
-            ComputeIteration();
+            if (!g_game_paused)
+            {
+                ComputeIteration();
+            }
             PresentFrame(canvas);
         }) | flex;
     });
@@ -338,11 +395,15 @@ void RunEventLoop(ftxui::ScreenInteractive& screen, const ftxui::Component& root
     std::atomic<bool> refresh_ui_continue = true;
     std::thread refresh_ui([&screen, &refresh_ui_continue]
     {
+        uint32_t time = 0;
+        std::condition_variable_any update_condition_var;
         while (refresh_ui_continue)
         {
             using namespace std::chrono_literals;
-            std::this_thread::sleep_for(1ms);
-            screen.Post([&] { g_time++; });
+            std::this_thread::sleep_for(g_30fps_limit_enabled ? 32ms : 1ms);
+            std::unique_lock lock(g_screen_refresh_mutex);
+            update_condition_var.wait_for(lock, 1s, [] { return g_screen_refresh_enabled.load(); });
+            screen.Post([&time] { time++; });
             screen.Post(ftxui::Event::Custom);
         }
     });

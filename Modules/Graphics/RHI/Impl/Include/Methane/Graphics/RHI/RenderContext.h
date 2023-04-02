@@ -103,6 +103,7 @@ public:
     [[nodiscard]] META_PIMPL_API OptionMask       GetOptions() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API tf::Executor&    GetParallelExecutor() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API IObjectRegistry& GetObjectRegistry() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool UploadResources() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API void RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT;
     META_PIMPL_API void CompleteInitialization() const;
     [[nodiscard]] META_PIMPL_API bool IsCompletingInitialization() const META_PIMPL_NOEXCEPT;
