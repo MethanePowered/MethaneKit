@@ -121,11 +121,8 @@ static std::vector<const char*> GetEnabledExtensions(const std::vector<std::stri
             enabled_extensions.push_back(extension.c_str());
         }
     };
-    META_UNUSED(add_enabled_extension);
 
-#ifndef NDEBUG
     add_enabled_extension(g_vk_debug_utils_extension);
-#endif
 
 #if defined(VULKAN_VALIDATION_BEST_PRACTICES_ENABLED) && !defined(NDEBUG)
     add_enabled_extension(g_vk_validation_extension);
