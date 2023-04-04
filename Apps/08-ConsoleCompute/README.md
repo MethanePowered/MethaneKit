@@ -1,6 +1,6 @@
 # Console Compute Tutorial
 
-| <pre><b>Windows (DirectX 12)       </pre></b>                            | <pre><b>Linux (Vulkan)             </pre></b>                       | <pre><b>MacOS (Metal)              </pre></b>                      |
+| <pre><b>Windows (DirectX 12)       </b></pre>                            | <pre><b>Linux (Vulkan)             </b></pre>                       | <pre><b>MacOS (Metal)              </b></pre>                      |
 |--------------------------------------------------------------------------|---------------------------------------------------------------------|--------------------------------------------------------------------|
 | ![ConsoleCompute on Windows](Screenshots/ConsoleComputeWinDirectX12.jpg) | ![ConsoleCompute on Linux](Screenshots/ConsoleComputeLinVulkan.jpg) | ![ConsoleCompute on MacOS](Screenshots/ConsoleComputeMacMetal.jpg) |
 
