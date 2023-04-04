@@ -93,6 +93,7 @@ and continue with others.
 | 5. [Typography](/Apps/05-Typography)                | ![Typography on Windows](/Apps/05-Typography/Screenshots/TypographyWinDirectX12.jpg)                       | Typography demonstrates animated text rendering with dynamic font atlas updates using Methane UI. |
 | 6. [Cube-Map Array](/Apps/06-CubeMapArray)          | ![Cube-Map Array on Windows](/Apps/06-CubeMapArray/Screenshots/CubeMapArrayWinDirectX12.jpg)               | Cube-map array texturing along with sky-box rendering.                                            |
 | 7. [Parallel Rendering](/Apps/07-ParallelRendering) | ![Parallel Rendering on Windows](/Apps/07-ParallelRendering/Screenshots/ParallelRenderingWinDirectX12.jpg) | Parallel rendering of the textured cube instances to the single render pass.                      |
+| 8. [Console Compute](/Apps/08-ConsoleCompute)       | ![Console Compute on Windows](/Apps/08-ConsoleCompute/Screenshots/ConsoleComputeWinDirectX12.jpg)          | Conway's Game of Life implemented in Compute Shader and running in pure console application.      |
 
 ### Samples
 
