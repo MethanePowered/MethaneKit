@@ -1,19 +1,13 @@
-set(TARGET MethaneUserInterfaceTypesTest)
+set(TARGET MethaneGraphicsRhiTest)
 
 add_executable(${TARGET}
-    UnitTypeCatchHelpers.hpp
-    UnitTypesTest.cpp
-    FakePlatformApp.hpp
-    ContextTest.cpp
+    ComputeContextTest.cpp
 )
 
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethaneGraphicsRhiNullImpl
-        MethaneUserInterfaceNullTypes
-        MethaneUserInterfaceNullTypography
-        MethanePlatformApp
         TaskFlow
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2WithMain
