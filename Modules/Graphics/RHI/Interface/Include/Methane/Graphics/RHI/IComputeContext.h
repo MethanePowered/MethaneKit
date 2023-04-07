@@ -41,6 +41,9 @@ namespace Methane::Graphics::Rhi
 struct ComputeContextSettings
 {
     ContextOptionMask options{ };
+
+    bool operator==(const ComputeContextSettings& other) const noexcept;
+    bool operator!=(const ComputeContextSettings& other) const noexcept;
 };
 
 struct IComputeContext

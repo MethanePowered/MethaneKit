@@ -28,6 +28,7 @@ Unit-tests of the RHI ComputeContext
 
 #include <stdexcept>
 #include <taskflow/taskflow.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace Methane::Graphics;
 
@@ -40,13 +41,6 @@ static Rhi::Device GetTestDevice()
         throw std::logic_error("No RHI devices available");
     return devices[0];
 }
-
-bool operator==(const Rhi::ComputeContextSettings& left, const Rhi::ComputeContextSettings& right)
-{
-    return left.options == right.options;
-}
-
-#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
 {
