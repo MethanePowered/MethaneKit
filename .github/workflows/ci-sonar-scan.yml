@@ -183,13 +183,13 @@ jobs:
               set /A result_error_level=!errorlevel!
             )
             if .!test_results!==. (
-              set test_results=%cd%\Results\%%~na.xml
+              set test_results=Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/%%~na.xml
             ) else (
-              set test_results=!test_results!,%cd%\Results\%%~na.xml
+              set test_results=!test_results!,Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/%%~na.xml
             )
           )
           echo Test Result Files: %test_results%
-          echo test_results=%test_results% >> %GITHUB_ENV%
+          echo test_results=%test_results%>> %GITHUB_ENV%
           exit !result_error_level!
 
       - name: Run unit-tests from install directory on Linux
