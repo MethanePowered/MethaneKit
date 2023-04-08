@@ -1,6 +1,7 @@
 set(TARGET MethaneGraphicsRhiTest)
 
 add_executable(${TARGET}
+    RhiTestHelpers.hpp
     ComputeContextTest.cpp
 )
 

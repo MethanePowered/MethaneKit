@@ -21,15 +21,18 @@ Unit-tests of the RHI ComputeContext
 
 ******************************************************************************/
 
-#include "Methane/Graphics/RHI/IComputeContext.h"
+#include "RhiTestHelpers.hpp"
+
 #include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/System.h>
 #include <Methane/Graphics/RHI/Device.h>
 
+#include <memory>
 #include <stdexcept>
 #include <taskflow/taskflow.hpp>
 #include <catch2/catch_test_macros.hpp>
 
+using namespace Methane;
 using namespace Methane::Graphics;
 
 static tf::Executor g_parallel_executor;
@@ -49,10 +52,44 @@ TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
     };
     const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
 
-    SECTION("Check initialization")
+    SECTION("Context Construction")
     {
         CHECK(compute_context.IsInitialized());
         CHECK(compute_context.GetInterfacePtr());
         CHECK(compute_context.GetInterface().GetSettings() == compute_context_settings);
+        CHECK(compute_context.GetName() == "");
+    }
+
+    SECTION("Object Destroyed Callback")
+    {
+        auto compute_context_ptr = std::make_unique<Rhi::ComputeContext>(GetTestDevice(), g_parallel_executor, compute_context_settings);
+        ObjectCallbackTester object_callback_tester(compute_context_ptr->GetInterface());
+        CHECK_FALSE(object_callback_tester.IsObjectDestroyed());
+        compute_context_ptr.reset();
+        CHECK(object_callback_tester.IsObjectDestroyed());
+    }
+
+    SECTION("Object Name Setup")
+    {
+        CHECK(compute_context.SetName("My Compute Context"));
+        CHECK(compute_context.GetName() == "My Compute Context");
+    }
+
+    SECTION("Object Name Change Callback")
+    {
+        CHECK_NOTHROW(compute_context.SetName("My Compute Context"));
+        ObjectCallbackTester object_callback_tester(compute_context.GetInterface());
+        CHECK(compute_context.SetName("Our Compute Context"));
+        CHECK(object_callback_tester.IsObjectNameChanged());
+        CHECK(object_callback_tester.GetCurObjectName() == "Our Compute Context");
+        CHECK(object_callback_tester.GetOldObjectName() == "My Compute Context");
+    }
+
+    SECTION("Object Name Set Unchanged")
+    {
+        CHECK_NOTHROW(compute_context.SetName("My Compute Context"));
+        ObjectCallbackTester object_callback_tester(compute_context.GetInterface());
+        CHECK_FALSE(compute_context.SetName("My Compute Context"));
+        CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
     }
 }
