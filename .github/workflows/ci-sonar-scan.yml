@@ -188,7 +188,8 @@ jobs:
               set test_results=!test_results!,%cd%\Results\%%~na.xml
             )
           )
-          echo "test_results=$test_results" >> $env:GITHUB_ENV
+          echo "Test Result Files: %test_results%"
+          echo "test_results=%test_results%" >> $env:GITHUB_ENV
           exit !result_error_level!
 
       - name: Run unit-tests from install directory on Linux
