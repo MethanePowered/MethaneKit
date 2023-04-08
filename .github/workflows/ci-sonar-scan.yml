@@ -189,7 +189,7 @@ jobs:
             )
           )
           echo "Test Result Files: %test_results%"
-          echo "test_results=%test_results%" >> $env:GITHUB_ENV
+          echo "test_results=%test_results%" >> %GITHUB_ENV%
           exit !result_error_level!
 
       - name: Run unit-tests from install directory on Linux
