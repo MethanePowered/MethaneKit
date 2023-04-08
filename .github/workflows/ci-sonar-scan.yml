@@ -210,6 +210,7 @@ jobs:
           prof_data_ext='.profdata'
           prof_raw_ext='.profraw'
           lcov_ext='.lcov'
+          test_results=''
           echo Running unit-tests and Converting LLVM code coverage data to lcov text format in directory $PWD
           mkdir Results
           mkdir Coverage
@@ -217,6 +218,7 @@ jobs:
           do
             ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
             echo  - $test_exe - completed with $? exit status
+            test_results+="$PWD/Results/$test_exe$result_ext,"
             if [ ! -f default.profraw ]; then
               continue
             fi
@@ -225,6 +227,8 @@ jobs:
             xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" -arch=x86_64 ./$test_exe > "./Coverage/$test_exe$lcov_ext"
             echo    - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
           done
+          echo "Test Result Files: $test_results"
+          echo "test_results=$test_results" >> $GITHUB_ENV
           echo List of generated coverage files in directory $PWD/Coverage
           ls -la ./Coverage
 
@@ -272,7 +276,7 @@ jobs:
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectKey=${{ matrix.sonar_project_key }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectVersion=${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.cfamily.compile-commands=Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.testExecutionReportPaths=$TESTS_DIR/Results/MethaneDataTypesTest.xml,$TESTS_DIR/Results/MethaneDataEventsTest.xml,$TESTS_DIR/Results/MethaneDataRangeSetTest.xml,$TESTS_DIR/Results/MethanePlatformInputTest.xml,$TESTS_DIR/Results/MethaneGraphicsTypesTest.xml,$TESTS_DIR/Results/MethaneGraphicsCameraTest.xml,$TESTS_DIR/Results/MethaneGraphicsRhiTest.xml$TESTS_DIR/Results/MethaneUserInterfaceTypesTest.xml"
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.testExecutionReportPaths=${{ env.test_results }}
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.coverageReportPaths=$TESTS_DIR/Coverage/Report/SonarQube.xml"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.scm.revision=${{ github.sha }}"
           if [ "${{ github.event_name }}" == "pull_request" ]; then
