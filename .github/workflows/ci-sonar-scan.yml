@@ -163,8 +163,10 @@ jobs:
         shell: cmd
         working-directory: 'Build\Output\${{ matrix.config_preset }}\Install\Tests'
         run: |
+          chcp 65001 #set code page to utf-8
           setlocal enabledelayedexpansion
           set open_cpp_coverage_exe=OpenCppCoverage\OpenCppCoverage.exe
+          set test_results=
           if not exist "%open_cpp_coverage_exe%" (
             echo File path "%open_cpp_coverage_exe%" does not exist!
             exit 101
@@ -180,7 +182,13 @@ jobs:
             if not !errorlevel!==0 (
               set /A result_error_level=!errorlevel!
             )
+            if .!test_results!==. (
+              set test_results=%cd%\Results\%%~na.xml
+            ) else (
+              set test_results=!test_results!,%cd%\Results\%%~na.xml
+            )
           )
+          echo "test_results=$test_results" >> $env:GITHUB_ENV
           exit !result_error_level!
 
       - name: Run unit-tests from install directory on Linux
@@ -188,13 +196,17 @@ jobs:
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
           result_ext='.xml'
+          test_results=''
           echo Running unit-tests in directory $PWD
           mkdir Results
           for test_exe in *Test
           do
             ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
             echo  - $test_exe - completed with $? exit status
+            test_results+="$PWD/Results/$test_exe$result_ext,"
           done
+          echo "Test Result Files: $test_results"
+          echo "test_results=$test_results" >> $GITHUB_ENV
 
       - name: Collect tests code coverage using ctest and gcov/lcov on Linux
         if: ${{ matrix.os_name == 'linux' }}
@@ -276,7 +288,7 @@ jobs:
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectKey=${{ matrix.sonar_project_key }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectVersion=${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.cfamily.compile-commands=Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.testExecutionReportPaths=${{ env.test_results }}
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.testExecutionReportPaths=${{ env.test_results }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.coverageReportPaths=$TESTS_DIR/Coverage/Report/SonarQube.xml"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.scm.revision=${{ github.sha }}"
           if [ "${{ github.event_name }}" == "pull_request" ]; then
