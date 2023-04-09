@@ -40,6 +40,7 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_METHODS_IMPLEMENT(Device);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(Device);
 
 Device::Device(const Ptr<IDevice>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))

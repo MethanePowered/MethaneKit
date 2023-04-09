@@ -21,9 +21,10 @@ RHI Test helper classes
 
 ******************************************************************************/
 
-#include "Methane/Data/Receiver.hpp"
+#include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/IObject.h>
 #include <Methane/Data/Receiver.hpp>
+#include <Methane/Data/Emitter.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
@@ -34,14 +35,12 @@ namespace Methane
 namespace rhi = Methane::Graphics::Rhi;
 
 class ObjectCallbackTester final
-: private Methane::Data::Receiver<rhi::IObjectCallback>
+    : private Data::Receiver<rhi::IObjectCallback>
 {
 public:
     ObjectCallbackTester(rhi::IObject& obj)
         : m_obj(obj)
-    {
-        obj.Connect(*this);
-    }
+    { obj.Connect(*this); }
 
     bool IsObjectDestroyed() const noexcept
     { return m_is_object_destroyed; }
@@ -78,6 +77,55 @@ private:
     bool m_is_object_name_changed = false;
     std::string m_old_name;
     std::string m_cur_name;
+};
+
+class ContextCallbackTester final
+    : private Data::Receiver<rhi::IContextCallback>
+{
+public:
+    ContextCallbackTester(rhi::IContext& context)
+        : m_context(context)
+    { dynamic_cast<Data::IEmitter<rhi::IContextCallback>&>(m_context).Connect(*this); }
+
+    bool IsContextReleased() const noexcept
+    { return m_is_context_released; }
+
+    bool IsContextCompletingInitialization() const noexcept
+    { return m_is_context_completing_initialization; }
+
+    bool IsContextInitialized() const noexcept
+    { return m_is_context_initialized; }
+
+    void Reset()
+    {
+        m_is_context_released = false;
+        m_is_context_completing_initialization = false;
+        m_is_context_initialized = false;
+    }
+
+private:
+    void OnContextReleased(rhi::IContext& context) override
+    {
+        CHECK(std::addressof(m_context) == std::addressof(context));
+        m_is_context_released = true;
+    }
+
+    void OnContextCompletingInitialization(rhi::IContext& context) override
+    {
+        CHECK(std::addressof(m_context) == std::addressof(context));
+        m_is_context_completing_initialization = true;
+    }
+
+    void OnContextInitialized(rhi::IContext& context) override
+    {
+        CHECK(std::addressof(m_context) == std::addressof(context));
+        m_is_context_initialized = true;
+    }
+
+    rhi::IContext& m_context;
+    bool m_is_context_released = false;
+    bool m_is_context_completing_initialization = false;
+    bool m_is_context_initialized = false;
 };
 
 } // namespace Methane

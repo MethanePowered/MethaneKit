@@ -10,6 +10,7 @@ target_link_libraries(${TARGET}
         MethaneBuildOptions
         MethaneGraphicsRhiNullImpl
         TaskFlow
+        magic_enum
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2WithMain
 )

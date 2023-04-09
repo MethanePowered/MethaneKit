@@ -21,11 +21,13 @@ Methane CommandKit PIMPL wrappers for direct calls to final implementation.
 
 ******************************************************************************/
 
+#include "Methane/Graphics/RHI/ICommandQueue.h"
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/ComputeCommandList.h>
+#include <Methane/Graphics/RHI/TransferCommandList.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 
 #include <Methane/Graphics/Base/CommandKit.h>
@@ -140,6 +142,18 @@ ComputeCommandList CommandKit::GetComputeListForEncoding(CommandListId cmd_list_
 {
     META_CHECK_ARG_EQUAL(GetListType(), CommandListType::Compute);
     return ComputeCommandList(dynamic_cast<IComputeCommandList&>(GetImpl(m_impl_ptr).GetListForEncoding(cmd_list_id, debug_group_name)));
+}
+
+TransferCommandList CommandKit::GetTransferList(CommandListId cmd_list_id) const
+{
+    META_CHECK_ARG_EQUAL(GetListType(), CommandListType::Transfer);
+    return TransferCommandList(dynamic_cast<ITransferCommandList&>(GetImpl(m_impl_ptr).GetList(cmd_list_id)));
+}
+
+TransferCommandList CommandKit::GetTransferListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const
+{
+    META_CHECK_ARG_EQUAL(GetListType(), CommandListType::Transfer);
+    return TransferCommandList(dynamic_cast<ITransferCommandList&>(GetImpl(m_impl_ptr).GetListForEncoding(cmd_list_id, debug_group_name)));
 }
 
 CommandListSet CommandKit::GetListSet(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const

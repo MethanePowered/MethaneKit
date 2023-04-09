@@ -115,7 +115,7 @@ public:
     META_PIMPL_API void Disconnect(Data::Receiver<IContextCallback>& receiver) const;
 
     // IComputeContext interface methods
-    [[nodiscard]] META_PIMPL_API const Settings&    GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::ComputeContext;
