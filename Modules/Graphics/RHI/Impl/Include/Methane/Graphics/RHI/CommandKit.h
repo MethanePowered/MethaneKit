@@ -23,7 +23,6 @@ Methane CommandKit PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
-#include "Methane/Graphics/RHI/CommandQueue.h"
 #include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/ICommandKit.h>
