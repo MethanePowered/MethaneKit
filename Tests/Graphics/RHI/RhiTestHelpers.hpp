@@ -42,6 +42,11 @@ public:
         : m_obj(obj)
     { obj.Connect(*this); }
 
+    template<typename ObjectType>
+    ObjectCallbackTester(ObjectType& obj)
+        : m_obj(obj.GetInterface())
+    { obj.Connect(*this); }
+
     bool IsObjectDestroyed() const noexcept
     { return m_is_object_destroyed; }
 
@@ -85,7 +90,12 @@ class ContextCallbackTester final
 public:
     ContextCallbackTester(rhi::IContext& context)
         : m_context(context)
-    { dynamic_cast<Data::IEmitter<rhi::IContextCallback>&>(m_context).Connect(*this); }
+    { dynamic_cast<Data::IEmitter<rhi::IContextCallback>&>(context).Connect(*this); }
+
+    template<typename ContextType>
+    ContextCallbackTester(ContextType& context)
+        : m_context(context.GetInterface())
+    { context.Connect(*this); }
 
     bool IsContextReleased() const noexcept
     { return m_is_context_released; }
@@ -113,6 +123,7 @@ private:
     void OnContextCompletingInitialization(rhi::IContext& context) override
     {
         CHECK(std::addressof(m_context) == std::addressof(context));
+        CHECK(context.IsCompletingInitialization());
         m_is_context_completing_initialization = true;
     }
 

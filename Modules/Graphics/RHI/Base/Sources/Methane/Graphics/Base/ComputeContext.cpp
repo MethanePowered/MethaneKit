@@ -69,20 +69,6 @@ Rhi::IFence& ComputeContext::GetComputeFence() const
     return GetComputeCommandKit().GetFence(0U);
 }
 
-void ComputeContext::ResetWithSettings(const Settings& settings)
-{
-    META_FUNCTION_TASK();
-    META_LOG("Render context '{}' RESET with new settings", GetName());
-
-    WaitForGpu(WaitFor::ComputeComplete);
-
-    Ptr<Device> device_ptr = GetBaseDevice().GetPtr<Device>();
-    m_settings = settings;
-
-    Release();
-    Initialize(*device_ptr, true);
-}
-
 void ComputeContext::Initialize(Device& device, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();

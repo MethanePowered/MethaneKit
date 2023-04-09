@@ -48,7 +48,6 @@ public:
     [[nodiscard]] const Settings& GetSettings() const noexcept override { return m_settings; }
 
 protected:
-    void ResetWithSettings(const Settings& settings);
     Rhi::IFence& GetComputeFence() const;
 
 private:
