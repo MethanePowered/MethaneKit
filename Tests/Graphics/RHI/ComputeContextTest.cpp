@@ -21,15 +21,19 @@ Unit-tests of the RHI ComputeContext
 
 ******************************************************************************/
 
-#include "Methane/Graphics/RHI/ICommandList.h"
-#include "Methane/Graphics/RHI/IContext.h"
+#include "Methane/Graphics/RHI/IShader.h"
+#include "Methane/Graphics/RHI/Shader.h"
 #include "RhiTestHelpers.hpp"
 
+#include <Methane/Data/AppShadersProvider.h>
 #include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/TransferCommandList.h>
 #include <Methane/Graphics/RHI/System.h>
 #include <Methane/Graphics/RHI/Device.h>
+#include <Methane/Graphics/RHI/CommandQueue.h>
+#include <Methane/Graphics/RHI/CommandKit.h>
+#include <Methane/Graphics/RHI/ComputeState.h>
 
 #include <memory>
 #include <stdexcept>
@@ -50,7 +54,7 @@ static Rhi::Device GetTestDevice()
     return devices[0];
 }
 
-TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
+TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 {
     const Rhi::ComputeContextSettings compute_context_settings{
         Rhi::ContextOptionMask{ Rhi::ContextOption::TransferWithD3D12DirectQueue }
@@ -58,8 +62,9 @@ TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
 
     SECTION("Context Construction")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
-        CHECK(compute_context.IsInitialized());
+        Rhi::ComputeContext compute_context;
+        REQUIRE_NOTHROW(compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, compute_context_settings));
+        REQUIRE(compute_context.IsInitialized());
         CHECK(compute_context.GetInterfacePtr());
         CHECK(compute_context.GetSettings() == compute_context_settings);
         CHECK(compute_context.GetOptions() == compute_context_settings.options);
@@ -87,7 +92,7 @@ TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
     SECTION("Object Name Change Callback")
     {
         const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
-        CHECK_NOTHROW(compute_context.SetName("My Compute Context"));
+        CHECK(compute_context.SetName("My Compute Context"));
         ObjectCallbackTester object_callback_tester(compute_context);
         CHECK(compute_context.SetName("Our Compute Context"));
         CHECK(object_callback_tester.IsObjectNameChanged());
@@ -98,7 +103,7 @@ TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
     SECTION("Object Name Set Unchanged")
     {
         const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
-        CHECK_NOTHROW(compute_context.SetName("My Compute Context"));
+        CHECK(compute_context.SetName("My Compute Context"));
         ObjectCallbackTester object_callback_tester(compute_context);
         CHECK_FALSE(compute_context.SetName("My Compute Context"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
@@ -108,7 +113,7 @@ TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
     {
         const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         ContextCallbackTester context_callback_tester(compute_context);
-        CHECK_NOTHROW(compute_context.Reset());
+        REQUIRE_NOTHROW(compute_context.Reset());
         CHECK(context_callback_tester.IsContextReleased());
         CHECK_FALSE(context_callback_tester.IsContextCompletingInitialization());
         CHECK(context_callback_tester.IsContextInitialized());
@@ -119,7 +124,7 @@ TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
         const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         ContextCallbackTester context_callback_tester(compute_context);
         const Rhi::Device new_device = Rhi::System::Get().UpdateGpuDevices().at(0);
-        CHECK_NOTHROW(compute_context.Reset(new_device));
+        REQUIRE_NOTHROW(compute_context.Reset(new_device));
         CHECK(context_callback_tester.IsContextReleased());
         CHECK_FALSE(context_callback_tester.IsContextCompletingInitialization());
         CHECK(context_callback_tester.IsContextInitialized());
@@ -130,8 +135,8 @@ TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
     {
         const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         Rhi::CommandKit upload_cmd_kit;
-        CHECK_NOTHROW(upload_cmd_kit = compute_context.GetUploadCommandKit());
-        CHECK(upload_cmd_kit.IsInitialized());
+        REQUIRE_NOTHROW(upload_cmd_kit = compute_context.GetUploadCommandKit());
+        REQUIRE(upload_cmd_kit.IsInitialized());
         CHECK(upload_cmd_kit.GetListType() == Rhi::CommandListType::Transfer);
     }
 
@@ -139,8 +144,8 @@ TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
     {
         const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         Rhi::CommandKit compute_cmd_kit;
-        CHECK_NOTHROW(compute_cmd_kit = compute_context.GetComputeCommandKit());
-        CHECK(compute_cmd_kit.IsInitialized());
+        REQUIRE_NOTHROW(compute_cmd_kit = compute_context.GetComputeCommandKit());
+        REQUIRE(compute_cmd_kit.IsInitialized());
         CHECK(compute_cmd_kit.GetListType() == Rhi::CommandListType::Compute);
     }
 
@@ -148,8 +153,8 @@ TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
     {
         const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         Rhi::CommandKit compute_cmd_kit;
-        CHECK_NOTHROW(compute_cmd_kit = compute_context.GetComputeCommandKit());
-        CHECK(compute_cmd_kit.IsInitialized());
+        REQUIRE_NOTHROW(compute_cmd_kit = compute_context.GetComputeCommandKit());
+        REQUIRE(compute_cmd_kit.IsInitialized());
         CHECK(compute_cmd_kit.GetListType() == Rhi::CommandListType::Compute);
     }
 
@@ -188,7 +193,7 @@ TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
     {
         const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         ContextCallbackTester context_callback_tester(compute_context);
-        CHECK_NOTHROW(compute_context.CompleteInitialization());
+        REQUIRE_NOTHROW(compute_context.CompleteInitialization());
         CHECK(context_callback_tester.IsContextCompletingInitialization());
         CHECK_FALSE(compute_context.IsCompletingInitialization());
     }
@@ -202,5 +207,80 @@ TEST_CASE("RHI Compute Context", "[rhi][compute][context]")
         CHECK_NOTHROW(compute_context.RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization));
         CHECK_NOTHROW(compute_context.WaitForGpu(Rhi::ContextWaitFor::ComputeComplete));
         //FIXME: CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Executing);
+    }
+}
+
+TEST_CASE("RHI Compute Context Factory", "[rhi][compute][context][factory]")
+{
+    const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, {});
+
+    SECTION("Can Create Compute Command Queue")
+    {
+        Rhi::CommandQueue command_queue;
+        REQUIRE_NOTHROW(command_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Compute));
+        REQUIRE(command_queue.IsInitialized());
+        CHECK(command_queue.GetCommandListType() == Rhi::CommandListType::Compute);
+    }
+
+    SECTION("Can Create Transfer Command Queue")
+    {
+        Rhi::CommandQueue command_queue;
+        REQUIRE_NOTHROW(command_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Transfer));
+        REQUIRE(command_queue.IsInitialized());
+        CHECK(command_queue.GetCommandListType() == Rhi::CommandListType::Transfer);
+    }
+
+    SECTION("Can not Create Render Command Queue")
+    {
+        Rhi::CommandQueue command_queue;
+        REQUIRE_THROWS(command_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Render));
+    }
+
+    SECTION("Can Create Compute Command Kit")
+    {
+        Rhi::CommandKit command_kit;
+        REQUIRE_NOTHROW(command_kit = compute_context.CreateCommandKit(Rhi::CommandListType::Compute));
+        REQUIRE(command_kit.IsInitialized());
+        CHECK(command_kit.GetListType() == Rhi::CommandListType::Compute);
+    }
+
+    SECTION("Can Create Transfer Command Kit")
+    {
+        Rhi::CommandKit command_kit;
+        REQUIRE_NOTHROW(command_kit = compute_context.CreateCommandKit(Rhi::CommandListType::Transfer));
+        REQUIRE(command_kit.IsInitialized());
+        CHECK(command_kit.GetListType() == Rhi::CommandListType::Transfer);
+    }
+
+    SECTION("Can not Create Render Command Kit")
+    {
+        Rhi::CommandKit command_kit;
+        REQUIRE_THROWS(command_kit = compute_context.CreateCommandKit(Rhi::CommandListType::Render));
+    }
+
+    SECTION("Can Create Program")
+    {
+        Rhi::Program program;
+        REQUIRE_NOTHROW(program = compute_context.CreateProgram({
+            { { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Shader", "Main" } } } },
+        }));
+        REQUIRE(program.IsInitialized());
+        CHECK(program.GetSettings().shaders.size() == 1);
+        CHECK(program.GetShader(Rhi::ShaderType::Compute).GetSettings().entry_function == Rhi::ShaderEntryFunction{ "Shader", "Main" });
+    }
+
+    SECTION("Can Create Compute State")
+    {
+        const Rhi::ComputeStateSettingsImpl& compute_state_settings{
+            compute_context.CreateProgram({
+                { { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Shader", "Main" } } } },
+            }),
+            Rhi::ThreadGroupSize(16, 16, 1)
+        };
+        Rhi::ComputeState compute_state;
+        CHECK_NOTHROW(compute_state = compute_context.CreateComputeState(compute_state_settings));
+        REQUIRE(compute_state.IsInitialized());
+        CHECK(compute_state.GetSettings().program_ptr == compute_state_settings.program.GetInterfacePtr());
+        CHECK(compute_state.GetSettings().thread_group_size == compute_state_settings.thread_group_size);
     }
 }

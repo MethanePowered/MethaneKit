@@ -69,6 +69,9 @@ struct ShaderEntryFunction
 {
     std::string file_name;
     std::string function_name;
+
+    bool operator==(const ShaderEntryFunction& other) const noexcept;
+    bool operator!=(const ShaderEntryFunction& other) const noexcept;
 };
 
 struct ShaderSettings

@@ -28,6 +28,7 @@ Methane command kit implementation.
 #include <Methane/Graphics/Base/CommandQueue.h>
 
 #include <Methane/Graphics/RHI/IFence.h>
+#include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Graphics/RHI/ICommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/ITransferCommandList.h>
@@ -47,6 +48,7 @@ static constexpr uint32_t g_max_cmd_lists_count = 32U;
 
 static std::string GetCommandListNameById(Rhi::CommandListId id)
 {
+    META_FUNCTION_TASK();
     switch(static_cast<Rhi::CommandListPurpose>(id))
     {
     case Rhi::CommandListPurpose::Default:        return "Default";
@@ -59,14 +61,24 @@ static std::string GetCommandListNameById(Rhi::CommandListId id)
 CommandKit::CommandKit(const Rhi::IContext& context, Rhi::CommandListType cmd_list_type)
     : m_context(context)
     , m_cmd_list_type(cmd_list_type)
-{ }
+{
+    META_FUNCTION_TASK();
+    if (context.GetType() == Rhi::ContextType::Compute)
+    {
+        META_CHECK_ARG_NOT_EQUAL_DESCR(cmd_list_type, Rhi::CommandListType::Render,
+                                       "compute context can not be used to create render command queues");
+    }
+    META_CHECK_ARG_NOT_EQUAL_DESCR(cmd_list_type, Rhi::CommandListType::ParallelRender,
+                                   "command queue should be created with Render type to support ParallelRender command lists");
+}
 
 CommandKit::CommandKit(Rhi::ICommandQueue& cmd_queue)
     : Object(cmd_queue.GetName())
     , m_context(cmd_queue.GetContext())
     , m_cmd_list_type(cmd_queue.GetCommandListType())
     , m_cmd_queue_ptr(static_cast<CommandQueue&>(cmd_queue).GetPtr<CommandQueue>())
-{ }
+{
+}
 
 bool CommandKit::SetName(std::string_view name)
 {

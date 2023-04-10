@@ -31,6 +31,16 @@ Methane shader interface: defines programmable stage of the graphics pipeline.
 namespace Methane::Graphics::Rhi
 {
 
+bool ShaderEntryFunction::operator==(const ShaderEntryFunction& other) const noexcept
+{
+    return std::tie(file_name, function_name) == std::tie(other.file_name, other.function_name);
+}
+
+bool ShaderEntryFunction::operator!=(const ShaderEntryFunction& other) const noexcept
+{
+    return std::tie(file_name, function_name) != std::tie(other.file_name, other.function_name);
+}
+
 Ptr<IShader> IShader::Create(Type type, const IContext& context, const Settings& settings)
 {
     return context.CreateShader(type, settings);
