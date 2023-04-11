@@ -21,8 +21,13 @@ Unit-tests of the RHI ComputeContext
 
 ******************************************************************************/
 
+#include "Methane/Graphics/RHI/ISampler.h"
 #include "Methane/Graphics/RHI/IShader.h"
+#include "Methane/Graphics/RHI/ITexture.h"
+#include "Methane/Graphics/RHI/ResourceView.h"
 #include "Methane/Graphics/RHI/Shader.h"
+#include "Methane/Graphics/Types.h"
+#include "Methane/Graphics/Volume.hpp"
 #include "RhiTestHelpers.hpp"
 
 #include <Methane/Data/AppShadersProvider.h>
@@ -32,8 +37,10 @@ Unit-tests of the RHI ComputeContext
 #include <Methane/Graphics/RHI/System.h>
 #include <Methane/Graphics/RHI/Device.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
-#include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/ComputeState.h>
+#include <Methane/Graphics/RHI/Buffer.h>
+#include <Methane/Graphics/RHI/Texture.h>
+#include <Methane/Graphics/RHI/Sampler.h>
 
 #include <memory>
 #include <stdexcept>
@@ -258,6 +265,16 @@ TEST_CASE("RHI Compute Context Factory", "[rhi][compute][context][factory]")
         REQUIRE_THROWS(command_kit = compute_context.CreateCommandKit(Rhi::CommandListType::Render));
     }
 
+    SECTION("Can Create Shader")
+    {
+        const Rhi::ShaderSettings shader_settings{ Data::ShaderProvider::Get(), { "Shader", "Main" } };
+        Rhi::Shader shader;
+        REQUIRE_NOTHROW(shader = compute_context.CreateShader(Rhi::ShaderType::Compute, shader_settings));
+        REQUIRE(shader.IsInitialized());
+        CHECK(shader.GetType() == Rhi::ShaderType::Compute);
+        CHECK(shader.GetSettings().entry_function == shader_settings.entry_function);
+    }
+
     SECTION("Can Create Program")
     {
         Rhi::Program program;
@@ -278,9 +295,65 @@ TEST_CASE("RHI Compute Context Factory", "[rhi][compute][context][factory]")
             Rhi::ThreadGroupSize(16, 16, 1)
         };
         Rhi::ComputeState compute_state;
-        CHECK_NOTHROW(compute_state = compute_context.CreateComputeState(compute_state_settings));
+        REQUIRE_NOTHROW(compute_state = compute_context.CreateComputeState(compute_state_settings));
         REQUIRE(compute_state.IsInitialized());
         CHECK(compute_state.GetSettings().program_ptr == compute_state_settings.program.GetInterfacePtr());
         CHECK(compute_state.GetSettings().thread_group_size == compute_state_settings.thread_group_size);
+    }
+
+    SECTION("Can Create Buffer")
+    {
+        const Rhi::BufferSettings buffer_settings = Rhi::BufferSettings::ForConstantBuffer(42);
+        Rhi::Buffer buffer;
+        REQUIRE_NOTHROW(buffer = compute_context.CreateBuffer(buffer_settings));
+        REQUIRE(buffer.IsInitialized());
+        CHECK(buffer.GetSettings().type == Rhi::BufferType::Constant);
+        CHECK(buffer.GetSettings().size == buffer_settings.size);
+    }
+
+    SECTION("Can Create Texture")
+    {
+        const Rhi::TextureSettings buffer_settings = Rhi::TextureSettings::ForImage(Dimensions(640, 480), 2, PixelFormat::RGBA8Unorm_sRGB, true);
+        Rhi::Texture texture;
+        REQUIRE_NOTHROW(texture = compute_context.CreateTexture(buffer_settings));
+        REQUIRE(texture.IsInitialized());
+        CHECK(texture.GetSettings().type == Rhi::TextureType::Image);
+        CHECK(texture.GetSettings().dimension_type == Rhi::TextureDimensionType::Tex2DArray);
+        CHECK(texture.GetSettings().array_length == 2);
+        CHECK(texture.GetSettings().dimensions == Dimensions(640, 480));
+        CHECK(texture.GetSettings().pixel_format == PixelFormat::RGBA8Unorm_sRGB);
+        CHECK(texture.GetSettings().mipmapped);
+    }
+
+    SECTION("Can Create Sampler")
+    {
+        const Rhi::SamplerSettings sampler_settings{
+            rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
+            rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
+        };
+        Rhi::Sampler sampler;
+        REQUIRE_NOTHROW(sampler = compute_context.CreateSampler(sampler_settings));
+        REQUIRE(sampler.IsInitialized());
+        CHECK(sampler.GetSettings().filter.min == Rhi::SamplerFilter::MinMag::Linear);
+        CHECK(sampler.GetSettings().filter.mag == Rhi::SamplerFilter::MinMag::Linear);
+        CHECK(sampler.GetSettings().address.r == Rhi::SamplerAddress::Mode::ClampToEdge);
+        CHECK(sampler.GetSettings().address.s == Rhi::SamplerAddress::Mode::ClampToEdge);
+        CHECK(sampler.GetSettings().address.t == Rhi::SamplerAddress::Mode::ClampToEdge);
+    }
+
+    SECTION("Can Get Object Registry")
+    {
+        Rhi::IObjectRegistry* registry_ptr = nullptr;
+        REQUIRE_NOTHROW(registry_ptr = &compute_context.GetObjectRegistry());
+        REQUIRE(registry_ptr);
+        CHECK_FALSE(registry_ptr->HasGraphicsObject("Something"));
+    }
+
+    SECTION("Can Get Parallel Executor")
+    {
+        tf::Executor* executor_ptr = nullptr;
+        REQUIRE_NOTHROW(executor_ptr = &compute_context.GetParallelExecutor());
+        REQUIRE(executor_ptr);
+        CHECK(executor_ptr->num_workers() > 0);
     }
 }
