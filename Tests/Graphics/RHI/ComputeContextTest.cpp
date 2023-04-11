@@ -21,13 +21,6 @@ Unit-tests of the RHI ComputeContext
 
 ******************************************************************************/
 
-#include "Methane/Graphics/RHI/ISampler.h"
-#include "Methane/Graphics/RHI/IShader.h"
-#include "Methane/Graphics/RHI/ITexture.h"
-#include "Methane/Graphics/RHI/ResourceView.h"
-#include "Methane/Graphics/RHI/Shader.h"
-#include "Methane/Graphics/Types.h"
-#include "Methane/Graphics/Volume.hpp"
 #include "RhiTestHelpers.hpp"
 
 #include <Methane/Data/AppShadersProvider.h>
@@ -38,12 +31,12 @@ Unit-tests of the RHI ComputeContext
 #include <Methane/Graphics/RHI/Device.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/ComputeState.h>
+#include <Methane/Graphics/RHI/Program.h>
+#include <Methane/Graphics/RHI/Shader.h>
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Sampler.h>
 
-#include <memory>
-#include <stdexcept>
 #include <taskflow/taskflow.hpp>
 #include <magic_enum.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -52,14 +45,6 @@ using namespace Methane;
 using namespace Methane::Graphics;
 
 static tf::Executor g_parallel_executor;
-
-static Rhi::Device GetTestDevice()
-{
-    static const Rhi::Devices& devices = Rhi::System::Get().UpdateGpuDevices();
-    if (devices.empty())
-        throw std::logic_error("No RHI devices available");
-    return devices[0];
-}
 
 TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 {

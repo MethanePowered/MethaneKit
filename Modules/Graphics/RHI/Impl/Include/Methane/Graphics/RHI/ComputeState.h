@@ -50,7 +50,7 @@ class ComputeContext;
 class ComputeState // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
-    using Settings   = ComputeStateSettingsImpl;
+    using Settings = ComputeStateSettingsImpl;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ComputeState);
     META_PIMPL_METHODS_COMPARE_DECLARE(ComputeState);

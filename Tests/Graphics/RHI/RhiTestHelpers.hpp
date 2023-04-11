@@ -23,16 +23,28 @@ RHI Test helper classes
 
 #include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/IObject.h>
+#include <Methane/Graphics/RHI/System.h>
+#include <Methane/Graphics/RHI/Device.h>
 #include <Methane/Data/Receiver.hpp>
 #include <Methane/Data/Emitter.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <memory>
+#include <stdexcept>
 
 namespace Methane
 {
 
 namespace rhi = Methane::Graphics::Rhi;
+
+static rhi::Device GetTestDevice()
+{
+    static const rhi::Devices& devices = rhi::System::Get().UpdateGpuDevices();
+    if (devices.empty())
+        throw std::logic_error("No RHI devices available");
+
+    return devices[0];
+}
 
 class ObjectCallbackTester final
     : private Data::Receiver<rhi::IObjectCallback>
