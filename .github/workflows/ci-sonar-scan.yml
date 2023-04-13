@@ -132,7 +132,8 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p "$INSTALL_DIR"
-          cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee $BUILD_LOG_FILE
+          # set METHANE_VERSION_BUILD=0 to benefit from SonarCloud analysis cache, build version invalidates cache at each run
+          cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=0 2>&1 | tee $BUILD_LOG_FILE
           ls -la "$BUILD_DIR" 2>&1 | tee -a $BUILD_LOG_FILE
           if [ -f $COMPILE_COMMANDS_FILE ]; then
             cp "$COMPILE_COMMANDS_FILE" "$INSTALL_DIR"
