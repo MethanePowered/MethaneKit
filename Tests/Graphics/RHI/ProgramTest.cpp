@@ -39,9 +39,9 @@ using namespace Methane::Graphics;
 
 static tf::Executor g_parallel_executor;
 
-void CheckShaderSettings(const Ptrs<Rhi::IShader>& shader_ptrs, const Rhi::ProgramSettingsImpl::ShaderSet& shader_settings)
+void CheckShaderSettings(const Methane::Ptrs<Rhi::IShader>& shader_ptrs, const Rhi::ProgramSettingsImpl::ShaderSet& shader_settings)
 {
-    for(const Ptr<Rhi::IShader>& shader_ptr : shader_ptrs)
+    for(const auto& shader_ptr : shader_ptrs)
     {
         REQUIRE(shader_ptr);
         const auto shader_it = shader_settings.find(shader_ptr->GetType());
