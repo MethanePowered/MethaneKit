@@ -67,16 +67,16 @@ TEST_CASE("RHI Compute State Functions", "[rhi][compute][state]")
         CHECK(object_callback_tester.IsObjectDestroyed());
     }
 
+    const Rhi::ComputeState compute_state = compute_context.CreateComputeState(compute_state_settings);
+
     SECTION("Object Name Setup")
     {
-        const Rhi::ComputeState compute_state = compute_context.CreateComputeState(compute_state_settings);
         CHECK(compute_context.SetName("My Compute Context"));
         CHECK(compute_context.GetName() == "My Compute Context");
     }
 
     SECTION("Object Name Change Callback")
     {
-        const Rhi::ComputeState compute_state = compute_context.CreateComputeState(compute_state_settings);
         CHECK(compute_context.SetName("My Compute Context"));
         ObjectCallbackTester object_callback_tester(compute_context);
         CHECK(compute_context.SetName("Our Compute Context"));
@@ -87,7 +87,6 @@ TEST_CASE("RHI Compute State Functions", "[rhi][compute][state]")
 
     SECTION("Object Name Set Unchanged")
     {
-        const Rhi::ComputeState compute_state = compute_context.CreateComputeState(compute_state_settings);
         CHECK(compute_context.SetName("My Compute Context"));
         ObjectCallbackTester object_callback_tester(compute_context);
         CHECK_FALSE(compute_context.SetName("My Compute Context"));
@@ -99,7 +98,6 @@ TEST_CASE("RHI Compute State Functions", "[rhi][compute][state]")
         const Rhi::Program new_compute_program = compute_context.CreateProgram({
             { { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Compute", "New" } } } },
         });
-        const Rhi::ComputeState compute_state = compute_context.CreateComputeState(compute_state_settings);
         REQUIRE_NOTHROW(compute_state.Reset(Rhi::ComputeStateSettingsImpl{ new_compute_program, Rhi::ThreadGroupSize(32, 32, 1) }));
         REQUIRE(compute_state.GetProgram().GetInterfacePtr().get() == new_compute_program.GetInterfacePtr().get());
         REQUIRE(compute_state.GetSettings().thread_group_size == Rhi::ThreadGroupSize(32, 32, 1));
@@ -110,7 +108,6 @@ TEST_CASE("RHI Compute State Functions", "[rhi][compute][state]")
         const Rhi::Program new_compute_program = compute_context.CreateProgram({
             { { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Compute", "New" } } } },
         });
-        const Rhi::ComputeState compute_state = compute_context.CreateComputeState(compute_state_settings);
         REQUIRE_NOTHROW(compute_state.Reset(Rhi::ComputeStateSettings{ new_compute_program.GetInterfacePtr(), Rhi::ThreadGroupSize(32, 32, 1) }));
         REQUIRE(compute_state.GetProgram().GetInterfacePtr().get() == new_compute_program.GetInterfacePtr().get());
         REQUIRE(compute_state.GetSettings().thread_group_size == Rhi::ThreadGroupSize(32, 32, 1));

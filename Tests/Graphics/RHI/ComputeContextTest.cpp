@@ -74,16 +74,16 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
         CHECK(object_callback_tester.IsObjectDestroyed());
     }
 
+    const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
+
     SECTION("Object Name Setup")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         CHECK(compute_context.SetName("My Compute Context"));
         CHECK(compute_context.GetName() == "My Compute Context");
     }
 
     SECTION("Object Name Change Callback")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         CHECK(compute_context.SetName("My Compute Context"));
         ObjectCallbackTester object_callback_tester(compute_context);
         CHECK(compute_context.SetName("Our Compute Context"));
@@ -94,7 +94,6 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Object Name Set Unchanged")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         CHECK(compute_context.SetName("My Compute Context"));
         ObjectCallbackTester object_callback_tester(compute_context);
         CHECK_FALSE(compute_context.SetName("My Compute Context"));
@@ -103,7 +102,6 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Context Reset")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         ContextCallbackTester context_callback_tester(compute_context);
         REQUIRE_NOTHROW(compute_context.Reset());
         CHECK(context_callback_tester.IsContextReleased());
@@ -113,7 +111,6 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Context Reset with Device")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         ContextCallbackTester context_callback_tester(compute_context);
         const Rhi::Device new_device = Rhi::System::Get().UpdateGpuDevices().at(0);
         REQUIRE_NOTHROW(compute_context.Reset(new_device));
@@ -125,7 +122,6 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Context Upload Command Kit")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         Rhi::CommandKit upload_cmd_kit;
         REQUIRE_NOTHROW(upload_cmd_kit = compute_context.GetUploadCommandKit());
         REQUIRE(upload_cmd_kit.IsInitialized());
@@ -134,7 +130,6 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Context Compute Command Kit")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         Rhi::CommandKit compute_cmd_kit;
         REQUIRE_NOTHROW(compute_cmd_kit = compute_context.GetComputeCommandKit());
         REQUIRE(compute_cmd_kit.IsInitialized());
@@ -143,7 +138,6 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Context Compute Command Kit")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         Rhi::CommandKit compute_cmd_kit;
         REQUIRE_NOTHROW(compute_cmd_kit = compute_context.GetComputeCommandKit());
         REQUIRE(compute_cmd_kit.IsInitialized());
@@ -152,7 +146,6 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Context Default Command Kits")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         const std::array<Rhi::CommandListType, 2> cmd_list_types { Rhi::CommandListType::Compute, Rhi::CommandListType::Transfer };
         for(Rhi::CommandListType cmd_list_type : cmd_list_types)
         {
@@ -164,7 +157,6 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Context Upload Resources")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         Rhi::TransferCommandList transfer_cmd_list = compute_context.GetUploadCommandKit().GetTransferListForEncoding();
         CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Encoding);
         CHECK_NOTHROW(compute_context.UploadResources());
@@ -173,7 +165,6 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Context Upload Resources Deferred")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         Rhi::TransferCommandList transfer_cmd_list = compute_context.GetUploadCommandKit().GetTransferListForEncoding();
         CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Encoding);
         CHECK_NOTHROW(compute_context.RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources));
@@ -183,7 +174,6 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Context Complete Initialization")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         ContextCallbackTester context_callback_tester(compute_context);
         REQUIRE_NOTHROW(compute_context.CompleteInitialization());
         CHECK(context_callback_tester.IsContextCompletingInitialization());
@@ -192,7 +182,6 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Context Complete Initialization Deferred")
     {
-        const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, compute_context_settings);
         ContextCallbackTester context_callback_tester(compute_context);
         Rhi::TransferCommandList transfer_cmd_list = compute_context.GetUploadCommandKit().GetTransferListForEncoding();
         CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Encoding);

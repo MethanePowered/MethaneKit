@@ -3,6 +3,7 @@ set(TARGET MethaneGraphicsRhiTest)
 add_executable(${TARGET}
     RhiTestHelpers.hpp
     ShaderTest.cpp
+    ProgramTest.cpp
     ComputeContextTest.cpp
     ComputeStateTest.cpp
 )

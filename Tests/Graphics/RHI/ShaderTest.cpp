@@ -36,7 +36,7 @@ using namespace Methane::Graphics;
 
 static tf::Executor g_parallel_executor;
 
-TEST_CASE("RHI Shader Functions", "[rhi][compute][state]")
+TEST_CASE("RHI Shader Functions", "[rhi][shader]")
 {
     const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
     const Rhi::ShaderSettings shader_settings{
