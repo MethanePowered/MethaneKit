@@ -72,7 +72,7 @@ static std::string GetQuadName(const ScreenQuad::Settings& settings, const Rhi::
     if (settings.alpha_blending_enabled)
         quad_name_ss << " with Alpha-Blending";
     if (!macro_definitions.empty())
-        quad_name_ss << " " << Rhi::IShader::ConvertMacroDefinitionsToString(macro_definitions);
+        quad_name_ss << " " << Rhi::ShaderMacroDefinition::ToString(macro_definitions);
     return quad_name_ss.str();
 }
 

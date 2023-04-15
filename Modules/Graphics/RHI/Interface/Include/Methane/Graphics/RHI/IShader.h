@@ -53,14 +53,14 @@ struct ShaderMacroDefinition
     std::string name;
     std::string value;
 
-    explicit ShaderMacroDefinition(std::string name)
-        : name(std::move(name))
-    { }
+    explicit ShaderMacroDefinition(std::string name);
+    ShaderMacroDefinition(std::string name, std::string value);
 
-    ShaderMacroDefinition(std::string name, std::string value)
-        : name(std::move(name))
-        , value(std::move(value))
-    { }
+    bool operator==(const ShaderMacroDefinition& other) const noexcept;
+    bool operator!=(const ShaderMacroDefinition& other) const noexcept;
+
+    [[nodiscard]] static std::string ToString(const std::vector<ShaderMacroDefinition>& macro_definitions,
+                                              std::string_view splitter = ", ") noexcept;
 };
 
 using ShaderMacroDefinitions = std::vector<ShaderMacroDefinition>;
@@ -83,6 +83,9 @@ struct ShaderSettings
     // Optional parameters (by default shaders are precompiled to application resources and loaded through Data::IProvider)
     std::string source_file_path;
     std::string source_compile_target;
+
+    bool operator==(const ShaderSettings& other) const noexcept;
+    bool operator!=(const ShaderSettings& other) const noexcept;
 };
 
 struct IContext;
@@ -98,9 +101,6 @@ struct IShader
 
     // Create IShader instance
     [[nodiscard]] static Ptr<IShader> Create(Type type, const IContext& context, const Settings& settings);
-
-    // Auxiliary functions
-    [[nodiscard]] static std::string ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, std::string_view splitter = ", ") noexcept;
 
     // IShader interface
     [[nodiscard]] virtual Ptr<IShader>    GetPtr() = 0;

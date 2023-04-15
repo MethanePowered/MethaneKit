@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Tests/Graphics/RHI/ColorTest.cpp
+FILE: Tests/Graphics/RHI/ComputeStateTest.cpp
 Unit-tests of the RHI ComputeContext
 
 ******************************************************************************/

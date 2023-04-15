@@ -31,6 +31,25 @@ Methane shader interface: defines programmable stage of the graphics pipeline.
 namespace Methane::Graphics::Rhi
 {
 
+ShaderMacroDefinition::ShaderMacroDefinition(std::string name)
+    : name(std::move(name))
+{ }
+
+ShaderMacroDefinition::ShaderMacroDefinition(std::string name, std::string value)
+    : name(std::move(name))
+    , value(std::move(value))
+{ }
+
+bool ShaderMacroDefinition::operator==(const ShaderMacroDefinition& other) const noexcept
+{
+    return std::tie(name, value) == std::tie(other.name, other.value);
+}
+
+bool ShaderMacroDefinition::operator!=(const ShaderMacroDefinition& other) const noexcept
+{
+    return std::tie(name, value) != std::tie(other.name, other.value);
+}
+
 bool ShaderEntryFunction::operator==(const ShaderEntryFunction& other) const noexcept
 {
     return std::tie(file_name, function_name) == std::tie(other.file_name, other.function_name);
@@ -41,23 +60,41 @@ bool ShaderEntryFunction::operator!=(const ShaderEntryFunction& other) const noe
     return std::tie(file_name, function_name) != std::tie(other.file_name, other.function_name);
 }
 
+bool ShaderSettings::operator==(const ShaderSettings& other) const noexcept
+{
+    if (std::addressof(data_provider) != std::addressof(other.data_provider))
+        return false;
+
+    return std::tie(entry_function, compile_definitions, source_file_path, source_compile_target)
+        == std::tie(other.entry_function, other.compile_definitions, other.source_file_path, other.source_compile_target);
+}
+
+bool ShaderSettings::operator!=(const ShaderSettings& other) const noexcept
+{
+    if (std::addressof(data_provider) == std::addressof(other.data_provider))
+        return false;
+
+    return std::tie(entry_function, compile_definitions, source_file_path, source_compile_target)
+        != std::tie(other.entry_function, other.compile_definitions, other.source_file_path, other.source_compile_target);
+}
+
 Ptr<IShader> IShader::Create(Type type, const IContext& context, const Settings& settings)
 {
     return context.CreateShader(type, settings);
 }
 
-std::string IShader::ConvertMacroDefinitionsToString(const MacroDefinitions& macro_definitions, std::string_view splitter) noexcept
+std::string ShaderMacroDefinition::ToString(const std::vector<ShaderMacroDefinition>& macro_definitions, std::string_view splitter) noexcept
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
-    bool is_first_defintion = true;
-    for(const MacroDefinition& macro_definition : macro_definitions)
+    bool is_first_definition = true;
+    for(const ShaderMacroDefinition& macro_definition : macro_definitions)
     {
-        if (!is_first_defintion)
+        if (!is_first_definition)
             ss << splitter;
 
         ss << macro_definition.name << "=" << macro_definition.value;
-        is_first_defintion = false;
+        is_first_definition = false;
     }
     return ss.str();
 }
