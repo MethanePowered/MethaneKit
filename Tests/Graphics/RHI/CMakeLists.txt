@@ -4,6 +4,7 @@ add_executable(${TARGET}
     RhiTestHelpers.hpp
     ShaderTest.cpp
     ProgramTest.cpp
+    ProgramBindingsTest.cpp
     ComputeContextTest.cpp
     ComputeStateTest.cpp
 )
@@ -12,6 +13,7 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethaneGraphicsRhiNullImpl
+        MethaneGraphicsRhiNull
         TaskFlow
         magic_enum
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>

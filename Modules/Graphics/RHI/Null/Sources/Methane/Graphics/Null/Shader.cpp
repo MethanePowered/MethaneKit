@@ -21,7 +21,10 @@ Null implementation of the shader interface.
 
 ******************************************************************************/
 
+#include "Methane/Graphics/Base/ProgramArgumentBinding.h"
+#include "Methane/Graphics/RHI/IProgram.h"
 #include <Methane/Graphics/Null/Shader.h>
+#include <Methane/Graphics/Null/ProgramArgumentBinding.h>
 
 #include <Methane/Graphics/Base/Context.h>
 
@@ -30,7 +33,28 @@ namespace Methane::Graphics::Null
 
 Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors&) const
 {
-    return {};
+    return m_argument_bindings;
+}
+
+void Shader::InitArgumentBindings(const ResourceArgumentDescs& argument_descriptions)
+{
+    m_argument_bindings.clear();
+    m_argument_bindings.reserve(argument_descriptions.size());
+    for(const auto& [argument_accessor, argument_desc] : argument_descriptions)
+    {
+        if (argument_accessor.GetShaderType() != GetType())
+            continue;
+
+        auto argument_binding_ptr = std::make_shared<ProgramArgumentBinding>(GetContext(),
+            Rhi::ProgramArgumentBindingSettings
+            {
+                argument_accessor,
+                argument_desc.resource_type,
+                argument_desc.resource_count
+            });
+
+        m_argument_bindings.push_back(std::static_pointer_cast<Base::ProgramArgumentBinding>(argument_binding_ptr));
+    }
 }
 
 } // namespace Methane::Graphics::Null

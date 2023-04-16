@@ -93,6 +93,7 @@ public:
     [[nodiscard]] size_t           GetHash() const noexcept       { return m_hash; }
 
     [[nodiscard]] bool operator==(const ProgramArgument& other) const noexcept;
+    [[nodiscard]] bool operator<(const ProgramArgument& other) const noexcept;
     [[nodiscard]] virtual explicit operator std::string() const noexcept;
 
 private:

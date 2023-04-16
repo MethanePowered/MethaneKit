@@ -28,9 +28,23 @@ Null implementation of the program interface.
 namespace Methane::Graphics::Null
 {
 
+Program::Program(const Base::Context& context, const Settings& settings)
+    : Base::Program(context, settings)
+{
+}
+
 Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     return std::make_shared<ProgramBindings>(*this, resource_views_by_argument, frame_index);
+}
+
+void Program::InitArgumentBindings(const ResourceArgumentDescs& argument_descriptions)
+{
+    for(Rhi::ShaderType shader_type : GetShaderTypes())
+    {
+        dynamic_cast<Shader&>(GetShaderRef(shader_type)).InitArgumentBindings(argument_descriptions);
+    }
+    Base::Program::InitArgumentBindings(GetSettings().argument_accessors);
 }
 
 } // namespace Methane::Graphics::Null

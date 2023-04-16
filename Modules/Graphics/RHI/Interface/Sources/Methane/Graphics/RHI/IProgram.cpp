@@ -47,6 +47,13 @@ bool ProgramArgument::operator==(const ProgramArgument& other) const noexcept
            std::tie(other.m_hash, other.m_shader_type, other.m_name);
 }
 
+bool ProgramArgument::operator<(const ProgramArgument& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(m_hash, m_shader_type, m_name) <
+           std::tie(other.m_hash, other.m_shader_type, other.m_name);
+}
+
 ProgramArgument::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
