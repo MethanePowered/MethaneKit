@@ -51,7 +51,7 @@ void CheckShaderSettings(const Methane::Ptrs<Rhi::IShader>& shader_ptrs, const R
 }
 
 const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
-const Rhi::ProgramSettingsImpl& compute_program_settings{
+const Rhi::ProgramSettingsImpl compute_program_settings{
     { { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Compute", "Main" } } } },
 };
 
