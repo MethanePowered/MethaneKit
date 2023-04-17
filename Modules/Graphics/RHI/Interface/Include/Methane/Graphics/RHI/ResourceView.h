@@ -223,6 +223,7 @@ public:
     [[nodiscard]] const SubResource::Index& GetSubresourceIndex() const noexcept { return m_settings.subresource_index; }
     [[nodiscard]] const SubResource::Count& GetSubresourceCount() const noexcept { return m_settings.subresource_count; }
     [[nodiscard]] Data::Size                GetOffset() const noexcept           { return m_settings.offset; }
+    [[nodiscard]] Data::Size                GetSize() const noexcept             { return m_settings.size; }
     [[nodiscard]] TextureDimensionType      GetTextureDimensionType() const;
 
 private:

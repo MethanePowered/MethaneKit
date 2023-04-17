@@ -258,7 +258,7 @@ ResourceView::operator std::string() const
     if (!m_resource_ptr)
         return "Null resource view_id";
 
-    return fmt::format("{} '{}' subresources from {} count {} with offset {}",
+    return fmt::format("{} '{}' subresources from {} for {} with offset {}",
                        magic_enum::enum_name(m_resource_ptr->GetResourceType()),
                        m_resource_ptr->GetName(),
                        static_cast<std::string>(m_settings.subresource_index),

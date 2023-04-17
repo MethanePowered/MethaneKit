@@ -21,7 +21,10 @@ Unit-tests of the RHI Program
 
 ******************************************************************************/
 
+#include "Methane/Graphics/RHI/IContext.h"
 #include "Methane/Graphics/RHI/IResource.h"
+#include "Methane/Graphics/Types.h"
+#include "Methane/Graphics/Volume.hpp"
 #include "RhiTestHelpers.hpp"
 
 #include <Methane/Data/AppShadersProvider.h>
@@ -29,6 +32,8 @@ Unit-tests of the RHI Program
 #include <Methane/Graphics/RHI/Program.h>
 #include <Methane/Graphics/RHI/ProgramBindings.h>
 #include <Methane/Graphics/RHI/Buffer.h>
+#include <Methane/Graphics/RHI/Texture.h>
+#include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/Null/Program.h>
 
 #include <memory>
@@ -45,9 +50,9 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
     const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
     const Rhi::Program compute_program = [&compute_context]()
         {
-            const Rhi::ProgramArgumentAccessor input_a_accessor{ Rhi::ShaderType::Compute, "InputA", Rhi::ProgramArgumentAccessType::Constant };
-            const Rhi::ProgramArgumentAccessor input_b_accessor{ Rhi::ShaderType::Compute, "InputB", Rhi::ProgramArgumentAccessType::Constant };
-            const Rhi::ProgramArgumentAccessor output_accessor { Rhi::ShaderType::Compute, "Output", Rhi::ProgramArgumentAccessType::Mutable };
+            const Rhi::ProgramArgumentAccessor texture_accessor{ Rhi::ShaderType::Compute, "InTexture", Rhi::ProgramArgumentAccessType::Constant };
+            const Rhi::ProgramArgumentAccessor sampler_accessor{ Rhi::ShaderType::Compute, "InSampler", Rhi::ProgramArgumentAccessType::Constant };
+            const Rhi::ProgramArgumentAccessor buffer_accessor { Rhi::ShaderType::Compute, "OutBuffer", Rhi::ProgramArgumentAccessType::Mutable };
             Rhi::Program compute_program = compute_context.CreateProgram(
                 Rhi::ProgramSettingsImpl
                 {
@@ -58,30 +63,57 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
                     Rhi::ProgramInputBufferLayouts{ },
                     Rhi::ProgramArgumentAccessors
                     {
-                        input_a_accessor,
-                        input_b_accessor,
-                        output_accessor
+                        texture_accessor,
+                        sampler_accessor,
+                        buffer_accessor
                     }
                 });
             dynamic_cast<Null::Program&>(compute_program.GetInterface()).InitArgumentBindings({
-                { input_a_accessor, { Rhi::ResourceType::Buffer, 1U } },
-                { input_b_accessor, { Rhi::ResourceType::Buffer, 1U } },
-                { output_accessor,  { Rhi::ResourceType::Buffer, 1U } },
+                { texture_accessor, { Rhi::ResourceType::Texture, 1U } },
+                { sampler_accessor, { Rhi::ResourceType::Sampler, 1U } },
+                { buffer_accessor,  { Rhi::ResourceType::Buffer,  1U } },
             });
             return compute_program;
         }();
 
-    const Rhi::Buffer bufferA = compute_context.CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(100500));
-    const Rhi::Buffer bufferB = compute_context.CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(12345, false, true));
-    const Rhi::Buffer bufferC = compute_context.CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(42000, false, true));
+    const Rhi::Texture texture = [&compute_context]()
+    {
+        Rhi::Texture texture = compute_context.CreateTexture(Rhi::TextureSettings::ForImage(Dimensions(640, 480), {}, PixelFormat::RGBA8, false));
+        texture.SetName("T");
+        return texture;
+    }();
+
+    const Rhi::Sampler sampler = [&compute_context]()
+    {
+        const Rhi::Sampler sampler = compute_context.CreateSampler({
+            rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
+            rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
+        });
+        sampler.SetName("S");
+        return sampler;
+    }();
+
+    const Rhi::Buffer buffer1 = [&compute_context]()
+    {
+        const Rhi::Buffer buffer = compute_context.CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(42000, false, true));
+        buffer.SetName("B1");
+        return buffer;
+    }();
+
+    const Rhi::Buffer buffer2 = [&compute_context]()
+        {
+            const Rhi::Buffer buffer = compute_context.CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(64000, false, true));
+            buffer.SetName("B2");
+            return buffer;
+        }();
 
     const Rhi::Program::ResourceViewsByArgument compute_resource_views{
-        { { Rhi::ShaderType::All, "InputA" }, { { bufferA.GetInterface() } } },
-        { { Rhi::ShaderType::All, "InputB" }, { { bufferB.GetInterface() } } },
-        { { Rhi::ShaderType::All, "Output" }, { { bufferC.GetInterface() } } },
+        { { Rhi::ShaderType::All, "InTexture" }, { { texture.GetInterface() } } },
+        { { Rhi::ShaderType::All, "InSampler" }, { { sampler.GetInterface() } } },
+        { { Rhi::ShaderType::All, "OutBuffer" }, { { buffer1.GetInterface() } } },
     };
 
-    SECTION("Compute Program Bindings Construction")
+    SECTION("Create Compute Program Bindings")
     {
         Rhi::ProgramBindings program_bindings;
         REQUIRE_NOTHROW(program_bindings = compute_program.CreateBindings(compute_resource_views, 2U));
@@ -89,6 +121,40 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         CHECK(program_bindings.GetInterfacePtr());
         CHECK(program_bindings.GetArguments().size() == 3U);
         CHECK(program_bindings.GetFrameIndex() == 2U);
+        CHECK(program_bindings.Get({ Rhi::ShaderType::All, "InTexture" }).GetResourceViews().at(0).GetResourcePtr().get() == texture.GetInterfacePtr().get());
+        CHECK(program_bindings.Get({ Rhi::ShaderType::All, "InSampler" }).GetResourceViews().at(0).GetResourcePtr().get() == sampler.GetInterfacePtr().get());
+        CHECK(program_bindings.Get({ Rhi::ShaderType::All, "OutBuffer" }).GetResourceViews().at(0).GetResourcePtr().get() == buffer1.GetInterfacePtr().get());
+    }
+
+    SECTION("Create Multiple Compute Program Bindings")
+    {
+        std::vector<Rhi::ProgramBindings> program_bindings;
+        for(size_t i = 0; i < 10; ++i)
+        {
+            REQUIRE_NOTHROW(program_bindings.push_back(compute_program.CreateBindings(compute_resource_views)));
+            REQUIRE(program_bindings.back().IsInitialized());
+            CHECK(program_bindings.back().GetArguments().size() == 3U);
+            CHECK(program_bindings.back().GetBindingsIndex() == i);
+        }
+        CHECK(compute_program.GetBindingsCount() == 10);
+        program_bindings.clear();
+        // FIXME: CHECK(compute_program.GetBindingsCount() == 0);
+    }
+
+    SECTION("Create A Copy of Program Bindings with Replacements")
+    {
+        Rhi::ProgramBindings orig_program_bindings = compute_program.CreateBindings(compute_resource_views, 2U);
+        Rhi::ProgramBindings copy_program_bindings;
+        REQUIRE_NOTHROW(copy_program_bindings = Rhi::ProgramBindings(orig_program_bindings, {
+            { { Rhi::ShaderType::All, "OutBuffer" }, { { buffer2.GetInterface() } } },
+        }, 3U));
+        REQUIRE(copy_program_bindings.IsInitialized());
+        CHECK(copy_program_bindings.GetInterfacePtr());
+        CHECK(copy_program_bindings.GetArguments().size() == 3U);
+        CHECK(copy_program_bindings.GetFrameIndex() == 3U);
+        CHECK(copy_program_bindings.Get({ Rhi::ShaderType::All, "InTexture" }).GetResourceViews().at(0).GetResourcePtr().get() == texture.GetInterfacePtr().get());
+        CHECK(copy_program_bindings.Get({ Rhi::ShaderType::All, "InSampler" }).GetResourceViews().at(0).GetResourcePtr().get() == sampler.GetInterfacePtr().get());
+        CHECK(copy_program_bindings.Get({ Rhi::ShaderType::All, "OutBuffer" }).GetResourceViews().at(0).GetResourcePtr().get() == buffer2.GetInterfacePtr().get());
     }
 
     SECTION("Object Destroyed Callback")
@@ -131,20 +197,62 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         Rhi::ProgramArguments program_arguments;
         REQUIRE(program_bindings.GetArguments().size() == 3U);
         REQUIRE_NOTHROW(program_arguments = program_bindings.GetArguments());
-        CHECK(program_arguments.count({ Rhi::ShaderType::All, "InputA" }) == 1);
-        CHECK(program_arguments.count({ Rhi::ShaderType::All, "InputB" }) == 1);
-        CHECK(program_arguments.count({ Rhi::ShaderType::All, "Output" }) == 1);
+        CHECK(program_arguments.count({ Rhi::ShaderType::All, "InTexture" }) == 1);
+        CHECK(program_arguments.count({ Rhi::ShaderType::All, "InSampler" }) == 1);
+        CHECK(program_arguments.count({ Rhi::ShaderType::All, "OutBuffer" }) == 1);
     }
 
-    SECTION("Can Get Program Argument Binding")
+    SECTION("Can Get Texture Argument Binding")
     {
-        Rhi::IProgramArgumentBinding* input_a_binding_ptr = nullptr;
-        REQUIRE_NOTHROW(input_a_binding_ptr = &program_bindings.Get({ Rhi::ShaderType::All, "InputA" }));
-        REQUIRE(input_a_binding_ptr);
-        CHECK(input_a_binding_ptr->GetSettings().argument.GetName() == "InputA");
-        CHECK(input_a_binding_ptr->GetSettings().resource_count == 1U);
-        CHECK(input_a_binding_ptr->GetSettings().resource_type == Rhi::ResourceType::Buffer);
-        CHECK(input_a_binding_ptr->GetResourceViews().size() == 1U);
-        CHECK(input_a_binding_ptr->GetResourceViews().at(0).GetResourcePtr().get() == bufferA.GetInterfacePtr().get());
+        Rhi::IProgramArgumentBinding* texture_binding_ptr = nullptr;
+        REQUIRE_NOTHROW(texture_binding_ptr = &program_bindings.Get({ Rhi::ShaderType::All, "InTexture" }));
+        REQUIRE(texture_binding_ptr);
+        CHECK(texture_binding_ptr->GetSettings().argument.GetName() == "InTexture");
+        CHECK(texture_binding_ptr->GetSettings().resource_count == 1U);
+        CHECK(texture_binding_ptr->GetSettings().resource_type == Rhi::ResourceType::Texture);
+        CHECK(texture_binding_ptr->GetResourceViews().size() == 1U);
+        CHECK(texture_binding_ptr->GetResourceViews().at(0).GetResourcePtr().get() == texture.GetInterfacePtr().get());
+    }
+
+    SECTION("Can Get Sampler Argument Binding")
+    {
+        Rhi::IProgramArgumentBinding* sampler_binding_ptr = nullptr;
+        REQUIRE_NOTHROW(sampler_binding_ptr = &program_bindings.Get({ Rhi::ShaderType::All, "InSampler" }));
+        REQUIRE(sampler_binding_ptr);
+        CHECK(sampler_binding_ptr->GetSettings().argument.GetName() == "InSampler");
+        CHECK(sampler_binding_ptr->GetSettings().resource_count == 1U);
+        CHECK(sampler_binding_ptr->GetSettings().resource_type == Rhi::ResourceType::Sampler);
+        CHECK(sampler_binding_ptr->GetResourceViews().size() == 1U);
+        CHECK(sampler_binding_ptr->GetResourceViews().at(0).GetResourcePtr().get() == sampler.GetInterfacePtr().get());
+    }
+
+    SECTION("Can Get Buffer Argument Binding")
+    {
+        Rhi::IProgramArgumentBinding* buffer_binding_ptr = nullptr;
+        REQUIRE_NOTHROW(buffer_binding_ptr = &program_bindings.Get({ Rhi::ShaderType::All, "OutBuffer" }));
+        REQUIRE(buffer_binding_ptr);
+        CHECK(buffer_binding_ptr->GetSettings().argument.GetName() == "OutBuffer");
+        CHECK(buffer_binding_ptr->GetSettings().resource_count == 1U);
+        CHECK(buffer_binding_ptr->GetSettings().resource_type == Rhi::ResourceType::Buffer);
+        CHECK(buffer_binding_ptr->GetResourceViews().size() == 1U);
+        CHECK(buffer_binding_ptr->GetResourceViews().at(0).GetResourcePtr().get() == buffer1.GetInterfacePtr().get());
+    }
+
+    SECTION("Can Change Buffer Argument Binding")
+    {
+        Rhi::IProgramArgumentBinding& buffer_binding = program_bindings.Get({ Rhi::ShaderType::All, "OutBuffer" });
+        REQUIRE_NOTHROW(buffer_binding.SetResourceViews({ { buffer2.GetInterface(), 0U, 128U } }));
+        const Rhi::ResourceView& buffer_view = buffer_binding.GetResourceViews().at(0);
+        CHECK(buffer_view.GetResourcePtr().get() == buffer2.GetInterfacePtr().get());
+        CHECK(buffer_view.GetOffset() == 0U);
+        CHECK(buffer_view.GetSize() == 128U);
+    }
+
+    SECTION("Convert to String")
+    {
+        CHECK(static_cast<std::string>(program_bindings) == 
+              "  - Compute shaders argument 'InSampler' (Constant) is bound to Sampler 'S' subresources from index(d:0, a:0, m:0) for count(d:0, a:0, m:0) with offset 0;\n" \
+              "  - Compute shaders argument 'InTexture' (Constant) is bound to Texture 'T' subresources from index(d:0, a:0, m:0) for count(d:1, a:1, m:1) with offset 0;\n" \
+              "  - Compute shaders argument 'OutBuffer' (Mutable) is bound to Buffer 'B1' subresources from index(d:0, a:0, m:0) for count(d:1, a:1, m:1) with offset 0.");
     }
 }
