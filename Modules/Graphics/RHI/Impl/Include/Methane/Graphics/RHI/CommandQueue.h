@@ -40,6 +40,7 @@ class CommandListSet;
 class Fence;
 class RenderPass;
 class RenderContext;
+class ComputeContext;
 class RenderCommandList;
 class ParallelRenderCommandList;
 class TransferCommandList;
@@ -54,6 +55,7 @@ public:
     META_PIMPL_API explicit CommandQueue(const Ptr<ICommandQueue>& interface_ptr);
     META_PIMPL_API explicit CommandQueue(ICommandQueue& interface_ref);
     META_PIMPL_API CommandQueue(const RenderContext& context, CommandListType command_lists_type);
+    META_PIMPL_API CommandQueue(const ComputeContext& context, CommandListType command_lists_type);
 
     META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API ICommandQueue& GetInterface() const META_PIMPL_NOEXCEPT;

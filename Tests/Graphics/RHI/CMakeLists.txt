@@ -7,6 +7,7 @@ add_executable(${TARGET}
     ProgramBindingsTest.cpp
     ComputeContextTest.cpp
     ComputeStateTest.cpp
+    CommandQueueTest.cpp
 )
 
 target_link_libraries(${TARGET}

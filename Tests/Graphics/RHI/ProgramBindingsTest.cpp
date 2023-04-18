@@ -126,6 +126,16 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         CHECK(program_bindings.Get({ Rhi::ShaderType::All, "OutBuffer" }).GetResourceViews().at(0).GetResourcePtr().get() == buffer1.GetInterfacePtr().get());
     }
 
+    SECTION("Can not create Compute Program Bindings with Unbound Resources")
+    {
+        Rhi::ProgramBindings program_bindings;
+        REQUIRE_THROWS_AS(program_bindings = compute_program.CreateBindings({
+                { { Rhi::ShaderType::All, "InTexture" }, { { texture.GetInterface() } } },
+                { { Rhi::ShaderType::All, "OutBuffer" }, { { buffer1.GetInterface() } } }
+            }),
+            Rhi::ProgramBindingsUnboundArgumentsException);
+    }
+
     SECTION("Create Multiple Compute Program Bindings")
     {
         std::vector<Rhi::ProgramBindings> program_bindings;
