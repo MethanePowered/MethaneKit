@@ -36,6 +36,8 @@ class CommandListSet final
 public:
     CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
+    using Base::CommandListSet::Complete;
+
     // Base::CommandListSet interface
     void WaitUntilCompleted() override;
 };

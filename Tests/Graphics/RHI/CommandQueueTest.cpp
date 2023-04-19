@@ -21,6 +21,9 @@ Unit-tests of the RHI ComputeContext
 
 ******************************************************************************/
 
+#include "Methane/Graphics/RHI/ComputeState.h"
+#include "Methane/Graphics/RHI/ICommandList.h"
+#include "Methane/Graphics/RHI/Program.h"
 #include "RhiTestHelpers.hpp"
 
 #include <Methane/Data/AppShadersProvider.h>
@@ -30,6 +33,8 @@ Unit-tests of the RHI ComputeContext
 #include <Methane/Graphics/RHI/Fence.h>
 #include <Methane/Graphics/RHI/TransferCommandList.h>
 #include <Methane/Graphics/RHI/ComputeCommandList.h>
+#include <Methane/Graphics/RHI/CommandListSet.h>
+#include <Methane/Graphics/Null/CommandListSet.h>
 
 #include <memory>
 #include <taskflow/taskflow.hpp>
@@ -86,6 +91,31 @@ TEST_CASE("RHI Command Queue Functions", "[rhi][queue]")
         ObjectCallbackTester object_callback_tester(compute_context);
         CHECK_FALSE(compute_context.SetName("My Compute Context"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Execute Command Lists")
+    {
+        const Rhi::CommandQueue compute_cmd_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Compute);
+        const Rhi::ComputeCommandList compute_cmd_list = compute_cmd_queue.CreateComputeCommandList();
+        const Rhi::CommandListSet cmd_list_set({ compute_cmd_list.GetInterface() });
+
+        compute_cmd_list.Reset();
+        compute_cmd_list.Commit();
+        CHECK(compute_cmd_list.GetState() == Rhi::CommandListState::Committed);
+
+        Rhi::ICommandList* completed_command_list_ptr = nullptr;
+        REQUIRE_NOTHROW(compute_cmd_queue.Execute(cmd_list_set,
+            [&completed_command_list_ptr](Rhi::ICommandList& command_list) {
+                completed_command_list_ptr = &command_list;
+            }));
+
+        CHECK(compute_cmd_list.GetState() == Rhi::CommandListState::Executing);
+        CHECK_FALSE(completed_command_list_ptr);
+
+        dynamic_cast<Null::CommandListSet&>(cmd_list_set.GetInterface()).Complete();
+
+        CHECK(compute_cmd_list.GetState() == Rhi::CommandListState::Pending);
+        CHECK(completed_command_list_ptr == compute_cmd_list.GetInterfacePtr().get());
     }
 }
 
