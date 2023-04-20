@@ -21,7 +21,6 @@ Unit-tests of the RHI Program
 
 ******************************************************************************/
 
-#include "Methane/Graphics/RHI/IContext.h"
 #include "RhiTestHelpers.hpp"
 
 #include <Methane/Data/AppShadersProvider.h>
@@ -95,9 +94,9 @@ TEST_CASE("RHI Program Functions", "[rhi][program]")
 
     SECTION("Object Name Set Unchanged")
     {
-        CHECK(compute_program.SetName("My Compute Context"));
+        CHECK(compute_program.SetName("My Program"));
         ObjectCallbackTester object_callback_tester(compute_program);
-        CHECK_FALSE(compute_program.SetName("My Compute Context"));
+        CHECK_FALSE(compute_program.SetName("My Program"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
     }
 

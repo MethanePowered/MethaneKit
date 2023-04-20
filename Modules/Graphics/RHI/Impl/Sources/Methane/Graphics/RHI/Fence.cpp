@@ -98,9 +98,9 @@ void Fence::WaitOnCpu() const
     GetImpl(m_impl_ptr).WaitOnCpu();
 }
 
-void Fence::WaitOnGpu(ICommandQueue& wait_on_command_queue) const
+void Fence::WaitOnGpu(const CommandQueue& wait_on_command_queue) const
 {
-    GetImpl(m_impl_ptr).WaitOnGpu(wait_on_command_queue);
+    GetImpl(m_impl_ptr).WaitOnGpu(wait_on_command_queue.GetInterface());
 }
 
 void Fence::FlushOnCpu() const
@@ -108,9 +108,9 @@ void Fence::FlushOnCpu() const
     GetImpl(m_impl_ptr).FlushOnCpu();
 }
 
-void Fence::FlushOnGpu(ICommandQueue& wait_on_command_queue) const
+void Fence::FlushOnGpu(const CommandQueue& wait_on_command_queue) const
 {
-    GetImpl(m_impl_ptr).FlushOnGpu(wait_on_command_queue);
+    GetImpl(m_impl_ptr).FlushOnGpu(wait_on_command_queue.GetInterface());
 }
 
 } // namespace Methane::Graphics::Rhi

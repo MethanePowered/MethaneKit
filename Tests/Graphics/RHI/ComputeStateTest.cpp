@@ -71,25 +71,25 @@ TEST_CASE("RHI Compute State Functions", "[rhi][compute][state]")
 
     SECTION("Object Name Setup")
     {
-        CHECK(compute_context.SetName("My Compute Context"));
-        CHECK(compute_context.GetName() == "My Compute Context");
+        CHECK(compute_state.SetName("My Compute State"));
+        CHECK(compute_state.GetName() == "My Compute State");
     }
 
     SECTION("Object Name Change Callback")
     {
-        CHECK(compute_context.SetName("My Compute Context"));
-        ObjectCallbackTester object_callback_tester(compute_context);
-        CHECK(compute_context.SetName("Our Compute Context"));
+        CHECK(compute_state.SetName("My Compute State"));
+        ObjectCallbackTester object_callback_tester(compute_state);
+        CHECK(compute_state.SetName("Our Compute State"));
         CHECK(object_callback_tester.IsObjectNameChanged());
-        CHECK(object_callback_tester.GetCurObjectName() == "Our Compute Context");
-        CHECK(object_callback_tester.GetOldObjectName() == "My Compute Context");
+        CHECK(object_callback_tester.GetCurObjectName() == "Our Compute State");
+        CHECK(object_callback_tester.GetOldObjectName() == "My Compute State");
     }
 
     SECTION("Object Name Set Unchanged")
     {
-        CHECK(compute_context.SetName("My Compute Context"));
-        ObjectCallbackTester object_callback_tester(compute_context);
-        CHECK_FALSE(compute_context.SetName("My Compute Context"));
+        CHECK(compute_state.SetName("My Compute State"));
+        ObjectCallbackTester object_callback_tester(compute_state);
+        CHECK_FALSE(compute_state.SetName("My Compute State"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
     }
 

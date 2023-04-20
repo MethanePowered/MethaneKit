@@ -16,14 +16,11 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Tests/Graphics/RHI/ComputeStateTest.cpp
-Unit-tests of the RHI ComputeContext
+FILE: Tests/Graphics/RHI/CommandQueueTest.cpp
+Unit-tests of the RHI Command Queue
 
 ******************************************************************************/
 
-#include "Methane/Graphics/RHI/ComputeState.h"
-#include "Methane/Graphics/RHI/ICommandList.h"
-#include "Methane/Graphics/RHI/Program.h"
 #include "RhiTestHelpers.hpp"
 
 #include <Methane/Data/AppShadersProvider.h>
@@ -71,25 +68,25 @@ TEST_CASE("RHI Command Queue Functions", "[rhi][queue]")
 
     SECTION("Object Name Setup")
     {
-        CHECK(compute_context.SetName("My Compute Context"));
-        CHECK(compute_context.GetName() == "My Compute Context");
+        CHECK(cmd_queue.SetName("My Compute Command Queue"));
+        CHECK(cmd_queue.GetName() == "My Compute Command Queue");
     }
 
     SECTION("Object Name Change Callback")
     {
-        CHECK(compute_context.SetName("My Compute Context"));
-        ObjectCallbackTester object_callback_tester(compute_context);
-        CHECK(compute_context.SetName("Our Compute Context"));
+        CHECK(cmd_queue.SetName("My Compute Command Queue"));
+        ObjectCallbackTester object_callback_tester(cmd_queue);
+        CHECK(cmd_queue.SetName("Our Compute Command Queue"));
         CHECK(object_callback_tester.IsObjectNameChanged());
-        CHECK(object_callback_tester.GetCurObjectName() == "Our Compute Context");
-        CHECK(object_callback_tester.GetOldObjectName() == "My Compute Context");
+        CHECK(object_callback_tester.GetCurObjectName() == "Our Compute Command Queue");
+        CHECK(object_callback_tester.GetOldObjectName() == "My Compute Command Queue");
     }
 
     SECTION("Object Name Set Unchanged")
     {
-        CHECK(compute_context.SetName("My Compute Context"));
-        ObjectCallbackTester object_callback_tester(compute_context);
-        CHECK_FALSE(compute_context.SetName("My Compute Context"));
+        CHECK(cmd_queue.SetName("My Compute Command Queue"));
+        ObjectCallbackTester object_callback_tester(cmd_queue);
+        CHECK_FALSE(cmd_queue.SetName("My Compute Command Queue"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
     }
 

@@ -16,15 +16,11 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Tests/Graphics/RHI/ProgramTest.cpp
-Unit-tests of the RHI Program
+FILE: Tests/Graphics/RHI/ProgramBindingsTest.cpp
+Unit-tests of the RHI Program Bindings
 
 ******************************************************************************/
 
-#include "Methane/Graphics/RHI/IContext.h"
-#include "Methane/Graphics/RHI/IResource.h"
-#include "Methane/Graphics/Types.h"
-#include "Methane/Graphics/Volume.hpp"
 #include "RhiTestHelpers.hpp"
 
 #include <Methane/Data/AppShadersProvider.h>
@@ -180,25 +176,25 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
 
     SECTION("Object Name Setup")
     {
-        CHECK(compute_program.SetName("My Program"));
-        CHECK(compute_program.GetName() == "My Program");
+        CHECK(program_bindings.SetName("My Program Bindings"));
+        CHECK(program_bindings.GetName() == "My Program Bindings");
     }
 
     SECTION("Object Name Change Callback")
     {
-        CHECK(compute_program.SetName("My Program"));
-        ObjectCallbackTester object_callback_tester(compute_program);
-        CHECK(compute_program.SetName("Our Program"));
+        CHECK(program_bindings.SetName("My Program Bindings"));
+        ObjectCallbackTester object_callback_tester(program_bindings);
+        CHECK(program_bindings.SetName("Our Program Bindings"));
         CHECK(object_callback_tester.IsObjectNameChanged());
-        CHECK(object_callback_tester.GetCurObjectName() == "Our Program");
-        CHECK(object_callback_tester.GetOldObjectName() == "My Program");
+        CHECK(object_callback_tester.GetCurObjectName() == "Our Program Bindings");
+        CHECK(object_callback_tester.GetOldObjectName() == "My Program Bindings");
     }
 
     SECTION("Object Name Set Unchanged")
     {
-        CHECK(compute_program.SetName("My Compute Context"));
-        ObjectCallbackTester object_callback_tester(compute_program);
-        CHECK_FALSE(compute_program.SetName("My Compute Context"));
+        CHECK(program_bindings.SetName("My Program Bindings"));
+        ObjectCallbackTester object_callback_tester(program_bindings);
+        CHECK_FALSE(program_bindings.SetName("My Program Bindings"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
     }
 

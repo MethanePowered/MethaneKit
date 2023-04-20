@@ -8,6 +8,7 @@ add_executable(${TARGET}
     ComputeContextTest.cpp
     ComputeStateTest.cpp
     CommandQueueTest.cpp
+    FenceTest.cpp
 )
 
 target_link_libraries(${TARGET}
