@@ -23,6 +23,7 @@ RHI Test helper classes
 
 #include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/IObject.h>
+#include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Graphics/RHI/System.h>
 #include <Methane/Graphics/RHI/Device.h>
 #include <Methane/Data/Receiver.hpp>
@@ -149,6 +150,52 @@ private:
     bool m_is_context_released = false;
     bool m_is_context_completing_initialization = false;
     bool m_is_context_initialized = false;
+};
+
+class CommandListCallbackTester final
+    : private Data::Receiver<rhi::ICommandListCallback>
+{
+public:
+    CommandListCallbackTester(rhi::ICommandList& cmd_list)
+        : m_cmd_list(cmd_list)
+    { dynamic_cast<Data::IEmitter<rhi::ICommandListCallback>&>(cmd_list).Connect(*this); }
+
+    template<typename CommandListType>
+    CommandListCallbackTester(CommandListType& cmd_list)
+        : m_cmd_list(cmd_list.GetInterface())
+    { cmd_list.Connect(*this); }
+
+    bool IsStateChanged() const noexcept { return m_is_state_changed; }
+    bool IsExecutionCompleted() const noexcept { return m_is_execution_completed; }
+    rhi::CommandListState GetTrackingState() const noexcept { return m_state; }
+
+    void Reset()
+    {
+        m_is_state_changed = false;
+        m_is_execution_completed = false;
+        m_state = rhi::CommandListState::Pending;
+    }
+
+private:
+    void OnCommandListStateChanged(rhi::ICommandList& cmd_list) override
+    {
+        CHECK(std::addressof(cmd_list) == std::addressof(m_cmd_list));
+        m_is_state_changed = true;
+        m_state = cmd_list.GetState();
+    }
+
+    void OnCommandListExecutionCompleted(rhi::ICommandList& cmd_list) override
+    {
+        CHECK(std::addressof(cmd_list) == std::addressof(m_cmd_list));
+        CHECK(cmd_list.GetState() == rhi::CommandListState::Pending);
+        m_is_execution_completed = true;
+        m_state = cmd_list.GetState();
+    }
+
+    rhi::ICommandList& m_cmd_list;
+    bool m_is_state_changed = false;
+    bool m_is_execution_completed = false;
+    rhi::CommandListState m_state = rhi::CommandListState::Pending;
 };
 
 } // namespace Methane

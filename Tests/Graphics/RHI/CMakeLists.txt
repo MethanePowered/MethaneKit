@@ -9,6 +9,7 @@ add_executable(${TARGET}
     ComputeStateTest.cpp
     CommandQueueTest.cpp
     FenceTest.cpp
+    TransferCommandListTest.cpp
 )
 
 target_link_libraries(${TARGET}

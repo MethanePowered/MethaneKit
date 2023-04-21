@@ -96,8 +96,8 @@ TEST_CASE("RHI Command Queue Functions", "[rhi][queue]")
         const Rhi::ComputeCommandList compute_cmd_list = compute_cmd_queue.CreateComputeCommandList();
         const Rhi::CommandListSet cmd_list_set({ compute_cmd_list.GetInterface() });
 
-        compute_cmd_list.Reset();
-        compute_cmd_list.Commit();
+        REQUIRE_NOTHROW(compute_cmd_list.Reset());
+        REQUIRE_NOTHROW(compute_cmd_list.Commit());
         CHECK(compute_cmd_list.GetState() == Rhi::CommandListState::Committed);
 
         Rhi::ICommandList* completed_command_list_ptr = nullptr;
