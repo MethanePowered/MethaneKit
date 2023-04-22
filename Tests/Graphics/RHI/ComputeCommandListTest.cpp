@@ -16,23 +16,28 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Tests/Graphics/RHI/TransferCommandListTest.cpp
-Unit-tests of the RHI Transfer Command List
+FILE: Tests/Graphics/RHI/ComputeCommandListTest.cpp
+Unit-tests of the RHI Compute Command List
 
 ******************************************************************************/
 
+#include "Methane/Graphics/Null/ComputeCommandList.h"
+#include "Methane/Graphics/RHI/IComputeCommandList.h"
 #include "RhiTestHelpers.hpp"
 
 #include <Methane/Data/AppShadersProvider.h>
 #include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
-#include <Methane/Graphics/RHI/TransferCommandList.h>
+#include <Methane/Graphics/RHI/ComputeCommandList.h>
+#include <Methane/Graphics/RHI/ComputeState.h>
+#include <Methane/Graphics/RHI/Program.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/Null/CommandListSet.h>
+#include <Methane/Graphics/Null/ComputeCommandList.h>
+#include <Methane/Graphics/Null/ComputeState.h>
 #include <Methane/Graphics/Null/CommandListDebugGroup.h>
-#include <Methane/Graphics/Null/TransferCommandList.h>
 
 #include <chrono>
 #include <future>
@@ -46,15 +51,15 @@ using namespace Methane::Graphics;
 
 static tf::Executor g_parallel_executor;
 
-TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
+TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
 {
     const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
     const Rhi::CommandQueue compute_cmd_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Compute);
 
     SECTION("Transfer Command List Construction")
     {
-        Rhi::TransferCommandList cmd_list;
-        REQUIRE_NOTHROW(cmd_list = compute_cmd_queue.CreateTransferCommandList());
+        Rhi::ComputeCommandList cmd_list;
+        REQUIRE_NOTHROW(cmd_list = compute_cmd_queue.CreateComputeCommandList());
         REQUIRE(cmd_list.IsInitialized());
         CHECK(cmd_list.GetInterfacePtr());
         CHECK(cmd_list.GetCommandQueue().GetInterfacePtr().get() == compute_cmd_queue.GetInterfacePtr().get());
@@ -63,14 +68,14 @@ TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
 
     SECTION("Object Destroyed Callback")
     {
-        auto cmd_list_ptr = std::make_unique<Rhi::TransferCommandList>(compute_cmd_queue);
+        auto cmd_list_ptr = std::make_unique<Rhi::ComputeCommandList>(compute_cmd_queue);
         ObjectCallbackTester object_callback_tester(*cmd_list_ptr);
         CHECK_FALSE(object_callback_tester.IsObjectDestroyed());
         cmd_list_ptr.reset();
         CHECK(object_callback_tester.IsObjectDestroyed());
     }
 
-    const Rhi::TransferCommandList cmd_list = compute_cmd_queue.CreateTransferCommandList();
+    const Rhi::ComputeCommandList cmd_list = compute_cmd_queue.CreateComputeCommandList();
 
     SECTION("Object Name Setup")
     {
@@ -114,7 +119,7 @@ TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
         const Rhi::CommandListDebugGroup debug_group("Test");
         REQUIRE_NOTHROW(cmd_list.Reset(&debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        CHECK(dynamic_cast<Null::TransferCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
+        CHECK(dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Reset Command List Once with Debug Group")
@@ -123,7 +128,7 @@ TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
         REQUIRE_NOTHROW(cmd_list.ResetOnce(&debug_group));
         REQUIRE_NOTHROW(cmd_list.ResetOnce(&debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        CHECK(dynamic_cast<Null::TransferCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
+        CHECK(dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Push and Pop Debug Group")
@@ -204,7 +209,7 @@ TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
 
         auto async_complete = std::async(std::launch::async, [&cmd_list_set]()
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            std::this_thread::sleep_for(std::chrono::milliseconds(300));
             dynamic_cast<Null::CommandListSet&>(cmd_list_set.GetInterface()).Complete();
         });
 
@@ -218,5 +223,71 @@ TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
         REQUIRE_NOTHROW(cmd_list.Reset());
         CHECK_NOTHROW(cmd_list.GetGpuTimeRange(true) == Data::TimeRange{});
         CHECK_NOTHROW(cmd_list.GetGpuTimeRange(false) == Data::TimeRange{});
+    }
+
+    const Rhi::ComputeStateSettingsImpl& compute_state_settings{
+        compute_context.CreateProgram({
+            { { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Shader", "Main" } } } },
+        }),
+        Rhi::ThreadGroupSize(16, 16, 1)
+    };
+    const Rhi::ComputeState compute_state = compute_context.CreateComputeState(compute_state_settings);
+
+    SECTION("Reset Command List with Compute State")
+    {
+        REQUIRE_NOTHROW(cmd_list.ResetWithState(compute_state));
+        CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
+        CHECK(&dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface()).GetComputeState() == compute_state.GetInterfacePtr().get());
+    }
+
+    SECTION("Reset Command List Once with Compute State")
+    {
+        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(compute_state));
+        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(compute_state));
+        CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
+        CHECK(&dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface()).GetComputeState() == compute_state.GetInterfacePtr().get());
+    }
+
+    SECTION("Reset Command List with Compute State and Debug Group")
+    {
+        const Rhi::CommandListDebugGroup debug_group("Test");
+        REQUIRE_NOTHROW(cmd_list.ResetWithState(compute_state, &debug_group));
+        CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
+
+        auto& null_cmd_list = dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface());
+        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
+        CHECK(&null_cmd_list.GetComputeState() == compute_state.GetInterfacePtr().get());
+    }
+
+    SECTION("Reset Command List Once with Compute State and Debug Group")
+    {
+        const Rhi::CommandListDebugGroup debug_group("Test");
+        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(compute_state, &debug_group));
+        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(compute_state, &debug_group));
+        CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
+
+        auto& null_cmd_list = dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface());
+        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
+        CHECK(&null_cmd_list.GetComputeState() == compute_state.GetInterfacePtr().get());
+    }
+
+    SECTION("Set Command List Compute State")
+    {
+        REQUIRE_NOTHROW(cmd_list.Reset());
+        REQUIRE_NOTHROW(cmd_list.SetComputeState(compute_state));
+        CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
+
+        auto& null_cmd_list = dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface());
+        CHECK(&null_cmd_list.GetComputeState() == compute_state.GetInterfacePtr().get());
+    }
+
+    SECTION("Dispatch thread groups in Compute Command List")
+    {
+        const Rhi::CommandListSet cmd_list_set({ cmd_list.GetInterface() });
+        REQUIRE_NOTHROW(cmd_list.ResetWithState(compute_state));
+        REQUIRE_NOTHROW(cmd_list.Dispatch(Rhi::ThreadGroupsCount(4U, 4U, 1U)));
+        REQUIRE_NOTHROW(cmd_list.Commit());
+        REQUIRE_NOTHROW(compute_cmd_queue.Execute(cmd_list_set));
+        dynamic_cast<Null::CommandListSet&>(cmd_list_set.GetInterface()).Complete();
     }
 }

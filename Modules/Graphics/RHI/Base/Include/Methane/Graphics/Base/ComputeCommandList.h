@@ -47,7 +47,6 @@ public:
     void SetComputeState(Rhi::IComputeState& compute_state) final;
     void Dispatch(const Rhi::ThreadGroupsCount& thread_groups_count) override;
 
-protected:
     ComputeState& GetComputeState();
 
 private:

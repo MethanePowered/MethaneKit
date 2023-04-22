@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2022 Evgeny Gorodetskiy
+Copyright 2023 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -86,9 +86,9 @@ public:
     META_PIMPL_API void Disconnect(Data::Receiver<ICommandListCallback>& receiver) const;
 
     // IComputeCommandList interface
-    META_PIMPL_API void ResetWithState(ComputeState& compute_state, const DebugGroup* debug_group_ptr = nullptr) const;
-    META_PIMPL_API void ResetWithStateOnce(ComputeState& compute_state, const DebugGroup* debug_group_ptr = nullptr) const;
-    META_PIMPL_API void SetComputeState(ComputeState& compute_state) const;
+    META_PIMPL_API void ResetWithState(const ComputeState& compute_state, const DebugGroup* debug_group_ptr = nullptr) const;
+    META_PIMPL_API void ResetWithStateOnce(const ComputeState& compute_state, const DebugGroup* debug_group_ptr = nullptr) const;
+    META_PIMPL_API void SetComputeState(const ComputeState& compute_state) const;
     META_PIMPL_API void Dispatch(const ThreadGroupsCount& thread_groups_count) const;
 
 private:

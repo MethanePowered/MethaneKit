@@ -156,19 +156,19 @@ void ComputeCommandList::Disconnect(Data::Receiver<ICommandListCallback>& receiv
     GetImpl(m_impl_ptr).Data::Emitter<ICommandListCallback>::Disconnect(receiver);
 }
 
-void ComputeCommandList::ResetWithState(ComputeState& compute_state, const DebugGroup* debug_group_ptr) const
+void ComputeCommandList::ResetWithState(const ComputeState& compute_state, const DebugGroup* debug_group_ptr) const
 {
     GetImpl(m_impl_ptr).ResetWithState(compute_state.GetInterface(),
                                        debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
-void ComputeCommandList::ResetWithStateOnce(ComputeState& compute_state, const DebugGroup* debug_group_ptr) const
+void ComputeCommandList::ResetWithStateOnce(const ComputeState& compute_state, const DebugGroup* debug_group_ptr) const
 {
     GetImpl(m_impl_ptr).ResetWithStateOnce(compute_state.GetInterface(),
                                            debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
-void ComputeCommandList::SetComputeState(ComputeState& compute_state) const
+void ComputeCommandList::SetComputeState(const ComputeState& compute_state) const
 {
     GetImpl(m_impl_ptr).SetComputeState(compute_state.GetInterface());
 }
