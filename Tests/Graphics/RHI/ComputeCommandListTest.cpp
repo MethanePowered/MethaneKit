@@ -21,8 +21,6 @@ Unit-tests of the RHI Compute Command List
 
 ******************************************************************************/
 
-#include "Methane/Graphics/Null/ComputeCommandList.h"
-#include "Methane/Graphics/RHI/IComputeCommandList.h"
 #include "RhiTestHelpers.hpp"
 
 #include <Methane/Data/AppShadersProvider.h>
@@ -32,12 +30,18 @@ Unit-tests of the RHI Compute Command List
 #include <Methane/Graphics/RHI/ComputeState.h>
 #include <Methane/Graphics/RHI/Program.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
-#include <Methane/Graphics/RHI/ResourceBarriers.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
+#include <Methane/Graphics/RHI/ResourceBarriers.h>
+#include <Methane/Graphics/RHI/ProgramBindings.h>
+#include <Methane/Graphics/RHI/Texture.h>
+#include <Methane/Graphics/RHI/Buffer.h>
+#include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/Null/CommandListSet.h>
 #include <Methane/Graphics/Null/ComputeCommandList.h>
+#include <Methane/Graphics/Null/Program.h>
 #include <Methane/Graphics/Null/ComputeState.h>
 #include <Methane/Graphics/Null/CommandListDebugGroup.h>
+#include <Methane/Graphics/Null/ProgramBindings.h>
 
 #include <chrono>
 #include <future>
@@ -55,6 +59,39 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
 {
     const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
     const Rhi::CommandQueue compute_cmd_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Compute);
+
+    const Rhi::Program compute_program = [&compute_context]()
+    {
+        const Rhi::ProgramArgumentAccessor texture_accessor{ Rhi::ShaderType::Compute, "InTexture", Rhi::ProgramArgumentAccessType::Constant };
+        const Rhi::ProgramArgumentAccessor sampler_accessor{ Rhi::ShaderType::Compute, "InSampler", Rhi::ProgramArgumentAccessType::Constant };
+        const Rhi::ProgramArgumentAccessor buffer_accessor { Rhi::ShaderType::Compute, "OutBuffer", Rhi::ProgramArgumentAccessType::Mutable };
+        Rhi::Program compute_program = compute_context.CreateProgram(
+            Rhi::ProgramSettingsImpl
+            {
+                Rhi::ProgramSettingsImpl::ShaderSet
+                {
+                    { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Compute", "Main" } } }
+                },
+                Rhi::ProgramInputBufferLayouts{ },
+                Rhi::ProgramArgumentAccessors
+                {
+                    texture_accessor,
+                    sampler_accessor,
+                    buffer_accessor
+                }
+            });
+        dynamic_cast<Null::Program&>(compute_program.GetInterface()).InitArgumentBindings({
+            { texture_accessor, { Rhi::ResourceType::Texture, 1U } },
+            { sampler_accessor, { Rhi::ResourceType::Sampler, 1U } },
+            { buffer_accessor,  { Rhi::ResourceType::Buffer,  1U } },
+        });
+        return compute_program;
+    }();
+
+    const Rhi::ComputeState compute_state = compute_context.CreateComputeState({
+        compute_program,
+        Rhi::ThreadGroupSize(16, 16, 1)
+    });
 
     SECTION("Transfer Command List Construction")
     {
@@ -144,6 +181,44 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         CHECK_THROWS(cmd_list.PopDebugGroup());
     }
 
+    SECTION("Set Program Bindings")
+    {
+        const Rhi::Texture texture = [&compute_context]()
+        {
+            Rhi::Texture texture = compute_context.CreateTexture(Rhi::TextureSettings::ForImage(Dimensions(640, 480), {}, PixelFormat::RGBA8, false));
+            texture.SetName("T");
+            return texture;
+        }();
+
+        const Rhi::Sampler sampler = [&compute_context]()
+        {
+            const Rhi::Sampler sampler = compute_context.CreateSampler({
+                rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
+                rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
+            });
+            sampler.SetName("S");
+            return sampler;
+        }();
+
+        const Rhi::Buffer buffer = [&compute_context]()
+        {
+            const Rhi::Buffer buffer = compute_context.CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(42000, false, true));
+            buffer.SetName("B");
+            return buffer;
+        }();
+
+        const Rhi::ProgramBindings compute_program_bindings = compute_program.CreateBindings({
+            { { Rhi::ShaderType::All, "InTexture" }, { { texture.GetInterface() } } },
+            { { Rhi::ShaderType::All, "InSampler" }, { { sampler.GetInterface() } } },
+            { { Rhi::ShaderType::All, "OutBuffer" }, { { buffer.GetInterface() } } },
+        });
+
+        REQUIRE_NOTHROW(cmd_list.ResetWithState(compute_state));
+        REQUIRE_NOTHROW(cmd_list.SetProgramBindings(compute_program_bindings));
+        REQUIRE_NOTHROW(cmd_list.Commit());
+        CHECK(dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface()).GetProgramBindingsPtr() == compute_program_bindings.GetInterfacePtr().get());
+    }
+
     SECTION("Set Resource Barriers")
     {
         const Rhi::ResourceBarriers barriers(Rhi::IResourceBarriers::Set{});
@@ -224,14 +299,6 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         CHECK_NOTHROW(cmd_list.GetGpuTimeRange(true) == Data::TimeRange{});
         CHECK_NOTHROW(cmd_list.GetGpuTimeRange(false) == Data::TimeRange{});
     }
-
-    const Rhi::ComputeStateSettingsImpl& compute_state_settings{
-        compute_context.CreateProgram({
-            { { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Shader", "Main" } } } },
-        }),
-        Rhi::ThreadGroupSize(16, 16, 1)
-    };
-    const Rhi::ComputeState compute_state = compute_context.CreateComputeState(compute_state_settings);
 
     SECTION("Reset Command List with Compute State")
     {
