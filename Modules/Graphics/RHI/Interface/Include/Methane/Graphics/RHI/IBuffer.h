@@ -61,6 +61,9 @@ struct BufferSettings
     [[nodiscard]] static BufferSettings ForIndexBuffer(Data::Size size, PixelFormat format, bool is_volatile = false);
     [[nodiscard]] static BufferSettings ForConstantBuffer(Data::Size size, bool addressable = false, bool is_volatile = false);
     [[nodiscard]] static BufferSettings ForReadBackBuffer(Data::Size size);
+
+    bool operator==(const BufferSettings& other) const;
+    bool operator!=(const BufferSettings& other) const;
 };
 
 struct IBuffer

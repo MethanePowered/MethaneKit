@@ -25,6 +25,8 @@ Methane Buffer PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
+#include <Methane/Graphics/RHI/ComputeContext.h>
+#include <Methane/Graphics/RHI/RenderContext.h>
 
 #ifdef META_GFX_METAL
 #include <Buffer.hh>
@@ -50,8 +52,13 @@ Buffer::Buffer(IBuffer& interface_ref)
 {
 }
 
-Buffer::Buffer(const IContext& context, const BufferSettings& settings)
-    : Buffer(IBuffer::Create(context, settings))
+Buffer::Buffer(const RenderContext& context, const BufferSettings& settings)
+    : Buffer(IBuffer::Create(context.GetInterface(), settings))
+{
+}
+
+Buffer::Buffer(const ComputeContext& context, const BufferSettings& settings)
+    : Buffer(IBuffer::Create(context.GetInterface(), settings))
 {
 }
 

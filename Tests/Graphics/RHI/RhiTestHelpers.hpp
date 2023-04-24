@@ -24,6 +24,7 @@ RHI Test helper classes
 #include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/IObject.h>
 #include <Methane/Graphics/RHI/ICommandList.h>
+#include <Methane/Graphics/RHI/IResource.h>
 #include <Methane/Graphics/RHI/System.h>
 #include <Methane/Graphics/RHI/Device.h>
 #include <Methane/Data/Receiver.hpp>
@@ -196,6 +197,37 @@ private:
     bool m_is_state_changed = false;
     bool m_is_execution_completed = false;
     rhi::CommandListState m_state = rhi::CommandListState::Pending;
+};
+
+class ResourceCallbackTester final
+    : private Data::Receiver<rhi::IResourceCallback>
+{
+public:
+    ResourceCallbackTester(rhi::IResource& resource)
+        : m_resource(resource)
+    { dynamic_cast<Data::IEmitter<rhi::IResourceCallback>&>(resource).Connect(*this); }
+
+    template<typename ResourceType>
+    ResourceCallbackTester(ResourceType& resource)
+        : m_resource(resource.GetInterface())
+    { resource.Connect(*this); }
+
+    bool IsResourceReleased() const noexcept { return m_is_resource_released; }
+
+    void Reset()
+    {
+        m_is_resource_released = false;
+    }
+
+private:
+    void OnResourceReleased(rhi::IResource& resource) override
+    {
+        CHECK(std::addressof(resource) == std::addressof(m_resource));
+        m_is_resource_released = true;
+    }
+
+    rhi::IResource& m_resource;
+    bool m_is_resource_released = false;
 };
 
 } // namespace Methane

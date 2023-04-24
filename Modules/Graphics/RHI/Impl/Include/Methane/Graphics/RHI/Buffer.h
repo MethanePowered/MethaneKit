@@ -23,6 +23,7 @@ Methane Buffer PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
+#include "Methane/Graphics/RHI/Device.h"
 #include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/IBuffer.h>
@@ -39,6 +40,8 @@ namespace Methane::Graphics::Rhi
 
 class ResourceBarriers;
 class CommandQueue;
+class RenderContext;
+class ComputeContext;
 
 class Buffer // NOSONAR - class has more than 35 methods, constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
@@ -61,7 +64,8 @@ public:
 
     META_PIMPL_API explicit Buffer(const Ptr<IBuffer>& interface_ptr);
     META_PIMPL_API explicit Buffer(IBuffer& interface_ref);
-    META_PIMPL_API Buffer(const IContext& context, const BufferSettings& settings);
+    META_PIMPL_API Buffer(const RenderContext& context, const BufferSettings& settings);
+    META_PIMPL_API Buffer(const ComputeContext& context, const BufferSettings& settings);
 
     META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API IBuffer& GetInterface() const META_PIMPL_NOEXCEPT;
@@ -80,10 +84,8 @@ public:
     META_PIMPL_API bool SetState(State state, Barriers& out_barriers) const;
     META_PIMPL_API bool SetOwnerQueueFamily(uint32_t family_index) const;
     META_PIMPL_API bool SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers) const;
-    META_PIMPL_API void SetData(const CommandQueue& target_cmd_queue, const SubResource& sub_resource) const;
     META_PIMPL_API void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const;
 
-    [[nodiscard]] META_PIMPL_API SubResource               GetData(Rhi::ICommandQueue& target_cmd_queue, const BytesRangeOpt& data_range = {}) const;
     [[nodiscard]] META_PIMPL_API Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const;
     [[nodiscard]] META_PIMPL_API SubResource::Count        GetSubresourceCount() const META_PIMPL_NOEXCEPT;
@@ -101,6 +103,8 @@ public:
     // IBuffer interface methods
     [[nodiscard]] META_PIMPL_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API uint32_t GetFormattedItemsCount() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API SubResource GetData(Rhi::ICommandQueue& target_cmd_queue, const BytesRangeOpt& data_range = {}) const;
+    META_PIMPL_API void SetData(const CommandQueue& target_cmd_queue, const SubResource& sub_resource) const;
     
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::Buffer;

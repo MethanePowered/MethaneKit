@@ -45,6 +45,13 @@ public:
     Resource(const Resource&) = delete;
     Resource(Resource&&) = delete;
 
+    ~Resource() override
+    {
+        META_FUNCTION_TASK();
+        // Resource released callback has to be emitted before native resource is released
+        Data::Emitter<Rhi::IResourceCallback>::Emit(&Rhi::IResourceCallback::OnResourceReleased, std::ref(*this));
+    }
+
     bool operator=(const Resource&) = delete;
     bool operator=(Resource&&) = delete;
 
