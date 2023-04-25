@@ -68,7 +68,7 @@ jobs:
             sonar_project_key: "methane-powered-kit-linux"
             tests_coverage_reports: "Build/Output/Ninja-Lin-VK-Scan/Build/MethaneTestCoverage.info"
 
-          - os: macos-latest
+          - os: macos-latest-xl
             os_name: macosx
             name: "MacOS_MTL_SonarScan"
             named_logo: Apple

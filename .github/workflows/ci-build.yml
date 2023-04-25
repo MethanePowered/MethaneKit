@@ -135,7 +135,7 @@ jobs:
             run_tests: false
             add_tracy_app: true
 
-          - os: macos-latest
+          - os: macos-latest-xl
             os_name: MacOS
             name: "MacOS_MTL_Release"
             config_preset: "Xcode-Mac-MTL-Default"
@@ -144,7 +144,7 @@ jobs:
             run_tests: true
             add_tracy_app: false
 
-          - os: macos-latest
+          - os: macos-latest-xl
             os_name: MacOS
             name: "MacOS_MTL_Profile"
             config_preset: "Xcode-Mac-MTL-Profile"
