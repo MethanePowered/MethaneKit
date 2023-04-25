@@ -23,7 +23,6 @@ Methane Buffer PIMPL wrappers for direct calls to final implementation.
 
 #pragma once
 
-#include "Methane/Graphics/RHI/Device.h"
 #include <Methane/Pimpl.h>
 
 #include <Methane/Graphics/RHI/IBuffer.h>
@@ -64,6 +63,7 @@ public:
 
     META_PIMPL_API explicit Buffer(const Ptr<IBuffer>& interface_ptr);
     META_PIMPL_API explicit Buffer(IBuffer& interface_ref);
+    META_PIMPL_API Buffer(const IContext& context, const BufferSettings& settings);
     META_PIMPL_API Buffer(const RenderContext& context, const BufferSettings& settings);
     META_PIMPL_API Buffer(const ComputeContext& context, const BufferSettings& settings);
 
