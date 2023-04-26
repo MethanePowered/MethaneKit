@@ -40,7 +40,7 @@ static SubResourceCount GetSubresourceCount(IResource& resource)
     {
     case ResourceType::Texture: return dynamic_cast<ITexture&>(resource).GetSubresourceCount();
     case ResourceType::Buffer:  return SubResourceCount(1U, 1U, 1U);
-    case ResourceType::Sampler: return SubResourceCount(0U, 0U, 0U);
+    default:                    return SubResourceCount(0U, 0U, 0U);
     }
 }
 
