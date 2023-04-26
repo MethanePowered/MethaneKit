@@ -130,4 +130,12 @@ TEST_CASE("RHI Buffer Functions", "[rhi][buffer][resource]")
         CHECK(buffer.GetOwnerQueueFamily().value() == 1U);
         CHECK(resource_barriers.HasOwnerTransition(buffer.GetInterface(), 0U, 1U));
     }
+
+    SECTION("Restore Descriptor Views")
+    {
+        auto buffer_ptr = std::make_unique<Rhi::Buffer>(compute_context, constant_buffer_settings);
+        const Rhi::Buffer::DescriptorByViewId descriptor_by_view_id = buffer_ptr->GetDescriptorByViewId();
+        buffer_ptr = std::make_unique<Rhi::Buffer>(compute_context, constant_buffer_settings);
+        CHECK_NOTHROW(buffer_ptr->RestoreDescriptorViews(descriptor_by_view_id));
+    }
 }
