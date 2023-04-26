@@ -27,6 +27,8 @@ Unit-tests of the RHI Buffer
 #include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
+#include <Methane/Graphics/RHI/CommandKit.h>
+#include <Methane/Graphics/RHI/CommandQueue.h>
 
 #include <memory>
 #include <taskflow/taskflow.hpp>
@@ -42,13 +44,16 @@ TEST_CASE("RHI Buffer Functions", "[rhi][buffer][resource]")
     const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
     const Rhi::BufferSettings constant_buffer_settings = Rhi::BufferSettings::ForConstantBuffer(42000, false, true);
 
-    SECTION("Buffer Construction")
+    SECTION("Constant Buffer Construction")
     {
         Rhi::Buffer buffer;
         REQUIRE_NOTHROW(buffer = compute_context.CreateBuffer(constant_buffer_settings));
         REQUIRE(buffer.IsInitialized());
         CHECK(buffer.GetInterfacePtr());
+        CHECK(buffer.GetResourceType() == Rhi::ResourceType::Buffer);
         CHECK(buffer.GetSettings() == constant_buffer_settings);
+        CHECK(buffer.GetUsage() == constant_buffer_settings.usage_mask);
+        CHECK(std::addressof(buffer.GetContext()) == compute_context.GetInterfacePtr().get());
     }
 
     SECTION("Object Destroyed Callback")
@@ -137,5 +142,30 @@ TEST_CASE("RHI Buffer Functions", "[rhi][buffer][resource]")
         const Rhi::Buffer::DescriptorByViewId descriptor_by_view_id = buffer_ptr->GetDescriptorByViewId();
         buffer_ptr = std::make_unique<Rhi::Buffer>(compute_context, constant_buffer_settings);
         CHECK_NOTHROW(buffer_ptr->RestoreDescriptorViews(descriptor_by_view_id));
+    }
+
+    SECTION("Get Data Size")
+    {
+        CHECK(buffer.GetDataSize(Data::MemoryState::Reserved) == Rhi::BufferSettings::GetAlignedSize(constant_buffer_settings.size));
+        CHECK(buffer.GetDataSize(Data::MemoryState::Initialized) == 0U);
+    }
+
+    SECTION("Set Data and Get Formatted Items Count")
+    {
+        const Rhi::BufferSettings vertex_buffer_settings = Rhi::BufferSettings::ForVertexBuffer(24 * 512, 24, true);
+        const Rhi::Buffer vertex_buffer = compute_context.CreateBuffer(vertex_buffer_settings);
+        CHECK(vertex_buffer.GetFormattedItemsCount() == 0U);
+
+        std::vector<std::byte> test_data(24 * 256, std::byte(8));
+        REQUIRE_NOTHROW(vertex_buffer.SetData(compute_context.GetUploadCommandKit().GetQueue(), {
+            reinterpret_cast<Data::ConstRawPtr>(test_data.data()), // NOSONAR
+            static_cast<Data::Size>(test_data.size())
+        }));
+        CHECK(vertex_buffer.GetFormattedItemsCount() == 256);
+    }
+
+    SECTION("Get Data")
+    {
+        CHECK_NOTHROW(buffer.GetData(compute_context.GetUploadCommandKit().GetQueue()));
     }
 }

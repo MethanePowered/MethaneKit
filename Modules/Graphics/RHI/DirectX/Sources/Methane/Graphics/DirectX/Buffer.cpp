@@ -21,6 +21,7 @@ DirectX 12 implementation of the buffer interface.
 
 ******************************************************************************/
 
+#include "Methane/Graphics/RHI/ResourceView.h"
 #include <Methane/Graphics/DirectX/Buffer.h>
 #include <Methane/Graphics/DirectX/Device.h>
 #include <Methane/Graphics/DirectX/Types.h>
@@ -89,7 +90,7 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& su
     ID3D12Resource&      d3d12_resource = is_private_storage ? *m_cp_upload_resource.Get() : GetNativeResourceRef();
 
     // Using zero range, since we're not going to read this resource on CPU
-    const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(GetSubresourceCount());
+    const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(Rhi::SubResourceCount());
     Data::RawPtr      p_sub_resource_data    = nullptr;
     ThrowIfFailed(
         d3d12_resource.Map(sub_resource_raw_index, &zero_read_range,

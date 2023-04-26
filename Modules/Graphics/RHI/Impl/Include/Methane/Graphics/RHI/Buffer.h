@@ -101,7 +101,7 @@ public:
     // IBuffer interface methods
     [[nodiscard]] META_PIMPL_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API uint32_t GetFormattedItemsCount() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API SubResource GetData(Rhi::ICommandQueue& target_cmd_queue, const BytesRangeOpt& data_range = {}) const;
+    [[nodiscard]] META_PIMPL_API SubResource GetData(const Rhi::CommandQueue& target_cmd_queue, const BytesRangeOpt& data_range = {}) const;
     META_PIMPL_API void SetData(const CommandQueue& target_cmd_queue, const SubResource& sub_resource) const;
     
 private:
