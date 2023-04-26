@@ -40,8 +40,6 @@ public:
                State initial_state = State::Undefined, Opt<State> auto_transition_source_state_opt = {});
 
     // IResource interface
-    SubResource::Count GetSubresourceCount() const noexcept final { return {}; }
-    Data::Size GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const final;
     Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
     // IBuffer interface

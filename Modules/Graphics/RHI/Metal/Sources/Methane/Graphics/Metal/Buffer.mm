@@ -137,7 +137,7 @@ void Buffer::SetDataToPrivateBuffer(const SubResource& sub_resource)
     if (sub_resource.HasDataRange())
         data_offset = sub_resource.GetDataRange().GetStart();
 
-    [mtl_blit_encoder copyFromBuffer:GetUploadSubresourceBuffer(sub_resource)
+    [mtl_blit_encoder copyFromBuffer:GetUploadSubresourceBuffer(sub_resource, Rhi::SubResourceCount())
                         sourceOffset:0U
                             toBuffer:m_mtl_buffer
                    destinationOffset:data_offset

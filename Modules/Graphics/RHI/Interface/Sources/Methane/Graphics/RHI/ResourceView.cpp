@@ -21,6 +21,7 @@ Methane sub-resource used for resource data transfers.
 
 ******************************************************************************/
 
+#include "Methane/Graphics/RHI/IContext.h"
 #include <Methane/Graphics/RHI/ResourceView.h>
 #include <Methane/Graphics/RHI/IResource.h>
 #include <Methane/Graphics/RHI/ITexture.h>
@@ -32,6 +33,16 @@ Methane sub-resource used for resource data transfers.
 
 namespace Methane::Graphics::Rhi
 {
+
+static SubResourceCount GetSubresourceCount(IResource& resource)
+{
+    switch(resource.GetResourceType())
+    {
+    case ResourceType::Texture: return dynamic_cast<ITexture&>(resource).GetSubresourceCount();
+    case ResourceType::Buffer:  return SubResourceCount(1U, 1U, 1U);
+    case ResourceType::Sampler: return SubResourceCount(0U, 0U, 0U);
+    }
+}
 
 SubResource::SubResource(Data::Bytes&& data, const Index& index, BytesRangeOpt data_range) noexcept
     : Data::Chunk(std::move(data))
@@ -209,7 +220,7 @@ ResourceView::ResourceView(IResource& resource, const Settings& settings)
 { }
 
 ResourceView::ResourceView(IResource& resource, Data::Size offset, Data::Size size)
-    : ResourceView(resource, SubResourceIndex(), resource.GetSubresourceCount(), offset, size)
+    : ResourceView(resource, SubResourceIndex(), Rhi::GetSubresourceCount(resource), offset, size)
 { }
 
 ResourceView::ResourceView(IResource& resource,

@@ -217,7 +217,7 @@ Ptr<ResourceView::ViewDescriptorVariant> Buffer::CreateNativeViewDescriptor(cons
     buffer_view_desc.vk_desc = vk::DescriptorBufferInfo(
         GetNativeResource(),
         static_cast<vk::DeviceSize>(view_id.offset),
-        view_id.size ? view_id.size : GetSubResourceDataSize(view_id.subresource_index)
+        view_id.size ? view_id.size : GetDataSize()
     );
 
     return std::make_shared<ResourceView::ViewDescriptorVariant>(std::move(buffer_view_desc));

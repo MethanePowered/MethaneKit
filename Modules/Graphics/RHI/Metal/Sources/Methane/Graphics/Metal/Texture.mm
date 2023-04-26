@@ -130,7 +130,7 @@ void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& 
                 slice = 0;
         }
 
-        [mtl_blit_encoder copyFromBuffer:GetUploadSubresourceBuffer(sub_resource)
+        [mtl_blit_encoder copyFromBuffer:GetUploadSubresourceBuffer(sub_resource, GetSubresourceCount())
                             sourceOffset:0
                        sourceBytesPerRow:bytes_per_row
                      sourceBytesPerImage:bytes_per_image

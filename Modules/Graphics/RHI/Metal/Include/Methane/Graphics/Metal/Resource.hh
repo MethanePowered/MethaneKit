@@ -23,6 +23,7 @@ Metal implementation of the resource interface.
 #pragma once
 
 #include "Device.hh"
+#include "Methane/Graphics/RHI/ResourceView.h"
 
 #include <Methane/Graphics/Base/Resource.h>
 #include <Methane/Graphics/Base/RenderContext.h>
@@ -66,10 +67,10 @@ protected:
         return dynamic_cast<const IContext&>(Base::Resource::GetBaseContext());
     }
 
-    id<MTLBuffer> GetUploadSubresourceBuffer(const Rhi::SubResource& sub_resource)
+    id<MTLBuffer> GetUploadSubresourceBuffer(const Rhi::SubResource& sub_resource, Rhi::SubResourceCount subresource_count)
     {
         META_FUNCTION_TASK();
-        const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(ReourceBaseType::GetSubresourceCount());
+        const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(subresource_count);
         m_upload_subresource_buffers.resize(sub_resource_raw_index + 1);
 
         id<MTLBuffer> mtl_upload_subresource_buffer = m_upload_subresource_buffers[sub_resource_raw_index];

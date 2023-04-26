@@ -109,10 +109,12 @@ struct ITexture
     [[nodiscard]] static Ptr<ITexture> Create(const IContext& context, const Settings& settings);
 
     // ITexture interface
-    [[nodiscard]] virtual const Settings& GetSettings() const = 0;
-    [[nodiscard]] virtual SubResource     GetData(ICommandQueue& target_cmd_queue,
-                                                  const SubResourceIndex& sub_resource_index = {},
-                                                  const BytesRangeOpt& data_range = {}) = 0;
+    [[nodiscard]] virtual const Settings&    GetSettings() const = 0;
+    [[nodiscard]] virtual Data::Size         GetSubResourceDataSize(const SubResource::Index& sub_resource_index = {}) const = 0;
+    [[nodiscard]] virtual SubResource::Count GetSubresourceCount() const noexcept = 0;
+    [[nodiscard]] virtual SubResource        GetData(ICommandQueue& target_cmd_queue,
+                                                     const SubResourceIndex& sub_resource_index = {},
+                                                     const BytesRangeOpt& data_range = {}) = 0;
     virtual void SetData(ICommandQueue& target_cmd_queue, const SubResources& sub_resources) = 0;
 };
 

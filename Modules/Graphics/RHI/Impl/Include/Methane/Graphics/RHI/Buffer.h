@@ -87,8 +87,6 @@ public:
     META_PIMPL_API void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const;
 
     [[nodiscard]] META_PIMPL_API Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const;
-    [[nodiscard]] META_PIMPL_API SubResource::Count        GetSubresourceCount() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API ResourceType              GetResourceType() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API State                     GetState() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API ResourceUsageMask         GetUsage() const META_PIMPL_NOEXCEPT;

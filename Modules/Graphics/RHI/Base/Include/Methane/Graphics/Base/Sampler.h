@@ -42,9 +42,7 @@ public:
             Opt<State> auto_transition_source_state_opt = {});
 
     // ISampler interface
-    SubResource::Count GetSubresourceCount() const noexcept final                    { return SubResource::Count(0U, 0U, 0U); }
-    Data::Size         GetSubResourceDataSize(const SubResource::Index&) const final { return 0U; }
-    const Settings&    GetSettings() const final                                     { return m_settings; }
+    const Settings& GetSettings() const final { return m_settings; }
 
     // IResource interface
     Data::Size GetDataSize(Data::MemoryState) const noexcept override { return 0; }

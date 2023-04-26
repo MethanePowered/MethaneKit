@@ -153,16 +153,6 @@ Data::Size Buffer::GetDataSize(Data::MemoryState size_type) const META_PIMPL_NOE
     return GetImpl(m_impl_ptr).GetDataSize(size_type);
 }
 
-Data::Size Buffer::GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const
-{
-    return GetImpl(m_impl_ptr).GetSubResourceDataSize(sub_resource_index);
-}
-
-SubResource::Count Buffer::GetSubresourceCount() const META_PIMPL_NOEXCEPT
-{
-    return GetImpl(m_impl_ptr).GetSubresourceCount();
-}
-
 ResourceType Buffer::GetResourceType() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetResourceType();

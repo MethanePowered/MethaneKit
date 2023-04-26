@@ -97,8 +97,6 @@ struct IResource
     virtual bool SetOwnerQueueFamily(uint32_t family_index, Ptr<IBarriers>& out_barriers) = 0;
     virtual void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) = 0;
     [[nodiscard]] virtual Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept = 0;
-    [[nodiscard]] virtual Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = {}) const = 0;
-    [[nodiscard]] virtual SubResource::Count        GetSubresourceCount() const noexcept = 0;
     [[nodiscard]] virtual Type                      GetResourceType() const noexcept = 0;
     [[nodiscard]] virtual State                     GetState() const noexcept = 0;
     [[nodiscard]] virtual UsageMask                 GetUsage() const noexcept = 0;

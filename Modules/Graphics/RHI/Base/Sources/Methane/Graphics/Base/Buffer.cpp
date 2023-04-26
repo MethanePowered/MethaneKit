@@ -39,13 +39,6 @@ Buffer::Buffer(const Context& context, const Settings& settings,
     META_CHECK_ARG_NOT_ZERO_DESCR(settings.size, "can not create buffer of zero size");
 }
 
-Data::Size Buffer::GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(sub_resource_index, SubResource::Index());
-    return m_settings.size;
-}
-
 Data::Size Buffer::GetDataSize(Data::MemoryState size_type) const noexcept
 {
     META_FUNCTION_TASK();
