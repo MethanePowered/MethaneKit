@@ -152,7 +152,7 @@ const Sampler::DescriptorByViewId& Sampler::GetDescriptorByViewId() const META_P
     return GetImpl(m_impl_ptr).GetDescriptorByViewId();
 }
 
-const IContext& Sampler::GetContext() const
+const IContext& Sampler::GetContext() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetContext();
 }
