@@ -12,6 +12,7 @@ add_executable(${TARGET}
     TransferCommandListTest.cpp
     ComputeCommandListTest.cpp
     BufferTest.cpp
+    SamplerTest.cpp
 )
 
 target_link_libraries(${TARGET}

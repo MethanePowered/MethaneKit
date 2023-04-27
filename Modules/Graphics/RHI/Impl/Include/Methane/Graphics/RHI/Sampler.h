@@ -36,6 +36,7 @@ namespace Methane::Graphics::Rhi
 {
 
 class RenderContext;
+class ComputeContext;
 class ResourceBarriers;
 
 class Sampler // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
@@ -59,6 +60,7 @@ public:
     META_PIMPL_API explicit Sampler(const Ptr<ISampler>& interface_ptr);
     META_PIMPL_API explicit Sampler(ISampler& interface_ref);
     META_PIMPL_API Sampler(const RenderContext& context, const Settings& settings);
+    META_PIMPL_API Sampler(const ComputeContext& context, const Settings& settings);
 
     META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API ISampler& GetInterface() const META_PIMPL_NOEXCEPT;
@@ -83,7 +85,7 @@ public:
     [[nodiscard]] META_PIMPL_API State                     GetState() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API ResourceUsageMask         GetUsage() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const DescriptorByViewId& GetDescriptorByViewId() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API RenderContext             GetRenderContext() const;
+    [[nodiscard]] META_PIMPL_API const IContext&           GetContext() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const Opt<uint32_t>&      GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT;
 
     // Data::IEmitter<IResourceCallback> interface methods
