@@ -221,7 +221,7 @@ void ComputeIteration()
 
     compute_cmd_queue.Execute(g_compute_cmd_list_set);
     g_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
-    g_frame_data = std::move(g_frame_texture.GetData(compute_cmd_queue.GetInterface()));
+    g_frame_data = std::move(g_frame_texture.GetData(compute_cmd_queue));
     g_fps_counter.OnCpuFrameReadyToPresent();
 }
 

@@ -82,6 +82,9 @@ struct TextureSettings
     Opt<Data::Index>        frame_index_opt;          // for TextureType::FrameBuffer
     Opt<DepthStencilValues> depth_stencil_clear_opt;  // for TextureType::DepthStencil
 
+    bool operator==(const TextureSettings& other) const;
+    bool operator!=(const TextureSettings& other) const;
+
     [[nodiscard]] static TextureSettings ForImage(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped,
                                                   ResourceUsageMask usage = { ResourceUsage::ShaderRead });
     [[nodiscard]] static TextureSettings ForCubeImage(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped,

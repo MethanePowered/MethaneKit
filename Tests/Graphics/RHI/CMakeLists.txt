@@ -13,6 +13,7 @@ add_executable(${TARGET}
     ComputeCommandListTest.cpp
     BufferTest.cpp
     SamplerTest.cpp
+    TextureTest.cpp
 )
 
 target_link_libraries(${TARGET}

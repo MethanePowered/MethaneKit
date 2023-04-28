@@ -38,6 +38,7 @@ namespace Methane::Graphics::Rhi
 {
 
 class RenderContext;
+class ComputeContext;
 class ResourceBarriers;
 class CommandQueue;
 
@@ -64,6 +65,7 @@ public:
     META_PIMPL_API explicit Texture(ITexture& interface_ref);
     META_PIMPL_API Texture(const IContext& context, const Settings& settings);
     META_PIMPL_API Texture(const RenderContext& render_context, const Settings& settings);
+    META_PIMPL_API Texture(const ComputeContext& compute_context, const Settings& settings);
 
     META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API ITexture& GetInterface() const META_PIMPL_NOEXCEPT;
@@ -91,7 +93,7 @@ public:
     [[nodiscard]] META_PIMPL_API State                     GetState() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API ResourceUsageMask         GetUsage() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const DescriptorByViewId& GetDescriptorByViewId() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API RenderContext             GetRenderContext() const;
+    [[nodiscard]] META_PIMPL_API const IContext&           GetContext() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const Opt<uint32_t>&      GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT;
 
     // Data::IEmitter<IResourceCallback> interface methods
@@ -100,7 +102,7 @@ public:
 
     // ITexture interface methods
     [[nodiscard]] META_PIMPL_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API SubResource GetData(Rhi::ICommandQueue& target_cmd_queue,
+    [[nodiscard]] META_PIMPL_API SubResource GetData(const CommandQueue& target_cmd_queue,
                                                      const SubResource::Index& sub_resource_index = SubResource::Index(),
                                                      const BytesRangeOpt& data_range = {}) const;
     META_PIMPL_API void SetData(const CommandQueue& target_cmd_queue, const SubResources& sub_resources) const;
