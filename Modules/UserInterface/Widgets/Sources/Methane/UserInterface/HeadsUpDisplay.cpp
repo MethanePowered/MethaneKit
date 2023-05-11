@@ -18,16 +18,15 @@ limitations under the License.
 
 FILE: Methane/UserInterface/HeadsUpDisplay.cpp
 Heads-Up-Display widget for displaying runtime rendering parameters.
-
- ╔═══════════════╤════════════════════════════════╗
- ║ F1 - Help     │ GPU Adapter Name               ║
- ╟───────────────┼────────────────────────────────╢
- ║ Frame Time ms │                                ║
- ╟───────────────┥ 123 FPS (Major Font)           ║
- ║ CPU Time %    │                                ║
- ╟───────────────┼────────────────────────────────╢
- ║ VSync ON/OFF  │ W x H       N FB      GFX API  ║
- ╚═══════════════╧════════════════════════════════╝
+ --------------------------------------------------
+ | F1 - Help     | GPU Adapter Name               |
+ |-------------- |--------------------------------|
+ | Frame Time ms |                                |
+ |-------------- | 123 FPS (Major Font)           |
+ | CPU Time %    |                                |
+ |-------------- |--------------------------------|
+ | VSync ON/OFF  | W x H       N FB      GFX API  |
+ --------------------------------------------------
 
 ******************************************************************************/
 
