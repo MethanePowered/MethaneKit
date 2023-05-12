@@ -8,13 +8,16 @@ set(TARGET MethaneConsoleCompute)
 include(MethaneShaders)
 
 add_executable(${TARGET}
-    ConsoleCompute.cpp
+    ConsoleApp.h
+    ConsoleApp.cpp
+    ConsoleComputeApp.h
+    ConsoleComputeApp.cpp
 )
 
 target_link_libraries(${TARGET}
     PRIVATE
         MethaneKit
-        component # FTXUI
+        ftxui::component # FTXUI
 )
 
 add_methane_shaders_source(
