@@ -26,6 +26,7 @@ Console UI application base class implemented using FTXUI framework
 #include <Methane/Data/Types.h>
 
 #include <ftxui/component/component.hpp>
+#include <ftxui/component/event.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 
@@ -45,10 +46,9 @@ public:
     const data::FrameSize& GetVisibleFrameSize() const { return m_frame_size; }
     const data::FrameRect& GetVisibleFrameRect() const { return m_frame_rect; }
 
-    double GetInitialCellsRatio() const { return static_cast<double>(m_initial_cells_percent) / 100.0; }
-    bool GetScreenRefreshEnabled() const { return m_screen_refresh_enabled; }
-    void SetScreenRefreshEnabled(bool enabled);
-    void ToggleScreenRefresh();
+    double GetInitialCellsRatio() const   { return static_cast<double>(m_initial_cells_percent) / 100.0; }
+    bool   IsScreenRefreshEnabled() const { return m_screen_refresh_enabled; }
+    void   ToggleScreenRefresh();
 
     // ConsoleApp virtual interface
     virtual int Run();
@@ -65,22 +65,24 @@ protected:
     virtual void Present(ftxui::Canvas& canvas) = 0;
     virtual void Restart() = 0;
 
-    void InitUserInterface();
-
     int GetComputeDeviceIndex() const   { return m_compute_device_index; }
     std::mutex& GetScreenRefreshMutex() { return m_screen_refresh_mutex; }
 
+    void InitUserInterface();
+
 private:
+    void UpdateFrameSize(int width, int height);
+    bool HandleInputEvent(ftxui::Event e);
+
     ftxui::ScreenInteractive     m_screen;
     ftxui::RadioboxOption        m_compute_device_option;
     ftxui::Component             m_root;
-
     std::mutex                   m_screen_refresh_mutex;
     std::atomic<bool>            m_screen_refresh_enabled{ true };
     bool                         m_30fps_screen_refresh_limit_enabled{ true };
-    int             m_compute_device_index = 0;
-    data::FrameSize m_frame_size{ 2048U, 2048U };
-    data::FrameRect m_frame_rect;
+    int                          m_compute_device_index = 0;
+    data::FrameSize              m_frame_size{ 2048U, 2048U };
+    data::FrameRect              m_frame_rect;
     std::optional<data::Point2I> m_mouse_pressed_pos;
     std::optional<data::Point2I> m_frame_pressed_pos;
     int                          m_initial_cells_percent = 50U;

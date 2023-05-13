@@ -32,6 +32,8 @@ Tutorial demonstrating "game of life" computing on GPU in console application
 #include <string>
 #include <random>
 
+namespace rhi = Methane::Graphics::Rhi;
+
 namespace Methane::Tutorials
 {
 
@@ -62,7 +64,6 @@ private:
     void RandomizeFrameData();
 
     std::mt19937            m_random_engine;
-    uint32_t                m_visible_cells_count = 0U;
     tf::Executor            m_parallel_executor;
     rhi::ComputeContext     m_compute_context;
     rhi::ComputeState       m_compute_state;
@@ -72,6 +73,7 @@ private:
     rhi::ProgramBindings    m_compute_bindings;
     rhi::SubResource        m_frame_data;
     Data::FpsCounter        m_fps_counter{ 60U };
+    uint32_t                m_visible_cells_count{ 0U };
 };
 
 } // namespace Methane::Tutorials

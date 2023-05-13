@@ -31,7 +31,6 @@ Tutorial demonstrating "game of life" computing on GPU in console application
 #include <random>
 
 namespace gfx = Methane::Graphics;
-namespace rhi = Methane::Graphics::Rhi;
 namespace data = Methane::Data;
 
 namespace Methane::Tutorials
@@ -41,15 +40,15 @@ static const rhi::Devices& GetComputeDevices()
 {
     META_FUNCTION_TASK();
     static const rhi::Devices& s_compute_devices = []()
-        {
-            rhi::System::Get().UpdateGpuDevices(rhi::DeviceCaps{
-                rhi::DeviceFeatureMask{},
-                0U, // render_queues_count
-                1U, // transfer_queues_count
-                1U  // compute_queues_count
-            });
-            return rhi::System::Get().GetGpuDevices();
-        }();
+    {
+        rhi::System::Get().UpdateGpuDevices(rhi::DeviceCaps{
+            rhi::DeviceFeatureMask{},
+            0U, // render_queues_count
+            1U, // transfer_queues_count
+            1U  // compute_queues_count
+        });
+        return rhi::System::Get().GetGpuDevices();
+    }();
     return s_compute_devices;
 }
 
@@ -134,7 +133,7 @@ const std::vector<std::string>& ConsoleComputeApp::GetComputeDeviceNames() const
 
 uint32_t ConsoleComputeApp::GetFramesCountPerSecond() const
 {
-    return GetScreenRefreshEnabled() ? 0 : m_fps_counter.GetFramesPerSecond();
+    return IsScreenRefreshEnabled() ? m_fps_counter.GetFramesPerSecond() : 0U;
 }
 
 uint32_t ConsoleComputeApp::GetVisibleCellsCount() const
@@ -194,7 +193,6 @@ void ConsoleComputeApp::Release()
 {
     META_FUNCTION_TASK();
     m_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
-
     m_compute_bindings = {};
     m_frame_texture    = {};
     m_compute_state    = {};
@@ -229,17 +227,20 @@ void ConsoleComputeApp::Present(ftxui::Canvas& canvas)
     const data::FrameRect& frame_rect = GetVisibleFrameRect();
     const uint8_t* cells  = m_frame_data.GetDataPtr<uint8_t>();
     m_visible_cells_count = 0U;
+
     for (uint32_t y = 0; y < frame_rect.size.GetHeight(); y++)
+    {
+        const uint32_t cell_y = frame_rect.origin.GetY() + y;
         for (uint32_t x = 0; x < frame_rect.size.GetWidth(); x++)
         {
             const uint32_t cell_x = frame_rect.origin.GetX() + x;
-            const uint32_t cell_y = frame_rect.origin.GetY() + y;
             if (cells[cell_x + cell_y * frame_rect.size.GetWidth()])
             {
                 canvas.DrawBlockOn(static_cast<int>(x), static_cast<int>(y));
                 m_visible_cells_count++;
             }
         }
+    }
     m_fps_counter.OnCpuFramePresented();
 }
 

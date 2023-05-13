@@ -63,11 +63,6 @@ int ConsoleApp::Run()
     return 0;
 }
 
-void ConsoleApp::SetScreenRefreshEnabled(bool enabled)
-{
-    m_screen_refresh_enabled = enabled;
-}
-
 void ConsoleApp::ToggleScreenRefresh()
 {
     m_screen_refresh_enabled = !m_screen_refresh_enabled;
@@ -137,18 +132,7 @@ void ConsoleApp::InitUserInterface()
     {
         return ftxui::canvas([this](Canvas& canvas)
         {
-            if (!static_cast<bool>(m_frame_rect.size))
-            {
-                // Set initial frame position in the center of game field
-                m_frame_rect.origin.SetX((m_frame_size.GetWidth() - canvas.width()) / 2);
-                m_frame_rect.origin.SetY((m_frame_size.GetHeight() - canvas.height()) / 2);
-            }
-
-            // Update frame size
-            m_frame_rect.size.SetWidth(canvas.width());
-            m_frame_rect.size.SetHeight(canvas.height());
-
-            // Compute turn in Game of Life and draw on frame
+            UpdateFrameSize(canvas.width(), canvas.height());
             if (m_screen_refresh_enabled)
             {
                 Compute();
@@ -159,33 +143,7 @@ void ConsoleApp::InitUserInterface()
 
     auto canvas_with_mouse = CatchEvent(canvas, [this](Event e)
     {
-        META_SCOPE_TASK("Mouse Handling");
-        if (!e.is_mouse())
-            return false;
-
-        if (e.mouse().button == Mouse::Button::Left)
-        {
-            const data::Point2I mouse_current_pos(e.mouse().x, e.mouse().y);
-            if (m_mouse_pressed_pos.has_value())
-            {
-                const data::Point2I shift = (*m_mouse_pressed_pos - mouse_current_pos) * 2;
-                m_frame_rect.origin.SetX(std::max(0, std::min(m_frame_pressed_pos->GetX() + shift.GetX(),
-                                                              static_cast<int32_t>(m_frame_size.GetWidth() - m_frame_rect.size.GetWidth() - 1))));
-                m_frame_rect.origin.SetY(std::max(0, std::min(m_frame_pressed_pos->GetY() + shift.GetY(),
-                                                              static_cast<int32_t>(m_frame_size.GetHeight() - m_frame_rect.size.GetHeight() - 1))));
-            }
-            else
-            {
-                m_mouse_pressed_pos = mouse_current_pos;
-                m_frame_pressed_pos = m_frame_rect.origin;
-            }
-        }
-        else if (m_mouse_pressed_pos.has_value())
-        {
-            m_mouse_pressed_pos.reset();
-            m_frame_pressed_pos.reset();
-        }
-        return false;
+        return HandleInputEvent(e);
     });
 
     static int s_sidebar_width = 35;
@@ -202,6 +160,52 @@ void ConsoleApp::InitUserInterface()
             main_container->Render() | flex,
         });
     });
+}
+
+void ConsoleApp::UpdateFrameSize(int width, int height)
+{
+    META_FUNCTION_TASK();
+    if (!static_cast<bool>(m_frame_rect.size))
+    {
+        // Set initial frame position in the center of game field
+        m_frame_rect.origin.SetX((m_frame_size.GetWidth() - width) / 2);
+        m_frame_rect.origin.SetY((m_frame_size.GetHeight() - height) / 2);
+    }
+
+    // Update frame size
+    m_frame_rect.size.SetWidth(width);
+    m_frame_rect.size.SetHeight(height);
+}
+
+bool ConsoleApp::HandleInputEvent(ftxui::Event e)
+{
+    META_FUNCTION_TASK();
+    if (!e.is_mouse())
+        return false;
+
+    if (e.mouse().button == ftxui::Mouse::Button::Left)
+    {
+        const data::Point2I mouse_current_pos(e.mouse().x, e.mouse().y);
+        if (m_mouse_pressed_pos.has_value())
+        {
+            const data::Point2I shift = (*m_mouse_pressed_pos - mouse_current_pos) * 2;
+            m_frame_rect.origin.SetX(std::max(0, std::min(m_frame_pressed_pos->GetX() + shift.GetX(),
+                                                          static_cast<int32_t>(m_frame_size.GetWidth() - m_frame_rect.size.GetWidth() - 1))));
+            m_frame_rect.origin.SetY(std::max(0, std::min(m_frame_pressed_pos->GetY() + shift.GetY(),
+                                                          static_cast<int32_t>(m_frame_size.GetHeight() - m_frame_rect.size.GetHeight() - 1))));
+        }
+        else
+        {
+            m_mouse_pressed_pos = mouse_current_pos;
+            m_frame_pressed_pos = m_frame_rect.origin;
+        }
+    }
+    else if (m_mouse_pressed_pos.has_value())
+    {
+        m_mouse_pressed_pos.reset();
+        m_frame_pressed_pos.reset();
+    }
+    return false;
 }
 
 } // namespace Methane::Tutorials
