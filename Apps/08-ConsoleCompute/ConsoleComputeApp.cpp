@@ -167,7 +167,7 @@ void ConsoleComputeApp::Init()
     m_compute_cmd_list_set = rhi::CommandListSet({ m_compute_cmd_list.GetInterface() });
 
     rhi::TextureSettings frame_texture_settings = rhi::TextureSettings::ForImage(
-        gfx::Dimensions(GetVisibleFrameSize()),
+        gfx::Dimensions(GetFieldSize()),
         std::nullopt, gfx::PixelFormat::R8Uint, false,
         rhi::ResourceUsageMask{
             rhi::ResourceUsage::ShaderRead,
@@ -202,11 +202,11 @@ void ConsoleComputeApp::Release()
 void ConsoleComputeApp::Compute()
 {
     META_FUNCTION_TASK();
-    const data::FrameSize&       frame_size        = GetVisibleFrameSize();
+    const data::FrameSize&       field_size        = GetFieldSize();
     const rhi::CommandQueue&     compute_cmd_queue = m_compute_context.GetComputeCommandKit().GetQueue();
     const rhi::ThreadGroupSize&  thread_group_size = m_compute_state.GetSettings().thread_group_size;
-    const rhi::ThreadGroupsCount thread_groups_count(data::DivCeil(frame_size.GetWidth(), thread_group_size.GetWidth()),
-                                                     data::DivCeil(frame_size.GetHeight(), thread_group_size.GetHeight()),
+    const rhi::ThreadGroupsCount thread_groups_count(data::DivCeil(field_size.GetWidth(), thread_group_size.GetWidth()),
+                                                     data::DivCeil(field_size.GetHeight(), thread_group_size.GetHeight()),
                                                      1U);
 
     META_DEBUG_GROUP_VAR(s_debum_group, "Compute Frame");
@@ -224,6 +224,7 @@ void ConsoleComputeApp::Compute()
 void ConsoleComputeApp::Present(ftxui::Canvas& canvas)
 {
     META_FUNCTION_TASK();
+    const data::FrameSize& field_size = GetFieldSize();
     const data::FrameRect& frame_rect = GetVisibleFrameRect();
     const uint8_t* cells  = m_frame_data.GetDataPtr<uint8_t>();
     m_visible_cells_count = 0U;
@@ -231,10 +232,11 @@ void ConsoleComputeApp::Present(ftxui::Canvas& canvas)
     for (uint32_t y = 0; y < frame_rect.size.GetHeight(); y++)
     {
         const uint32_t cell_y = frame_rect.origin.GetY() + y;
+        const uint32_t cell_shift = cell_y * field_size.GetWidth();
         for (uint32_t x = 0; x < frame_rect.size.GetWidth(); x++)
         {
             const uint32_t cell_x = frame_rect.origin.GetX() + x;
-            if (cells[cell_x + cell_y * frame_rect.size.GetWidth()])
+            if (cells[cell_shift + cell_x])
             {
                 canvas.DrawBlockOn(static_cast<int>(x), static_cast<int>(y));
                 m_visible_cells_count++;
@@ -258,7 +260,7 @@ void ConsoleComputeApp::RandomizeFrameData()
     META_FUNCTION_TASK();
 
     // Randomize initial game state
-    m_frame_data = rhi::SubResource(GetRandomFrameData(m_random_engine, GetVisibleFrameSize(), GetInitialCellsRatio()));
+    m_frame_data = rhi::SubResource(GetRandomFrameData(m_random_engine, GetFieldSize(), GetInitialCellsRatio()));
 
     // Set frame texture data
     m_frame_texture.SetData(m_compute_context.GetComputeCommandKit().GetQueue(), { m_frame_data });

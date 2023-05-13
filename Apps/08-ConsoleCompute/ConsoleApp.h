@@ -43,7 +43,7 @@ class ConsoleApp
 public:
     ConsoleApp();
 
-    const data::FrameSize& GetVisibleFrameSize() const { return m_frame_size; }
+    const data::FrameSize& GetFieldSize() const        { return m_field_size; }
     const data::FrameRect& GetVisibleFrameRect() const { return m_frame_rect; }
 
     double GetInitialCellsRatio() const   { return static_cast<double>(m_initial_cells_percent) / 100.0; }
@@ -80,9 +80,9 @@ private:
     std::mutex                   m_screen_refresh_mutex;
     std::atomic<bool>            m_screen_refresh_enabled{ true };
     bool                         m_30fps_screen_refresh_limit_enabled{ true };
-    int                          m_compute_device_index = 0;
-    data::FrameSize              m_frame_size{ 2048U, 2048U };
-    data::FrameRect              m_frame_rect;
+    int             m_compute_device_index = 0;
+    data::FrameSize m_field_size{ 2048U, 2048U };
+    data::FrameRect m_frame_rect;
     std::optional<data::Point2I> m_mouse_pressed_pos;
     std::optional<data::Point2I> m_frame_pressed_pos;
     int                          m_initial_cells_percent = 50U;

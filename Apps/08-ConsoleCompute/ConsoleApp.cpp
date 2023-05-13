@@ -82,7 +82,7 @@ void ConsoleApp::InitUserInterface()
                 separator(),
                 text(fmt::format(" FPS: {} ", GetFramesCountPerSecond())),
                 separator(),
-                text(fmt::format(" Field: {} x {} ", m_frame_size.GetWidth(), m_frame_size.GetHeight())),
+                text(fmt::format(" Field: {} x {} ", m_field_size.GetWidth(), m_field_size.GetHeight())),
                 separator(),
                 text(fmt::format(" Visible {} ", static_cast<std::string>(m_frame_rect) )),
                 separator(),
@@ -168,8 +168,8 @@ void ConsoleApp::UpdateFrameSize(int width, int height)
     if (!static_cast<bool>(m_frame_rect.size))
     {
         // Set initial frame position in the center of game field
-        m_frame_rect.origin.SetX((m_frame_size.GetWidth() - width) / 2);
-        m_frame_rect.origin.SetY((m_frame_size.GetHeight() - height) / 2);
+        m_frame_rect.origin.SetX((m_field_size.GetWidth() - width) / 2);
+        m_frame_rect.origin.SetY((m_field_size.GetHeight() - height) / 2);
     }
 
     // Update frame size
@@ -190,9 +190,9 @@ bool ConsoleApp::HandleInputEvent(ftxui::Event e)
         {
             const data::Point2I shift = (*m_mouse_pressed_pos - mouse_current_pos) * 2;
             m_frame_rect.origin.SetX(std::max(0, std::min(m_frame_pressed_pos->GetX() + shift.GetX(),
-                                                          static_cast<int32_t>(m_frame_size.GetWidth() - m_frame_rect.size.GetWidth() - 1))));
+                                                          static_cast<int32_t>(m_field_size.GetWidth() - m_frame_rect.size.GetWidth() - 1))));
             m_frame_rect.origin.SetY(std::max(0, std::min(m_frame_pressed_pos->GetY() + shift.GetY(),
-                                                          static_cast<int32_t>(m_frame_size.GetHeight() - m_frame_rect.size.GetHeight() - 1))));
+                                                          static_cast<int32_t>(m_field_size.GetHeight() - m_frame_rect.size.GetHeight() - 1))));
         }
         else
         {
