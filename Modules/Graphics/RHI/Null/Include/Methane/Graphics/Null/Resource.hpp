@@ -48,8 +48,17 @@ public:
     ~Resource() override
     {
         META_FUNCTION_TASK();
-        // Resource released callback has to be emitted before native resource is released
-        Data::Emitter<Rhi::IResourceCallback>::Emit(&Rhi::IResourceCallback::OnResourceReleased, std::ref(*this));
+        try
+        {
+            // Resource released callback has to be emitted before native resource is released
+            Data::Emitter<Rhi::IResourceCallback>::Emit(&Rhi::IResourceCallback::OnResourceReleased, std::ref(*this));
+        }
+        catch(const std::exception& e)
+        {
+            META_UNUSED(e);
+            META_LOG("WARNING: Unexpected error during resource destruction: {}", e.what());
+            assert(false);
+        }
     }
 
     bool operator=(const Resource&) = delete;

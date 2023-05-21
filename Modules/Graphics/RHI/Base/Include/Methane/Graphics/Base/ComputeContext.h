@@ -51,7 +51,7 @@ protected:
     Rhi::IFence& GetComputeFence() const;
 
 private:
-    void WaitForGpuComputeComplete();
+    void WaitForGpuComputeComplete() const;
 
     Settings m_settings;
 };

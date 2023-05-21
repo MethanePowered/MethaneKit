@@ -30,7 +30,7 @@ DirectX 12 implementation of the compute command list interface.
 namespace Methane::Graphics::DirectX
 {
 
-class ComputeCommandList final
+class ComputeCommandList final // NOSONAR - inheritance hierarchy depth is greater than 5
     : public CommandList<Base::ComputeCommandList>
 {
 public:

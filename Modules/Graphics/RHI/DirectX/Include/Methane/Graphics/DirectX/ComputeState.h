@@ -57,7 +57,7 @@ public:
 
 private:
     Program& GetDirectProgram();
-    const Device&  GetDirectDevice() { return m_device; }
+    const Device& GetDirectDevice() const { return m_device; }
 
     const Device&                     m_device;
     D3D12_COMPUTE_PIPELINE_STATE_DESC m_pipeline_state_desc{ };

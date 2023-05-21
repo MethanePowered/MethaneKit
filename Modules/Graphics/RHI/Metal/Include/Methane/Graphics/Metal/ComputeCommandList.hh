@@ -34,7 +34,7 @@ namespace Methane::Graphics::Metal
 
 class CommandQueue;
 
-class ComputeCommandList final
+class ComputeCommandList final // NOSONAR - inheritance hierarchy depth is greater than 5
     : public CommandList<id<MTLComputeCommandEncoder>, Base::ComputeCommandList>
 {
 public:

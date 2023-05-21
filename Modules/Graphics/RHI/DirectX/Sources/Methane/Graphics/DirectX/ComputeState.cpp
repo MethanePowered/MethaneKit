@@ -79,7 +79,7 @@ void ComputeState::Reset(const Settings& settings)
     Base::ComputeState::Reset(settings);
 
     // Set pipeline state descriptor for program
-    Program& dx_program = GetDirectProgram();
+    const Program& dx_program = GetDirectProgram();
     m_pipeline_state_desc.pRootSignature = dx_program.GetNativeRootSignature().Get();
     m_pipeline_state_desc.CS             = GetShaderByteCode(dx_program.GetShader(Rhi::ShaderType::Compute));
     m_pipeline_state_desc.NodeMask       = {};

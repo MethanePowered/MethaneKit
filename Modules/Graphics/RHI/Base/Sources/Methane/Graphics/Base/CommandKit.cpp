@@ -231,7 +231,7 @@ void CommandKit::ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::Comma
     size_t                      executing_cmd_list_count = cmd_list_ids.size();
     std::condition_variable_any executing_cmd_list_set_condition_var;
     GetQueue().Execute(GetListSet(cmd_list_ids, frame_index_opt),
-                       [&executing_cmd_list_count, &execution_wait_mutex, &executing_cmd_list_set_condition_var](Rhi::ICommandList&)
+                       [&executing_cmd_list_count, &execution_wait_mutex, &executing_cmd_list_set_condition_var](const Rhi::ICommandList&)
                        {
                            std::lock_guard lock(execution_wait_mutex);
                            executing_cmd_list_count--;

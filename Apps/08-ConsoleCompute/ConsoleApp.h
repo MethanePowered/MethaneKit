@@ -41,7 +41,8 @@ namespace data = Methane::Data;
 class ConsoleApp
 {
 public:
-    ConsoleApp();
+    ConsoleApp() = default;
+    virtual ~ConsoleApp() = default;
 
     const data::FrameSize& GetFieldSize() const        { return m_field_size; }
     const data::FrameRect& GetVisibleFrameRect() const { return m_frame_rect; }
@@ -72,17 +73,17 @@ protected:
 
 private:
     void UpdateFrameSize(int width, int height);
-    bool HandleInputEvent(ftxui::Event e);
+    bool HandleInputEvent(ftxui::Event& e);
 
-    ftxui::ScreenInteractive     m_screen;
-    ftxui::RadioboxOption        m_compute_device_option;
+    ftxui::ScreenInteractive     m_screen{ ftxui::ScreenInteractive::Fullscreen() };
+    ftxui::RadioboxOption        m_compute_device_option{ ftxui::RadioboxOption::Simple() };
     ftxui::Component             m_root;
     std::mutex                   m_screen_refresh_mutex;
     std::atomic<bool>            m_screen_refresh_enabled{ true };
     bool                         m_30fps_screen_refresh_limit_enabled{ true };
-    int             m_compute_device_index = 0;
-    data::FrameSize m_field_size{ 2048U, 2048U };
-    data::FrameRect m_frame_rect;
+    int                          m_compute_device_index = 0;
+    data::FrameSize              m_field_size{ 2048U, 2048U };
+    data::FrameRect              m_frame_rect;
     std::optional<data::Point2I> m_mouse_pressed_pos;
     std::optional<data::Point2I> m_frame_pressed_pos;
     int                          m_initial_cells_percent = 50U;

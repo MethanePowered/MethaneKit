@@ -56,9 +56,9 @@ static Methane::Data::Bytes GetRandomFrameData(std::mt19937& random_engine, cons
 {
     META_FUNCTION_TASK();
     Methane::Data::Bytes frame_data(frame_size.GetPixelsCount(), std::byte());
-    const uint32_t cells_count = static_cast<uint32_t>(static_cast<double>(frame_size.GetPixelsCount()) * initial_cells_ratio);
+    const auto cells_count = static_cast<uint32_t>(static_cast<double>(frame_size.GetPixelsCount()) * initial_cells_ratio);
     std::uniform_int_distribution<uint32_t> dist(0U, frame_size.GetPixelsCount() - 1U);
-    auto* cell_values = reinterpret_cast<uint8_t*>(frame_data.data());
+    auto* cell_values = reinterpret_cast<uint8_t*>(frame_data.data()); // NOSONAR
     for(uint32_t i = 0; i < cells_count; i++)
     {
         uint32_t p = 0U;
@@ -73,7 +73,7 @@ static Methane::Data::Bytes GetRandomFrameData(std::mt19937& random_engine, cons
 }
 
 ConsoleComputeApp::ConsoleComputeApp()
-    : m_random_engine([]() {
+    : m_random_engine([]() { // NOSONAR
         std::random_device r;
         std::seed_seq seed{r(), r(), r(), r(), r(), r(), r(), r()};
         return std::mt19937(seed);
@@ -93,8 +93,7 @@ const rhi::Device* ConsoleComputeApp::GetComputeDevice() const
 
 int ConsoleComputeApp::Run()
 {
-    const rhi::Device* device_ptr = GetComputeDevice();
-    if (!device_ptr)
+    if (!GetComputeDevice())
     {
         std::cerr << "ERROR: No GPU devices are available for computing!";
         return 1;
@@ -217,7 +216,7 @@ void ConsoleComputeApp::Compute()
 
     compute_cmd_queue.Execute(m_compute_cmd_list_set);
     m_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
-    m_frame_data = std::move(m_frame_texture.GetData(compute_cmd_queue));
+    m_frame_data = m_frame_texture.GetData(compute_cmd_queue);
     m_fps_counter.OnCpuFrameReadyToPresent();
 }
 

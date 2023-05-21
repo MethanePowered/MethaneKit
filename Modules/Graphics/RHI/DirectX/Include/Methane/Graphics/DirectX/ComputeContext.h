@@ -30,7 +30,7 @@ DirectX implementation of the compute context interface.
 namespace Methane::Graphics::DirectX
 {
 
-class ComputeContext final
+class ComputeContext final // NOSONAR - inheritance hierarchy depth is greater than 5
     : public Context<Base::ComputeContext>
 {
 public:

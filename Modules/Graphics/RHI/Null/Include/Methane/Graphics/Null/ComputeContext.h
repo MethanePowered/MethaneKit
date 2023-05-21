@@ -30,7 +30,7 @@ Null implementation of the compute context interface.
 namespace Methane::Graphics::Null
 {
 
-class ComputeContext final
+class ComputeContext final // NOSONAR - inheritance hierarchy depth is higher than 5
     : public Context<Base::ComputeContext>
 {
 public:

@@ -34,7 +34,7 @@ namespace Methane::Graphics::Vulkan
 
 class CommandQueue;
 
-class ComputeCommandList final
+class ComputeCommandList final // NOSONAR - inheritance hierarchy depth is greater than 5
     : public CommandList<Base::ComputeCommandList, vk::PipelineBindPoint::eCompute>
 {
 public:

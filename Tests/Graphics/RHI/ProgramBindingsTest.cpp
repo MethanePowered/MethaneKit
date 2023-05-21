@@ -45,32 +45,32 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
 {
     const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
     const Rhi::Program compute_program = [&compute_context]()
-        {
-            const Rhi::ProgramArgumentAccessor texture_accessor{ Rhi::ShaderType::Compute, "InTexture", Rhi::ProgramArgumentAccessType::Constant };
-            const Rhi::ProgramArgumentAccessor sampler_accessor{ Rhi::ShaderType::Compute, "InSampler", Rhi::ProgramArgumentAccessType::Constant };
-            const Rhi::ProgramArgumentAccessor buffer_accessor { Rhi::ShaderType::Compute, "OutBuffer", Rhi::ProgramArgumentAccessType::Mutable };
-            Rhi::Program compute_program = compute_context.CreateProgram(
-                Rhi::ProgramSettingsImpl
+    {
+        const Rhi::ProgramArgumentAccessor texture_accessor{ Rhi::ShaderType::Compute, "InTexture", Rhi::ProgramArgumentAccessType::Constant };
+        const Rhi::ProgramArgumentAccessor sampler_accessor{ Rhi::ShaderType::Compute, "InSampler", Rhi::ProgramArgumentAccessType::Constant };
+        const Rhi::ProgramArgumentAccessor buffer_accessor { Rhi::ShaderType::Compute, "OutBuffer", Rhi::ProgramArgumentAccessType::Mutable };
+        Rhi::Program compute_program = compute_context.CreateProgram(
+            Rhi::ProgramSettingsImpl
+            {
+                Rhi::ProgramSettingsImpl::ShaderSet
                 {
-                    Rhi::ProgramSettingsImpl::ShaderSet
-                    {
-                        { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Compute", "Main" } } }
-                    },
-                    Rhi::ProgramInputBufferLayouts{ },
-                    Rhi::ProgramArgumentAccessors
-                    {
-                        texture_accessor,
-                        sampler_accessor,
-                        buffer_accessor
-                    }
-                });
-            dynamic_cast<Null::Program&>(compute_program.GetInterface()).InitArgumentBindings({
-                { texture_accessor, { Rhi::ResourceType::Texture, 1U } },
-                { sampler_accessor, { Rhi::ResourceType::Sampler, 1U } },
-                { buffer_accessor,  { Rhi::ResourceType::Buffer,  1U } },
+                    { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Compute", "Main" } } }
+                },
+                Rhi::ProgramInputBufferLayouts{ },
+                Rhi::ProgramArgumentAccessors
+                {
+                    texture_accessor,
+                    sampler_accessor,
+                    buffer_accessor
+                }
             });
-            return compute_program;
-        }();
+        dynamic_cast<Null::Program&>(compute_program.GetInterface()).SetArgumentBindings({
+            { texture_accessor, { Rhi::ResourceType::Texture, 1U } },
+            { sampler_accessor, { Rhi::ResourceType::Sampler, 1U } },
+            { buffer_accessor,  { Rhi::ResourceType::Buffer,  1U } },
+        });
+        return compute_program;
+    }();
 
     const Rhi::Texture texture = [&compute_context]()
     {

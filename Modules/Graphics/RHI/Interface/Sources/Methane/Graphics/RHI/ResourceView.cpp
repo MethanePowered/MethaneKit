@@ -34,11 +34,11 @@ Methane sub-resource used for resource data transfers.
 namespace Methane::Graphics::Rhi
 {
 
-static SubResourceCount GetSubresourceCount(IResource& resource)
+static SubResourceCount GetSubresourceCount(const IResource& resource)
 {
     switch(resource.GetResourceType())
     {
-    case ResourceType::Texture: return dynamic_cast<ITexture&>(resource).GetSubresourceCount();
+    case ResourceType::Texture: return dynamic_cast<const ITexture&>(resource).GetSubresourceCount();
     case ResourceType::Buffer:  return SubResourceCount(1U, 1U, 1U);
     default:                    return SubResourceCount(0U, 0U, 0U);
     }

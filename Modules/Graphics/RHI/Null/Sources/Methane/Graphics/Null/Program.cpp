@@ -38,7 +38,7 @@ Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument
     return std::make_shared<ProgramBindings>(*this, resource_views_by_argument, frame_index);
 }
 
-void Program::InitArgumentBindings(const ResourceArgumentDescs& argument_descriptions)
+void Program::SetArgumentBindings(const ResourceArgumentDescs& argument_descriptions)
 {
     for(Rhi::ShaderType shader_type : GetShaderTypes())
     {

@@ -55,7 +55,7 @@ struct SamplerSettings;
 enum class CommandListType;
 enum class ShaderType : uint32_t;
 
-class ComputeContext
+class ComputeContext // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
     using Settings              = ComputeContextSettings;

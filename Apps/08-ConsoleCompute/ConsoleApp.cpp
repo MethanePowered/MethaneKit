@@ -32,12 +32,6 @@ Console UI application base class implemented using FTXUI framework
 namespace Methane::Tutorials
 {
 
-ConsoleApp::ConsoleApp()
-    : m_screen(ftxui::ScreenInteractive::Fullscreen())
-    , m_compute_device_option(ftxui::RadioboxOption::Simple())
-{
-}
-
 int ConsoleApp::Run()
 {
     META_FUNCTION_TASK();
@@ -99,9 +93,9 @@ void ConsoleApp::InitUserInterface()
     };
 
     auto sidebar = Container::Vertical({
-        Renderer([&]{ return text("GPU Devices:") | ftxui::bold; }),
+        Renderer([]{ return text("GPU Devices:") | ftxui::bold; }),
         Radiobox(&GetComputeDeviceNames(), &m_compute_device_index, m_compute_device_option),
-        Renderer([&] { return separator(); }),
+        Renderer([] { return separator(); }),
         Checkbox("30 FPS limit", &m_30fps_screen_refresh_limit_enabled),
         Container::Horizontal({
             Button("Restart",      [this]() { Restart(); },             ButtonOption::Border()),
@@ -109,7 +103,7 @@ void ConsoleApp::InitUserInterface()
             Button("Next Step",    [this]() { Compute(); },             ButtonOption::Border()),
         }),
         Slider("Initial Cells %", &m_initial_cells_percent),
-        Renderer([&]
+        Renderer([]
         {
             return vbox({
                 separator(),
@@ -130,18 +124,18 @@ void ConsoleApp::InitUserInterface()
 
     auto canvas = Renderer([this]
     {
-        return ftxui::canvas([this](Canvas& canvas)
+        return ftxui::canvas([this](Canvas& c)
         {
-            UpdateFrameSize(canvas.width(), canvas.height());
+            UpdateFrameSize(c.width(), c.height());
             if (m_screen_refresh_enabled)
             {
                 Compute();
             }
-            Present(canvas);
+            Present(c);
         }) | flex;
     });
 
-    auto canvas_with_mouse = CatchEvent(canvas, [this](Event e)
+    auto canvas_with_mouse = CatchEvent(canvas, [this](Event e) // NOSONAR
     {
         return HandleInputEvent(e);
     });
@@ -153,7 +147,7 @@ void ConsoleApp::InitUserInterface()
         ResizableSplitLeft(sidebar, canvas_with_mouse, &s_sidebar_width) | border | flex
     });
 
-    m_root = Renderer(main_container, [=]
+    m_root = Renderer(main_container, [main_container]
     {
         return vbox({
             text("Methane Console Compute: Game of Life") | ftxui::bold | hcenter,
@@ -177,7 +171,7 @@ void ConsoleApp::UpdateFrameSize(int width, int height)
     m_frame_rect.size.SetHeight(height);
 }
 
-bool ConsoleApp::HandleInputEvent(ftxui::Event e)
+bool ConsoleApp::HandleInputEvent(ftxui::Event& e)
 {
     META_FUNCTION_TASK();
     if (!e.is_mouse())

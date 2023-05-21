@@ -32,7 +32,7 @@ namespace Methane::Graphics::Null
 
 class CommandQueue;
 
-class ComputeCommandList final
+class ComputeCommandList final // NOSONAR - inheritance hierarchy depth is higher than 5
     : public CommandList<Base::ComputeCommandList>
 {
 public:

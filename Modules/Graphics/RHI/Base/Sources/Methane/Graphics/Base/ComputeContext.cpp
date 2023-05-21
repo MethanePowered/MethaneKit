@@ -55,7 +55,7 @@ void ComputeContext::WaitForGpu(WaitFor wait_for)
     }
 }
 
-void ComputeContext::WaitForGpuComputeComplete()
+void ComputeContext::WaitForGpuComputeComplete() const
 {
     META_FUNCTION_TASK();
     META_SCOPE_TIMER("ComputeContextDX::WaitForGpu::ComputeComplete");

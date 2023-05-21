@@ -39,7 +39,7 @@ public:
     // IProgram interface
     [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index) override;
 
-    void InitArgumentBindings(const ResourceArgumentDescs& argument_descriptions);
+    void SetArgumentBindings(const ResourceArgumentDescs& argument_descriptions);
 };
 
 } // namespace Methane::Graphics::Null

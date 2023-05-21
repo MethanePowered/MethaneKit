@@ -62,7 +62,7 @@ ProgramBindings::ProgramBindings(Program& program,
         m_has_mutable_descriptor_set = true;
     }
 
-    const auto destrictor_set_selector = [this, &vk_constant_descriptor_set, &vk_frame_constant_descriptor_set]
+    const auto descriptor_set_selector = [this, &vk_constant_descriptor_set, &vk_frame_constant_descriptor_set]
                                          (const Rhi::ProgramArgumentAccessType access_type) -> const vk::DescriptorSet&
     {
         static const vk::DescriptorSet s_empty_set;
@@ -86,7 +86,7 @@ ProgramBindings::ProgramBindings(Program& program,
     };
 
     // Initialize each argument binding with descriptor set pointer and binding index
-    ForEachArgumentBinding([&program, &destrictor_set_selector](const Rhi::IProgram::Argument& program_argument, ArgumentBinding& argument_binding)
+    ForEachArgumentBinding([&program, &descriptor_set_selector](const Rhi::IProgram::Argument& program_argument, ArgumentBinding& argument_binding)
     {
         const ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetVulkanSettings();
         const Rhi::ProgramArgumentAccessType access_type = argument_binding_settings.argument.GetAccessorType();
@@ -95,7 +95,7 @@ ProgramBindings::ProgramBindings(Program& program,
         META_CHECK_ARG_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", static_cast<std::string>(program_argument));
         const auto layout_binding_index = static_cast<uint32_t>(std::distance(layout_info.arguments.begin(), layout_argument_it));
         const uint32_t binding_value = layout_info.bindings.at(layout_binding_index).binding;
-        const vk::DescriptorSet& descriptor_set = destrictor_set_selector(access_type);
+        const vk::DescriptorSet& descriptor_set = descriptor_set_selector(access_type);
 
         argument_binding.SetDescriptorSetBinding(descriptor_set, binding_value);
     });

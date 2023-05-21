@@ -80,7 +80,7 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
                     buffer_accessor
                 }
             });
-        dynamic_cast<Null::Program&>(compute_program.GetInterface()).InitArgumentBindings({
+        dynamic_cast<Null::Program&>(compute_program.GetInterface()).SetArgumentBindings({
             { texture_accessor, { Rhi::ResourceType::Texture, 1U } },
             { sampler_accessor, { Rhi::ResourceType::Sampler, 1U } },
             { buffer_accessor,  { Rhi::ResourceType::Buffer,  1U } },

@@ -65,9 +65,9 @@ public:
             descriptor.heap.RemoveResource(descriptor.index);
         }
 
-        // Resource released callback has to be emitted before native resource is released
         try
         {
+            // Resource released callback has to be emitted before native resource is released
             Data::Emitter<Rhi::IResourceCallback>::Emit(&Rhi::IResourceCallback::OnResourceReleased, std::ref(*this));
         }
         catch(const std::exception& e)
