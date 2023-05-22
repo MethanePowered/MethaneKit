@@ -155,7 +155,7 @@ Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue& target_cmd_queue, const Byt
     return Rhi::SubResource(std::move(data), Rhi::SubResourceIndex(), data_range);
 }
 
-Data::Bytes Buffer::GetDataFromSharedBuffer(const BytesRange& data_range)
+Data::Bytes Buffer::GetDataFromSharedBuffer(const BytesRange& data_range) const
 {
     META_FUNCTION_TASK();
     Data::RawPtr data_ptr = nullptr;

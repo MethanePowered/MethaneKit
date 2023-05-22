@@ -238,7 +238,7 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
 {
     META_FUNCTION_TASK();
     if (const Rhi::DeviceFeatureMask device_supported_features = Device::GetSupportedFeatures(vk_physical_device);
-        !static_cast<bool>(device_supported_features.HasBits(capabilities.features)))
+        !device_supported_features.HasBits(capabilities.features))
         throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
 
     std::vector<uint32_t> reserved_queues_count_per_family(m_vk_queue_family_properties.size(), 0U);

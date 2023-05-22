@@ -51,7 +51,7 @@ protected:
     Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
 private:
-    Data::Bytes GetDataFromSharedBuffer(const BytesRange& data_range);
+    Data::Bytes GetDataFromSharedBuffer(const BytesRange& data_range) const;
     Data::Bytes GetDataFromPrivateBuffer(const BytesRange& data_range, Rhi::ICommandQueue& target_cmd_queue);
 
     vk::UniqueBuffer       m_vk_unique_staging_buffer;

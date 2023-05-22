@@ -27,12 +27,13 @@ Null implementation of the resource interface.
 #include <Methane/Graphics/Base/Resource.h>
 
 #include <type_traits>
+#include <cassert>
 
 namespace Methane::Graphics::Null
 {
 
 template<typename ResourceBaseType, typename = std::enable_if_t<std::is_base_of_v<Base::Resource, ResourceBaseType>, void>>
-class Resource
+class Resource // NOSONAR - can not comply with rule of Zero: destructor is required
     : public ResourceBaseType
     , public virtual Rhi::IResource // NOSONAR
 {

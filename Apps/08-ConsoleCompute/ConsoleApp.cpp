@@ -35,7 +35,7 @@ namespace Methane::Tutorials
 int ConsoleApp::Run()
 {
     META_FUNCTION_TASK();
-    std::atomic<bool> refresh_ui_continue = true;
+    std::atomic refresh_ui_continue = true;
     std::thread refresh_ui([this, &refresh_ui_continue]
     {
         uint32_t time = 0;
