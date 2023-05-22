@@ -80,7 +80,7 @@ private:
     void AddRootParameterBinding(const Rhi::ProgramArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBinding& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
-    void ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask access, ICommandList& command_list,
+    void ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask access, const ICommandList& command_list,
                                     const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const;
     template<Rhi::CommandListType command_list_type>
     void ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask access, ID3D12GraphicsCommandList& d3d12_command_list,

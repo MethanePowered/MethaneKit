@@ -92,7 +92,7 @@ void ComputeState::Reset(const Settings& settings)
 void ComputeState::Apply(Base::ComputeCommandList& command_list)
 {
     META_FUNCTION_TASK();
-    auto& dx_compute_command_list = static_cast<ComputeCommandList&>(command_list);
+    const auto& dx_compute_command_list = static_cast<ComputeCommandList&>(command_list);
     ID3D12GraphicsCommandList& d3d12_command_list = dx_compute_command_list.GetNativeCommandList();
 
     d3d12_command_list.SetPipelineState(GetNativePipelineState().Get());

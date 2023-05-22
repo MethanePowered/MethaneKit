@@ -303,7 +303,7 @@ void ProgramBindings::AddRootParameterBindingsForArgument(ArgumentBinding& argum
     }
 }
 
-void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask access, ICommandList& command_list,
+void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask access, const ICommandList& command_list,
                                                  const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const
 {
     META_FUNCTION_TASK();
