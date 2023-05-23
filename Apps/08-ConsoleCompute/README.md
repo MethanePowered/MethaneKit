@@ -11,6 +11,7 @@ implemented with amazing [FTXUI](https://github.com/ArthurSonzogni/FTXUI) librar
   - [ConsoleApp.h](ConsoleApp.h) - console application base class implementing console UI.
   - [ConsoleApp.cpp](ConsoleApp.cpp)
   - [ConsoleComputeApp.h](ConsoleComputeApp.h) - compute application implements Gave of Life logic using Methane Kit.
+  - [ConsoleComputeApp.cpp](ConsoleComputeApp.cpp)
   - [Shaders/GameOfLife.hlsl](Shaders/GameOfLife.hlsl) - HLSL compute shader implements Game of Life cells update iteration.
 
 Tutorial demonstrates the following techniques:
@@ -139,7 +140,7 @@ void ConsoleComputeApp::Compute()
 ## HLSL Compute Shader
 
 Compute shader implements compute iteration of cells data in texture `g_frame_texture` (bound for read and write),
-according to [Game of Life rules](#game-of-life-rules).
+updated according to [Game of Life rules](#game-of-life-rules).
 
 ```hlsl
 RWTexture2D<uint> g_frame_texture;
