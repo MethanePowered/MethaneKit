@@ -94,32 +94,35 @@ void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
             shader_types_by_argument_name_map[shader_argument.GetName()].insert(shader_argument.GetShaderType());
         }
     }
-    
-    // Replace bindings for argument set for all shader types in program to one binding set for argument with ShaderType::All
-    for (const auto& [argument_name, shader_types] : shader_types_by_argument_name_map)
+
+    if (all_shader_types.size() > 1)
     {
-        if (shader_types != all_shader_types)
-            continue;
-
-        Ptr<ProgramBindings::ArgumentBinding> argument_binding_ptr;
-        for(Rhi::ShaderType shader_type : all_shader_types)
+        // Replace bindings for argument set for all shader types in program to one binding set for argument with ShaderType::All
+        for (const auto& [argument_name, shader_types]: shader_types_by_argument_name_map)
         {
-            const Argument argument{ shader_type, argument_name };
-            auto binding_by_argument_it = m_binding_by_argument.find(argument);
-            META_CHECK_ARG_DESCR(argument, binding_by_argument_it != m_binding_by_argument.end(), "Resource binding was not initialized for for argument");
-            if (argument_binding_ptr)
-            {
-                argument_binding_ptr->MergeSettings(*binding_by_argument_it->second);
-            }
-            else
-            {
-                argument_binding_ptr = binding_by_argument_it->second;
-            }
-            m_binding_by_argument.erase(binding_by_argument_it);
-        }
+            if (shader_types != all_shader_types)
+                continue;
 
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "failed to create resource binding for argument '{}'", argument_name);
-        m_binding_by_argument.try_emplace(Argument{ Rhi::ShaderType::All, argument_name }, argument_binding_ptr);
+            Ptr<ProgramBindings::ArgumentBinding> argument_binding_ptr;
+            for (Rhi::ShaderType shader_type: all_shader_types)
+            {
+                const Argument argument{ shader_type, argument_name };
+                auto binding_by_argument_it = m_binding_by_argument.find(argument);
+                META_CHECK_ARG_DESCR(argument, binding_by_argument_it != m_binding_by_argument.end(), "Resource binding was not initialized for for argument");
+                if (argument_binding_ptr)
+                {
+                    argument_binding_ptr->MergeSettings(*binding_by_argument_it->second);
+                }
+                else
+                {
+                    argument_binding_ptr = binding_by_argument_it->second;
+                }
+                m_binding_by_argument.erase(binding_by_argument_it);
+            }
+
+            META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "failed to create resource binding for argument '{}'", argument_name);
+            m_binding_by_argument.try_emplace(Argument{ Rhi::ShaderType::All, argument_name }, argument_binding_ptr);
+        }
     }
 
     if (m_context.GetType() != Rhi::IContext::Type::Render)

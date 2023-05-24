@@ -93,7 +93,7 @@ public:
     [[nodiscard]] const IProgram::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
 
 private:
-    const IProgram& m_program;
+    const IProgram&           m_program;
     const IProgram::Arguments m_unbound_arguments;
 };
 

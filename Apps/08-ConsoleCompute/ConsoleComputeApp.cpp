@@ -153,7 +153,7 @@ void ConsoleComputeApp::Init()
             rhi::ProgramInputBufferLayouts { },
             rhi::ProgramArgumentAccessors
             {
-                { { rhi::ShaderType::All, "m_frame_texture" }, rhi::ProgramArgumentAccessor::Type::Mutable },
+                { { rhi::ShaderType::Compute, "g_frame_texture" }, rhi::ProgramArgumentAccessor::Type::Mutable },
             },
         }),
         rhi::ThreadGroupSize(16U, 16U, 1U)
@@ -178,7 +178,7 @@ void ConsoleComputeApp::Init()
     m_frame_texture.SetName("Game of Life Frame Texture");
 
     m_compute_bindings = m_compute_state.GetProgram().CreateBindings({
-        { { rhi::ShaderType::All, "g_frame_texture"   }, { { m_frame_texture.GetInterface() } } },
+        { { rhi::ShaderType::Compute, "g_frame_texture" }, { { m_frame_texture.GetInterface() } } },
     });
     m_compute_bindings.SetName("Game of Life Compute Bindings");
 

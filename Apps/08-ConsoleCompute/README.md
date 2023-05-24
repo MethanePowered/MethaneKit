@@ -53,13 +53,13 @@ void ConsoleComputeApp::Init()
 
     m_compute_state = m_compute_context.CreateComputeState({
             m_compute_context.CreateProgram({
-            rhi::Program::ShaderSet { { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } } },
-            rhi::ProgramInputBufferLayouts { },
-            rhi::ProgramArgumentAccessors
-            {
-                { { rhi::ShaderType::All, "m_frame_texture" }, rhi::ProgramArgumentAccessor::Type::Mutable },
-            },
-        }),
+                rhi::Program::ShaderSet { { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } } },
+                rhi::ProgramInputBufferLayouts { },
+                rhi::ProgramArgumentAccessors
+                {
+                    { { rhi::ShaderType::Compute, "m_frame_texture" }, rhi::ProgramArgumentAccessor::Type::Mutable },
+                },
+            }),
         rhi::ThreadGroupSize(16U, 16U, 1U)
     });
     m_compute_state.GetProgram().SetName("Game of Life Program");
@@ -96,7 +96,7 @@ void ConsoleComputeApp::Init()
     m_frame_texture.SetName("Game of Life Frame Texture");
 
     m_compute_bindings = m_compute_state.GetProgram().CreateBindings({
-        { { rhi::ShaderType::All, "g_frame_texture"   }, { { m_frame_texture.GetInterface() } } },
+        { { rhi::ShaderType::Compute, "g_frame_texture" }, { { m_frame_texture.GetInterface() } } },
     });
     m_compute_bindings.SetName("Game of Life Compute Bindings");
 

@@ -198,7 +198,7 @@ void ShadowCubeApp::Init()
                 final_state_settings.program.GetSettings().input_buffer_layouts,
                 rhi::ProgramArgumentAccessors
                 {
-                    { { rhi::ShaderType::All, "g_mesh_uniforms"  }, rhi::ProgramArgumentAccessor::Type::Mutable },
+                    { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, rhi::ProgramArgumentAccessor::Type::Mutable },
                 },
                 m_shadow_pass_pattern.GetAttachmentFormats()
             }
@@ -241,13 +241,13 @@ void ShadowCubeApp::Init()
 
         // Shadow-pass resource bindings for cube rendering
         frame.shadow_pass.cube.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.uniforms_buffer.GetInterface() } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.uniforms_buffer.GetInterface() } } },
         }, frame.index);
         frame.shadow_pass.cube.program_bindings.SetName(IndexedName("Cube Shadow-Pass Bindings {}", frame.index));
 
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer.GetInterface() } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer.GetInterface() } } },
         }, frame.index);
         frame.shadow_pass.floor.program_bindings.SetName(IndexedName("Floor Shadow-Pass Bindings {}", frame.index));
 

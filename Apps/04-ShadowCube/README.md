@@ -308,7 +308,7 @@ Vertex shader since it will be used for rendering to depth buffer only without c
                 final_state_settings.program.GetSettings().input_buffer_layouts,
                 rhi::ProgramArgumentAccessors
                 {
-                    { { rhi::ShaderType::All, "g_mesh_uniforms"  }, rhi::ProgramArgumentAccessor::Type::Mutable },
+                    { { rhi::ShaderType::Vertex, "g_mesh_uniforms" }, rhi::ProgramArgumentAccessor::Type::Mutable },
                 },
                 m_shadow_pass_pattern.GetAttachmentFormats()
             }
@@ -385,12 +385,12 @@ rendered depth texture content for the next render pass. Render command list is 
         
         // Shadow-pass resource bindings for cube rendering
         frame.shadow_pass.cube.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.uniforms_buffer.GetInterface() } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms" }, { { frame.shadow_pass.cube.uniforms_buffer.GetInterface() } } },
         }, frame.index);
         
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer.GetInterface() } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms" }, { { frame.shadow_pass.floor.uniforms_buffer.GetInterface() } } },
         }, frame.index);
         
         // Create depth texture for shadow map rendering
