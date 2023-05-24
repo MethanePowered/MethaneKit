@@ -208,9 +208,9 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         }();
 
         const Rhi::ProgramBindings compute_program_bindings = compute_program.CreateBindings({
-            { { Rhi::ShaderType::All, "InTexture" }, { { texture.GetInterface() } } },
-            { { Rhi::ShaderType::All, "InSampler" }, { { sampler.GetInterface() } } },
-            { { Rhi::ShaderType::All, "OutBuffer" }, { { buffer.GetInterface() } } },
+            { { Rhi::ShaderType::Compute, "InTexture" }, { { texture.GetInterface() } } },
+            { { Rhi::ShaderType::Compute, "InSampler" }, { { sampler.GetInterface() } } },
+            { { Rhi::ShaderType::Compute, "OutBuffer" }, { { buffer.GetInterface() } } },
         });
 
         REQUIRE_NOTHROW(cmd_list.ResetWithState(compute_state));
