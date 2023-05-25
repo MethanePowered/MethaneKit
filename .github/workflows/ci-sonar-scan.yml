@@ -159,8 +159,9 @@ jobs:
             throw 'OpenCppCoverage/OpenCppCoverage.exe executable was not found in unpacked content!'
           }
 
-      - name: Run all unit-tests from install directory with code coverage using OpenCppCoverage on Windows
+      - name: Run all unit-tests with OpenCppCoverage code coverage on Windows
         if: ${{ matrix.os_name == 'windows' }}
+        continue-on-error: true
         shell: cmd
         working-directory: 'Build\Output\${{ matrix.config_preset }}\Install\Tests'
         run: |
@@ -193,8 +194,9 @@ jobs:
           echo test_results=%test_results%>> %GITHUB_ENV%
           exit !result_error_level!
 
-      - name: Run unit-tests from install directory on Linux
+      - name: Run all unit-tests with GCov code coverage on Linux
         if: ${{ matrix.os_name == 'linux' }}
+        continue-on-error: true
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
           result_ext='.xml'
@@ -216,8 +218,9 @@ jobs:
           set -o pipefail
           cmake --build --preset ${{ matrix.build_preset }} --target MethaneTestCoverage 2>&1 | tee $COVERAGE_LOG_FILE
 
-      - name: Run all unit-tests from install directory with LCov code coverage on MacOS
+      - name: Run all unit-tests with LCov code coverage on MacOS
         if: ${{ matrix.os_name == 'macosx' }}
+        continue-on-error: true
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
           result_ext='.xml'

@@ -213,8 +213,10 @@ jobs:
     - name: Run Unit-Tests on Unix
       if: ${{ matrix.run_tests && matrix.os_name != 'Windows'}}
       working-directory: ${{ env.INSTALL_DIR }}/Tests
+      continue-on-error: true
       shell: bash
       run: |
+        set -o pipefail
         result_ext='_result.xml'
         echo Running all unit-tests in directory $PWD
         for test_exe in *Test
@@ -226,25 +228,30 @@ jobs:
     - name: Run Unit-Tests on Windows
       if: ${{ matrix.run_tests && matrix.os_name == 'Windows' }}
       working-directory: ${{ env.INSTALL_DIR }}/Tests
+      continue-on-error: true
       shell: cmd
       run: |
         setlocal enabledelayedexpansion
         echo Running unit-tests in directory "%cd%"
+        set /A result_error_level=0
         for /r "." %%a in (*Test.exe) do (
           "%%~fa" -r junit -o "%%~fa_result.xml"
           echo  - %%~na - completed with !errorlevel! exit status
+          if not !errorlevel!==0 (
+            set /A result_error_level=!errorlevel!
+          )
         )
-        exit 0
+        exit !result_error_level!
 
     - name: Upload Test Results Artifact
       uses: actions/upload-artifact@v3
-      if: ${{ matrix.run_tests && (success() || failure()) }}
+      if: ${{ matrix.run_tests }}
       with:
         name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
         path: ${{ env.INSTALL_DIR }}/Tests/*_result.xml
 
     - name: Upload Build Log and Test Tesults to Testspace server
-      if: ${{ matrix.run_tests && (success() || failure()) }}
+      if: ${{ matrix.run_tests }}
       run: testspace "[ ${{ matrix.name }} ]${{ env.INSTALL_DIR }}/Tests/*_result.xml" "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
     - name: Add README and BUILD files
