@@ -161,7 +161,6 @@ jobs:
 
       - name: Run all unit-tests with OpenCppCoverage code coverage on Windows
         if: ${{ matrix.os_name == 'windows' }}
-        continue-on-error: true
         shell: cmd
         working-directory: 'Build\Output\${{ matrix.config_preset }}\Install\Tests'
         run: |
@@ -196,7 +195,6 @@ jobs:
 
       - name: Run all unit-tests with GCov code coverage on Linux
         if: ${{ matrix.os_name == 'linux' }}
-        continue-on-error: true
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
           result_ext='.xml'
@@ -213,7 +211,7 @@ jobs:
           echo "test_results=$test_results" >> $GITHUB_ENV
 
       - name: Collect tests code coverage using ctest and gcov/lcov on Linux
-        if: ${{ matrix.os_name == 'linux' }}
+        if: ${{ matrix.os_name == 'linux' && (success() || failure()) }}
         run: |
           set -o pipefail
           cmake --build --preset ${{ matrix.build_preset }} --target MethaneTestCoverage 2>&1 | tee $COVERAGE_LOG_FILE
@@ -250,6 +248,7 @@ jobs:
           ls -la ./Coverage
 
       - name: Generate Code Coverage Reports
+        if: ${{ success() || failure() }}
         uses: danielpalme/ReportGenerator-GitHub-Action@5.1.13
         with:
           reports: ${{ matrix.tests_coverage_reports }}
@@ -259,16 +258,18 @@ jobs:
           tag: '${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}'
 
       - name: Upload Code Coverage Cobertura Report
+        if: ${{ success() || failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: MethaneKit_${{ matrix.name }}_CoverageResults
           path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
 
       - name: Upload Build Log and Code Coverage to Testspace server
-        if: ${{ always() }}
+        if: ${{ success() || failure() }}
         run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
       - name: Upload Code Coverage to CodeCov server
+        if: ${{ success() || failure() }}
         uses: codecov/codecov-action@v3
         with:
           files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
@@ -276,6 +277,7 @@ jobs:
           name: ${{ matrix.name }}
 
       - name: Run Sonar Scanner
+        if: ${{ success() || failure() }}
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -313,13 +315,13 @@ jobs:
           done
 
       - name: Archive Scan Artifacts
-        if: ${{ always() }}
+        if: ${{ success() || failure() }}
         shell: bash
         working-directory: Build/Output/${{ matrix.config_preset }}/Install
         run: 7z a -t7z -mx=9 MethaneKit_${{ matrix.name }}.7z *
 
       - name: Upload Archived Scan Artifacts
-        if: ${{ always() }}
+        if: ${{ success() || failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
