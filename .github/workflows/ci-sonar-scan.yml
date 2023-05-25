@@ -197,6 +197,7 @@ jobs:
         if: ${{ matrix.os_name == 'linux' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
+          set -o pipefail
           result_ext='.xml'
           test_results=''
           echo Running unit-tests in directory $PWD
@@ -218,9 +219,9 @@ jobs:
 
       - name: Run all unit-tests with LCov code coverage on MacOS
         if: ${{ matrix.os_name == 'macosx' }}
-        continue-on-error: true
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
+          set -o pipefail
           result_ext='.xml'
           prof_data_ext='.profdata'
           prof_raw_ext='.profraw'
