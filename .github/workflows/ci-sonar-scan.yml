@@ -197,8 +197,7 @@ jobs:
         if: ${{ matrix.os_name == 'linux' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
-          set +x
-          set -o pipefail
+          set +e -o pipefail
           result_ext='.xml'
           test_results=''
           echo Running unit-tests in directory $PWD
@@ -224,8 +223,7 @@ jobs:
         if: ${{ matrix.os_name == 'macosx' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
-          set +x
-          set -o pipefail
+          set +e -o pipefail
           result_ext='.xml'
           prof_data_ext='.profdata'
           prof_raw_ext='.profraw'

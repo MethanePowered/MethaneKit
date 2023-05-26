@@ -215,8 +215,7 @@ jobs:
       working-directory: ${{ env.INSTALL_DIR }}/Tests
       shell: bash
       run: |
-        set +x
-        set -o pipefail
+        set +e -o pipefail
         result_ext='_result.xml'
         echo Running all unit-tests in directory $PWD
         for test_exe in *Test
