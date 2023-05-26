@@ -216,14 +216,19 @@ jobs:
       shell: bash
       run: |
         set +e
-        set -o pipefail
         result_ext='_result.xml'
+        result_error_level=0
         echo Running all unit-tests in directory $PWD
         for test_exe in *Test
         do
           ./$test_exe -r junit -o "$test_exe$result_ext"
-          echo  - $test_exe - completed with $? exit code
+          last_error_level=$?
+          echo  - $test_exe - completed with $last_error_level exit code
+          if [ $last_error_level != 0 ]; then
+            result_error_level=$last_error_level
+          fi
         done
+        exit $result_error_level
 
     - name: Run Unit-Tests on Windows
       if: ${{ matrix.run_tests && matrix.os_name == 'Windows' }}

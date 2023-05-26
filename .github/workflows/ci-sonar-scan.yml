@@ -198,21 +198,26 @@ jobs:
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
           set +e
-          seg -o pipefail
           result_ext='.xml'
           test_results=''
+          result_error_level=0
           echo Running unit-tests in directory $PWD
           mkdir Results
           for test_exe in *Test
           do
             ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
-            echo  - $test_exe - completed with $? exit status
+            last_error_level=$?
+            echo  - $test_exe - completed with $last_error_level exit status
+            if [ $last_error_level != 0 ]; then
+              result_error_level=$last_error_level
+            fi
             if [ -f "$PWD/Results/$test_exe$result_ext" ]; then
               test_results+="$PWD/Results/$test_exe$result_ext,"
             fi
           done
           echo "Test Result Files: $test_results"
           echo "test_results=$test_results" >> $GITHUB_ENV
+          exit $result_error_level
 
       - name: Collect tests code coverage using ctest and gcov/lcov on Linux
         if: ${{ matrix.os_name == 'linux' && (success() || failure()) }}
@@ -225,7 +230,7 @@ jobs:
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
           set +e
-          set -o pipefail
+          result_error_level=0
           result_ext='.xml'
           prof_data_ext='.profdata'
           prof_raw_ext='.profraw'
@@ -237,7 +242,11 @@ jobs:
           for test_exe in *Test
           do
             ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
-            echo  - $test_exe - completed with $? exit status
+            last_error_level=$?
+            echo  - $test_exe - completed with $last_error_level exit status
+            if [ $last_error_level != 0 ]; then
+              result_error_level=$last_error_level
+            fi
             if [ -f "$PWD/Results/$test_exe$result_ext" ]; then
               test_results+="$PWD/Results/$test_exe$result_ext,"
             fi
@@ -253,6 +262,7 @@ jobs:
           echo "test_results=$test_results" >> $GITHUB_ENV
           echo List of generated coverage files in directory $PWD/Coverage
           ls -la ./Coverage
+          exit $result_error_level
 
       - name: Generate Code Coverage Reports
         if: ${{ success() || failure() }}
