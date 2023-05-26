@@ -197,7 +197,8 @@ jobs:
         if: ${{ matrix.os_name == 'linux' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
-          set +e -o pipefail
+          set +e
+          seg -o pipefail
           result_ext='.xml'
           test_results=''
           echo Running unit-tests in directory $PWD
@@ -206,9 +207,9 @@ jobs:
           do
             ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
             echo  - $test_exe - completed with $? exit status
-            if exist "$PWD/Results/$test_exe$result_ext" (
+            if [ -f "$PWD/Results/$test_exe$result_ext" ]; then
               test_results+="$PWD/Results/$test_exe$result_ext,"
-            )
+            fi
           done
           echo "Test Result Files: $test_results"
           echo "test_results=$test_results" >> $GITHUB_ENV
@@ -223,7 +224,8 @@ jobs:
         if: ${{ matrix.os_name == 'macosx' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
-          set +e -o pipefail
+          set +e
+          set -o pipefail
           result_ext='.xml'
           prof_data_ext='.profdata'
           prof_raw_ext='.profraw'
@@ -236,9 +238,9 @@ jobs:
           do
             ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
             echo  - $test_exe - completed with $? exit status
-            if exist "$PWD/Results/$test_exe$result_ext" (
+            if [ -f "$PWD/Results/$test_exe$result_ext" ]; then
               test_results+="$PWD/Results/$test_exe$result_ext,"
-            )
+            fi
             if [ ! -f default.profraw ]; then
               continue
             fi
