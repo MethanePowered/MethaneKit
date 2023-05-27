@@ -192,10 +192,13 @@ void ConsoleComputeApp::Release()
 {
     META_FUNCTION_TASK();
     m_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
-    m_compute_bindings = {};
-    m_frame_texture    = {};
-    m_compute_state    = {};
-    m_compute_context  = {};
+
+    m_compute_cmd_list_set = {};
+    m_compute_cmd_list     = {};
+    m_compute_bindings     = {};
+    m_frame_texture        = {};
+    m_compute_state        = {};
+    m_compute_context      = {};
 }
 
 void ConsoleComputeApp::Compute()
