@@ -109,6 +109,8 @@ void ConsoleApp::InitUserInterface()
                 separator(),
                 paragraph("Controls:") | ftxui::bold,
                 paragraph(" ◆ Press mouse left button over game field to drag the visible area."),
+                paragraph(" ◆ Press mouse left button over vertical splitter and drag to resize left panel."),
+                paragraph(" ◆ Resize console window to increase canvas area."),
                 separator(),
                 paragraph("Conway's Game of Life Rules:") | ftxui::bold,
                 paragraph(" ◆ Any live cell with fewer than two live neighbours dies, as if by underpopulation."),
