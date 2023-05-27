@@ -261,8 +261,8 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
     SECTION("Convert to String")
     {
         CHECK(static_cast<std::string>(program_bindings) ==
-              "  - Compute shaders argument 'OutBuffer' (Mutable) is bound to Buffer 'B1' subresources from index(d:0, a:0, m:0) for count(d:1, a:1, m:1) with offset 0;\n" \
+              "  - Compute shaders argument 'InSampler' (Constant) is bound to Sampler 'S' subresources from index(d:0, a:0, m:0) for count(d:0, a:0, m:0) with offset 0;\n" \
               "  - Compute shaders argument 'InTexture' (Constant) is bound to Texture 'T' subresources from index(d:0, a:0, m:0) for count(d:1, a:1, m:1) with offset 0;\n" \
-              "  - Compute shaders argument 'InSampler' (Constant) is bound to Sampler 'S' subresources from index(d:0, a:0, m:0) for count(d:0, a:0, m:0) with offset 0.");
+              "  - Compute shaders argument 'OutBuffer' (Mutable) is bound to Buffer 'B1' subresources from index(d:0, a:0, m:0) for count(d:1, a:1, m:1) with offset 0.");
     }
 }
