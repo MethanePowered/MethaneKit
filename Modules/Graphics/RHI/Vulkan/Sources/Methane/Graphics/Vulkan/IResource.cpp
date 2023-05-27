@@ -110,7 +110,8 @@ vk::PipelineStageFlags IResource::GetNativePipelineStageFlagsByResourceState(Rhi
     case Rhi::ResourceState::UnorderedAccess:
     case Rhi::ResourceState::ShaderResource:
         return vk::PipelineStageFlagBits::eVertexShader | // All possible shader stages
-               vk::PipelineStageFlagBits::eFragmentShader;
+               vk::PipelineStageFlagBits::eFragmentShader |
+               vk::PipelineStageFlagBits::eComputeShader;
     case Rhi::ResourceState::CopyDest:
     case Rhi::ResourceState::CopySource:
     case Rhi::ResourceState::ResolveDest:
