@@ -46,7 +46,7 @@ Buffer::Buffer(const Base::Context& context, const Settings& settings)
     const D3D12_HEAP_TYPE  normal_heap_type = is_private_storage ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
     const D3D12_HEAP_TYPE  heap_type        = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
     const Rhi::ResourceState resource_state = is_read_back_buffer || is_private_storage
-                                              ? Rhi::ResourceState::CopyDest
+                                              ? Rhi::ResourceState::Common
                                               : Rhi::ResourceState::GenericRead;
 
     D3D12_RESOURCE_FLAGS resource_flags = D3D12_RESOURCE_FLAG_NONE;
