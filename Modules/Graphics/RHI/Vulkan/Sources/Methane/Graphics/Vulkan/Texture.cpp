@@ -45,8 +45,8 @@ vk::ImageAspectFlags Texture::GetNativeImageAspectFlags(const Rhi::TextureSettin
     case Rhi::TextureType::RenderTarget:
     case Rhi::TextureType::FrameBuffer:  return vk::ImageAspectFlagBits::eColor;
     case Rhi::TextureType::DepthStencil: return IsDepthFormat(settings.pixel_format)
-                                                    ? vk::ImageAspectFlagBits::eDepth
-                                                    : vk::ImageAspectFlagBits::eStencil;
+                                              ? vk::ImageAspectFlagBits::eDepth
+                                              : vk::ImageAspectFlagBits::eStencil;
     default: META_UNEXPECTED_ARG_DESCR_RETURN(settings.type, vk::ImageAspectFlagBits::eColor, "Unsupported texture type");
     }
 }
@@ -581,7 +581,7 @@ vk::ImageSubresourceRange Texture::GetNativeSubresourceRange() const noexcept
     META_FUNCTION_TASK();
     const SubResource::Count& subresource_count = GetSubresourceCount();
     return vk::ImageSubresourceRange(
-        vk::ImageAspectFlagBits::eColor,
+        Texture::GetNativeImageAspectFlags(GetSettings()),
         0U, subresource_count.GetMipLevelsCount(),
         0U, subresource_count.GetBaseLayerCount()
     );
