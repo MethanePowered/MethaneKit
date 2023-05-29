@@ -576,7 +576,7 @@ void Texture::GenerateMipLevels(Rhi::ICommandQueue& target_cmd_queue, State targ
     SetState(target_resource_state);
 }
 
-vk::ImageSubresourceRange Texture::GetNativeSubresourceRange() const noexcept
+vk::ImageSubresourceRange Texture::GetNativeSubresourceRange() const
 {
     META_FUNCTION_TASK();
     const SubResource::Count& subresource_count = GetSubresourceCount();

@@ -60,7 +60,7 @@ public:
 
     // ITexture overrides
     const vk::Image& GetNativeImage() const noexcept { return GetNativeResource(); }
-    vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept;
+    vk::ImageSubresourceRange GetNativeSubresourceRange() const;
 
 private:
     Texture(const Base::Context& context, const Settings& settings, vk::UniqueImage&& vk_unique_image);
