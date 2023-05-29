@@ -232,28 +232,28 @@ void TexturedCubeApp::Init()
     const Data::Size vertex_data_size   = cube_mesh.GetVertexDataSize();
     const Data::Size  vertex_size       = cube_mesh.GetVertexSize();
     rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForVertexBuffer(vertex_data_size, vertex_size));
-    vertex_buffer.SetData(
-        { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()), vertex_data_size } },
-        render_cmd_queue
-    );
+    vertex_buffer.SetData(render_cmd_queue, {
+        reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()),
+        vertex_data_size
+    });
     m_vertex_buffer_set = rhi::BufferSet(rhi::BufferType::Vertex, { vertex_buffer });
 
     // Create index buffer for cube mesh
     const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
     const gfx::PixelFormat index_format = gfx::GetIndexFormat(cube_mesh.GetIndex(0));
     m_index_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForIndexBuffer(index_data_size, index_format));
-    m_index_buffer.SetData(
-        { { reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()), index_data_size } },
-        render_cmd_queue
-    );
+    m_index_buffer.SetData(render_cmd_queue, {
+        reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()),
+        index_data_size
+    });
 
     // Create constants buffer for frame rendering
     const auto constants_data_size = static_cast<Data::Size>(sizeof(m_shader_constants));
     m_const_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(constants_data_size));
-    m_const_buffer.SetData(
-        { { reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), constants_data_size } },
-        render_cmd_queue
-    );
+    m_const_buffer.SetData(render_cmd_queue, {
+        reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants),
+        constants_data_size
+    });
 
     ...
 }
@@ -449,7 +449,7 @@ bool TexturedCubeApp::Render()
     // Update uniforms buffer related to current frame
     const TexturedCubeFrame& frame = GetCurrentFrame();
     const rhi::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.uniforms_buffer.SetData(m_shader_uniforms_subresources, render_cmd_queue);
+    frame.uniforms_buffer.SetData(render_cmd_queue, m_shader_uniforms_subresources);
 
     // Issue commands for cube rendering
     META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");

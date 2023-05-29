@@ -203,10 +203,10 @@ class HelloTriangleApp final : public GraphicsApp
 
         // Create index buffer for cube mesh
         m_index_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForIndexBuffer(m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0))));
-        m_index_buffer.SetData(
-            { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } },
-            m_render_cmd_queue
-        );
+        m_index_buffer.SetData(m_render_cmd_queue, {
+            reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()),
+            m_cube_mesh.GetIndexDataSize()
+        });
 
         // Create per-frame command lists
         for(HelloCubeFrame& frame : GetFrames())
@@ -290,10 +290,10 @@ class HelloCubeApp final : public GraphicsApp
         const HelloCubeFrame& frame = GetCurrentFrame();
         
         // Update vertex buffer with vertices in camera's projection view
-        frame.vertex_buffer_set[0].SetData(
-            { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } },
-            m_render_cmd_queue
-        );
+        frame.vertex_buffer_set[0].SetData(m_render_cmd_queue, {
+            reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()),
+            m_cube_mesh.GetVertexDataSize()
+        });
 
         // Issue commands for cube rendering
         META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
@@ -544,10 +544,10 @@ class HelloCubeApp final : public GraphicsApp
 
         // Create constant vertex buffer
         Rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize()));
-        vertex_buffer.SetData(
-            { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), m_cube_mesh.GetVertexDataSize() } },
-            m_render_cmd_queue
-        );
+        vertex_buffer.SetData(m_render_cmd_queue, {
+            reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()),
+            m_cube_mesh.GetVertexDataSize()
+        });
         m_vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
 
         const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
@@ -601,7 +601,7 @@ class HelloCubeApp final : public GraphicsApp
         const HelloCubeFrame& frame = GetCurrentFrame();
 
         // Update uniforms buffer on GPU and apply model-view-projection transformation in vertex shader on GPU
-        frame.uniforms_buffer.SetData(m_shader_uniforms_subresources, m_render_cmd_queue);
+        frame.uniforms_buffer.SetData(m_render_cmd_queue, m_shader_uniforms_subresources);
 
         // Issue commands for cube rendering
         META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
