@@ -23,17 +23,17 @@ FPS counter interface.
 
 #pragma once
 
-#include <Methane/Graphics/RHI/IFpsCounter.h>
+#include <Methane/Data/IFpsCounter.h>
 
 #include <Methane/Timer.hpp>
 
 #include <queue>
 
-namespace Methane::Graphics::Base
+namespace Methane::Data
 {
 
 class FpsCounter
-    : public Rhi::IFpsCounter
+    : public IFpsCounter
 {
 public:
     FpsCounter() = default;

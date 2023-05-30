@@ -21,6 +21,7 @@ Methane sub-resource used for resource data transfers.
 
 ******************************************************************************/
 
+#include "Methane/Graphics/RHI/IContext.h"
 #include <Methane/Graphics/RHI/ResourceView.h>
 #include <Methane/Graphics/RHI/IResource.h>
 #include <Methane/Graphics/RHI/ITexture.h>
@@ -32,6 +33,16 @@ Methane sub-resource used for resource data transfers.
 
 namespace Methane::Graphics::Rhi
 {
+
+static SubResourceCount GetSubresourceCount(const IResource& resource)
+{
+    switch(resource.GetResourceType())
+    {
+    case ResourceType::Texture: return dynamic_cast<const ITexture&>(resource).GetSubresourceCount();
+    case ResourceType::Buffer:  return SubResourceCount(1U, 1U, 1U);
+    default:                    return SubResourceCount(0U, 0U, 0U);
+    }
+}
 
 SubResource::SubResource(Data::Bytes&& data, const Index& index, BytesRangeOpt data_range) noexcept
     : Data::Chunk(std::move(data))
@@ -51,9 +62,6 @@ SubResourceCount::SubResourceCount(Data::Size depth, Data::Size array_size, Data
     , m_mip_levels_count(mip_levels_count)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_ZERO_DESCR(depth, "subresource count can not be zero");
-    META_CHECK_ARG_NOT_ZERO_DESCR(array_size, "subresource count can not be zero");
-    META_CHECK_ARG_NOT_ZERO_DESCR(mip_levels_count, "subresource count can not be zero");
 }
 
 void SubResourceCount::operator+=(const SubResourceIndex& other) noexcept
@@ -212,7 +220,7 @@ ResourceView::ResourceView(IResource& resource, const Settings& settings)
 { }
 
 ResourceView::ResourceView(IResource& resource, Data::Size offset, Data::Size size)
-    : ResourceView(resource, SubResourceIndex(), resource.GetSubresourceCount(), offset, size)
+    : ResourceView(resource, SubResourceIndex(), Rhi::GetSubresourceCount(resource), offset, size)
 { }
 
 ResourceView::ResourceView(IResource& resource,
@@ -261,7 +269,7 @@ ResourceView::operator std::string() const
     if (!m_resource_ptr)
         return "Null resource view_id";
 
-    return fmt::format("{} '{}' subresources from {} count {} with offset {}",
+    return fmt::format("{} '{}' subresources from {} for {} with offset {}",
                        magic_enum::enum_name(m_resource_ptr->GetResourceType()),
                        m_resource_ptr->GetName(),
                        static_cast<std::string>(m_settings.subresource_index),

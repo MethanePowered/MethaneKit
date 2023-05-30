@@ -23,6 +23,7 @@ Methane CommandQueue PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/Fence.h>
@@ -30,6 +31,7 @@ Methane CommandQueue PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/ParallelRenderCommandList.h>
 #include <Methane/Graphics/RHI/TransferCommandList.h>
+#include <Methane/Graphics/RHI/ComputeCommandList.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -56,6 +58,11 @@ CommandQueue::CommandQueue(ICommandQueue& interface_ref)
 }
 
 CommandQueue::CommandQueue(const RenderContext& context, CommandListType command_lists_type)
+    : CommandQueue(ICommandQueue::Create(context.GetInterface(), command_lists_type))
+{
+}
+
+CommandQueue::CommandQueue(const ComputeContext& context, CommandListType command_lists_type)
     : CommandQueue(ICommandQueue::Create(context.GetInterface(), command_lists_type))
 {
 }
@@ -108,6 +115,11 @@ Fence CommandQueue::CreateFence() const
 TransferCommandList CommandQueue::CreateTransferCommandList() const
 {
     return TransferCommandList(GetImpl(m_impl_ptr).CreateTransferCommandList());
+}
+
+ComputeCommandList CommandQueue::CreateComputeCommandList() const
+{
+    return ComputeCommandList(GetImpl(m_impl_ptr).CreateComputeCommandList());
 }
 
 RenderCommandList CommandQueue::CreateRenderCommandList(const RenderPass& render_pass) const

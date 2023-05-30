@@ -24,10 +24,9 @@ Vulkan implementation of the command queue interface.
 #pragma once
 
 #include <Methane/Graphics/Base/CommandQueueTracking.h>
+#include <Methane/Instrumentation.h>
 
-#include <tracy/Tracy.hpp>
 #include <vulkan/vulkan.hpp>
-
 #include <mutex>
 
 namespace Methane::Graphics::Vulkan
@@ -55,6 +54,7 @@ public:
     // ICommandQueue interface
     [[nodiscard]] Ptr<Rhi::IFence>                     CreateFence() override;
     [[nodiscard]] Ptr<Rhi::ITransferCommandList>       CreateTransferCommandList() override;
+    [[nodiscard]] Ptr<Rhi::IComputeCommandList>        CreateComputeCommandList() override;
     [[nodiscard]] Ptr<Rhi::IRenderCommandList>         CreateRenderCommandList(Rhi::IRenderPass& render_pass) override;
     [[nodiscard]] Ptr<Rhi::IParallelRenderCommandList> CreateParallelRenderCommandList(Rhi::IRenderPass& render_pass) override;
     [[nodiscard]] Ptr<Rhi::ITimestampQueryPool>        CreateTimestampQueryPool(uint32_t max_timestamps_per_frame) override;

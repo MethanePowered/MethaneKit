@@ -25,8 +25,18 @@ Null implementation of the shader interface.
 
 #include <Methane/Graphics/Base/Shader.h>
 
+#include <map>
+
 namespace Methane::Graphics::Null
 {
+
+struct ResourceArgumentDesc
+{
+    Rhi::ResourceType resource_type;
+    uint32_t resource_count;
+};
+
+using ResourceArgumentDescs = std::map<Rhi::ProgramArgumentAccessor, ResourceArgumentDesc>;
 
 class Shader final
     : public Base::Shader
@@ -36,6 +46,11 @@ public:
 
     // Base::Shader interface
     Ptrs<Base::ProgramArgumentBinding> GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const override;
+
+    void InitArgumentBindings(const ResourceArgumentDescs& argument_descriptions);
+
+private:
+    Ptrs<Base::ProgramArgumentBinding> m_argument_bindings;
 };
 
 } // namespace Methane::Graphics::Null

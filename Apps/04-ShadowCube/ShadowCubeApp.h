@@ -94,13 +94,14 @@ private:
 
         void SetShadowPassUniforms(hlslpp::MeshUniforms&& uniforms) noexcept { m_shadow_pass_uniforms = std::move(uniforms); }
 
-        [[nodiscard]] const hlslpp::MeshUniforms& GetShadowPassUniforms() const noexcept             { return m_shadow_pass_uniforms; }
-        [[nodiscard]] const rhi::SubResources&    GetShadowPassUniformsSubresources() const noexcept { return m_shadow_pass_uniforms_subresources; }
+        [[nodiscard]] const hlslpp::MeshUniforms& GetShadowPassUniforms() const noexcept            { return m_shadow_pass_uniforms; }
+        [[nodiscard]] const rhi::SubResource&     GetShadowPassUniformsSubresource() const noexcept { return m_shadow_pass_uniforms_subresource; }
 
     private:
-        hlslpp::MeshUniforms m_shadow_pass_uniforms{};
-        rhi::SubResources    m_shadow_pass_uniforms_subresources{
-            { reinterpret_cast<Data::ConstRawPtr>(&m_shadow_pass_uniforms), sizeof(hlslpp::MeshUniforms) } // NOSONAR
+        hlslpp::MeshUniforms   m_shadow_pass_uniforms{};
+        const rhi::SubResource m_shadow_pass_uniforms_subresource{
+            reinterpret_cast<Data::ConstRawPtr>(&m_shadow_pass_uniforms), // NOSONAR
+            sizeof(hlslpp::MeshUniforms)
         };
     };
 
@@ -126,8 +127,9 @@ private:
         30.F                      // - light_specular_factor
     };
     hlslpp::SceneUniforms    m_scene_uniforms{ };
-    rhi::SubResources        m_scene_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) } // NOSONAR
+    rhi::SubResource         m_scene_uniforms_subresource{
+        reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), // NOSONAR
+        sizeof(hlslpp::SceneUniforms)
     };
     gfx::Camera              m_view_camera;
     gfx::Camera              m_light_camera;

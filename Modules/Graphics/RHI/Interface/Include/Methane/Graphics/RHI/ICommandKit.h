@@ -65,6 +65,8 @@ struct ICommandKit
     [[nodiscard]] virtual ICommandList&    GetListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const = 0;
     [[nodiscard]] virtual ICommandListSet& GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const = 0;
     [[nodiscard]] virtual IFence&          GetFence(CommandListId fence_id = 0U) const = 0;
+    virtual void ExecuteListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const = 0;
+    virtual void ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

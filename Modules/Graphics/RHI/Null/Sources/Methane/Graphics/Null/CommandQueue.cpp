@@ -24,6 +24,7 @@ Null implementation of the command queue interface.
 #include <Methane/Graphics/Null/CommandQueue.h>
 #include <Methane/Graphics/Null/Fence.h>
 #include <Methane/Graphics/Null/TransferCommandList.h>
+#include <Methane/Graphics/Null/ComputeCommandList.h>
 #include <Methane/Graphics/Null/RenderCommandList.h>
 #include <Methane/Graphics/Null/ParallelRenderCommandList.h>
 #include <Methane/Graphics/Base/Context.h>
@@ -41,6 +42,12 @@ Ptr<Rhi::ITransferCommandList> CommandQueue::CreateTransferCommandList()
 {
     META_FUNCTION_TASK();
     return std::make_shared<TransferCommandList>(*this);
+}
+
+Ptr<Rhi::IComputeCommandList> CommandQueue::CreateComputeCommandList()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ComputeCommandList>(*this);
 }
 
 Ptr<Rhi::IRenderCommandList> CommandQueue::CreateRenderCommandList(Rhi::IRenderPass& render_pass)

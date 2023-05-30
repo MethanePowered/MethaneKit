@@ -48,6 +48,7 @@ struct ProgramSettingsImpl
 };
 
 class RenderContext;
+class ComputeContext;
 class Shader;
 class ProgramBindings;
 
@@ -70,6 +71,7 @@ public:
     META_PIMPL_API explicit Program(const Ptr<IProgram>& interface_ptr);
     META_PIMPL_API explicit Program(IProgram& interface_ref);
     META_PIMPL_API Program(const RenderContext& context, const Settings& settings);
+    META_PIMPL_API Program(const ComputeContext& context, const Settings& settings);
 
     META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API IProgram& GetInterface() const META_PIMPL_NOEXCEPT;

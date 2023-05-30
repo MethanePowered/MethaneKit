@@ -49,4 +49,11 @@ DeviceCaps& DeviceCaps::SetTransferQueuesCount(uint32_t new_transfer_queues_coun
     return *this;
 }
 
+DeviceCaps& DeviceCaps::SetComputeQueuesCount(uint32_t new_compute_queues_count) noexcept
+{
+    META_FUNCTION_TASK();
+    compute_queues_count = new_compute_queues_count;
+    return *this;
+}
+
 } // namespace Methane::Graphics::Rhi

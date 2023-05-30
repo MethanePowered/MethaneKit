@@ -14,6 +14,7 @@ target_link_libraries(${TARGET}
         MethaneUserInterfaceNullTypes
         MethaneUserInterfaceNullTypography
         MethanePlatformApp
+        TaskFlow
         $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
         Catch2WithMain
 )

@@ -67,7 +67,7 @@ struct MeshUniforms
 `TexturedMeshBuffers<UniformsType>` which is managing vertex, index, uniforms buffers and texture with data for particular
 mesh drawing passed to constructor as a reference to [BaseMesh<VType>]((../../../Modules/Graphics/Primitives/Include/Methane/Graphics/Mesh/BaseMesh.hpp)) object.
 
-Supplementary member `m_scene_uniforms_subresources` stores a pointer to the `m_scene_uniforms` in the `std::vector` 
+Supplementary member `m_scene_uniforms_subresource` stores a pointer to the `m_scene_uniforms` in the `std::vector` 
 type `gfx::IResource::SubResources` which is passed to `Rhi::Buffer::SetData(...)` method to update the buffer data on GPU.
 
 Two `gfx::Camera` objects are used: one `m_view_camera` is usual perspective view camera, while the other `m_light_camera`
@@ -149,7 +149,7 @@ private:
         30.F                      // - light_specular_factor
     };
     hlslpp::SceneUniforms    m_scene_uniforms{ };
-    rhi::SubResources        m_scene_uniforms_subresources{
+    rhi::SubResources        m_scene_uniforms_subresource{
         { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) } // NOSONAR
     };
     gfx::Camera              m_view_camera;
@@ -308,7 +308,7 @@ Vertex shader since it will be used for rendering to depth buffer only without c
                 final_state_settings.program.GetSettings().input_buffer_layouts,
                 rhi::ProgramArgumentAccessors
                 {
-                    { { rhi::ShaderType::All, "g_mesh_uniforms"  }, rhi::ProgramArgumentAccessor::Type::Mutable },
+                    { { rhi::ShaderType::Vertex, "g_mesh_uniforms" }, rhi::ProgramArgumentAccessor::Type::Mutable },
                 },
                 m_shadow_pass_pattern.GetAttachmentFormats()
             }
@@ -385,12 +385,12 @@ rendered depth texture content for the next render pass. Render command list is 
         
         // Shadow-pass resource bindings for cube rendering
         frame.shadow_pass.cube.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.uniforms_buffer.GetInterface() } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms" }, { { frame.shadow_pass.cube.uniforms_buffer.GetInterface() } } },
         }, frame.index);
         
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::All, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer.GetInterface() } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms" }, { { frame.shadow_pass.floor.uniforms_buffer.GetInterface() } } },
         }, frame.index);
         
         // Create depth texture for shadow map rendering
@@ -577,11 +577,11 @@ bool ShadowCubeApp::Render()
     // Upload uniform buffers to GPU
     const ShadowCubeFrame& frame = GetCurrentFrame();
     const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.scene_uniforms_buffer.SetData(m_scene_uniforms_subresources, render_cmd_queue);
-    frame.shadow_pass.floor.uniforms_buffer.SetData(m_floor_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);
-    frame.shadow_pass.cube.uniforms_buffer.SetData(m_cube_buffers_ptr->GetShadowPassUniformsSubresources(), render_cmd_queue);
-    frame.final_pass.floor.uniforms_buffer.SetData(m_floor_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
-    frame.final_pass.cube.uniforms_buffer.SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
+    frame.scene_uniforms_buffer.SetData(render_cmd_queue, m_scene_uniforms_subresource);
+    frame.shadow_pass.floor.uniforms_buffer.SetData(render_cmd_queue, m_floor_buffers_ptr->GetShadowPassUniformsSubresources());
+    frame.shadow_pass.cube.uniforms_buffer.SetData(render_cmd_queue, m_cube_buffers_ptr->GetShadowPassUniformsSubresources());
+    frame.final_pass.floor.uniforms_buffer.SetData(render_cmd_queue, m_floor_buffers_ptr->GetFinalPassUniformsSubresources());
+    frame.final_pass.cube.uniforms_buffer.SetData(render_cmd_queue, m_cube_buffers_ptr->GetFinalPassUniformsSubresources());
 
     // Record commands for shadow & final render passes
     RenderScene(m_shadow_pass, frame.shadow_pass);

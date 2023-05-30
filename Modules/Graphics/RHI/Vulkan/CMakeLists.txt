@@ -17,8 +17,10 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ProgramArgumentBinding.h
     ${INCLUDE_DIR}/ProgramBindings.h
     ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/ComputeContext.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
+    ${INCLUDE_DIR}/ComputeState.h
     ${INCLUDE_DIR}/IResource.h
     ${INCLUDE_DIR}/ResourceView.h
     ${INCLUDE_DIR}/ResourceBarriers.h
@@ -37,6 +39,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ICommandList.h
     ${INCLUDE_DIR}/CommandList.hpp
     ${INCLUDE_DIR}/TransferCommandList.h
+    ${INCLUDE_DIR}/ComputeCommandList.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
     ${INCLUDE_DIR}/Utils.hpp
@@ -56,6 +59,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderContext.cpp
     ${SOURCES_DIR}/RenderState.cpp
     ${SOURCES_DIR}/ViewState.cpp
+    ${SOURCES_DIR}/ComputeState.cpp
     ${SOURCES_DIR}/IResource.cpp
     ${SOURCES_DIR}/ResourceView.cpp
     ${SOURCES_DIR}/ResourceBarriers.cpp
@@ -71,6 +75,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/CommandListSet.cpp
     ${SOURCES_DIR}/CommandListDebugGroup.cpp
     ${SOURCES_DIR}/TransferCommandList.cpp
+    ${SOURCES_DIR}/ComputeCommandList.cpp
     ${SOURCES_DIR}/RenderCommandList.cpp
     ${SOURCES_DIR}/ParallelRenderCommandList.cpp
 )

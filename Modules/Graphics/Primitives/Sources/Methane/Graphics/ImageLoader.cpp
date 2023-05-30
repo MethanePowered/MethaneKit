@@ -171,7 +171,7 @@ Rhi::Texture ImageLoader::LoadImageToTexture2D(const Rhi::CommandQueue& target_c
                              image_data.GetDimensions(), std::nullopt, image_format,
                              options.HasAnyBit(ImageOption::Mipmapped)));
     texture.SetName(texture_name);
-    texture.SetData({ { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } }, target_cmd_queue);
+    texture.SetData(target_cmd_queue, { { image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize() } });
 
     return texture;
 }
@@ -208,13 +208,13 @@ Rhi::Texture ImageLoader::LoadImagesToTextureCube(const Rhi::CommandQueue& targe
     const uint32_t   face_channels_count = face_images_data.front().second.GetChannelsCount();
     META_CHECK_ARG_EQUAL_DESCR(face_dimensions.GetWidth(), face_dimensions.GetHeight(), "all images of cube texture faces must have equal width and height");
 
-    Rhi::IResource::SubResources face_resources;
-    face_resources.reserve(face_images_data.size());
+    Rhi::IResource::SubResources face_sub_resources;
+    face_sub_resources.reserve(face_images_data.size());
     for(const auto& [face_index, image_data] : face_images_data)
     {
         META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     image_data.GetDimensions(),    "all face image of cube texture must have equal dimensions");
         META_CHECK_ARG_EQUAL_DESCR(face_channels_count, image_data.GetChannelsCount(), "all face image of cube texture must have equal channels count");
-        face_resources.emplace_back(image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize(), Rhi::IResource::SubResource::Index(face_index));
+        face_sub_resources.emplace_back(image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize(), Rhi::IResource::SubResource::Index(face_index));
     }
 
     // Load face images to cube texture
@@ -224,7 +224,7 @@ Rhi::Texture ImageLoader::LoadImagesToTextureCube(const Rhi::CommandQueue& targe
                              face_dimensions.GetWidth(), std::nullopt,
                              image_format, options.HasAnyBit(Option::Mipmapped)));
     texture.SetName(texture_name);
-    texture.SetData(face_resources, target_cmd_queue);
+    texture.SetData(target_cmd_queue, face_sub_resources);
 
     return texture;
 }

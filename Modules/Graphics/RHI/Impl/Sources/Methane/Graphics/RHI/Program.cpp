@@ -23,6 +23,7 @@ Methane Program PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/Program.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/Shader.h>
 #include <Methane/Graphics/RHI/ProgramBindings.h>
 
@@ -70,6 +71,11 @@ Program::Program(IProgram& interface_ref)
 }
 
 Program::Program(const RenderContext& context, const Settings& settings)
+    : Program(IProgram::Create(context.GetInterface(), Settings::Convert(context.GetInterface(), settings)))
+{
+}
+
+Program::Program(const ComputeContext& context, const Settings& settings)
     : Program(IProgram::Create(context.GetInterface(), Settings::Convert(context.GetInterface(), settings)))
 {
 }

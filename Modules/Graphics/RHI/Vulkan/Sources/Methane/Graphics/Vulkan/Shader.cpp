@@ -215,7 +215,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
     META_LOG("{} shader '{}' ({}) with argument bindings:",
              magic_enum::enum_name(GetType()),
              shader_settings.entry_function.function_name,
-             Rhi::IShader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions));
+             Rhi::ShaderMacroDefinition::ToString(shader_settings.compile_definitions));
 
     Ptrs<Base::ProgramArgumentBinding> argument_bindings;
     const spirv_cross::Compiler& spirv_compiler = GetNativeCompiler();
@@ -332,7 +332,7 @@ void Shader::InitializeVertexInputDescriptions(const Program& program)
     std::stringstream log_ss;
     log_ss << magic_enum::enum_name(GetType())
            << " shader '" << shader_settings.entry_function.function_name
-           << "' (" << Rhi::IShader::ConvertMacroDefinitionsToString(shader_settings.compile_definitions)
+           << "' (" << Rhi::ShaderMacroDefinition::ToString(shader_settings.compile_definitions)
            << ") input layout:" << std::endl;
     if (shader_resources.stage_inputs.empty())
         log_ss << " - No stage inputs." << std::endl;
@@ -386,9 +386,10 @@ vk::ShaderStageFlagBits Shader::ConvertTypeToStageFlagBits(Rhi::ShaderType shade
     META_FUNCTION_TASK();
     switch(shader_type)
     {
-    case Rhi::ShaderType::All:    return vk::ShaderStageFlagBits::eAll;
-    case Rhi::ShaderType::Vertex: return vk::ShaderStageFlagBits::eVertex;
-    case Rhi::ShaderType::Pixel:  return vk::ShaderStageFlagBits::eFragment;
+    case Rhi::ShaderType::All:     return vk::ShaderStageFlagBits::eAll;
+    case Rhi::ShaderType::Vertex:  return vk::ShaderStageFlagBits::eVertex;
+    case Rhi::ShaderType::Pixel:   return vk::ShaderStageFlagBits::eFragment;
+    case Rhi::ShaderType::Compute: return vk::ShaderStageFlagBits::eCompute;
     default: META_UNEXPECTED_ARG_RETURN(shader_type, vk::ShaderStageFlagBits::eAll);
     }
 }

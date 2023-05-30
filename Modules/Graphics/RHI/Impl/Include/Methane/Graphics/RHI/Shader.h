@@ -36,6 +36,7 @@ namespace Methane::Graphics::Rhi
 {
 
 class RenderContext;
+class ComputeContext;
 
 class Shader // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
@@ -53,6 +54,7 @@ public:
     META_PIMPL_API explicit Shader(const Ptr<IShader>& interface_ptr);
     META_PIMPL_API explicit Shader(IShader& interface_ref);
     META_PIMPL_API Shader(Type type, const RenderContext& context, const Settings& settings);
+    META_PIMPL_API Shader(Type type, const ComputeContext& context, const Settings& settings);
 
     META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API IShader& GetInterface() const META_PIMPL_NOEXCEPT;

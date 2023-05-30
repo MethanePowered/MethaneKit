@@ -41,12 +41,6 @@ public:
                   const Rhi::RenderContextSettings& settings);
 
     // IContext interface
-    [[nodiscard]] Ptr<Rhi::ICommandQueue> CreateCommandQueue(Rhi::CommandListType type) const override;
-    [[nodiscard]] Ptr<Rhi::IShader> CreateShader(Rhi::ShaderType type, const Rhi::ShaderSettings& settings) const override;
-    [[nodiscard]] Ptr<Rhi::IProgram>      CreateProgram(const Rhi::ProgramSettings& settings) const override;
-    [[nodiscard]] Ptr<Rhi::IBuffer>       CreateBuffer(const Rhi::BufferSettings& settings) const override;
-    [[nodiscard]] Ptr<Rhi::ITexture>      CreateTexture(const Rhi::TextureSettings& settings) const override;
-    [[nodiscard]] Ptr<Rhi::ISampler>      CreateSampler(const Rhi::SamplerSettings& settings) const override;
     void WaitForGpu(WaitFor wait_for) override;
 
     // IRenderContext interface

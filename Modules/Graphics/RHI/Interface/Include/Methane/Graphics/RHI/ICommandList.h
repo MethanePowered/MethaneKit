@@ -42,6 +42,7 @@ enum class CommandListType
     Transfer,
     Render,
     ParallelRender,
+    Compute,
 
     Count
 };

@@ -35,30 +35,6 @@ Base implementation of the resource interface.
 #include <utility>
 #include <algorithm>
 
-template<>
-struct fmt::formatter<Methane::Graphics::Rhi::SubResource::Index>
-{
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
-
-    template<typename FormatContext>
-    auto format(const Methane::Graphics::Rhi::SubResource::Index& index, FormatContext& ctx)
-    {
-        return format_to(ctx.out(), "{}", static_cast<std::string>(index));
-    }
-};
-
-template<>
-struct fmt::formatter<Methane::Graphics::Rhi::SubResource::Count>
-{
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
-
-    template<typename FormatContext>
-    auto format(const Methane::Graphics::Rhi::SubResource::Count& count, FormatContext& ctx)
-    {
-        return format_to(ctx.out(), "{}", static_cast<std::string>(count));
-    }
-};
-
 namespace Methane::Graphics::Base
 {
 
@@ -71,55 +47,10 @@ Resource::Resource(const Context& context, Type type, UsageMask usage_mask,
     , m_auto_transition_source_state_opt(auto_transition_source_state_opt)
 { }
 
-void Resource::SetData(const SubResources& sub_resources, Rhi::ICommandQueue&)
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EMPTY_DESCR(sub_resources, "can not set buffer data from empty sub-resources");
-
-    Data::Size sub_resources_data_size = 0U;
-    for(const Rhi::SubResource& sub_resource : sub_resources)
-    {
-        META_CHECK_ARG_NAME_DESCR("sub_resource", !sub_resource.IsEmptyOrNull(), "can not set empty subresource data to buffer");
-        sub_resources_data_size += sub_resource.GetDataSize();
-
-        if (m_sub_resource_count_constant)
-        {
-            META_CHECK_ARG_LESS(sub_resource.GetIndex(), m_sub_resource_count);
-        }
-        else
-        {
-            m_sub_resource_count += sub_resource.GetIndex();
-        }
-    }
-
-    const Data::Size reserved_data_size = GetDataSize(Data::MemoryState::Reserved);
-    META_UNUSED(reserved_data_size);
-
-    META_CHECK_ARG_LESS_OR_EQUAL_DESCR(sub_resources_data_size, reserved_data_size, "can not set more data than allocated buffer size");
-    m_initialized_data_size = sub_resources_data_size;
-
-    if (!m_sub_resource_count_constant)
-    {
-        FillSubresourceSizes();
-    }
-}
-
-Rhi::IResource::SubResource Resource::GetData(const SubResource::Index&, const std::optional<BytesRange>&)
-{
-    META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(IResource::SubResource(), "reading data is not allowed for this type of resource");
-}
-
 const Rhi::IContext& Resource::GetContext() const noexcept
 {
     META_FUNCTION_TASK();
     return m_context;
-}
-
-Data::Size Resource::GetSubResourceDataSize(const SubResource::Index& sub_resource_index) const
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(sub_resource_index, m_sub_resource_count);
-    return m_sub_resource_sizes[sub_resource_index.GetRawIndex(m_sub_resource_count)];
 }
 
 bool Resource::SetState(State state, Ptr<IBarriers>& out_barriers)
@@ -209,79 +140,6 @@ bool Resource::SetOwnerQueueFamily(uint32_t family_index)
 
     m_owner_queue_family_index_opt = family_index;
     return true;
-}
-
-void Resource::SetSubResourceCount(const SubResource::Count& sub_resource_count)
-{
-    META_FUNCTION_TASK();
-
-    m_sub_resource_count_constant = true;
-    m_sub_resource_count          = sub_resource_count;
-    m_sub_resource_sizes.clear();
-
-    FillSubresourceSizes();
-}
-
-void Resource::ValidateSubResource(const Rhi::SubResource& sub_resource) const
-{
-    META_FUNCTION_TASK();
-    ValidateSubResource(sub_resource.GetIndex(), sub_resource.GetDataRangeOptional());
-
-    const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(m_sub_resource_count);
-    const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
-    META_UNUSED(sub_resource_data_size);
-
-    if (sub_resource.HasDataRange())
-    {
-        META_CHECK_ARG_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource.GetDataRange().GetLength(),
-                                   "sub-resource {} data size should be equal to the length of data range", sub_resource.GetIndex());
-    }
-    META_CHECK_ARG_LESS_OR_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource_data_size,
-                                       "sub-resource {} data size should be less or equal than full resource size", sub_resource.GetIndex());
-}
-
-void Resource::ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(sub_resource_index, m_sub_resource_count);
-    if (!sub_resource_data_range)
-        return;
-
-    META_CHECK_ARG_NAME_DESCR("sub_resource_data_range", !sub_resource_data_range->IsEmpty(), "sub-resource {} data range can not be empty", sub_resource_index);
-    const Data::Index sub_resource_raw_index = sub_resource_index.GetRawIndex(m_sub_resource_count);
-    META_CHECK_ARG_LESS(sub_resource_raw_index, m_sub_resource_sizes.size());
-
-    const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
-    META_UNUSED(sub_resource_data_size);
-    META_CHECK_ARG_LESS_DESCR(sub_resource_data_range->GetEnd(), sub_resource_data_size + 1, "sub-resource index {}", sub_resource_index);
-}
-
-Data::Size Resource::CalculateSubResourceDataSize(const SubResource::Index& subresource_index) const
-{
-    META_FUNCTION_TASK();
-    static const SubResource::Index s_zero_index;
-    META_CHECK_ARG_EQUAL_DESCR(subresource_index, s_zero_index, "subresource size is undefined, must be provided by super class override");
-
-    static const SubResource::Count s_one_count;
-    META_CHECK_ARG_EQUAL_DESCR(m_sub_resource_count, s_one_count, "subresource size is undefined, must be provided by super class override");
-
-    return GetDataSize();
-}
-
-void Resource::FillSubresourceSizes()
-{
-    META_FUNCTION_TASK();
-    const Data::Size curr_subresource_raw_count = m_sub_resource_count.GetRawCount();
-    const auto       prev_subresource_raw_count = static_cast<Data::Size>(m_sub_resource_sizes.size());
-    if (curr_subresource_raw_count == prev_subresource_raw_count)
-        return;
-
-    m_sub_resource_sizes.reserve(curr_subresource_raw_count);
-    for (Data::Index subresource_raw_index = prev_subresource_raw_count; subresource_raw_index < curr_subresource_raw_count; ++subresource_raw_index)
-    {
-        const SubResource::Index subresource_index(subresource_raw_index, m_sub_resource_count);
-        m_sub_resource_sizes.emplace_back(CalculateSubResourceDataSize(subresource_index));
-    }
 }
 
 } // namespace Methane::Graphics::Base

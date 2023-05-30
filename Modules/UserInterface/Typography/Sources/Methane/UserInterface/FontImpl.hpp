@@ -504,10 +504,8 @@ private:
         }
         else
         {
-            atlas_texture.SetData(
-                { rhi::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }, // NOSONAR
-                render_context.GetRenderCommandKit().GetQueue()
-            );
+            atlas_texture.SetData(render_context.GetRenderCommandKit().GetQueue(),
+                { rhi::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }); // NOSONAR
         }
         return { atlas_texture, deferred_data_init };
     }
@@ -576,11 +574,8 @@ private:
         }
         else
         {
-            atlas_texture.texture.SetData(
-                rhi::IResource::SubResources
-                    { rhi::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }, // NOSONAR
-                render_context.GetRenderCommandKit().GetQueue()
-            );
+            atlas_texture.texture.SetData(render_context.GetRenderCommandKit().GetQueue(),
+                { rhi::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_atlas_bitmap.data()), static_cast<Data::Size>(m_atlas_bitmap.size())) }); // NOSONAR
         }
 
         atlas_texture.is_update_required = false;

@@ -262,7 +262,7 @@ bool CubeMapArrayApp::Render()
     // Update uniforms buffer related to current frame
     const CubeMapArrayFrame& frame = GetCurrentFrame();
     const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.cube.uniforms_buffer.SetData(m_cube_buffers_ptr->GetFinalPassUniformsSubresources(), render_cmd_queue);
+    frame.cube.uniforms_buffer.SetData(render_cmd_queue, m_cube_buffers_ptr->GetFinalPassUniformsSubresource());
 
     // 1) Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     META_DEBUG_GROUP_VAR(s_debug_group, "Cube Instances Rendering");

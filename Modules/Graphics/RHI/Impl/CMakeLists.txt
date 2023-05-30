@@ -19,8 +19,10 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderPattern.h
     ${INCLUDE_DIR}/RenderPass.h
     ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/ComputeContext.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
+    ${INCLUDE_DIR}/ComputeState.h
     ${INCLUDE_DIR}/Buffer.h
     ${INCLUDE_DIR}/BufferSet.h
     ${INCLUDE_DIR}/Texture.h
@@ -29,6 +31,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
     ${INCLUDE_DIR}/TransferCommandList.h
+    ${INCLUDE_DIR}/ComputeCommandList.h
 )
 
 list(APPEND SOURCES
@@ -45,8 +48,10 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderPattern.cpp
     ${SOURCES_DIR}/RenderPass.cpp
     ${SOURCES_DIR}/RenderContext.cpp
+    ${SOURCES_DIR}/ComputeContext.cpp
     ${SOURCES_DIR}/RenderState.cpp
     ${SOURCES_DIR}/ViewState.cpp
+    ${SOURCES_DIR}/ComputeState.cpp
     ${SOURCES_DIR}/Buffer.cpp
     ${SOURCES_DIR}/BufferSet.cpp
     ${SOURCES_DIR}/Texture.cpp
@@ -55,6 +60,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/RenderCommandList.cpp
     ${SOURCES_DIR}/ParallelRenderCommandList.cpp
     ${SOURCES_DIR}/TransferCommandList.cpp
+    ${SOURCES_DIR}/ComputeCommandList.cpp
 )
 
 if (METHANE_GFX_API EQUAL METHANE_GFX_DIRECTX)

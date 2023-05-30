@@ -23,6 +23,8 @@ Null implementation of the program interface.
 
 #pragma once
 
+#include "Shader.h"
+
 #include <Methane/Graphics/Base/Program.h>
 
 namespace Methane::Graphics::Null
@@ -32,10 +34,12 @@ class Program final
     : public Base::Program
 {
 public:
-    using Base::Program::Program;
+    Program(const Base::Context& context, const Settings& settings);
 
     // IProgram interface
     [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index) override;
+
+    void SetArgumentBindings(const ResourceArgumentDescs& argument_descriptions);
 };
 
 } // namespace Methane::Graphics::Null

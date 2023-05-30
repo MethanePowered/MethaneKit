@@ -48,11 +48,14 @@ Methane text rendering primitive.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Pimpl.hpp>
+#include <memory>
 
 namespace hlslpp // NOSONAR
 {
 #pragma pack(push, 16)
+
 #include <TextUniforms.h> // NOSONAR
+
 #pragma pack(pop)
 }
 
@@ -76,7 +79,7 @@ public:
 
 private:
     uint32_t             m_frame_index;
-    DirtyResourceMask    m_dirty_mask { ~0U };
+    DirtyResourceMask    m_dirty_mask{ ~0U };
     rhi::BufferSet       m_vertex_buffer_set;
     rhi::Buffer          m_index_buffer;
     rhi::Buffer          m_uniforms_buffer;
@@ -87,11 +90,11 @@ public:
     struct CommonResourceRefs
     {
         const rhi::RenderContext& render_context;
-        const rhi::RenderState&   render_state;
-        const rhi::Buffer&        const_buffer;
-        const rhi::Texture&       atlas_texture;
-        const rhi::Sampler&       atlas_sampler;
-        const TextMesh&           text_mesh;
+        const rhi::RenderState  & render_state;
+        const rhi::Buffer       & const_buffer;
+        const rhi::Texture      & atlas_texture;
+        const rhi::Sampler      & atlas_sampler;
+        const TextMesh          & text_mesh;
     };
 
     TextFrameResources(uint32_t frame_index, const CommonResourceRefs& common_resources)
@@ -115,11 +118,12 @@ public:
     {
         META_FUNCTION_TASK();
         return m_dirty_mask.HasAnyBits({
-            DirtyResource::Mesh,
-            DirtyResource::Uniforms,
-            DirtyResource::Atlas
-        });
+                                           DirtyResource::Mesh,
+                                           DirtyResource::Uniforms,
+                                           DirtyResource::Atlas
+                                       });
     }
+
     [[nodiscard]] bool IsInitialized() const noexcept
     {
         META_FUNCTION_TASK();
@@ -139,7 +143,7 @@ public:
         return m_vertex_buffer_set;
     }
 
-    [[nodiscard]] const rhi::Buffer&          GetIndexBuffer() const noexcept
+    [[nodiscard]] const rhi::Buffer& GetIndexBuffer() const noexcept
     {
         return m_index_buffer;
     }
@@ -183,18 +187,18 @@ public:
 
         if (!m_vertex_buffer_set.IsInitialized() || m_vertex_buffer_set[0].GetDataSize() < vertices_data_size)
         {
-            const Data::Size  vertex_buffer_size = vertices_data_size * reservation_multiplier;
-            rhi::Buffer vertex_buffer;
+            const Data::Size vertex_buffer_size = vertices_data_size * reservation_multiplier;
+            rhi::Buffer      vertex_buffer;
             vertex_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForVertexBuffer(vertex_buffer_size, text_mesh.GetVertexSize()));
             vertex_buffer.SetName(fmt::format("{} Text Vertex Buffer {}", text_name, m_frame_index));
             m_vertex_buffer_set = rhi::BufferSet(rhi::BufferType::Vertex, { vertex_buffer });
         }
-        m_vertex_buffer_set[0].SetData({
+        m_vertex_buffer_set[0].SetData(render_context.GetRenderCommandKit().GetQueue(), {
             rhi::SubResource(
                 reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetVertices().data()), vertices_data_size, // NOSONAR
                 rhi::SubResource::Index(), rhi::BytesRange(0U, vertices_data_size)
             )
-        }, render_context.GetRenderCommandKit().GetQueue());
+        });
 
         // Update index buffer
         const Data::Size indices_data_size = text_mesh.GetIndicesDataSize();
@@ -207,12 +211,12 @@ public:
             m_index_buffer.SetName(fmt::format("{} Text Index Buffer {}", text_name, m_frame_index));
         }
 
-        m_index_buffer.SetData({
+        m_index_buffer.SetData(render_context.GetRenderCommandKit().GetQueue(), {
             rhi::SubResource(
                 reinterpret_cast<Data::ConstRawPtr>(text_mesh.GetIndices().data()), indices_data_size, // NOSONAR
                 rhi::SubResource::Index(), rhi::BytesRange(0U, indices_data_size)
             )
-        }, render_context.GetRenderCommandKit().GetQueue());
+        });
 
         m_dirty_mask.SetBitOff(DirtyResource::Mesh);
     }
@@ -244,19 +248,13 @@ public:
                 m_program_bindings.Get({ rhi::ShaderType::Vertex, "g_uniforms" }).SetResourceViews({ { m_uniforms_buffer.GetInterface() } });
             }
         }
-        m_uniforms_buffer.SetData(
-            rhi::SubResources
-                {
-                    { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size } // NOSONAR
-                },
-            render_context.GetRenderCommandKit().GetQueue()
-        );
-
+        m_uniforms_buffer.SetData(render_context.GetRenderCommandKit().GetQueue(),
+                                  { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size }); // NOSONAR
         m_dirty_mask.SetBitOff(DirtyResource::Uniforms);
     }
 
     void InitializeProgramBindings(const rhi::RenderState& state, const rhi::Buffer& const_buffer,
-                                                         const rhi::Sampler& atlas_sampler, std::string_view text_name)
+                                   const rhi::Sampler& atlas_sampler, std::string_view text_name)
     {
         META_FUNCTION_TASK();
         if (m_program_bindings.IsInitialized())
@@ -268,24 +266,24 @@ public:
         META_CHECK_ARG_TRUE(m_uniforms_buffer.IsInitialized());
 
         m_program_bindings = state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_uniforms"  }, { { m_uniforms_buffer.GetInterface() } } },
-            { { rhi::ShaderType::Pixel,  "g_constants" }, { { const_buffer.GetInterface()      } } },
-            { { rhi::ShaderType::Pixel,  "g_texture"   }, { { m_atlas_texture.GetInterface()   } } },
-            { { rhi::ShaderType::Pixel,  "g_sampler"   }, { { atlas_sampler.GetInterface()     } } },
-        });
+                                                                   { { rhi::ShaderType::Vertex, "g_uniforms" },  { { m_uniforms_buffer.GetInterface() } } },
+                                                                   { { rhi::ShaderType::Pixel,  "g_constants" }, { { const_buffer.GetInterface() } } },
+                                                                   { { rhi::ShaderType::Pixel,  "g_texture" },   { { m_atlas_texture.GetInterface() } } },
+                                                                   { { rhi::ShaderType::Pixel,  "g_sampler" },   { { atlas_sampler.GetInterface() } } },
+                                                               });
         m_program_bindings.SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
     }
 };
 
 class Text::Impl // NOSONAR - class destructor is required
     : public Data::Emitter<ITextCallback>
-    , public Data::Receiver<IFontCallback>
+      , public Data::Receiver<IFontCallback>
 {
 private:
-    using FrameResources    = TextFrameResources;
+    using FrameResources = TextFrameResources;
     using PerFrameResources = std::vector<TextFrameResources>;
 
-    Context&            m_ui_context;
+    Context& m_ui_context;
     SettingsUtf32       m_settings;
     UnitRect            m_frame_rect;
     FrameSize           m_render_attachment_size = FrameSize::Max();
@@ -296,8 +294,8 @@ private:
     rhi::Buffer         m_const_buffer;
     rhi::Sampler        m_atlas_sampler;
     PerFrameResources   m_frame_resources;
-    bool                m_is_viewport_dirty = true;
-    bool                m_is_const_buffer_dirty = true;
+    bool                m_is_viewport_dirty      = true;
+    bool                m_is_const_buffer_dirty  = true;
 
 public:
     Impl(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf32& settings)
@@ -316,39 +314,40 @@ public:
             render_state_ptr)
         {
             META_CHECK_ARG_EQUAL_DESCR(render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
-                                       "Text '{}' render state '{}' from cache has incompatible render pattern settings", m_settings.name, m_settings.state_name);
+                                       "Text '{}' render state '{}' from cache has incompatible render pattern settings", m_settings.name,
+                                       m_settings.state_name);
             m_render_state = rhi::RenderState(render_state_ptr);
         }
         else
         {
             rhi::RenderState::Settings state_settings
-            {
-                rhi::Program(m_ui_context.GetRenderContext(),
-                    rhi::Program::Settings
-                    {
-                        rhi::Program::ShaderSet
-                        {
-                            { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, { } } },
-                            { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Text", "TextPS" }, { } } },
-                        },
-                        rhi::ProgramInputBufferLayouts
-                        {
-                            rhi::Program::InputBufferLayout
-                                {
-                                    rhi::Program::InputBufferLayout::ArgumentSemantics { "POSITION", "TEXCOORD" }
-                                }
-                        },
-                        rhi::ProgramArgumentAccessors
-                        {
-                            { { rhi::ShaderType::Vertex, "g_uniforms"  }, rhi::ProgramArgumentAccessor::Type::Mutable  },
-                            { { rhi::ShaderType::Pixel,  "g_constants" }, rhi::ProgramArgumentAccessor::Type::Mutable  },
-                            { { rhi::ShaderType::Pixel,  "g_texture"   }, rhi::ProgramArgumentAccessor::Type::Mutable  },
-                            { { rhi::ShaderType::Pixel,  "g_sampler"   }, rhi::ProgramArgumentAccessor::Type::Constant },
-                        },
-                        render_pattern.GetAttachmentFormats()
-                    }),
-                render_pattern
-            };
+                                           {
+                                               rhi::Program(m_ui_context.GetRenderContext(),
+                                                            rhi::Program::Settings
+                                                                {
+                                                                    rhi::Program::ShaderSet
+                                                                        {
+                                                                            { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, {} } },
+                                                                            { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Text", "TextPS" }, {} } },
+                                                                        },
+                                                                    rhi::ProgramInputBufferLayouts
+                                                                        {
+                                                                            rhi::Program::InputBufferLayout
+                                                                                {
+                                                                                    rhi::Program::InputBufferLayout::ArgumentSemantics{ "POSITION", "TEXCOORD" }
+                                                                                }
+                                                                        },
+                                                                    rhi::ProgramArgumentAccessors
+                                                                        {
+                                                                            { { rhi::ShaderType::Vertex, "g_uniforms" },  rhi::ProgramArgumentAccessor::Type::Mutable },
+                                                                            { { rhi::ShaderType::Pixel,  "g_constants" }, rhi::ProgramArgumentAccessor::Type::Mutable },
+                                                                            { { rhi::ShaderType::Pixel,  "g_texture" },   rhi::ProgramArgumentAccessor::Type::Mutable },
+                                                                            { { rhi::ShaderType::Pixel,  "g_sampler" },   rhi::ProgramArgumentAccessor::Type::Constant },
+                                                                        },
+                                                                    render_pattern.GetAttachmentFormats()
+                                                                }),
+                                               render_pattern
+                                           };
             state_settings.program.SetName("Text Shading");
             state_settings.depth.enabled                                        = false;
             state_settings.depth.write_enabled                                  = false;
@@ -369,12 +368,12 @@ public:
 
         const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsBase();
         m_view_state = rhi::ViewState({
-            { gfx::GetFrameViewport(viewport_rect)    },
-            { gfx::GetFrameScissorRect(viewport_rect) }
-        });
+                                          { gfx::GetFrameViewport(viewport_rect) },
+                                          { gfx::GetFrameScissorRect(viewport_rect) }
+                                      });
 
-        static const std::string s_sampler_name = "Font Atlas Sampler";
-        if (const auto atlas_sampler_ptr = std::dynamic_pointer_cast<rhi::ISampler>(gfx_objects_registry.GetGraphicsObject(s_sampler_name));
+        static const std::string s_sampler_name    = "Font Atlas Sampler";
+        if (const auto           atlas_sampler_ptr = std::dynamic_pointer_cast<rhi::ISampler>(gfx_objects_registry.GetGraphicsObject(s_sampler_name));
             atlas_sampler_ptr)
         {
             m_atlas_sampler = rhi::Sampler(atlas_sampler_ptr);
@@ -382,9 +381,9 @@ public:
         else
         {
             m_atlas_sampler = m_ui_context.GetRenderContext().CreateSampler({
-                rhi::ISampler::Filter(rhi::ISampler::Filter::MinMag::Linear),
-                rhi::ISampler::Address(rhi::ISampler::Address::Mode::ClampToZero),
-            });
+                                                                                rhi::ISampler::Filter(rhi::ISampler::Filter::MinMag::Linear),
+                                                                                rhi::ISampler::Address(rhi::ISampler::Address::Mode::ClampToZero),
+                                                                            });
             m_atlas_sampler.SetName(s_sampler_name);
 
             gfx_objects_registry.AddGraphicsObject(m_atlas_sampler.GetInterface());
@@ -396,19 +395,19 @@ public:
     { }
 
     Impl(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf8& settings)
-    : Impl(ui_context, render_pattern, font,
-        SettingsUtf32
-        {
-            settings.name,
-            Font::ConvertUtf8To32(settings.text),
-            settings.rect,
-            settings.layout,
-            settings.color,
-            settings.incremental_update,
-            settings.adjust_vertical_content_offset,
-            settings.mesh_buffers_reservation_multiplier,
-            settings.state_name
-        }
+        : Impl(ui_context, render_pattern, font,
+               SettingsUtf32
+                   {
+                       settings.name,
+                       Font::ConvertUtf8To32(settings.text),
+                       settings.rect,
+                       settings.layout,
+                       settings.color,
+                       settings.incremental_update,
+                       settings.adjust_vertical_content_offset,
+                       settings.mesh_buffers_reservation_multiplier,
+                       settings.state_name
+                   }
     )
     { }
 
@@ -425,10 +424,16 @@ public:
         m_font.Disconnect(*this);
     }
 
-    [[nodiscard]] const UnitRect&       GetFrameRect() const noexcept { return m_frame_rect; }
-    [[nodiscard]] const SettingsUtf32&  GetSettings() const noexcept  { return m_settings; }
-    [[nodiscard]] const std::u32string& GetTextUtf32() const noexcept { return m_settings.text; }
-    [[nodiscard]] std::string           GetTextUtf8() const
+    [[nodiscard]] const UnitRect& GetFrameRect() const noexcept
+    { return m_frame_rect; }
+
+    [[nodiscard]] const SettingsUtf32& GetSettings() const noexcept
+    { return m_settings; }
+
+    [[nodiscard]] const std::u32string& GetTextUtf32() const noexcept
+    { return m_settings.text; }
+
+    [[nodiscard]] std::string GetTextUtf8() const
     {
         META_FUNCTION_TASK();
         return Font::ConvertUtf32To8(m_settings.text);
@@ -567,7 +572,8 @@ public:
         }
         if (frame_resources.IsDirty(FrameResources::DirtyResource::Mesh) && m_text_mesh_ptr)
         {
-            frame_resources.UpdateMeshBuffers(m_ui_context.GetRenderContext(), *m_text_mesh_ptr, m_settings.name, m_settings.mesh_buffers_reservation_multiplier);
+            frame_resources.UpdateMeshBuffers(m_ui_context.GetRenderContext(), *m_text_mesh_ptr, m_settings.name,
+                                              m_settings.mesh_buffers_reservation_multiplier);
         }
         if (frame_resources.IsDirty(FrameResources::DirtyResource::Atlas))
         {
@@ -608,7 +614,7 @@ public:
         META_FUNCTION_TASK();
         META_UNUSED(old_atlas_texture_ptr);
         if (m_font != font || m_frame_resources.empty() ||
-            (new_atlas_texture_ptr && m_ui_context.GetRenderContext() != new_atlas_texture_ptr->GetRenderContext()))
+            (new_atlas_texture_ptr && m_ui_context.GetRenderContext().GetInterfacePtr().get() != std::addressof(new_atlas_texture_ptr->GetContext())))
             return;
 
         MakeFrameResourcesDirty(FrameResources::DirtyResourceMask(FrameResources::DirtyResource::Atlas));
@@ -738,14 +744,8 @@ private:
         const hlslpp::TextConstants constants{
             m_settings.color.AsVector()
         };
-        m_const_buffer.SetData(
-            rhi::SubResources
-            {
-                rhi::IResource::SubResource(reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
-                                            static_cast<Data::Size>(sizeof(constants)))
-            },
-            m_ui_context.GetRenderContext().GetRenderCommandKit().GetQueue()
-        );
+        m_const_buffer.SetData(m_ui_context.GetRenderContext().GetRenderCommandKit().GetQueue(),
+                               { reinterpret_cast<Data::ConstRawPtr>(&constants), static_cast<Data::Size>(sizeof(constants)) }); // NOSONAR
         m_is_const_buffer_dirty = false;
     }
 

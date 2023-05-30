@@ -24,6 +24,7 @@ Methane Texture PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 
 #include <Methane/Pimpl.hpp>
@@ -57,6 +58,11 @@ Texture::Texture(const IContext& context, const Settings& settings)
 
 Texture::Texture(const RenderContext& render_context, const Settings& settings)
     : Texture(render_context.GetInterface(), settings)
+{
+}
+
+Texture::Texture(const ComputeContext& compute_context, const Settings& settings)
+    : Texture(compute_context.GetInterface(), settings)
 {
 }
 
@@ -127,9 +133,9 @@ bool Texture::SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers)
     return state_changed;
 }
 
-void Texture::SetData(const SubResources& sub_resources, const CommandQueue& target_cmd_queue) const
+void Texture::SetData(const CommandQueue& target_cmd_queue, const SubResources& sub_resources) const
 {
-    GetImpl(m_impl_ptr).SetData(sub_resources, target_cmd_queue.GetInterface());
+    GetImpl(m_impl_ptr).SetData(target_cmd_queue.GetInterface(), sub_resources);
 }
 
 void Texture::RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const
@@ -137,9 +143,9 @@ void Texture::RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_vie
     GetImpl(m_impl_ptr).RestoreDescriptorViews(descriptor_by_view_id);
 }
 
-SubResource Texture::GetData(const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range) const
+SubResource Texture::GetData(const CommandQueue& target_cmd_queue, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range) const
 {
-    return GetImpl(m_impl_ptr).GetData(sub_resource_index, data_range);
+    return GetImpl(m_impl_ptr).GetData(target_cmd_queue.GetInterface(), sub_resource_index, data_range);
 }
 
 Data::Size Texture::GetDataSize(Data::MemoryState size_type) const META_PIMPL_NOEXCEPT
@@ -152,7 +158,7 @@ Data::Size Texture::GetSubResourceDataSize(const SubResource::Index& sub_resourc
     return GetImpl(m_impl_ptr).GetSubResourceDataSize(sub_resource_index);
 }
 
-const SubResource::Count& Texture::GetSubresourceCount() const META_PIMPL_NOEXCEPT
+SubResource::Count Texture::GetSubresourceCount() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetSubresourceCount();
 }
@@ -177,11 +183,9 @@ const Texture::DescriptorByViewId& Texture::GetDescriptorByViewId() const META_P
     return GetImpl(m_impl_ptr).GetDescriptorByViewId();
 }
 
-RenderContext Texture::GetRenderContext() const
+const IContext& Texture::GetContext() const META_PIMPL_NOEXCEPT
 {
-    IContext& context = const_cast<IContext&>(GetImpl(m_impl_ptr).GetContext()); // NOSONAR
-    META_CHECK_ARG_EQUAL(context.GetType(), ContextType::Render);
-    return RenderContext(dynamic_cast<IRenderContext&>(context));
+    return GetImpl(m_impl_ptr).GetContext();
 }
 
 const Opt<uint32_t>& Texture::GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT

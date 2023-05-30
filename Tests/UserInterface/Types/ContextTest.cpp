@@ -33,6 +33,7 @@ Unit-tests of the User Interface IContext
 #include <Methane/UserInterface/FontLibrary.h>
 #include <Methane/UserInterface/TypeTraits.hpp>
 
+#include <taskflow/taskflow.hpp>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
@@ -41,17 +42,12 @@ using namespace Methane::Graphics;
 using namespace Methane::Platform;
 using namespace Methane::UserInterface;
 
-namespace tf
-{
-class Executor { public: Executor() = default; };
-}
-
 static const float       g_dot_to_px_factor = 2.F;
 static const uint32_t    g_font_resolution_dpi = 96;
 static const FakeApp     g_fake_app(2.F, 96);
 static const UnitSize    g_frame_size_dot { Units::Dots, 960U, 540U };
 static const UnitSize    g_frame_size_px  { Units::Pixels, 1920U, 1080U };
-static tf::Executor      g_fake_executor;
+static tf::Executor      g_parallel_executor;
 
 static Rhi::Device GetTestDevice()
 {
@@ -62,7 +58,7 @@ static Rhi::Device GetTestDevice()
 
 TEST_CASE("UI Context Accessors", "[ui][context][accessor]")
 {
-    const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
+    const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_parallel_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
     const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
     const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
     UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
@@ -92,7 +88,7 @@ TEST_CASE("UI Context Accessors", "[ui][context][accessor]")
 
 TEMPLATE_TEST_CASE("UI Context Convertors of Unit Types", "[ui][context][unit][convert]", ALL_BASE_TYPES)
 {
-const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
+const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_parallel_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
 const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
 const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
 UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
@@ -184,7 +180,7 @@ UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
 
 TEMPLATE_TEST_CASE("UI Context Comparison of Unit Types", "[ui][context][unit][convert]", ALL_BASE_TYPES)
 {
-    const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
+    const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_parallel_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
     const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
     const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
     UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);
@@ -210,7 +206,7 @@ TEMPLATE_TEST_CASE("UI Context Comparison of Unit Types", "[ui][context][unit][c
 
 TEMPLATE_TEST_CASE("UI Context Convertors of Scalar Types", "[ui][context][unit][convert]", int32_t, uint32_t, float, double)
 {
-    const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_fake_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
+    const Rhi::RenderContext render_context(AppEnvironment{}, GetTestDevice(), g_parallel_executor, Rhi::RenderContextSettings{ g_frame_size_px.AsBase() });
     const Rhi::CommandQueue render_cmd_queue(render_context, Rhi::CommandListType::Render);
     const Rhi::RenderPattern render_pattern(render_context, Rhi::RenderPatternSettings{});
     UserInterface::Context ui_context(g_fake_app, render_cmd_queue, render_pattern);

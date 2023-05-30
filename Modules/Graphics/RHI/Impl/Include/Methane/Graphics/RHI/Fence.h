@@ -62,9 +62,9 @@ public:
     // IFence interface methods
     META_PIMPL_API void Signal() const;
     META_PIMPL_API void WaitOnCpu() const;
-    META_PIMPL_API void WaitOnGpu(ICommandQueue& wait_on_command_queue) const;
+    META_PIMPL_API void WaitOnGpu(const CommandQueue& wait_on_command_queue) const;
     META_PIMPL_API void FlushOnCpu() const;
-    META_PIMPL_API void FlushOnGpu(ICommandQueue& wait_on_command_queue) const;
+    META_PIMPL_API void FlushOnGpu(const CommandQueue& wait_on_command_queue) const;
 
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::Fence;

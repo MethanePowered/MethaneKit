@@ -41,9 +41,9 @@ public:
     // IObject overrides
     bool SetName(std::string_view name) override;
 
-    // IResource overrides
-    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override;
-    SubResource GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const std::optional<BytesRange>& data_range = {}) override;
+    // IBuffer overrides
+    void SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& sub_resource) override;
+    SubResource GetData(Rhi::ICommandQueue& target_cmd_queue, const BytesRangeOpt& data_range = {}) override;
     Opt<Descriptor> InitializeNativeViewDescriptor(const View::Id& view_id) override;
 
     D3D12_VERTEX_BUFFER_VIEW        GetNativeVertexBufferView() const;

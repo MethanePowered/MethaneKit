@@ -60,7 +60,7 @@ public:
     void CompleteInitialization() override;
     void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 
-    void Apply(ICommandList& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const;
+    void Apply(ICommandList& command_list, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const;
 
 private:
     struct RootParameterBinding
@@ -69,6 +69,9 @@ private:
         uint32_t                    root_parameter_index = 0U;
         D3D12_GPU_DESCRIPTOR_HANDLE base_descriptor      {  };
         D3D12_GPU_VIRTUAL_ADDRESS   gpu_virtual_address  = 0U;
+
+        template<Rhi::CommandListType command_list_type>
+        void Apply(ID3D12GraphicsCommandList& d3d12_command_list) const;
     };
 
     template<typename FuncType> // function void(ArgumentBinding&, const DescriptorHeap::Reservation*)
@@ -77,9 +80,12 @@ private:
     void AddRootParameterBinding(const Rhi::ProgramArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
     void UpdateRootParameterBindings();
     void AddRootParameterBindingsForArgument(ArgumentBinding& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
+    void ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask access, const ICommandList& command_list,
+                                    const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const;
+    template<Rhi::CommandListType command_list_type>
     void ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask access, ID3D12GraphicsCommandList& d3d12_command_list,
                                     const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const;
-    void ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const;
+
     void CopyDescriptorsToGpu() const;
     void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBinding& argument_binding,
                                          const DescriptorHeap::Reservation* p_heap_reservation) const;

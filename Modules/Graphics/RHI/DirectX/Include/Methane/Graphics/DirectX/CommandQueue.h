@@ -25,13 +25,14 @@ DirectX 12 implementation of the command queue interface.
 
 #include <Methane/Graphics/Base/CommandQueueTracking.h>
 
-#pragma warning(push)
-#pragma warning(disable: 4189)
-#include <tracy/TracyD3D12.hpp>
-#pragma warning(pop)
-
 #include <wrl.h>
 #include <directx/d3d12.h>
+
+#ifdef TRACY_ENABLE
+#include <tracy/TracyD3D12.hpp>
+#else
+struct TracyD3D12Ctx{};
+#endif
 
 namespace Methane::Graphics::DirectX
 {
@@ -51,6 +52,7 @@ public:
     // ICommandQueue interface
     [[nodiscard]] Ptr<Rhi::IFence>                     CreateFence() override;
     [[nodiscard]] Ptr<Rhi::ITransferCommandList>       CreateTransferCommandList() override;
+    [[nodiscard]] Ptr<Rhi::IComputeCommandList>        CreateComputeCommandList() override;
     [[nodiscard]] Ptr<Rhi::IRenderCommandList>         CreateRenderCommandList(Rhi::IRenderPass& render_pass) override;
     [[nodiscard]] Ptr<Rhi::IParallelRenderCommandList> CreateParallelRenderCommandList(Rhi::IRenderPass& render_pass) override;
     [[nodiscard]] Ptr<Rhi::ITimestampQueryPool>        CreateTimestampQueryPool(uint32_t max_timestamps_per_frame) override;

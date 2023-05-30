@@ -40,9 +40,11 @@ class CommandListSet;
 class Fence;
 class RenderPass;
 class RenderContext;
+class ComputeContext;
 class RenderCommandList;
 class ParallelRenderCommandList;
 class TransferCommandList;
+class ComputeCommandList;
 
 class CommandQueue // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
@@ -53,6 +55,7 @@ public:
     META_PIMPL_API explicit CommandQueue(const Ptr<ICommandQueue>& interface_ptr);
     META_PIMPL_API explicit CommandQueue(ICommandQueue& interface_ref);
     META_PIMPL_API CommandQueue(const RenderContext& context, CommandListType command_lists_type);
+    META_PIMPL_API CommandQueue(const ComputeContext& context, CommandListType command_lists_type);
 
     META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API ICommandQueue& GetInterface() const META_PIMPL_NOEXCEPT;
@@ -70,6 +73,7 @@ public:
     [[nodiscard]] META_PIMPL_API CommandKit                CreateCommandKit() const;
     [[nodiscard]] META_PIMPL_API Fence                     CreateFence() const;
     [[nodiscard]] META_PIMPL_API TransferCommandList       CreateTransferCommandList() const;
+    [[nodiscard]] META_PIMPL_API ComputeCommandList        CreateComputeCommandList() const;
     [[nodiscard]] META_PIMPL_API RenderCommandList         CreateRenderCommandList(const RenderPass& render_pass) const;
     [[nodiscard]] META_PIMPL_API ParallelRenderCommandList CreateParallelRenderCommandList(const RenderPass& render_pass) const;
     [[nodiscard]] META_PIMPL_API const IContext&           GetContext() const META_PIMPL_NOEXCEPT;

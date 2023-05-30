@@ -15,6 +15,10 @@ coverage:
         informational: true
         only_pulls: true
 
+ignore:
+  - "Tests"
+  - "Apps"
+
 component_management:
   individual_components:
     - component_id: common-primitives

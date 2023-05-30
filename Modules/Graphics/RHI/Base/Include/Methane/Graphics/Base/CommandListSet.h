@@ -27,8 +27,7 @@ Base implementation of the command list set interface.
 
 #include <Methane/Graphics/RHI/ICommandListSet.h>
 #include <Methane/Data/Receiver.hpp>
-
-#include <tracy/Tracy.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <mutex>
 #include <atomic>

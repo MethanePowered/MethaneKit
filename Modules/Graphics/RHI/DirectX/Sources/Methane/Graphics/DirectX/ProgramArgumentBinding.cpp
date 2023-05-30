@@ -32,9 +32,21 @@ DirectX 12 implementation of the program argument binding interface.
 namespace Methane::Graphics::DirectX
 {
 
+static Rhi::ResourceUsageMask GetShaderUsage(ProgramArgumentBindingType binding_type) noexcept
+{
+    META_FUNCTION_TASK();
+    Rhi::ResourceUsageMask shader_usage(Rhi::ResourceUsage::ShaderRead);
+    if (binding_type == ProgramArgumentBindingType::UnorderedAccessView)
+    {
+        shader_usage.SetBitOn(Rhi::ResourceUsage::ShaderWrite);
+    }
+    return shader_usage;
+}
+
 ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, const Settings& settings)
     : Base::ProgramArgumentBinding(context, settings)
     , m_settings_dx(settings)
+    , m_shader_usage(GetShaderUsage(settings.type))
     , m_cp_native_device(dynamic_cast<const IContext&>(context).GetDirectDevice().GetNativeDevice())
 {
     META_FUNCTION_TASK();
@@ -45,6 +57,7 @@ ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, con
 ProgramArgumentBinding::ProgramArgumentBinding(const ProgramArgumentBinding& other)
     : Base::ProgramArgumentBinding(other)
     , m_settings_dx(other.m_settings_dx)
+    , m_shader_usage(other.m_shader_usage)
     , m_root_parameter_index(other.m_root_parameter_index)
     , m_descriptor_range(other.m_descriptor_range)
     , m_p_descriptor_heap_reservation(other.m_p_descriptor_heap_reservation)
@@ -88,23 +101,23 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     const uint32_t             descriptor_range_start = m_p_descriptor_heap_reservation
                                                       ? m_p_descriptor_heap_reservation->GetRange(m_settings_dx.argument.GetAccessorIndex()).GetStart()
                                                       : std::numeric_limits<uint32_t>::max();
-    const DescriptorHeap*      p_dx_descriptor_heap = m_p_descriptor_heap_reservation
+    const DescriptorHeap*        p_dx_descriptor_heap = m_p_descriptor_heap_reservation
                                                       ? static_cast<const DescriptorHeap*>(&m_p_descriptor_heap_reservation->heap.get())
                                                       : nullptr;
-    const DescriptorHeap::Type descriptor_heap_type = p_dx_descriptor_heap
+    const DescriptorHeap::Type   descriptor_heap_type = p_dx_descriptor_heap
                                                       ? p_dx_descriptor_heap->GetSettings().type
                                                       : DescriptorHeap::Type::Undefined;
     const D3D12_DESCRIPTOR_HEAP_TYPE native_heap_type = p_dx_descriptor_heap
                                                       ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
                                                       : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    constexpr Rhi::ResourceUsageMask shader_read_usage(Rhi::ResourceUsage::ShaderRead);
 
     uint32_t resource_index = 0;
     m_resource_views_dx.clear();
     m_resource_views_dx.reserve(resource_views.size());
-    for(const Rhi::IResource::View& resource_view : resource_views)
+
+    for(const Rhi::ResourceView& resource_view : resource_views)
     {
-        m_resource_views_dx.emplace_back(resource_view, shader_read_usage);
+        m_resource_views_dx.emplace_back(resource_view, m_shader_usage);
         if (!p_dx_descriptor_heap)
             continue;
 

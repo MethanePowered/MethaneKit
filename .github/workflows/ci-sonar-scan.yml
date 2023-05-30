@@ -36,7 +36,7 @@ on:
 env:
   product_ver_major: 0
   product_ver_minor: 7
-  product_ver_patch: 1
+  product_ver_patch: 2
   product_ver_build: ${{ github.run_number }}
   sonar_server_url: "https://sonarcloud.io"
   sonar_organization: methane-powered
@@ -159,13 +159,15 @@ jobs:
             throw 'OpenCppCoverage/OpenCppCoverage.exe executable was not found in unpacked content!'
           }
 
-      - name: Run all unit-tests from install directory with code coverage using OpenCppCoverage on Windows
+      - name: Run all unit-tests with OpenCppCoverage code coverage on Windows
         if: ${{ matrix.os_name == 'windows' }}
         shell: cmd
         working-directory: 'Build\Output\${{ matrix.config_preset }}\Install\Tests'
         run: |
+          chcp 65001 #set code page to utf-8
           setlocal enabledelayedexpansion
           set open_cpp_coverage_exe=OpenCppCoverage\OpenCppCoverage.exe
+          set test_results=
           if not exist "%open_cpp_coverage_exe%" (
             echo File path "%open_cpp_coverage_exe%" does not exist!
             exit 101
@@ -181,43 +183,73 @@ jobs:
             if not !errorlevel!==0 (
               set /A result_error_level=!errorlevel!
             )
+            if .!test_results!==. (
+              set test_results=Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/%%~na.xml
+            ) else (
+              set test_results=!test_results!,Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/%%~na.xml
+            )
           )
+          echo Test Result Files: %test_results%
+          echo test_results=%test_results%>> %GITHUB_ENV%
           exit !result_error_level!
 
-      - name: Run unit-tests from install directory on Linux
+      - name: Run all unit-tests with GCov code coverage on Linux
         if: ${{ matrix.os_name == 'linux' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
+          set +e
           result_ext='.xml'
+          test_results=''
+          result_error_level=0
           echo Running unit-tests in directory $PWD
           mkdir Results
           for test_exe in *Test
           do
             ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
-            echo  - $test_exe - completed with $? exit status
+            last_error_level=$?
+            echo  - $test_exe - completed with $last_error_level exit status
+            if [ $last_error_level != 0 ]; then
+              result_error_level=$last_error_level
+            fi
+            if [ -f "$PWD/Results/$test_exe$result_ext" ]; then
+              test_results+="$PWD/Results/$test_exe$result_ext,"
+            fi
           done
+          echo "Test Result Files: $test_results"
+          echo "test_results=$test_results" >> $GITHUB_ENV
+          exit $result_error_level
 
       - name: Collect tests code coverage using ctest and gcov/lcov on Linux
-        if: ${{ matrix.os_name == 'linux' }}
+        if: ${{ matrix.os_name == 'linux' && (success() || failure()) }}
         run: |
           set -o pipefail
           cmake --build --preset ${{ matrix.build_preset }} --target MethaneTestCoverage 2>&1 | tee $COVERAGE_LOG_FILE
 
-      - name: Run all unit-tests from install directory with LCov code coverage on MacOS
+      - name: Run all unit-tests with LCov code coverage on MacOS
         if: ${{ matrix.os_name == 'macosx' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: |
+          set +e
+          result_error_level=0
           result_ext='.xml'
           prof_data_ext='.profdata'
           prof_raw_ext='.profraw'
           lcov_ext='.lcov'
+          test_results=''
           echo Running unit-tests and Converting LLVM code coverage data to lcov text format in directory $PWD
           mkdir Results
           mkdir Coverage
           for test_exe in *Test
           do
             ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
-            echo  - $test_exe - completed with $? exit status
+            last_error_level=$?
+            echo  - $test_exe - completed with $last_error_level exit status
+            if [ $last_error_level != 0 ]; then
+              result_error_level=$last_error_level
+            fi
+            if [ -f "$PWD/Results/$test_exe$result_ext" ]; then
+              test_results+="$PWD/Results/$test_exe$result_ext,"
+            fi
             if [ ! -f default.profraw ]; then
               continue
             fi
@@ -226,10 +258,14 @@ jobs:
             xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" -arch=x86_64 ./$test_exe > "./Coverage/$test_exe$lcov_ext"
             echo    - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
           done
+          echo "Test Result Files: $test_results"
+          echo "test_results=$test_results" >> $GITHUB_ENV
           echo List of generated coverage files in directory $PWD/Coverage
           ls -la ./Coverage
+          exit $result_error_level
 
       - name: Generate Code Coverage Reports
+        if: ${{ success() || failure() }}
         uses: danielpalme/ReportGenerator-GitHub-Action@5.1.13
         with:
           reports: ${{ matrix.tests_coverage_reports }}
@@ -239,16 +275,18 @@ jobs:
           tag: '${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}'
 
       - name: Upload Code Coverage Cobertura Report
+        if: ${{ success() || failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: MethaneKit_${{ matrix.name }}_CoverageResults
           path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
 
       - name: Upload Build Log and Code Coverage to Testspace server
-        if: ${{ always() }}
+        if: ${{ success() || failure() }}
         run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
       - name: Upload Code Coverage to CodeCov server
+        if: ${{ success() || failure() }}
         uses: codecov/codecov-action@v3
         with:
           files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
@@ -256,6 +294,7 @@ jobs:
           name: ${{ matrix.name }}
 
       - name: Run Sonar Scanner
+        if: ${{ success() || failure() }}
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -273,7 +312,7 @@ jobs:
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectKey=${{ matrix.sonar_project_key }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectVersion=${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.cfamily.compile-commands=Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.testExecutionReportPaths=$TESTS_DIR/Results/MethaneDataTypesTest.xml,$TESTS_DIR/Results/MethaneDataEventsTest.xml,$TESTS_DIR/Results/MethaneDataRangeSetTest.xml,$TESTS_DIR/Results/MethanePlatformInputTest.xml,$TESTS_DIR/Results/MethaneGraphicsTypesTest.xml,$TESTS_DIR/Results/MethaneGraphicsCameraTest.xml,$TESTS_DIR/Results/MethaneUserInterfaceTypesTest.xml"
+          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.testExecutionReportPaths=${{ env.test_results }}"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.coverageReportPaths=$TESTS_DIR/Coverage/Report/SonarQube.xml"
           SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.scm.revision=${{ github.sha }}"
           if [ "${{ github.event_name }}" == "pull_request" ]; then
@@ -293,13 +332,13 @@ jobs:
           done
 
       - name: Archive Scan Artifacts
-        if: ${{ always() }}
+        if: ${{ success() || failure() }}
         shell: bash
         working-directory: Build/Output/${{ matrix.config_preset }}/Install
         run: 7z a -t7z -mx=9 MethaneKit_${{ matrix.name }}.7z *
 
       - name: Upload Archived Scan Artifacts
-        if: ${{ always() }}
+        if: ${{ success() || failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}

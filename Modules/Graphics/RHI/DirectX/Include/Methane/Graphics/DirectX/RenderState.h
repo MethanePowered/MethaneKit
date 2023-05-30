@@ -28,13 +28,6 @@ DirectX 12 implementation of the render state interface.
 #include <wrl.h>
 #include <directx/d3d12.h>
 
-namespace Methane::Graphics::Base
-{
-
-class RenderCommandList;
-
-} // namespace Methane::Graphics::Base
-
 namespace Methane::Graphics::DirectX
 {
 

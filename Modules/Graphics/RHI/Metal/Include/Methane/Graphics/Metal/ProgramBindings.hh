@@ -33,6 +33,8 @@ namespace Methane::Graphics::Metal
 {
 
 class Program;
+class RenderCommandList;
+class ComputeCommandList;
 
 class ProgramBindings final
     : public Base::ProgramBindings
@@ -49,6 +51,13 @@ public:
 
     // Base::ProgramBindings interface
     void CompleteInitialization() override { }
+
+private:
+    template<typename FuncType> // function void(const ArgumentBinding&)
+    void ForEachChangedArgumentBinding(const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior, FuncType functor) const;
+
+    void Apply(RenderCommandList& argument_binding, ApplyBehaviorMask apply_behavior) const;
+    void Apply(ComputeCommandList& compute_command_list, ApplyBehaviorMask apply_behavior) const;
 };
 
 } // namespace Methane::Graphics::Metal

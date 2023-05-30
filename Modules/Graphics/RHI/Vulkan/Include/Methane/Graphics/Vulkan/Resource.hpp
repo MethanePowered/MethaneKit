@@ -206,7 +206,7 @@ protected:
         m_vk_resource = std::forward<T>(vk_resource);
     }
 
-    TransferCommandList& PrepareResourceUpload(Rhi::ICommandQueue& target_cmd_queue)
+    TransferCommandList& PrepareResourceTransfer(Rhi::ICommandQueue& target_cmd_queue, State transfer_state)
     {
         META_FUNCTION_TASK();
         const Rhi::ICommandKit& upload_cmd_kit = Base::Resource::GetContext().GetUploadCommandKit();
@@ -214,7 +214,7 @@ protected:
         upload_cmd_list.RetainResource(*this);
 
         const bool owner_changed = SetOwnerQueueFamily(upload_cmd_kit.GetQueue().GetFamilyIndex(), m_upload_begin_transition_barriers_ptr);
-        if (const bool state_changed = SetState(State::CopyDest, m_upload_begin_transition_barriers_ptr);
+        if (const bool state_changed = SetState(transfer_state, m_upload_begin_transition_barriers_ptr);
             (owner_changed || state_changed) &&
             m_upload_begin_transition_barriers_ptr && !m_upload_begin_transition_barriers_ptr->IsEmpty())
         {
@@ -232,7 +232,7 @@ protected:
         return upload_cmd_list;
     }
 
-    void CompleteResourceUpload(TransferCommandList& upload_cmd_list, State final_resource_state, Rhi::ICommandQueue& target_cmd_queue)
+    void CompleteResourceTransfer(TransferCommandList& upload_cmd_list, State final_resource_state, Rhi::ICommandQueue& target_cmd_queue)
     {
         META_FUNCTION_TASK();
         const bool owner_changed = SetOwnerQueueFamily(target_cmd_queue.GetFamilyIndex(), m_upload_end_transition_barriers_ptr);

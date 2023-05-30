@@ -10,6 +10,7 @@ set(HEADERS
     ${INCLUDE_DIR}/System.h
     ${INCLUDE_DIR}/Context.h
     ${INCLUDE_DIR}/RenderContext.h
+    ${INCLUDE_DIR}/ComputeContext.h
     ${INCLUDE_DIR}/Fence.h
     ${INCLUDE_DIR}/Shader.h
     ${INCLUDE_DIR}/Program.h
@@ -19,6 +20,7 @@ set(HEADERS
     ${INCLUDE_DIR}/RenderPattern.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
+    ${INCLUDE_DIR}/ComputeState.h
     ${INCLUDE_DIR}/ResourceBarriers.h
     ${INCLUDE_DIR}/Resource.h
     ${INCLUDE_DIR}/Buffer.h
@@ -33,9 +35,9 @@ set(HEADERS
     ${INCLUDE_DIR}/CommandListDebugGroup.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
+    ${INCLUDE_DIR}/ComputeCommandList.h
     ${INCLUDE_DIR}/DescriptorManager.h
     ${INCLUDE_DIR}/QueryPool.h
-    ${INCLUDE_DIR}/FpsCounter.h
 )
 
 set(SOURCES ${GRAPHICS_API_SOURCES}
@@ -44,6 +46,7 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/System.cpp
     ${SOURCES_DIR}/Context.cpp
     ${SOURCES_DIR}/RenderContext.cpp
+    ${SOURCES_DIR}/ComputeContext.cpp
     ${SOURCES_DIR}/Fence.cpp
     ${SOURCES_DIR}/Shader.cpp
     ${SOURCES_DIR}/Program.cpp
@@ -51,6 +54,7 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/ProgramBindings.cpp
     ${SOURCES_DIR}/RenderState.cpp
     ${SOURCES_DIR}/ViewState.cpp
+    ${SOURCES_DIR}/ComputeState.cpp
     ${SOURCES_DIR}/ResourceBarriers.cpp
     ${SOURCES_DIR}/Resource.cpp
     ${SOURCES_DIR}/Buffer.cpp
@@ -67,9 +71,9 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/CommandListDebugGroup.cpp
     ${SOURCES_DIR}/RenderCommandList.cpp
     ${SOURCES_DIR}/ParallelRenderCommandList.cpp
+    ${SOURCES_DIR}/ComputeCommandList.cpp
     ${SOURCES_DIR}/DescriptorManager.cpp
     ${SOURCES_DIR}/QueryPool.cpp
-    ${SOURCES_DIR}/FpsCounter.cpp
 )
 
 add_library(${TARGET} STATIC
@@ -88,7 +92,6 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethaneCommonPrecompiledHeaders
-        MethaneDataPrimitives
         MethaneInstrumentation
         MethaneMathPrecompiledHeaders
         TaskFlow

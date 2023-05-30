@@ -86,6 +86,7 @@ public:
 
     // IDevice interface
     [[nodiscard]] Ptr<Rhi::IRenderContext> CreateRenderContext(const Methane::Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings) override;
+    [[nodiscard]] Ptr<Rhi::IComputeContext> CreateComputeContext(tf::Executor& parallel_executor, const Rhi::ComputeContextSettings& settings) override;
 
     // IObject interface
     bool SetName(std::string_view name) override;

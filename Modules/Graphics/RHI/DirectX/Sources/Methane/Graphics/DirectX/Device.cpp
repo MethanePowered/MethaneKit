@@ -24,6 +24,7 @@ DirectX 12 implementation of the device interface.
 
 #include <Methane/Graphics/DirectX/Device.h>
 #include <Methane/Graphics/DirectX/RenderContext.h>
+#include <Methane/Graphics/DirectX/ComputeContext.h>
 #include <Methane/Graphics/DirectX/ErrorHandling.h>
 
 #include <Methane/Platform/Windows/Utils.h>
@@ -115,6 +116,14 @@ Ptr<Rhi::IRenderContext> Device::CreateRenderContext(const Platform::AppEnvironm
     auto render_context_ptr = std::make_shared<RenderContext>(env, *this, parallel_executor, settings);
     render_context_ptr->Initialize(*this, true);
     return render_context_ptr;
+}
+
+Ptr<Rhi::IComputeContext> Device::CreateComputeContext(tf::Executor& parallel_executor, const Rhi::ComputeContextSettings& settings)
+{
+    META_FUNCTION_TASK();
+    const auto compute_context_ptr = std::make_shared<ComputeContext>(*this, parallel_executor, settings);
+    compute_context_ptr->Initialize(*this, true);
+    return compute_context_ptr;
 }
 
 bool Device::SetName(std::string_view name)

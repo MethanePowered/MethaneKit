@@ -114,7 +114,7 @@ void System::AddDevice(const id<MTLDevice>& mtl_device)
 {
     META_FUNCTION_TASK();
     const Rhi::DeviceFeatureMask device_supported_features = Device::GetSupportedFeatures(mtl_device);
-    if (!(device_supported_features & GetDeviceCapabilities().features))
+    if (!device_supported_features.HasBits(GetDeviceCapabilities().features))
         return;
 
     Base::System::AddDevice(std::make_shared<Device>(mtl_device, GetDeviceCapabilities()));

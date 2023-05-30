@@ -46,18 +46,27 @@ static Rhi::ResourceState GetBoundResourceTargetState(const Rhi::IResource& reso
     switch (resource_type)
     {
     case Rhi::IResource::Type::Buffer:
+    {
         // FIXME: state transition of DX upload heap resources should be reworked properly and made friendly with Vulkan
         // DX resource in upload heap can not be transitioned to any other state but initial GenericRead state
-        if (dynamic_cast<const Rhi::IBuffer&>(resource).GetSettings().storage_mode != Rhi::IBuffer::StorageMode::Private)
+        const Rhi::BufferSettings& buffer_settings = dynamic_cast<const Rhi::IBuffer&>(resource).GetSettings();
+        if (buffer_settings.usage_mask.HasBit(Rhi::ResourceUsage::ShaderWrite))
+            return Rhi::ResourceState::UnorderedAccess;
+        if (buffer_settings.storage_mode != Rhi::IBuffer::StorageMode::Private)
             return resource.GetState();
         else if (is_constant_binding)
             return Rhi::ResourceState::ConstantBuffer;
-        break;
+    } break;
 
     case Rhi::IResource::Type::Texture:
-        if (dynamic_cast<const Rhi::ITexture&>(resource).GetSettings().type == Rhi::ITexture::Type::DepthStencil)
+    {
+        const Rhi::TextureSettings& texture_settings = dynamic_cast<const Rhi::ITexture&>(resource).GetSettings();
+        if (texture_settings.usage_mask.HasBit(Rhi::ResourceUsage::ShaderWrite))
+            return Rhi::ResourceState::UnorderedAccess;
+        if (texture_settings.usage_mask.HasBit(Rhi::ResourceUsage::ShaderRead) &&
+            texture_settings.type == Rhi::ITexture::Type::DepthStencil)
             return Rhi::ResourceState::DepthRead;
-        break;
+    } break;
 
     default:
         break;
@@ -220,19 +229,27 @@ Rhi::IProgramBindings::IArgumentBinding& ProgramBindings::Get(const Rhi::IProgra
 ProgramBindings::operator std::string() const
 {
     META_FUNCTION_TASK();
-    bool is_first = true;
-    std::stringstream ss;
+    std::vector<std::string> argument_binding_strings;
+    argument_binding_strings.reserve(m_binding_by_argument.size());
 
     for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
     {
         META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
-        if (!is_first)
-            ss << ";\n";
-        ss << "  - " << static_cast<std::string>(*argument_binding_ptr);
-        is_first = false;
+        argument_binding_strings.push_back(static_cast<std::string>(*argument_binding_ptr));
     }
-    ss << ".";
 
+    // Arguments are stored in unordered_set, so to get reliable output we need to sort them
+    std::sort(argument_binding_strings.begin(), argument_binding_strings.end());
+
+    std::stringstream ss;
+    for(const std::string& argument_binding_str : argument_binding_strings)
+    {
+        if (ss.rdbuf()->in_avail() > 0)
+            ss << ";\n";
+        ss << "  - " << argument_binding_str;
+    }
+
+    ss << ".";
     return ss.str();
 }
 

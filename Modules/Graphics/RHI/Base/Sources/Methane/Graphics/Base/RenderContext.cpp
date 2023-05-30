@@ -148,7 +148,7 @@ void RenderContext::Initialize(Device& device, bool is_callback_emitted)
     }
 }
 
-bool RenderContext::UploadResources()
+bool RenderContext::UploadResources() const
 {
     META_FUNCTION_TASK();
     if (!Context::UploadResources())

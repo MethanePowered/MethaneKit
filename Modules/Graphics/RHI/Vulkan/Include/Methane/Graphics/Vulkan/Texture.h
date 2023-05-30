@@ -49,15 +49,18 @@ public:
 
     void ResetNativeFrameImage();
 
-    // IResource interface
-    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
+    // ITexture interface
+    void SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources) override;
+    SubResource GetData(Rhi::ICommandQueue& target_cmd_queue,
+                        const SubResource::Index& sub_resource_index = {},
+                        const BytesRangeOpt& data_range = {}) override;
 
     // IObject overide
     bool SetName(std::string_view name) override;
 
     // ITexture overrides
     const vk::Image& GetNativeImage() const noexcept { return GetNativeResource(); }
-    vk::ImageSubresourceRange GetNativeSubresourceRange() const noexcept;
+    vk::ImageSubresourceRange GetNativeSubresourceRange() const;
 
 private:
     Texture(const Base::Context& context, const Settings& settings, vk::UniqueImage&& vk_unique_image);

@@ -7,6 +7,7 @@ list(APPEND TEST_TARGETS
     MethanePlatformInputTest
     MethaneGraphicsCameraTest
     MethaneGraphicsTypesTest
+    MethaneGraphicsRhiTest
     MethaneUserInterfaceTypesTest
 )
 
@@ -25,7 +26,7 @@ endif()
 
 setup_target_for_coverage_lcov(
     NAME MethaneTestCoverage
-    EXECUTABLE ctest -j 4
+    EXECUTABLE ctest -j 4 || true # Suppress error on test failures
     DEPENDENCIES ${TEST_TARGETS}
     EXCLUDE ${EXCLUDE_DIRS}
 )

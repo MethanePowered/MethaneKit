@@ -23,6 +23,7 @@ Methane Shader PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/Shader.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/ComputeContext.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -49,6 +50,11 @@ Shader::Shader(IShader& interface_ref)
 }
 
 Shader::Shader(Type type, const RenderContext& context, const Settings& settings)
+    : Shader(IShader::Create(type, context.GetInterface(), settings))
+{
+}
+
+Shader::Shader(Type type, const ComputeContext& context, const Settings& settings)
     : Shader(IShader::Create(type, context.GetInterface(), settings))
 {
 }

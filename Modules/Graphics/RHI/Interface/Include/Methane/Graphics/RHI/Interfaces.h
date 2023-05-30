@@ -44,5 +44,6 @@ Methane graphics RHI interfaces: all headers under one umbrella.
 #include "ICommandListDebugGroup.h"
 #include "ICommandQueue.h"
 #include "ITransferCommandList.h"
+#include "IComputeCommandList.h"
 #include "IRenderCommandList.h"
 #include "IParallelRenderCommandList.h"

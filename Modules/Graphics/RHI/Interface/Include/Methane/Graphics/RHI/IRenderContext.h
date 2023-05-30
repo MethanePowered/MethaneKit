@@ -25,8 +25,8 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 #pragma once
 
 #include "IContext.h"
-#include "IFpsCounter.h"
 
+#include <Methane/Data/IFpsCounter.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Graphics/Color.hpp>
@@ -49,7 +49,7 @@ struct RenderContextSettings
     uint32_t                frame_buffers_count  = 3U;
     bool                    vsync_enabled        = true;
     bool                    is_full_screen       = false;
-    ContextOptionMask       options_mask;
+    ContextOptionMask       options_mask         { ContextOption::DeferredProgramBindingsInitialization };
     uint32_t                unsync_max_fps       = 1000U; // MacOS only
 
     RenderContextSettings& SetFrameSize(FrameSize&& new_frame_size) noexcept;
@@ -85,11 +85,11 @@ struct IRenderContext
     [[nodiscard]] virtual bool ReadyToRender() const = 0;
     virtual void Resize(const FrameSize& frame_size) = 0;
     virtual void Present() = 0;
-    [[nodiscard]] virtual Platform::AppView  GetAppView() const = 0;
-    [[nodiscard]] virtual const Settings&    GetSettings() const noexcept = 0;
-    [[nodiscard]] virtual uint32_t           GetFrameBufferIndex() const noexcept = 0;
-    [[nodiscard]] virtual uint32_t           GetFrameIndex() const noexcept = 0;
-    [[nodiscard]] virtual const IFpsCounter& GetFpsCounter() const noexcept = 0;
+    [[nodiscard]] virtual Platform::AppView GetAppView() const = 0;
+    [[nodiscard]] virtual const Settings&   GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual uint32_t          GetFrameBufferIndex() const noexcept = 0;
+    [[nodiscard]] virtual uint32_t          GetFrameIndex() const noexcept = 0;
+    [[nodiscard]] virtual const Data::IFpsCounter& GetFpsCounter() const noexcept = 0;
 
     virtual bool SetVSyncEnabled(bool vsync_enabled) = 0;
     virtual bool SetFrameBuffersCount(uint32_t frame_buffers_count) = 0;

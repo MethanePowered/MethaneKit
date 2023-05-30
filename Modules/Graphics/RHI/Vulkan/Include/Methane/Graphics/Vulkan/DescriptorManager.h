@@ -24,16 +24,12 @@ Vulkan descriptor manager with descriptor sets allocator.
 #pragma once
 
 #include <Methane/Graphics/Base/DescriptorManager.h>
+#include <Methane/Instrumentation.h>
 
-#include <tracy/Tracy.hpp>
 #include <vulkan/vulkan.hpp>
-
 #include <map>
 #include <optional>
 #include <mutex>
-
-// Uncomment to enable deferred program bindings initialization
-#define DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
 
 namespace Methane::Graphics::Rhi
 {
@@ -76,9 +72,6 @@ public:
     });
 
     // IDescriptorManager overrides
-#ifndef DEFERRED_PROGRAM_BINDINGS_INITIALIZATION
-    void CompleteInitialization() override { /* intentionally uninitialized */}
-#endif
     void Release() override;
 
     void SetDescriptorPoolSizeRatio(vk::DescriptorType descriptor_type, float size_ratio);

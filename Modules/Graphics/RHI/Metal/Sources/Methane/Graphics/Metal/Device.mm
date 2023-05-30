@@ -23,6 +23,7 @@ Metal implementation of the device interface.
 
 #include <Methane/Graphics/Metal/Device.hh>
 #include <Methane/Graphics/Metal/RenderContext.hh>
+#include <Methane/Graphics/Metal/ComputeContext.hh>
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
 
@@ -52,6 +53,14 @@ Ptr<Rhi::IRenderContext> Device::CreateRenderContext(const Platform::AppEnvironm
     const auto render_context_ptr = std::make_shared<RenderContext>(env, *this, parallel_executor, settings);
     render_context_ptr->Initialize(*this, true);
     return render_context_ptr;
+}
+
+Ptr<Rhi::IComputeContext> Device::CreateComputeContext(tf::Executor& parallel_executor, const Rhi::ComputeContextSettings& settings)
+{
+    META_FUNCTION_TASK();
+    const auto compute_context_ptr = std::make_shared<ComputeContext>(*this, parallel_executor, settings);
+    compute_context_ptr->Initialize(*this, true);
+    return compute_context_ptr;
 }
 
 } // namespace Methane::Graphics::Metal

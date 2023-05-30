@@ -73,42 +73,13 @@ RenderContext::~RenderContext()
     }
 }
 
-Ptr<Rhi::ICommandQueue> RenderContext::CreateCommandQueue(Rhi::CommandListType type) const
+[[nodiscard]] Ptr<Rhi::ITexture> RenderContext::CreateTexture(const Rhi::TextureSettings& settings) const
 {
     META_FUNCTION_TASK();
-    return std::make_shared<CommandQueue>(*this, type);
-}
+    if (settings.type == Rhi::TextureType::FrameBuffer)
+         return std::make_shared<Texture>(*this, settings, settings.frame_index_opt.value());
 
-Ptr<Rhi::IShader> RenderContext::CreateShader(Rhi::ShaderType type, const Rhi::ShaderSettings& settings) const
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Shader>(type, *this, settings);
-}
-
-Ptr<Rhi::IProgram> RenderContext::CreateProgram(const Rhi::ProgramSettings& settings) const
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Program>(*this, settings);
-}
-
-Ptr<Rhi::IBuffer> RenderContext::CreateBuffer(const Rhi::BufferSettings& settings) const
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Buffer>(*this, settings);
-}
-
-Ptr<Rhi::ITexture> RenderContext::CreateTexture(const Rhi::TextureSettings& settings) const
-{
-    META_FUNCTION_TASK();
-    return settings.type == Rhi::TextureType::FrameBuffer
-         ? std::make_shared<Texture>(*this, settings, settings.frame_index_opt.value())
-         : std::make_shared<Texture>(*this, settings);
-}
-
-Ptr<Rhi::ISampler> RenderContext::CreateSampler(const Rhi::SamplerSettings& settings) const
-{
-    META_FUNCTION_TASK();
-    return std::make_shared<Sampler>(*this, settings);
+    return Context::CreateTexture(settings);
 }
 
 Ptr<Rhi::IRenderState> RenderContext::CreateRenderState(const Rhi::RenderStateSettings& settings) const

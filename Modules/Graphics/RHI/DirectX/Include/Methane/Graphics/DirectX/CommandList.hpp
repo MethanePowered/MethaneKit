@@ -76,7 +76,7 @@ public:
         SetCommandListState(Rhi::CommandListState::Encoding);
     }
 
-    // ICommandList interface
+    // Rhi::ICommandList interface
 
     void PushDebugGroup(Rhi::ICommandListDebugGroup& debug_group) final
     {
@@ -123,7 +123,7 @@ public:
         m_cp_command_list->ResourceBarrier(static_cast<UINT>(d3d12_resource_barriers.size()), d3d12_resource_barriers.data());
     }
 
-    // ICommandList interface
+    // Rhi::ICommandList interface
 
     void Reset(Rhi::ICommandListDebugGroup* debug_group_ptr) override
     {
@@ -160,10 +160,11 @@ public:
         return true;
     }
 
-    // ICommandList interface
+    // DirectX::ICommandList interface
 
-    CommandQueue&               GetDirectCommandQueue() final { return static_cast<CommandQueue&>(GetBaseCommandQueue()); }
-    ID3D12GraphicsCommandList&  GetNativeCommandList() const final
+    CommandQueue&              GetDirectCommandQueue() final      { return static_cast<CommandQueue&>(GetBaseCommandQueue()); }
+    Rhi::CommandListType       GetCommandListType() const final   { return Base::CommandList::GetType(); }
+    ID3D12GraphicsCommandList& GetNativeCommandList() const final
     {
         META_CHECK_ARG_NOT_NULL(m_cp_command_list);
         return *m_cp_command_list.Get();

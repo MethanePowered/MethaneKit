@@ -93,6 +93,18 @@ BufferSettings BufferSettings::ForReadBackBuffer(Data::Size size)
     };
 }
 
+bool BufferSettings::operator==(const BufferSettings& other) const
+{
+    return std::tie(type, usage_mask, size, item_stride_size, data_format, storage_mode)
+        == std::tie(other.type, other.usage_mask, other.size, other.item_stride_size, other.data_format, other.storage_mode);
+}
+
+bool BufferSettings::operator!=(const BufferSettings& other) const
+{
+    return std::tie(type, usage_mask, size, item_stride_size, data_format, storage_mode)
+        != std::tie(other.type, other.usage_mask, other.size, other.item_stride_size, other.data_format, other.storage_mode);
+}
+
 Data::Size BufferSettings::GetAlignedSize(Data::Size size) noexcept
 {
     // Aligned size must be a multiple 256 bytes

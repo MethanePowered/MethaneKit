@@ -39,7 +39,8 @@ public:
     Buffer(const Base::Context& context, const Settings& settings);
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override;
+    void SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& sub_resource) override;
+    SubResource GetData(Rhi::ICommandQueue& target_cmd_queue, const BytesRangeOpt& data_range = {}) override;
 
     // IObject interface
     bool SetName(std::string_view name) override;
@@ -48,8 +49,10 @@ public:
     MTLIndexType         GetNativeIndexType() const noexcept;
 
 private:
-    void SetDataToManagedBuffer(const SubResources& sub_resources);
-    void SetDataToPrivateBuffer(const SubResources& sub_resources);
+    void SetDataToManagedBuffer(const SubResource& sub_resource);
+    void SetDataToPrivateBuffer(const SubResource& sub_resource);
+    Data::Bytes GetDataFromManagedBuffer(const BytesRange& data_range);
+    Data::Bytes GetDataFromPrivateBuffer(const BytesRange& data_range);
 
     id<MTLBuffer> m_mtl_buffer;
 };

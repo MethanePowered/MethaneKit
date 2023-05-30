@@ -39,8 +39,9 @@ class Buffer final // NOSONAR - inheritance hierarchy is greater than 5
 public:
     Buffer(const Base::Context& context, const Settings& settings);
 
-    // IResource interface
-    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override;
+    // IBuffer interface
+    void SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& sub_resource) override;
+    SubResource GetData(Rhi::ICommandQueue& target_cmd_queue, const BytesRangeOpt& data_range = {}) override;
 
     // IObject interface
     bool SetName(std::string_view name) override;
@@ -50,9 +51,12 @@ protected:
     Ptr<ResourceView::ViewDescriptorVariant> CreateNativeViewDescriptor(const View::Id& view_id) override;
 
 private:
-    vk::UniqueBuffer            m_vk_unique_staging_buffer;
-    vk::UniqueDeviceMemory      m_vk_unique_staging_memory;
-    std::vector<vk::BufferCopy> m_vk_copy_regions;
+    Data::Bytes GetDataFromSharedBuffer(const BytesRange& data_range) const;
+    Data::Bytes GetDataFromPrivateBuffer(const BytesRange& data_range, Rhi::ICommandQueue& target_cmd_queue);
+
+    vk::UniqueBuffer       m_vk_unique_staging_buffer;
+    vk::UniqueDeviceMemory m_vk_unique_staging_memory;
+    vk::BufferCopy         m_vk_copy_region;
 };
 
 } // namespace Methane::Graphics::Vulkan

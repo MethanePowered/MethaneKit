@@ -38,6 +38,7 @@ namespace Methane::Graphics::Rhi
 {
 
 class RenderContext;
+class ComputeContext;
 class ResourceBarriers;
 class CommandQueue;
 
@@ -64,6 +65,7 @@ public:
     META_PIMPL_API explicit Texture(ITexture& interface_ref);
     META_PIMPL_API Texture(const IContext& context, const Settings& settings);
     META_PIMPL_API Texture(const RenderContext& render_context, const Settings& settings);
+    META_PIMPL_API Texture(const ComputeContext& compute_context, const Settings& settings);
 
     META_PIMPL_API bool IsInitialized() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API ITexture& GetInterface() const META_PIMPL_NOEXCEPT;
@@ -82,18 +84,16 @@ public:
     META_PIMPL_API bool SetState(State state, Barriers& out_barriers) const;
     META_PIMPL_API bool SetOwnerQueueFamily(uint32_t family_index) const;
     META_PIMPL_API bool SetOwnerQueueFamily(uint32_t family_index, Barriers& out_barriers) const;
-    META_PIMPL_API void SetData(const SubResources& sub_resources, const CommandQueue& target_cmd_queue) const;
     META_PIMPL_API void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) const;
 
-    [[nodiscard]] META_PIMPL_API SubResource               GetData(const SubResource::Index& sub_resource_index = SubResource::Index(), const BytesRangeOpt& data_range = {}) const;
     [[nodiscard]] META_PIMPL_API Data::Size                GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API Data::Size                GetSubResourceDataSize(const SubResource::Index& sub_resource_index = SubResource::Index()) const;
-    [[nodiscard]] META_PIMPL_API const SubResource::Count& GetSubresourceCount() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API SubResource::Count        GetSubresourceCount() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API ResourceType              GetResourceType() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API State                     GetState() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API ResourceUsageMask         GetUsage() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const DescriptorByViewId& GetDescriptorByViewId() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API RenderContext             GetRenderContext() const;
+    [[nodiscard]] META_PIMPL_API const IContext&           GetContext() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const Opt<uint32_t>&      GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT;
 
     // Data::IEmitter<IResourceCallback> interface methods
@@ -102,6 +102,10 @@ public:
 
     // ITexture interface methods
     [[nodiscard]] META_PIMPL_API const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API SubResource GetData(const CommandQueue& target_cmd_queue,
+                                                     const SubResource::Index& sub_resource_index = SubResource::Index(),
+                                                     const BytesRangeOpt& data_range = {}) const;
+    META_PIMPL_API void SetData(const CommandQueue& target_cmd_queue, const SubResources& sub_resources) const;
     
 private:
     using Impl = Methane::Graphics::META_GFX_NAME::Texture;

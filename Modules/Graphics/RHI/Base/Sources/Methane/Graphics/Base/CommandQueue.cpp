@@ -21,6 +21,7 @@ Base implementation of the command queue interface.
 
 ******************************************************************************/
 
+#include "Methane/Graphics/RHI/ICommandList.h"
 #include <Methane/Graphics/Base/CommandQueue.h>
 #include <Methane/Graphics/Base/CommandListSet.h>
 #include <Methane/Graphics/Base/CommandKit.h>
@@ -35,7 +36,15 @@ CommandQueue::CommandQueue(const Context& context, Rhi::CommandListType command_
     : m_context(context)
     , m_device_ptr(context.GetBaseDevicePtr())
     , m_command_lists_type(command_lists_type)
-{ }
+{
+    if (context.GetType() == Rhi::ContextType::Compute)
+    {
+        META_CHECK_ARG_NOT_EQUAL_DESCR(command_lists_type, Rhi::CommandListType::Render,
+                                       "compute context can not be used to create render command queues");
+    }
+    META_CHECK_ARG_NOT_EQUAL_DESCR(command_lists_type, Rhi::CommandListType::ParallelRender,
+                                   "command queue should be created with Render type to support ParallelRender command lists");
+}
 
 bool CommandQueue::SetName(std::string_view name)
 {

@@ -23,6 +23,14 @@ Null template implementation of the base context interface.
 
 #pragma once
 
+#include "CommandQueue.h"
+#include "Shader.h"
+#include "Program.h"
+#include "ComputeState.h"
+#include "Buffer.h"
+#include "Texture.h"
+#include "Sampler.h"
+
 #include <Methane/Graphics/Base/Device.h>
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Base/DescriptorManager.h>
@@ -38,6 +46,43 @@ public:
     Context(Base::Device& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, std::make_unique<Base::DescriptorManager>(*this), parallel_executor, settings)
     {
+    }
+
+    // IContext overrides
+
+    [[nodiscard]] Ptr<Rhi::ICommandQueue> CreateCommandQueue(Rhi::CommandListType type) const final
+    {
+        return std::make_shared<CommandQueue>(*this, type);
+    }
+
+    [[nodiscard]] Ptr<Rhi::IShader> CreateShader(Rhi::ShaderType type, const Rhi::ShaderSettings& settings) const final
+    {
+        return std::make_shared<Shader>(type, *this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::IProgram> CreateProgram(const Rhi::ProgramSettings& settings) const final
+    {
+        return std::make_shared<Program>(*this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::IComputeState> CreateComputeState(const Rhi::ComputeStateSettings& settings) const final
+    {
+        return std::make_shared<ComputeState>(*this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::IBuffer> CreateBuffer(const Rhi::BufferSettings& settings) const final
+    {
+        return std::make_shared<Buffer>(*this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::ITexture> CreateTexture(const Rhi::TextureSettings& settings) const final
+    {
+        return std::make_shared<Texture>(*this, settings);
+    }
+
+    [[nodiscard]] Ptr<Rhi::ISampler> CreateSampler(const Rhi::SamplerSettings& settings) const final
+    {
+        return std::make_shared<Sampler>(*this, settings);
     }
 };
 

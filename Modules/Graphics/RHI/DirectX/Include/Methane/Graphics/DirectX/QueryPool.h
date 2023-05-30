@@ -74,11 +74,9 @@ public:
     CommandQueue&    GetDirectCommandQueue() noexcept;
     const IContext&  GetDirectContext() const noexcept        { return m_context_dx; }
     IResource&       GetDirectResultResource() const noexcept { return m_result_resource_dx; }
+    Rhi::IBuffer&    GetResultBuffer() noexcept               { return *m_result_buffer_ptr; }
     D3D12_QUERY_TYPE GetNativeQueryType() const noexcept      { return m_native_query_type; }
     ID3D12QueryHeap& GetNativeQueryHeap() noexcept            { return m_native_query_heap; }
-
-protected:
-    Rhi::IBuffer& GetResultBuffer() noexcept { return *m_result_buffer_ptr; }
 
 private:
     Ptr<Rhi::IBuffer> m_result_buffer_ptr;

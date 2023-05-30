@@ -70,4 +70,4 @@ inline void ThrowIfFailed(HRESULT hr, const wrl::ComPtr<ID3DBlob>& error_blob)
         throw RuntimeException(hr, error_blob);
 }
 
-} // namespace Methane::Graphics
+} // namespace Methane::Graphics::DirectX

@@ -41,8 +41,10 @@ NOTE:
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
+#ifdef TRACY_ENABLE
 #include <tracy/Tracy.hpp>
 #include <tracy/TracyC.h>
+#endif
 
 #ifdef __GCC_COMPILER__
 #pragma GCC diagnostic pop
@@ -63,6 +65,10 @@ constexpr const char* g_methane_itt_domain_name = "Methane Kit";
 
 ITT_DOMAIN_EXTERN();
 
+#ifdef TRACY_ENABLE
+
+#define TRACY_SET_THREAD_NAME(name) tracy::SetThreadName(name)
+
 #if defined(TRACY_ZONE_CALL_STACK_DEPTH) && TRACY_ZONE_CALL_STACK_DEPTH > 0
 
 #define TRACY_ZONE_SCOPED() ZoneScopedS(TRACY_ZONE_CALL_STACK_DEPTH)
@@ -75,13 +81,18 @@ ITT_DOMAIN_EXTERN();
 
 #endif // defined(TRACY_ZONE_CALL_STACK_DEPTH) && TRACY_ZONE_CALL_STACK_DEPTH > 0
 
-#ifdef TRACY_ENABLE
-
-#define TRACY_SET_THREAD_NAME(name) tracy::SetThreadName(name)
-
 #else // ifdef TRACY_ENABLE
 
 #define TRACY_SET_THREAD_NAME(name)
+#define TRACY_ZONE_SCOPED()
+#define TRACY_ZONE_SCOPED_NAME(name)
+
+#define TracyMessage(S, N)
+#define TracyLockable(M, V) M V
+#define LockableBase(M) M
+#define FrameMark
+#define TracyCFrameMarkStart(name)
+#define TracyCFrameMarkEnd(name)
 
 #endif // ifdef TRACY_ENABLE
 

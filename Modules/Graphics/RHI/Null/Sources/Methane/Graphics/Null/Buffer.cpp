@@ -33,4 +33,9 @@ Buffer::Buffer(const Base::Context& context, const Settings& settings)
 {
 }
 
+Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt&)
+{
+    return {};
+}
+
 } // namespace Methane::Graphics::Null

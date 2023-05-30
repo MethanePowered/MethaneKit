@@ -45,6 +45,7 @@ class Texture;
 class Sampler;
 class RenderState;
 class RenderPattern;
+class ComputeState;
 
 struct ShaderSettings;
 struct ProgramSettingsImpl;
@@ -53,6 +54,7 @@ struct TextureSettings;
 struct SamplerSettings;
 struct RenderStateSettingsImpl;
 struct RenderPatternSettings;
+struct ComputeStateSettingsImpl;
 
 enum class CommandListType;
 enum class ShaderType : uint32_t;
@@ -96,10 +98,12 @@ public:
     [[nodiscard]] META_PIMPL_API Texture          CreateTexture(const TextureSettings& settings) const;
     [[nodiscard]] META_PIMPL_API Sampler          CreateSampler(const SamplerSettings& settings) const;
     [[nodiscard]] META_PIMPL_API RenderState      CreateRenderState(const RenderStateSettingsImpl& settings) const;
+    [[nodiscard]] META_PIMPL_API ComputeState     CreateComputeState(const ComputeStateSettingsImpl& settings) const;
     [[nodiscard]] META_PIMPL_API RenderPattern    CreateRenderPattern(const RenderPatternSettings& settings) const;
     [[nodiscard]] META_PIMPL_API OptionMask       GetOptions() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API tf::Executor&    GetParallelExecutor() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API IObjectRegistry& GetObjectRegistry() const META_PIMPL_NOEXCEPT;
+    META_PIMPL_API bool UploadResources() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API void RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT;
     META_PIMPL_API void CompleteInitialization() const;
     [[nodiscard]] META_PIMPL_API bool IsCompletingInitialization() const META_PIMPL_NOEXCEPT;
@@ -120,11 +124,11 @@ public:
     [[nodiscard]] META_PIMPL_API bool ReadyToRender() const;
     META_PIMPL_API void Resize(const FrameSize& frame_size) const;
     META_PIMPL_API void Present() const;
-    [[nodiscard]] META_PIMPL_API Platform::AppView  GetAppView() const;
-    [[nodiscard]] META_PIMPL_API const Settings&    GetSettings() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API uint32_t           GetFrameBufferIndex() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API uint32_t           GetFrameIndex() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API const IFpsCounter& GetFpsCounter() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API Platform::AppView GetAppView() const;
+    [[nodiscard]] META_PIMPL_API const Settings&   GetSettings() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API uint32_t          GetFrameBufferIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API uint32_t          GetFrameIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API const Data::IFpsCounter& GetFpsCounter() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API bool SetVSyncEnabled(bool vsync_enabled) const;
     META_PIMPL_API bool SetFrameBuffersCount(uint32_t frame_buffers_count) const;
     META_PIMPL_API bool SetFullScreen(bool is_full_screen) const;

@@ -21,11 +21,11 @@ FPS counter interface.
 
 ******************************************************************************/
 
-#include <Methane/Graphics/RHI/IFpsCounter.h>
+#include <Methane/Data/IFpsCounter.h>
 
 #include <Methane/Instrumentation.h>
 
-namespace Methane::Graphics::Rhi
+namespace Methane::Data
 {
 
 FrameTiming::FrameTiming(double total_time_sec, double present_time_sec, double gpu_wait_time_sec) noexcept

@@ -38,48 +38,12 @@ namespace Methane::Graphics::Metal
 
 Program::Program(const Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
-    , m_mtl_vertex_desc(GetMetalShader(Rhi::ShaderType::Vertex).GetNativeVertexDescriptor(*this))
 {
     META_FUNCTION_TASK();
-
-    // Create dummy pipeline state to get program reflection of vertex and fragment shader arguments
-    MTLRenderPipelineDescriptor* mtl_reflection_state_desc = [MTLRenderPipelineDescriptor new];
-    mtl_reflection_state_desc.vertexDescriptor = m_mtl_vertex_desc;
-    mtl_reflection_state_desc.vertexFunction   = GetNativeShaderFunction(Rhi::ShaderType::Vertex);
-    mtl_reflection_state_desc.fragmentFunction = GetNativeShaderFunction(Rhi::ShaderType::Pixel);
-
-    // Fill state color attachment descriptors matching program's pixel shader output
-    // NOTE: even when program has no pixel shaders render, render state must have at least one color format to be valid
-    uint32_t attachment_index = 0;
-    for(PixelFormat color_format : settings.attachment_formats.colors)
-    {
-        mtl_reflection_state_desc.colorAttachments[attachment_index++].pixelFormat = TypeConverter::DataFormatToMetalPixelType(color_format);
-    }
-    mtl_reflection_state_desc.colorAttachments[attachment_index].pixelFormat = MTLPixelFormatInvalid;
-    mtl_reflection_state_desc.depthAttachmentPixelFormat   = TypeConverter::DataFormatToMetalPixelType(settings.attachment_formats.depth);
-    mtl_reflection_state_desc.stencilAttachmentPixelFormat = TypeConverter::DataFormatToMetalPixelType(settings.attachment_formats.stencil);
-    
-    const IContext& metal_context = dynamic_cast<const IContext&>(context);
-    
-    NSError* ns_error = nil;
-    const id<MTLDevice>& mtl_device = metal_context.GetMetalDevice().GetNativeDevice();
-
-    MTLRenderPipelineReflection* mtl_render_pipeline_reflection = nil;
-    m_mtl_dummy_pipeline_state_for_reflection = [mtl_device newRenderPipelineStateWithDescriptor:mtl_reflection_state_desc
-                                                                                         options:MTLPipelineOptionArgumentInfo
-                                                                                      reflection:&mtl_render_pipeline_reflection
-                                                                                           error:&ns_error];
-
-    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_dummy_pipeline_state_for_reflection,
-                                  "Failed to create dummy pipeline state for program reflection: {}",
-                                  MacOS::ConvertFromNsString([ns_error localizedDescription]));
-
-    if (mtl_render_pipeline_reflection)
-    {
-        SetNativeShaderArguments(Rhi::ShaderType::Vertex, mtl_render_pipeline_reflection.vertexArguments);
-        SetNativeShaderArguments(Rhi::ShaderType::Pixel,  mtl_render_pipeline_reflection.fragmentArguments);
-        InitArgumentBindings(settings.argument_accessors);
-    }
+    if (HasShader(Rhi::ShaderType::Vertex))
+        ReflectRenderPipelineArguments();
+    else if (HasShader(Rhi::ShaderType::Compute))
+        ReflectComputePipelineArguments();
 }
 
 Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
@@ -105,12 +69,86 @@ id<MTLFunction> Program::GetNativeShaderFunction(Rhi::ShaderType shader_type) no
     return HasShader(shader_type) ? static_cast<Shader&>(GetShaderRef(shader_type)).GetNativeFunction() : nil;
 }
 
-void Program::SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept
+void Program::ReflectRenderPipelineArguments()
+{
+    META_FUNCTION_TASK();
+    const Settings& settings = Base::Program::GetSettings();
+
+    m_mtl_vertex_desc = GetMetalShader(Rhi::ShaderType::Vertex).GetNativeVertexDescriptor(*this);
+
+    // Create dummy pipeline state to get program reflection of vertex and fragment shader arguments
+    MTLRenderPipelineDescriptor* mtl_reflection_state_desc = [MTLRenderPipelineDescriptor new];
+    mtl_reflection_state_desc.vertexDescriptor = m_mtl_vertex_desc;
+    mtl_reflection_state_desc.vertexFunction   = GetNativeShaderFunction(Rhi::ShaderType::Vertex);
+    mtl_reflection_state_desc.fragmentFunction = GetNativeShaderFunction(Rhi::ShaderType::Pixel);
+
+    // Fill state color attachment descriptors matching program's pixel shader output
+    // NOTE: even when program has no pixel shaders render, render state must have at least one color format to be valid
+    uint32_t attachment_index = 0;
+    for(PixelFormat color_format : settings.attachment_formats.colors)
+    {
+        mtl_reflection_state_desc.colorAttachments[attachment_index++].pixelFormat = TypeConverter::DataFormatToMetalPixelType(color_format);
+    }
+    mtl_reflection_state_desc.colorAttachments[attachment_index].pixelFormat = MTLPixelFormatInvalid;
+    mtl_reflection_state_desc.depthAttachmentPixelFormat   = TypeConverter::DataFormatToMetalPixelType(settings.attachment_formats.depth);
+    mtl_reflection_state_desc.stencilAttachmentPixelFormat = TypeConverter::DataFormatToMetalPixelType(settings.attachment_formats.stencil);
+
+    NSError* ns_error = nil;
+    const id<MTLDevice>& mtl_device = GetMetalContext().GetMetalDevice().GetNativeDevice();
+
+    MTLRenderPipelineReflection* mtl_render_pipeline_reflection = nil;
+    id<MTLRenderPipelineState> mtl_render_pipeline_state = [mtl_device newRenderPipelineStateWithDescriptor: mtl_reflection_state_desc
+                                                                                                    options: MTLPipelineOptionArgumentInfo
+                                                                                                 reflection: &mtl_render_pipeline_reflection
+                                                                                                      error: &ns_error];
+
+    META_CHECK_ARG_NOT_NULL_DESCR(mtl_render_pipeline_state,
+                                  "Failed to create dummy pipeline state for program reflection: {}",
+                                  MacOS::ConvertFromNsString([ns_error localizedDescription]));
+
+    if (!mtl_render_pipeline_reflection)
+        return;
+
+    SetNativeShaderArguments(Rhi::ShaderType::Vertex, mtl_render_pipeline_reflection.vertexBindings);
+    SetNativeShaderArguments(Rhi::ShaderType::Pixel,  mtl_render_pipeline_reflection.fragmentBindings);
+    InitArgumentBindings(settings.argument_accessors);
+}
+
+void Program::ReflectComputePipelineArguments()
+{
+    META_FUNCTION_TASK();
+    const Settings& settings = Base::Program::GetSettings();
+
+    // Create dummy pipeline state to get program reflection of vertex and fragment shader arguments
+    MTLComputePipelineDescriptor* mtl_reflection_state_desc = [MTLComputePipelineDescriptor new];
+    mtl_reflection_state_desc.computeFunction = GetNativeShaderFunction(Rhi::ShaderType::Compute);
+
+    NSError* ns_error = nil;
+    const id<MTLDevice>& mtl_device = GetMetalContext().GetMetalDevice().GetNativeDevice();
+
+    MTLComputePipelineReflection* mtl_compute_pipeline_reflection = nil;
+    id<MTLComputePipelineState> mtl_compute_pipeline_state = [mtl_device newComputePipelineStateWithDescriptor: mtl_reflection_state_desc
+                                                                                                       options: MTLPipelineOptionArgumentInfo
+                                                                                                    reflection: &mtl_compute_pipeline_reflection
+                                                                                                         error: &ns_error];
+
+    META_CHECK_ARG_NOT_NULL_DESCR(mtl_compute_pipeline_state,
+                                  "Failed to create compute pipeline state for program reflection: {}",
+                                  MacOS::ConvertFromNsString([ns_error localizedDescription]));
+
+    if (!mtl_compute_pipeline_reflection)
+        return;
+
+    SetNativeShaderArguments(Rhi::ShaderType::Compute, mtl_compute_pipeline_reflection.bindings);
+    InitArgumentBindings(settings.argument_accessors);
+}
+
+void Program::SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<id<MTLBinding>>* mtl_arguments) noexcept
 {
     META_FUNCTION_TASK();
     if (HasShader(shader_type))
     {
-        GetMetalShader(shader_type).SetNativeArguments(mtl_arguments);
+        GetMetalShader(shader_type).SetNativeBindings(mtl_arguments);
     }
 }
 

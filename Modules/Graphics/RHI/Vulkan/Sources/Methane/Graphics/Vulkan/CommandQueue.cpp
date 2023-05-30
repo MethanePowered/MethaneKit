@@ -25,6 +25,7 @@ Vulkan implementation of the command queue interface.
 #include <Methane/Graphics/Vulkan/CommandListSet.h>
 #include <Methane/Graphics/Vulkan/Fence.h>
 #include <Methane/Graphics/Vulkan/TransferCommandList.h>
+#include <Methane/Graphics/Vulkan/ComputeCommandList.h>
 #include <Methane/Graphics/Vulkan/RenderCommandList.h>
 #include <Methane/Graphics/Vulkan/ParallelRenderCommandList.h>
 #include <Methane/Graphics/Vulkan/QueryPool.h>
@@ -143,6 +144,12 @@ Ptr<Rhi::ITransferCommandList> CommandQueue::CreateTransferCommandList()
 {
     META_FUNCTION_TASK();
     return std::make_shared<TransferCommandList>(*this);
+}
+
+Ptr<Rhi::IComputeCommandList> CommandQueue::CreateComputeCommandList()
+{
+    META_FUNCTION_TASK();
+    return std::make_shared<ComputeCommandList>(*this);
 }
 
 Ptr<Rhi::IRenderCommandList> CommandQueue::CreateRenderCommandList(Rhi::IRenderPass& render_pass)

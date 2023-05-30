@@ -23,6 +23,7 @@ Methane Device PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/Device.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/ComputeContext.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -39,6 +40,7 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_METHODS_IMPLEMENT(Device);
+META_PIMPL_METHODS_COMPARE_IMPLEMENT(Device);
 
 Device::Device(const Ptr<IDevice>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
@@ -73,6 +75,11 @@ std::string_view Device::GetName() const META_PIMPL_NOEXCEPT
 RenderContext Device::CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) const
 {
     return RenderContext(GetImpl(m_impl_ptr).CreateRenderContext(env, parallel_executor, settings));
+}
+
+ComputeContext Device::CreateComputeContext(tf::Executor& parallel_executor, const ComputeContextSettings& settings) const
+{
+    return ComputeContext(GetImpl(m_impl_ptr).CreateComputeContext(parallel_executor, settings));
 }
 
 const std::string& Device::GetAdapterName() const META_PIMPL_NOEXCEPT

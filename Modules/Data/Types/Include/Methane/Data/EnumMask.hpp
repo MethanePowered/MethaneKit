@@ -103,7 +103,7 @@ public:
     constexpr EnumMask& SetBitOn(Bit bit) noexcept          { return *this |= bit; }
     constexpr EnumMask& SetBitOff(Bit bit) noexcept         { return *this &= ~EnumMask(bit); }
     constexpr EnumMask& SetBit(Bit bit, bool on) noexcept   { return on ? SetBitOn(bit) : SetBitOff(bit); }
-    constexpr bool HasBits(EnumMask mask) const noexcept    { return mask.m_value ? ((m_value & mask.GetValue()) == mask.GetValue()) : !m_value; }
+    constexpr bool HasBits(EnumMask mask) const noexcept    { return mask.m_value ? ((m_value & mask.GetValue()) == mask.GetValue()) : true; }
     constexpr bool HasBit(Bit bit) const noexcept           { return HasBits(EnumMask(bit)); }
     constexpr bool HasAnyBits(EnumMask mask) const noexcept { return (m_value & mask.GetValue()) != M{}; }
     constexpr bool HasAnyBit(Bit bit) const noexcept        { return HasAnyBits(EnumMask(bit)); }

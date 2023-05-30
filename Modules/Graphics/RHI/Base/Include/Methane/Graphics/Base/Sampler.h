@@ -42,10 +42,9 @@ public:
             Opt<State> auto_transition_source_state_opt = {});
 
     // ISampler interface
-    const Settings& GetSettings() const override { return m_settings; }
+    const Settings& GetSettings() const final { return m_settings; }
 
     // IResource interface
-    void       SetData(const SubResources& sub_resources, Rhi::ICommandQueue&) override;
     Data::Size GetDataSize(Data::MemoryState) const noexcept override { return 0; }
 
 private:

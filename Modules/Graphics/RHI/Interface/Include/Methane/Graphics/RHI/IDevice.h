@@ -56,13 +56,19 @@ using DeviceFeatureMask = Data::EnumMask<DeviceFeature>;
 
 struct DeviceCaps
 {
-    DeviceFeatureMask features              { ~0U };
+    DeviceFeatureMask features{
+        DeviceFeature::PresentToWindow,
+        DeviceFeature::AnisotropicFiltering,
+        DeviceFeature::ImageCubeArray,
+    };
     uint32_t          render_queues_count   { 1U };
     uint32_t          transfer_queues_count { 1U };
+    uint32_t          compute_queues_count  { 1U };
 
     DeviceCaps& SetFeatures(DeviceFeatureMask new_features) noexcept;
     DeviceCaps& SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept;
     DeviceCaps& SetTransferQueuesCount(uint32_t new_transfer_queues_count) noexcept;
+    DeviceCaps& SetComputeQueuesCount(uint32_t new_compute_queues_count) noexcept;
 };
 
 struct IDevice;
@@ -76,7 +82,9 @@ struct IDeviceCallback
 };
 
 struct IRenderContext;
+struct IComputeContext;
 struct RenderContextSettings;
+struct ComputeContextSettings;
 
 struct IDevice
     : virtual IObject // NOSONAR
@@ -86,11 +94,12 @@ struct IDevice
     using Feature      = DeviceFeature;
     using Capabilities = DeviceCaps;
 
-    [[nodiscard]] virtual Ptr<IRenderContext> CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) = 0;
-    [[nodiscard]] virtual const std::string&  GetAdapterName() const noexcept = 0;
-    [[nodiscard]] virtual bool                IsSoftwareAdapter() const noexcept = 0;
-    [[nodiscard]] virtual const Capabilities& GetCapabilities() const noexcept = 0;
-    [[nodiscard]] virtual std::string         ToString() const = 0;
+    [[nodiscard]] virtual Ptr<IRenderContext>  CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) = 0;
+    [[nodiscard]] virtual Ptr<IComputeContext> CreateComputeContext(tf::Executor& parallel_executor, const ComputeContextSettings& settings) = 0;
+    [[nodiscard]] virtual const std::string&   GetAdapterName() const noexcept = 0;
+    [[nodiscard]] virtual bool                 IsSoftwareAdapter() const noexcept = 0;
+    [[nodiscard]] virtual const Capabilities&  GetCapabilities() const noexcept = 0;
+    [[nodiscard]] virtual std::string          ToString() const = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

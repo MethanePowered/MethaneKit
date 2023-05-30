@@ -79,6 +79,7 @@ static bool EnableDebugLayer()
     }
 
 #ifdef BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
+    dxgi_info_queue_cptr->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_WARNING, true);
     dxgi_info_queue_cptr->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true);
     dxgi_info_queue_cptr->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
 #endif
@@ -259,7 +260,7 @@ void System::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_
         return;
 
     if (const Rhi::DeviceFeatureMask device_supported_features = Device::GetSupportedFeatures(cp_adapter, feature_level);
-        !GetDeviceCapabilities().features.HasBits(device_supported_features))
+        !device_supported_features.HasBits(GetDeviceCapabilities().features))
         return;
 
     Base::System::AddDevice(std::make_shared<Device>(cp_adapter, feature_level, GetDeviceCapabilities()));

@@ -370,10 +370,13 @@ void TextMesh::ApplyAlignmentOffset(const size_t aligned_text_length, const size
     for(size_t char_index = line_start_index; char_index < end_char_index; ++char_index)
     {
         const CharPosition& char_position = m_char_positions[char_index];
-        if (char_position.is_line_start && char_index <= end_char_index - 1)
+        if (char_position.is_line_start &&
+            !char_position.is_whitespace &&
+            char_index <= end_char_index - 1)
         {
+            META_CHECK_ARG_LESS_DESCR(char_position.start_vertex_index, m_vertices.size(), "character start vertex index is invalid");
             line_whitespace_index = 0;
-            line_start_offset = static_cast<int32_t>(m_vertices[m_char_positions[char_index].start_vertex_index].position[0]);
+            line_start_offset = static_cast<int32_t>(m_vertices[char_position.start_vertex_index].position[0]);
             horizontal_alignment_offset = GetHorizontalLineAlignmentOffset(char_index);
             if (justify_alignment_enabled)
             {

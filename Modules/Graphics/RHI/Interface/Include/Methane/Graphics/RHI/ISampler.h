@@ -53,6 +53,9 @@ struct SamplerFilter
     SamplerFilter(MinMag min_mag, Mip mip) : SamplerFilter(min_mag, min_mag, mip) { }
     explicit SamplerFilter(MinMag min_mag) : SamplerFilter(min_mag, Mip::NotMipmapped) { }
 
+    bool operator==(const SamplerFilter& other) const;
+    bool operator!=(const SamplerFilter& other) const;
+
     MinMag min = MinMag::Nearest;
     MinMag mag = MinMag::Nearest;
     Mip    mip = Mip::NotMipmapped;
@@ -72,6 +75,9 @@ struct SamplerAddress
     SamplerAddress(Mode s, Mode t, Mode r) : s(s), t(t), r(r) { }
     explicit SamplerAddress(Mode all) : s(all), t(all), r(all) { }
 
+    bool operator==(const SamplerAddress& other) const;
+    bool operator!=(const SamplerAddress& other) const;
+
     Mode s = Mode::ClampToEdge; // width
     Mode t = Mode::ClampToEdge; // height
     Mode r = Mode::ClampToEdge; // depth
@@ -80,6 +86,9 @@ struct SamplerAddress
 struct SamplerLevelOfDetail
 {
     SamplerLevelOfDetail(float bias = 0.F, float min = 0.F, float max = std::numeric_limits<float>::max());
+
+    bool operator==(const SamplerLevelOfDetail& other) const;
+    bool operator!=(const SamplerLevelOfDetail& other) const;
 
     float min  = 0.F;
     float max  = std::numeric_limits<float>::max();
@@ -101,6 +110,9 @@ struct SamplerSettings
                     uint32_t  max_anisotropy = 1,
                     SamplerBorderColor border_color = SamplerBorderColor::TransparentBlack,
                     Compare compare_function = Compare::Never);
+
+    bool operator==(const SamplerSettings& other) const;
+    bool operator!=(const SamplerSettings& other) const;
 
     SamplerFilter        filter;
     SamplerAddress       address;

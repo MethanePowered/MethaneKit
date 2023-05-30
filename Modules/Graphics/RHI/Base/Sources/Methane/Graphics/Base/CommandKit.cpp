@@ -24,33 +24,61 @@ Methane command kit implementation.
 #include <Methane/Graphics/Base/CommandKit.h>
 #include <Methane/Graphics/Base/CommandListSet.h>
 #include <Methane/Graphics/Base/RenderCommandList.h>
+#include <Methane/Graphics/Base/ComputeCommandList.h>
 #include <Methane/Graphics/Base/CommandQueue.h>
 
 #include <Methane/Graphics/RHI/IFence.h>
+#include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Graphics/RHI/ICommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/ITransferCommandList.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <atomic>
+#include <condition_variable>
+
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics::Base
 {
 
 static constexpr uint32_t g_max_cmd_lists_count = 32U;
 
+static std::string GetCommandListNameById(Rhi::CommandListId id)
+{
+    META_FUNCTION_TASK();
+    switch(static_cast<Rhi::CommandListPurpose>(id))
+    {
+    case Rhi::CommandListPurpose::Default:        return "Default";
+    case Rhi::CommandListPurpose::PreUploadSync:  return "PreUploadSync";
+    case Rhi::CommandListPurpose::PostUploadSync: return "PostUploadSync";
+    }
+    return std::to_string(id);
+}
+
 CommandKit::CommandKit(const Rhi::IContext& context, Rhi::CommandListType cmd_list_type)
     : m_context(context)
     , m_cmd_list_type(cmd_list_type)
-{ }
+{
+    META_FUNCTION_TASK();
+    if (context.GetType() == Rhi::ContextType::Compute)
+    {
+        META_CHECK_ARG_NOT_EQUAL_DESCR(cmd_list_type, Rhi::CommandListType::Render,
+                                       "compute context can not be used to create render command queues");
+    }
+    META_CHECK_ARG_NOT_EQUAL_DESCR(cmd_list_type, Rhi::CommandListType::ParallelRender,
+                                   "command queue should be created with Render type to support ParallelRender command lists");
+}
 
 CommandKit::CommandKit(Rhi::ICommandQueue& cmd_queue)
     : Object(cmd_queue.GetName())
     , m_context(cmd_queue.GetContext())
     , m_cmd_list_type(cmd_queue.GetCommandListType())
     , m_cmd_queue_ptr(static_cast<CommandQueue&>(cmd_queue).GetPtr<CommandQueue>())
-{ }
+{
+}
 
 bool CommandKit::SetName(std::string_view name)
 {
@@ -117,12 +145,13 @@ Rhi::ICommandList& CommandKit::GetList(Rhi::CommandListId cmd_list_id = 0U) cons
 
     switch (m_cmd_list_type)
     {
-    case Rhi::CommandListType::Transfer: cmd_list_ptr = Rhi::ITransferCommandList::Create(GetQueue()); break;
+    case Rhi::CommandListType::Transfer: cmd_list_ptr = GetQueue().CreateTransferCommandList(); break;
     case Rhi::CommandListType::Render:   cmd_list_ptr = RenderCommandList::CreateForSynchronization(GetQueue()); break;
+    case Rhi::CommandListType::Compute:  cmd_list_ptr = GetQueue().CreateComputeCommandList(); break;
     default: META_UNEXPECTED_ARG(m_cmd_list_type);
     }
 
-    cmd_list_ptr->SetName(fmt::format("{} Utility Command List {}", GetName(), cmd_list_id));
+    cmd_list_ptr->SetName(fmt::format("{} Helper List {}", GetName(), GetCommandListNameById(cmd_list_id)));
     return *cmd_list_ptr;
 }
 
@@ -187,6 +216,30 @@ Rhi::IFence& CommandKit::GetFence(Rhi::CommandListId fence_id) const
     fence_ptr = Rhi::IFence::Create(GetQueue());
     fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_id));
     return *fence_ptr;
+}
+
+void CommandKit::ExecuteListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+{
+    META_FUNCTION_TASK();
+    GetQueue().Execute(GetListSet(cmd_list_ids, frame_index_opt));
+}
+
+void CommandKit::ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+{
+    META_FUNCTION_TASK();
+    std::mutex                  execution_wait_mutex;
+    size_t                      executing_cmd_list_count = cmd_list_ids.size();
+    std::condition_variable_any executing_cmd_list_set_condition_var;
+    GetQueue().Execute(GetListSet(cmd_list_ids, frame_index_opt),
+                       [&executing_cmd_list_count, &execution_wait_mutex, &executing_cmd_list_set_condition_var](const Rhi::ICommandList&)
+                       {
+                           std::lock_guard lock(execution_wait_mutex);
+                           executing_cmd_list_count--;
+                           executing_cmd_list_set_condition_var.notify_one();
+                       });
+
+    std::unique_lock lock(execution_wait_mutex);
+    executing_cmd_list_set_condition_var.wait(lock, [&executing_cmd_list_count]() { return executing_cmd_list_count == 0U; });
 }
 
 CommandKit::CommandListIndex CommandKit::GetCommandListIndexById(Rhi::CommandListId cmd_list_id) const noexcept

@@ -62,7 +62,7 @@ public:
     {
         // Raw pointer is used for program bindings instead of smart pointer for performance reasons
         // to get rid of shared_from_this() overhead required to acquire smart pointer from reference
-        const ProgramBindings* program_bindings_ptr;
+        const ProgramBindings* program_bindings_ptr = nullptr;
         Ptrs<Object>           retained_resources;
     };
 
@@ -110,8 +110,8 @@ protected:
     virtual void ResetCommandState();
     virtual void ApplyProgramBindings(ProgramBindings& program_bindings, Rhi::ProgramBindingsApplyBehaviorMask apply_behavior);
 
-    CommandState&       GetCommandState()               { return m_command_state; }
-    const CommandState& GetCommandState() const         { return m_command_state; }
+    CommandState&       GetCommandState()        { return m_command_state; }
+    const CommandState& GetCommandState() const  { return m_command_state; }
 
     void SetCommandListState(State state);
     void SetCommandListStateNoLock(State state);

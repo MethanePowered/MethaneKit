@@ -82,6 +82,9 @@ struct TextureSettings
     Opt<Data::Index>        frame_index_opt;          // for TextureType::FrameBuffer
     Opt<DepthStencilValues> depth_stencil_clear_opt;  // for TextureType::DepthStencil
 
+    bool operator==(const TextureSettings& other) const;
+    bool operator!=(const TextureSettings& other) const;
+
     [[nodiscard]] static TextureSettings ForImage(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped,
                                                   ResourceUsageMask usage = { ResourceUsage::ShaderRead });
     [[nodiscard]] static TextureSettings ForCubeImage(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped,
@@ -109,7 +112,13 @@ struct ITexture
     [[nodiscard]] static Ptr<ITexture> Create(const IContext& context, const Settings& settings);
 
     // ITexture interface
-    [[nodiscard]] virtual const Settings& GetSettings() const = 0;
+    [[nodiscard]] virtual const Settings&    GetSettings() const = 0;
+    [[nodiscard]] virtual Data::Size         GetSubResourceDataSize(const SubResource::Index& sub_resource_index = {}) const = 0;
+    [[nodiscard]] virtual SubResource::Count GetSubresourceCount() const noexcept = 0;
+    [[nodiscard]] virtual SubResource        GetData(ICommandQueue& target_cmd_queue,
+                                                     const SubResourceIndex& sub_resource_index = {},
+                                                     const BytesRangeOpt& data_range = {}) = 0;
+    virtual void SetData(ICommandQueue& target_cmd_queue, const SubResources& sub_resources) = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

@@ -13,6 +13,7 @@
 - [IRenderCommandList](Include/Methane/Graphics/IRenderCommandList.h)
 - [IParallelRenderCommandList](Include/Methane/Graphics/IParallelRenderCommandList.h)
 - [ITransferCommandList](Include/Methane/Graphics/ITransferCommandList.h) (work in progress)
+- [IComputeCommandList](Include/Methane/Graphics/IComputeCommandList.h) (work in progress)
 - [IFence](Include/Methane/Graphics/IFence.h)
 - [ICommandKit](Include/Methane/Graphics/ICommandKit.h)
 

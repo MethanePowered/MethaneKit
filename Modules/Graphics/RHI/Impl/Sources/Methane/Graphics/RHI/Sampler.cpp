@@ -23,6 +23,7 @@ Methane Sampler PIMPL wrappers for direct calls to final implementation.
 
 #include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
+#include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 
 #include <Methane/Pimpl.hpp>
@@ -50,6 +51,11 @@ Sampler::Sampler(ISampler& interface_ref)
 }
 
 Sampler::Sampler(const RenderContext& context, const Settings& settings)
+    : Sampler(ISampler::Create(context.GetInterface(), settings))
+{
+}
+
+Sampler::Sampler(const ComputeContext& context, const Settings& settings)
     : Sampler(ISampler::Create(context.GetInterface(), settings))
 {
 }
@@ -146,11 +152,9 @@ const Sampler::DescriptorByViewId& Sampler::GetDescriptorByViewId() const META_P
     return GetImpl(m_impl_ptr).GetDescriptorByViewId();
 }
 
-RenderContext Sampler::GetRenderContext() const
+const IContext& Sampler::GetContext() const META_PIMPL_NOEXCEPT
 {
-    IContext& context = const_cast<IContext&>(GetImpl(m_impl_ptr).GetContext()); // NOSONAR
-    META_CHECK_ARG_EQUAL(context.GetType(), ContextType::Render);
-    return RenderContext(dynamic_cast<IRenderContext&>(context));
+    return GetImpl(m_impl_ptr).GetContext();
 }
 
 const Opt<uint32_t>& Sampler::GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT

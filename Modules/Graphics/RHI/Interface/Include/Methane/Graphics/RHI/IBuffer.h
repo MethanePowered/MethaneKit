@@ -61,6 +61,9 @@ struct BufferSettings
     [[nodiscard]] static BufferSettings ForIndexBuffer(Data::Size size, PixelFormat format, bool is_volatile = false);
     [[nodiscard]] static BufferSettings ForConstantBuffer(Data::Size size, bool addressable = false, bool is_volatile = false);
     [[nodiscard]] static BufferSettings ForReadBackBuffer(Data::Size size);
+
+    bool operator==(const BufferSettings& other) const;
+    bool operator!=(const BufferSettings& other) const;
 };
 
 struct IBuffer
@@ -76,6 +79,8 @@ struct IBuffer
     // IBuffer interface
     [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;
     [[nodiscard]] virtual uint32_t        GetFormattedItemsCount() const noexcept = 0;
+    [[nodiscard]] virtual SubResource     GetData(ICommandQueue& target_cmd_queue, const BytesRangeOpt& data_range = {}) = 0;
+    virtual void SetData(ICommandQueue& target_cmd_queue, const SubResource& sub_resource) = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

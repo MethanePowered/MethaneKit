@@ -36,6 +36,7 @@ namespace Methane::Graphics::Rhi
 {
 
 class RenderContext;
+class ComputeContext;
 
 class Device // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
@@ -62,6 +63,7 @@ public:
 
     // IDevice interface methods
     [[nodiscard]] META_PIMPL_API RenderContext       CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) const;
+    [[nodiscard]] META_PIMPL_API ComputeContext      CreateComputeContext(tf::Executor& parallel_executor, const ComputeContextSettings& settings) const;
     [[nodiscard]] META_PIMPL_API const std::string&  GetAdapterName() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API bool                IsSoftwareAdapter() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const Capabilities& GetCapabilities() const META_PIMPL_NOEXCEPT;

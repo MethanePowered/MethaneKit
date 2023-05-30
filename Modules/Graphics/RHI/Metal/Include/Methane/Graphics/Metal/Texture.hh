@@ -43,7 +43,10 @@ public:
     Texture(const Base::Context& context, const Settings& settings);
 
     // IResource interface
-    void SetData(const SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue) override;
+    void SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources) override;
+    SubResource GetData(Rhi::ICommandQueue& target_cmd_queue,
+                        const SubResource::Index& sub_resource_index = SubResource::Index(),
+                        const BytesRangeOpt& data_range = {}) override;
 
     // IObject interface
     bool SetName(std::string_view name) override;

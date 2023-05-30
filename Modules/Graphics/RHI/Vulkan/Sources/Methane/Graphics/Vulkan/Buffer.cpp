@@ -100,49 +100,101 @@ Buffer::Buffer(const Base::Context& context, const Settings& settings)
     GetNativeDevice().bindBufferMemory(m_vk_unique_staging_buffer.get(), m_vk_unique_staging_memory.get(), 0);
 }
 
-void Buffer::SetData(const Rhi::SubResources& sub_resources, Rhi::ICommandQueue& target_cmd_queue)
+void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const Rhi::SubResource& sub_resource)
 {
     META_FUNCTION_TASK();
-    Resource::SetData(sub_resources, target_cmd_queue);
+    Base::Buffer::SetData(target_cmd_queue, sub_resource);
 
     const Settings& buffer_settings = GetSettings();
     const bool is_private_storage = buffer_settings.storage_mode == Rhi::IBuffer::StorageMode::Private;
+    const vk::DeviceMemory& vk_device_memory = is_private_storage ? m_vk_unique_staging_memory.get() : GetNativeDeviceMemory();
+
+    const vk::DeviceSize sub_resource_offset = 0U;
+    Data::RawPtr sub_resource_data_ptr = nullptr;
+    const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},
+                                                                 reinterpret_cast<void**>(&sub_resource_data_ptr)); // NOSONAR
+
+    META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
+    META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+    std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), sub_resource_data_ptr);
+
+    GetNativeDevice().unmapMemory(vk_device_memory);
+
     if (is_private_storage)
     {
-        m_vk_copy_regions.clear();
-        m_vk_copy_regions.reserve(sub_resources.size());
-    }
-
-    const vk::DeviceMemory& vk_device_memory = is_private_storage ? m_vk_unique_staging_memory.get() : GetNativeDeviceMemory();
-    for(const SubResource& sub_resource : sub_resources)
-    {
-        ValidateSubResource(sub_resource);
-
-        const vk::DeviceSize sub_resource_offset = 0U;
-        Data::RawPtr sub_resource_data_ptr = nullptr;
-        const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},
-                                                                     reinterpret_cast<void**>(&sub_resource_data_ptr)); // NOSONAR
-
-        META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
-        META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
-        std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), sub_resource_data_ptr);
-
-        GetNativeDevice().unmapMemory(vk_device_memory);
-
-        if (is_private_storage)
-        {
-            m_vk_copy_regions.emplace_back(sub_resource_offset, sub_resource_offset, static_cast<vk::DeviceSize>(sub_resource.GetDataSize()));
-        }
+        m_vk_copy_region = vk::BufferCopy(sub_resource_offset, sub_resource_offset, static_cast<vk::DeviceSize>(sub_resource.GetDataSize()));
     }
 
     if (!is_private_storage)
         return;
 
     // In case of private GPU storage, copy buffer data from staging upload resource to the device-local GPU resource
-    TransferCommandList& upload_cmd_list = PrepareResourceUpload(target_cmd_queue);
-    upload_cmd_list.GetNativeCommandBufferDefault().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), m_vk_copy_regions);
-    CompleteResourceUpload(upload_cmd_list, GetTargetResourceStateByBufferType(buffer_settings.type), target_cmd_queue);
+    TransferCommandList& upload_cmd_list = PrepareResourceTransfer(target_cmd_queue, State::CopyDest);
+    upload_cmd_list.GetNativeCommandBufferDefault().copyBuffer(m_vk_unique_staging_buffer.get(), GetNativeResource(), 1U, &m_vk_copy_region);
+    CompleteResourceTransfer(upload_cmd_list, GetTargetResourceStateByBufferType(buffer_settings.type), target_cmd_queue);
     GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources);
+}
+
+Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue& target_cmd_queue, const BytesRangeOpt& data_range)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
+                              "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
+
+    const BytesRange buffer_data_range(data_range ? data_range->GetStart() : 0U,
+                                       data_range ? data_range->GetEnd()   : GetDataSize());
+
+    Data::Bytes data;
+    switch(GetSettings().storage_mode)
+    {
+    case IBuffer::StorageMode::Managed: data = GetDataFromSharedBuffer(buffer_data_range); break;
+    case IBuffer::StorageMode::Private: data = GetDataFromPrivateBuffer(buffer_data_range, target_cmd_queue); break;
+    default: META_UNEXPECTED_ARG_RETURN(GetSettings().storage_mode, SubResource());
+    }
+
+    return Rhi::SubResource(std::move(data), Rhi::SubResourceIndex(), data_range);
+}
+
+Data::Bytes Buffer::GetDataFromSharedBuffer(const BytesRange& data_range) const
+{
+    META_FUNCTION_TASK();
+    Data::RawPtr data_ptr = nullptr;
+    const vk::DeviceMemory& vk_device_memory = GetNativeDeviceMemory();
+    const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, data_range.GetStart(), data_range.GetLength(),
+                                                                 vk::MemoryMapFlags{}, reinterpret_cast<void**>(&data_ptr)); // NOSONAR
+
+    META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
+    META_CHECK_ARG_NOT_NULL_DESCR(data_ptr, "failed to map buffer subresource");
+    Data::Bytes data(data_ptr, data_ptr + data_range.GetLength());
+    GetNativeDevice().unmapMemory(vk_device_memory);
+
+    return data;
+}
+
+Data::Bytes Buffer::GetDataFromPrivateBuffer(const BytesRange& data_range, Rhi::ICommandQueue& target_cmd_queue)
+{
+    META_FUNCTION_TASK();
+    const State       initial_buffer_state = GetState();
+    TransferCommandList&   upload_cmd_list = PrepareResourceTransfer(target_cmd_queue, State::CopySource);
+    const vk::CommandBuffer& vk_cmd_buffer = upload_cmd_list.GetNativeCommandBufferDefault();
+    const vk::BufferCopy vk_buffer_copy(data_range.GetStart(), 0U, data_range.GetLength());
+    vk_cmd_buffer.copyBuffer(GetNativeResource(), m_vk_unique_staging_buffer.get(), 1U, &vk_buffer_copy);
+
+    CompleteResourceTransfer(upload_cmd_list, initial_buffer_state, target_cmd_queue);
+
+    // Execute resource transfer commands and wait for completion
+    GetBaseContext().UploadResources();
+
+    // Copy buffer data from mapped staging resource
+    Data::RawPtr data_ptr = nullptr;
+    const vk::Result vk_map_result = GetNativeDevice().mapMemory(m_vk_unique_staging_memory.get(), 0U, data_range.GetLength(),
+                                                                 vk::MemoryMapFlags{}, reinterpret_cast<void**>(&data_ptr)); // NOSONAR
+    META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
+    META_CHECK_ARG_NOT_NULL_DESCR(data_ptr, "failed to map buffer subresource");
+    Data::Bytes data(data_ptr, data_ptr + data_range.GetLength());
+    GetNativeDevice().unmapMemory(m_vk_unique_staging_memory.get());
+
+    return data;
 }
 
 bool Buffer::SetName(std::string_view name)
@@ -165,7 +217,7 @@ Ptr<ResourceView::ViewDescriptorVariant> Buffer::CreateNativeViewDescriptor(cons
     buffer_view_desc.vk_desc = vk::DescriptorBufferInfo(
         GetNativeResource(),
         static_cast<vk::DeviceSize>(view_id.offset),
-        view_id.size ? view_id.size : GetSubResourceDataSize(view_id.subresource_index)
+        view_id.size ? view_id.size : GetDataSize()
     );
 
     return std::make_shared<ResourceView::ViewDescriptorVariant>(std::move(buffer_view_desc));

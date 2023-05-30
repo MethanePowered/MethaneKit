@@ -354,10 +354,10 @@ void AppBase::UpdateWindowTitle()
         return;
     }
 
-    const Rhi::RenderContextSettings& context_settings     = m_context.GetSettings();
-    const Rhi::IFpsCounter&           fps_counter          = m_context.GetFpsCounter();
-    const uint32_t                    average_fps          = fps_counter.GetFramesPerSecond();
-    const Rhi::IFpsCounter::Timing    average_frame_timing = fps_counter.GetAverageFrameTiming();
+    const Rhi::RenderContextSettings& context_settings = m_context.GetSettings();
+    const Data::IFpsCounter&          fps_counter      = m_context.GetFpsCounter();
+    const uint32_t                    average_fps      = fps_counter.GetFramesPerSecond();
+    const Data::FrameTiming       average_frame_timing = fps_counter.GetAverageFrameTiming();
 
     const std::string title = fmt::format("{:s}        {:d} FPS, {:.2f} ms, {:.2f}% CPU |  {:d} x {:d}  |  {:d} FB  |  VSync {:s}  |  {:s}  |  {:s}  |  F1 - help",
                                           GetPlatformAppSettings().name,

@@ -49,19 +49,56 @@ namespace Methane::Graphics::DirectX
 
 static const std::set<std::string, std::less<>> g_skip_semantic_names{{ "SV_VERTEXID", "SV_INSTANCEID", "SV_ISFRONTFACE" }};
 
+static Rhi::IResource::Type GetResourceTypeByDimensionType(D3D_SRV_DIMENSION dimension_type)
+{
+    META_FUNCTION_TASK();
+    switch (dimension_type)
+    {
+    case D3D_SRV_DIMENSION_BUFFER:
+    case D3D_SRV_DIMENSION_BUFFEREX:
+        return Rhi::IResource::Type::Buffer;
+
+    case D3D_SRV_DIMENSION_TEXTURE1D:
+    case D3D_SRV_DIMENSION_TEXTURE1DARRAY:
+    case D3D_SRV_DIMENSION_TEXTURE2D:
+    case D3D_SRV_DIMENSION_TEXTURE2DARRAY:
+    case D3D_SRV_DIMENSION_TEXTURE2DMS:
+    case D3D_SRV_DIMENSION_TEXTURE2DMSARRAY:
+    case D3D_SRV_DIMENSION_TEXTURE3D:
+    case D3D_SRV_DIMENSION_TEXTURECUBE:
+    case D3D_SRV_DIMENSION_TEXTURECUBEARRAY:
+        return Rhi::IResource::Type::Texture;
+
+    default: META_UNEXPECTED_ARG_DESCR_RETURN(dimension_type, Rhi::IResource::Type::Buffer, "unable to determine resource type by DX resource dimension type");
+    }
+}
+
 [[nodiscard]]
-static Rhi::IResource::Type GetResourceTypeByInputType(D3D_SHADER_INPUT_TYPE input_type)
+static Rhi::IResource::Type GetResourceTypeByInputAndDimensionType(D3D_SHADER_INPUT_TYPE input_type, D3D_SRV_DIMENSION dimension_type)
 {
     META_FUNCTION_TASK();
     switch (input_type)
     {
-    case D3D_SIT_CBUFFER:
     case D3D_SIT_STRUCTURED:
-    case D3D_SIT_TBUFFER:   return Rhi::IResource::Type::Buffer;
-    case D3D_SIT_TEXTURE:   return Rhi::IResource::Type::Texture;
-    case D3D_SIT_SAMPLER:   return Rhi::IResource::Type::Sampler;
+    case D3D_SIT_UAV_RWSTRUCTURED:
+    case D3D_SIT_CBUFFER:
+    case D3D_SIT_TBUFFER:     return Rhi::IResource::Type::Buffer;
+    case D3D_SIT_TEXTURE:     return Rhi::IResource::Type::Texture;
+    case D3D_SIT_SAMPLER:     return Rhi::IResource::Type::Sampler;
+    case D3D_SIT_UAV_RWTYPED: return GetResourceTypeByDimensionType(dimension_type);
     default: META_UNEXPECTED_ARG_DESCR_RETURN(input_type, Rhi::IResource::Type::Buffer, "unable to determine resource type by DX shader input type");
     }
+}
+
+static bool IsUnorderedAccessInputType(D3D_SHADER_INPUT_TYPE input_type) noexcept
+{
+    return input_type == D3D_SIT_UAV_RWTYPED ||
+           input_type == D3D_SIT_UAV_RWSTRUCTURED ||
+           input_type == D3D_SIT_UAV_RWBYTEADDRESS ||
+           input_type == D3D_SIT_UAV_APPEND_STRUCTURED ||
+           input_type == D3D_SIT_UAV_CONSUME_STRUCTURED ||
+           input_type == D3D_SIT_UAV_RWSTRUCTURED_WITH_COUNTER ||
+           input_type == D3D_SIT_UAV_FEEDBACKTEXTURE;
 }
 
 using StepType = Base::Program::InputBufferLayout::StepType;
@@ -153,12 +190,19 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                                                    ? Rhi::ProgramArgumentAccessor(shader_argument)
                                                    : *argument_acc_it;
 
-        const ProgramBindings::ArgumentBinding::Type dx_addressable_binding_type = binding_desc.Type == D3D_SIT_CBUFFER
-                                                                                     ? ProgramBindings::ArgumentBinding::Type::ConstantBufferView
-                                                                                     : ProgramBindings::ArgumentBinding::Type::ShaderResourceView;
-        const ProgramBindings::ArgumentBinding::Type dx_binding_type             = argument_acc.IsAddressable()
-                                                                                     ? dx_addressable_binding_type
-                                                                                     : ProgramBindings::ArgumentBinding::Type::DescriptorTable;
+        ProgramBindings::ArgumentBinding::Type dx_binding_type = ProgramBindings::ArgumentBinding::Type::DescriptorTable;
+        if (argument_acc.IsAddressable())
+        {
+            if (IsUnorderedAccessInputType(binding_desc.Type))
+                // SRV or UAV root descriptors can only be Raw or Structured buffers, textures must be bound through DescriptorTable
+                dx_binding_type = binding_desc.Type == D3D_SIT_UAV_RWTYPED
+                                ? ProgramBindings::ArgumentBinding::Type::DescriptorTable
+                                : ProgramBindings::ArgumentBinding::Type::UnorderedAccessView;
+            else
+                dx_binding_type = binding_desc.Type == D3D_SIT_CBUFFER
+                                ? ProgramBindings::ArgumentBinding::Type::ConstantBufferView
+                                : ProgramBindings::ArgumentBinding::Type::ShaderResourceView;
+        }
 
         argument_bindings.push_back(std::make_shared<ProgramBindings::ArgumentBinding>(
             GetContext(),
@@ -167,7 +211,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                 Rhi::IProgramArgumentBinding::Settings
                 {
                     argument_acc,
-                    GetResourceTypeByInputType(binding_desc.Type),
+                    GetResourceTypeByInputAndDimensionType(binding_desc.Type, binding_desc.Dimension),
                     binding_desc.BindCount
                 },
                 dx_binding_type,

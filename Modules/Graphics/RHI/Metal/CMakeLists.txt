@@ -12,6 +12,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/IContext.h
     ${INCLUDE_DIR}/Context.hpp
     ${INCLUDE_DIR}/RenderContext.hh
+    ${INCLUDE_DIR}/ComputeContext.hh
     ${INCLUDE_DIR}/RenderContextAppView.hh
     ${INCLUDE_DIR}/Shader.hh
     ${INCLUDE_DIR}/Program.hh
@@ -20,6 +21,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/ProgramBindings.hh
     ${INCLUDE_DIR}/RenderState.hh
     ${INCLUDE_DIR}/ViewState.hh
+    ${INCLUDE_DIR}/ComputeState.hh
     ${INCLUDE_DIR}/Resource.hh
     ${INCLUDE_DIR}/ResourceBarriers.hh
     ${INCLUDE_DIR}/DescriptorManager.h
@@ -35,6 +37,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/CommandListDebugGroup.hh
     ${INCLUDE_DIR}/CommandList.hpp
     ${INCLUDE_DIR}/TransferCommandList.hh
+    ${INCLUDE_DIR}/ComputeCommandList.hh
     ${INCLUDE_DIR}/RenderCommandList.hh
     ${INCLUDE_DIR}/ParallelRenderCommandList.hh
 )
@@ -52,6 +55,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/ProgramBindings.mm
     ${SOURCES_DIR}/RenderState.mm
     ${SOURCES_DIR}/ViewState.mm
+    ${SOURCES_DIR}/ComputeState.mm
     ${SOURCES_DIR}/Resource.mm
     ${SOURCES_DIR}/Buffer.mm
     ${SOURCES_DIR}/BufferSet.mm
@@ -64,6 +68,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/CommandListSet.mm
     ${SOURCES_DIR}/CommandListDebugGroup.mm
     ${SOURCES_DIR}/TransferCommandList.mm
+    ${SOURCES_DIR}/ComputeCommandList.mm
     ${SOURCES_DIR}/RenderCommandList.mm
     ${SOURCES_DIR}/ParallelRenderCommandList.mm
 )

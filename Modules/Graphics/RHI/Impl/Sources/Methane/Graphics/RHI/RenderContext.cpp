@@ -32,6 +32,7 @@ Methane RenderContext PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/RenderPattern.h>
+#include <Methane/Graphics/RHI/ComputeState.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -137,6 +138,11 @@ RenderState RenderContext::CreateRenderState(const RenderStateSettingsImpl& sett
     return RenderState(GetImpl(m_impl_ptr).CreateRenderState(RenderStateSettingsImpl::Convert(settings)));
 }
 
+ComputeState RenderContext::CreateComputeState(const ComputeStateSettingsImpl& settings) const
+{
+    return ComputeState(GetImpl(m_impl_ptr).CreateComputeState(ComputeStateSettingsImpl::Convert(settings)));
+}
+
 RenderPattern RenderContext::CreateRenderPattern(const RenderPatternSettings& settings) const
 {
     return RenderPattern(GetImpl(m_impl_ptr).CreateRenderPattern(settings));
@@ -155,6 +161,11 @@ tf::Executor& RenderContext::GetParallelExecutor() const META_PIMPL_NOEXCEPT
 IObjectRegistry& RenderContext::GetObjectRegistry() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetObjectRegistry();
+}
+
+bool RenderContext::UploadResources() const META_PIMPL_NOEXCEPT
+{
+    return GetImpl(m_impl_ptr).UploadResources();
 }
 
 void RenderContext::RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT
@@ -257,7 +268,7 @@ uint32_t RenderContext::GetFrameIndex() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetFrameIndex();
 }
 
-const IFpsCounter& RenderContext::GetFpsCounter() const META_PIMPL_NOEXCEPT
+const Data::IFpsCounter& RenderContext::GetFpsCounter() const META_PIMPL_NOEXCEPT
 {
     return GetImpl(m_impl_ptr).GetFpsCounter();
 }

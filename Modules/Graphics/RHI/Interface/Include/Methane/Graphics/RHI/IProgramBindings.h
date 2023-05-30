@@ -55,8 +55,8 @@ public:
 
 struct ProgramArgumentBindingSettings
 {
-    Rhi::ProgramArgumentAccessor argument;
-    IResource::Type         resource_type;
+    ProgramArgumentAccessor argument;
+    ResourceType            resource_type;
     uint32_t                resource_count = 1;
 };
 
@@ -93,7 +93,7 @@ public:
     [[nodiscard]] const IProgram::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
 
 private:
-    const IProgram& m_program;
+    const IProgram&           m_program;
     const IProgram::Arguments m_unbound_arguments;
 };
 

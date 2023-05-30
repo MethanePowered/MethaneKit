@@ -39,7 +39,8 @@ public:
     Device(const id<MTLDevice>& mtl_device, const Capabilities& capabilities);
 
     // IDevice interface
-    [[nodiscard]] Ptr<Rhi::IRenderContext> CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings) override;
+    [[nodiscard]] Ptr<Rhi::IRenderContext>  CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings) override;
+    [[nodiscard]] Ptr<Rhi::IComputeContext> CreateComputeContext(tf::Executor& parallel_executor, const Rhi::ComputeContextSettings& settings) override;
 
     const id<MTLDevice>& GetNativeDevice() const { return m_mtl_device; }
 

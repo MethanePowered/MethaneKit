@@ -128,7 +128,7 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
     Apply(dynamic_cast<ICommandList&>(command_list), command_list.GetProgramBindingsPtr(), apply_behavior);
 }
 
-void ProgramBindings::Apply(ICommandList& command_list_dx, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const
+void ProgramBindings::Apply(ICommandList& command_list, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
     Rhi::ProgramArgumentAccessMask apply_access_mask;
@@ -143,12 +143,11 @@ void ProgramBindings::Apply(ICommandList& command_list_dx, const Base::ProgramBi
     // Set resource transition barriers before applying resource bindings
     if (apply_behavior.HasAnyBit(ApplyBehavior::StateBarriers))
     {
-        ApplyResourceTransitionBarriers(command_list_dx, apply_access_mask);
+        ApplyResourceTransitionBarriers(command_list, apply_access_mask);
     }
 
     // Apply root parameter bindings after resource barriers
-    ID3D12GraphicsCommandList& d3d12_command_list = command_list_dx.GetNativeCommandList();
-    ApplyRootParameterBindings(apply_access_mask, d3d12_command_list, applied_program_bindings_ptr,
+    ApplyRootParameterBindings(apply_access_mask, command_list, applied_program_bindings_ptr,
                                apply_behavior.HasAnyBit(ApplyBehavior::ChangesOnly));
 }
 
@@ -292,8 +291,7 @@ void ProgramBindings::AddRootParameterBindingsForArgument(ArgumentBinding& argum
 
     for (const ResourceView& resource_view_dx : argument_binding.GetDirectResourceViews())
     {
-        if (binding_settings.type == DXBindingType::ConstantBufferView ||
-            binding_settings.type == DXBindingType::ShaderResourceView)
+        if (binding_settings.type != DXBindingType::DescriptorTable)
         {
             AddRootParameterBinding(binding_settings.argument, {
                 argument_binding,
@@ -305,6 +303,28 @@ void ProgramBindings::AddRootParameterBindingsForArgument(ArgumentBinding& argum
     }
 }
 
+void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask access, const ICommandList& command_list,
+                                                 const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const
+{
+    META_FUNCTION_TASK();
+    ID3D12GraphicsCommandList& d3d12_command_list = command_list.GetNativeCommandList();
+    switch(Rhi::CommandListType command_list_type = command_list.GetCommandListType();
+           command_list_type)
+    {
+    case Rhi::CommandListType::Render:
+        ApplyRootParameterBindings<Rhi::CommandListType::Render>(access, d3d12_command_list, applied_program_bindings_ptr, apply_changes_only);
+        break;
+
+    case Rhi::CommandListType::Compute:
+        ApplyRootParameterBindings<Rhi::CommandListType::Compute>(access, d3d12_command_list, applied_program_bindings_ptr, apply_changes_only);
+        break;
+
+    default:
+        META_UNEXPECTED_ARG(command_list_type);
+    }
+}
+
+template<Rhi::CommandListType command_list_type>
 void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask access, ID3D12GraphicsCommandList& d3d12_command_list,
                                                  const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const
 {
@@ -312,35 +332,52 @@ void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask 
     Data::ForEachBitInEnumMask(access,
         [this, &d3d12_command_list, applied_program_bindings_ptr, apply_changes_only](Rhi::ProgramArgumentAccessType access_type)
         {
-            const bool do_program_bindings_comparing = access_type == Rhi::ProgramArgumentAccessType::Mutable && apply_changes_only && applied_program_bindings_ptr;
-            const RootParameterBindings& root_parameter_bindings = m_root_parameter_bindings_by_access[magic_enum::enum_index(access_type).value()];
+           const bool do_program_bindings_comparing = access_type == Rhi::ProgramArgumentAccessType::Mutable && apply_changes_only && applied_program_bindings_ptr;
+           const RootParameterBindings& root_parameter_bindings = m_root_parameter_bindings_by_access[magic_enum::enum_index(access_type).value()];
 
-            for (const RootParameterBinding& root_parameter_binding : root_parameter_bindings)
-            {
-                if (do_program_bindings_comparing && root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *applied_program_bindings_ptr))
-                    continue;
+           for (const RootParameterBinding& root_parameter_binding : root_parameter_bindings)
+           {
+               if (do_program_bindings_comparing && root_parameter_binding.argument_binding.IsAlreadyApplied(GetProgram(), *applied_program_bindings_ptr))
+                   continue;
 
-                ApplyRootParameterBinding(root_parameter_binding, d3d12_command_list);
-            }
+               root_parameter_binding.Apply<command_list_type>(d3d12_command_list);
+           }
         });
 }
 
-void ProgramBindings::ApplyRootParameterBinding(const RootParameterBinding& root_parameter_binding, ID3D12GraphicsCommandList& d3d12_command_list) const
+template<Rhi::CommandListType command_list_type>
+void ProgramBindings::RootParameterBinding::Apply(ID3D12GraphicsCommandList& d3d12_command_list) const
 {
     META_FUNCTION_TASK();
-    switch (const ArgumentBinding::Type binding_type = root_parameter_binding.argument_binding.GetDirectSettings().type;
+    switch (const ArgumentBinding::Type binding_type = argument_binding.GetDirectSettings().type;
             binding_type)
     {
     case ArgumentBinding::Type::DescriptorTable:
-        d3d12_command_list.SetGraphicsRootDescriptorTable(root_parameter_binding.root_parameter_index, root_parameter_binding.base_descriptor);
+        if constexpr (command_list_type == Rhi::CommandListType::Render)
+            d3d12_command_list.SetGraphicsRootDescriptorTable(root_parameter_index, base_descriptor);
+        else if constexpr (command_list_type == Rhi::CommandListType::Compute)
+            d3d12_command_list.SetComputeRootDescriptorTable(root_parameter_index, base_descriptor);
         break;
 
     case ArgumentBinding::Type::ConstantBufferView:
-        d3d12_command_list.SetGraphicsRootConstantBufferView(root_parameter_binding.root_parameter_index, root_parameter_binding.gpu_virtual_address);
+        if constexpr (command_list_type == Rhi::CommandListType::Render)
+            d3d12_command_list.SetGraphicsRootConstantBufferView(root_parameter_index, gpu_virtual_address);
+        else if constexpr (command_list_type == Rhi::CommandListType::Compute)
+            d3d12_command_list.SetComputeRootConstantBufferView(root_parameter_index, gpu_virtual_address);
         break;
 
     case ArgumentBinding::Type::ShaderResourceView:
-        d3d12_command_list.SetGraphicsRootShaderResourceView(root_parameter_binding.root_parameter_index, root_parameter_binding.gpu_virtual_address);
+        if constexpr (command_list_type == Rhi::CommandListType::Render)
+            d3d12_command_list.SetGraphicsRootShaderResourceView(root_parameter_index, gpu_virtual_address);
+        else if constexpr (command_list_type == Rhi::CommandListType::Compute)
+            d3d12_command_list.SetComputeRootShaderResourceView(root_parameter_index, gpu_virtual_address);
+        break;
+
+    case ArgumentBinding::Type::UnorderedAccessView:
+        if constexpr (command_list_type == Rhi::CommandListType::Render)
+            d3d12_command_list.SetGraphicsRootUnorderedAccessView(root_parameter_index, gpu_virtual_address);
+        else if constexpr (command_list_type == Rhi::CommandListType::Compute)
+            d3d12_command_list.SetComputeRootUnorderedAccessView(root_parameter_index, gpu_virtual_address);
         break;
 
     default:

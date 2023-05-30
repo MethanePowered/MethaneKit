@@ -79,9 +79,10 @@ private:
     Camera                     m_camera;
 
 #ifdef UNIFORMS_BUFFER_ENABLED
-    hlslpp::Uniforms        m_shader_uniforms { };
-    const Rhi::SubResources m_shader_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) } // NOSONAR
+    hlslpp::Uniforms       m_shader_uniforms { };
+    const Rhi::SubResource m_shader_uniforms_subresource{
+        reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), // NOSONAR
+        sizeof(hlslpp::Uniforms)
     };
     Rhi::BufferSet m_vertex_buffer_set;
 #else
@@ -179,19 +180,19 @@ public:
         // Create index buffer for cube mesh
         m_index_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForIndexBuffer(m_cube_mesh.GetIndexDataSize(), GetIndexFormat(m_cube_mesh.GetIndex(0))));
         m_index_buffer.SetName("Cube Index Buffer");
-        m_index_buffer.SetData(
-            { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), m_cube_mesh.GetIndexDataSize() } }, // NOSONAR
-            m_render_cmd_queue
-        );
+        m_index_buffer.SetData(m_render_cmd_queue, {
+            reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetIndices().data()), // NOSONAR
+            m_cube_mesh.GetIndexDataSize()
+        });
 
 #ifdef UNIFORMS_BUFFER_ENABLED
         // Create constant vertex buffer
         Rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize()));
         vertex_buffer.SetName("Cube Vertex Buffer");
-        vertex_buffer.SetData(
-            { { reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
-            m_render_cmd_queue
-        );
+        vertex_buffer.SetData(m_render_cmd_queue, {
+            reinterpret_cast<Data::ConstRawPtr>(m_cube_mesh.GetVertices().data()), // NOSONAR
+            m_cube_mesh.GetVertexDataSize()
+        });
         m_vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
 
         const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
@@ -268,13 +269,13 @@ public:
 
 #ifdef UNIFORMS_BUFFER_ENABLED
         // Update uniforms buffer on GPU and apply model-view-projection transformation in vertex shader on GPU
-        frame.uniforms_buffer.SetData(m_shader_uniforms_subresources, m_render_cmd_queue);
+        frame.uniforms_buffer.SetData(m_render_cmd_queue, m_shader_uniforms_subresource);
 #else
         // Update vertex buffer with vertices in camera's projection view
-        frame.vertex_buffer_set[0].SetData(
-            { { reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), m_cube_mesh.GetVertexDataSize() } }, // NOSONAR
-            m_render_cmd_queue
-        );
+        frame.vertex_buffer_set[0].SetData(m_render_cmd_queue, {
+            reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), // NOSONAR
+            m_cube_mesh.GetVertexDataSize()
+        });
 #endif
 
         // Issue commands for cube rendering

@@ -37,8 +37,6 @@ Buffer::Buffer(const Context& context, const Settings& settings,
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_ZERO_DESCR(settings.size, "can not create buffer of zero size");
-
-    SetSubResourceCount(SubResource::Count());
 }
 
 Data::Size Buffer::GetDataSize(Data::MemoryState size_type) const noexcept
@@ -51,6 +49,18 @@ uint32_t Buffer::GetFormattedItemsCount() const noexcept
 {
     META_FUNCTION_TASK();
     return m_settings.item_stride_size > 0U ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0U;
+}
+
+void Buffer::SetData(Rhi::ICommandQueue&, const SubResource& sub_resource)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NAME_DESCR("sub_resource", !sub_resource.IsEmptyOrNull(), "can not set empty subresource data to buffer");
+    META_CHECK_ARG_EQUAL(sub_resource.GetIndex(), SubResource::Index());
+
+    const Data::Size reserved_data_size = GetDataSize(Data::MemoryState::Reserved);
+    META_UNUSED(reserved_data_size);
+    META_CHECK_ARG_LESS_OR_EQUAL_DESCR(sub_resource.GetDataSize(), reserved_data_size, "can not set more data than allocated buffer size");
+    SetInitializedDataSize(sub_resource.GetDataSize());
 }
 
 } // namespace Methane::Graphics::Base

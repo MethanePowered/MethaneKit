@@ -24,6 +24,7 @@ DirectX 12 command list interface and debug group implementation.
 #pragma once
 
 #include <Methane/Graphics/RHI/IResourceBarriers.h>
+#include <Methane/Graphics/RHI/ICommandList.h>
 
 #include <directx/d3d12.h>
 
@@ -38,6 +39,7 @@ struct ICommandList
     using DebugGroup = CommandListDebugGroup;
 
     virtual CommandQueue& GetDirectCommandQueue() = 0;
+    virtual Rhi::CommandListType GetCommandListType() const = 0;
     virtual ID3D12GraphicsCommandList& GetNativeCommandList() const = 0;
     virtual ID3D12GraphicsCommandList4* GetNativeCommandList4() const = 0;
     virtual void SetResourceBarriers(const Rhi::IResourceBarriers& resource_barriers) = 0;

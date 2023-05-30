@@ -31,6 +31,8 @@ function(get_shader_profile SHADER_TYPE PROFILE_VER OUT_PROFILE)
         set(_PROFILE_TYPE ps)
     elseif(SHADER_TYPE STREQUAL "vert")
         set(_PROFILE_TYPE vs)
+    elseif(SHADER_TYPE STREQUAL "comp")
+        set(_PROFILE_TYPE cs)
     else()
         message(FATAL_ERROR "Unsupported shader type: " ${SHADER_TYPE})
     endif()
@@ -183,6 +185,11 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
     set_target_properties(${METAL_LIB_TARGET}
         PROPERTIES
         FOLDER "Build/${FOR_TARGET}/Shaders"
+    )
+
+    set_target_properties(${FOR_TARGET}
+        PROPERTIES
+        METAL_LIB_TARGET ${METAL_LIB_TARGET}
     )
 
     add_dependencies(${METAL_LIB_TARGET} ${_SHADER_COMPILE_TARGETS})

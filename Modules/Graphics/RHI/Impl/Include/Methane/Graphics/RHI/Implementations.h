@@ -37,6 +37,8 @@ Methane graphics RHI PIMPL implementations.
 #include "RenderPass.h"
 #include "RenderContext.h"
 #include "RenderState.h"
+#include "ComputeContext.h"
+#include "ComputeState.h"
 #include "ViewState.h"
 #include "Buffer.h"
 #include "BufferSet.h"
@@ -46,3 +48,4 @@ Methane graphics RHI PIMPL implementations.
 #include "RenderCommandList.h"
 #include "ParallelRenderCommandList.h"
 #include "TransferCommandList.h"
+#include "ComputeCommandList.h"

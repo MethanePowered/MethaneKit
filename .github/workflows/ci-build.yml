@@ -31,9 +31,9 @@ on:
 env:
   product_ver_major: 0
   product_ver_minor: 7
-  product_ver_patch: 1
+  product_ver_patch: 2
   product_ver_build: ${{ github.run_number }}
-  tracy_release_version: "0.9"
+  tracy_release_version: "0.9.1"
   # TSC Invariant check is disabled to allow running Catch test executables only for tests list query by CTest
   TRACY_NO_INVARIANT_CHECK: 1
 
@@ -215,13 +215,20 @@ jobs:
       working-directory: ${{ env.INSTALL_DIR }}/Tests
       shell: bash
       run: |
+        set +e
         result_ext='_result.xml'
+        result_error_level=0
         echo Running all unit-tests in directory $PWD
         for test_exe in *Test
         do
           ./$test_exe -r junit -o "$test_exe$result_ext"
-          echo  - $test_exe - completed with $? exit code
+          last_error_level=$?
+          echo  - $test_exe - completed with $last_error_level exit code
+          if [ $last_error_level != 0 ]; then
+            result_error_level=$last_error_level
+          fi
         done
+        exit $result_error_level
 
     - name: Run Unit-Tests on Windows
       if: ${{ matrix.run_tests && matrix.os_name == 'Windows' }}
@@ -230,11 +237,15 @@ jobs:
       run: |
         setlocal enabledelayedexpansion
         echo Running unit-tests in directory "%cd%"
+        set /A result_error_level=0
         for /r "." %%a in (*Test.exe) do (
           "%%~fa" -r junit -o "%%~fa_result.xml"
           echo  - %%~na - completed with !errorlevel! exit status
+          if not !errorlevel!==0 (
+            set /A result_error_level=!errorlevel!
+          )
         )
-        exit 0
+        exit !result_error_level!
 
     - name: Upload Test Results Artifact
       uses: actions/upload-artifact@v3
@@ -243,11 +254,12 @@ jobs:
         name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
         path: ${{ env.INSTALL_DIR }}/Tests/*_result.xml
 
-    - name: Upload Build Log and Test Tesults to Testspace server
+    - name: Upload Test Results and Build Log to Testspace server
       if: ${{ matrix.run_tests && (success() || failure()) }}
       run: testspace "[ ${{ matrix.name }} ]${{ env.INSTALL_DIR }}/Tests/*_result.xml" "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
     - name: Add README and BUILD files
+      if: ${{ success() || failure() }}
       shell: bash
       run: |
         cp README.md $INSTALL_DIR/README.md
@@ -259,26 +271,28 @@ jobs:
         echo   - Builder agent ${{ matrix.os }} system information: >> $INSTALL_DIR/Build-Info.txt
 
     - name: Add Windows System Information to BUILD file
-      if: ${{ matrix.os_name == 'Windows' }}
+      if: ${{ matrix.os_name == 'Windows' && (success() || failure()) }}
       run: systeminfo >> Build\Output\${{ matrix.config_preset }}\Install\Build-Info.txt
 
     - name: Add Unix System Information to BUILD file
-      if: ${{ matrix.os_name != 'Windows' }}
+      if: ${{ matrix.os_name != 'Windows' && (success() || failure()) }}
       run: uname -a >>$INSTALL_DIR/Build-Info.txt
 
     - name: Download Tracy release
-      if: ${{ matrix.add_tracy_app }}
+      if: ${{ matrix.add_tracy_app && (success() || failure()) }}
       shell: bash
       run: |
         curl -sSLo Tracy.7z https://github.com/MethanePowered/Tracy/releases/download/v${{ env.tracy_release_version }}/Tracy-${{ matrix.os_name }}-v${{ env.tracy_release_version }}.7z
         7z x Tracy.7z -o$INSTALL_DIR/Apps
 
     - name: Archive Build Artifacts
+      if: ${{ success() || failure() }}
       shell: bash
       working-directory: ${{ env.INSTALL_DIR }}
       run: 7z a -t7z -mx=9 MethaneKit_${{ matrix.name }}.7z *
 
     - name: Upload Archived Build Artifacts
+      if: ${{ success() || failure() }}
       uses: actions/upload-artifact@v3
       with:
         name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}

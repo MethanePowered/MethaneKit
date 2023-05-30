@@ -23,6 +23,7 @@ Metal implementation of the resource interface.
 #pragma once
 
 #include "Device.hh"
+#include "Methane/Graphics/RHI/ResourceView.h"
 
 #include <Methane/Graphics/Base/Resource.h>
 #include <Methane/Graphics/Base/RenderContext.h>
@@ -66,10 +67,10 @@ protected:
         return dynamic_cast<const IContext&>(Base::Resource::GetBaseContext());
     }
 
-    id<MTLBuffer> GetUploadSubresourceBuffer(const Rhi::IResource::SubResource& sub_resource)
+    id<MTLBuffer> GetUploadSubresourceBuffer(const Rhi::SubResource& sub_resource, Rhi::SubResourceCount subresource_count)
     {
         META_FUNCTION_TASK();
-        const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(Base::Resource::GetSubresourceCount());
+        const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(subresource_count);
         m_upload_subresource_buffers.resize(sub_resource_raw_index + 1);
 
         id<MTLBuffer> mtl_upload_subresource_buffer = m_upload_subresource_buffers[sub_resource_raw_index];
@@ -83,15 +84,28 @@ protected:
         }
         else
         {
-            Data::RawPtr p_resource_data = static_cast<Data::RawPtr>([mtl_upload_subresource_buffer contents]);
-            META_CHECK_ARG_NOT_NULL(p_resource_data);
-            std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), p_resource_data);
+            Data::RawPtr resource_data_ptr = static_cast<Data::RawPtr>([mtl_upload_subresource_buffer contents]);
+            META_CHECK_ARG_NOT_NULL(resource_data_ptr);
+            std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), resource_data_ptr);
         }
         return mtl_upload_subresource_buffer;
     }
 
+    id<MTLBuffer> GetReadBackBuffer(Data::Size data_size)
+    {
+        META_FUNCTION_TASK();
+        if (!m_mtl_read_back_buffer || m_mtl_read_back_buffer.length != data_size)
+        {
+            const id<MTLDevice>& mtl_device = GetMetalContext().GetMetalDevice().GetNativeDevice();
+            m_mtl_read_back_buffer = [mtl_device newBufferWithLength:data_size
+                                                             options:MTLResourceStorageModeShared];
+        }
+        return m_mtl_read_back_buffer;
+    }
+
 private:
     std::vector<id<MTLBuffer>> m_upload_subresource_buffers;
+    id<MTLBuffer> m_mtl_read_back_buffer;
 };
 
 } // namespace Methane::Graphics::Metal

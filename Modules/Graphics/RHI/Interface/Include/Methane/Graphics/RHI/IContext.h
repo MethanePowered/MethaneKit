@@ -44,11 +44,13 @@ namespace Methane::Graphics::Rhi
 enum class ContextType
 {
     Render,
+    Compute
 };
 
 enum class ContextWaitFor
 {
     RenderComplete,
+    ComputeComplete,
     FramePresented,
     ResourcesUploaded
 };
@@ -62,8 +64,9 @@ enum class ContextDeferredAction : uint32_t
 
 enum class ContextOption : uint32_t
 {
-    TransferWithD3D12DirectQueue, // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
-    EmulateD3D12RenderPass        // Render passes are emulated with traditional DX API, instead of using native DX render pass API
+    DeferredProgramBindingsInitialization, // Defer program bindings initialization on GPU until Context::CompleteInitialization
+    TransferWithD3D12DirectQueue,          // Transfer command lists and queues in DX API are created with DIRECT type instead of COPY type
+    EmulateD3D12RenderPass                 // Render passes are emulated with traditional DX API, instead of using native DX render pass API
 };
 
 using ContextOptionMask = Data::EnumMask<ContextOption>;
@@ -91,12 +94,14 @@ struct ICommandQueue;
 struct ICommandKit;
 struct IShader;
 struct IProgram;
+struct IComputeState;
 struct IBuffer;
 struct ITexture;
 struct ISampler;
 
 struct ShaderSettings;
 struct ProgramSettings;
+struct ComputeStateSettings;
 struct BufferSettings;
 struct TextureSettings;
 struct SamplerSettings;
@@ -120,6 +125,7 @@ struct IContext
     [[nodiscard]] virtual Ptr<ICommandKit>   CreateCommandKit(CommandListType type) const = 0;
     [[nodiscard]] virtual Ptr<IShader>       CreateShader(ShaderType type, const ShaderSettings& settings) const = 0;
     [[nodiscard]] virtual Ptr<IProgram>      CreateProgram(const ProgramSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<IComputeState> CreateComputeState(const ComputeStateSettings& settings) const = 0;
     [[nodiscard]] virtual Ptr<IBuffer>       CreateBuffer(const BufferSettings& settings) const = 0;
     [[nodiscard]] virtual Ptr<ITexture>      CreateTexture(const TextureSettings& settings) const = 0;
     [[nodiscard]] virtual Ptr<ISampler>      CreateSampler(const SamplerSettings& settings) const = 0;
@@ -128,6 +134,7 @@ struct IContext
     [[nodiscard]] virtual tf::Executor&      GetParallelExecutor() const noexcept = 0;
     [[nodiscard]] virtual IObjectRegistry&   GetObjectRegistry() noexcept = 0;
     [[nodiscard]] virtual const IObjectRegistry& GetObjectRegistry() const noexcept = 0;
+    virtual bool UploadResources() const = 0;
     virtual void RequestDeferredAction(DeferredAction action) const noexcept = 0;
     virtual void CompleteInitialization() = 0;
     [[nodiscard]] virtual bool IsCompletingInitialization() const noexcept = 0;

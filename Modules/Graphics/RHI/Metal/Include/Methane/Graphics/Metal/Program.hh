@@ -33,7 +33,8 @@ namespace Methane::Graphics::Metal
 struct IContext;
 class Shader;
 
-class Program final : public Base::Program
+class Program final
+    : public Base::Program
 {
 public:
     Program(const Base::Context& context, const Settings& settings);
@@ -48,10 +49,11 @@ public:
 
 private:
     const IContext& GetMetalContext() const noexcept;
-    void SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<MTLArgument*>* mtl_arguments) noexcept;
+    void ReflectRenderPipelineArguments();
+    void ReflectComputePipelineArguments();
+    void SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<id<MTLBinding>>* mtl_arguments) noexcept;
     
-    MTLVertexDescriptor*         m_mtl_vertex_desc = nil;
-    id<MTLRenderPipelineState>   m_mtl_dummy_pipeline_state_for_reflection;
+    MTLVertexDescriptor* m_mtl_vertex_desc = nil;
 };
 
 } // namespace Methane::Graphics::Metal

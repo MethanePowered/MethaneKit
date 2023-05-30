@@ -16,6 +16,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/RenderContext.h
     ${INCLUDE_DIR}/RenderState.h
     ${INCLUDE_DIR}/ViewState.h
+    ${INCLUDE_DIR}/ComputeState.h
     ${INCLUDE_DIR}/ResourceView.h
     ${INCLUDE_DIR}/ResourceBarriers.h
     ${INCLUDE_DIR}/Resource.hpp
@@ -31,6 +32,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/CommandListDebugGroup.h
     ${INCLUDE_DIR}/CommandList.hpp
     ${INCLUDE_DIR}/TransferCommandList.h
+    ${INCLUDE_DIR}/ComputeCommandList.h
     ${INCLUDE_DIR}/RenderCommandList.h
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
 )
@@ -55,6 +57,7 @@ list(APPEND SOURCES
     ${SOURCES_DIR}/CommandListSet.cpp
     ${SOURCES_DIR}/CommandListDebugGroup.cpp
     ${SOURCES_DIR}/TransferCommandList.cpp
+    ${SOURCES_DIR}/ComputeCommandList.cpp
     ${SOURCES_DIR}/RenderCommandList.cpp
     ${SOURCES_DIR}/ParallelRenderCommandList.cpp
 )

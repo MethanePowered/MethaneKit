@@ -16,7 +16,7 @@ Tutorial demonstrates the following techniques:
   - Creating render target texture 2D array;
   - Rendering text labels to the faces of texture 2D array via separate render passes
     using helper class [TextureLabeler](/Apps/Common/Include/TextureLabeler.h);
-  - Using [MeshBuffers](Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp) extension
+  - Using [MeshBuffers](/Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp) extension
     primitive to represent cube instances, create index and vertex buffers and render with a single Draw command.
   - Using single addressable uniforms buffer to store an array of uniform structures for
     all cube instance parameters at once and binding array elements in that buffer to the particular
@@ -44,3 +44,8 @@ Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInte
 - [Methane::Platform::AppController](/Modules/Platform/App/README.md#platform-application-controller)
 - [Methane::Graphics::AppController, AppContextController](/Modules/Graphics/App/README.md#graphics-application-controllers)
 - [Methane::UserInterface::AppController](/Modules/UserInterface/App/README.md#user-interface-application-controllers)
+
+## Continue learning
+
+Continue learning Methane Graphics programming in the next tutorial [ConsoleCompute](../08-ConsoleCompute),
+which is demonstrating computing on GPU in pure console application.
