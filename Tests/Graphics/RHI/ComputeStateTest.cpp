@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Tests/Graphics/RHI/ComputeStateTest.cpp
-Unit-tests of the RHI ComputeContext
+Unit-tests of the RHI ComputeState
 
 ******************************************************************************/
 
@@ -40,15 +40,15 @@ static tf::Executor g_parallel_executor;
 
 TEST_CASE("RHI Compute State Functions", "[rhi][compute][state]")
 {
-    const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
-    const Rhi::ComputeStateSettingsImpl& compute_state_settings{
+    const Rhi::ComputeContext compute_context(GetTestDevice(), g_parallel_executor, {});
+    const Rhi::ComputeStateSettingsImpl compute_state_settings{
         compute_context.CreateProgram({
             { { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Shader", "Main" } } } },
         }),
         Rhi::ThreadGroupSize(16, 16, 1)
     };
 
-    SECTION("Context Construction")
+    SECTION("Compute State Construction")
     {
         Rhi::ComputeState compute_state;
         REQUIRE_NOTHROW(compute_state = compute_context.CreateComputeState(compute_state_settings));

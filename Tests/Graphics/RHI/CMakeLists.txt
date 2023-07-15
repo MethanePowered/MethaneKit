@@ -7,6 +7,7 @@ add_executable(${TARGET}
     ProgramBindingsTest.cpp
     ComputeContextTest.cpp
     ComputeStateTest.cpp
+    ViewStateTest.cpp
     CommandQueueTest.cpp
     FenceTest.cpp
     TransferCommandListTest.cpp
