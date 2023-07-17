@@ -99,6 +99,8 @@ public:
     const vk::PhysicalDevice&        GetNativePhysicalDevice() const noexcept { return m_vk_physical_device; }
     const vk::Device&                GetNativeDevice() const noexcept         { return m_vk_unique_device.get(); }
     const vk::QueueFamilyProperties& GetNativeQueueFamilyProperties(uint32_t queue_family_index) const;
+    bool                             IsExtensionSupported(std::string_view required_extension) const;
+    bool                             IsDynamicStateSupported() const noexcept { return m_is_dynamic_state_supported; }
 
 private:
     using QueueFamilyReservationByType = std::map<Rhi::CommandListType, Ptr<QueueFamilyReservation>>;
@@ -107,9 +109,11 @@ private:
                             std::vector<uint32_t>& reserved_queues_count_per_family,
                             const vk::SurfaceKHR& vk_surface = vk::SurfaceKHR());
 
-    bool IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const;
+    Rhi::DeviceFeatureMask GetSupportedFeatures() const;
 
     vk::PhysicalDevice                     m_vk_physical_device;
+    const std::set<std::string_view>       m_supported_extension_names;
+    const bool                             m_is_dynamic_state_supported = false;
     std::vector<vk::QueueFamilyProperties> m_vk_queue_family_properties;
     vk::UniqueDevice                       m_vk_unique_device;
     QueueFamilyReservationByType           m_queue_family_reservation_by_type;

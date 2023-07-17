@@ -52,6 +52,8 @@ namespace Methane::Graphics::Vulkan
 //#define VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
 //#endif
 
+#define VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME "VK_KHR_portability_subset"
+
 static const std::vector<std::string_view> g_common_device_extensions{
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
@@ -64,14 +66,6 @@ static const std::vector<std::string_view> g_common_device_extensions{
     VK_GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME,
     VK_GOOGLE_USER_TYPE_EXTENSION_NAME,
 #endif
-};
-
-static const std::vector<std::string_view> g_render_device_extensions{
-    VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME
-};
-
-static const std::vector<std::string_view> g_present_device_extensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
 };
 
 template<bool exact_flags_matching>
@@ -154,16 +148,16 @@ static vk::QueueFlags GetQueueFlagsByType(Rhi::CommandListType cmd_list_type)
     }
 }
 
-static bool IsDeviceExtensionSupported(const vk::PhysicalDevice& vk_physical_device, const std::vector<std::string_view>& required_extensions)
+static std::set<std::string_view> GetDeviceSupportedExtensionNames(const vk::PhysicalDevice& vk_physical_device)
 {
     META_FUNCTION_TASK();
-    std::set<std::string_view> extensions(required_extensions.begin(), required_extensions.end());
+    std::set<std::string_view> supported_extensions;
     const std::vector<vk::ExtensionProperties> vk_device_extension_properties = vk_physical_device.enumerateDeviceExtensionProperties();
     for(const vk::ExtensionProperties& vk_extension_props : vk_device_extension_properties)
     {
-        extensions.erase(vk_extension_props.extensionName);
+        supported_extensions.insert(vk_extension_props.extensionName);
     }
-    return extensions.empty();
+    return supported_extensions;
 }
 
 QueueFamilyReservation::QueueFamilyReservation(uint32_t family_index, vk::QueueFlags queue_flags, uint32_t queues_count, bool can_present_to_window)
@@ -218,26 +212,17 @@ void QueueFamilyReservation::IncrementQueuesCount(uint32_t extra_queues_count) n
     m_priorities.resize(m_queues_count, 0.F);
 }
 
-Rhi::DeviceFeatureMask Device::GetSupportedFeatures(const vk::PhysicalDevice& vk_physical_device)
-{
-    META_FUNCTION_TASK();
-    vk::PhysicalDeviceFeatures vk_device_features = vk_physical_device.getFeatures();
-    Rhi::DeviceFeatureMask device_features;
-    device_features.SetBit(Rhi::DeviceFeature::PresentToWindow,      IsDeviceExtensionSupported(vk_physical_device, g_present_device_extensions));
-    device_features.SetBit(Rhi::DeviceFeature::AnisotropicFiltering, vk_device_features.samplerAnisotropy);
-    device_features.SetBit(Rhi::DeviceFeature::ImageCubeArray,       vk_device_features.imageCubeArray);
-    return device_features;
-}
-
 Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities)
     : Base::Device(vk_physical_device.getProperties().deviceName,
                  IsSoftwarePhysicalDevice(vk_physical_device),
                  capabilities)
     , m_vk_physical_device(vk_physical_device)
+    , m_supported_extension_names(GetDeviceSupportedExtensionNames(vk_physical_device))
+    , m_is_dynamic_state_supported(IsExtensionSupported(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME))
     , m_vk_queue_family_properties(vk_physical_device.getQueueFamilyProperties())
 {
     META_FUNCTION_TASK();
-    if (const Rhi::DeviceFeatureMask device_supported_features = Device::GetSupportedFeatures(vk_physical_device);
+    if (const Rhi::DeviceFeatureMask device_supported_features = GetSupportedFeatures();
         !device_supported_features.HasBits(capabilities.features))
         throw IncompatibleException("Supported Device features are incompatible with the required capabilities");
 
@@ -264,14 +249,17 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     {
         if (capabilities.features.HasBit(Rhi::DeviceFeature::PresentToWindow))
         {
-            enabled_extension_names.insert(enabled_extension_names.end(), g_present_device_extensions.begin(), g_present_device_extensions.end());
+            enabled_extension_names.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         }
-        enabled_extension_names.insert(enabled_extension_names.end(), g_render_device_extensions.begin(), g_render_device_extensions.end());
+        if (m_is_dynamic_state_supported)
+        {
+            enabled_extension_names.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+        }
     }
 
-    if (IsExtensionSupported({ "VK_KHR_portability_subset" }))
+    if (IsExtensionSupported(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME))
     {
-        enabled_extension_names.emplace_back("VK_KHR_portability_subset");
+        enabled_extension_names.emplace_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
     }
 
     std::vector<const char*> raw_enabled_extension_names;
@@ -327,10 +315,10 @@ bool Device::SetName(std::string_view name)
     return true;
 }
 
-bool Device::IsExtensionSupported(const std::vector<std::string_view>& required_extensions) const
+bool Device::IsExtensionSupported(std::string_view required_extension) const
 {
     META_FUNCTION_TASK();
-    return IsDeviceExtensionSupported(m_vk_physical_device, required_extensions);
+    return m_supported_extension_names.count(required_extension);
 }
 
 const QueueFamilyReservation* Device::GetQueueFamilyReservationPtr(Rhi::CommandListType cmd_list_type) const noexcept
@@ -416,6 +404,17 @@ void Device::ReserveQueueFamily(Rhi::CommandListType cmd_list_type, uint32_t que
 
     META_LOG("Vulkan command queue family [{}] was reserved for allocating {} {} queues.",
              *vk_queue_family_index, queues_count, magic_enum::enum_name(cmd_list_type));
+}
+
+Rhi::DeviceFeatureMask Device::GetSupportedFeatures() const
+{
+    META_FUNCTION_TASK();
+    vk::PhysicalDeviceFeatures vk_device_features = m_vk_physical_device.getFeatures();
+    Rhi::DeviceFeatureMask device_features;
+    device_features.SetBit(Rhi::DeviceFeature::PresentToWindow,      IsExtensionSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME));
+    device_features.SetBit(Rhi::DeviceFeature::AnisotropicFiltering, vk_device_features.samplerAnisotropy);
+    device_features.SetBit(Rhi::DeviceFeature::ImageCubeArray,       vk_device_features.imageCubeArray);
+    return device_features;
 }
 
 } // namespace Methane::Graphics::Vulkan
