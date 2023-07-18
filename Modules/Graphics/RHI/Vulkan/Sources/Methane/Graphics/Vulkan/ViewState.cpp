@@ -91,6 +91,7 @@ ViewState::ViewState(const Settings& settings)
     : Base::ViewState(settings)
     , m_vk_viewports(ViewportsToVulkan(settings.viewports))
     , m_vk_scissor_rects(ScissorRectsToVulkan(settings.scissor_rects))
+    , m_vk_viewport_state_info({}, m_vk_viewports, m_vk_scissor_rects)
 { }
 
 bool ViewState::Reset(const Settings& settings)
@@ -99,8 +100,9 @@ bool ViewState::Reset(const Settings& settings)
     if (!Base::ViewState::Reset(settings))
         return false;
 
-    m_vk_viewports     = ViewportsToVulkan(settings.viewports);
-    m_vk_scissor_rects = ScissorRectsToVulkan(settings.scissor_rects);
+    m_vk_viewports           = ViewportsToVulkan(settings.viewports);
+    m_vk_scissor_rects       = ScissorRectsToVulkan(settings.scissor_rects);
+    m_vk_viewport_state_info = vk::PipelineViewportStateCreateInfo({}, m_vk_viewports, m_vk_scissor_rects);
     return true;
 }
 
@@ -111,6 +113,7 @@ bool ViewState::SetViewports(const Viewports& viewports)
         return false;
 
     m_vk_viewports = ViewportsToVulkan(GetSettings().viewports);
+    m_vk_viewport_state_info.setViewports(m_vk_viewports);
     return true;
 }
 
@@ -121,6 +124,7 @@ bool ViewState::SetScissorRects(const ScissorRects& scissor_rects)
         return false;
 
     m_vk_scissor_rects = ScissorRectsToVulkan(GetSettings().scissor_rects);
+    m_vk_viewport_state_info.setScissors(m_vk_scissor_rects);
     return true;
 }
 

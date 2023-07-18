@@ -48,20 +48,6 @@ Ptr<Rhi::IRenderCommandList> RenderCommandList::CreateForSynchronization(Rhi::IC
 namespace Methane::Graphics::Vulkan
 {
 
-vk::PrimitiveTopology GetVulkanPrimitiveTopology(Rhi::RenderPrimitive primitive_type)
-{
-    META_FUNCTION_TASK();
-    switch(primitive_type)
-    {
-    case Rhi::RenderPrimitive::Point:           return vk::PrimitiveTopology::ePointList;
-    case Rhi::RenderPrimitive::Line:            return vk::PrimitiveTopology::eLineList;
-    case Rhi::RenderPrimitive::LineStrip:       return vk::PrimitiveTopology::eLineStrip;
-    case Rhi::RenderPrimitive::Triangle:        return vk::PrimitiveTopology::eTriangleList;
-    case Rhi::RenderPrimitive::TriangleStrip:   return vk::PrimitiveTopology::eTriangleStrip;
-    default:                               META_UNEXPECTED_ARG_RETURN(primitive_type, vk::PrimitiveTopology::ePointList);
-    }
-}
-
 static vk::IndexType GetVulkanIndexTypeByStride(Data::Size index_stride_bytes)
 {
     META_FUNCTION_TASK();
@@ -213,7 +199,7 @@ void RenderCommandList::UpdatePrimitiveTopology(Primitive primitive)
     if (DrawingState& drawing_state = GetDrawingState();
         drawing_state.changes.HasAnyBit(DrawingState::Change::PrimitiveType))
     {
-        const vk::PrimitiveTopology vk_primitive_topology = GetVulkanPrimitiveTopology(primitive);
+        const vk::PrimitiveTopology vk_primitive_topology = RenderState::GetVulkanPrimitiveTopology(primitive);
         GetNativeCommandBufferDefault().setPrimitiveTopologyEXT(vk_primitive_topology);
         drawing_state.changes.SetBitOff(DrawingState::Change::PrimitiveType);
     }

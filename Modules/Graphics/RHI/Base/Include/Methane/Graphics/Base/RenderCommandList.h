@@ -49,29 +49,31 @@ class BufferSet;
 class Buffer;
 class Texture;
 
+struct RenderDrawingState
+{
+    enum class Change : uint32_t
+    {
+        PrimitiveType
+    };
+
+    using ChangeMask = Data::EnumMask<Change>;
+
+    Ptrs<Texture>             render_pass_attachment_ptrs;
+    Ptr<RenderState>          render_state_ptr;
+    Ptr<BufferSet>            vertex_buffer_set_ptr;
+    Ptr<Buffer>               index_buffer_ptr;
+    Opt<Rhi::RenderPrimitive> primitive_type_opt;
+    ViewState*                view_state_ptr      = nullptr;
+    Rhi::RenderStateGroupMask render_state_groups;
+    ChangeMask                changes;
+};
+
 class RenderCommandList
     : public Rhi::IRenderCommandList
     , public CommandList
 {
 public:
-    struct DrawingState
-    {
-        enum class Change : uint32_t
-        {
-            PrimitiveType
-        };
-
-        using ChangeMask = Data::EnumMask<Change>;
-
-        Ptrs<Texture>             render_pass_attachments_ptr;
-        Ptr<RenderState>          render_state_ptr;
-        Ptr<BufferSet>            vertex_buffer_set_ptr;
-        Ptr<Buffer>               index_buffer_ptr;
-        Opt<Primitive>            primitive_type_opt;
-        ViewState*                view_state_ptr      = nullptr;
-        Rhi::RenderStateGroupMask render_state_groups;
-        ChangeMask                changes;
-    };
+    using DrawingState = RenderDrawingState;
 
     static Ptr<IRenderCommandList> CreateForSynchronization(Rhi::ICommandQueue& cmd_queue);
 
@@ -97,17 +99,17 @@ public:
     void Draw(Primitive primitive_type, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;
 
-    bool        HasPass() const noexcept     { return !!m_render_pass_ptr; }
-    RenderPass* GetPassPtr() const noexcept  { return m_render_pass_ptr.get(); }
-    RenderPass& GetPass();
+    RenderPass&         GetPass();
+    RenderPass*         GetPassPtr() const noexcept      { return m_render_pass_ptr.get(); }
+    bool                HasPass() const noexcept         { return !!m_render_pass_ptr; }
+    const DrawingState& GetDrawingState() const noexcept { return m_drawing_state; }
 
 protected:
     // CommandList overrides
     void ResetCommandState() override;
 
-    DrawingState&       GetDrawingState()       { return m_drawing_state; }
-    const DrawingState& GetDrawingState() const { return m_drawing_state; }
-    bool                IsParallel() const      { return m_is_parallel; }
+    DrawingState& GetDrawingState() noexcept  { return m_drawing_state; }
+    bool          IsParallel() const noexcept { return m_is_parallel; }
 
     inline void UpdateDrawingState(Primitive primitive_type);
     inline void ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count = 0) const;

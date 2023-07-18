@@ -33,14 +33,22 @@ namespace Methane::Graphics::Rhi
 bool ViewSettings::operator==(const ViewSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return viewports == other.viewports &&
-           scissor_rects == other.scissor_rects;
+    return std::tie(viewports, scissor_rects) ==
+           std::tie(other.viewports, other.scissor_rects);
 }
 
 bool ViewSettings::operator!=(const ViewSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return !operator==(other);
+    return std::tie(viewports, scissor_rects) !=
+           std::tie(other.viewports, other.scissor_rects);
+}
+
+bool ViewSettings::operator<(const ViewSettings& other) const noexcept
+{
+    META_FUNCTION_TASK();
+    return std::tie(viewports, scissor_rects) <
+           std::tie(other.viewports, other.scissor_rects);
 }
 
 ViewSettings::operator std::string() const

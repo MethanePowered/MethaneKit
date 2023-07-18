@@ -345,6 +345,11 @@ struct Volume // NOSONAR - class has more than 35 methods
         return std::tie(origin, size) != std::tie(other.origin, other.size);
     }
 
+    bool operator<(const Volume& other) const noexcept
+    {
+        return std::tie(origin, size) < std::tie(other.origin, other.size);
+    }
+
     template<typename M>
     std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator*(M multiplier) const noexcept(std::is_unsigned_v<M>)
     {

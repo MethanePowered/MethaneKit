@@ -68,7 +68,7 @@ void RenderCommandList::Reset(IDebugGroup* debug_group_ptr)
     if (m_render_pass_ptr)
     {
         META_LOG("{}", static_cast<std::string>(m_render_pass_ptr->GetPattern().GetSettings()));
-        m_drawing_state.render_pass_attachments_ptr = m_render_pass_ptr->GetNonFrameBufferAttachmentTextures();
+        m_drawing_state.render_pass_attachment_ptrs = m_render_pass_ptr->GetNonFrameBufferAttachmentTextures();
     }
 }
 
@@ -266,7 +266,7 @@ void RenderCommandList::ResetCommandState()
 
     CommandList::ResetCommandState();
 
-    m_drawing_state.render_pass_attachments_ptr.clear();
+    m_drawing_state.render_pass_attachment_ptrs.clear();
     m_drawing_state.render_state_ptr.reset();
     m_drawing_state.vertex_buffer_set_ptr.reset();
     m_drawing_state.index_buffer_ptr.reset();

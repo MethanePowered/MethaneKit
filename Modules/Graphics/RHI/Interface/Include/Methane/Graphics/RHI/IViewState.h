@@ -35,6 +35,7 @@ struct ViewSettings
 
     [[nodiscard]] bool operator==(const ViewSettings& other) const noexcept;
     [[nodiscard]] bool operator!=(const ViewSettings& other) const noexcept;
+    [[nodiscard]] bool operator<(const ViewSettings& other) const noexcept;
     [[nodiscard]] explicit operator std::string() const;
 };
 

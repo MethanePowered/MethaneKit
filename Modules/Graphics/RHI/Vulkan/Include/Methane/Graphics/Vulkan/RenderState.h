@@ -23,19 +23,35 @@ Vulkan implementation of the render state interface.
 
 #pragma once
 
+#include <Methane/Graphics/RHI/IViewState.h>
 #include <Methane/Graphics/Base/RenderState.h>
 
 #include <vulkan/vulkan.hpp>
+
+#include <map>
+
+namespace Methane::Graphics::Rhi
+{
+enum class RenderPrimitive;
+}
+
+namespace Methane::Graphics::Base
+{
+struct RenderDrawingState;
+}
 
 namespace Methane::Graphics::Vulkan
 {
 
 struct IContext;
+class ViewState;
 
 class RenderState final
     : public Base::RenderState
 {
 public:
+    static vk::PrimitiveTopology GetVulkanPrimitiveTopology(Rhi::RenderPrimitive primitive_type);
+
     RenderState(const Base::RenderContext& context, const Settings& settings);
     
     // IRenderState interface
@@ -47,11 +63,21 @@ public:
     // IObject interface
     bool SetName(std::string_view name) override;
 
-    const vk::Pipeline& GetNativePipeline() const noexcept { return m_vk_unique_pipeline.get(); }
+    bool                IsNativePipelineDynamic() const noexcept  { return m_is_pipeline_dynamic; }
+    const vk::Pipeline& GetNativePipelineDynamic() const;
+    const vk::Pipeline& GetNativePipelineMonolithic(const ViewState& viewState, Rhi::RenderPrimitive renderPrimitive);
+    const vk::Pipeline& GetNativePipelineMonolithic(const Base::RenderDrawingState& drawing_state);
 
 private:
-    const IContext&    m_vk_context;
-    vk::UniquePipeline m_vk_unique_pipeline;
+    vk::UniquePipeline CreateNativePipeline(const ViewState* viewState = nullptr, Opt<Rhi::RenderPrimitive> renderPrimitive = {});
+
+    using PipelineId = std::tuple<Rhi::ViewSettings, Rhi::RenderPrimitive>;
+    using MonolithicPipelineById = std::map<PipelineId, vk::UniquePipeline>;
+
+    const IContext&        m_vk_context;
+    const bool             m_is_pipeline_dynamic;
+    vk::UniquePipeline     m_vk_pipeline_dynamic;
+    MonolithicPipelineById m_vk_pipeline_monolithic_by_id;
 };
 
 } // namespace Methane::Graphics::Vulkan
