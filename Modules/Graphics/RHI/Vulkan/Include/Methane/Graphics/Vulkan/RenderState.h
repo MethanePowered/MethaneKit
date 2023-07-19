@@ -63,7 +63,7 @@ public:
     // IObject interface
     bool SetName(std::string_view name) override;
 
-    bool                IsNativePipelineDynamic() const noexcept  { return m_is_pipeline_dynamic; }
+    bool                IsNativePipelineDynamic() const noexcept  { return !Base::RenderState::IsDeferred(); }
     const vk::Pipeline& GetNativePipelineDynamic() const;
     const vk::Pipeline& GetNativePipelineMonolithic(const ViewState& viewState, Rhi::RenderPrimitive renderPrimitive);
     const vk::Pipeline& GetNativePipelineMonolithic(const Base::RenderDrawingState& drawing_state);
@@ -75,7 +75,6 @@ private:
     using MonolithicPipelineById = std::map<PipelineId, vk::UniquePipeline>;
 
     const IContext&        m_vk_context;
-    const bool             m_is_pipeline_dynamic;
     vk::UniquePipeline     m_vk_pipeline_dynamic;
     MonolithicPipelineById m_vk_pipeline_monolithic_by_id;
 };

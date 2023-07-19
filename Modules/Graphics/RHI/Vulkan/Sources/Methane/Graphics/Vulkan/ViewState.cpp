@@ -131,7 +131,11 @@ bool ViewState::SetScissorRects(const ScissorRects& scissor_rects)
 void ViewState::Apply(Base::RenderCommandList& command_list)
 {
     META_FUNCTION_TASK();
-    const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandList&>(command_list).GetNativeCommandBufferDefault();
+    auto&   vulkan_command_list = static_cast<RenderCommandList&>(command_list);
+    if (!vulkan_command_list.IsDynamicStateSupported())
+        return;
+
+    const vk::CommandBuffer& vk_command_buffer = vulkan_command_list.GetNativeCommandBufferDefault();
     vk_command_buffer.setViewportWithCountEXT(m_vk_viewports);
     vk_command_buffer.setScissorWithCountEXT(m_vk_scissor_rects);
 }

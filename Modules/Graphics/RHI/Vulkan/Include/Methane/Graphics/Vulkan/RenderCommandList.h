@@ -61,6 +61,8 @@ public:
     void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;
 
+    bool IsDynamicStateSupported() const noexcept { return m_is_dynamic_state_supported; }
+
 private:
     // IRenderPassCallback
     void OnRenderPassUpdated(const Rhi::IRenderPass& render_pass) override;
@@ -68,6 +70,8 @@ private:
     void UpdatePrimitiveTopology(Primitive primitive);
 
     RenderPass& GetVulkanPass();
+
+    const bool m_is_dynamic_state_supported;
 };
 
 } // namespace Methane::Graphics::Vulkan

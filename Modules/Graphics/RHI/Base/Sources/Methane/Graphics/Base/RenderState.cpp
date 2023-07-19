@@ -30,9 +30,10 @@ Base implementation of the render state interface.
 namespace Methane::Graphics::Base
 {
 
-RenderState::RenderState(const RenderContext& context, const Settings& settings)
+RenderState::RenderState(const RenderContext& context, const Settings& settings, bool is_deferred)
     : m_context(context)
     , m_settings(settings)
+    , m_is_deferred(is_deferred)
 { }
 
 void RenderState::Reset(const Settings& settings)

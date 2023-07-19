@@ -191,9 +191,9 @@ vk::PrimitiveTopology RenderState::GetVulkanPrimitiveTopology(Rhi::RenderPrimiti
 }
 
 RenderState::RenderState(const Base::RenderContext& context, const Settings& settings)
-    : Base::RenderState(context, settings)
+    : Base::RenderState(context, settings,
+                        !dynamic_cast<const IContext&>(context).GetVulkanDevice().IsDynamicStateSupported())
     , m_vk_context(dynamic_cast<const IContext&>(GetRenderContext()))
-    , m_is_pipeline_dynamic(m_vk_context.GetVulkanDevice().IsDynamicStateSupported())
 {
     META_FUNCTION_TASK();
     Reset(settings);
@@ -204,7 +204,7 @@ void RenderState::Reset(const Settings& settings)
     META_FUNCTION_TASK();
     Base::RenderState::Reset(settings);
 
-    if (m_is_pipeline_dynamic)
+    if (IsNativePipelineDynamic())
     {
         m_vk_pipeline_dynamic = CreateNativePipeline();
     }
@@ -218,7 +218,7 @@ void RenderState::Apply(Base::RenderCommandList& render_command_list, Groups /*s
 {
     META_FUNCTION_TASK();
     const auto& vulkan_render_command_list = static_cast<RenderCommandList&>(render_command_list);
-    const vk::Pipeline& vk_pipeline_state = m_is_pipeline_dynamic
+    const vk::Pipeline& vk_pipeline_state = IsNativePipelineDynamic()
                                           ? GetNativePipelineDynamic()
                                           : GetNativePipelineMonolithic(vulkan_render_command_list.GetDrawingState());
     vulkan_render_command_list.GetNativeCommandBufferDefault().bindPipeline(vk::PipelineBindPoint::eGraphics, vk_pipeline_state);
@@ -230,20 +230,31 @@ bool RenderState::SetName(std::string_view name)
     if (!Base::RenderState::SetName(name))
         return false;
 
-    SetVulkanObjectName(m_vk_context.GetVulkanDevice().GetNativeDevice(), m_vk_pipeline_dynamic.get(), name);
+    if (IsNativePipelineDynamic())
+    {
+        SetVulkanObjectName(m_vk_context.GetVulkanDevice().GetNativeDevice(), m_vk_pipeline_dynamic.get(), name);
+    }
+    else
+    {
+        for(const auto& [pipeline_id, vk_pipeline_monolithic] : m_vk_pipeline_monolithic_by_id)
+        {
+            SetVulkanObjectName(m_vk_context.GetVulkanDevice().GetNativeDevice(), vk_pipeline_monolithic.get(), name);
+        }
+    }
     return true;
 }
 
 const vk::Pipeline& RenderState::GetNativePipelineDynamic() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(m_is_pipeline_dynamic, "dynamic pipeline is not supported by device");
+    META_CHECK_ARG_TRUE_DESCR(IsNativePipelineDynamic(), "dynamic pipeline is not supported by device");
     return m_vk_pipeline_dynamic.get();
 }
 
 const vk::Pipeline& RenderState::GetNativePipelineMonolithic(const ViewState& view_state, Rhi::RenderPrimitive render_primitive)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_FALSE_DESCR(IsNativePipelineDynamic(), "dynamic pipeline should be used");
     const PipelineId pipeline_id = std::tie(view_state.GetSettings(), render_primitive);
     const auto pipeline_monolithic_by_id_it = m_vk_pipeline_monolithic_by_id.find(pipeline_id);
     if (pipeline_monolithic_by_id_it == m_vk_pipeline_monolithic_by_id.end())
@@ -360,11 +371,17 @@ vk::UniquePipeline RenderState::CreateNativePipeline(const ViewState* view_state
         0, nullptr, 0, nullptr
     );
 
-    const std::vector<vk::DynamicState> dynamic_states = {
-        vk::DynamicState::eViewportWithCountEXT,
-        vk::DynamicState::eScissorWithCountEXT,
-        vk::DynamicState::ePrimitiveTopologyEXT,
-    };
+    std::vector<vk::DynamicState> dynamic_states;
+    if (view_state_ptr)
+    {
+        dynamic_states.push_back(vk::DynamicState::eViewportWithCountEXT);
+        dynamic_states.push_back(vk::DynamicState::eScissorWithCountEXT);
+    }
+    if (render_primitive_opt)
+    {
+        dynamic_states.push_back(vk::DynamicState::ePrimitiveTopologyEXT);
+    }
+
     vk::PipelineDynamicStateCreateInfo dynamic_info(
         vk::PipelineDynamicStateCreateFlags{},
         dynamic_states
@@ -387,13 +404,15 @@ vk::UniquePipeline RenderState::CreateNativePipeline(const ViewState* view_state
         &multisample_info,
         &depth_stencil_info,
         &blending_info,
-        m_is_pipeline_dynamic && !view_state_ptr ? &dynamic_info : nullptr,
+        IsNativePipelineDynamic() ? &dynamic_info : nullptr,
         program.GetNativePipelineLayout(),
         render_pattern.GetNativeRenderPass()
     );
 
     auto pipe = m_vk_context.GetVulkanDevice().GetNativeDevice().createGraphicsPipelineUnique(nullptr, vk_pipeline_create_info);
     META_CHECK_ARG_EQUAL_DESCR(pipe.result, vk::Result::eSuccess, "Vulkan pipeline creation has failed");
+
+    SetVulkanObjectName(m_vk_context.GetVulkanDevice().GetNativeDevice(), pipe.value.get(), Base::Object::GetName());
     return std::move(pipe.value);
 }
 
