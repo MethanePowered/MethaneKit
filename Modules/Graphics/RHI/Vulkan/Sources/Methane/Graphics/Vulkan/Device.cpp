@@ -148,14 +148,14 @@ static vk::QueueFlags GetQueueFlagsByType(Rhi::CommandListType cmd_list_type)
     }
 }
 
-static std::set<std::string_view> GetDeviceSupportedExtensionNames(const vk::PhysicalDevice& vk_physical_device)
+static std::vector<std::string> GetDeviceSupportedExtensionNames(const vk::PhysicalDevice& vk_physical_device)
 {
     META_FUNCTION_TASK();
-    std::set<std::string_view> supported_extensions;
+    std::vector<std::string> supported_extensions;
     const std::vector<vk::ExtensionProperties> vk_device_extension_properties = vk_physical_device.enumerateDeviceExtensionProperties();
     for(const vk::ExtensionProperties& vk_extension_props : vk_device_extension_properties)
     {
-        supported_extensions.insert(vk_extension_props.extensionName);
+        supported_extensions.emplace_back(vk_extension_props.extensionName.operator std::string());
     }
     return supported_extensions;
 }
@@ -217,7 +217,8 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
                  IsSoftwarePhysicalDevice(vk_physical_device),
                  capabilities)
     , m_vk_physical_device(vk_physical_device)
-    , m_supported_extension_names(GetDeviceSupportedExtensionNames(vk_physical_device))
+    , m_supported_extension_names_storage(GetDeviceSupportedExtensionNames(vk_physical_device))
+    , m_supported_extension_names_set(m_supported_extension_names_storage.begin(), m_supported_extension_names_storage.end())
     , m_is_dynamic_state_supported(IsExtensionSupported(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME))
     , m_vk_queue_family_properties(vk_physical_device.getQueueFamilyProperties())
 {
@@ -318,7 +319,7 @@ bool Device::SetName(std::string_view name)
 bool Device::IsExtensionSupported(std::string_view required_extension) const
 {
     META_FUNCTION_TASK();
-    return m_supported_extension_names.count(required_extension);
+    return m_supported_extension_names_set.count(required_extension);
 }
 
 const QueueFamilyReservation* Device::GetQueueFamilyReservationPtr(Rhi::CommandListType cmd_list_type) const noexcept

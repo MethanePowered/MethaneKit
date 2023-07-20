@@ -112,7 +112,8 @@ private:
     Rhi::DeviceFeatureMask GetSupportedFeatures() const;
 
     vk::PhysicalDevice                     m_vk_physical_device;
-    const std::set<std::string_view>       m_supported_extension_names;
+    const std::vector<std::string>         m_supported_extension_names_storage;
+    const std::set<std::string_view>       m_supported_extension_names_set;
     const bool                             m_is_dynamic_state_supported = false;
     std::vector<vk::QueueFamilyProperties> m_vk_queue_family_properties;
     vk::UniqueDevice                       m_vk_unique_device;
