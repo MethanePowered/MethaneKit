@@ -372,12 +372,12 @@ vk::UniquePipeline RenderState::CreateNativePipeline(const ViewState* view_state
     );
 
     std::vector<vk::DynamicState> dynamic_states;
-    if (view_state_ptr)
+    if (!view_state_ptr)
     {
         dynamic_states.push_back(vk::DynamicState::eViewportWithCountEXT);
         dynamic_states.push_back(vk::DynamicState::eScissorWithCountEXT);
     }
-    if (render_primitive_opt)
+    if (!render_primitive_opt)
     {
         dynamic_states.push_back(vk::DynamicState::ePrimitiveTopologyEXT);
     }
