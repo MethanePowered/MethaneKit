@@ -132,17 +132,16 @@ void RenderCommandList::SetViewState(Rhi::IViewState& view_state)
     VerifyEncodingState();
 
     DrawingState& drawing_state = GetDrawingState();
-    const ViewState* p_prev_view_state = drawing_state.view_state_ptr;
-    drawing_state.view_state_ptr = static_cast<ViewState*>(&view_state);
-
-    if (p_prev_view_state && p_prev_view_state->GetSettings() == view_state.GetSettings())
+    if (drawing_state.view_state_ptr && drawing_state.view_state_ptr->GetSettings() == view_state.GetSettings())
     {
         META_LOG("{} Command list '{}' view state is already set up", magic_enum::enum_name(GetType()), GetName());
         return;
     }
 
     META_LOG("{} Command list '{}' SET VIEW STATE:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(drawing_state.view_state_ptr->GetSettings()));
+    drawing_state.view_state_ptr = static_cast<ViewState*>(&view_state);
     drawing_state.view_state_ptr->Apply(*this);
+    drawing_state.changes |= DrawingState::Change::ViewState;
 }
 
 bool RenderCommandList::SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers)
@@ -289,11 +288,20 @@ void RenderCommandList::UpdateDrawingState(Primitive primitive_type)
         drawing_state.primitive_type_opt = primitive_type;
     }
 
-    if (m_drawing_state.render_state_ptr && m_drawing_state.render_state_ptr->IsDeferred())
+    if (m_drawing_state.render_state_ptr &&
+        m_drawing_state.render_state_ptr->IsDeferred() &&
+        (static_cast<bool>(m_drawing_state.render_state_groups) ||
+         drawing_state.changes.HasAnyBit(DrawingState::Change::PrimitiveType) ||
+         drawing_state.changes.HasAnyBit(DrawingState::Change::ViewState)))
     {
+        // Apply render state in deferred mode right before the Draw call,
+        // only in case when any render state groups or view state or primitive type has changed
         m_drawing_state.render_state_ptr->Apply(*this, m_drawing_state.render_state_groups);
         RetainResource(m_drawing_state.render_state_ptr);
+
         m_drawing_state.render_state_groups = {};
+        drawing_state.changes.SetBitOff(DrawingState::Change::PrimitiveType);
+        drawing_state.changes.SetBitOff(DrawingState::Change::ViewState);
     }
 }
 

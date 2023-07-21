@@ -53,7 +53,8 @@ struct RenderDrawingState
 {
     enum class Change : uint32_t
     {
-        PrimitiveType
+        PrimitiveType,
+        ViewState
     };
 
     using ChangeMask = Data::EnumMask<Change>;

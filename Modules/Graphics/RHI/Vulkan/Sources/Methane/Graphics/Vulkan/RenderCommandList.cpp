@@ -199,9 +199,13 @@ void RenderCommandList::OnRenderPassUpdated(const Rhi::IRenderPass& render_pass)
 void RenderCommandList::UpdatePrimitiveTopology(Primitive primitive)
 {
     META_FUNCTION_TASK();
-    if (DrawingState& drawing_state = GetDrawingState();
-        m_is_dynamic_state_supported &&
-        drawing_state.changes.HasAnyBit(DrawingState::Change::PrimitiveType))
+    DrawingState& drawing_state = GetDrawingState();
+    if (!drawing_state.changes.HasAnyBit(DrawingState::Change::PrimitiveType))
+        return;
+
+    drawing_state.primitive_type_opt = primitive;
+
+    if (m_is_dynamic_state_supported)
     {
         const vk::PrimitiveTopology vk_primitive_topology = RenderState::GetVulkanPrimitiveTopology(primitive);
         GetNativeCommandBufferDefault().setPrimitiveTopologyEXT(vk_primitive_topology);

@@ -131,7 +131,7 @@ bool ViewState::SetScissorRects(const ScissorRects& scissor_rects)
 void ViewState::Apply(Base::RenderCommandList& command_list)
 {
     META_FUNCTION_TASK();
-    auto&   vulkan_command_list = static_cast<RenderCommandList&>(command_list);
+    auto& vulkan_command_list = static_cast<RenderCommandList&>(command_list);
     if (!vulkan_command_list.IsDynamicStateSupported())
         return;
 

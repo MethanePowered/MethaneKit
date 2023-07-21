@@ -214,8 +214,8 @@ void QueueFamilyReservation::IncrementQueuesCount(uint32_t extra_queues_count) n
 
 Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKHR& vk_surface, const Capabilities& capabilities)
     : Base::Device(vk_physical_device.getProperties().deviceName,
-                 IsSoftwarePhysicalDevice(vk_physical_device),
-                 capabilities)
+                   IsSoftwarePhysicalDevice(vk_physical_device),
+                   capabilities)
     , m_vk_physical_device(vk_physical_device)
     , m_supported_extension_names_storage(GetDeviceSupportedExtensionNames(vk_physical_device))
     , m_supported_extension_names_set(m_supported_extension_names_storage.begin(), m_supported_extension_names_storage.end())
@@ -273,10 +273,16 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     vk_device_features.imageCubeArray    = capabilities.features.HasBit(Rhi::DeviceFeature::ImageCubeArray);
 
     // Add descriptions of enabled device features:
-    vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_feature(true);
+    vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT vk_device_dynamic_state_feature(m_is_dynamic_state_supported);
     vk::PhysicalDeviceTimelineSemaphoreFeaturesKHR    vk_device_timeline_semaphores_feature(true);
     vk::PhysicalDeviceHostQueryResetFeatures          vk_device_host_query_reset_feature(true);
-    vk::DeviceCreateInfo vk_device_info(vk::DeviceCreateFlags{}, vk_queue_create_infos, { }, raw_enabled_extension_names, &vk_device_features);
+    vk::DeviceCreateInfo vk_device_info(
+        vk::DeviceCreateFlags{},
+        vk_queue_create_infos,
+        { },
+        raw_enabled_extension_names,
+        &vk_device_features
+    );
     vk_device_info.setPNext(&vk_device_dynamic_state_feature);
     vk_device_dynamic_state_feature.setPNext(&vk_device_timeline_semaphores_feature);
     vk_device_timeline_semaphores_feature.setPNext(&vk_device_host_query_reset_feature);
