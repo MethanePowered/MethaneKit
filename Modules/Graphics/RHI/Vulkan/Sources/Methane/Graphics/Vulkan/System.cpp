@@ -153,13 +153,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
         strstr(callback_data_ptr->pMessage, "terminator_CreateInstance: Failed to CreateInstance in ICD")))
         return VK_FALSE;
 
-#ifndef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
     // Filter out validation error appeared due to missing HLSL extension for SPIRV bytecode, which can not be used because of bug in NVidia Windows drivers:
     // vkCreateShaderModule(): The SPIR-V Extension (SPV_GOOGLE_hlsl_functionality1 | SPV_GOOGLE_user_type) was declared, but none of the requirements were met to use it.
-    if (callback_data_ptr->messageIdNumber == 1028204675 && // VUID-VkShaderModuleCreateInfo-pCode-04147
-        strstr(callback_data_ptr->pMessage, "SPV_GOOGLE_"))
+    if (callback_data_ptr->messageIdNumber  == -60244330  ||// VUID-VkShaderModuleCreateInfo-pCode-08742
+        (callback_data_ptr->messageIdNumber == 1028204675 && strstr(callback_data_ptr->pMessage, "SPV_GOOGLE_")) ) // VUID-VkShaderModuleCreateInfo-pCode-04147
         return VK_FALSE;
-#endif // VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
 
 #endif // !NDEBUG
 

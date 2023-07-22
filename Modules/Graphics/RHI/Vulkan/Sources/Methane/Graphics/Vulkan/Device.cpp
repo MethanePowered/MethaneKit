@@ -46,25 +46,12 @@ Vulkan implementation of the device interface.
 namespace Methane::Graphics::Vulkan
 {
 
-// Google extensions are used to reflect HLSL semantic names from shader input decorations,
-// and it works fine, but is not listed by Windows NVidia drivers, who knows why?
-//#ifdef __linux__
-//#define VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
-//#endif
-
 #define VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME "VK_KHR_portability_subset"
 
 static const std::vector<std::string_view> g_common_device_extensions{
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
-#endif
-#ifndef __APPLE__
-    VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
-#endif
-#ifdef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
-    VK_GOOGLE_HLSL_FUNCTIONALITY1_EXTENSION_NAME,
-    VK_GOOGLE_USER_TYPE_EXTENSION_NAME,
 #endif
 };
 
@@ -286,11 +273,6 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     vk_device_info.setPNext(&vk_device_dynamic_state_feature);
     vk_device_dynamic_state_feature.setPNext(&vk_device_timeline_semaphores_feature);
     vk_device_timeline_semaphores_feature.setPNext(&vk_device_host_query_reset_feature);
-
-#ifndef __APPLE__
-    vk::PhysicalDeviceSynchronization2FeaturesKHR vk_device_synchronization_2_feature(true);
-    vk_device_host_query_reset_feature.setPNext(&vk_device_synchronization_2_feature);
-#endif
 
     m_vk_unique_device = vk_physical_device.createDeviceUnique(vk_device_info);
     VULKAN_HPP_DEFAULT_DISPATCHER.init(m_vk_unique_device.get());
