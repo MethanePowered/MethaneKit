@@ -294,7 +294,6 @@ protected:
         );
     }
 
-private:
     vk::UniqueCommandPool CreateVulkanCommandPool(uint32_t queue_family_index)
     {
         META_FUNCTION_TASK();
@@ -348,6 +347,7 @@ private:
         return m_vk_command_buffer_begin_infos[magic_enum::enum_index(cmd_buffer_type).value()];       
     }
 
+private:
     vk::Device            m_vk_device;
     vk::UniqueCommandPool m_vk_unique_command_pool;
     bool                  m_is_native_committed = false;

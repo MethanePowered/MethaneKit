@@ -194,6 +194,7 @@ void RenderCommandList::OnRenderPassUpdated(const Rhi::IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
     SetSecondaryRenderBufferInheritInfo(CreateRenderCommandBufferInheritanceInfo(static_cast<const RenderPass&>(render_pass)));
+    InitializeSecondaryCommandBuffers(IsParallel() ? 0U : 1U);
 }
 
 void RenderCommandList::UpdatePrimitiveTopology(Primitive primitive)
