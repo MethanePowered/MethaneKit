@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/ImageLoader.h
-ForImage Loader creates textures from images loaded via data provider and
+Image Loader creates textures from images loaded via data provider and
 by decoding them from popular image formats.
 
 ******************************************************************************/

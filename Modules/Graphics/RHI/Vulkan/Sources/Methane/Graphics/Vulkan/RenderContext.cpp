@@ -408,7 +408,7 @@ void RenderContext::ResetNativeObjectNames() const
         if (!vk_unique_frame_semaphore)
             continue;
 
-        const std::string frame_semaphore_name = fmt::format("{} Frame {} ForImage Available", GetName(), frame_index);
+        const std::string frame_semaphore_name = fmt::format("{} Frame {} Image Available", GetName(), frame_index);
         SetVulkanObjectName(m_vk_device, vk_unique_frame_semaphore.get(), frame_semaphore_name.c_str());
         frame_index++;
     }
