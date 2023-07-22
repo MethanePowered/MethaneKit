@@ -120,8 +120,15 @@ void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& complet
     }
 
     std::scoped_lock fence_guard(m_vk_unique_execution_completed_fence_mutex);
-    m_vk_device.resetFences(GetNativeExecutionCompletedFence());
-    GetVulkanCommandQueue().GetNativeQueue().submit(submit_info, GetNativeExecutionCompletedFence());
+    const vk::Fence& vk_fence = GetNativeExecutionCompletedFence();
+    if (m_signalled_execution_completed_fence)
+    {
+        // Do not reset not-signalled fence to workaround crash in validation layer on MacOS
+        // https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/4974
+        m_vk_device.resetFences(vk_fence);
+    }
+    GetVulkanCommandQueue().GetNativeQueue().submit(submit_info, vk_fence);
+    m_signalled_execution_completed_fence = true;
 }
 
 void CommandListSet::WaitUntilCompleted()

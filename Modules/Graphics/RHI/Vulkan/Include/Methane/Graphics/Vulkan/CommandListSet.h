@@ -69,6 +69,7 @@ private:
     std::vector<uint64_t>               m_vk_wait_values;
     vk::UniqueSemaphore                 m_vk_unique_execution_completed_semaphore;
     vk::UniqueFence                     m_vk_unique_execution_completed_fence;
+    bool                                m_signalled_execution_completed_fence = false;
     TracyLockable(std::mutex,           m_vk_unique_execution_completed_fence_mutex);
 };
 
