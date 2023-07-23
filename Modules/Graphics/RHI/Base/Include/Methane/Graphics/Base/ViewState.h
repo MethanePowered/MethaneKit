@@ -26,6 +26,7 @@ Base implementation of the view state interface.
 #include "Object.h"
 
 #include <Methane/Graphics/RHI/IViewState.h>
+#include <Methane/Data/Emitter.hpp>
 
 namespace Methane::Graphics::Base
 {
@@ -34,10 +35,12 @@ class RenderCommandList;
 
 class ViewState
     : public Rhi::IViewState
+    , public Data::Emitter<Rhi::IViewStateCallback>
     , public std::enable_shared_from_this<ViewState>
 {
 public:
     explicit ViewState(const Settings& settings);
+    ~ViewState() override;
 
     // IViewState overrides
     Ptr<Rhi::IViewState> GetPtr() final                  { return shared_from_this(); }

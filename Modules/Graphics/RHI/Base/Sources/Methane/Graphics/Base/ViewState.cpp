@@ -21,6 +21,8 @@ Base implementation of the view state interface.
 
 ******************************************************************************/
 
+#include "Methane/Data/Emitter.hpp"
+#include "Methane/Graphics/RHI/IViewState.h"
 #include <Methane/Graphics/Base/ViewState.h>
 
 #include <Methane/Checks.hpp>
@@ -45,6 +47,12 @@ ViewState::ViewState(const Settings& settings)
     META_FUNCTION_TASK();
     Validate(settings.viewports);
     Validate(settings.scissor_rects);
+}
+
+ViewState::~ViewState()
+{
+    META_FUNCTION_TASK();
+    Data::Emitter<ICallback>::Emit(&ICallback::OnViewStateDestroyed, *this);
 }
 
 bool ViewState::Reset(const Settings& settings)

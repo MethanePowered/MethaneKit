@@ -34,8 +34,13 @@ class ViewState final
 public:
     using Base::ViewState::ViewState;
 
+    // IViewState overrides
+    bool Reset(const Settings& settings) override;
+    bool SetViewports(const Viewports& viewports) override;
+    bool SetScissorRects(const ScissorRects& scissor_rects) override;
+
     // Base::ViewState interface
-    void Apply(Base::RenderCommandList&) override { /* Intentionally unimplemented */ }
+    void Apply(Base::RenderCommandList&) override;
 };
 
 } // namespace Methane::Graphics::Null

@@ -26,11 +26,48 @@ Null implementation of the view state interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IViewState> Rhi::IViewState::Create(const Rhi::IViewState::Settings& state_settings)
+Ptr <IViewState> IViewState::Create(const Rhi::IViewState::Settings& state_settings)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Null::ViewState>(state_settings);
 }
 
 } // namespace Methane::Graphics::Rhi
+
+namespace Methane::Graphics::Null
+{
+
+bool ViewState::Reset(const Settings& settings)
+{
+    if (!Base::ViewState::Reset(settings))
+        return false;
+
+    Data::Emitter<ICallback>::Emit(&ICallback::OnViewStateChanged, *this);
+    return true;
+}
+
+bool ViewState::SetViewports(const Viewports& viewports)
+{
+    if (!Base::ViewState::SetViewports(viewports))
+        return false;
+
+    Data::Emitter<ICallback>::Emit(&ICallback::OnViewStateChanged, *this);
+    return true;
+}
+
+bool ViewState::SetScissorRects(const ScissorRects& scissor_rects)
+{
+    if (!Base::ViewState::SetScissorRects(scissor_rects))
+        return false;
+
+    Data::Emitter<ICallback>::Emit(&ICallback::OnViewStateChanged, *this);
+    return true;
+}
+
+void ViewState::Apply(Base::RenderCommandList&)
+{
+    /* Intentionally unimplemented */
+}
+
+} // namespace Methane::Graphics::Null
 
