@@ -26,10 +26,12 @@ Vulkan implementation of the render state interface.
 #include <Methane/Graphics/RHI/IViewState.h>
 #include <Methane/Graphics/Base/RenderState.h>
 #include <Methane/Data/Receiver.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <vulkan/vulkan.hpp>
 
 #include <map>
+#include <mutex>
 
 namespace Methane::Graphics::Rhi
 {
@@ -82,9 +84,10 @@ private:
     using PipelineId = std::tuple<Rhi::IViewState*, Rhi::RenderPrimitive>;
     using MonolithicPipelineById = std::map<PipelineId, vk::UniquePipeline>;
 
-    const RenderContext&   m_vk_render_context;
-    vk::UniquePipeline     m_vk_pipeline_dynamic;
-    MonolithicPipelineById m_vk_pipeline_monolithic_by_id;
+    const RenderContext&      m_vk_render_context;
+    vk::UniquePipeline        m_vk_pipeline_dynamic;
+    MonolithicPipelineById    m_vk_pipeline_monolithic_by_id;
+    TracyLockable(std::mutex, m_mutex);
 };
 
 } // namespace Methane::Graphics::Vulkan

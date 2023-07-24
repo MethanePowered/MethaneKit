@@ -26,10 +26,12 @@ Vulkan implementation of the shader interface.
 #include <Methane/Graphics/Base/Shader.h>
 #include <Methane/Data/MutableChunk.hpp>
 #include <Methane/Memory.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <vulkan/vulkan.hpp>
 
 #include <string>
+#include <mutex>
 
 namespace spirv_cross // NOSONAR
 {
@@ -77,6 +79,7 @@ private:
     std::vector<vk::VertexInputBindingDescription>   m_vertex_input_binding_descriptions;
     std::vector<vk::VertexInputAttributeDescription> m_vertex_input_attribute_descriptions;
     bool                                             m_vertex_input_initialized = false;
+    TracyLockable(std::mutex,                        m_mutex);
 };
 
 } // namespace Methane::Graphics::Vulkan

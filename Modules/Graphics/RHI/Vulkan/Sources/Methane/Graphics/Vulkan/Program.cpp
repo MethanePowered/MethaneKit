@@ -101,7 +101,7 @@ const std::vector<vk::DescriptorSetLayout>& Program::GetNativeDescriptorSetLayou
     return m_vk_descriptor_set_layouts;
 }
 
-const vk::DescriptorSetLayout& Program::GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType argument_access_type)
+const vk::DescriptorSetLayout& Program::GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType argument_access_type) const
 {
     META_FUNCTION_TASK();
     static const vk::DescriptorSetLayout s_empty_layout;
@@ -109,7 +109,7 @@ const vk::DescriptorSetLayout& Program::GetNativeDescriptorSetLayout(Rhi::Progra
     return layout_info.index_opt ? m_vk_unique_descriptor_set_layouts[*layout_info.index_opt].get() : s_empty_layout;
 }
 
-const Program::DescriptorSetLayoutInfo& Program::GetDescriptorSetLayoutInfo(Rhi::ProgramArgumentAccessType argument_access_type)
+const Program::DescriptorSetLayoutInfo& Program::GetDescriptorSetLayoutInfo(Rhi::ProgramArgumentAccessType argument_access_type) const
 {
     META_FUNCTION_TASK();
     return m_descriptor_set_layout_info_by_access_type[*magic_enum::enum_index(argument_access_type)];
@@ -118,6 +118,8 @@ const Program::DescriptorSetLayoutInfo& Program::GetDescriptorSetLayoutInfo(Rhi:
 const vk::PipelineLayout& Program::GetNativePipelineLayout()
 {
     META_FUNCTION_TASK();
+    std::lock_guard lock(m_mutex);
+
     if (m_vk_unique_pipeline_layout)
         return m_vk_unique_pipeline_layout.get();
 
@@ -133,6 +135,8 @@ const vk::PipelineLayout& Program::GetNativePipelineLayout()
 const vk::DescriptorSet& Program::GetConstantDescriptorSet()
 {
     META_FUNCTION_TASK();
+    std::lock_guard lock(m_mutex);
+
     if (m_vk_constant_descriptor_set_opt.has_value())
         return m_vk_constant_descriptor_set_opt.value();
 
@@ -148,6 +152,8 @@ const vk::DescriptorSet& Program::GetConstantDescriptorSet()
 const vk::DescriptorSet& Program::GetFrameConstantDescriptorSet(Data::Index frame_index)
 {
     META_FUNCTION_TASK();
+    std::lock_guard lock(m_mutex);
+
     if (!m_vk_frame_constant_descriptor_sets.empty())
     {
         META_CHECK_ARG_LESS(frame_index, m_vk_frame_constant_descriptor_sets.size());

@@ -256,6 +256,8 @@ const vk::Pipeline& RenderState::GetNativePipelineMonolithic(ViewState& view_sta
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_FALSE_DESCR(IsNativePipelineDynamic(), "dynamic pipeline should be used");
+    std::lock_guard lock(m_mutex);
+
     const PipelineId pipeline_id(static_cast<Rhi::IViewState*>(&view_state), render_primitive);
     const auto pipeline_monolithic_by_id_it = m_vk_pipeline_monolithic_by_id.find(pipeline_id);
     if (pipeline_monolithic_by_id_it == m_vk_pipeline_monolithic_by_id.end())
@@ -263,6 +265,7 @@ const vk::Pipeline& RenderState::GetNativePipelineMonolithic(ViewState& view_sta
         view_state.Connect(*this);
         return m_vk_pipeline_monolithic_by_id.try_emplace(pipeline_id, CreateNativePipeline(&view_state, render_primitive)).first->second.get();
     }
+
     return pipeline_monolithic_by_id_it->second.get();
 }
 
@@ -421,6 +424,8 @@ vk::UniquePipeline RenderState::CreateNativePipeline(const ViewState* view_state
 void RenderState::OnViewStateChanged(Rhi::IViewState& view_state)
 {
     META_FUNCTION_TASK();
+    std::lock_guard lock(m_mutex);
+
     for(auto& [pipeline_id, vk_pipeline_monolithic] : m_vk_pipeline_monolithic_by_id)
         if (std::get<0>(pipeline_id) == &view_state)
         {
@@ -432,6 +437,8 @@ void RenderState::OnViewStateChanged(Rhi::IViewState& view_state)
 void RenderState::OnViewStateDestroyed(Rhi::IViewState& view_state)
 {
     META_FUNCTION_TASK();
+    std::lock_guard lock(m_mutex);
+
     for(auto vk_pipeline_it = m_vk_pipeline_monolithic_by_id.begin();
         vk_pipeline_it != m_vk_pipeline_monolithic_by_id.end();)
     {
