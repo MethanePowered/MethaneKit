@@ -442,7 +442,7 @@ void RenderState::OnViewStateDestroyed(Rhi::IViewState& view_state)
         }
 
         m_vk_render_context.DeferredRelease(std::move(vk_pipeline_it->second));
-        m_vk_pipeline_monolithic_by_id.erase(vk_pipeline_it);
+        vk_pipeline_it = m_vk_pipeline_monolithic_by_id.erase(vk_pipeline_it);
     }
 }
 
