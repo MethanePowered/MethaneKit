@@ -46,6 +46,7 @@ namespace Methane::Graphics::Vulkan
 
 struct IContext;
 class ViewState;
+class RenderContext;
 
 class RenderState final
     : public Base::RenderState
@@ -81,7 +82,7 @@ private:
     using PipelineId = std::tuple<Rhi::IViewState*, Rhi::RenderPrimitive>;
     using MonolithicPipelineById = std::map<PipelineId, vk::UniquePipeline>;
 
-    const IContext&        m_vk_context;
+    const RenderContext&   m_vk_render_context;
     vk::UniquePipeline     m_vk_pipeline_dynamic;
     MonolithicPipelineById m_vk_pipeline_monolithic_by_id;
 };

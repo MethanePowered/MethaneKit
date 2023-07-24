@@ -136,6 +136,8 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
     }
 
     GetVulkanDefaultCommandQueue(cl_type).CompleteExecution(frame_buffer_index);
+
+    m_vk_deferred_release_pipelines.clear();
 }
 
 bool RenderContext::ReadyToRender() const

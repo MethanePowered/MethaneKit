@@ -21,7 +21,7 @@ Vulkan implementation of the render state interface.
 
 ******************************************************************************/
 
-#include "Methane/Graphics/RHI/IViewState.h"
+#include <Methane/Graphics/Vulkan/RenderContext.h>
 #include <Methane/Graphics/Vulkan/RenderState.h>
 #include <Methane/Graphics/Vulkan/RenderPattern.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
@@ -194,7 +194,7 @@ vk::PrimitiveTopology RenderState::GetVulkanPrimitiveTopology(Rhi::RenderPrimiti
 RenderState::RenderState(const Base::RenderContext& context, const Settings& settings)
     : Base::RenderState(context, settings,
                         !dynamic_cast<const IContext&>(context).GetVulkanDevice().IsDynamicStateSupported())
-    , m_vk_context(dynamic_cast<const IContext&>(GetRenderContext()))
+    , m_vk_render_context(static_cast<const RenderContext&>(GetRenderContext()))
 {
     META_FUNCTION_TASK();
     Reset(settings);
@@ -233,13 +233,13 @@ bool RenderState::SetName(std::string_view name)
 
     if (IsNativePipelineDynamic())
     {
-        SetVulkanObjectName(m_vk_context.GetVulkanDevice().GetNativeDevice(), m_vk_pipeline_dynamic.get(), name);
+        SetVulkanObjectName(m_vk_render_context.GetVulkanDevice().GetNativeDevice(), m_vk_pipeline_dynamic.get(), name);
     }
     else
     {
         for(const auto& [pipeline_id, vk_pipeline_monolithic] : m_vk_pipeline_monolithic_by_id)
         {
-            SetVulkanObjectName(m_vk_context.GetVulkanDevice().GetNativeDevice(), vk_pipeline_monolithic.get(), name);
+            SetVulkanObjectName(m_vk_render_context.GetVulkanDevice().GetNativeDevice(), vk_pipeline_monolithic.get(), name);
         }
     }
     return true;
@@ -411,10 +411,10 @@ vk::UniquePipeline RenderState::CreateNativePipeline(const ViewState* view_state
         render_pattern.GetNativeRenderPass()
     );
 
-    auto pipe = m_vk_context.GetVulkanDevice().GetNativeDevice().createGraphicsPipelineUnique(nullptr, vk_pipeline_create_info);
+    auto pipe = m_vk_render_context.GetVulkanDevice().GetNativeDevice().createGraphicsPipelineUnique(nullptr, vk_pipeline_create_info);
     META_CHECK_ARG_EQUAL_DESCR(pipe.result, vk::Result::eSuccess, "Vulkan pipeline creation has failed");
 
-    SetVulkanObjectName(m_vk_context.GetVulkanDevice().GetNativeDevice(), pipe.value.get(), Base::Object::GetName());
+    SetVulkanObjectName(m_vk_render_context.GetVulkanDevice().GetNativeDevice(), pipe.value.get(), Base::Object::GetName());
     return std::move(pipe.value);
 }
 
@@ -424,7 +424,7 @@ void RenderState::OnViewStateChanged(Rhi::IViewState& view_state)
     for(auto& [pipeline_id, vk_pipeline_monolithic] : m_vk_pipeline_monolithic_by_id)
         if (std::get<0>(pipeline_id) == &view_state)
         {
-            // TODO: add support of delayed destruction of the pipeline state used in executing GPU command buffer
+            m_vk_render_context.DeferredRelease(std::move(vk_pipeline_monolithic));
             vk_pipeline_monolithic = CreateNativePipeline(static_cast<const ViewState*>(&view_state), std::get<1>(pipeline_id));
         }
 }
@@ -441,7 +441,7 @@ void RenderState::OnViewStateDestroyed(Rhi::IViewState& view_state)
             continue;
         }
 
-        // TODO: add support of delayed destruction of the pipeline state used in executing GPU command buffer
+        m_vk_render_context.DeferredRelease(std::move(vk_pipeline_it->second));
         m_vk_pipeline_monolithic_by_id.erase(vk_pipeline_it);
     }
 }
