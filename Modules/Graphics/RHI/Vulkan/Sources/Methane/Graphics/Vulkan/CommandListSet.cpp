@@ -53,9 +53,10 @@ namespace Methane::Graphics::Vulkan
 static Rhi::IRenderPass* GetRenderPassFromCommandList(const Rhi::ICommandList& command_list)
 {
     META_FUNCTION_TASK();
-    const Rhi::CommandListType cmd_list_type = command_list.GetType();
 
-    switch(cmd_list_type)
+
+    switch(const Rhi::CommandListType cmd_list_type = command_list.GetType();
+           cmd_list_type)
     {
     case Rhi::CommandListType::Render:
     {

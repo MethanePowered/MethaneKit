@@ -64,7 +64,6 @@ public:
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetVulkanCommandQueue().GetVulkanContext().GetVulkanDevice().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetVulkanCommandQueue().GetFamilyIndex()))
-        , m_vk_primary_command_buffer_level(vk::CommandBufferLevel::ePrimary)
     {
         META_FUNCTION_TASK();
         std::fill(m_vk_command_buffer_encoding_flags.begin(), m_vk_command_buffer_encoding_flags.end(), false);
@@ -84,7 +83,6 @@ public:
         : CommandListBaseT(parallel_render_command_list)
         , m_vk_device(GetVulkanCommandQueue().GetVulkanContext().GetVulkanDevice().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetVulkanCommandQueue().GetFamilyIndex()))
-        , m_vk_primary_command_buffer_level(vk::CommandBufferLevel::ePrimary)
         , m_debug_group_command_buffer_type(is_beginning_cmd_list ? CommandBufferType::Primary : default_command_buffer_type)
     {
         META_FUNCTION_TASK();
@@ -369,7 +367,7 @@ private:
     vk::Device                   m_vk_device;
     vk::UniqueCommandPool        m_vk_unique_command_pool;
     bool                         m_is_native_committed = false;
-    const vk::CommandBufferLevel m_vk_primary_command_buffer_level;
+    const vk::CommandBufferLevel m_vk_primary_command_buffer_level = vk::CommandBufferLevel::ePrimary;
 
     // Unique command buffers and corresponding begin flags are indexed by the value of CommandBufferType enum
     std::array<vk::UniqueCommandBuffer, command_buffers_count>    m_vk_unique_command_buffers;

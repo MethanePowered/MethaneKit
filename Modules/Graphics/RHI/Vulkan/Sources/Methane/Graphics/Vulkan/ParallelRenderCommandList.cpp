@@ -174,7 +174,7 @@ Ptr<Rhi::IRenderCommandList> ParallelRenderCommandList::CreateCommandList(bool i
 void ParallelRenderCommandList::OnRenderPassUpdated(const Rhi::IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
-    RenderPass& vulkan_render_pass = GetVulkanRenderPass();
+    const RenderPass& vulkan_render_pass = GetVulkanRenderPass();
     m_vk_ending_inheritance_info = vk::CommandBufferInheritanceInfo(
         vulkan_render_pass.GetVulkanPattern().GetNativeRenderPass(),
         0U,
