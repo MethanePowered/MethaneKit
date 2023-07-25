@@ -277,7 +277,7 @@ const vk::Pipeline& RenderState::GetNativePipelineMonolithic(const Base::RenderD
     return GetNativePipelineMonolithic(static_cast<ViewState&>(*drawing_state.view_state_ptr), drawing_state.primitive_type_opt.value());
 }
 
-vk::UniquePipeline RenderState::CreateNativePipeline(const ViewState* view_state_ptr, Opt<Rhi::RenderPrimitive> render_primitive_opt)
+vk::UniquePipeline RenderState::CreateNativePipeline(const ViewState* view_state_ptr, Opt<Rhi::RenderPrimitive> render_primitive_opt) const
 {
     META_FUNCTION_TASK();
     const Settings& settings = GetSettings();

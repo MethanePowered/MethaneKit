@@ -28,6 +28,8 @@ Base implementation of the view state interface.
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
+#include <cassert>
+
 namespace Methane::Graphics::Base
 {
 
@@ -52,7 +54,15 @@ ViewState::ViewState(const Settings& settings)
 ViewState::~ViewState()
 {
     META_FUNCTION_TASK();
-    Data::Emitter<ICallback>::Emit(&ICallback::OnViewStateDestroyed, *this);
+    try
+    {
+        Data::Emitter<ICallback>::Emit(&ICallback::OnViewStateDestroyed, *this);
+    }
+    catch([[maybe_unused]] const std::exception& e)
+    {
+        META_LOG("WARNING: Unexpected error during view-state destruction: {}", e.what());
+        assert(false);
+    }
 }
 
 bool ViewState::Reset(const Settings& settings)

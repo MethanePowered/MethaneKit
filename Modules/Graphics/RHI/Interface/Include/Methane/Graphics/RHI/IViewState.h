@@ -51,7 +51,7 @@ struct IViewStateCallback
 };
 
 struct IViewState
-    : virtual Data::IEmitter<IViewStateCallback>
+    : virtual Data::IEmitter<IViewStateCallback> // NOSONAR
 {
     using Settings = ViewSettings;
     using ICallback = IViewStateCallback;
@@ -65,8 +65,6 @@ struct IViewState
     virtual bool Reset(const Settings& settings) = 0;
     virtual bool SetViewports(const Viewports& viewports) = 0;
     virtual bool SetScissorRects(const ScissorRects& scissor_rects) = 0;
-
-    virtual ~IViewState() = default;
 };
 
 } // namespace Methane::Graphics::Rhi

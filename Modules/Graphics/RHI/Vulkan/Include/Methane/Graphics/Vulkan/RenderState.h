@@ -75,7 +75,7 @@ public:
     const vk::Pipeline& GetNativePipelineMonolithic(const Base::RenderDrawingState& drawing_state);
 
 private:
-    vk::UniquePipeline CreateNativePipeline(const ViewState* viewState = nullptr, Opt<Rhi::RenderPrimitive> renderPrimitive = {});
+    vk::UniquePipeline CreateNativePipeline(const ViewState* viewState = nullptr, Opt<Rhi::RenderPrimitive> renderPrimitive = {}) const;
 
     // IViewStateCallback overrides
     void OnViewStateChanged(Rhi::IViewState& view_state) override;

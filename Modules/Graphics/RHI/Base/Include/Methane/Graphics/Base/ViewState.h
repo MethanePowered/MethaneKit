@@ -42,6 +42,12 @@ public:
     explicit ViewState(const Settings& settings);
     ~ViewState() override;
 
+    ViewState(const ViewState&) = delete;
+    ViewState(ViewState&&) noexcept = delete;
+
+    ViewState& operator=(const ViewState&) = delete;
+    ViewState& operator=(ViewState&&) noexcept = delete;
+
     // IViewState overrides
     Ptr<Rhi::IViewState> GetPtr() final                  { return shared_from_this(); }
     const Settings& GetSettings() const noexcept final   { return m_settings; }
