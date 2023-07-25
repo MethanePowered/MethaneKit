@@ -61,34 +61,13 @@ void ParallelRenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     m_beginning_command_list.Reset(debug_group_ptr);
-
-    if (debug_group_ptr)
-    {
-        // Instead of closing debug group in beginning CL commit, we force to close it in ending CL
-        m_beginning_command_list.ClearOpenDebugGroups();
-
-        m_ending_command_list.ResetOnce();
-        m_ending_command_list.PushOpenDebugGroup(*debug_group_ptr);
-    }
-
     Base::ParallelRenderCommandList::Reset(debug_group_ptr);
 }
 
 void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
-
     m_beginning_command_list.Reset(debug_group_ptr);
-
-    if (debug_group_ptr)
-    {
-        // Instead of closing debug group in beginning CL commit, we force to close it in ending CL
-        m_beginning_command_list.ClearOpenDebugGroups();
-
-        m_ending_command_list.ResetOnce();
-        m_ending_command_list.PushOpenDebugGroup(*debug_group_ptr);
-    }
-
     Base::ParallelRenderCommandList::ResetWithState(render_state, debug_group_ptr);
 }
 
