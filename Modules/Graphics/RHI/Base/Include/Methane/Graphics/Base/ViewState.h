@@ -33,7 +33,7 @@ namespace Methane::Graphics::Base
 
 class RenderCommandList;
 
-class ViewState
+class ViewState // NOSONAR - class requires destructor
     : public Rhi::IViewState
     , public Data::Emitter<Rhi::IViewStateCallback>
     , public std::enable_shared_from_this<ViewState>
