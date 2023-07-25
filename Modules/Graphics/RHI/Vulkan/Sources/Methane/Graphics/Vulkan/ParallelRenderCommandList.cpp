@@ -41,7 +41,10 @@ ParallelRenderCommandList::ParallelRenderCommandList(CommandQueue& command_queue
     , m_ending_command_list(vk::CommandBufferLevel::eSecondary, // Ending command list creates Primary command buffer with Secondary level
                             vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit, &m_vk_ending_inheritance_info),
                             static_cast<CommandQueue&>(command_queue), Rhi::CommandListType::Render)
-{ }
+{
+    META_FUNCTION_TASK();
+    static_cast<Data::IEmitter<IRenderPassCallback>&>(render_pass).Connect(*this);
+}
 
 bool ParallelRenderCommandList::SetName(std::string_view name)
 {
@@ -107,7 +110,12 @@ void ParallelRenderCommandList::SetParallelCommandListsCount(uint32_t count)
 {
     META_FUNCTION_TASK();
     Base::ParallelRenderCommandList::SetParallelCommandListsCount(count);
+    UpdateParallelCommandBuffers();
+}
 
+void ParallelRenderCommandList::UpdateParallelCommandBuffers()
+{
+    META_FUNCTION_TASK();
     m_vk_parallel_sync_cmd_buffers.clear();
     m_vk_parallel_pass_cmd_buffers.clear();
 
@@ -182,6 +190,24 @@ RenderPass& ParallelRenderCommandList::GetVulkanPass() noexcept
 Ptr<Rhi::IRenderCommandList> ParallelRenderCommandList::CreateCommandList(bool is_beginning_list)
 {
     return std::make_shared<RenderCommandList>(*this, is_beginning_list);
+}
+
+void ParallelRenderCommandList::OnRenderPassUpdated(const Rhi::IRenderPass& render_pass)
+{
+    META_FUNCTION_TASK();
+    RenderPass& vulkan_render_pass = GetVulkanPass();
+    m_vk_ending_inheritance_info = vk::CommandBufferInheritanceInfo(
+        vulkan_render_pass.GetVulkanPattern().GetNativeRenderPass(),
+        0U,
+        vulkan_render_pass.GetNativeFrameBuffer());
+    m_ending_command_list.UpdateCommandBufferInheritInfo<CommandBufferType::Primary>(m_vk_ending_inheritance_info, false);
+
+    for(const Ref<Rhi::IRenderCommandList>& parallel_cmd_list_ref : GetParallelCommandLists())
+    {
+        static_cast<RenderCommandList&>(parallel_cmd_list_ref.get()).OnRenderPassUpdated(render_pass);
+    }
+
+    UpdateParallelCommandBuffers();
 }
 
 } // namespace Methane::Graphics::Vulkan

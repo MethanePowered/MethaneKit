@@ -64,13 +64,14 @@ public:
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetVulkanCommandQueue().GetVulkanContext().GetVulkanDevice().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetVulkanCommandQueue().GetFamilyIndex()))
+        , m_vk_primary_command_buffer_level(vk::CommandBufferLevel::ePrimary)
     {
         META_FUNCTION_TASK();
         std::fill(m_vk_command_buffer_encoding_flags.begin(), m_vk_command_buffer_encoding_flags.end(), false);
         std::fill(m_vk_command_buffer_primary_flags.begin(), m_vk_command_buffer_primary_flags.end(), false);
 
         InitializePrimaryCommandBuffer();
-        SetSecondaryRenderBufferInheritInfo(secondary_render_buffer_inherit_info);
+        SetCommandBufferInheritInfo(secondary_render_buffer_inherit_info, CommandBufferType::SecondaryRenderPass);
         InitializeSecondaryCommandBuffers(1U);
 
         CommandListBaseT::InitializeTimestampQueries();
@@ -83,6 +84,7 @@ public:
         : CommandListBaseT(parallel_render_command_list)
         , m_vk_device(GetVulkanCommandQueue().GetVulkanContext().GetVulkanDevice().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetVulkanCommandQueue().GetFamilyIndex()))
+        , m_vk_primary_command_buffer_level(vk::CommandBufferLevel::ePrimary)
         , m_debug_group_command_buffer_type(is_beginning_cmd_list ? CommandBufferType::Primary : default_command_buffer_type)
     {
         META_FUNCTION_TASK();
@@ -102,7 +104,7 @@ public:
         else
         {
             // Thread render and ending command lists of the parallel rendering do not use primary command buffers
-            SetSecondaryRenderBufferInheritInfo(secondary_render_buffer_inherit_info);
+            SetCommandBufferInheritInfo(secondary_render_buffer_inherit_info, CommandBufferType::SecondaryRenderPass);
             InitializeSecondaryCommandBuffers(0U);
         }
 
@@ -115,13 +117,14 @@ public:
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetVulkanCommandQueue().GetVulkanContext().GetVulkanDevice().GetNativeDevice()) // NOSONAR
         , m_vk_unique_command_pool(CreateVulkanCommandPool(GetVulkanCommandQueue().GetFamilyIndex()))
+        , m_vk_primary_command_buffer_level(vk_buffer_level)
         , m_vk_command_buffer_begin_infos({ vk_begin_info })
     {
         META_FUNCTION_TASK();
         std::fill(m_vk_command_buffer_encoding_flags.begin(), m_vk_command_buffer_encoding_flags.end(), false);
         std::fill(m_vk_command_buffer_primary_flags.begin(), m_vk_command_buffer_primary_flags.end(), false);
 
-        InitializePrimaryCommandBuffer(vk_buffer_level);
+        InitializePrimaryCommandBuffer();
 
         if (vk_buffer_level == vk::CommandBufferLevel::ePrimary)
         {
@@ -256,7 +259,21 @@ public:
                                   magic_enum::enum_name(cmd_buffer_type));
         return m_vk_unique_command_buffers[cmd_buffer_index].get();
     }
-    
+
+    template<CommandBufferType command_buffer_type>
+    void UpdateCommandBufferInheritInfo(const vk::CommandBufferInheritanceInfo& vk_inherit_info, bool is_parallel)
+    {
+        META_FUNCTION_TASK();
+        SetCommandBufferInheritInfo(vk_inherit_info, command_buffer_type);
+        if constexpr (command_buffer_type == CommandBufferType::Primary)
+        {
+            InitializePrimaryCommandBuffer();
+        }
+        else
+        {
+            InitializeSecondaryCommandBuffers(is_parallel ? 0U : 1U);
+        }
+    }
 
 protected:
     bool IsNativeCommitted() const             { return m_is_native_committed; }
@@ -280,11 +297,12 @@ protected:
                                                                 Base::CommandList::GetProgramBindingsPtr(), apply_behavior);
     }
 
-    void SetSecondaryRenderBufferInheritInfo(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info) noexcept
+    void SetCommandBufferInheritInfo(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info,
+                                    CommandBufferType command_buffer_type) noexcept
     {
         META_FUNCTION_TASK();
         m_vk_secondary_render_buffer_inherit_info_opt = secondary_render_buffer_inherit_info;
-        const size_t secondary_render_pass_index = magic_enum::enum_index(CommandBufferType::SecondaryRenderPass).value();
+        const size_t secondary_render_pass_index = magic_enum::enum_index(command_buffer_type).value();
         const bool is_secondary_command_buffer = !m_vk_command_buffer_primary_flags[secondary_render_pass_index];
         m_vk_command_buffer_begin_infos[secondary_render_pass_index] = vk::CommandBufferBeginInfo(
             is_secondary_command_buffer && secondary_render_buffer_inherit_info.renderPass
@@ -302,12 +320,12 @@ protected:
         return m_vk_device.createCommandPoolUnique(vk_command_pool_info);
     }
 
-    void InitializePrimaryCommandBuffer(const vk::CommandBufferLevel& vk_buffer_level = vk::CommandBufferLevel::ePrimary)
+    void InitializePrimaryCommandBuffer()
     {
         META_FUNCTION_TASK();
         m_vk_command_buffer_primary_flags[0] = true;
         m_vk_unique_command_buffers[0] = std::move(m_vk_device.allocateCommandBuffersUnique(
-            vk::CommandBufferAllocateInfo(m_vk_unique_command_pool.get(), vk_buffer_level, 1U)
+            vk::CommandBufferAllocateInfo(m_vk_unique_command_pool.get(), m_vk_primary_command_buffer_level, 1U)
         ).back());
 
         m_vk_unique_command_buffers[0].get().begin(m_vk_command_buffer_begin_infos[0]);
@@ -348,9 +366,10 @@ protected:
     }
 
 private:
-    vk::Device            m_vk_device;
-    vk::UniqueCommandPool m_vk_unique_command_pool;
-    bool                  m_is_native_committed = false;
+    vk::Device                   m_vk_device;
+    vk::UniqueCommandPool        m_vk_unique_command_pool;
+    bool                         m_is_native_committed = false;
+    const vk::CommandBufferLevel m_vk_primary_command_buffer_level;
 
     // Unique command buffers and corresponding begin flags are indexed by the value of CommandBufferType enum
     std::array<vk::UniqueCommandBuffer, command_buffers_count>    m_vk_unique_command_buffers;

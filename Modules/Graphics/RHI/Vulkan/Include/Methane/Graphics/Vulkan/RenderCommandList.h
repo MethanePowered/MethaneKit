@@ -63,10 +63,10 @@ public:
 
     bool IsDynamicStateSupported() const noexcept { return m_is_dynamic_state_supported; }
 
-private:
     // IRenderPassCallback
     void OnRenderPassUpdated(const Rhi::IRenderPass& render_pass) override;
 
+private:
     void UpdatePrimitiveTopology(Primitive primitive);
 
     RenderPass& GetVulkanPass();

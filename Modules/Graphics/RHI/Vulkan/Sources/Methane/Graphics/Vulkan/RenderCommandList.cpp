@@ -60,7 +60,7 @@ static vk::IndexType GetVulkanIndexTypeByStride(Data::Size index_stride_bytes)
     }
 }
 
-static vk::CommandBufferInheritanceInfo CreateRenderCommandBufferInheritanceInfo(const RenderPass& render_pass) noexcept
+static vk::CommandBufferInheritanceInfo CreateCommandBufferInheritInfo(const RenderPass& render_pass) noexcept
 {
     META_FUNCTION_TASK();
     return vk::CommandBufferInheritanceInfo(
@@ -76,7 +76,7 @@ RenderCommandList::RenderCommandList(CommandQueue& command_queue)
 { }
 
 RenderCommandList::RenderCommandList(CommandQueue& command_queue, RenderPass& render_pass)
-    : CommandList(CreateRenderCommandBufferInheritanceInfo(render_pass), command_queue, render_pass)
+    : CommandList(CreateCommandBufferInheritInfo(render_pass), command_queue, render_pass)
     , m_is_dynamic_state_supported(GetVulkanCommandQueue().GetVulkanDevice().IsDynamicStateSupported())
 {
     META_FUNCTION_TASK();
@@ -84,11 +84,10 @@ RenderCommandList::RenderCommandList(CommandQueue& command_queue, RenderPass& re
 }
 
 RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_command_list, bool is_beginning_cmd_list)
-    : CommandList(CreateRenderCommandBufferInheritanceInfo(parallel_render_command_list.GetVulkanPass()), parallel_render_command_list, is_beginning_cmd_list)
+    : CommandList(CreateCommandBufferInheritInfo(parallel_render_command_list.GetVulkanPass()), parallel_render_command_list, is_beginning_cmd_list)
     , m_is_dynamic_state_supported(GetVulkanCommandQueue().GetVulkanDevice().IsDynamicStateSupported())
 {
     META_FUNCTION_TASK();
-    static_cast<Data::IEmitter<IRenderPassCallback>&>(parallel_render_command_list.GetVulkanPass()).Connect(*this);
 }
 
 void RenderCommandList::Reset(IDebugGroup* debug_group_ptr)
@@ -193,8 +192,9 @@ void RenderCommandList::Commit()
 void RenderCommandList::OnRenderPassUpdated(const Rhi::IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
-    SetSecondaryRenderBufferInheritInfo(CreateRenderCommandBufferInheritanceInfo(static_cast<const RenderPass&>(render_pass)));
-    InitializeSecondaryCommandBuffers(IsParallel() ? 0U : 1U);
+    UpdateCommandBufferInheritInfo<CommandBufferType::SecondaryRenderPass>(
+        CreateCommandBufferInheritInfo(static_cast<const RenderPass&>(render_pass)),
+        IsParallel());
 }
 
 void RenderCommandList::UpdatePrimitiveTopology(Primitive primitive)
