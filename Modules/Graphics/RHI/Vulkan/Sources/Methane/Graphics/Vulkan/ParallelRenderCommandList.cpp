@@ -119,7 +119,7 @@ void ParallelRenderCommandList::Commit()
     const vk::CommandBuffer& vk_beginning_primary_cmd_buffer = m_beginning_command_list.GetNativeCommandBuffer(CommandBufferType::Primary);
     vk_beginning_primary_cmd_buffer.executeCommands(m_vk_parallel_sync_cmd_buffers);
 
-    RenderPass& render_pass = GetVulkanPass();
+    RenderPass& render_pass = GetVulkanRenderPass();
     render_pass.Begin(m_beginning_command_list);
 
     vk_beginning_primary_cmd_buffer.executeCommands(m_vk_parallel_pass_cmd_buffers);
@@ -160,10 +160,10 @@ CommandQueue& ParallelRenderCommandList::GetVulkanCommandQueue() noexcept
     return static_cast<class CommandQueue&>(GetCommandQueue());
 }
 
-RenderPass& ParallelRenderCommandList::GetVulkanPass() noexcept
+RenderPass& ParallelRenderCommandList::GetVulkanRenderPass() const noexcept
 {
     META_FUNCTION_TASK();
-    return static_cast<class RenderPass&>(GetPass());
+    return static_cast<class RenderPass&>(GetRenderPass());
 }
 
 Ptr<Rhi::IRenderCommandList> ParallelRenderCommandList::CreateCommandList(bool is_beginning_list)
@@ -174,7 +174,7 @@ Ptr<Rhi::IRenderCommandList> ParallelRenderCommandList::CreateCommandList(bool i
 void ParallelRenderCommandList::OnRenderPassUpdated(const Rhi::IRenderPass& render_pass)
 {
     META_FUNCTION_TASK();
-    RenderPass& vulkan_render_pass = GetVulkanPass();
+    RenderPass& vulkan_render_pass = GetVulkanRenderPass();
     m_vk_ending_inheritance_info = vk::CommandBufferInheritanceInfo(
         vulkan_render_pass.GetVulkanPattern().GetNativeRenderPass(),
         0U,

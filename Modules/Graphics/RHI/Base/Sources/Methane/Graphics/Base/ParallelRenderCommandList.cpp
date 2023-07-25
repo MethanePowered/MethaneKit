@@ -200,7 +200,7 @@ bool ParallelRenderCommandList::SetName(std::string_view name)
     return true;
 }
 
-RenderPass& ParallelRenderCommandList::GetPass()
+RenderPass& ParallelRenderCommandList::GetRenderPass() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);

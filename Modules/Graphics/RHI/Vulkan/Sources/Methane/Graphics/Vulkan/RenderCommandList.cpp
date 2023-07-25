@@ -84,7 +84,7 @@ RenderCommandList::RenderCommandList(CommandQueue& command_queue, RenderPass& re
 }
 
 RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_command_list, bool is_beginning_cmd_list)
-    : CommandList(CreateCommandBufferInheritInfo(parallel_render_command_list.GetVulkanPass()), parallel_render_command_list, is_beginning_cmd_list)
+    : CommandList(CreateCommandBufferInheritInfo(parallel_render_command_list.GetVulkanRenderPass()), parallel_render_command_list, is_beginning_cmd_list)
     , m_is_dynamic_state_supported(GetVulkanCommandQueue().GetVulkanDevice().IsDynamicStateSupported())
 {
     META_FUNCTION_TASK();

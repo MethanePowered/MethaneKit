@@ -50,20 +50,44 @@ Ptr<ICommandListSet> Rhi::ICommandListSet::Create(const Refs<ICommandList>& comm
 namespace Methane::Graphics::Vulkan
 {
 
+static Rhi::IRenderPass* GetRenderPassFromCommandList(const Rhi::ICommandList& command_list)
+{
+    META_FUNCTION_TASK();
+    const Rhi::CommandListType cmd_list_type = command_list.GetType();
+
+    switch(cmd_list_type)
+    {
+    case Rhi::CommandListType::Render:
+    {
+        const auto& render_cmd_list = dynamic_cast<const RenderCommandList&>(command_list);
+        if (render_cmd_list.HasPass())
+            return &render_cmd_list.GetRenderPass();
+    } break;
+
+    case Rhi::CommandListType::ParallelRender:
+    {
+        const auto& parallel_render_cmd_list = dynamic_cast<const ParallelRenderCommandList&>(command_list);
+        return &parallel_render_cmd_list.GetRenderPass();
+    } break;
+
+    default:
+        break;
+    }
+
+    return nullptr;
+}
+
 static vk::PipelineStageFlags GetFrameBufferRenderingWaitStages(const Refs<Rhi::ICommandList>& command_list_refs)
 {
     META_FUNCTION_TASK();
     vk::PipelineStageFlags wait_stages {};
     for(const Ref<Rhi::ICommandList>& command_list_ref : command_list_refs)
     {
-        if (command_list_ref.get().GetType() != Rhi::CommandListType::Render)
+        const Rhi::IRenderPass* render_pass_ptr = GetRenderPassFromCommandList(command_list_ref.get());
+        if (!render_pass_ptr)
             continue;
 
-        const auto& render_command_list = dynamic_cast<const RenderCommandList&>(command_list_ref.get());
-        if (!render_command_list.HasPass())
-            continue;
-
-        for(const Rhi::TextureView& attach_location : render_command_list.GetRenderPass().GetSettings().attachments)
+        for(const Rhi::TextureView& attach_location : render_pass_ptr->GetSettings().attachments)
         {
             const Rhi::TextureType attach_texture_type = attach_location.GetTexture().GetSettings().type;
             if (attach_texture_type == Rhi::TextureType::FrameBuffer)
@@ -164,7 +188,11 @@ const std::vector<vk::Semaphore>& CommandListSet::GetWaitSemaphores()
         return vk_wait_semaphores;
 
     m_vk_wait_semaphores = vk_wait_semaphores;
-    m_vk_wait_semaphores.push_back(dynamic_cast<const RenderContext&>(command_queue.GetVulkanContext()).GetNativeFrameImageAvailableSemaphore());
+    const Opt<Data::Index>& frame_index_opt = GetFrameIndex();
+    const RenderContext& render_context = dynamic_cast<const RenderContext&>(command_queue.GetVulkanContext());
+    m_vk_wait_semaphores.push_back(
+        frame_index_opt ? render_context.GetNativeFrameImageAvailableSemaphore(*frame_index_opt)
+                        : render_context.GetNativeFrameImageAvailableSemaphore());
     return m_vk_wait_semaphores;
 }
 

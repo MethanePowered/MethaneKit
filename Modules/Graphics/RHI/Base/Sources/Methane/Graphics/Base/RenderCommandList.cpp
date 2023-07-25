@@ -51,7 +51,7 @@ RenderCommandList::RenderCommandList(CommandQueue& command_queue, RenderPass& pa
 RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_command_list)
     : CommandList(static_cast<CommandQueue&>(parallel_render_command_list.GetCommandQueue()), Type::Render)
     , m_is_parallel(true)
-    , m_render_pass_ptr(parallel_render_command_list.GetPass().GetPtr<RenderPass>())
+    , m_render_pass_ptr(parallel_render_command_list.GetRenderPass().GetPtr<RenderPass>())
 { }
 
 Rhi::IRenderPass& RenderCommandList::GetRenderPass() const

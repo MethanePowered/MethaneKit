@@ -63,7 +63,7 @@ public:
 
     const Vulkan::ICommandList& GetVulkanPrimaryCommandList() const noexcept { return m_beginning_command_list; }
     CommandQueue& GetVulkanCommandQueue() noexcept;
-    RenderPass& GetVulkanPass() noexcept;
+    RenderPass& GetVulkanRenderPass() const noexcept;
 
 protected:
     // ParallelRenderCommandListBase interface
