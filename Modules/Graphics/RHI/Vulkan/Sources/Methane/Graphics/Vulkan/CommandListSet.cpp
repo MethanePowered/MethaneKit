@@ -190,7 +190,7 @@ const std::vector<vk::Semaphore>& CommandListSet::GetWaitSemaphores()
 
     m_vk_wait_semaphores = vk_wait_semaphores;
     const Opt<Data::Index>& frame_index_opt = GetFrameIndex();
-    const RenderContext& render_context = dynamic_cast<const RenderContext&>(command_queue.GetVulkanContext());
+    const auto& render_context = dynamic_cast<const RenderContext&>(command_queue.GetVulkanContext());
     m_vk_wait_semaphores.push_back(
         frame_index_opt ? render_context.GetNativeFrameImageAvailableSemaphore(*frame_index_opt)
                         : render_context.GetNativeFrameImageAvailableSemaphore());
