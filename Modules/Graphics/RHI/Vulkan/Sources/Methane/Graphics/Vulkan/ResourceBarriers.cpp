@@ -304,11 +304,12 @@ void ResourceBarriers::AddImageMemoryOwnerChangeBarrier(const Texture& texture, 
     if (family_index_before == family_index_after)
         return;
 
+    const vk::ImageLayout image_layout = IResource::GetNativeImageLayoutByResourceState(texture.GetState());
     m_vk_default_barrier.vk_image_memory_barriers.emplace_back(
         vk::AccessFlagBits::eMemoryWrite,
         vk::AccessFlagBits::eMemoryRead,
-        vk::ImageLayout::eUndefined,
-        vk::ImageLayout::eUndefined,
+        image_layout,
+        image_layout,
         family_index_before,
         family_index_after,
         texture.GetNativeImage(),
