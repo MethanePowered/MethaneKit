@@ -21,10 +21,14 @@ Base implementation of the view state interface.
 
 ******************************************************************************/
 
+#include "Methane/Data/Emitter.hpp"
+#include "Methane/Graphics/RHI/IViewState.h"
 #include <Methane/Graphics/Base/ViewState.h>
 
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
+
+#include <cassert>
 
 namespace Methane::Graphics::Base
 {
@@ -45,6 +49,20 @@ ViewState::ViewState(const Settings& settings)
     META_FUNCTION_TASK();
     Validate(settings.viewports);
     Validate(settings.scissor_rects);
+}
+
+ViewState::~ViewState()
+{
+    META_FUNCTION_TASK();
+    try
+    {
+        Data::Emitter<ICallback>::Emit(&ICallback::OnViewStateDestroyed, *this);
+    }
+    catch([[maybe_unused]] const std::exception& e)
+    {
+        META_LOG("WARNING: Unexpected error during view-state destruction: {}", e.what());
+        assert(false);
+    }
 }
 
 bool ViewState::Reset(const Settings& settings)

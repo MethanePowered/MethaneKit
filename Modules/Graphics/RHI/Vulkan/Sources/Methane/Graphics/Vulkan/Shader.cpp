@@ -286,6 +286,8 @@ vk::PipelineVertexInputStateCreateInfo Shader::GetNativeVertexInputStateCreateIn
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(GetType(), Rhi::ShaderType::Vertex);
+    std::lock_guard lock(m_mutex);
+
     if (!m_vertex_input_initialized)
         InitializeVertexInputDescriptions(program);
 

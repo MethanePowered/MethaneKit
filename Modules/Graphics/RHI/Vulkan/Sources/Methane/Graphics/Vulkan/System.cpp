@@ -143,9 +143,10 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
     // Assert on calling vkBeginCommandBuffer() on active VkCommandBuffer before it has completed. You must check command buffer fence before this call.
     //assert(callback_data_ptr->messageIdNumber == -2080204129); // VUID-vkBeginCommandBuffer-commandBuffer-00049
 
-    if (callback_data_ptr->messageIdNumber == 648835635 || // UNASSIGNED-khronos-Validation-debug-build-warning-message
-        callback_data_ptr->messageIdNumber == 767975156 || // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
-        callback_data_ptr->messageIdNumber == -400166253)  // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
+    if (callback_data_ptr->messageIdNumber == 648835635  || // UNASSIGNED-khronos-Validation-debug-build-warning-message
+        callback_data_ptr->messageIdNumber == 767975156  || // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
+        callback_data_ptr->messageIdNumber == -400166253 || // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
+        callback_data_ptr->messageIdNumber == 1630022081)   // VUID-vkCmdPipelineBarrier-dstStageMask-03937 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
         return VK_FALSE;
 
     if (callback_data_ptr->messageIdNumber == 0 && (
@@ -153,13 +154,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
         strstr(callback_data_ptr->pMessage, "terminator_CreateInstance: Failed to CreateInstance in ICD")))
         return VK_FALSE;
 
-#ifndef VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
     // Filter out validation error appeared due to missing HLSL extension for SPIRV bytecode, which can not be used because of bug in NVidia Windows drivers:
     // vkCreateShaderModule(): The SPIR-V Extension (SPV_GOOGLE_hlsl_functionality1 | SPV_GOOGLE_user_type) was declared, but none of the requirements were met to use it.
-    if (callback_data_ptr->messageIdNumber == 1028204675 && // VUID-VkShaderModuleCreateInfo-pCode-04147
-        strstr(callback_data_ptr->pMessage, "SPV_GOOGLE_"))
+    if (callback_data_ptr->messageIdNumber  == -60244330  ||// VUID-VkShaderModuleCreateInfo-pCode-08742
+        (callback_data_ptr->messageIdNumber == 1028204675 && strstr(callback_data_ptr->pMessage, "SPV_GOOGLE_")) ) // VUID-VkShaderModuleCreateInfo-pCode-04147
         return VK_FALSE;
-#endif // VK_GOOGLE_SPIRV_EXTENSIONS_ENABLED
 
 #endif // !NDEBUG
 

@@ -150,11 +150,12 @@ void ParallelRenderCommandList::SetParallelCommandListsCount(uint32_t count)
     for(uint32_t cmd_list_index = initial_count; cmd_list_index < count; ++cmd_list_index)
     {
         m_parallel_command_lists.emplace_back(std::static_pointer_cast<RenderCommandList>(CreateCommandList(false)));
-        m_parallel_command_lists.back()->SetValidationEnabled(m_is_validation_enabled);
-        m_parallel_command_lists_refs.emplace_back(*m_parallel_command_lists.back());
+        RenderCommandList& render_command_list = *m_parallel_command_lists.back();
+        render_command_list.SetValidationEnabled(m_is_validation_enabled);
+        m_parallel_command_lists_refs.emplace_back(render_command_list);
         if (!name.empty())
         {
-            m_parallel_command_lists.back()->SetName(GetThreadCommandListName(name, cmd_list_index));
+            render_command_list.SetName(GetThreadCommandListName(name, cmd_list_index));
         }
     }
 }
@@ -199,7 +200,7 @@ bool ParallelRenderCommandList::SetName(std::string_view name)
     return true;
 }
 
-RenderPass& ParallelRenderCommandList::GetPass()
+RenderPass& ParallelRenderCommandList::GetRenderPass() const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);

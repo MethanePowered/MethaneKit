@@ -361,7 +361,7 @@ bool Texture::SetName(std::string_view name)
 void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_cp_upload_resource, "Only ForImage textures support data upload from CPU.");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_cp_upload_resource, "Only Image textures support data upload from CPU.");
 
     Base::Texture::SetData(target_cmd_queue, sub_resources);
 

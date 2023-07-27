@@ -26,18 +26,27 @@ Base implementation of the view state interface.
 #include "Object.h"
 
 #include <Methane/Graphics/RHI/IViewState.h>
+#include <Methane/Data/Emitter.hpp>
 
 namespace Methane::Graphics::Base
 {
 
 class RenderCommandList;
 
-class ViewState
+class ViewState // NOSONAR - class requires destructor
     : public Rhi::IViewState
+    , public Data::Emitter<Rhi::IViewStateCallback>
     , public std::enable_shared_from_this<ViewState>
 {
 public:
     explicit ViewState(const Settings& settings);
+    ~ViewState() override;
+
+    ViewState(const ViewState&) = delete;
+    ViewState(ViewState&&) noexcept = delete;
+
+    ViewState& operator=(const ViewState&) = delete;
+    ViewState& operator=(ViewState&&) noexcept = delete;
 
     // IViewState overrides
     Ptr<Rhi::IViewState> GetPtr() final                  { return shared_from_this(); }

@@ -91,6 +91,7 @@ ViewState::ViewState(const Settings& settings)
     : Base::ViewState(settings)
     , m_vk_viewports(ViewportsToVulkan(settings.viewports))
     , m_vk_scissor_rects(ScissorRectsToVulkan(settings.scissor_rects))
+    , m_vk_viewport_state_info({}, m_vk_viewports, m_vk_scissor_rects)
 { }
 
 bool ViewState::Reset(const Settings& settings)
@@ -99,8 +100,11 @@ bool ViewState::Reset(const Settings& settings)
     if (!Base::ViewState::Reset(settings))
         return false;
 
-    m_vk_viewports     = ViewportsToVulkan(settings.viewports);
-    m_vk_scissor_rects = ScissorRectsToVulkan(settings.scissor_rects);
+    m_vk_viewports           = ViewportsToVulkan(settings.viewports);
+    m_vk_scissor_rects       = ScissorRectsToVulkan(settings.scissor_rects);
+    m_vk_viewport_state_info = vk::PipelineViewportStateCreateInfo({}, m_vk_viewports, m_vk_scissor_rects);
+
+    Data::Emitter<ICallback>::Emit(&ICallback::OnViewStateChanged, *this);
     return true;
 }
 
@@ -111,6 +115,9 @@ bool ViewState::SetViewports(const Viewports& viewports)
         return false;
 
     m_vk_viewports = ViewportsToVulkan(GetSettings().viewports);
+    m_vk_viewport_state_info.setViewports(m_vk_viewports);
+
+    Data::Emitter<ICallback>::Emit(&ICallback::OnViewStateChanged, *this);
     return true;
 }
 
@@ -121,13 +128,20 @@ bool ViewState::SetScissorRects(const ScissorRects& scissor_rects)
         return false;
 
     m_vk_scissor_rects = ScissorRectsToVulkan(GetSettings().scissor_rects);
+    m_vk_viewport_state_info.setScissors(m_vk_scissor_rects);
+
+    Data::Emitter<ICallback>::Emit(&ICallback::OnViewStateChanged, *this);
     return true;
 }
 
 void ViewState::Apply(Base::RenderCommandList& command_list)
 {
     META_FUNCTION_TASK();
-    const vk::CommandBuffer& vk_command_buffer = static_cast<RenderCommandList&>(command_list).GetNativeCommandBufferDefault();
+    const auto& vulkan_command_list = static_cast<RenderCommandList&>(command_list);
+    if (!vulkan_command_list.IsDynamicStateSupported())
+        return;
+
+    const vk::CommandBuffer& vk_command_buffer = vulkan_command_list.GetNativeCommandBufferDefault();
     vk_command_buffer.setViewportWithCountEXT(m_vk_viewports);
     vk_command_buffer.setScissorWithCountEXT(m_vk_scissor_rects);
 }

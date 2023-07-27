@@ -388,6 +388,11 @@ struct Rect
         return std::tie(origin, size) != std::tie(other.origin, other.size);
     }
 
+    bool operator<(const Rect& other) const noexcept
+    {
+        return std::tie(origin, size) < std::tie(other.origin, other.size);
+    }
+
     template<typename M>
     std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator*(M multiplier) const noexcept(std::is_unsigned_v<M>)
     {

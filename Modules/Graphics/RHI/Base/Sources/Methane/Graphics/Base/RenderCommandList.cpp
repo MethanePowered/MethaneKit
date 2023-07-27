@@ -51,7 +51,7 @@ RenderCommandList::RenderCommandList(CommandQueue& command_queue, RenderPass& pa
 RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_command_list)
     : CommandList(static_cast<CommandQueue&>(parallel_render_command_list.GetCommandQueue()), Type::Render)
     , m_is_parallel(true)
-    , m_render_pass_ptr(parallel_render_command_list.GetPass().GetPtr<RenderPass>())
+    , m_render_pass_ptr(parallel_render_command_list.GetRenderPass().GetPtr<RenderPass>())
 { }
 
 Rhi::IRenderPass& RenderCommandList::GetRenderPass() const
@@ -68,7 +68,7 @@ void RenderCommandList::Reset(IDebugGroup* debug_group_ptr)
     if (m_render_pass_ptr)
     {
         META_LOG("{}", static_cast<std::string>(m_render_pass_ptr->GetPattern().GetSettings()));
-        m_drawing_state.render_pass_attachments_ptr = m_render_pass_ptr->GetNonFrameBufferAttachmentTextures();
+        m_drawing_state.render_pass_attachment_ptrs = m_render_pass_ptr->GetNonFrameBufferAttachmentTextures();
     }
 }
 
@@ -111,13 +111,16 @@ void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::Ren
     changed_states |= ~m_drawing_state.render_state_groups;
 
     auto& render_state_base = static_cast<RenderState&>(render_state);
-    render_state_base.Apply(*this, changed_states & state_groups);
+    if (!render_state_base.IsDeferred())
+    {
+        render_state_base.Apply(*this, changed_states & state_groups);
+    }
 
     Ptr<Object> render_state_object_ptr = render_state_base.GetBasePtr();
     m_drawing_state.render_state_ptr = std::static_pointer_cast<RenderState>(render_state_object_ptr);
     m_drawing_state.render_state_groups |= state_groups;
 
-    if (render_state_changed)
+    if (render_state_changed && !render_state_base.IsDeferred())
     {
         RetainResource(render_state_object_ptr);
     }
@@ -129,17 +132,16 @@ void RenderCommandList::SetViewState(Rhi::IViewState& view_state)
     VerifyEncodingState();
 
     DrawingState& drawing_state = GetDrawingState();
-    const ViewState* p_prev_view_state = drawing_state.view_state_ptr;
-    drawing_state.view_state_ptr = static_cast<ViewState*>(&view_state);
-
-    if (p_prev_view_state && p_prev_view_state->GetSettings() == view_state.GetSettings())
+    if (drawing_state.view_state_ptr && drawing_state.view_state_ptr->GetSettings() == view_state.GetSettings())
     {
         META_LOG("{} Command list '{}' view state is already set up", magic_enum::enum_name(GetType()), GetName());
         return;
     }
 
     META_LOG("{} Command list '{}' SET VIEW STATE:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(drawing_state.view_state_ptr->GetSettings()));
+    drawing_state.view_state_ptr = static_cast<ViewState*>(&view_state);
     drawing_state.view_state_ptr->Apply(*this);
+    drawing_state.changes |= DrawingState::Change::ViewState;
 }
 
 bool RenderCommandList::SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool set_resource_barriers)
@@ -266,7 +268,7 @@ void RenderCommandList::ResetCommandState()
 
     CommandList::ResetCommandState();
 
-    m_drawing_state.render_pass_attachments_ptr.clear();
+    m_drawing_state.render_pass_attachment_ptrs.clear();
     m_drawing_state.render_state_ptr.reset();
     m_drawing_state.vertex_buffer_set_ptr.reset();
     m_drawing_state.index_buffer_ptr.reset();
@@ -280,11 +282,27 @@ void RenderCommandList::UpdateDrawingState(Primitive primitive_type)
 {
     META_FUNCTION_TASK();
     DrawingState& drawing_state = GetDrawingState();
-    if (drawing_state.primitive_type_opt && *drawing_state.primitive_type_opt == primitive_type)
-        return;
+    if (!drawing_state.primitive_type_opt || *drawing_state.primitive_type_opt == primitive_type)
+    {
+        drawing_state.changes |= DrawingState::Change::PrimitiveType;
+        drawing_state.primitive_type_opt = primitive_type;
+    }
 
-    drawing_state.changes |= DrawingState::Change::PrimitiveType;
-    drawing_state.primitive_type_opt = primitive_type;
+    if (m_drawing_state.render_state_ptr &&
+        m_drawing_state.render_state_ptr->IsDeferred() &&
+        (static_cast<bool>(m_drawing_state.render_state_groups) ||
+         drawing_state.changes.HasAnyBit(DrawingState::Change::PrimitiveType) ||
+         drawing_state.changes.HasAnyBit(DrawingState::Change::ViewState)))
+    {
+        // Apply render state in deferred mode right before the Draw call,
+        // only in case when any render state groups or view state or primitive type has changed
+        m_drawing_state.render_state_ptr->Apply(*this, m_drawing_state.render_state_groups);
+        RetainResource(m_drawing_state.render_state_ptr);
+
+        m_drawing_state.render_state_groups = {};
+        drawing_state.changes.SetBitOff(DrawingState::Change::PrimitiveType);
+        drawing_state.changes.SetBitOff(DrawingState::Change::ViewState);
+    }
 }
 
 void RenderCommandList::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, uint32_t draw_vertex_count) const

@@ -178,7 +178,7 @@ static Ptr<ResourceView::ViewDescriptorVariant> CreateNativeImageViewDescriptor(
                                       view_id.subresource_count.GetBaseLayerCount())
         ));
 
-    const std::string view_name = fmt::format("{} ForImage View for {} usage", texture_name, Data::GetEnumMaskName(view_id.usage));
+    const std::string view_name = fmt::format("{} Image View for {} usage", texture_name, Data::GetEnumMaskName(view_id.usage));
     SetVulkanObjectName(vk_device, image_view_desc.vk_view.get(), view_name.c_str());
 
     image_view_desc.vk_desc = vk::DescriptorImageInfo(

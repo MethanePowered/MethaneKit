@@ -73,7 +73,7 @@ public:
     // IObject interface
     bool SetName(std::string_view name) override;
 
-    RenderPass& GetPass();
+    RenderPass& GetRenderPass() const;
 
 protected:
     static std::string GetParallelCommandListDebugName(std::string_view base_name, std::string_view suffix);
