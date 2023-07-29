@@ -105,12 +105,13 @@ private:
     void ResetNativeSwapchain();
     void ResetNativeObjectNames() const;
 
-    const vk::Device m_vk_device;
+    const Methane::Platform::AppEnvironment m_app_env;
+    const vk::Device                        m_vk_device;
 #ifdef __APPLE__
     // MacOS metal app view with swap-chain implementation to work via MoltenVK
     AppViewMetal* m_metal_view;
 #endif
-    const vk::UniqueSurfaceKHR             m_vk_unique_surface;
+    vk::UniqueSurfaceKHR                   m_vk_unique_surface;
     vk::UniqueSwapchainKHR                 m_vk_unique_swapchain;
     vk::Format                             m_vk_frame_format;
     vk::Extent2D                           m_vk_frame_extent;

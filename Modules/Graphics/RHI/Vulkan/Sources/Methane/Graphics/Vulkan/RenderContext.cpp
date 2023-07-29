@@ -37,7 +37,6 @@ Vulkan implementation of the render context interface.
 #include <Methane/Graphics/Vulkan/Platform.h>
 #include <Methane/Graphics/Vulkan/Types.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>
-
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
@@ -52,6 +51,7 @@ namespace Methane::Graphics::Vulkan
 RenderContext::RenderContext(const Methane::Platform::AppEnvironment& app_env, Device& device,
                                  tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
     : Context<Base::RenderContext>(device, parallel_executor, settings)
+    , m_app_env(app_env)
     , m_vk_device(device.GetNativeDevice())
     , m_vk_unique_surface(Platform::CreateVulkanSurfaceForWindow(static_cast<System&>(Rhi::ISystem::Get()).GetNativeInstance(), app_env))
 { }
@@ -237,14 +237,31 @@ uint32_t RenderContext::GetNextFrameBufferIndex()
 {
     META_FUNCTION_TASK();
     uint32_t next_image_index = 0;
-    const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[Base::RenderContext::GetFrameBufferIndex()].get();
-    if (const vk::Result image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(), vk_image_available_semaphore, {}, &next_image_index);
-        image_acquire_result != vk::Result::eSuccess &&
-        image_acquire_result != vk::Result::eSuboptimalKHR)
-        throw InvalidArgumentException<vk::Result>("RenderContext::GetNextFrameBufferIndex", "image_acquire_result", image_acquire_result, "failed to acquire next image");
+    const uint32_t frame_semaphore_index = Base::RenderContext::GetFrameIndex() % m_vk_frame_semaphores_pool.size();
+    const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[frame_semaphore_index].get();
 
-    m_vk_frame_image_available_semaphores[next_image_index % m_vk_frame_image_available_semaphores.size()] = vk_image_available_semaphore;
-    return next_image_index % Base::RenderContext::GetSettings().frame_buffers_count;
+    switch (const vk::Result image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(),
+                                                                                    vk_image_available_semaphore, {}, &next_image_index);
+            image_acquire_result)
+    {
+    case vk::Result::eSuccess:
+    case vk::Result::eSuboptimalKHR:
+        break;
+
+    case vk::Result::eErrorSurfaceLostKHR:
+        m_vk_unique_surface.release();
+        m_vk_unique_surface = Platform::CreateVulkanSurfaceForWindow(static_cast<System&>(Rhi::ISystem::Get()).GetNativeInstance(), m_app_env);
+        ResetNativeSwapchain();
+        break;
+
+    default:
+        throw InvalidArgumentException<vk::Result>("RenderContext::GetNextFrameBufferIndex", "image_acquire_result",
+                                                   image_acquire_result, "failed to acquire next image");
+    }
+
+    const uint32_t next_frame_index = next_image_index % Base::RenderContext::GetSettings().frame_buffers_count;
+    m_vk_frame_image_available_semaphores[next_frame_index] = vk_image_available_semaphore;
+    return next_frame_index;
 }
 
 vk::SurfaceFormatKHR RenderContext::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const
@@ -323,9 +340,9 @@ void RenderContext::InitializeNativeSwapchain()
     }
 
     const Device::SwapChainSupport swap_chain_support  = GetVulkanDevice().GetSwapChainSupportForSurface(GetNativeSurface());
-    const vk::SurfaceFormatKHR       swap_surface_format = ChooseSwapSurfaceFormat(swap_chain_support.formats);
-    const vk::PresentModeKHR         swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
-    const vk::Extent2D               swap_extent         = ChooseSwapExtent(swap_chain_support.capabilities);
+    const vk::SurfaceFormatKHR     swap_surface_format = ChooseSwapSurfaceFormat(swap_chain_support.formats);
+    const vk::PresentModeKHR       swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
+    const vk::Extent2D             swap_extent         = ChooseSwapExtent(swap_chain_support.capabilities);
 
     uint32_t image_count = std::max(swap_chain_support.capabilities.minImageCount, GetSettings().frame_buffers_count);
     if (swap_chain_support.capabilities.maxImageCount && image_count > swap_chain_support.capabilities.maxImageCount)
