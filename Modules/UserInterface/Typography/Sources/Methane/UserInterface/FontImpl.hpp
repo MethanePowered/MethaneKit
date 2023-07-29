@@ -31,6 +31,7 @@ Font implementation.
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/Texture.h>
+#include <Methane/Graphics/RHI/ObjectName.hpp>
 #include <Methane/Graphics/Rect.hpp>
 #include <Methane/Data/IProvider.h>
 #include <Methane/Data/Emitter.hpp>
@@ -497,7 +498,7 @@ private:
                                    rhi::TextureSettings::ForImage(
                                        gfx::Dimensions(m_atlas_pack_ptr->GetSize()),
                                        std::nullopt, gfx::PixelFormat::R8Unorm, false));
-        atlas_texture.SetName(fmt::format("{} Font Atlas", m_settings.description.name));
+        SetObjectName(atlas_texture, "{} Font Atlas", m_settings.description.name);
         if (deferred_data_init)
         {
             render_context.RequestDeferredAction(rhi::IContext::DeferredAction::CompleteInitialization);

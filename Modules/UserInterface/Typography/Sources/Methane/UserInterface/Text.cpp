@@ -40,6 +40,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/Program.h>
+#include <Methane/Graphics/RHI/ObjectName.hpp>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/EnumMask.hpp>
 #include <Methane/Data/Emitter.hpp>
@@ -190,7 +191,7 @@ public:
             const Data::Size vertex_buffer_size = vertices_data_size * reservation_multiplier;
             rhi::Buffer      vertex_buffer;
             vertex_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForVertexBuffer(vertex_buffer_size, text_mesh.GetVertexSize()));
-            vertex_buffer.SetName(fmt::format("{} Text Vertex Buffer {}", text_name, m_frame_index));
+            SetObjectName(vertex_buffer, "{} Text Vertex Buffer {}", text_name, m_frame_index);
             m_vertex_buffer_set = rhi::BufferSet(rhi::BufferType::Vertex, { vertex_buffer });
         }
         m_vertex_buffer_set[0].SetData(render_context.GetRenderCommandKit().GetQueue(), {
@@ -208,7 +209,7 @@ public:
         {
             const Data::Size index_buffer_size = vertices_data_size * reservation_multiplier;
             m_index_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForIndexBuffer(index_buffer_size, gfx::PixelFormat::R16Uint));
-            m_index_buffer.SetName(fmt::format("{} Text Index Buffer {}", text_name, m_frame_index));
+            SetObjectName(m_index_buffer, "{} Text Index Buffer {}", text_name, m_frame_index);
         }
 
         m_index_buffer.SetData(render_context.GetRenderCommandKit().GetQueue(), {
@@ -241,7 +242,7 @@ public:
         if (!m_uniforms_buffer.IsInitialized())
         {
             m_uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size));
-            m_uniforms_buffer.SetName(fmt::format("{} Text Uniforms Buffer {}", text_name, m_frame_index));
+            SetObjectName(m_uniforms_buffer, "{} Text Uniforms Buffer {}", text_name, m_frame_index);
 
             if (m_program_bindings.IsInitialized())
             {
@@ -271,7 +272,7 @@ public:
             { { rhi::ShaderType::Pixel,  "g_texture" },   { { m_atlas_texture.GetInterface() } } },
             { { rhi::ShaderType::Pixel,  "g_sampler" },   { { atlas_sampler.GetInterface() } } },
         });
-        m_program_bindings.SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
+        SetObjectName(m_program_bindings, "{} Text Bindings {}", text_name, m_frame_index);
     }
 };
 
@@ -655,7 +656,7 @@ private:
         if (!m_const_buffer.IsInitialized())
         {
             m_const_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(static_cast<Data::Size>(sizeof(hlslpp::TextConstants))));
-            m_const_buffer.SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
+            SetObjectName(m_const_buffer, "{} Text Constants Buffer", m_settings.name);
         }
 
         const rhi::Texture& atlas_texture = m_font.GetAtlasTexture(render_context);

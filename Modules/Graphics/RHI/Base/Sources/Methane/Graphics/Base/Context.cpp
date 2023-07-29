@@ -26,8 +26,8 @@ Base implementation of the context interface.
 #include <Methane/Graphics/Base/CommandQueue.h>
 #include <Methane/Graphics/Base/CommandKit.h>
 #include <Methane/Graphics/RHI/IDescriptorManager.h>
-
 #include <Methane/Graphics/RHI/ICommandKit.h>
+#include <Methane/Graphics/RHI/ObjectName.hpp>
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
@@ -164,7 +164,7 @@ void Context::Initialize(Device& device, bool is_callback_emitted)
     if (const std::string_view context_name = GetName();
         !context_name.empty())
     {
-        m_device_ptr->SetName(fmt::format("{} Device", context_name));
+        SetObjectName(*m_device_ptr, "{} Device", context_name);
     }
 
     if (is_callback_emitted)
@@ -181,7 +181,7 @@ Rhi::ICommandKit& Context::GetDefaultCommandKit(Rhi::CommandListType type) const
         return *cmd_kit_ptr;
 
     cmd_kit_ptr = Rhi::ICommandKit::Create(*this, type);
-    cmd_kit_ptr->SetName(fmt::format("{} {}", GetName(), g_default_command_kit_names[magic_enum::enum_index(type).value()]));
+    SetObjectName(*cmd_kit_ptr, "{} {}", GetName(), g_default_command_kit_names[magic_enum::enum_index(type).value()]);
 
     m_default_command_kit_ptr_by_queue[std::addressof(cmd_kit_ptr->GetQueue())] = cmd_kit_ptr;
     return *cmd_kit_ptr;
@@ -232,11 +232,11 @@ bool Context::SetName(std::string_view name)
     if (!Object::SetName(name))
         return false;
 
-    GetBaseDevice().SetName(fmt::format("{} Device", name));
+    SetObjectName(GetBaseDevice(), "{} Device", name);
     for(const Ptr<Rhi::ICommandKit>& cmd_kit_ptr : m_default_command_kit_ptrs)
     {
         if (cmd_kit_ptr)
-            cmd_kit_ptr->SetName(fmt::format("{} {}", name, g_default_command_kit_names[magic_enum::enum_index(cmd_kit_ptr->GetListType()).value()]));
+            SetObjectName(*cmd_kit_ptr, "{} {}", name, g_default_command_kit_names[magic_enum::enum_index(cmd_kit_ptr->GetListType()).value()]);
     }
     return true;
 }

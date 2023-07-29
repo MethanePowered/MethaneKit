@@ -87,7 +87,7 @@ public:
         for (HelloTriangleFrame& frame : GetFrames())
         {
             frame.render_cmd_list = cmd_queue.CreateRenderCommandList(frame.screen_pass);
-            frame.render_cmd_list.SetName(IndexedName("Render Triangle", frame.index));
+            rhi::SetObjectName(frame.render_cmd_list, "Render Triangle {}", frame.index);
             frame.execute_cmd_list_set = Rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
         }
 

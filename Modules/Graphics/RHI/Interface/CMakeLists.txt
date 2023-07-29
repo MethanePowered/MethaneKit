@@ -38,6 +38,7 @@ list(APPEND HEADERS
     ${INCLUDE_DIR}/IParallelRenderCommandList.h
     ${INCLUDE_DIR}/IQueryPool.h
     ${INCLUDE_DIR}/IDescriptorManager.h
+    ${INCLUDE_DIR}/ObjectName.hpp
     ${INCLUDE_DIR}/TypeFormatters.hpp
 )
 

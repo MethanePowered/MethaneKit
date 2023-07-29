@@ -24,7 +24,7 @@ Methane graphics utils for Vulkan API.
 #pragma once
 
 #include <Methane/Instrumentation.h>
-
+#include <Methane/Platform/Utils.h>
 #include <vulkan/vulkan.hpp>
 
 #include <stdint.h>
@@ -36,6 +36,7 @@ template<typename VulkanObjectType>
 void SetVulkanObjectName(const vk::Device& vk_device, const VulkanObjectType& vk_object, const char* name)
 {
     META_FUNCTION_TASK();
+    Methane::Platform::PrintToDebugOutput(name);
     vk_device.setDebugUtilsObjectNameEXT(
         vk::DebugUtilsObjectNameInfoEXT(
             VulkanObjectType::objectType,

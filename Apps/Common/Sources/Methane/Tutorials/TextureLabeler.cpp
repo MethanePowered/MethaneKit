@@ -26,6 +26,7 @@ Renders text labels to the faces of cube-map texture array
 #include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
+#include <Methane/Graphics/RHI/ObjectName.hpp>
 #include <Methane/UserInterface/Context.h>
 #include <Methane/UserInterface/FontLibrary.h>
 #include <Methane/UserInterface/Text.h>
@@ -101,7 +102,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
         });
 
     const std::string_view rt_texture_name = m_rt_texture.GetName();
-    m_texture_face_render_pattern.SetName(fmt::format("Texture '{}' Face Render Pattern", rt_texture_name));
+    SetObjectName(m_texture_face_render_pattern, "Texture '{}' Face Render Pattern", rt_texture_name);
 
     gui::Text::SettingsUtf32 slice_text_settings
     {
@@ -136,10 +137,10 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
                 { rhi::TextureView(rt_texture.GetInterface(), rhi::SubResource::Index(depth_index, array_index), {}, rhi::TextureDimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
-            slice.render_pass.SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));
+            SetObjectName(slice.render_pass, "Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index);
 
             slice.render_cmd_list = m_gui_context.GetRenderCommandQueue().CreateRenderCommandList(slice.render_pass);
-            slice.render_cmd_list.SetName(fmt::format("Render Texture '{}' Slice {}:{} Label", rt_texture_name, array_index, depth_index));
+            SetObjectName(slice.render_cmd_list, "Render Texture '{}' Slice {}:{} Label", rt_texture_name, array_index, depth_index);
             slice_render_cmd_list_refs.emplace_back(slice.render_cmd_list.GetInterface());
 
             slice_text_settings.name = fmt::format("Texture '{}' Slice {}:{} Label Text", rt_texture_name, array_index, depth_index);
@@ -173,7 +174,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
         });
         m_ending_render_pass = m_ending_render_pattern.CreateRenderPass({ { }, rt_texture_settings.dimensions.AsRectSize() });
         m_ending_render_cmd_list = m_gui_context.GetRenderCommandQueue().CreateRenderCommandList(m_ending_render_pass);
-        m_ending_render_cmd_list.SetName(fmt::format("Render Texture State Transition", rt_texture_name));
+        SetObjectName(m_ending_render_cmd_list, "Render Texture State Transition", rt_texture_name);
         m_ending_resource_barriers = rhi::ResourceBarriers({
             { m_rt_texture.GetInterface(), rhi::ResourceState::RenderTarget, rt_texture_final_state }
         });

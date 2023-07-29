@@ -34,6 +34,7 @@ Screen Quad rendering primitive.
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/RHI/ProgramBindings.h>
+#include <Methane/Graphics/RHI/ObjectName.hpp>
 #include <Methane/Graphics/QuadMesh.hpp>
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Data/AppResourceProviders.h>
@@ -154,7 +155,7 @@ public:
                     }),
                 render_pattern
             };
-            state_settings.program.SetName(fmt::format("{} Shading", quad_name));
+            SetObjectName(state_settings.program, "{} Shading", quad_name);
             state_settings.depth.enabled                                        = false;
             state_settings.depth.write_enabled                                  = false;
             state_settings.rasterizer.is_front_counter_clockwise                = true;
@@ -193,7 +194,7 @@ public:
                 render_context.GetObjectRegistry().AddGraphicsObject(m_texture_sampler.GetInterface());
             }
 
-            m_texture.SetName(fmt::format("{} Screen-Quad Texture", m_settings.name));
+            SetObjectName(m_texture, "{} Screen-Quad Texture", m_settings.name);
         }
 
         static const std::string s_vertex_buffer_name = "Screen-Quad Vertex Buffer";
@@ -241,7 +242,7 @@ public:
 
         m_const_buffer = render_context.CreateBuffer(
             Rhi::BufferSettings::ForConstantBuffer(static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants))));
-        m_const_buffer.SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
+        SetObjectName(m_const_buffer, "{} Screen-Quad Constants Buffer", m_settings.name);
 
         Rhi::ProgramBindings::ResourceViewsByArgument program_binding_resource_views = {
             { { Rhi::ShaderType::Pixel, "g_constants" }, { { m_const_buffer.GetInterface() } } }
@@ -254,7 +255,7 @@ public:
         }
 
         m_const_program_bindings = m_render_state.GetProgram().CreateBindings(program_binding_resource_views);
-        m_const_program_bindings.SetName(fmt::format("{} Screen-Quad Constant Bindings", m_settings.name));
+        SetObjectName(m_const_program_bindings, "{} Screen-Quad Constant Bindings", m_settings.name);
 
         UpdateConstantsBuffer();
     }

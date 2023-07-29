@@ -26,6 +26,7 @@ Mesh buffers with texture extension structure.
 #include "MeshBuffersBase.h"
 
 #include <Methane/Graphics/RHI/Texture.h>
+#include <Methane/Graphics/RHI/ObjectName.hpp>
 #include <Methane/Graphics/UberMesh.hpp>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/AlignedAllocator.hpp>
@@ -195,7 +196,7 @@ public:
         SetSubsetTexture(texture, 0U);
         if (texture.IsInitialized())
         {
-            texture.SetName(fmt::format("{} Texture", MeshBuffers<UniformsType>::GetMeshName()));
+            SetObjectName(texture, "{} Texture", MeshBuffers<UniformsType>::GetMeshName());
         }
     }
     
