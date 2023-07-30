@@ -107,9 +107,14 @@ bool BufferSettings::operator!=(const BufferSettings& other) const
 
 Data::Size BufferSettings::GetAlignedSize(Data::Size size) noexcept
 {
+#ifdef METHANE_GFX_DIRECTX
     // Aligned size must be a multiple 256 bytes
-    static constexpr uint32_t s_data_placement_minus_one = s_data_alignment - 1;
-    return (size + s_data_placement_minus_one) & ~s_data_placement_minus_one;
+    constexpr Data::Size data_alignment = 256U;
+    constexpr uint32_t data_placement_minus_one = data_alignment - 1;
+    return (size + data_placement_minus_one) & ~data_placement_minus_one;
+#else
+    return size;
+#endif
 }
 
 } // namespace Methane::Graphics::Rhi
