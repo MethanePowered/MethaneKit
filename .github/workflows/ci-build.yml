@@ -257,7 +257,7 @@ jobs:
         path: ${{ env.INSTALL_DIR }}/Tests/*_result.xml
 
     - name: Upload Test Results and Build Log to Testspace server
-      if: ${{ is_origin_repository && matrix.run_tests && (success() || failure()) }}
+      if: ${{ env.is_origin_repository && matrix.run_tests && (success() || failure()) }}
       run: testspace "[ ${{ matrix.name }} ]${{ env.INSTALL_DIR }}/Tests/*_result.xml" "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
     - name: Add README and BUILD files
@@ -302,7 +302,7 @@ jobs:
 
     - name: Update Badge Parameters
       id: badge-params
-      if: ${{ is_origin_repository && github.event_name == 'push' && always() }}
+      if: ${{ env.is_origin_repository && github.event_name == 'push' && always() }}
       shell: bash
       run: |
         case "${{ job.status }}" in
@@ -325,7 +325,7 @@ jobs:
         esac
 
     - name: Update Badge JSON
-      if: ${{ is_origin_repository && github.event_name == 'push' && always() }}
+      if: ${{ env.is_origin_repository && github.event_name == 'push' && always() }}
       uses: schneegans/dynamic-badges-action@v1.6.0 # https://github.com/marketplace/actions/dynamic-badges
       with:
         auth: ${{ secrets.GIST_TOKEN }}
