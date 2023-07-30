@@ -21,6 +21,12 @@ Methane global solution/workspace options, which must be set from root CMakeList
 
 *****************************************************************************]]
 
+if (METHANE_MEMORY_SANITIZER_ENABLED)
+    # Add compiler and linker options globally for all modules
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+endif()
+
 if(WIN32)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -49,7 +55,7 @@ elseif(APPLE)
     endif()
 
     # Set OS deployment target minimum version
-    if(DEPLOYMENT_TARGET)
+    if (DEPLOYMENT_TARGET)
         set(CMAKE_OSX_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}")
     else()
         set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0")

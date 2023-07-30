@@ -77,6 +77,7 @@ option(METHANE_ITT_METADATA_ENABLED         "Enable ITT metadata for tasks and e
 option(METHANE_GPU_INSTRUMENTATION_ENABLED  "Enable GPU instrumentation to collect command list execution timings" OFF)
 option(METHANE_TRACY_PROFILING_ENABLED      "Enable realtime profiling with Tracy" OFF)
 option(METHANE_TRACY_PROFILING_ON_DEMAND    "Enable Tracy data collection on demand, after client connection" OFF)
+option(METHANE_MEMORY_SANITIZER_ENABLED     "Enable memory address sanitizer in compiler and linker" OFF)
 
 # Platform dependent options
 if(APPLE)
