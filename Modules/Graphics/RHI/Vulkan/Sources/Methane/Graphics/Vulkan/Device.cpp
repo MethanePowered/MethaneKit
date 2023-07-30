@@ -208,7 +208,7 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     , m_vk_physical_device(vk_physical_device)
     , m_supported_extension_names_storage(GetDeviceSupportedExtensionNames(vk_physical_device))
     , m_supported_extension_names_set(m_supported_extension_names_storage.begin(), m_supported_extension_names_storage.end())
-    , m_is_dynamic_state_supported(false) //IsExtensionSupported(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME))
+    , m_is_dynamic_state_supported(IsExtensionSupported(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME))
     , m_vk_queue_family_properties(vk_physical_device.getQueueFamilyProperties())
 {
     META_FUNCTION_TASK();
