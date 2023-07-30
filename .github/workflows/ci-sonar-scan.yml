@@ -47,6 +47,7 @@ env:
 jobs:
   sonar_scan:
     name: ${{ matrix.name }}
+    if: ${{ github.repository == 'MethanePowered/MethaneKit' }}
 
     strategy:
       fail-fast: false

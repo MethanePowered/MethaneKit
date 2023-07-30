@@ -34,6 +34,7 @@ env:
   product_ver_patch: 2
   product_ver_build: ${{ github.run_number }}
   tracy_release_version: "0.9.1"
+  is_origin_repository: ${{ github.repository == 'MethanePowered/MethaneKit' }}
   # TSC Invariant check is disabled to allow running Catch test executables only for tests list query by CTest
   TRACY_NO_INVARIANT_CHECK: 1
 
@@ -187,6 +188,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Install Testspace
+      if: ${{ env.is_origin_repository }}
       uses: testspace-com/setup-testspace@v1
       with:
         domain: ${{ github.repository_owner }}
@@ -255,7 +257,7 @@ jobs:
         path: ${{ env.INSTALL_DIR }}/Tests/*_result.xml
 
     - name: Upload Test Results and Build Log to Testspace server
-      if: ${{ matrix.run_tests && (success() || failure()) }}
+      if: ${{ is_origin_repository && matrix.run_tests && (success() || failure()) }}
       run: testspace "[ ${{ matrix.name }} ]${{ env.INSTALL_DIR }}/Tests/*_result.xml" "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
     - name: Add README and BUILD files
@@ -300,7 +302,7 @@ jobs:
 
     - name: Update Badge Parameters
       id: badge-params
-      if: ${{ github.event_name == 'push' && always() }}
+      if: ${{ is_origin_repository && github.event_name == 'push' && always() }}
       shell: bash
       run: |
         case "${{ job.status }}" in
@@ -323,7 +325,7 @@ jobs:
         esac
 
     - name: Update Badge JSON
-      if: ${{ github.event_name == 'push' && always() }}
+      if: ${{ is_origin_repository && github.event_name == 'push' && always() }}
       uses: schneegans/dynamic-badges-action@v1.6.0 # https://github.com/marketplace/actions/dynamic-badges
       with:
         auth: ${{ secrets.GIST_TOKEN }}
