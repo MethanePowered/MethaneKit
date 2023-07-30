@@ -419,7 +419,9 @@ void RenderContext::ResetNativeObjectNames() const
     if (context_name.empty())
         return;
 
-    SetVulkanObjectName(m_vk_device, m_vk_unique_surface.get(), context_name.data());
+    // NOTE: Do not set name of the m_vk_unique_surface because it was not created with m_vk_device,
+    // and attempt to set name of the unrelated object may cause crash on some platforms (SIGSEGV on Linux).
+    SetVulkanObjectName(m_vk_device, m_vk_unique_swapchain.get(), context_name);
 
     uint32_t frame_index = 0u;
     for (const vk::UniqueSemaphore& vk_unique_frame_semaphore : m_vk_frame_semaphores_pool)
@@ -427,8 +429,8 @@ void RenderContext::ResetNativeObjectNames() const
         if (!vk_unique_frame_semaphore)
             continue;
 
-        const std::string frame_semaphore_name = fmt::format("{} Frame {} Image Available", GetName(), frame_index);
-        SetVulkanObjectName(m_vk_device, vk_unique_frame_semaphore.get(), frame_semaphore_name.c_str());
+        SetVulkanObjectName(m_vk_device, vk_unique_frame_semaphore.get(),
+                            fmt::format("{} Frame {} Image Available", context_name, frame_index));
         frame_index++;
     }
 }

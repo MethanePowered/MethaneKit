@@ -210,7 +210,7 @@ public:
             frame.program_bindings = m_render_state.GetProgram().CreateBindings({
                 { { Rhi::ShaderType::Vertex, "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } }
             }, frame.index);
-            rhi::SetObjectName(frame.program_bindings, "Cube Bindings {} {}", frame.index);
+            rhi::SetObjectName(frame.program_bindings, "Cube Bindings {}", frame.index);
 #else
             // Create vertex buffers for each frame
             Rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true));

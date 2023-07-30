@@ -243,13 +243,13 @@ void ShadowCubeApp::Init()
         frame.shadow_pass.cube.program_bindings = shadow_state_settings.program.CreateBindings({
             { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.uniforms_buffer.GetInterface() } } },
         }, frame.index);
-        rhi::SetObjectName(frame.shadow_pass.cube.program_bindings, "Cube Shadow-Pass Bindings {} {}", frame.index);
+        rhi::SetObjectName(frame.shadow_pass.cube.program_bindings, "Cube Shadow-Pass Bindings {}", frame.index);
 
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.program_bindings = shadow_state_settings.program.CreateBindings({
             { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer.GetInterface() } } },
         }, frame.index);
-        rhi::SetObjectName(frame.shadow_pass.floor.program_bindings, "Floor Shadow-Pass Bindings {} {}", frame.index);
+        rhi::SetObjectName(frame.shadow_pass.floor.program_bindings, "Floor Shadow-Pass Bindings {}", frame.index);
 
         // Create depth texture for shadow map rendering
         frame.shadow_pass.rt_texture = render_context.CreateTexture(shadow_texture_settings);
@@ -285,14 +285,14 @@ void ShadowCubeApp::Init()
             { { rhi::ShaderType::Pixel,  "g_texture"        }, { { m_cube_buffers_ptr->GetTexture().GetInterface()       } } },
             { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, { { m_texture_sampler.GetInterface()                      } } },
         }, frame.index);
-        rhi::SetObjectName(frame.final_pass.cube.program_bindings, "Cube Final-Pass Bindings {} {}", frame.index);
+        rhi::SetObjectName(frame.final_pass.cube.program_bindings, "Cube Final-Pass Bindings {}", frame.index);
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.program_bindings = rhi::ProgramBindings(frame.final_pass.cube.program_bindings, {
             { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.floor.uniforms_buffer.GetInterface() } } },
             { { rhi::ShaderType::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexture().GetInterface()      } } },
         }, frame.index);
-        rhi::SetObjectName(frame.final_pass.floor.program_bindings, "Floor Final-Pass Bindings {} {}", frame.index);
+        rhi::SetObjectName(frame.final_pass.floor.program_bindings, "Floor Final-Pass Bindings {}", frame.index);
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.
         frame.final_pass.rt_texture  = frame.screen_texture;

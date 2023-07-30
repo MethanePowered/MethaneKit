@@ -187,7 +187,7 @@ void CubeMapArrayApp::Init()
 
         // Resource bindings for Sky-Box rendering
         frame.sky_box.program_bindings = m_sky_box.CreateProgramBindings(frame.sky_box.uniforms_buffer, frame.index);
-        rhi::SetObjectName(frame.sky_box.program_bindings, "Space Sky-Box Bindings {} {}", frame.index);
+        rhi::SetObjectName(frame.sky_box.program_bindings, "Space Sky-Box Bindings {}", frame.index);
         
         // Create command list for rendering
         frame.render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
