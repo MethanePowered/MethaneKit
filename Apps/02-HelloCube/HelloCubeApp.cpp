@@ -204,23 +204,23 @@ public:
 #ifdef UNIFORMS_BUFFER_ENABLED
             // Create uniforms buffer with volatile parameters for frame rendering
             frame.uniforms_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
-            rhi::SetObjectName(frame.uniforms_buffer, "Uniforms Buffer {}", frame.index);
+            frame.uniforms_buffer.SetName(fmt::format("Uniforms Buffer {}", frame.index));
 
             // Configure program resource bindings
             frame.program_bindings = m_render_state.GetProgram().CreateBindings({
                 { { Rhi::ShaderType::Vertex, "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } }
             }, frame.index);
-            rhi::SetObjectName(frame.program_bindings, "Cube Bindings {}", frame.index);
+            frame.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
 #else
             // Create vertex buffers for each frame
             Rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true));
-            rhi::SetObjectName(vertex_buffer, "Cube Vertex Buffer {}", frame.index);
+            vertex_buffer.SetName(fmt::format("Cube Vertex Buffer {}", frame.index));
             frame.vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
 #endif
 
             // Create command list for rendering
             frame.render_cmd_list = m_render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
-            rhi::SetObjectName(frame.render_cmd_list, "Cube Rendering {}", frame.index);
+            frame.render_cmd_list.SetName(fmt::format("Cube Rendering {}", frame.index));
             frame.execute_cmd_list_set = Rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
         }
 

@@ -25,7 +25,6 @@ Mesh buffers base implementation class.
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/ParallelRenderCommandList.h>
-#include <Methane/Graphics/RHI/ObjectName.hpp>
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Instrumentation.h>
 
@@ -53,7 +52,7 @@ MeshBuffersBase::MeshBuffersBase(const Rhi::CommandQueue& render_cmd_queue, cons
         Rhi::BufferSettings::ForVertexBuffer(
             mesh_data.GetVertexDataSize(),
             mesh_data.GetVertexSize()));
-    SetObjectName(vertex_buffer, "{} Vertex Buffer", mesh_name);
+    vertex_buffer.SetName(fmt::format("{} Vertex Buffer", mesh_name));
     vertex_buffer.SetData(render_cmd_queue, {
         mesh_data.GetVertexData(),
         mesh_data.GetVertexDataSize()
@@ -64,7 +63,7 @@ MeshBuffersBase::MeshBuffersBase(const Rhi::CommandQueue& render_cmd_queue, cons
         Rhi::BufferSettings::ForIndexBuffer(
             mesh_data.GetIndexDataSize(),
             GetIndexFormat(mesh_data.GetIndex(0))));
-    SetObjectName(m_index_buffer, "{} Index Buffer", mesh_name);
+    m_index_buffer.SetName(fmt::format("{} Index Buffer", mesh_name));
     m_index_buffer.SetData(render_cmd_queue, {
         reinterpret_cast<Data::ConstRawPtr>(mesh_data.GetIndices().data()), // NOSONAR
         mesh_data.GetIndexDataSize()

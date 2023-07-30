@@ -24,7 +24,7 @@ Methane graphics utils for Vulkan API.
 #pragma once
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Platform/Utils.h>
+
 #include <vulkan/vulkan.hpp>
 
 #include <stdint.h>

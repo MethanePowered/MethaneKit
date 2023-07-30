@@ -32,7 +32,6 @@ Methane command kit implementation.
 #include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Graphics/RHI/ICommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/ITransferCommandList.h>
-#include <Methane/Graphics/RHI/ObjectName.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -88,20 +87,20 @@ bool CommandKit::SetName(std::string_view name)
         return false;
 
     if (m_cmd_queue_ptr)
-        SetObjectName(*m_cmd_queue_ptr, "{} Command Queue", GetName());
+        m_cmd_queue_ptr->SetName(fmt::format("{} Command Queue", GetName()));
 
     for(size_t cmd_list_index = 0; cmd_list_index < m_cmd_list_ptrs.size(); ++cmd_list_index)
     {
         const Ptr<Rhi::ICommandList>& cmd_list_ptr = m_cmd_list_ptrs[cmd_list_index];
         if (cmd_list_ptr)
-            SetObjectName(*cmd_list_ptr, "{} Command List {}", GetName(), cmd_list_index);
+            cmd_list_ptr->SetName(fmt::format("{} Command List {}", GetName(), cmd_list_index));
     }
 
     for(size_t fence_index = 0; fence_index < m_fence_ptrs.size(); ++fence_index)
     {
         const Ptr<Rhi::IFence>& fence_ptr = m_fence_ptrs[fence_index];
         if (fence_ptr)
-            SetObjectName(*fence_ptr, "{} Fence {}", GetName(), fence_index);
+            fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_index));
     }
 
     return true;
@@ -114,7 +113,7 @@ Rhi::ICommandQueue& CommandKit::GetQueue() const
         return *m_cmd_queue_ptr;
 
     m_cmd_queue_ptr = Rhi::ICommandQueue::Create(m_context, m_cmd_list_type);
-    SetObjectName(*m_cmd_queue_ptr, "{} Command Queue", GetName());
+    m_cmd_queue_ptr->SetName(fmt::format("{} Command Queue", GetName()));
     return *m_cmd_queue_ptr;
 }
 
@@ -152,7 +151,7 @@ Rhi::ICommandList& CommandKit::GetList(Rhi::CommandListId cmd_list_id = 0U) cons
     default: META_UNEXPECTED_ARG(m_cmd_list_type);
     }
 
-    SetObjectName(*cmd_list_ptr, "{} Helper List {}", GetName(), GetCommandListNameById(cmd_list_id));
+    cmd_list_ptr->SetName(fmt::format("{} Helper List {}", GetName(), GetCommandListNameById(cmd_list_id)));
     return *cmd_list_ptr;
 }
 
@@ -215,7 +214,7 @@ Rhi::IFence& CommandKit::GetFence(Rhi::CommandListId fence_id) const
         return *fence_ptr;
 
     fence_ptr = Rhi::IFence::Create(GetQueue());
-    SetObjectName(*fence_ptr, "{} Fence {}", GetName(), fence_id);
+    fence_ptr->SetName(fmt::format("{} Fence {}", GetName(), fence_id));
     return *fence_ptr;
 }
 
