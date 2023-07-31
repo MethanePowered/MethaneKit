@@ -54,7 +54,6 @@ struct BufferSettings
     PixelFormat       data_format;
     BufferStorageMode storage_mode = BufferStorageMode::Managed;
 
-    [[nodiscard]] static Data::Size     GetAlignedSize(Data::Size size) noexcept;
     [[nodiscard]] static BufferSettings ForVertexBuffer(Data::Size size, Data::Size stride, bool is_volatile = false);
     [[nodiscard]] static BufferSettings ForIndexBuffer(Data::Size size, PixelFormat format, bool is_volatile = false);
     [[nodiscard]] static BufferSettings ForConstantBuffer(Data::Size size, bool addressable = false, bool is_volatile = false);

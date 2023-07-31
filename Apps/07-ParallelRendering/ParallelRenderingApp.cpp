@@ -187,7 +187,7 @@ void ParallelRenderingApp::Init()
 
     // Create frame buffer resources
     const Data::Size uniforms_data_size = m_cube_array_buffers_ptr->GetUniformsBufferSize();
-    const Data::Size uniform_data_size = MeshBuffers::GetAlignedUniformSize();
+    const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
     tf::Taskflow program_bindings_task_flow;
     for(ParallelRenderingFrame& frame : GetFrames())
     {
@@ -210,8 +210,8 @@ void ParallelRenderingApp::Init()
                 rhi::ProgramBindings& cube_program_bindings = frame.cubes_array.program_bindings_per_instance[cube_index];
                 cube_program_bindings = rhi::ProgramBindings(frame.cubes_array.program_bindings_per_instance[0], {
                     {
-                      { rhi::ShaderType::All, "g_uniforms" },
-                      { { frame.cubes_array.uniforms_buffer.GetInterface(), m_cube_array_buffers_ptr->GetUniformsBufferOffset(cube_index), uniform_data_size } }
+                        { rhi::ShaderType::All, "g_uniforms" },
+                        { { frame.cubes_array.uniforms_buffer.GetInterface(), m_cube_array_buffers_ptr->GetUniformsBufferOffset(cube_index), uniform_data_size } }
                     }
                 }, frame.index);
                 cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));

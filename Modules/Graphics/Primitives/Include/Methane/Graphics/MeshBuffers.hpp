@@ -89,9 +89,9 @@ public:
     }
 
     [[nodiscard]]
-    static constexpr Data::Size GetAlignedUniformSize() noexcept
+    static constexpr Data::Size GetUniformSize() noexcept
     {
-        return Rhi::BufferSettings::GetAlignedSize(static_cast<Data::Size>(sizeof(UniformsType)));
+        return static_cast<Data::Size>(sizeof(UniformsType));
     }
 
     [[nodiscard]]
@@ -101,7 +101,7 @@ public:
         if (m_final_pass_instance_uniforms.empty())
             return 0U;
         
-        return Rhi::BufferSettings::GetAlignedSize(static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0])));
+        return static_cast<Data::Size>(m_final_pass_instance_uniforms.size() * sizeof(m_final_pass_instance_uniforms[0]));
     }
 
     [[nodiscard]]
