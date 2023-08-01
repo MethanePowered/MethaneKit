@@ -128,11 +128,16 @@ void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& complet
     META_FUNCTION_TASK();
     Base::CommandListSet::Execute(completed_callback);
 
+    const std::vector<vk::Semaphore>& wait_semaphores = GetWaitSemaphores();
+    const std::vector<vk::PipelineStageFlags>& wait_stages = GetWaitStages();
     vk::SubmitInfo submit_info(
-        GetWaitSemaphores(),
-        GetWaitStages(),
-        m_vk_command_buffers,
-        GetNativeExecutionCompletedSemaphore()
+        static_cast<uint32_t>(wait_semaphores.size()),
+        wait_semaphores.empty() ? nullptr : wait_semaphores.data(),
+        wait_stages.data(),
+        static_cast<uint32_t>(m_vk_command_buffers.size()),
+        m_vk_command_buffers.data(),
+        1U,
+        &GetNativeExecutionCompletedSemaphore()
     );
     
     Opt<vk::TimelineSemaphoreSubmitInfo> vk_timeline_submit_info_opt;
@@ -189,11 +194,14 @@ const std::vector<vk::Semaphore>& CommandListSet::GetWaitSemaphores()
         return vk_wait_semaphores;
 
     m_vk_wait_semaphores = vk_wait_semaphores;
+
     const Opt<Data::Index>& frame_index_opt = GetFrameIndex();
     const auto& render_context = dynamic_cast<const RenderContext&>(command_queue.GetVulkanContext());
-    m_vk_wait_semaphores.push_back(
-        frame_index_opt ? render_context.GetNativeFrameImageAvailableSemaphore(*frame_index_opt)
-                        : render_context.GetNativeFrameImageAvailableSemaphore());
+    const vk::Semaphore& frame_image_available_semaphore = frame_index_opt ? render_context.GetNativeFrameImageAvailableSemaphore(*frame_index_opt)
+                                                                           : render_context.GetNativeFrameImageAvailableSemaphore();
+    if (frame_image_available_semaphore)
+        m_vk_wait_semaphores.push_back(frame_image_available_semaphore);
+
     return m_vk_wait_semaphores;
 }
 

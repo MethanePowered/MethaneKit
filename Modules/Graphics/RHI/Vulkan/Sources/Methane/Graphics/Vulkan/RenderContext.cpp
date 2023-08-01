@@ -116,7 +116,6 @@ void RenderContext::Initialize(Base::Device& device, bool is_callback_emitted)
     META_FUNCTION_TASK();
     SetDevice(device);
     InitializeNativeSwapchain();
-    UpdateFrameBufferIndex();
     Context<Base::RenderContext>::Initialize(device, is_callback_emitted);
 }
 
@@ -236,12 +235,34 @@ const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore() cons
 uint32_t RenderContext::GetNextFrameBufferIndex()
 {
     META_FUNCTION_TASK();
-    uint32_t next_image_index = 0;
-    const uint32_t frame_semaphore_index = Base::RenderContext::GetFrameIndex() % m_vk_frame_semaphores_pool.size();
-    const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[frame_semaphore_index].get();
+    const uint32_t frame_sync_index = Base::RenderContext::GetFrameIndex() % m_frame_sync_pool.size();
+    const uint32_t await_sync_index = (frame_sync_index + 1U) % m_frame_sync_pool.size();
 
+    // Wait for the rendering of the frame [N - FBC] (where FBC is Frame Buffers Count) to be completed,
+    // which is accomplished by waiting for the next frame image availability [N - FBC - 1]
+    // or simply [N + 1] in the FBC ring buffer
+    if (FrameSync& await_frame_sync = m_frame_sync_pool[await_sync_index];
+        await_frame_sync.is_submitted)
+    {
+        if (m_vk_device.getFenceStatus(await_frame_sync.vk_unique_fence.get()) == vk::Result::eNotReady)
+        {
+            const vk::Result wait_result = m_vk_device.waitForFences(await_frame_sync.vk_unique_fence.get(), true, std::numeric_limits<uint64_t>::max());
+            META_CHECK_ARG_EQUAL_DESCR(wait_result, vk::Result::eSuccess, "failed to wait for frame synchronization fence (-N-1)");
+        }
+        m_vk_device.resetFences(await_frame_sync.vk_unique_fence.get());
+        await_frame_sync.is_submitted = false;
+    }
+
+    FrameSync& curr_frame_sync = m_frame_sync_pool[frame_sync_index];
+    if (curr_frame_sync.is_submitted)
+        return GetFrameBufferIndex();
+
+    // Acquire next frame image with signalling GPU semaphore and CPU fence when image will be acquired
+    uint32_t   next_image_index = 0;
     switch (const vk::Result image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(),
-                                                                                    vk_image_available_semaphore, {}, &next_image_index);
+                                                                                    curr_frame_sync.vk_unique_semaphore.get(),
+                                                                                    curr_frame_sync.vk_unique_fence.get(),
+                                                                                    &next_image_index);
             image_acquire_result)
     {
     case vk::Result::eSuccess:
@@ -260,7 +281,9 @@ uint32_t RenderContext::GetNextFrameBufferIndex()
     }
 
     const uint32_t next_frame_index = next_image_index % Base::RenderContext::GetSettings().frame_buffers_count;
-    m_vk_frame_image_available_semaphores[next_frame_index] = vk_image_available_semaphore;
+    m_vk_frame_image_available_semaphores[next_frame_index] = curr_frame_sync.vk_unique_semaphore.get();
+    curr_frame_sync.is_submitted = true;
+
     return next_frame_index;
 }
 
@@ -376,17 +399,29 @@ void RenderContext::InitializeNativeSwapchain()
 
     // Create frame semaphores in pool
     const uint32_t frame_buffers_count = GetSettings().frame_buffers_count;
-    m_vk_frame_semaphores_pool.resize(frame_buffers_count);
-    for(vk::UniqueSemaphore& vk_unique_frame_semaphore : m_vk_frame_semaphores_pool)
+    m_frame_sync_pool.resize(frame_buffers_count);
+    for(FrameSync& frame_sync : m_frame_sync_pool)
     {
-        if (vk_unique_frame_semaphore)
-            continue;
+        if (!frame_sync.vk_unique_semaphore)
+            frame_sync.vk_unique_semaphore = m_vk_device.createSemaphoreUnique(vk::SemaphoreCreateInfo());
 
-        vk_unique_frame_semaphore = m_vk_device.createSemaphoreUnique(vk::SemaphoreCreateInfo());
+        if (!frame_sync.vk_unique_fence)
+            frame_sync.vk_unique_fence = m_vk_device.createFenceUnique(vk::FenceCreateInfo());
+
+        frame_sync.is_submitted = false;
     }
 
     // Image available semaphores are assigned from frame semaphores in GetNextFrameBufferIndex
     m_vk_frame_image_available_semaphores.resize(frame_buffers_count);
+
+    // Acquire first image from swapchain
+    const vk::UniqueFence first_image_fence = m_vk_device.createFenceUnique(vk::FenceCreateInfo());
+    const vk::ResultValue<uint32_t> first_image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(), {}, first_image_fence.get());
+    META_CHECK_ARG_EQUAL_DESCR(first_image_acquire_result.result, vk::Result::eSuccess, "failed to acquire first image of the just created swapchain");
+    InvalidateFrameBufferIndex(first_image_acquire_result.value);Improv
+
+    const vk::Result wait_first_image_result = m_vk_device.waitForFences(first_image_fence.get(), true, std::numeric_limits<uint64_t>::max());
+    META_CHECK_ARG_EQUAL_DESCR(wait_first_image_result, vk::Result::eSuccess, "failed to wait for acquiring first image of the just created swapchain");
 
     ResetNativeObjectNames();
 
@@ -398,7 +433,7 @@ void RenderContext::ReleaseNativeSwapchainResources()
     META_FUNCTION_TASK();
     WaitForGpu(WaitFor::RenderComplete);
 
-    m_vk_frame_semaphores_pool.clear();
+    m_frame_sync_pool.clear();
     m_vk_frame_image_available_semaphores.clear();
     m_vk_frame_images.clear();
     m_vk_unique_swapchain.reset();
@@ -424,13 +459,16 @@ void RenderContext::ResetNativeObjectNames() const
     SetVulkanObjectName(m_vk_device, m_vk_unique_swapchain.get(), context_name);
 
     uint32_t frame_index = 0u;
-    for (const vk::UniqueSemaphore& vk_unique_frame_semaphore : m_vk_frame_semaphores_pool)
+    for (const FrameSync& frame_sync : m_frame_sync_pool)
     {
-        if (!vk_unique_frame_semaphore)
-            continue;
+        if (!frame_sync.vk_unique_semaphore)
+            SetVulkanObjectName(m_vk_device, frame_sync.vk_unique_semaphore.get(),
+                                fmt::format("{} Frame {} Image Available Semaphore", context_name, frame_index));
 
-        SetVulkanObjectName(m_vk_device, vk_unique_frame_semaphore.get(),
-                            fmt::format("{} Frame {} Image Available", context_name, frame_index));
+        if (!frame_sync.vk_unique_fence)
+            SetVulkanObjectName(m_vk_device, frame_sync.vk_unique_fence.get(),
+                                fmt::format("{} Frame {} Image Available Fence", context_name, frame_index));
+
         frame_index++;
     }
 }

@@ -105,6 +105,13 @@ private:
     void ResetNativeSwapchain();
     void ResetNativeObjectNames() const;
 
+    struct FrameSync
+    {
+        vk::UniqueSemaphore vk_unique_semaphore;
+        vk::UniqueFence     vk_unique_fence;
+        bool                is_submitted = false;
+    };
+
     const Methane::Platform::AppEnvironment m_app_env;
     const vk::Device                        m_vk_device;
 #ifdef __APPLE__
@@ -116,7 +123,7 @@ private:
     vk::Format                             m_vk_frame_format;
     vk::Extent2D                           m_vk_frame_extent;
     std::vector<vk::Image>                 m_vk_frame_images;
-    std::vector<vk::UniqueSemaphore>       m_vk_frame_semaphores_pool;
+    std::vector<FrameSync>                 m_frame_sync_pool;
     std::vector<vk::Semaphore>             m_vk_frame_image_available_semaphores;
     mutable std::deque<vk::UniquePipeline> m_vk_deferred_release_pipelines;
 };
