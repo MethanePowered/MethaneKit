@@ -418,7 +418,7 @@ void RenderContext::InitializeNativeSwapchain()
     const vk::UniqueFence first_image_fence = m_vk_device.createFenceUnique(vk::FenceCreateInfo());
     const vk::ResultValue<uint32_t> first_image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(), {}, first_image_fence.get());
     META_CHECK_ARG_EQUAL_DESCR(first_image_acquire_result.result, vk::Result::eSuccess, "failed to acquire first image of the just created swapchain");
-    InvalidateFrameBufferIndex(first_image_acquire_result.value);Improv
+    InvalidateFrameBufferIndex(first_image_acquire_result.value);
 
     const vk::Result wait_first_image_result = m_vk_device.waitForFences(first_image_fence.get(), true, std::numeric_limits<uint64_t>::max());
     META_CHECK_ARG_EQUAL_DESCR(wait_first_image_result, vk::Result::eSuccess, "failed to wait for acquiring first image of the just created swapchain");

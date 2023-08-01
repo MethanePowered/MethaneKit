@@ -133,18 +133,18 @@ void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& complet
     vk::SubmitInfo submit_info(
         static_cast<uint32_t>(wait_semaphores.size()),
         wait_semaphores.empty() ? nullptr : wait_semaphores.data(),
-        wait_stages.data(),
+        wait_stages.empty()     ? nullptr : wait_stages.data(),
         static_cast<uint32_t>(m_vk_command_buffers.size()),
         m_vk_command_buffers.data(),
         1U,
-        &GetNativeExecutionCompletedSemaphore()
+        &m_vk_unique_execution_completed_semaphore.get()
     );
     
     Opt<vk::TimelineSemaphoreSubmitInfo> vk_timeline_submit_info_opt;
     if (const std::vector<uint64_t>& vk_wait_values = CommandListSet::GetWaitValues();
         !vk_wait_values.empty())
     {
-        META_CHECK_ARG_EQUAL(vk_wait_values.size(), submit_info.waitSemaphoreCount);
+        META_CHECK_ARG_EQUAL(vk_wait_values.size(), wait_semaphores.size());
         vk_timeline_submit_info_opt.emplace(vk_wait_values);
         submit_info.setPNext(&vk_timeline_submit_info_opt.value());
     }
@@ -226,7 +226,7 @@ const std::vector<uint64_t>& CommandListSet::GetWaitValues()
     META_CHECK_ARG_EQUAL(wait_before_exec.wait_values.size(), wait_before_exec.semaphores.size());
 
     const std::vector<uint64_t>& vk_wait_values = wait_before_exec.wait_values;
-    if (!m_vk_wait_frame_buffer_rendering_on_stages || vk_wait_values.empty())
+    if (!m_vk_wait_frame_buffer_rendering_on_stages)
         return vk_wait_values;
 
     m_vk_wait_values = vk_wait_values;
