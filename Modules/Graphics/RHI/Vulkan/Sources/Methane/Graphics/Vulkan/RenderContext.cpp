@@ -219,6 +219,12 @@ const vk::Image& RenderContext::GetNativeFrameImage(uint32_t frame_buffer_index)
     return m_vk_frame_images[frame_buffer_index];
 }
 
+const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore() const
+{
+    META_FUNCTION_TASK();
+    return GetNativeFrameImageAvailableSemaphore(GetFrameBufferIndex());
+}
+
 const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore(uint32_t frame_buffer_index) const
 {
     META_FUNCTION_TASK();
@@ -226,10 +232,10 @@ const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore(uint32
     return m_vk_frame_image_available_semaphores[frame_buffer_index];
 }
 
-const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore() const
+const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore(Opt<uint32_t> frame_buffer_index_opt) const
 {
-    META_FUNCTION_TASK();
-    return GetNativeFrameImageAvailableSemaphore(GetFrameBufferIndex());
+    return frame_buffer_index_opt ? GetNativeFrameImageAvailableSemaphore(*frame_buffer_index_opt)
+                                  : GetNativeFrameImageAvailableSemaphore();
 }
 
 uint32_t RenderContext::GetNextFrameBufferIndex()

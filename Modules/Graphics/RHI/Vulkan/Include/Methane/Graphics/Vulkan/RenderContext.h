@@ -87,8 +87,9 @@ public:
     const vk::Extent2D&     GetNativeFrameExtent() const noexcept { return m_vk_frame_extent; }
     vk::Format              GetNativeFrameFormat() const noexcept { return m_vk_frame_format; }
     const vk::Image&        GetNativeFrameImage(uint32_t frame_buffer_index) const;
-    const vk::Semaphore&    GetNativeFrameImageAvailableSemaphore(uint32_t frame_buffer_index) const;
     const vk::Semaphore&    GetNativeFrameImageAvailableSemaphore() const;
+    const vk::Semaphore&    GetNativeFrameImageAvailableSemaphore(uint32_t frame_buffer_index) const;
+    const vk::Semaphore&    GetNativeFrameImageAvailableSemaphore(Opt<uint32_t> frame_buffer_index_opt) const;
 
     void DeferredRelease(vk::UniquePipeline&& pipeline) const { m_vk_deferred_release_pipelines.emplace_back(std::move(pipeline)); }
 

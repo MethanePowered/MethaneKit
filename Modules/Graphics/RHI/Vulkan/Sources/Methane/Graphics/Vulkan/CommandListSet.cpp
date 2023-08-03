@@ -128,43 +128,27 @@ void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& complet
     META_FUNCTION_TASK();
     Base::CommandListSet::Execute(completed_callback);
 
-    const std::vector<vk::Semaphore>& wait_semaphores = GetWaitSemaphores();
-    const std::vector<vk::PipelineStageFlags>& wait_stages = GetWaitStages();
-    vk::SubmitInfo submit_info(
-        static_cast<uint32_t>(wait_semaphores.size()),
-        wait_semaphores.empty() ? nullptr : wait_semaphores.data(),
-        wait_stages.empty()     ? nullptr : wait_stages.data(),
-        static_cast<uint32_t>(m_vk_command_buffers.size()),
-        m_vk_command_buffers.data(),
-        1U,
-        &m_vk_unique_execution_completed_semaphore.get()
-    );
-    
-    Opt<vk::TimelineSemaphoreSubmitInfo> vk_timeline_submit_info_opt;
-    if (const std::vector<uint64_t>& vk_wait_values = CommandListSet::GetWaitValues();
-        !vk_wait_values.empty())
+    SubmitInfo submit_info = GetSubmitInfo();
+    if (submit_info.second.waitSemaphoreValueCount || submit_info.second.signalSemaphoreValueCount)
     {
-        META_CHECK_ARG_EQUAL(vk_wait_values.size(), wait_semaphores.size());
-        vk_timeline_submit_info_opt.emplace(vk_wait_values);
-        submit_info.setPNext(&vk_timeline_submit_info_opt.value());
+        submit_info.first.setPNext(&submit_info.second);
     }
 
-    std::scoped_lock fence_guard(m_vk_unique_execution_completed_fence_mutex);
-    const vk::Fence& vk_fence = GetNativeExecutionCompletedFence();
+    std::scoped_lock fence_guard(m_execution_completed_fence_mutex);
     if (m_signalled_execution_completed_fence)
     {
         // Do not reset not-signalled fence to workaround crash in validation layer on MacOS
         // https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/4974
-        m_vk_device.resetFences(vk_fence);
+        m_vk_device.resetFences(m_vk_unique_execution_completed_fence.get());
     }
-    GetVulkanCommandQueue().GetNativeQueue().submit(submit_info, vk_fence);
+    GetVulkanCommandQueue().GetNativeQueue().submit(submit_info.first, m_vk_unique_execution_completed_fence.get());
     m_signalled_execution_completed_fence = true;
 }
 
 void CommandListSet::WaitUntilCompleted()
 {
     META_FUNCTION_TASK();
-    std::scoped_lock fence_guard(m_vk_unique_execution_completed_fence_mutex);
+    std::scoped_lock fence_guard(m_execution_completed_fence_mutex);
     const vk::Result execution_completed_fence_wait_result = m_vk_device.waitForFences(
         GetNativeExecutionCompletedFence(),
         true, std::numeric_limits<uint64_t>::max()
@@ -185,53 +169,50 @@ const CommandQueue& CommandListSet::GetVulkanCommandQueue() const noexcept
     return static_cast<const CommandQueue&>(GetBaseCommandQueue());
 }
 
-const std::vector<vk::Semaphore>& CommandListSet::GetWaitSemaphores()
-{
-    META_FUNCTION_TASK();
-    const CommandQueue& command_queue = GetVulkanCommandQueue();
-    const std::vector<vk::Semaphore>& vk_wait_semaphores = command_queue.GetWaitBeforeExecuting().semaphores;
-    if (!m_vk_wait_frame_buffer_rendering_on_stages)
-        return vk_wait_semaphores;
-
-    m_vk_wait_semaphores = vk_wait_semaphores;
-
-    const Opt<Data::Index>& frame_index_opt = GetFrameIndex();
-    const auto& render_context = dynamic_cast<const RenderContext&>(command_queue.GetVulkanContext());
-    const vk::Semaphore& frame_image_available_semaphore = frame_index_opt ? render_context.GetNativeFrameImageAvailableSemaphore(*frame_index_opt)
-                                                                           : render_context.GetNativeFrameImageAvailableSemaphore();
-    if (frame_image_available_semaphore)
-        m_vk_wait_semaphores.push_back(frame_image_available_semaphore);
-
-    return m_vk_wait_semaphores;
-}
-
-const std::vector<vk::PipelineStageFlags>& CommandListSet::GetWaitStages()
-{
-    META_FUNCTION_TASK();
-    const CommandQueue& command_queue = GetVulkanCommandQueue();
-    const std::vector<vk::PipelineStageFlags>& vk_wait_stages = command_queue.GetWaitBeforeExecuting().stages;
-    if (!m_vk_wait_frame_buffer_rendering_on_stages)
-        return vk_wait_stages;
-
-    m_vk_wait_stages = vk_wait_stages;
-    m_vk_wait_stages.push_back(m_vk_wait_frame_buffer_rendering_on_stages);
-    return m_vk_wait_stages;
-}
-
-const std::vector<uint64_t>& CommandListSet::GetWaitValues()
+CommandListSet::SubmitInfo CommandListSet::GetSubmitInfo()
 {
     META_FUNCTION_TASK();
     const CommandQueue& command_queue = GetVulkanCommandQueue();
     const CommandQueue::WaitInfo& wait_before_exec = command_queue.GetWaitBeforeExecuting();
-    META_CHECK_ARG_EQUAL(wait_before_exec.wait_values.size(), wait_before_exec.semaphores.size());
+    META_CHECK_ARG_EQUAL(wait_before_exec.values.size(), wait_before_exec.semaphores.size());
 
-    const std::vector<uint64_t>& vk_wait_values = wait_before_exec.wait_values;
-    if (!m_vk_wait_frame_buffer_rendering_on_stages)
-        return vk_wait_values;
+    const std::vector<vk::Semaphore>&          vk_wait_semaphores = m_vk_wait_frame_buffer_rendering_on_stages ? m_vk_wait_semaphores : wait_before_exec.semaphores;
+    const std::vector<uint64_t>&               vk_wait_values     = m_vk_wait_frame_buffer_rendering_on_stages ? m_vk_wait_values     : wait_before_exec.values;
+    const std::vector<vk::PipelineStageFlags>& vk_wait_stages     = m_vk_wait_frame_buffer_rendering_on_stages ? m_vk_wait_stages     : wait_before_exec.stages;
 
-    m_vk_wait_values = vk_wait_values;
-    m_vk_wait_values.push_back(0U);
-    return m_vk_wait_values;
+    if (m_vk_wait_frame_buffer_rendering_on_stages)
+    {
+        m_vk_wait_semaphores = wait_before_exec.semaphores;
+        m_vk_wait_values     = wait_before_exec.values;
+        m_vk_wait_stages     = wait_before_exec.stages;
+
+        const auto& render_context = dynamic_cast<const RenderContext&>(command_queue.GetVulkanContext());
+        const vk::Semaphore& frame_image_available_semaphore = render_context.GetNativeFrameImageAvailableSemaphore(GetFrameIndex());
+        if (frame_image_available_semaphore)
+        {
+            m_vk_wait_semaphores.push_back(frame_image_available_semaphore);
+            m_vk_wait_values.push_back(0U);
+            m_vk_wait_stages.push_back(m_vk_wait_frame_buffer_rendering_on_stages);
+        }
+    }
+
+    SubmitInfo submit_info;
+    submit_info.first = vk::SubmitInfo(
+        static_cast<uint32_t>(vk_wait_semaphores.size()),
+        vk_wait_semaphores.empty() ? nullptr : vk_wait_semaphores.data(),
+        vk_wait_stages.empty()     ? nullptr : vk_wait_stages.data(),
+        static_cast<uint32_t>(m_vk_command_buffers.size()),
+        m_vk_command_buffers.data(),
+        1U,
+        &m_vk_unique_execution_completed_semaphore.get()
+    );
+
+    if (!vk_wait_values.empty())
+    {
+        submit_info.second = vk::TimelineSemaphoreSubmitInfo(vk_wait_values);
+    }
+
+    return submit_info;
 }
 
 void CommandListSet::OnObjectNameChanged(Rhi::IObject& object, const std::string& old_name)
