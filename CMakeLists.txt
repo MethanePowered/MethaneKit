@@ -123,6 +123,8 @@ message(STATUS "METHANE applications build....................... ${METHANE_APPS
 message(STATUS "METHANE tests build.............................. ${METHANE_TESTS_BUILD_ENABLED}")
 message(STATUS "METHANE tests running during build............... ${METHANE_RUN_TESTS_DURING_BUILD}")
 message(STATUS "METHANE runtime validation checks................ ${METHANE_CHECKS_ENABLED}")
+message(STATUS "METHANE unity build.............................. ${METHANE_UNITY_BUILD_ENABLED}")
+message(STATUS "METHANE code coverage............................ ${METHANE_CODE_COVERAGE_ENABLED}")
 message(STATUS "METHANE debug logging............................ ${METHANE_LOGGING_ENABLED}")
 message(STATUS "METHANE command list debug groups................ ${METHANE_COMMAND_DEBUG_GROUPS_ENABLED}")
 message(STATUS "METHANE shaders code symbols..................... ${METHANE_SHADERS_CODEVIEW_ENABLED}")
@@ -133,6 +135,7 @@ message(STATUS "METHANE ITT metadata............................. ${METHANE_ITT_
 message(STATUS "METHANE GPU instrumentation...................... ${METHANE_GPU_INSTRUMENTATION_ENABLED}")
 message(STATUS "METHANE Tracy profiling.......................... ${METHANE_TRACY_PROFILING_ENABLED}")
 message(STATUS "METHANE Tracy profiling on demand................ ${METHANE_TRACY_PROFILING_ON_DEMAND}")
+message(STATUS "METHANE memory sanitizer......................... ${METHANE_MEMORY_SANITIZER_ENABLED}")
 
 if (APPLE)
     message(STATUS "METHANE Apple code signing....................... ${METHANE_APPLE_CODE_SIGNING_ENABLED} (dev.team: '${APPLE_DEVELOPMENT_TEAM}')")

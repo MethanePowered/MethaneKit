@@ -92,6 +92,10 @@
                     "type": "BOOL",
                     "value": "OFF"
                 },
+                "METHANE_MEMORY_SANITIZER_ENABLED":  {
+                    "type": "BOOL",
+                    "value": "OFF"
+                },
                 "METHANE_APPLE_CODE_SIGNING_ENABLED": {
                     "type": "BOOL",
                     "value": "OFF"
