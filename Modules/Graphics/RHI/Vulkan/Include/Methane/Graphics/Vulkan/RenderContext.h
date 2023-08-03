@@ -111,6 +111,8 @@ private:
         vk::UniqueSemaphore vk_unique_semaphore;
         vk::UniqueFence     vk_unique_fence;
         bool                is_submitted = false;
+
+        void Wait(const vk::Device& vk_device);
     };
 
     const Methane::Platform::AppEnvironment m_app_env;

@@ -247,17 +247,7 @@ uint32_t RenderContext::GetNextFrameBufferIndex()
     // Wait for the rendering of the frame [N - FBC] (where FBC is Frame Buffers Count) to be completed,
     // which is accomplished by waiting for the next frame image availability [N - FBC - 1]
     // or simply [N + 1] in the FBC ring buffer
-    if (FrameSync& await_frame_sync = m_frame_sync_pool[await_sync_index];
-        await_frame_sync.is_submitted)
-    {
-        if (m_vk_device.getFenceStatus(await_frame_sync.vk_unique_fence.get()) == vk::Result::eNotReady)
-        {
-            const vk::Result wait_result = m_vk_device.waitForFences(await_frame_sync.vk_unique_fence.get(), true, std::numeric_limits<uint64_t>::max());
-            META_CHECK_ARG_EQUAL_DESCR(wait_result, vk::Result::eSuccess, "failed to wait for frame synchronization fence (-N-1)");
-        }
-        m_vk_device.resetFences(await_frame_sync.vk_unique_fence.get());
-        await_frame_sync.is_submitted = false;
-    }
+    m_frame_sync_pool[await_sync_index].Wait(m_vk_device);
 
     FrameSync& curr_frame_sync = m_frame_sync_pool[frame_sync_index];
     if (curr_frame_sync.is_submitted)
@@ -439,6 +429,11 @@ void RenderContext::ReleaseNativeSwapchainResources()
     META_FUNCTION_TASK();
     WaitForGpu(WaitFor::RenderComplete);
 
+    for(FrameSync& frame_sync : m_frame_sync_pool)
+    {
+        frame_sync.Wait(m_vk_device);
+    }
+
     m_frame_sync_pool.clear();
     m_vk_frame_image_available_semaphores.clear();
     m_vk_frame_images.clear();
@@ -477,6 +472,22 @@ void RenderContext::ResetNativeObjectNames() const
 
         frame_index++;
     }
+}
+
+void RenderContext::FrameSync::Wait(const vk::Device& vk_device)
+{
+    META_FUNCTION_TASK();
+    if (!is_submitted)
+        return;
+
+    if (vk_device.getFenceStatus(vk_unique_fence.get()) == vk::Result::eNotReady)
+    {
+        const vk::Result wait_result = vk_device.waitForFences(vk_unique_fence.get(), true, std::numeric_limits<uint64_t>::max());
+        META_CHECK_ARG_EQUAL_DESCR(wait_result, vk::Result::eSuccess, "failed to wait for frame synchronization fence (-N-1)");
+    }
+
+    vk_device.resetFences(vk_unique_fence.get());
+    is_submitted = false;
 }
 
 } // namespace Methane::Graphics::Vulkan
