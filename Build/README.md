@@ -142,7 +142,7 @@ Alternatively root [CMakeLists.txt](/CMakeLists.txt) can be opened directly in V
 [Methane Graphics RHI](/Modules/Graphics/RHI) is built using **Metal** graphics API on MacOS by default.
 Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON` or
 by running `Build/Unix/Build.sh --vulkan`, but it requires Vulkan SDK installation with MoltenVK driver implementation
-on top of Metal, which is not currently supporting all extensions required by Methane Kit.
+on top of Metal.
 
 Run built applications from the installation directory `Build/Output/XCode/Install/Apps`.
 

@@ -129,10 +129,16 @@ void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& complet
     Base::CommandListSet::Execute(completed_callback);
 
     SubmitInfo submit_info = GetSubmitInfo();
+
+    // FIXME: MoltenVK is crashing on Apple platforms on attempt to use submit info with timeline semaphore values,
+    //        while timeline semaphore extension is properly enabled in Device.cpp and this code works fine on Linux.
+#ifndef __APPLE__
     if (submit_info.second.waitSemaphoreValueCount || submit_info.second.signalSemaphoreValueCount)
     {
+        // Bind vk::TimelineSemaphoreSubmitInfo to the vk::SubmitInfo
         submit_info.first.setPNext(&submit_info.second);
     }
+#endif
 
     std::scoped_lock fence_guard(m_execution_completed_fence_mutex);
     if (m_signalled_execution_completed_fence)
@@ -141,6 +147,7 @@ void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& complet
         // https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/4974
         m_vk_device.resetFences(m_vk_unique_execution_completed_fence.get());
     }
+
     GetVulkanCommandQueue().GetNativeQueue().submit(submit_info.first, m_vk_unique_execution_completed_fence.get());
     m_signalled_execution_completed_fence = true;
 }
@@ -174,7 +181,6 @@ CommandListSet::SubmitInfo CommandListSet::GetSubmitInfo()
     META_FUNCTION_TASK();
     const CommandQueue& command_queue = GetVulkanCommandQueue();
     const CommandQueue::WaitInfo& wait_before_exec = command_queue.GetWaitBeforeExecuting();
-    META_CHECK_ARG_EQUAL(wait_before_exec.values.size(), wait_before_exec.semaphores.size());
 
     const std::vector<vk::Semaphore>&          vk_wait_semaphores = m_vk_wait_frame_buffer_rendering_on_stages ? m_vk_wait_semaphores : wait_before_exec.semaphores;
     const std::vector<uint64_t>&               vk_wait_values     = m_vk_wait_frame_buffer_rendering_on_stages ? m_vk_wait_values     : wait_before_exec.values;
@@ -196,19 +202,18 @@ CommandListSet::SubmitInfo CommandListSet::GetSubmitInfo()
         }
     }
 
-    SubmitInfo submit_info;
+    META_CHECK_ARG_EQUAL_DESCR(vk_wait_semaphores.size(), vk_wait_stages.size(), "number of wait semaphores and stages must be equal");
+    SubmitInfo submit_info{};
     submit_info.first = vk::SubmitInfo(
-        static_cast<uint32_t>(vk_wait_semaphores.size()),
-        vk_wait_semaphores.empty() ? nullptr : vk_wait_semaphores.data(),
-        vk_wait_stages.empty()     ? nullptr : vk_wait_stages.data(),
-        static_cast<uint32_t>(m_vk_command_buffers.size()),
-        m_vk_command_buffers.data(),
-        1U,
-        &m_vk_unique_execution_completed_semaphore.get()
+        vk_wait_semaphores,
+        vk_wait_stages,
+        m_vk_command_buffers,
+        m_vk_unique_execution_completed_semaphore.get()
     );
 
     if (!vk_wait_values.empty())
     {
+        META_CHECK_ARG_EQUAL_DESCR(vk_wait_semaphores.size(), vk_wait_values.size(), "number of wait timeline semaphores and values must be equal");
         submit_info.second = vk::TimelineSemaphoreSubmitInfo(vk_wait_values);
     }
 

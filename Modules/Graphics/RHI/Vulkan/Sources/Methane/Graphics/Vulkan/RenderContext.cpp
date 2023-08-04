@@ -190,6 +190,8 @@ void RenderContext::Present()
     UpdateFrameBufferIndex();
 }
 
+#ifndef __APPLE__
+
 bool RenderContext::SetVSyncEnabled(bool vsync_enabled)
 {
     META_FUNCTION_TASK();
@@ -200,6 +202,8 @@ bool RenderContext::SetVSyncEnabled(bool vsync_enabled)
     }
     return false;
 }
+
+#endif // # !defined(__APPLE__)
 
 bool RenderContext::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {

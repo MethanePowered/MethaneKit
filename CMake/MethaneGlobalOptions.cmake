@@ -94,7 +94,6 @@ elseif(APPLE)
     if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
         # * On Windows and Linux, only Vulkan-Headers are required to build Methane Kit,
         #   because it is dynamically loading Vulkan library in runtime. Vulkan SDK is not required for build.
-        message(WARNING "METHANE RHI: Vulkan API is not fully supported on MacOS due to weired crash on submit to Transfer command queue")
         # * To enable Vulkan API on MacOS we link statically with MoltenVK framework (translation layer to Metal).
         #   in order to enable finding Vulkan SDK with MoltenVK framework, environment variable might need to be set:
         #   - VULKAN_SDK to full installation path before running CMake generator ($HOME/VulkanSDK/1.3.250.1/macOS)

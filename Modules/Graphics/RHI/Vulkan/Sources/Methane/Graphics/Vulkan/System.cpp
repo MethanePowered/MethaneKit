@@ -149,6 +149,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
         callback_data_ptr->messageIdNumber == 1630022081)   // VUID-vkCmdPipelineBarrier-dstStageMask-03937 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
         return VK_FALSE;
 
+#ifdef __APPLE__
+    // FIXME: disable warning on Apple "VkSemaphore is a timeline semaphore, but VkSubmitInfo does not include an instance of VkTimelineSemaphoreSubmitInfo",
+    //        which was introduced as the result of the workaround of crash on vk::Queue::submit with vk::SubmitInfo containing a pointer to vk::TimelineSemaphoreSubmitInfo
+    //        see Vulkan::CommandListSet::Execute() for more details
+    if (callback_data_ptr->messageIdNumber == -410448035) // VUID-VkSubmitInfo-pWaitSemaphores-03239
+        return VK_FALSE;
+#endif
+
     if (callback_data_ptr->messageIdNumber == 0 && (
         strstr(callback_data_ptr->pMessage, "loader_get_json: Failed to open JSON file") ||
         strstr(callback_data_ptr->pMessage, "terminator_CreateInstance: Failed to CreateInstance in ICD")))

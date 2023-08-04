@@ -115,20 +115,21 @@ private:
         void Wait(const vk::Device& vk_device);
     };
 
-    const Methane::Platform::AppEnvironment m_app_env;
-    const vk::Device                        m_vk_device;
 #ifdef __APPLE__
     // MacOS metal app view with swap-chain implementation to work via MoltenVK
-    AppViewMetal* m_metal_view;
+    const AppViewMetal* m_metal_view;
 #endif
-    vk::UniqueSurfaceKHR                   m_vk_unique_surface;
-    vk::UniqueSwapchainKHR                 m_vk_unique_swapchain;
-    vk::Format                             m_vk_frame_format;
-    vk::Extent2D                           m_vk_frame_extent;
-    std::vector<vk::Image>                 m_vk_frame_images;
-    std::vector<FrameSync>                 m_frame_sync_pool;
-    std::vector<vk::Semaphore>             m_vk_frame_image_available_semaphores;
-    mutable std::deque<vk::UniquePipeline> m_vk_deferred_release_pipelines;
+
+    const Methane::Platform::AppEnvironment m_app_env;
+    const vk::Device                        m_vk_device;
+    vk::UniqueSurfaceKHR                    m_vk_unique_surface;
+    vk::UniqueSwapchainKHR                  m_vk_unique_swapchain;
+    vk::Format                              m_vk_frame_format;
+    vk::Extent2D                            m_vk_frame_extent;
+    std::vector<vk::Image>                  m_vk_frame_images;
+    std::vector<FrameSync>                  m_frame_sync_pool;
+    std::vector<vk::Semaphore>              m_vk_frame_image_available_semaphores;
+    mutable std::deque<vk::UniquePipeline>  m_vk_deferred_release_pipelines;
 };
 
 } // namespace Methane::Graphics::Vulkan
