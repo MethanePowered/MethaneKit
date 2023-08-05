@@ -17,6 +17,7 @@ if(MSVC)
         /wd4456 # declaration of 'lock' hides previous local declaration (taskflow/core/executor.hpp:1842)
         /wd4267 # conversion from 'size_t' to 'unsigned char', possible loss of data (taskflow/algorithm/sort.hpp:229)
         /wd4146 # unary minus operator applied to unsigned type, result still unsigned (taskflow/algorithm/sort.hpp:42)
+        /wd4244 # conversion from '_Rep' to 'size_t', possible loss of data (taskflow/core/observer.hpp:884)
     )
 else() # Clang or GCC
     target_compile_options(Taskflow INTERFACE
