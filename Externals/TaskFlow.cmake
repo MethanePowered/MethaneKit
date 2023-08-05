@@ -15,4 +15,8 @@ if(MSVC)
     target_compile_options(Taskflow INTERFACE
         /wd4456 # declaration of 'lock' hides previous local declaration (taskflow/core/executor.hpp:1842)
     )
+else() # Clang or GCC
+    target_compile_options(Taskflow INTERFACE
+        -Wno-shorten-64-to-32 # implicit conversion loses integer precision: 'unsigned long' to 'int' (taskflow/core/observer.hpp:568:24)
+    )
 endif()
