@@ -34,10 +34,11 @@ template<>
 struct fmt::formatter<Methane::Graphics::Rhi::RenderTargetSettings>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Rhi::RenderTargetSettings& rt, FormatContext& ctx)
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::RenderTargetSettings& rt, FormatContext& ctx) const
     { return format_to(ctx.out(), "{}", static_cast<std::string>(rt)); }
 
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
 };
 
 namespace Methane::Graphics::Rhi

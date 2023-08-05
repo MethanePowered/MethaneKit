@@ -1,5 +1,5 @@
 CPMAddPackage(
     NAME CLI11
     GITHUB_REPOSITORY MethanePowered/CLI11
-    VERSION 2.2.0
+    VERSION 2.3.2
 )

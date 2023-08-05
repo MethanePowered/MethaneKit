@@ -1,7 +1,7 @@
 CPMAddPackage(
     NAME TaskFlow
     GITHUB_REPOSITORY MethanePowered/TaskFlow
-    VERSION 3.4.0
+    VERSION 3.6.0
     OPTIONS
         "TF_BUILD_BENCHMARKS OFF"
         "TF_BUILD_CUDA OFF"

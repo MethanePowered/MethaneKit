@@ -29,7 +29,19 @@ minimum number of continuous ranges by merging or splitting adjacent ranges in s
 
 #include <Methane/Instrumentation.h>
 
+#include <fmt/format.h>
 #include <algorithm>
+
+template<typename ScalarT>
+struct fmt::formatter<Methane::Data::Range<ScalarT>>
+{
+    template<typename FormatContext>
+    auto format(const Methane::Data::Range<ScalarT>& range, FormatContext& ctx) const
+    { return format_to(ctx.out(), "{}", static_cast<std::string>(range)); }
+
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
+};
 
 namespace Methane::Data
 {

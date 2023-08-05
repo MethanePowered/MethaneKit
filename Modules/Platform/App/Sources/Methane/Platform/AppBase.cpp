@@ -31,6 +31,7 @@ Base application interface and platform-independent implementation.
 #include <Methane/Version.h>
 
 #include <CLI/CLI.hpp>
+#include <taskflow/core/async.hpp>
 #include <taskflow/core/executor.hpp>
 
 #include <sstream>

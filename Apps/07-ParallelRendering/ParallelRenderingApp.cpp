@@ -30,7 +30,7 @@ Tutorial demonstrating parallel rendering with Methane graphics API
 #include <Methane/Data/TimeAnimation.h>
 #include <Methane/Instrumentation.h>
 
-#include <taskflow/taskflow.hpp>
+#include <taskflow/algorithm/for_each.hpp>
 #include <taskflow/algorithm/sort.hpp>
 #include <cmath>
 #include <random>
@@ -305,7 +305,7 @@ ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeAr
         });
 
     // Sort cubes parameters by thread index
-    // to make sure that actual cubes distrubution by render threads will match thread_index in parameters
+    // to make sure that actual cubes distribution by render threads will match thread_index in parameters
     // NOTE-1: thread index is displayed on cube faces as text label using an element of Texture 2D Array.
     // NOTE-2: Sorting also improves rendering performance because it ensures using one texture for all cubes per thread.
     tf::Task sort_task = task_flow.sort(cube_array_parameters.begin(), cube_array_parameters.end(),

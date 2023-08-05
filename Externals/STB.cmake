@@ -1,7 +1,7 @@
 CPMAddPackage(
     NAME STB
     GITHUB_REPOSITORY MethanePowered/STB
-    GIT_TAG af1a5bc352164740c1cc1354942b1c6b72eacb8a
+    GIT_TAG master
 )
 
 add_library(STB INTERFACE)

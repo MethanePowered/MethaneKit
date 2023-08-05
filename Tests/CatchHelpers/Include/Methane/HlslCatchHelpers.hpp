@@ -87,7 +87,7 @@ public:
 
     std::string describe() const override
     {
-        return fmt::format("approximately equals to {} with precision {}", m_reference_vector, m_precision_vector.x);
+        return fmt::format("approximately equals to {} with precision {}", m_reference_vector, m_precision_vector[0]);
     }
 
 private:

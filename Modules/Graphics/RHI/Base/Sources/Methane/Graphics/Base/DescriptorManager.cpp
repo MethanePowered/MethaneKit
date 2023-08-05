@@ -27,7 +27,7 @@ Base descriptor manager implementation.
 
 #include <Methane/Instrumentation.h>
 
-#include <taskflow/taskflow.hpp>
+#include <taskflow/algorithm/for_each.hpp>
 
 namespace Methane::Graphics::Base
 {
@@ -49,7 +49,7 @@ void DescriptorManager::CompleteInitialization()
 
     m_program_bindings.erase(program_bindings_end_it, m_program_bindings.end());
 
-    static const auto binding_initialization_completer = [](const WeakPtr<Rhi::IProgramBindings>& program_bindings_wptr)
+    constexpr auto binding_initialization_completer = [](const WeakPtr<Rhi::IProgramBindings>& program_bindings_wptr)
     {
         META_FUNCTION_TASK();
         // Some binding pointers may become expired here due to command list retained resources cleanup on execution completion

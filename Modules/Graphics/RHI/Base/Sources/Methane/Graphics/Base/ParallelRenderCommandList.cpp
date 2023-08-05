@@ -34,7 +34,7 @@ Base implementation of the parallel render command list interface.
 
 #include <Methane/Instrumentation.h>
 
-#include <taskflow/taskflow.hpp>
+#include <taskflow/algorithm/for_each.hpp>
 #include <fmt/format.h>
 
 #include <string_view>
