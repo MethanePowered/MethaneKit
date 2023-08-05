@@ -219,7 +219,7 @@ jobs:
 
     - name: Install Vulkan SDK
       if: ${{ matrix.install_vulkan_sdk }}
-      uses: MethanePowered/InstallVulkanSdk@v1
+      uses: MethanePowered/InstallVulkanSdk@main
       with:
         version: 1.3.250.1
         cache: true
