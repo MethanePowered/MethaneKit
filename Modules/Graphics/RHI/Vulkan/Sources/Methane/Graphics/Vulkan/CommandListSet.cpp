@@ -128,15 +128,16 @@ void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& complet
     META_FUNCTION_TASK();
     Base::CommandListSet::Execute(completed_callback);
 
-    SubmitInfo submit_info = GetSubmitInfo();
+    auto [vk_submit_info, vk_timeline_semaphore_submit_info] = GetSubmitInfo();
 
     // FIXME: MoltenVK is crashing on Apple platforms on attempt to use submit info with timeline semaphore values,
     //        while timeline semaphore extension is properly enabled in Device.cpp and this code works fine on Linux.
 #ifndef __APPLE__
-    if (submit_info.second.waitSemaphoreValueCount || submit_info.second.signalSemaphoreValueCount)
+    if (vk_timeline_semaphore_submit_info.waitSemaphoreValueCount ||
+        vk_timeline_semaphore_submit_info.signalSemaphoreValueCount)
     {
         // Bind vk::TimelineSemaphoreSubmitInfo to the vk::SubmitInfo
-        submit_info.first.setPNext(&submit_info.second);
+        vk_submit_info.setPNext(&vk_timeline_semaphore_submit_info);
     }
 #endif
 
@@ -148,7 +149,7 @@ void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& complet
         m_vk_device.resetFences(m_vk_unique_execution_completed_fence.get());
     }
 
-    GetVulkanCommandQueue().GetNativeQueue().submit(submit_info.first, m_vk_unique_execution_completed_fence.get());
+    GetVulkanCommandQueue().GetNativeQueue().submit(vk_submit_info, m_vk_unique_execution_completed_fence.get());
     m_signalled_execution_completed_fence = true;
 }
 

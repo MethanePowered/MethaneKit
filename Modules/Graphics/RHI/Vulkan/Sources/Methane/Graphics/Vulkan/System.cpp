@@ -143,10 +143,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
     // Assert on calling vkBeginCommandBuffer() on active VkCommandBuffer before it has completed. You must check command buffer fence before this call.
     //assert(callback_data_ptr->messageIdNumber == -2080204129); // VUID-vkBeginCommandBuffer-commandBuffer-00049
 
-    if (callback_data_ptr->messageIdNumber == 648835635  || // UNASSIGNED-khronos-Validation-debug-build-warning-message
-        callback_data_ptr->messageIdNumber == 767975156  || // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
-        callback_data_ptr->messageIdNumber == -400166253 || // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
-        callback_data_ptr->messageIdNumber == 1630022081)   // VUID-vkCmdPipelineBarrier-dstStageMask-03937 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
+    if (callback_data_ptr->messageIdNumber == 648835635   || // UNASSIGNED-khronos-Validation-debug-build-warning-message
+        callback_data_ptr->messageIdNumber == 767975156   || // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
+        callback_data_ptr->messageIdNumber == -400166253  || // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
+        callback_data_ptr->messageIdNumber == -2117225404 || // VUID-vkCmdPipelineBarrier-dstStageMask-04996 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
+        callback_data_ptr->messageIdNumber == 1630022081)    // VUID-vkCmdPipelineBarrier-dstStageMask-03937 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
         return VK_FALSE;
 
 #ifdef __APPLE__
