@@ -70,16 +70,16 @@ public:
     META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // ICommandQueue interface methods
-    [[nodiscard]] META_PIMPL_API CommandKit                CreateCommandKit() const;
-    [[nodiscard]] META_PIMPL_API Fence                     CreateFence() const;
-    [[nodiscard]] META_PIMPL_API TransferCommandList       CreateTransferCommandList() const;
-    [[nodiscard]] META_PIMPL_API ComputeCommandList        CreateComputeCommandList() const;
-    [[nodiscard]] META_PIMPL_API RenderCommandList         CreateRenderCommandList(const RenderPass& render_pass) const;
-    [[nodiscard]] META_PIMPL_API ParallelRenderCommandList CreateParallelRenderCommandList(const RenderPass& render_pass) const;
-    [[nodiscard]] META_PIMPL_API const IContext&           GetContext() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API CommandListType           GetCommandListType() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API uint32_t                  GetFamilyIndex() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API ITimestampQueryPool&      GetTimestampQueryPool();
+    [[nodiscard]] META_PIMPL_API CommandKit                      CreateCommandKit() const;
+    [[nodiscard]] META_PIMPL_API Fence                           CreateFence() const;
+    [[nodiscard]] META_PIMPL_API TransferCommandList             CreateTransferCommandList() const;
+    [[nodiscard]] META_PIMPL_API ComputeCommandList              CreateComputeCommandList() const;
+    [[nodiscard]] META_PIMPL_API RenderCommandList               CreateRenderCommandList(const RenderPass& render_pass) const;
+    [[nodiscard]] META_PIMPL_API ParallelRenderCommandList       CreateParallelRenderCommandList(const RenderPass& render_pass) const;
+    [[nodiscard]] META_PIMPL_API const IContext&                 GetContext() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API CommandListType                 GetCommandListType() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API uint32_t                        GetFamilyIndex() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API const Ptr<ITimestampQueryPool>& GetTimestampQueryPoolPtr();
     META_PIMPL_API void Execute(const CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) const;
 
 private:
