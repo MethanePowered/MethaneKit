@@ -49,7 +49,7 @@ public:
     const Ptr<Rhi::ITimestampQueryPool>&               GetTimestampQueryPoolPtr() override      { return m_timestamp_query_pool_ptr; }
 
 private:
-    Ptr<TimestampQueryPool> m_timestamp_query_pool_ptr = std::make_shared<TimestampQueryPool>(*this, 1000U);
+    const Ptr<Rhi::ITimestampQueryPool> m_timestamp_query_pool_ptr = std::make_shared<TimestampQueryPool>(*this, 1000U);
 };
 
 } // namespace Methane::Graphics::Null

@@ -62,7 +62,7 @@ private:
     void Reset();
     
     id<MTLCommandQueue> m_mtl_command_queue = nil;
-    Ptr<TimestampQueryPool> m_timestamp_query_pool_ptr = std::make_shared<TimestampQueryPool>(*this, 1000U);
+    Ptr<Rhi::ITimestampQueryPool> m_timestamp_query_pool_ptr = std::make_shared<TimestampQueryPool>(*this, 1000U);
 };
 
 } // namespace Methane::Graphics::Metal
