@@ -38,7 +38,7 @@ on:
 env:
   product_ver_major: 0
   product_ver_minor: 7
-  product_ver_patch: 2
+  product_ver_patch: 3
   product_ver_build: ${{ github.run_number }}
   sonar_server_url: "https://sonarcloud.io"
   sonar_organization: methane-powered
@@ -47,6 +47,7 @@ env:
 jobs:
   sonar_scan:
     name: ${{ matrix.name }}
+    if: ${{ github.repository == 'MethanePowered/MethaneKit' }}
 
     strategy:
       fail-fast: false
@@ -110,7 +111,7 @@ jobs:
           dotnet-version: 6.0.400
 
       - name: Install Sonar-Scanner
-        uses: sonarsource/sonarcloud-github-c-cpp@v1
+        uses: sonarsource/sonarcloud-github-c-cpp@v2
 
       - name: Install Ninja
         uses: MethanePowered/gha-setup-ninja@master

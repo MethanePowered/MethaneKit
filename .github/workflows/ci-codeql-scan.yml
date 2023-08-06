@@ -31,6 +31,7 @@ on:
 jobs:
   analyze:
     name: ${{ matrix.name }}
+    if: ${{ github.repository == 'MethanePowered/MethaneKit' }}
 
     strategy:
       fail-fast: false
@@ -41,10 +42,12 @@ jobs:
           #  name: "Win64_DX_CodeQL-Scan"
           #  config_preset: "VS2022-Win64-DX-Scan"
           #  build_preset: "VS2022-Win64-DX-Scan"
+
           - os: ubuntu-latest
             name: "Ubuntu_VK_CodeQL-Scan"
             config_preset: "Make-Lin-VK-Scan"
             build_preset: "Make-Lin-VK-Scan"
+
           - os: macos-latest
             name: "MacOS_MTL_CodeQL-Scan"
             config_preset: "Xcode-Mac-MTL-Scan"

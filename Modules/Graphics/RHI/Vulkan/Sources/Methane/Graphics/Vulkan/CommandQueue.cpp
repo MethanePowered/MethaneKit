@@ -179,7 +179,7 @@ void CommandQueue::Execute(Rhi::ICommandListSet& command_list_set, const Rhi::IC
 
     m_wait_before_executing.semaphores.clear();
     m_wait_before_executing.stages.clear();
-    m_wait_before_executing.wait_values.clear();
+    m_wait_before_executing.values.clear();
 }
 
 void CommandQueue::WaitForSemaphore(const vk::Semaphore& semaphore, vk::PipelineStageFlags stage_flags, const uint64_t* timeline_wait_value_ptr)
@@ -188,14 +188,14 @@ void CommandQueue::WaitForSemaphore(const vk::Semaphore& semaphore, vk::Pipeline
     m_wait_before_executing.semaphores.emplace_back(semaphore);
     m_wait_before_executing.stages.emplace_back(stage_flags);
 
-    const bool no_timeline_waits = m_wait_before_executing.wait_values.empty();
+    const bool no_timeline_waits = m_wait_before_executing.values.empty();
     if (timeline_wait_value_ptr && no_timeline_waits)
     {
-        m_wait_before_executing.wait_values.resize(m_wait_before_executing.semaphores.size() - 1U, 0U);
+        m_wait_before_executing.values.resize(m_wait_before_executing.semaphores.size() - 1U, 0U);
     }
     if (timeline_wait_value_ptr || !no_timeline_waits)
     {
-        m_wait_before_executing.wait_values.push_back(timeline_wait_value_ptr ? *timeline_wait_value_ptr : 0U);
+        m_wait_before_executing.values.push_back(timeline_wait_value_ptr ? *timeline_wait_value_ptr : 0U);
     }
 }
 

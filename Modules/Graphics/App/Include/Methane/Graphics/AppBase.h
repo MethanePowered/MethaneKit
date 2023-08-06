@@ -112,8 +112,6 @@ protected:
     ImageLoader&                      GetImageLoader() noexcept                   { return m_image_loader; }
     Data::AnimationsPool&             GetAnimations() noexcept                    { return m_animations; }
 
-    static std::string IndexedName(const std::string& base_name, uint32_t index);
-
 private:
     Graphics::IApp::Settings   m_settings;
     Rhi::RenderContextSettings m_initial_context_settings;

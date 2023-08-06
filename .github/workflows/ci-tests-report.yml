@@ -22,6 +22,7 @@ jobs:
           - name: "Win32_DX_Release"
           - name: "Win32_VK_Release"
           - name: "Ubuntu_VK_Release"
+          - name: "MacOS_VK_Release"
           - name: "MacOS_MTL_Release"
 
     runs-on: ubuntu-latest

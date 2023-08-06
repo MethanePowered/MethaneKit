@@ -30,7 +30,7 @@ Tutorial demonstrating parallel rendering with Methane graphics API
 #include <Methane/Data/TimeAnimation.h>
 #include <Methane/Instrumentation.h>
 
-#include <taskflow/taskflow.hpp>
+#include <taskflow/algorithm/for_each.hpp>
 #include <taskflow/algorithm/sort.hpp>
 #include <cmath>
 #include <random>
@@ -187,13 +187,13 @@ void ParallelRenderingApp::Init()
 
     // Create frame buffer resources
     const Data::Size uniforms_data_size = m_cube_array_buffers_ptr->GetUniformsBufferSize();
-    const Data::Size uniform_data_size = MeshBuffers::GetAlignedUniformSize();
+    const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
     tf::Taskflow program_bindings_task_flow;
     for(ParallelRenderingFrame& frame : GetFrames())
     {
         // Create buffer for uniforms array related to all cube instances
         frame.cubes_array.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, true, true));
-        frame.cubes_array.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
+        frame.cubes_array.uniforms_buffer.SetName(fmt::format("Uniforms Buffer {}", frame.index));
 
         // Configure program resource bindings
         frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
@@ -207,11 +207,12 @@ void ParallelRenderingApp::Init()
         program_bindings_task_flow.for_each_index(1U, cubes_count, 1U,
             [this, &frame, uniform_data_size](const uint32_t cube_index)
             {
+                META_UNUSED(uniform_data_size); // workaround for Clang error unused-lambda-capture uniform_data_size (false positive)
                 rhi::ProgramBindings& cube_program_bindings = frame.cubes_array.program_bindings_per_instance[cube_index];
                 cube_program_bindings = rhi::ProgramBindings(frame.cubes_array.program_bindings_per_instance[0], {
                     {
-                      { rhi::ShaderType::All, "g_uniforms" },
-                      { { frame.cubes_array.uniforms_buffer.GetInterface(), m_cube_array_buffers_ptr->GetUniformsBufferOffset(cube_index), uniform_data_size } }
+                        { rhi::ShaderType::All, "g_uniforms" },
+                        { { frame.cubes_array.uniforms_buffer.GetInterface(), m_cube_array_buffers_ptr->GetUniformsBufferOffset(cube_index), uniform_data_size } }
                     }
                 }, frame.index);
                 cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
@@ -223,14 +224,14 @@ void ParallelRenderingApp::Init()
             frame.parallel_render_cmd_list = render_cmd_queue.CreateParallelRenderCommandList(frame.screen_pass);
             frame.parallel_render_cmd_list.SetParallelCommandListsCount(m_settings.GetActiveRenderThreadCount());
             frame.parallel_render_cmd_list.SetValidationEnabled(false);
-            frame.parallel_render_cmd_list.SetName(IndexedName("Parallel Cubes Rendering", frame.index));
+            frame.parallel_render_cmd_list.SetName(fmt::format("Parallel Cubes Rendering {}", frame.index));
             frame.execute_cmd_list_set = rhi::CommandListSet({ frame.parallel_render_cmd_list.GetInterface() }, frame.index);
         }
         else
         {
             // Create serial command list for rendering to the screen pass
             frame.serial_render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
-            frame.serial_render_cmd_list.SetName(IndexedName("Serial Cubes Rendering", frame.index));
+            frame.serial_render_cmd_list.SetName(fmt::format("Serial Cubes Rendering {}", frame.index));
             frame.serial_render_cmd_list.SetValidationEnabled(false);
             frame.execute_cmd_list_set = rhi::CommandListSet({ frame.serial_render_cmd_list.GetInterface() }, frame.index);
         }
@@ -304,7 +305,7 @@ ParallelRenderingApp::CubeArrayParameters ParallelRenderingApp::InitializeCubeAr
         });
 
     // Sort cubes parameters by thread index
-    // to make sure that actual cubes distrubution by render threads will match thread_index in parameters
+    // to make sure that actual cubes distribution by render threads will match thread_index in parameters
     // NOTE-1: thread index is displayed on cube faces as text label using an element of Texture 2D Array.
     // NOTE-2: Sorting also improves rendering performance because it ensures using one texture for all cubes per thread.
     tf::Task sort_task = task_flow.sort(cube_array_parameters.begin(), cube_array_parameters.end(),

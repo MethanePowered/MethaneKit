@@ -47,7 +47,7 @@ BufferSettings BufferSettings::ForVertexBuffer(Data::Size size, Data::Size strid
     return Rhi::BufferSettings{
         Rhi::BufferType::Vertex,
         Rhi::ResourceUsageMask(),
-        GetAlignedSize(size),
+        size,
         stride,
         PixelFormat::Unknown,
         GetBufferStorageMode(is_volatile)
@@ -60,7 +60,7 @@ BufferSettings BufferSettings::ForIndexBuffer(Data::Size size, PixelFormat forma
     return Rhi::BufferSettings{
         Rhi::BufferType::Index,
         Rhi::ResourceUsageMask(),
-        GetAlignedSize(size),
+        size,
         GetPixelSize(format),
         format,
         GetBufferStorageMode(is_volatile)
@@ -73,7 +73,7 @@ BufferSettings BufferSettings::ForConstantBuffer(Data::Size size, bool addressab
     return Rhi::BufferSettings{
         Rhi::BufferType::Constant,
         Rhi::ResourceUsageMask(Rhi::ResourceUsage::ShaderRead).SetBit(Rhi::ResourceUsage::Addressable, addressable),
-        GetAlignedSize(size),
+        size,
         0U,
         PixelFormat::Unknown,
         GetBufferStorageMode(is_volatile)
@@ -86,7 +86,7 @@ BufferSettings BufferSettings::ForReadBackBuffer(Data::Size size)
     return Rhi::BufferSettings{
         Rhi::BufferType::ReadBack,
         Rhi::ResourceUsageMask(Rhi::ResourceUsage::ReadBack),
-        GetAlignedSize(size),
+        size,
         0U,
         PixelFormat::Unknown,
         Rhi::BufferStorageMode::Managed
@@ -103,13 +103,6 @@ bool BufferSettings::operator!=(const BufferSettings& other) const
 {
     return std::tie(type, usage_mask, size, item_stride_size, data_format, storage_mode)
         != std::tie(other.type, other.usage_mask, other.size, other.item_stride_size, other.data_format, other.storage_mode);
-}
-
-Data::Size BufferSettings::GetAlignedSize(Data::Size size) noexcept
-{
-    // Aligned size must be a multiple 256 bytes
-    static constexpr uint32_t s_data_placement_minus_one = s_data_alignment - 1;
-    return (size + s_data_placement_minus_one) & ~s_data_placement_minus_one;
 }
 
 } // namespace Methane::Graphics::Rhi

@@ -159,7 +159,7 @@ protected:
                                      Rhi::ResourceState resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(m_cp_resource, !m_cp_resource, "committed resource is already initialized");
+        META_CHECK_ARG_DESCR(m_cp_resource.Get(), !m_cp_resource, "committed resource is already initialized");
         const D3D12_RESOURCE_STATES d3d_resource_state = IResource::GetNativeResourceState(resource_state);
         m_cp_resource = CreateCommittedResource(resource_desc, heap_type, d3d_resource_state, p_clear_value);
         SetState(resource_state);

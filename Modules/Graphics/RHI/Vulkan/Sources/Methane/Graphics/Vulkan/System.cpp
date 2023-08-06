@@ -143,11 +143,20 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
     // Assert on calling vkBeginCommandBuffer() on active VkCommandBuffer before it has completed. You must check command buffer fence before this call.
     //assert(callback_data_ptr->messageIdNumber == -2080204129); // VUID-vkBeginCommandBuffer-commandBuffer-00049
 
-    if (callback_data_ptr->messageIdNumber == 648835635  || // UNASSIGNED-khronos-Validation-debug-build-warning-message
-        callback_data_ptr->messageIdNumber == 767975156  || // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
-        callback_data_ptr->messageIdNumber == -400166253 || // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
-        callback_data_ptr->messageIdNumber == 1630022081)   // VUID-vkCmdPipelineBarrier-dstStageMask-03937 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
+    if (callback_data_ptr->messageIdNumber == 648835635   || // UNASSIGNED-khronos-Validation-debug-build-warning-message
+        callback_data_ptr->messageIdNumber == 767975156   || // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
+        callback_data_ptr->messageIdNumber == -400166253  || // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
+        callback_data_ptr->messageIdNumber == -2117225404 || // VUID-vkCmdPipelineBarrier-dstStageMask-04996 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
+        callback_data_ptr->messageIdNumber == 1630022081)    // VUID-vkCmdPipelineBarrier-dstStageMask-03937 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
         return VK_FALSE;
+
+#ifdef __APPLE__
+    // FIXME: disable warning on Apple "VkSemaphore is a timeline semaphore, but VkSubmitInfo does not include an instance of VkTimelineSemaphoreSubmitInfo",
+    //        which was introduced as the result of the workaround of crash on vk::Queue::submit with vk::SubmitInfo containing a pointer to vk::TimelineSemaphoreSubmitInfo
+    //        see Vulkan::CommandListSet::Execute() for more details
+    if (callback_data_ptr->messageIdNumber == -410448035) // VUID-VkSubmitInfo-pWaitSemaphores-03239
+        return VK_FALSE;
+#endif
 
     if (callback_data_ptr->messageIdNumber == 0 && (
         strstr(callback_data_ptr->pMessage, "loader_get_json: Failed to open JSON file") ||

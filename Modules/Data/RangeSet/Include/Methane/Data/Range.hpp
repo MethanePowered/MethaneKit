@@ -28,7 +28,6 @@ till end (exclusively): [start, end)
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <fmt/format.h>
 #include <initializer_list>
 #include <algorithm>
 
@@ -102,11 +101,3 @@ private:
 };
 
 } // namespace Methane::Data
-
-template<typename ScalarT>
-struct fmt::formatter<Methane::Data::Range<ScalarT>>
-{
-    template<typename FormatContext>
-    auto format(const Methane::Data::Range<ScalarT>& range, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(range)); }
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
-};

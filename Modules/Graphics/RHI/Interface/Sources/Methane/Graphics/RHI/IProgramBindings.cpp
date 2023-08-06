@@ -33,10 +33,11 @@ Methane program bindings interface for resources binding to program arguments.
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::ProgramArgument>
 {
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
 
     template<typename FormatContext>
-    auto format(const Methane::Graphics::Rhi::ProgramArgument& program_argument, FormatContext& ctx)
+    auto format(const Methane::Graphics::Rhi::ProgramArgument& program_argument, FormatContext& ctx) const
     {
         return format_to(ctx.out(), "{}", static_cast<std::string>(program_argument));
     }

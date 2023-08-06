@@ -33,26 +33,33 @@ template<>
 struct fmt::formatter<Methane::Graphics::Rhi::IResource::View>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Rhi::IResource::View& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::IResource::View& rl, FormatContext& ctx) const
+    { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
 };
 
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::ProgramArgumentAccessor>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ProgramArgumentAccessor& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ProgramArgumentAccessor& rl, FormatContext& ctx) const
+    { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
 };
 
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsageMask>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsageMask& rl, FormatContext& ctx)
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsageMask& rl, FormatContext& ctx) const
     { return format_to(ctx.out(), "{}", Methane::Data::GetEnumMaskName(rl)); }
 
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
 };
 
 namespace Methane::Graphics::Base

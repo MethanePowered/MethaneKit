@@ -144,7 +144,7 @@ void CommandQueueTracking::WaitForExecution() noexcept
 
             while (!m_executing_command_lists.empty())
             {
-                const Ptr<CommandListSet>& command_list_set_ptr = GetNextExecutingCommandListSet();
+                Ptr<CommandListSet> command_list_set_ptr = GetNextExecutingCommandListSet();
                 if (!command_list_set_ptr)
                     break;
 

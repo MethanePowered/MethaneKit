@@ -171,7 +171,7 @@ void CubeMapArrayApp::Init()
     {
         // Create uniforms buffer with volatile parameters for frame rendering
         frame.cube.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
-        frame.cube.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
+        frame.cube.uniforms_buffer.SetName(fmt::format("Uniforms Buffer {}", frame.index));
 
         // Configure program resource bindings
         frame.cube.program_bindings = m_render_state.GetProgram().CreateBindings({
@@ -179,19 +179,19 @@ void CubeMapArrayApp::Init()
             { { rhi::ShaderType::Pixel, "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture().GetInterface() } } },
             { { rhi::ShaderType::Pixel, "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
         }, frame.index);
-        frame.cube.program_bindings.SetName(IndexedName("Cube Bindings", frame.index));
+        frame.cube.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
 
         // Create uniforms buffer for Sky-Box rendering
         frame.sky_box.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(gfx::SkyBox::GetUniformsSize(), false, true));
-        frame.sky_box.uniforms_buffer.SetName(IndexedName("Sky-box Uniforms Buffer", frame.index));
+        frame.sky_box.uniforms_buffer.SetName(fmt::format("Sky-box Uniforms Buffer {}", frame.index));
 
         // Resource bindings for Sky-Box rendering
         frame.sky_box.program_bindings = m_sky_box.CreateProgramBindings(frame.sky_box.uniforms_buffer, frame.index);
-        frame.sky_box.program_bindings.SetName(IndexedName("Space Sky-Box Bindings {}", frame.index));
+        frame.sky_box.program_bindings.SetName(fmt::format("Space Sky-Box Bindings {}", frame.index));
         
         // Create command list for rendering
         frame.render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
-        frame.render_cmd_list.SetName(IndexedName("Cube Rendering", frame.index));
+        frame.render_cmd_list.SetName(fmt::format("Cube Rendering {}", frame.index));
         frame.execute_cmd_list_set = rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
     }
     

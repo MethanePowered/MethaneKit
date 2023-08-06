@@ -45,8 +45,8 @@ public:
     void WaitUntilCompleted() override;
 
     const std::vector<vk::CommandBuffer>& GetNativeCommandBuffers() const noexcept { return m_vk_command_buffers; }
-    const vk::Semaphore&     GetNativeExecutionCompletedSemaphore() const noexcept { return m_vk_unique_execution_completed_semaphore.get(); }
-    const vk::Fence&         GetNativeExecutionCompletedFence() const noexcept     { return m_vk_unique_execution_completed_fence.get(); }
+    const vk::Semaphore& GetNativeExecutionCompletedSemaphore() const noexcept     { return m_vk_unique_execution_completed_semaphore.get(); }
+    const vk::Fence&     GetNativeExecutionCompletedFence() const noexcept         { return m_vk_unique_execution_completed_fence.get(); }
 
     CommandQueue&       GetVulkanCommandQueue() noexcept;
     const CommandQueue& GetVulkanCommandQueue() const noexcept;
@@ -56,6 +56,8 @@ protected:
     void OnObjectNameChanged(Rhi::IObject& object, const std::string& old_name) override;
 
 private:
+    using SubmitInfo = std::pair<vk::SubmitInfo, vk::TimelineSemaphoreSubmitInfo>;
+    SubmitInfo GetSubmitInfo();
     const std::vector<vk::Semaphore>&          GetWaitSemaphores();
     const std::vector<vk::PipelineStageFlags>& GetWaitStages();
     const std::vector<uint64_t>&               GetWaitValues();
@@ -70,7 +72,7 @@ private:
     vk::UniqueSemaphore                 m_vk_unique_execution_completed_semaphore;
     vk::UniqueFence                     m_vk_unique_execution_completed_fence;
     bool                                m_signalled_execution_completed_fence = false;
-    TracyLockable(std::mutex,           m_vk_unique_execution_completed_fence_mutex);
+    TracyLockable(std::mutex,           m_execution_completed_fence_mutex);
 };
 
 } // namespace Methane::Graphics::Vulkan

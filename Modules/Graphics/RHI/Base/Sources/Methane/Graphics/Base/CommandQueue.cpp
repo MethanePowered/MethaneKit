@@ -75,7 +75,6 @@ void CommandQueue::Execute(Rhi::ICommandListSet& command_lists, const Rhi::IComm
 {
     META_FUNCTION_TASK();
     META_LOG("Command queue '{}' is executing", GetName());
-
     static_cast<CommandListSet&>(command_lists).Execute(completed_callback);
 }
 

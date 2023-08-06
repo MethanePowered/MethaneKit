@@ -26,7 +26,6 @@ Base implementation of the context interface.
 #include <Methane/Graphics/Base/CommandQueue.h>
 #include <Methane/Graphics/Base/CommandKit.h>
 #include <Methane/Graphics/RHI/IDescriptorManager.h>
-
 #include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Instrumentation.h>
 

@@ -27,6 +27,8 @@ Math primitive functions.
 #include <cstdlib>
 #include <cmath>
 
+#include <Methane/Checks.hpp>
+
 namespace Methane::Data
 {
 
@@ -45,13 +47,26 @@ constexpr T RoundCast(V value) noexcept
 }
 
 template<typename T>
-std::enable_if_t<std::is_arithmetic_v<T>, T> AbsSubtract(T a, T b)
+constexpr bool IsPowerOfTwo(T value) noexcept
+{
+    return value > 0 && (value & (value - 1)) == 0;
+}
+
+template<typename T>
+constexpr std::enable_if_t<std::is_arithmetic_v<T>, T> AlignUp(T value, T alignment)
+{
+    META_CHECK_ARG_TRUE_DESCR(IsPowerOfTwo(alignment), "alignment {} must be a power of two", alignment);
+    return (value + alignment - 1) & ~(alignment - 1);
+}
+
+template<typename T>
+constexpr std::enable_if_t<std::is_arithmetic_v<T>, T> AbsSubtract(T a, T b) noexcept
 {
     return a >= b ? a - b : b - a;
 }
 
 template<typename T>
-T DivCeil(T numerator, T denominator)
+constexpr T DivCeil(T numerator, T denominator) noexcept
 {
     if constexpr (std::is_signed_v<T>)
     {
@@ -63,7 +78,7 @@ T DivCeil(T numerator, T denominator)
     }
     else
     {
-        return numerator > 0 ? (1 + ((numerator - 1) / denominator)) : 0;
+        return numerator > 0 ? (1 + (numerator - 1) / denominator) : 0;
     }
 }
 

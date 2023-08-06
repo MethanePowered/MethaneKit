@@ -45,7 +45,7 @@ public:
     {
         std::vector<vk::Semaphore>          semaphores;
         std::vector<vk::PipelineStageFlags> stages;
-        std::vector<uint64_t>               wait_values;
+        std::vector<uint64_t>               values;
     };
 
     CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type);
