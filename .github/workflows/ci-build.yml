@@ -250,7 +250,7 @@ jobs:
         echo "VULKAN_SDK_VERSION=$sdk_ver" >> $GITHUB_ENV
         echo "VULKAN_SDK_PLATFORM=$sdk_os" >> $GITHUB_ENV
         echo "PATH=$PATH:$sdk_ver_dir/bin" >> $GITHUB_ENV
-        echo "DYLD_LIBRARY_PATH="$sdk_ver_dir/lib:${DYLD_LIBRARY_PATH:-}" >> $GITHUB_ENV
+        echo "DYLD_LIBRARY_PATH=$sdk_ver_dir/lib:${DYLD_LIBRARY_PATH:-}" >> $GITHUB_ENV
 
     - name: Initialize Externals Cache
       uses: actions/cache@v3
