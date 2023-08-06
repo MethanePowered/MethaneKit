@@ -218,7 +218,7 @@ jobs:
       with:
         domain: ${{ github.repository_owner }}
 
-    - name: Install Vulkan SDK
+    - name: Install Vulkan SDK ${{ env.vulkan_sdk_version }}
       if: ${{ matrix.install_vulkan_sdk }}
       run: |
         runner_os=$(uname -s)
@@ -229,7 +229,7 @@ jobs:
           *) echo "Unknown runner_os: $runner_os" ; exit 7 ; ;;
         esac
         sdk_ver="${{ env.vulkan_sdk_version }}"
-        sdk_dir="Build/Output/ExternalsCache/VulkanSDK"
+        sdk_dir="${{ runner.tool_cache }}/VulkanSDK"
         sdk_ver_dir="$sdk_dir/$sdk_ver/$sdk_os_subdir"
         if [ -d "$sdk_ver_dir" ]; then
           echo "Vulkan SDK version directory already exists: $sdk_ver_dir"
