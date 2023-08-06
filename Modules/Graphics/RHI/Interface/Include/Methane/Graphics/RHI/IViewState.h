@@ -24,6 +24,7 @@ Methane view state interface: viewports and clipping rects setup.
 #pragma once
 
 #include <Methane/Graphics/Volume.hpp>
+#include <Methane/Data/IEmitter.h>
 
 namespace Methane::Graphics::Rhi
 {
@@ -35,12 +36,25 @@ struct ViewSettings
 
     [[nodiscard]] bool operator==(const ViewSettings& other) const noexcept;
     [[nodiscard]] bool operator!=(const ViewSettings& other) const noexcept;
+    [[nodiscard]] bool operator<(const ViewSettings& other) const noexcept;
     [[nodiscard]] explicit operator std::string() const;
 };
 
+struct IViewState;
+
+struct IViewStateCallback
+{
+    virtual void OnViewStateChanged(IViewState& view_state) = 0;
+    virtual void OnViewStateDestroyed(IViewState& view_state) = 0;
+
+    virtual ~IViewStateCallback() = default;
+};
+
 struct IViewState
+    : virtual Data::IEmitter<IViewStateCallback> // NOSONAR
 {
     using Settings = ViewSettings;
+    using ICallback = IViewStateCallback;
 
     // Create IViewState instance
     [[nodiscard]] static Ptr<IViewState> Create(const Settings& state_settings);
@@ -51,8 +65,6 @@ struct IViewState
     virtual bool Reset(const Settings& settings) = 0;
     virtual bool SetViewports(const Viewports& viewports) = 0;
     virtual bool SetScissorRects(const ScissorRects& scissor_rects) = 0;
-
-    virtual ~IViewState() = default;
 };
 
 } // namespace Methane::Graphics::Rhi

@@ -61,9 +61,9 @@ struct DeviceCaps
         DeviceFeature::AnisotropicFiltering,
         DeviceFeature::ImageCubeArray,
     };
-    uint32_t          render_queues_count   { 1U };
-    uint32_t          transfer_queues_count { 1U };
-    uint32_t          compute_queues_count  { 1U };
+    uint32_t render_queues_count   { 1U };
+    uint32_t transfer_queues_count { 1U };
+    uint32_t compute_queues_count  { 1U };
 
     DeviceCaps& SetFeatures(DeviceFeatureMask new_features) noexcept;
     DeviceCaps& SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept;

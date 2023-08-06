@@ -67,6 +67,7 @@ protected:
     // Rarely actual frame buffers count in swap-chain may be different from the requested,
     // so it may be changed from RenderContextXX::Initialize() method
     void InvalidateFrameBuffersCount(uint32_t frame_buffers_count);
+    void InvalidateFrameBufferIndex(uint32_t frame_buffer_index);
 
     Rhi::IFence& GetCurrentFrameFence() const;
     Rhi::IFence& GetRenderFence() const;

@@ -92,6 +92,10 @@
                     "type": "BOOL",
                     "value": "OFF"
                 },
+                "METHANE_MEMORY_SANITIZER_ENABLED":  {
+                    "type": "BOOL",
+                    "value": "OFF"
+                },
                 "METHANE_APPLE_CODE_SIGNING_ENABLED": {
                     "type": "BOOL",
                     "value": "OFF"
@@ -701,6 +705,30 @@
         },
 
         {
+            "name": "Ninja-Mac-VK-Default",
+            "displayName": "Default - Ninja Multi-Config - MacOS (Vulkan)",
+            "description": "Default configuration using Ninja Multi-Config generator for MacOS (Vulkan)",
+            "inherits": [
+                "Ninja-Mac-Default"
+            ],
+            "cacheVariables": {
+                "METHANE_GFX_VULKAN_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
+            "name": "Xcode-Mac-VK-Default",
+            "displayName": "Default - Xcode - MacOS (Vulkan)",
+            "description": "Default configuration using Xcode generator for MacOS (Vulkan)",
+            "generator": "Xcode",
+            "inherits": [
+                "Ninja-Mac-VK-Default"
+            ]
+        },
+
+        {
             "name": "Ninja-Mac-MTL-Default",
             "displayName": "Default - Ninja Multi-Config - MacOS (Metal)",
             "description": "Default configuration using Ninja Multi-Config generator for MacOS (Metal)",
@@ -1260,6 +1288,39 @@
             "description": "Scanning build with Unix Makefiles for Linux (Vulkan)",
             "inherits": [ "Linux-Build" ],
             "configurePreset": "Make-Lin-VK-Scan"
+        },
+
+        {
+            "name": "Ninja-Mac-VK-Debug",
+            "displayName": "Debug - Ninja Multi-Config - MacOS (Vulkan)",
+            "description": "Debug build with Ninja Multi-Config for MacOS (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Ninja-Mac-VK-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Ninja-Mac-VK-Release",
+            "displayName": "Release - Ninja Multi-Config - MacOS (Vulkan)",
+            "description": "Release build with Ninja Multi-Config for MacOS (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Ninja-Mac-VK-Default",
+            "configuration": "Release"
+        },
+        {
+            "name": "Xcode-Mac-VK-Debug",
+            "displayName": "Debug - Xcode - MacOS (Vulkan)",
+            "description": "Debug build with Xcode for MacOS (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-VK-Default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "Xcode-Mac-VK-Release",
+            "displayName": "Release - Xcode - MacOS (Vulkan)",
+            "description": "Release build with Xcode for MacOS (Vulkan)",
+            "inherits": [ "MacOS-Build" ],
+            "configurePreset": "Xcode-Mac-VK-Default",
+            "configuration": "Release"
         },
 
         {

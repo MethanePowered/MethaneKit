@@ -21,6 +21,12 @@ Methane global solution/workspace options, which must be set from root CMakeList
 
 *****************************************************************************]]
 
+if (METHANE_MEMORY_SANITIZER_ENABLED)
+    # Add compiler and linker options globally for all modules
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+endif()
+
 if(WIN32)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -49,7 +55,7 @@ elseif(APPLE)
     endif()
 
     # Set OS deployment target minimum version
-    if(DEPLOYMENT_TARGET)
+    if (DEPLOYMENT_TARGET)
         set(CMAKE_OSX_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}")
     else()
         set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0")
@@ -86,16 +92,15 @@ elseif(APPLE)
     set(CMAKE_XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path")
 
     if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
-        # On Windows and Linux, only Vulkan-Headers are required to build Methane Kit,
-        # because it is dynamically loading Vulkan library in runtime. Vulkan SDK is not required for build.
-        message(WARNING "METHANE RHI: Vulkan API is not supported on MacOS, because MoltenVK does not support extension 'VK_EXT_extended_dynamic_state'")
-        # To enable Vulkan API on MacOS we link statically with MoltenVK framework (translation layer to Metal).
-        # in order to enable finding Vulkan SDK with MoltenVK framework, set environment variable
-        # - VULKAN_SDK to full installation path before running CMake generator ($USER_HOME$/VulkanSDK/1.2.182.0/macOS)
+        # * On Windows and Linux, only Vulkan-Headers are required to build Methane Kit,
+        #   because it is dynamically loading Vulkan library in runtime. Vulkan SDK is not required for build.
+        # * To enable Vulkan API on MacOS we link statically with MoltenVK framework (translation layer to Metal).
+        #   in order to enable finding Vulkan SDK with MoltenVK framework, environment variable might need to be set:
+        #   - VULKAN_SDK to full installation path before running CMake generator ($HOME/VulkanSDK/1.3.250.1/macOS)
         find_package(Vulkan REQUIRED)
-        # To run Vulkan application on MacOS, additional environment variables need to be set for application:
-        # - VK_ICD_FILENAMES=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/icd.d/MoltenVK_icd.json
-        # - VK_LAYER_PATH=$USER_HOME$/VulkanSDK/1.2.182.0/macOS/share/vulkan/explicit_layer.d
+        # * To run Vulkan application on MacOS, additional environment variables might need to be set for application:
+        #   - VK_ICD_FILENAMES=$HOME/VulkanSDK/1.3.250.1/macOS/share/vulkan/icd.d/MoltenVK_icd.json
+        #   - VK_LAYER_PATH=$HOME/VulkanSDK/1.3.250.1/macOS/share/vulkan/explicit_layer.d
     endif()
 
 else(UNIX)

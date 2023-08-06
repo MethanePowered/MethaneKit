@@ -28,6 +28,7 @@ Vulkan implementation of the parallel render command list interface.
 
 #include <Methane/Graphics/Base/ParallelRenderCommandList.h>
 #include <Methane/Graphics/Base/QueryPool.h>
+#include <Methane/Data/Receiver.hpp>
 
 namespace Methane::Graphics::Vulkan
 {
@@ -38,6 +39,7 @@ class RenderPass;
 
 class ParallelRenderCommandList final
     : public Base::ParallelRenderCommandList
+    , private Data::Receiver<Rhi::IRenderPassCallback>
 {
 public:
     ParallelRenderCommandList(CommandQueue& command_queue, RenderPass& render_pass);
@@ -61,7 +63,7 @@ public:
 
     const Vulkan::ICommandList& GetVulkanPrimaryCommandList() const noexcept { return m_beginning_command_list; }
     CommandQueue& GetVulkanCommandQueue() noexcept;
-    RenderPass& GetVulkanPass() noexcept;
+    RenderPass& GetVulkanRenderPass() const noexcept;
 
 protected:
     // ParallelRenderCommandListBase interface
@@ -69,6 +71,11 @@ protected:
 
 private:
     using SyncCommandList = Vulkan::CommandList<Base::CommandList, vk::PipelineBindPoint::eGraphics>;
+
+    // IRenderPassCallback
+    void OnRenderPassUpdated(const Rhi::IRenderPass& render_pass) override;
+
+    void UpdateParallelCommandBuffers();
 
     RenderCommandList                m_beginning_command_list;
     vk::CommandBufferInheritanceInfo m_vk_ending_inheritance_info;

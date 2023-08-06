@@ -45,8 +45,11 @@ template<>
 struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsage& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", fmt::join(rl.GetBitNames(), "|")); }
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsage& rl, FormatContext& ctx) const
+    { return format_to(ctx.out(), "{}", fmt::join(rl.GetBitNames(), "|")); }
+
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
 };
 
 namespace Methane::Graphics::DirectX
@@ -361,7 +364,7 @@ bool Texture::SetName(std::string_view name)
 void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_cp_upload_resource, "Only ForImage textures support data upload from CPU.");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_cp_upload_resource, "Only Image textures support data upload from CPU.");
 
     Base::Texture::SetData(target_cmd_queue, sub_resources);
 

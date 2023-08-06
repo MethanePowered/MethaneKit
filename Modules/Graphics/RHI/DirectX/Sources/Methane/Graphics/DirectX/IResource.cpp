@@ -29,8 +29,11 @@ template<>
 struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
 {
     template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsage& rl, FormatContext& ctx) { return format_to(ctx.out(), "{}", fmt::join(rl.GetBitNames(), "|")); }
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsage& rl, FormatContext& ctx) const
+    { return format_to(ctx.out(), "{}", fmt::join(rl.GetBitNames(), "|")); }
+
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
 };
 
 namespace Methane::Graphics::DirectX

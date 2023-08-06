@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/ImageLoader.cpp
-ForImage Loader creates textures from images loaded via data provider and
+Image Loader creates textures from images loaded via data provider and
 by decoding them from popular image formats.
 
 ******************************************************************************/
@@ -27,11 +27,10 @@ by decoding them from popular image formats.
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Platform/Utils.h>
-#include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <taskflow/taskflow.hpp>
+#include <taskflow/algorithm/for_each.hpp>
 
 #ifdef USE_OPEN_IMAGE_IO
 

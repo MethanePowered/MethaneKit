@@ -50,9 +50,12 @@ public:
     const std::vector<vk::Viewport>& GetNativeViewports() const noexcept    { return m_vk_viewports; }
     const std::vector<vk::Rect2D>&   GetNativeScissorRects() const noexcept { return m_vk_scissor_rects; }
 
+    const vk::PipelineViewportStateCreateInfo& GetNativeViewportStateCreateInfo() const noexcept { return m_vk_viewport_state_info; }
+
 private:
     std::vector<vk::Viewport> m_vk_viewports;
     std::vector<vk::Rect2D>   m_vk_scissor_rects;
+    vk::PipelineViewportStateCreateInfo m_vk_viewport_state_info;
 };
 
 } // namespace Methane::Graphics::Vulkan

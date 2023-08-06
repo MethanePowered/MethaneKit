@@ -36,6 +36,9 @@ template<typename VulkanObjectType>
 void SetVulkanObjectName(const vk::Device& vk_device, const VulkanObjectType& vk_object, const char* name)
 {
     META_FUNCTION_TASK();
+    if (!vk_object)
+        return;
+
     vk_device.setDebugUtilsObjectNameEXT(
         vk::DebugUtilsObjectNameInfoEXT(
             VulkanObjectType::objectType,

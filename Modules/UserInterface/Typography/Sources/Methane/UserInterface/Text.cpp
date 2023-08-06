@@ -266,11 +266,11 @@ public:
         META_CHECK_ARG_TRUE(m_uniforms_buffer.IsInitialized());
 
         m_program_bindings = state.GetProgram().CreateBindings({
-                                                                   { { rhi::ShaderType::Vertex, "g_uniforms" },  { { m_uniforms_buffer.GetInterface() } } },
-                                                                   { { rhi::ShaderType::Pixel,  "g_constants" }, { { const_buffer.GetInterface() } } },
-                                                                   { { rhi::ShaderType::Pixel,  "g_texture" },   { { m_atlas_texture.GetInterface() } } },
-                                                                   { { rhi::ShaderType::Pixel,  "g_sampler" },   { { atlas_sampler.GetInterface() } } },
-                                                               });
+            { { rhi::ShaderType::Vertex, "g_uniforms" },  { { m_uniforms_buffer.GetInterface() } } },
+            { { rhi::ShaderType::Pixel,  "g_constants" }, { { const_buffer.GetInterface() } } },
+            { { rhi::ShaderType::Pixel,  "g_texture" },   { { m_atlas_texture.GetInterface() } } },
+            { { rhi::ShaderType::Pixel,  "g_sampler" },   { { atlas_sampler.GetInterface() } } },
+        });
         m_program_bindings.SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
     }
 };
@@ -321,33 +321,34 @@ public:
         else
         {
             rhi::RenderState::Settings state_settings
-                                           {
-                                               rhi::Program(m_ui_context.GetRenderContext(),
-                                                            rhi::Program::Settings
-                                                                {
-                                                                    rhi::Program::ShaderSet
-                                                                        {
-                                                                            { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, {} } },
-                                                                            { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Text", "TextPS" }, {} } },
-                                                                        },
-                                                                    rhi::ProgramInputBufferLayouts
-                                                                        {
-                                                                            rhi::Program::InputBufferLayout
-                                                                                {
-                                                                                    rhi::Program::InputBufferLayout::ArgumentSemantics{ "POSITION", "TEXCOORD" }
-                                                                                }
-                                                                        },
-                                                                    rhi::ProgramArgumentAccessors
-                                                                        {
-                                                                            { { rhi::ShaderType::Vertex, "g_uniforms" },  rhi::ProgramArgumentAccessor::Type::Mutable },
-                                                                            { { rhi::ShaderType::Pixel,  "g_constants" }, rhi::ProgramArgumentAccessor::Type::Mutable },
-                                                                            { { rhi::ShaderType::Pixel,  "g_texture" },   rhi::ProgramArgumentAccessor::Type::Mutable },
-                                                                            { { rhi::ShaderType::Pixel,  "g_sampler" },   rhi::ProgramArgumentAccessor::Type::Constant },
-                                                                        },
-                                                                    render_pattern.GetAttachmentFormats()
-                                                                }),
-                                               render_pattern
-                                           };
+            {
+                rhi::Program(
+                    m_ui_context.GetRenderContext(),
+                    rhi::Program::Settings
+                    {
+                        rhi::Program::ShaderSet
+                        {
+                            { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, {} } },
+                            { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Text", "TextPS" }, {} } },
+                        },
+                        rhi::ProgramInputBufferLayouts
+                        {
+                            rhi::Program::InputBufferLayout
+                            {
+                                rhi::Program::InputBufferLayout::ArgumentSemantics{ "POSITION", "TEXCOORD" }
+                            }
+                        },
+                        rhi::ProgramArgumentAccessors
+                        {
+                            { { rhi::ShaderType::Vertex, "g_uniforms" },  rhi::ProgramArgumentAccessor::Type::Mutable },
+                            { { rhi::ShaderType::Pixel,  "g_constants" }, rhi::ProgramArgumentAccessor::Type::Mutable },
+                            { { rhi::ShaderType::Pixel,  "g_texture" },   rhi::ProgramArgumentAccessor::Type::Mutable },
+                            { { rhi::ShaderType::Pixel,  "g_sampler" },   rhi::ProgramArgumentAccessor::Type::Constant },
+                        },
+                        render_pattern.GetAttachmentFormats()
+                    }),
+                render_pattern
+            };
             state_settings.program.SetName("Text Shading");
             state_settings.depth.enabled                                        = false;
             state_settings.depth.write_enabled                                  = false;
@@ -368,12 +369,12 @@ public:
 
         const FrameRect viewport_rect = m_text_mesh_ptr ? GetAlignedViewportRect() : m_frame_rect.AsBase();
         m_view_state = rhi::ViewState({
-                                          { gfx::GetFrameViewport(viewport_rect) },
-                                          { gfx::GetFrameScissorRect(viewport_rect) }
-                                      });
+            { gfx::GetFrameViewport(viewport_rect) },
+            { gfx::GetFrameScissorRect(viewport_rect) }
+        });
 
         static const std::string s_sampler_name    = "Font Atlas Sampler";
-        if (const auto           atlas_sampler_ptr = std::dynamic_pointer_cast<rhi::ISampler>(gfx_objects_registry.GetGraphicsObject(s_sampler_name));
+        if (const auto atlas_sampler_ptr = std::dynamic_pointer_cast<rhi::ISampler>(gfx_objects_registry.GetGraphicsObject(s_sampler_name));
             atlas_sampler_ptr)
         {
             m_atlas_sampler = rhi::Sampler(atlas_sampler_ptr);
@@ -381,9 +382,9 @@ public:
         else
         {
             m_atlas_sampler = m_ui_context.GetRenderContext().CreateSampler({
-                                                                                rhi::ISampler::Filter(rhi::ISampler::Filter::MinMag::Linear),
-                                                                                rhi::ISampler::Address(rhi::ISampler::Address::Mode::ClampToZero),
-                                                                            });
+                rhi::ISampler::Filter(rhi::ISampler::Filter::MinMag::Linear),
+                rhi::ISampler::Address(rhi::ISampler::Address::Mode::ClampToZero),
+            });
             m_atlas_sampler.SetName(s_sampler_name);
 
             gfx_objects_registry.AddGraphicsObject(m_atlas_sampler.GetInterface());
@@ -397,17 +398,17 @@ public:
     Impl(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf8& settings)
         : Impl(ui_context, render_pattern, font,
                SettingsUtf32
-                   {
-                       settings.name,
-                       Font::ConvertUtf8To32(settings.text),
-                       settings.rect,
-                       settings.layout,
-                       settings.color,
-                       settings.incremental_update,
-                       settings.adjust_vertical_content_offset,
-                       settings.mesh_buffers_reservation_multiplier,
-                       settings.state_name
-                   }
+               {
+                   settings.name,
+                   Font::ConvertUtf8To32(settings.text),
+                   settings.rect,
+                   settings.layout,
+                   settings.color,
+                   settings.incremental_update,
+                   settings.adjust_vertical_content_offset,
+                   settings.mesh_buffers_reservation_multiplier,
+                   settings.state_name
+               }
     )
     { }
 

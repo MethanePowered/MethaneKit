@@ -29,14 +29,20 @@ template<>
 struct fmt::formatter<Methane::Graphics::Rhi::SubResource::Index>
 {
     template<typename FormatContext>
-    auto format(const Methane::Graphics::Rhi::SubResource::Index& index, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(index)); }
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    auto format(const Methane::Graphics::Rhi::SubResource::Index& index, FormatContext& ctx) const
+    { return format_to(ctx.out(), "{}", static_cast<std::string>(index)); }
+
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
 };
 
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::SubResource::Count>
 {
     template<typename FormatContext>
-    auto format(const Methane::Graphics::Rhi::SubResource::Count& count, FormatContext& ctx) { return format_to(ctx.out(), "{}", static_cast<std::string>(count)); }
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const { return ctx.end(); }
+    auto format(const Methane::Graphics::Rhi::SubResource::Count& count, FormatContext& ctx) const
+    { return format_to(ctx.out(), "{}", static_cast<std::string>(count)); }
+
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
 };

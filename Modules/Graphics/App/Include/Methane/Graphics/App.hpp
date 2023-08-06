@@ -98,7 +98,7 @@ public:
 
             // Create color texture for frame buffer
             frame.screen_texture = render_context.CreateTexture(Rhi::TextureSettings::ForFrameBuffer(render_context.GetSettings(), frame.index));
-            frame.screen_texture.SetName(IndexedName("Frame Buffer", frame.index));
+            frame.screen_texture.SetName(fmt::format("Frame Buffer {}", frame.index));
 
             // Configure render pass: color, depth, stencil attachments and shader access
             frame.screen_pass = CreateScreenRenderPass(frame.screen_texture);

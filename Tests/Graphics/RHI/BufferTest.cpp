@@ -146,7 +146,7 @@ TEST_CASE("RHI Buffer Functions", "[rhi][buffer][resource]")
 
     SECTION("Get Data Size")
     {
-        CHECK(buffer.GetDataSize(Data::MemoryState::Reserved) == Rhi::BufferSettings::GetAlignedSize(constant_buffer_settings.size));
+        CHECK(buffer.GetDataSize(Data::MemoryState::Reserved) == constant_buffer_settings.size);
         CHECK(buffer.GetDataSize(Data::MemoryState::Initialized) == 0U);
     }
 

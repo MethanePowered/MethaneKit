@@ -153,7 +153,7 @@ CommandQueue& ParallelRenderCommandList::GetDirectCommandQueue()
 RenderPass& ParallelRenderCommandList::GetDirectPass()
 {
     META_FUNCTION_TASK();
-    return static_cast<RenderPass&>(GetPass());
+    return static_cast<RenderPass&>(GetRenderPass());
 }
 
 Ptr<Rhi::IRenderCommandList> ParallelRenderCommandList::CreateCommandList(bool)

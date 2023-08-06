@@ -27,11 +27,13 @@ Vulkan implementation of the program interface.
 #include "ProgramBindings.h"
 
 #include <Methane/Graphics/Base/Program.h>
+#include <Methane/Instrumentation.h>
 
 #include <magic_enum.hpp>
 #include <vulkan/vulkan.hpp>
 
 #include <array>
+#include <mutex>
 
 namespace Methane::Graphics::Vulkan
 {
@@ -68,8 +70,8 @@ public:
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
     const std::vector<vk::DescriptorSetLayout>& GetNativeDescriptorSetLayouts() const;
-    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(ArgumentAccessor::Type argument_access_type);
-    const DescriptorSetLayoutInfo& GetDescriptorSetLayoutInfo(ArgumentAccessor::Type argument_access_type);
+    const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(ArgumentAccessor::Type argument_access_type) const;
+    const DescriptorSetLayoutInfo& GetDescriptorSetLayoutInfo(ArgumentAccessor::Type argument_access_type) const;
     const vk::PipelineLayout& GetNativePipelineLayout();
     const vk::DescriptorSet& GetConstantDescriptorSet();
     const vk::DescriptorSet& GetFrameConstantDescriptorSet(Data::Index frame_index);
@@ -90,6 +92,7 @@ private:
     vk::UniquePipelineLayout                   m_vk_unique_pipeline_layout;
     std::optional<vk::DescriptorSet>           m_vk_constant_descriptor_set_opt;
     std::vector<vk::DescriptorSet>             m_vk_frame_constant_descriptor_sets;
+    TracyLockable(std::mutex,                  m_mutex);
 };
 
 } // namespace Methane::Graphics::Vulkan

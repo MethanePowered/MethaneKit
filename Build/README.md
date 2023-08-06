@@ -142,7 +142,7 @@ Alternatively root [CMakeLists.txt](/CMakeLists.txt) can be opened directly in V
 [Methane Graphics RHI](/Modules/Graphics/RHI) is built using **Metal** graphics API on MacOS by default.
 Vulkan graphics API can be used instead by adding cmake generator option `-DMETHANE_GFX_VULKAN_ENABLED:BOOL=ON` or
 by running `Build/Unix/Build.sh --vulkan`, but it requires Vulkan SDK installation with MoltenVK driver implementation
-on top of Metal, which is not currently supporting all extensions required by Methane Kit.
+on top of Metal.
 
 Run built applications from the installation directory `Build/Output/XCode/Install/Apps`.
 
@@ -212,6 +212,7 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=[ON|OFF]
 | <sub>METHANE_GPU_INSTRUMENTATION_ENABLED</sub>  | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>ON</b></sub>             | <sub>Enable GPU instrumentation to collect command list execution timings</sub>     |
 | <sub>METHANE_TRACY_PROFILING_ENABLED</sub>      | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>ON</b></sub>             | <sub>Enable realtime profiling with Tracy</sub>                                     |
 | <sub>METHANE_TRACY_PROFILING_ON_DEMAND</sub>    | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>ON</b></sub>             | <sub>Enable Tracy data collection on demand, after client connection</sub>          |
+| <sub>METHANE_MEMORY_SANITIZER_ENABLED</sub>     | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>OFF</b></sub>            | <sub>Enable memory address sanitizer in compiler and linker</sub>                   |
 | <sub>METHANE_APPLE_CODE_SIGNING_ENABLED</sub>   | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>OFF</b></sub>            | <sub>Enable code signing on Apple platforms (requires APPLE_DEVELOPMENT_TEAM)</sub> |
 
 ### CMake Presets

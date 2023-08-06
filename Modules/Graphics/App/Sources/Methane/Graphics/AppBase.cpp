@@ -409,10 +409,4 @@ void AppBase::OnContextInitialized(Rhi::IContext&)
     SetBaseAnimationsEnabled(m_restore_animations_enabled);
 }
 
-std::string AppBase::IndexedName(const std::string& base_name, uint32_t index)
-{
-    META_FUNCTION_TASK();
-    return fmt::format("{} {}", base_name, index);
-}
-
 } // namespace Methane::Graphics

@@ -157,7 +157,7 @@ void TexturedCubeApp::Init()
     {
         // Create uniforms buffer with volatile parameters for frame rendering
         frame.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
-        frame.uniforms_buffer.SetName(IndexedName("Uniforms Buffer", frame.index));
+        frame.uniforms_buffer.SetName(fmt::format("Uniforms Buffer {}", frame.index));
 
         // Configure program resource bindings
         frame.program_bindings = m_render_state.GetProgram().CreateBindings({
@@ -166,11 +166,11 @@ void TexturedCubeApp::Init()
             { { rhi::ShaderType::Pixel, "g_texture"   }, { { m_cube_texture.GetInterface()        } } },
             { { rhi::ShaderType::Pixel, "g_sampler"   }, { { m_texture_sampler.GetInterface()     } } },
         }, frame.index);
-        frame.program_bindings.SetName(IndexedName("Cube Bindings", frame.index));
+        frame.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
 
         // Create command list for rendering
         frame.render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
-        frame.render_cmd_list.SetName(IndexedName("Cube Rendering", frame.index));
+        frame.render_cmd_list.SetName(fmt::format("Cube Rendering {}", frame.index));
         frame.execute_cmd_list_set = rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
     }
 

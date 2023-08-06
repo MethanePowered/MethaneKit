@@ -77,7 +77,7 @@ bool ParallelRenderCommandList::ResetCommandEncoder()
 RenderPass& ParallelRenderCommandList::GetMetalRenderPass()
 {
     META_FUNCTION_TASK();
-    return static_cast<class RenderPass&>(GetPass());
+    return static_cast<class RenderPass&>(GetRenderPass());
 }
 
 } // namespace Methane::Graphics::Metal

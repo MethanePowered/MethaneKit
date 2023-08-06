@@ -37,7 +37,6 @@ Vulkan implementation of the render context interface.
 #include <Methane/Graphics/Vulkan/Platform.h>
 #include <Methane/Graphics/Vulkan/Types.h>
 #include <Methane/Graphics/Vulkan/Utils.hpp>
-
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
@@ -52,6 +51,7 @@ namespace Methane::Graphics::Vulkan
 RenderContext::RenderContext(const Methane::Platform::AppEnvironment& app_env, Device& device,
                                  tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings)
     : Context<Base::RenderContext>(device, parallel_executor, settings)
+    , m_app_env(app_env)
     , m_vk_device(device.GetNativeDevice())
     , m_vk_unique_surface(Platform::CreateVulkanSurfaceForWindow(static_cast<System&>(Rhi::ISystem::Get()).GetNativeInstance(), app_env))
 { }
@@ -116,7 +116,6 @@ void RenderContext::Initialize(Base::Device& device, bool is_callback_emitted)
     META_FUNCTION_TASK();
     SetDevice(device);
     InitializeNativeSwapchain();
-    UpdateFrameBufferIndex();
     Context<Base::RenderContext>::Initialize(device, is_callback_emitted);
 }
 
@@ -136,6 +135,8 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
     }
 
     GetVulkanDefaultCommandQueue(cl_type).CompleteExecution(frame_buffer_index);
+
+    m_vk_deferred_release_pipelines.clear();
 }
 
 bool RenderContext::ReadyToRender() const
@@ -189,6 +190,8 @@ void RenderContext::Present()
     UpdateFrameBufferIndex();
 }
 
+#ifndef __APPLE__
+
 bool RenderContext::SetVSyncEnabled(bool vsync_enabled)
 {
     META_FUNCTION_TASK();
@@ -199,6 +202,8 @@ bool RenderContext::SetVSyncEnabled(bool vsync_enabled)
     }
     return false;
 }
+
+#endif // # !defined(__APPLE__)
 
 bool RenderContext::SetFrameBuffersCount(uint32_t frame_buffers_count)
 {
@@ -218,6 +223,12 @@ const vk::Image& RenderContext::GetNativeFrameImage(uint32_t frame_buffer_index)
     return m_vk_frame_images[frame_buffer_index];
 }
 
+const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore() const
+{
+    META_FUNCTION_TASK();
+    return GetNativeFrameImageAvailableSemaphore(GetFrameBufferIndex());
+}
+
 const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore(uint32_t frame_buffer_index) const
 {
     META_FUNCTION_TASK();
@@ -225,24 +236,55 @@ const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore(uint32
     return m_vk_frame_image_available_semaphores[frame_buffer_index];
 }
 
-const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore() const
+const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore(Opt<uint32_t> frame_buffer_index_opt) const
 {
-    META_FUNCTION_TASK();
-    return GetNativeFrameImageAvailableSemaphore(GetFrameBufferIndex());
+    return frame_buffer_index_opt ? GetNativeFrameImageAvailableSemaphore(*frame_buffer_index_opt)
+                                  : GetNativeFrameImageAvailableSemaphore();
 }
 
 uint32_t RenderContext::GetNextFrameBufferIndex()
 {
     META_FUNCTION_TASK();
-    uint32_t next_image_index = 0;
-    const vk::Semaphore& vk_image_available_semaphore = m_vk_frame_semaphores_pool[Base::RenderContext::GetFrameBufferIndex()].get();
-    if (const vk::Result image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(), vk_image_available_semaphore, {}, &next_image_index);
-        image_acquire_result != vk::Result::eSuccess &&
-        image_acquire_result != vk::Result::eSuboptimalKHR)
-        throw InvalidArgumentException<vk::Result>("RenderContext::GetNextFrameBufferIndex", "image_acquire_result", image_acquire_result, "failed to acquire next image");
+    const uint32_t frame_sync_index = Base::RenderContext::GetFrameIndex() % m_frame_sync_pool.size();
+    const uint32_t await_sync_index = (frame_sync_index + 1U) % m_frame_sync_pool.size();
 
-    m_vk_frame_image_available_semaphores[next_image_index % m_vk_frame_image_available_semaphores.size()] = vk_image_available_semaphore;
-    return next_image_index % Base::RenderContext::GetSettings().frame_buffers_count;
+    // Wait for the rendering of the frame [N - FBC] (where FBC is Frame Buffers Count) to be completed,
+    // which is accomplished by waiting for the next frame image availability [N - FBC - 1]
+    // or simply [N + 1] in the FBC ring buffer
+    m_frame_sync_pool[await_sync_index].Wait(m_vk_device);
+
+    FrameSync& curr_frame_sync = m_frame_sync_pool[frame_sync_index];
+    if (curr_frame_sync.is_submitted)
+        return GetFrameBufferIndex();
+
+    // Acquire next frame image with signalling GPU semaphore and CPU fence when image will be acquired
+    uint32_t   next_image_index = 0;
+    switch (const vk::Result image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(),
+                                                                                    curr_frame_sync.vk_unique_semaphore.get(),
+                                                                                    curr_frame_sync.vk_unique_fence.get(),
+                                                                                    &next_image_index);
+            image_acquire_result)
+    {
+    case vk::Result::eSuccess:
+    case vk::Result::eSuboptimalKHR:
+        break;
+
+    case vk::Result::eErrorSurfaceLostKHR:
+        m_vk_unique_surface.release();
+        m_vk_unique_surface = Platform::CreateVulkanSurfaceForWindow(static_cast<System&>(Rhi::ISystem::Get()).GetNativeInstance(), m_app_env);
+        ResetNativeSwapchain();
+        break;
+
+    default:
+        throw InvalidArgumentException<vk::Result>("RenderContext::GetNextFrameBufferIndex", "image_acquire_result",
+                                                   image_acquire_result, "failed to acquire next image");
+    }
+
+    const uint32_t next_frame_index = next_image_index % Base::RenderContext::GetSettings().frame_buffers_count;
+    m_vk_frame_image_available_semaphores[next_frame_index] = curr_frame_sync.vk_unique_semaphore.get();
+    curr_frame_sync.is_submitted = true;
+
+    return next_frame_index;
 }
 
 vk::SurfaceFormatKHR RenderContext::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& available_formats) const
@@ -321,9 +363,9 @@ void RenderContext::InitializeNativeSwapchain()
     }
 
     const Device::SwapChainSupport swap_chain_support  = GetVulkanDevice().GetSwapChainSupportForSurface(GetNativeSurface());
-    const vk::SurfaceFormatKHR       swap_surface_format = ChooseSwapSurfaceFormat(swap_chain_support.formats);
-    const vk::PresentModeKHR         swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
-    const vk::Extent2D               swap_extent         = ChooseSwapExtent(swap_chain_support.capabilities);
+    const vk::SurfaceFormatKHR     swap_surface_format = ChooseSwapSurfaceFormat(swap_chain_support.formats);
+    const vk::PresentModeKHR       swap_present_mode   = ChooseSwapPresentMode(swap_chain_support.present_modes);
+    const vk::Extent2D             swap_extent         = ChooseSwapExtent(swap_chain_support.capabilities);
 
     uint32_t image_count = std::max(swap_chain_support.capabilities.minImageCount, GetSettings().frame_buffers_count);
     if (swap_chain_support.capabilities.maxImageCount && image_count > swap_chain_support.capabilities.maxImageCount)
@@ -357,17 +399,29 @@ void RenderContext::InitializeNativeSwapchain()
 
     // Create frame semaphores in pool
     const uint32_t frame_buffers_count = GetSettings().frame_buffers_count;
-    m_vk_frame_semaphores_pool.resize(frame_buffers_count);
-    for(vk::UniqueSemaphore& vk_unique_frame_semaphore : m_vk_frame_semaphores_pool)
+    m_frame_sync_pool.resize(frame_buffers_count);
+    for(FrameSync& frame_sync : m_frame_sync_pool)
     {
-        if (vk_unique_frame_semaphore)
-            continue;
+        if (!frame_sync.vk_unique_semaphore)
+            frame_sync.vk_unique_semaphore = m_vk_device.createSemaphoreUnique(vk::SemaphoreCreateInfo());
 
-        vk_unique_frame_semaphore = m_vk_device.createSemaphoreUnique(vk::SemaphoreCreateInfo());
+        if (!frame_sync.vk_unique_fence)
+            frame_sync.vk_unique_fence = m_vk_device.createFenceUnique(vk::FenceCreateInfo());
+
+        frame_sync.is_submitted = false;
     }
 
     // Image available semaphores are assigned from frame semaphores in GetNextFrameBufferIndex
     m_vk_frame_image_available_semaphores.resize(frame_buffers_count);
+
+    // Acquire first image from swapchain
+    const vk::UniqueFence first_image_fence = m_vk_device.createFenceUnique(vk::FenceCreateInfo());
+    const vk::ResultValue<uint32_t> first_image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(), {}, first_image_fence.get());
+    META_CHECK_ARG_EQUAL_DESCR(first_image_acquire_result.result, vk::Result::eSuccess, "failed to acquire first image of the just created swapchain");
+    InvalidateFrameBufferIndex(first_image_acquire_result.value);
+
+    const vk::Result wait_first_image_result = m_vk_device.waitForFences(first_image_fence.get(), true, std::numeric_limits<uint64_t>::max());
+    META_CHECK_ARG_EQUAL_DESCR(wait_first_image_result, vk::Result::eSuccess, "failed to wait for acquiring first image of the just created swapchain");
 
     ResetNativeObjectNames();
 
@@ -379,7 +433,12 @@ void RenderContext::ReleaseNativeSwapchainResources()
     META_FUNCTION_TASK();
     WaitForGpu(WaitFor::RenderComplete);
 
-    m_vk_frame_semaphores_pool.clear();
+    for(FrameSync& frame_sync : m_frame_sync_pool)
+    {
+        frame_sync.Wait(m_vk_device);
+    }
+
+    m_frame_sync_pool.clear();
     m_vk_frame_image_available_semaphores.clear();
     m_vk_frame_images.clear();
     m_vk_unique_swapchain.reset();
@@ -400,18 +459,39 @@ void RenderContext::ResetNativeObjectNames() const
     if (context_name.empty())
         return;
 
-    SetVulkanObjectName(m_vk_device, m_vk_unique_surface.get(), context_name.data());
+    // NOTE: Do not set name of the m_vk_unique_surface because it was not created with m_vk_device,
+    // and attempt to set name of the unrelated object may cause crash on some platforms (SIGSEGV on Linux).
+    SetVulkanObjectName(m_vk_device, m_vk_unique_swapchain.get(), context_name);
 
     uint32_t frame_index = 0u;
-    for (const vk::UniqueSemaphore& vk_unique_frame_semaphore : m_vk_frame_semaphores_pool)
+    for (const FrameSync& frame_sync : m_frame_sync_pool)
     {
-        if (!vk_unique_frame_semaphore)
-            continue;
+        if (!frame_sync.vk_unique_semaphore)
+            SetVulkanObjectName(m_vk_device, frame_sync.vk_unique_semaphore.get(),
+                                fmt::format("{} Frame {} Image Available Semaphore", context_name, frame_index));
 
-        const std::string frame_semaphore_name = fmt::format("{} Frame {} ForImage Available", GetName(), frame_index);
-        SetVulkanObjectName(m_vk_device, vk_unique_frame_semaphore.get(), frame_semaphore_name.c_str());
+        if (!frame_sync.vk_unique_fence)
+            SetVulkanObjectName(m_vk_device, frame_sync.vk_unique_fence.get(),
+                                fmt::format("{} Frame {} Image Available Fence", context_name, frame_index));
+
         frame_index++;
     }
+}
+
+void RenderContext::FrameSync::Wait(const vk::Device& vk_device)
+{
+    META_FUNCTION_TASK();
+    if (!is_submitted)
+        return;
+
+    if (vk_device.getFenceStatus(vk_unique_fence.get()) == vk::Result::eNotReady)
+    {
+        const vk::Result wait_result = vk_device.waitForFences(vk_unique_fence.get(), true, std::numeric_limits<uint64_t>::max());
+        META_CHECK_ARG_EQUAL_DESCR(wait_result, vk::Result::eSuccess, "failed to wait for frame synchronization fence (-N-1)");
+    }
+
+    vk_device.resetFences(vk_unique_fence.get());
+    is_submitted = false;
 }
 
 } // namespace Methane::Graphics::Vulkan

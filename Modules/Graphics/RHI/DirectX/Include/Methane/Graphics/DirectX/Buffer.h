@@ -36,7 +36,7 @@ class Buffer final // NOSONAR - inheritance hierarchy is greater than 5
     : public Resource<Base::Buffer>
 {
 public:
-    Buffer(const Base::Context& context, const Settings& settings);
+    Buffer(const Base::Context& context, const Settings& orig_settings);
 
     // IObject overrides
     bool SetName(std::string_view name) override;

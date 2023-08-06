@@ -28,7 +28,7 @@ Mesh buffers base implementation class.
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <taskflow/taskflow.hpp>
+#include <taskflow/algorithm/for_each.hpp>
 #include <fmt/format.h>
 
 namespace Methane::Graphics
