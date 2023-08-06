@@ -223,14 +223,14 @@ jobs:
       run: |
         runner_os=$(uname -s)
         case $runner_os in
-          macOS|Darwin) sdk_os=mac ;;
-          Linux) sdk_os=linux ;;
-          Windows|MINGW*) sdk_os=windows ;;
+          macOS|Darwin) sdk_os=mac ; sdk_os_subdir=macOS ;;
+          Linux) sdk_os=linux ; sdk_os_subdir=linux ;;
+          Windows|MINGW*) sdk_os=windows ; sdk_os_subdir=windows ;;
           *) echo "Unknown runner_os: $runner_os" ; exit 7 ; ;;
         esac
         sdk_ver="${{ env.vulkan_sdk_version }}"
-        sdk_dir="${{ runner.tool_cache }}/VulkanSDK"
-        sdk_ver_dir="$sdk_dir/$sdk_ver"
+        sdk_dir="Build/Output/ExternalsCache/VulkanSDK"
+        sdk_ver_dir="$sdk_dir/$sdk_ver/$sdk_os_subdir"
         if [ -d "$sdk_ver_dir" ]; then
           echo "Vulkan SDK version directory already exists: $sdk_ver_dir"
         else
@@ -240,12 +240,17 @@ jobs:
           curl -sSLo vulkan_sdk.7z $vulkan_sdk_url
           echo "Unpacking Vulkan SDK archive to $sdk_dir ..."
           7z x vulkan_sdk.7z -o$sdk_dir
-          test -d $sdk_ver_dir
+          if [ ! -d $sdk_ver_dir ]; then
+            echo "Vulkan SDK subdirectory not found: $sdk_ver_dir"
+            exit 7
+          fi
         fi
         echo "Setting VULKAN_SDK* environment variables..."
         echo "VULKAN_SDK=$sdk_ver_dir" >> $GITHUB_ENV
         echo "VULKAN_SDK_VERSION=$sdk_ver" >> $GITHUB_ENV
         echo "VULKAN_SDK_PLATFORM=$sdk_os" >> $GITHUB_ENV
+        echo "PATH=$PATH:$sdk_ver_dir/bin" >> $GITHUB_ENV
+        echo "DYLD_LIBRARY_PATH="$sdk_ver_dir/lib:${DYLD_LIBRARY_PATH:-}" >> $GITHUB_ENV
 
     - name: Initialize Externals Cache
       uses: actions/cache@v3
