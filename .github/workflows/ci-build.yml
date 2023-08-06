@@ -31,7 +31,7 @@ on:
 env:
   product_ver_major: 0
   product_ver_minor: 7
-  product_ver_patch: 2
+  product_ver_patch: 3
   product_ver_build: ${{ github.run_number }}
   tracy_release_version: "0.9.1"
   vulkan_sdk_version: "1.3.250.1"
