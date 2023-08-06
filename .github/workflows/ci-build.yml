@@ -34,6 +34,7 @@ env:
   product_ver_patch: 2
   product_ver_build: ${{ github.run_number }}
   tracy_release_version: "0.9.1"
+  vulkan_sdk_version: "1.3.250.1"
   is_origin_repository: ${{ github.repository == 'MethanePowered/MethaneKit' }}
   # TSC Invariant check is disabled to allow running Catch test executables only for tests list query by CTest
   TRACY_NO_INVARIANT_CHECK: 1
@@ -219,11 +220,27 @@ jobs:
 
     - name: Install Vulkan SDK
       if: ${{ matrix.install_vulkan_sdk }}
-      uses: MethanePowered/InstallVulkanSdk@main
-      with:
-        version: 1.3.250.1
-        destination: ${{ runner.tool_cache }}/VulkanSdk
-        use_cache: true
+      run: |
+        runner_os=$(uname -s)
+        case $runner_os in
+          macOS|Darwin) sdk_os=mac ;;
+          Linux) sdk_os=linux ;;
+          Windows|MINGW*) sdk_os=windows ;;
+          *) echo "unknown runner_os: $runner_os" ; exit 7 ; ;;
+        esac
+        sdk_ver=${{ env.vulkan_sdk_version }}
+        sdk_dir=${{ runner.tool_cache }}/VulkanSDK
+        test -d $sdk_dir || mkdir -pv $sdk_dir
+        curl -sSLo vulkan_sdk.7z https://github.com/MethanePowered/VulkanHeaders/releases/download/sdk-$sdk_ver/vulkan_sdk_$sdk_os.7z
+        7z x vulkan_sdk.7z -o$sdk_dir
+        sdk_ver_dir=$sdk_dir/$sdk_ver
+        test -d $sdk_ver_dir
+        fi
+        (
+          echo VULKAN_SDK=$sdk_ver_dir
+          echo VULKAN_SDK_VERSION=$sdk_ver
+          echo VULKAN_SDK_PLATFORM=$sdk_os
+        ) | tee -a $GITHUB_ENV
 
     - name: Initialize Externals Cache
       uses: actions/cache@v3
