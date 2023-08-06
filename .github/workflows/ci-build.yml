@@ -226,21 +226,26 @@ jobs:
           macOS|Darwin) sdk_os=mac ;;
           Linux) sdk_os=linux ;;
           Windows|MINGW*) sdk_os=windows ;;
-          *) echo "unknown runner_os: $runner_os" ; exit 7 ; ;;
+          *) echo "Unknown runner_os: $runner_os" ; exit 7 ; ;;
         esac
-        sdk_ver=${{ env.vulkan_sdk_version }}
-        sdk_dir=${{ runner.tool_cache }}/VulkanSDK
-        test -d $sdk_dir || mkdir -pv $sdk_dir
-        curl -sSLo vulkan_sdk.7z https://github.com/MethanePowered/VulkanHeaders/releases/download/sdk-$sdk_ver/vulkan_sdk_$sdk_os.7z
-        7z x vulkan_sdk.7z -o$sdk_dir
-        sdk_ver_dir=$sdk_dir/$sdk_ver
-        test -d $sdk_ver_dir
+        sdk_ver="${{ env.vulkan_sdk_version }}"
+        sdk_dir="${{ runner.tool_cache }}/VulkanSDK"
+        sdk_ver_dir="$sdk_dir/$sdk_ver"
+        if [ -d "$sdk_ver_dir" ]; then
+          echo "Vulkan SDK version directory already exists: $sdk_ver_dir"
+        else
+          test -d $sdk_dir || mkdir -pv $sdk_dir
+          vulkan_sdk_url=https://github.com/MethanePowered/VulkanHeaders/releases/download/sdk-$sdk_ver/vulkan_sdk_$sdk_os.7z
+          echo "Downloading Vulkan SDK archive $vulkan_sdk_url ..."
+          curl -sSLo vulkan_sdk.7z $vulkan_sdk_url
+          echo "Unpacking Vulkan SDK archive to $sdk_dir ..."
+          7z x vulkan_sdk.7z -o$sdk_dir
+          test -d $sdk_ver_dir
         fi
-        (
-          echo VULKAN_SDK=$sdk_ver_dir
-          echo VULKAN_SDK_VERSION=$sdk_ver
-          echo VULKAN_SDK_PLATFORM=$sdk_os
-        ) | tee -a $GITHUB_ENV
+        echo "Setting VULKAN_SDK* environment variables..."
+        echo "VULKAN_SDK=$sdk_ver_dir" >> $GITHUB_ENV
+        echo "VULKAN_SDK_VERSION=$sdk_ver" >> $GITHUB_ENV
+        echo "VULKAN_SDK_PLATFORM=$sdk_os" >> $GITHUB_ENV
 
     - name: Initialize Externals Cache
       uses: actions/cache@v3
