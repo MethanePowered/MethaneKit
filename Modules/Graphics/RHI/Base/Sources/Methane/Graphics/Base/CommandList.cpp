@@ -295,9 +295,13 @@ void CommandList::InitializeTimestampQueries() // NOSONAR - function is not cons
 {
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     META_FUNCTION_TASK();
-    Rhi::ITimestampQueryPool& query_pool_ptr = GetCommandQueue().GetTimestampQueryPool();
-    m_begin_timestamp_query_ptr = query_pool_ptr.CreateTimestampQuery(*this);
-    m_end_timestamp_query_ptr   = query_pool_ptr.CreateTimestampQuery(*this);
+    Rhi::ITimestampQueryPool* query_pool_ptr = GetCommandQueue().GetTimestampQueryPoolPtr().get();
+    // In DirectX copy command queue may have no support of timestamp queries
+    if (!query_pool_ptr)
+        return;
+
+    m_begin_timestamp_query_ptr = query_pool_ptr->CreateTimestampQuery(*this);
+    m_end_timestamp_query_ptr   = query_pool_ptr->CreateTimestampQuery(*this);
 #endif
 }
 

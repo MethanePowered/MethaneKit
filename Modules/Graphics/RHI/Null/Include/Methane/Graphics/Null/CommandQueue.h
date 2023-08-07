@@ -45,11 +45,11 @@ public:
     [[nodiscard]] Ptr<Rhi::IRenderCommandList>         CreateRenderCommandList(Rhi::IRenderPass& render_pass) override;
     [[nodiscard]] Ptr<Rhi::IParallelRenderCommandList> CreateParallelRenderCommandList(Rhi::IRenderPass& render_pass) override;
     [[nodiscard]] Ptr<Rhi::ITimestampQueryPool>        CreateTimestampQueryPool(uint32_t max_timestamps_per_frame) override;
-    uint32_t                  GetFamilyIndex() const noexcept override { return 0U; }
-    Rhi::ITimestampQueryPool& GetTimestampQueryPool() override         { return m_timestamp_query_pool; }
+    uint32_t                                           GetFamilyIndex() const noexcept override { return 0U; }
+    const Ptr<Rhi::ITimestampQueryPool>&               GetTimestampQueryPoolPtr() override      { return m_timestamp_query_pool_ptr; }
 
 private:
-    TimestampQueryPool m_timestamp_query_pool{ *this, 1000U };
+    const Ptr<Rhi::ITimestampQueryPool> m_timestamp_query_pool_ptr = std::make_shared<TimestampQueryPool>(*this, 1000U);
 };
 
 } // namespace Methane::Graphics::Null

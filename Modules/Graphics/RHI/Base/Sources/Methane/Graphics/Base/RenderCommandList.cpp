@@ -138,7 +138,9 @@ void RenderCommandList::SetViewState(Rhi::IViewState& view_state)
         return;
     }
 
-    META_LOG("{} Command list '{}' SET VIEW STATE:\n{}", magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(drawing_state.view_state_ptr->GetSettings()));
+    META_LOG("{} Command list '{}' SET VIEW STATE:\n{}",
+             magic_enum::enum_name(GetType()), GetName(),
+             drawing_state.view_state_ptr ? static_cast<std::string>(drawing_state.view_state_ptr->GetSettings()) : std::string());
     drawing_state.view_state_ptr = static_cast<ViewState*>(&view_state);
     drawing_state.view_state_ptr->Apply(*this);
     drawing_state.changes |= DrawingState::Change::ViewState;

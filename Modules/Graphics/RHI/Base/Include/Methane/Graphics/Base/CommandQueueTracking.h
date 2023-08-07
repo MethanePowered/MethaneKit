@@ -62,8 +62,8 @@ public:
 
     virtual void CompleteExecution(const Opt<Data::Index>& frame_index = { });
 
-    Ptr<CommandListSet>       GetLastExecutingCommandListSet() const;
-    Rhi::ITimestampQueryPool& GetTimestampQueryPool() final;
+    Ptr<CommandListSet> GetLastExecutingCommandListSet() const;
+    const Ptr<Rhi::ITimestampQueryPool>& GetTimestampQueryPoolPtr() final;
 
 protected:
     using CommandListSetsQueue = std::queue<Ptr<CommandListSet>>;

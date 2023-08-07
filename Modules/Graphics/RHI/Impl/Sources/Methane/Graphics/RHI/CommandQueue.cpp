@@ -147,9 +147,9 @@ ParallelRenderCommandList CommandQueue::CreateParallelRenderCommandList(const Re
     return GetImpl(m_impl_ptr).GetFamilyIndex();
 }
 
-[[nodiscard]] ITimestampQueryPool& CommandQueue::GetTimestampQueryPool()
+[[nodiscard]] const Ptr<ITimestampQueryPool>& CommandQueue::GetTimestampQueryPoolPtr()
 {
-    return GetImpl(m_impl_ptr).GetTimestampQueryPool();
+    return GetImpl(m_impl_ptr).GetTimestampQueryPoolPtr();
 }
 
 void CommandQueue::Execute(const CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback) const

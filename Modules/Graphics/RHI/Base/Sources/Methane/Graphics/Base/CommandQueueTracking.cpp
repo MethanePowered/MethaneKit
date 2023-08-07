@@ -174,13 +174,13 @@ Ptr<CommandListSet> CommandQueueTracking::GetLastExecutingCommandListSet() const
     return m_executing_command_lists.empty() ? Ptr<CommandListSet>() : m_executing_command_lists.back();
 }
 
-Rhi::ITimestampQueryPool& CommandQueueTracking::GetTimestampQueryPool()
+const Ptr<Rhi::ITimestampQueryPool>& CommandQueueTracking::GetTimestampQueryPoolPtr()
 {
     META_FUNCTION_TASK();
     if (!m_timestamp_query_pool_ptr)
         InitializeTimestampQueryPool();
 
-    return *m_timestamp_query_pool_ptr;
+    return m_timestamp_query_pool_ptr;
 }
 
 const Ptr<CommandListSet>& CommandQueueTracking::GetNextExecutingCommandListSet() const
