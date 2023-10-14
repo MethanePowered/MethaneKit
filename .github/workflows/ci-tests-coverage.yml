@@ -12,6 +12,7 @@ on:
 jobs:
   coverage-report:
     name: ${{ matrix.name }} Coverage Report
+    if: ${{ github.repository == 'MethanePowered/MethaneKit' }}
 
     strategy:
       fail-fast: false
