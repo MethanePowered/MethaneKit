@@ -62,7 +62,7 @@ jobs:
 
     - name: Install Linux prerequisites
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run:
+      run: |
         sudo apt update
         sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev
 
