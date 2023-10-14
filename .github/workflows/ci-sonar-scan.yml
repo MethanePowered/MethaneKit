@@ -33,7 +33,7 @@ on:
       - 'CMakeLists.txt'
       - 'CMakePresets.json'
   schedule:
-    - cron: '20 23 * * 3' # Scheduled workflow will not run in GitHub forks
+    - cron: '20 23 * * 3' # Scheduled workflow will not run in GitHub forks by default
 
 env:
   product_ver_major: 0
