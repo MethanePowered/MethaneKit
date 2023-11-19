@@ -13,6 +13,7 @@ add_executable(${TARGET}
     TransferCommandListTest.cpp
     ComputeCommandListTest.cpp
     BufferTest.cpp
+    BufferSetTest.cpp
     SamplerTest.cpp
     TextureTest.cpp
 )

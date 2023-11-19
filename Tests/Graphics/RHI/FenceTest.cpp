@@ -23,7 +23,6 @@ Unit-tests of the RHI Fence
 
 #include "RhiTestHelpers.hpp"
 
-#include <Methane/Data/AppShadersProvider.h>
 #include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
@@ -32,7 +31,6 @@ Unit-tests of the RHI Fence
 
 #include <memory>
 #include <taskflow/taskflow.hpp>
-#include <catch2/catch_test_macros.hpp>
 
 using namespace Methane;
 using namespace Methane::Graphics;
@@ -44,7 +42,7 @@ static uint64_t GetFenceValue(const Rhi::Fence& fence)
     return dynamic_cast<Null::Fence&>(fence.GetInterface()).GetValue();
 }
 
-TEST_CASE("RHI Fence Functions", "[rhi][queue]")
+TEST_CASE("RHI Fence Functions", "[rhi][fence]")
 {
     const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
     const Rhi::CommandQueue compute_cmd_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Compute);
