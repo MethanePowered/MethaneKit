@@ -88,7 +88,7 @@ elseif(APPLE)
     # Enable Obj-C automatic reference counting and Apple app options
     set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES")
     set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
-    set(CMAKE_INSTALL_RPATH "@executable_path")
+    set(CMAKE_INSTALL_RPATH "@executable_path;/usr/local/lib")
     set(CMAKE_XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path")
 
     if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)
