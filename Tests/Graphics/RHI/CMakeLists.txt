@@ -12,6 +12,7 @@ add_executable(${TARGET}
     FenceTest.cpp
     TransferCommandListTest.cpp
     ComputeCommandListTest.cpp
+    CommandKitTest.cpp
     BufferTest.cpp
     BufferSetTest.cpp
     SamplerTest.cpp

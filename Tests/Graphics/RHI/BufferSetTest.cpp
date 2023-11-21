@@ -16,7 +16,7 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Tests/Graphics/RHI/FenceTest.cpp
+FILE: Tests/Graphics/RHI/BufferSetTest.cpp
 Unit-tests of the RHI BufferSet
 
 ******************************************************************************/
