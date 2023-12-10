@@ -39,6 +39,7 @@ namespace Methane
 
 namespace rhi = Methane::Graphics::Rhi;
 
+[[maybe_unused]]
 static rhi::Device GetTestDevice()
 {
     static const rhi::Devices& devices = rhi::System::Get().UpdateGpuDevices();

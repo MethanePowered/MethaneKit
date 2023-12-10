@@ -23,24 +23,15 @@ Unit-tests of the RHI CommandListDebugGroup
 
 #include "RhiTestHelpers.hpp"
 
-#include <Methane/Graphics/RHI/ComputeContext.h>
-#include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 
 #include <memory>
-#include <catch2/matchers/catch_matchers.hpp>
-#include <taskflow/taskflow.hpp>
 
 using namespace Methane;
 using namespace Methane::Graphics;
 
-static tf::Executor g_parallel_executor;
-
 TEST_CASE("RHI Command List Debug Group Functions", "[rhi][list][debug]")
 {
-    const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
-    const Rhi::CommandQueue compute_cmd_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Compute);
-
     SECTION("Command List Debug Group Construction")
     {
         Rhi::CommandListDebugGroup debug_group;

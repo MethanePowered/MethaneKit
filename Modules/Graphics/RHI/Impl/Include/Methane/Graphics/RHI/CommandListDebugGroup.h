@@ -61,7 +61,7 @@ public:
     META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // ICommandListDebugGroup interface methods
-    META_PIMPL_API CommandListDebugGroup AddSubGroup(Data::Index id, const std::string& name) const;
+    META_PIMPL_API CommandListDebugGroup AddSubGroup(Data::Index id, std::string_view name) const;
     [[nodiscard]] META_PIMPL_API Opt<CommandListDebugGroup> GetSubGroup(Data::Index id) const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API bool HasSubGroups() const META_PIMPL_NOEXCEPT;
 
