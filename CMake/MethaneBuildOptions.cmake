@@ -156,6 +156,8 @@ else() # Clang or GCC on Linux/MacOS
     target_link_options(MethaneBuildOptions INTERFACE
         # -flto - use the link-time optimizer
         $<$<CONFIG:Release>:-flto>
+        # Disable useless warnings
+        LINKER:-no_warn_duplicate_libraries
     )
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # GCC
