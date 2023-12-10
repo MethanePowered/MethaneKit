@@ -10,6 +10,7 @@ add_executable(${TARGET}
     ViewStateTest.cpp
     CommandQueueTest.cpp
     FenceTest.cpp
+    CommandListDebugGroupTest.cpp
     TransferCommandListTest.cpp
     ComputeCommandListTest.cpp
     CommandKitTest.cpp

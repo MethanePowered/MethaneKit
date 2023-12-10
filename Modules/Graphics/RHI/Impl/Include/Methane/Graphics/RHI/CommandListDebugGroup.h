@@ -25,7 +25,7 @@ Methane CommandListDebugGroup PIMPL wrappers for direct calls to final implement
 
 #include <Methane/Pimpl.h>
 
-#include <Methane/Graphics/RHI/ICommandList.h>
+#include <Methane/Graphics/RHI/ICommandListDebugGroup.h>
 
 namespace Methane::Graphics::META_GFX_NAME
 {
