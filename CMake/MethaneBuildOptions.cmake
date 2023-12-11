@@ -156,8 +156,6 @@ else() # Clang or GCC on Linux/MacOS
     target_link_options(MethaneBuildOptions INTERFACE
         # -flto - use the link-time optimizer
         $<$<CONFIG:Release>:-flto>
-        # Disable useless warnings
-        LINKER:--no_warn_duplicate_libraries
     )
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # GCC
@@ -180,6 +178,22 @@ else() # Clang or GCC on Linux/MacOS
         )
 
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+
+        EXECUTE_PROCESS(COMMAND clang --version OUTPUT_VARIABLE CLANG_FULL_VERSION_STRING)
+        string(REGEX REPLACE ".*clang version ([0-9]+\\.[0-9]+).*" "\\1" CLANG_VERSION_STRING ${CLANG_FULL_VERSION_STRING})
+
+        # Warn about requirement to set OSX architectures for fat-binary starting with XCode & Clang v12.0
+        # Build architectures have to be set with cmake generator command line option -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+        if (NOT CMAKE_OSX_ARCHITECTURES AND CLANG_VERSION_STRING VERSION_GREATER_EQUAL 12.0)
+            message(WARNING "Apple Clang v12.0 requires build architectures to be set explicitly with cmake generator option -DCMAKE_OSX_ARCHITECTURES=\"arm64;x86_64\"")
+        endif()
+
+        # Disable duplicate libraries warning for AppleClang >= 15.0
+        if (CLANG_VERSION_STRING VERSION_GREATER_EQUAL 15.0)
+            target_link_options(MethaneBuildOptions INTERFACE
+                LINKER:-no_warn_duplicate_libraries
+            )
+        endif()
 
         if(METHANE_RHI_PIMPL_INLINE_ENABLED AND METHANE_GFX_API EQUAL METHANE_GFX_METAL)
             target_compile_options(MethaneBuildOptions INTERFACE
