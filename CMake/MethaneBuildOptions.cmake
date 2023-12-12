@@ -117,6 +117,14 @@ if (MSVC)
             $<$<CONFIG:Release>:/LTCG>
         )
 
+        target_compile_definitions(MethaneBuildOptions INTERFACE
+            # FIXME: Silence MSVC warnings about use of stdext::checked_array_iterator until migration to C++20:
+            #        warning STL4043: stdext::checked_array_iterator, stdext::unchecked_array_iterator,
+            #        and related factory functions are non-Standard extensions and will be removed in the future.
+            #        std::span (since C++20) and gsl::span can be used instead.
+            _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
+        )
+
     else() # Clang compiler on Windows
 
         target_compile_options(MethaneBuildOptions INTERFACE
