@@ -3,7 +3,7 @@ include(MethaneModules)
 CPMAddPackage(
     NAME DirectXShaderCompilerBinary
     GITHUB_REPOSITORY MethanePowered/DirectXShaderCompilerBinary
-    GIT_TAG 023e6ce2e46416ae2b506682b39b99f36c4e8ebc
+    GIT_TAG a50df7047e7811cef3bf52dc127aa9fdcaf0eedb
     VERSION 1.6.2104.2
 )
 
