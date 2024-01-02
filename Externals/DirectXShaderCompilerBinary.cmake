@@ -3,8 +3,7 @@ include(MethaneModules)
 CPMAddPackage(
     NAME DirectXShaderCompilerBinary
     GITHUB_REPOSITORY MethanePowered/DirectXShaderCompilerBinary
-    GIT_TAG 5b5f70b9837045ba3441b03e7cf70f2443cb82f6
-    VERSION 1.6.2104.2
+    VERSION 1.7.2308
 )
 
 get_platform_arch_dir(PLATFORM_ARCH_DIR CPP_EXT)
