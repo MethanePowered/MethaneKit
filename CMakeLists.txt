@@ -68,6 +68,10 @@ option(METHANE_CODE_COVERAGE_ENABLED        "Enable code coverage data collectio
 option(METHANE_SHADERS_CODEVIEW_ENABLED     "Enable shaders code symbols viewing in debug tools" OFF)
 option(METHANE_OPEN_IMAGE_IO_ENABLED        "Enable using OpenImageIO library for images loading" OFF)
 
+if(APPLE)
+    option(METHANE_METAL_SHADER_CONVERTER_ENABLED "Enable Apple Metal Shader Converter instead of SPIRV-Cross" OFF)
+endif()
+
 # Profiling and instrumentation configuration
 option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
 option(METHANE_LOGGING_ENABLED              "Enable debug logging" OFF)

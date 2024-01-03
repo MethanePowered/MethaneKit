@@ -74,11 +74,56 @@ static Rhi::IResource::Type GetResourceTypeByMetalArgumentType(MTLBindingType mt
 [[nodiscard]]
 static uint32_t GetBindingArrayLength(id<MTLBinding> mtl_binding)
 {
+    META_FUNCTION_TASK();
     if (mtl_binding.type != MTLBindingTypeTexture)
         return 1U;
 
     id<MTLTextureBinding> mtl_texture_binding = static_cast<id<MTLTextureBinding>>(mtl_binding);
     return static_cast<uint32_t>(mtl_texture_binding.arrayLength);
+}
+
+[[nodiscard]]
+id<MTLFunction> Shader::GetMetalLibraryFunction(const IContext& context, const Rhi::ShaderSettings& settings)
+{
+    META_FUNCTION_TASK();
+    const std::string compiled_entry_function_name = Base::Shader::GetCompiledEntryFunctionName(settings);
+
+#ifdef METAL_LIBRARY_SPLIT_BY_SHADER_ENTRY_FUNCTION
+    std::string_view shader_library_name =  compiled_entry_function_name;
+#else
+    std::string_view shader_library_name = settings.entry_function.file_name;
+#endif
+
+    const Ptr<ProgramLibrary>& program_library_ptr = context.GetMetalLibrary(shader_library_name);
+    META_CHECK_ARG_NOT_NULL(program_library_ptr);
+    id<MTLLibrary> mtl_shader_library = program_library_ptr->GetNativeLibrary();
+
+#ifdef METAL_LIBRARY_SPLIT_BY_SHADER_ENTRY_FUNCTION
+    NSString* ns_shader_function_name = mtl_shader_library.functionNames.firstObject;
+#else
+    NSString* ns_shader_function_name = Methane::MacOS::ConvertToNsString(compiled_entry_function_name);
+#endif
+
+    return [mtl_shader_library newFunctionWithName: ns_shader_function_name];
+}
+
+[[nodiscard]]
+static std::string GetAttributeName(NSString* ns_reflect_attrib_name)
+{
+    META_FUNCTION_TASK();
+
+    // Regex matching prefix of the input attributes "in_var_..."
+    static const std::regex s_attr_prefix_regex("^in_var_");
+
+    // Regex matching suffix of the input attributes "...123"
+    static const std::regex s_attr_suffix_regex("\\d+$");
+
+    std::string attrib_name = MacOS::ConvertFromNsString(ns_reflect_attrib_name);
+    attrib_name = std::regex_replace(attrib_name, s_attr_prefix_regex, "");
+    attrib_name = std::regex_replace(attrib_name, s_attr_suffix_regex, "");
+
+    std::transform(attrib_name.begin(), attrib_name.end(), attrib_name.begin(), ::toupper);
+    return attrib_name;
 }
 
 #ifndef NDEBUG
@@ -114,8 +159,7 @@ static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
 
 Shader::Shader(Rhi::ShaderType shader_type, const Base::Context& context, const Settings& settings)
     : Base::Shader(shader_type, context, settings)
-    , m_mtl_function([dynamic_cast<const IContext&>(context).GetMetalLibrary(settings.entry_function.file_name)->GetNativeLibrary()
-                         newFunctionWithName: Methane::MacOS::ConvertToNsString(GetCompiledEntryFunctionName())])
+    , m_mtl_function(GetMetalLibraryFunction(dynamic_cast<const IContext&>(context), settings))
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_function, "failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName());
@@ -184,10 +228,6 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
 MTLVertexDescriptor* Shader::GetNativeVertexDescriptor(const Program& program) const
 {
     META_FUNCTION_TASK();
-    
-    // Regex matching prefix of the input attributes "in_var_"
-    static const std::regex s_attr_suffix_regex("^in_var_");
-
     MTLVertexDescriptor* mtl_vertex_desc = [[MTLVertexDescriptor alloc] init];
     [mtl_vertex_desc reset];
     
@@ -198,7 +238,7 @@ MTLVertexDescriptor* Shader::GetNativeVertexDescriptor(const Program& program) c
             continue;
         
         const MTLVertexFormat mtl_vertex_format = TypeConverter::MetalDataTypeToVertexFormat(mtl_vertex_attrib.attributeType);
-        const std::string attrib_name = std::regex_replace(MacOS::ConvertFromNsString(mtl_vertex_attrib.name), s_attr_suffix_regex, "");
+        const std::string attrib_name = GetAttributeName(mtl_vertex_attrib.name);
         const uint32_t    attrib_size = TypeConverter::ByteSizeOfVertexFormat(mtl_vertex_format);
         const uint32_t    attrib_slot = GetProgramInputBufferIndexByArgumentSemantic(program, attrib_name);
         

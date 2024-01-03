@@ -49,6 +49,8 @@ public:
 private:
     const IContext& GetMetalContext() const noexcept;
 
+    static id<MTLFunction> GetMetalLibraryFunction(const IContext& context, const Rhi::ShaderSettings& settings);
+
     id<MTLFunction>          m_mtl_function;
     NSArray<id<MTLBinding>>* m_mtl_bindings = nil;
 };

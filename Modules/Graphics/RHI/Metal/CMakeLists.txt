@@ -115,3 +115,11 @@ set_source_files_properties(
         SKIP_PRECOMPILE_HEADERS ON
         SKIP_UNITY_BUILD_INCLUSION ON
 )
+
+if (METHANE_METAL_SHADER_CONVERTER_ENABLED)
+    set_source_files_properties(
+        ${SOURCES_DIR}/Shader.mm
+        PROPERTIES
+            COMPILE_FLAGS "-DMETAL_LIBRARY_SPLIT_BY_SHADER_ENTRY_FUNCTION"
+    )
+endif()
