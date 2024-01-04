@@ -1,8 +1,8 @@
 CPMAddPackage(
     NAME SPIRVCross
     GITHUB_REPOSITORY MethanePowered/SPIRVCross
-    GIT_TAG sdk-1.3.216.0
-    VERSION 1.3.216.0
+    GIT_TAG vulkan-sdk-1.3.268.0
+    VERSION 1.3.268.0
     OPTIONS
         "SPIRV_CROSS_STATIC ON"
         "SPIRV_CROSS_SHARED OFF"
