@@ -158,7 +158,7 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
         set(SHADER_COMPILE_TARGET ${FOR_TARGET}_Compile_${SHADER_METAL_FILE})
 
         add_custom_target(${SHADER_COMPILE_TARGET}
-            COMMENT "Compiling Metal shader " ${SHADER_METAL_FILE} " for target " ${TARGET}
+            COMMENT "Compile Metal shader " ${SHADER_METAL_FILE} " for target " ${TARGET}
             BYPRODUCTS "${SHADER_AIR_PATH}"
             DEPENDS "${SHADER_METAL_PATH}"
             COMMAND xcrun -sdk ${SDK} metal ${EXTRA_COMPILE_FLAGS} -c "${SHADER_METAL_PATH}" -o "${SHADER_AIR_PATH}"
@@ -198,7 +198,9 @@ function(compile_metal_shaders_to_library FOR_TARGET SDK METAL_SHADERS METAL_LIB
     add_dependencies(${FOR_TARGET} ${METAL_LIB_TARGET})
 endfunction()
 
-function(compile_dxil_to_metal_library FOR_TARGET COMPILE_SHADER_TARGETS COMPILED_SHADER_BINARIES LIBRARY_NAME OUT_METAL_LIBRARIES)
+function(convert_dxil_to_metal_library FOR_TARGET COMPILE_SHADER_TARGETS COMPILED_SHADER_BINARIES LIBRARY_NAME OUT_METAL_LIBRARIES)
+
+    set(MSC_EXE "${MSC_BINARY_DIR}/metal-shaderconverter")
 
     foreach(DXIL_SHADER_BINARY ${COMPILED_SHADER_BINARIES})
         if (METAL_SHADER_CONV_COMMAND)
@@ -207,13 +209,14 @@ function(compile_dxil_to_metal_library FOR_TARGET COMPILE_SHADER_TARGETS COMPILE
         get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
         get_file_name(${DXIL_SHADER_BINARY} SHADER_METAL_LIBRARY_NAME)
         set(SHADER_METAL_LIBRARY "${TARGET_SHADERS_DIR}/${SHADER_METAL_LIBRARY_NAME}.metallib")
-        list(APPEND METAL_SHADER_CONV_COMMAND "metal-shaderconverter" -o "${SHADER_METAL_LIBRARY}" "${DXIL_SHADER_BINARY}")
+        list(APPEND METAL_SHADER_CONV_COMMAND ${MSC_EXE} -o "${SHADER_METAL_LIBRARY}" "${DXIL_SHADER_BINARY}")
         list(APPEND SHADER_METAL_LIBRARIES "${SHADER_METAL_LIBRARY}")
-    endforeach ()
+        list(APPEND SHADER_METAL_LIBRARY_NAMES "${SHADER_METAL_LIBRARY_NAME}")
+    endforeach()
 
-    set(METAL_LIB_TARGET ${FOR_TARGET}_CompileMetalLibrary_${LIBRARY_NAME})
+    set(METAL_LIB_TARGET ${FOR_TARGET}_CompileMetalLibraries_${LIBRARY_NAME})
     add_custom_target(${METAL_LIB_TARGET}
-        COMMENT "Convert compiled DXIL to Metal libraries for application " ${TARGET}
+        COMMENT "Convert compiled DXIL to Metal Shader libraries (${SHADER_METAL_LIBRARY_NAMES}) for target ${TARGET}"
         BYPRODUCTS "${SHADER_METAL_LIBRARIES}"
         DEPENDS "${COMPILED_SHADER_BINARIES}"
         COMMAND ${METAL_SHADER_CONV_COMMAND}
@@ -229,7 +232,7 @@ function(compile_dxil_to_metal_library FOR_TARGET COMPILE_SHADER_TARGETS COMPILE
         METAL_LIB_TARGET ${METAL_LIB_TARGET}
     )
 
-    add_dependencies(${METAL_LIB_TARGET} ${COMPILE_SHADER_TARGETS})
+    add_dependencies(${METAL_LIB_TARGET} MetalShaderConverterUnpack-build ${COMPILE_SHADER_TARGETS})
     add_dependencies(${FOR_TARGET} ${METAL_LIB_TARGET})
 
     set(${OUT_METAL_LIBRARIES} "${SHADER_METAL_LIBRARIES}" PARENT_SCOPE)
@@ -359,7 +362,7 @@ function(add_methane_shaders_source)
             # Use Apple's Metal Shader Converter to compile from DXIL directly to Metal library
             get_file_name(${METAL_LIBRARY} LIBRARY_NAME)
             compile_hlsl_shaders(${SHADERS_TARGET} "${SHADERS_SOURCE_PATH}" "${SHADERS_VERSION}" "${SHADERS_TYPES}" COMPILED_SHADER_BINARIES COMPILE_SHADER_TARGETS)
-            compile_dxil_to_metal_library(${SHADERS_TARGET} "${COMPILE_SHADER_TARGETS}" "${COMPILED_SHADER_BINARIES}" "${LIBRARY_NAME}" METAL_LIBRARIES)
+            convert_dxil_to_metal_library(${SHADERS_TARGET} "${COMPILE_SHADER_TARGETS}" "${COMPILED_SHADER_BINARIES}" "${LIBRARY_NAME}" METAL_LIBRARIES)
             set_property(TARGET ${SHADERS_TARGET} APPEND PROPERTY METAL_LIBRARIES ${METAL_LIBRARIES})
         else()
             # Use SPIRV-Cross to convert compiled HLSL as SPIRV to Metal shader sources and then compile to Metal library
