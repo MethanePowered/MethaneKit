@@ -155,7 +155,7 @@ Shader::Shader(Type type, const Base::Context& context, const Settings& settings
     else
     {
         const std::string compiled_func_name = GetCompiledEntryFunctionName();
-        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(fmt::format("{}.obj", compiled_func_name)));
+        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(fmt::format("{}.dxil", compiled_func_name)));
     }
 
     META_CHECK_ARG_NOT_NULL(m_byte_code_chunk_ptr);
