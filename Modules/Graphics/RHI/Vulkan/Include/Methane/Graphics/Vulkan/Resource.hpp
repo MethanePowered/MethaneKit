@@ -39,6 +39,7 @@ Vulkan implementation of the resource interface.
 #include <fmt/format.h>
 
 #include <type_traits>
+#include <cassert>
 
 namespace Methane::Graphics::Vulkan
 {

@@ -26,6 +26,8 @@ Null implementation of the render context interface.
 #include <Methane/Graphics/Null/RenderState.h>
 #include <Methane/Graphics/Null/RenderPattern.h>
 
+#include <cassert>
+
 namespace Methane::Graphics::Null
 {
 
