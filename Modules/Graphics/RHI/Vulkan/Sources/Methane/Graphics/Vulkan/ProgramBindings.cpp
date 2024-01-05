@@ -46,11 +46,11 @@ ProgramBindings::ProgramBindings(Program& program,
     META_FUNCTION_TASK();
     program.Connect(*this);
 
-    const vk::DescriptorSet& vk_constant_descriptor_set = program.GetConstantDescriptorSet();
+    const vk::DescriptorSet& vk_constant_descriptor_set = program.AcquireConstantDescriptorSet();
     if (vk_constant_descriptor_set)
         m_descriptor_sets.emplace_back(vk_constant_descriptor_set);
 
-    const vk::DescriptorSet& vk_frame_constant_descriptor_set = program.GetFrameConstantDescriptorSet(frame_index);
+    const vk::DescriptorSet& vk_frame_constant_descriptor_set = program.AcquireFrameConstantDescriptorSet(frame_index);
     if (vk_frame_constant_descriptor_set)
         m_descriptor_sets.emplace_back(vk_frame_constant_descriptor_set);
 

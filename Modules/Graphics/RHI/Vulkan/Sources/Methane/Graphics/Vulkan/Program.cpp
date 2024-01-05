@@ -115,7 +115,14 @@ const Program::DescriptorSetLayoutInfo& Program::GetDescriptorSetLayoutInfo(Rhi:
     return m_descriptor_set_layout_info_by_access_type[*magic_enum::enum_index(argument_access_type)];
 }
 
-const vk::PipelineLayout& Program::GetNativePipelineLayout()
+const vk::PipelineLayout& Program::GetNativePipelineLayout() const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(m_vk_unique_pipeline_layout);
+    return m_vk_unique_pipeline_layout.get();
+}
+
+const vk::PipelineLayout& Program::AcquireNativePipelineLayout()
 {
     META_FUNCTION_TASK();
     std::lock_guard lock(m_mutex);
@@ -132,7 +139,7 @@ const vk::PipelineLayout& Program::GetNativePipelineLayout()
     return m_vk_unique_pipeline_layout.get();
 }
 
-const vk::DescriptorSet& Program::GetConstantDescriptorSet()
+const vk::DescriptorSet& Program::AcquireConstantDescriptorSet()
 {
     META_FUNCTION_TASK();
     std::lock_guard lock(m_mutex);
@@ -149,7 +156,7 @@ const vk::DescriptorSet& Program::GetConstantDescriptorSet()
     return m_vk_constant_descriptor_set_opt.value();
 }
 
-const vk::DescriptorSet& Program::GetFrameConstantDescriptorSet(Data::Index frame_index)
+const vk::DescriptorSet& Program::AcquireFrameConstantDescriptorSet(Data::Index frame_index)
 {
     META_FUNCTION_TASK();
     std::lock_guard lock(m_mutex);

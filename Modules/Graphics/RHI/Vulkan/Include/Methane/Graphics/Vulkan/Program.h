@@ -72,9 +72,10 @@ public:
     const std::vector<vk::DescriptorSetLayout>& GetNativeDescriptorSetLayouts() const;
     const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(ArgumentAccessor::Type argument_access_type) const;
     const DescriptorSetLayoutInfo& GetDescriptorSetLayoutInfo(ArgumentAccessor::Type argument_access_type) const;
-    const vk::PipelineLayout& GetNativePipelineLayout();
-    const vk::DescriptorSet& GetConstantDescriptorSet();
-    const vk::DescriptorSet& GetFrameConstantDescriptorSet(Data::Index frame_index);
+    const vk::PipelineLayout& GetNativePipelineLayout() const;
+    const vk::PipelineLayout& AcquireNativePipelineLayout();
+    const vk::DescriptorSet& AcquireConstantDescriptorSet();
+    const vk::DescriptorSet& AcquireFrameConstantDescriptorSet(Data::Index frame_index);
 
 private:
     using DescriptorSetLayoutInfoByAccessType = std::array<DescriptorSetLayoutInfo, magic_enum::enum_count<ArgumentAccessor::Type>()>;
