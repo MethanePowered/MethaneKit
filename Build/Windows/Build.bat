@@ -148,7 +148,7 @@ IF DEFINED ANALYZE_BUILD (
 
     IF NOT EXIST "%SONAR_SCANNER_DIR%" (
         ECHO Downloading and unpacking SonarScanner binaries...
-        CALL powershell -ExecutionPolicy Bypass -Command "& '%START_DIR%\SonarDownload.ps1' '%SONAR_SCANNER_VERSION%' '%SONAR_SCANNER_DIR%'" 
+        CALL powershell -ExecutionPolicy Bypass -Command "& '%START_DIR%\CI\DownloadSonarScanner.ps1' '%SONAR_SCANNER_VERSION%' '%SONAR_SCANNER_DIR%'"
         IF %ERRORLEVEL% NEQ 0 GOTO ERROR
     )
 

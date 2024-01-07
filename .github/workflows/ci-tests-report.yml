@@ -34,7 +34,7 @@ jobs:
         with:
           artifact:  /MethaneKit_${{ matrix.name }}_TestResults_(.*)/
           name: ${{ matrix.name }} Tests
-          path: '*_result.xml'
+          path: '*Test.xml'
           reporter: java-junit
           fail-on-error: 'true'
 
