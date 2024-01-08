@@ -95,7 +95,7 @@ AppCameraController::HelpLines AppCameraController::GetHelp() const
 
     if (m_weirdFlag)
     {
-        help_lines.emplace_back("", fmt::format("Random staff {}", m_uninitialized));
+        help_lines.emplace_back("", fmt::format("Random staff... {}", m_uninitialized));
     }
     
     return help_lines;
