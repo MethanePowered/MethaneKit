@@ -20,6 +20,8 @@ on:
       - 'CMakeLists.txt'
       - 'CMakePresets.json'
 
+  # Pull request event runs in context of the target repository branch, but remote repos do not have access to secrets,
+  # so it is used only for internal PRs from origin repository branches according to job condition below.
   pull_request:
     branches: [ master ]
     types: [opened, synchronize, reopened]
@@ -34,6 +36,22 @@ on:
       - 'Build/*/CI/**'
       - 'CMakeLists.txt'
       - 'CMakePresets.json'
+
+  # "Pull request target" event runs in context of the base repository and has access to secrets,
+  # it is used only for external PRs from forked repositories to origin according to job condition below.
+  pull_request_target:
+    branches: [ master ]
+    types: [ opened, synchronize, reopened ]
+    paths:
+      - 'Apps/**'
+      - 'Modules/**'
+      - 'Tests/**'
+      - 'Externals/**'
+      - 'CMake/**'
+      - 'Build/*/CI/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+
   schedule:
     - cron: '20 23 * * 3' # Scheduled workflow will not run in GitHub forks by default
 
@@ -46,7 +64,14 @@ env:
 jobs:
   sonar_scan:
     name: ${{ matrix.name }}
-    if: ${{ github.repository == 'MethanePowered/MethaneKit' }}
+
+    # Run sonar scan job only in context of the origin repository:
+    # - Trigger on either "push" or "pull request" event for the origin repository owned branches
+    # - Or trigger on "pull request target" event for external repositories to have access to secrets from origin repo context
+    #   see https://github.com/orgs/community/discussions/26829
+    if: ${{ github.repository == 'MethanePowered/MethaneKit' && 
+            (github.event_name != 'pull_request_target' ||
+             github.event.pull_request.head.repo.full_name != github.repository) }}
 
     strategy:
       fail-fast: false
