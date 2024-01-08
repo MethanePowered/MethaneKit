@@ -20,8 +20,8 @@ on:
       - 'CMakeLists.txt'
       - 'CMakePresets.json'
 
-  # Pull request event runs in context of the target repository branch, but remote repos do not have access to secrets,
-  # so it is used only for internal PRs from origin repository branches according to job condition below.
+  # "Pull request" event runs in context of the target repository branch, but remote repos do not have access to secrets,
+  # it is used only for internal PRs from origin repository branches according to job condition below.
   pull_request:
     branches: [ master ]
     types: [opened, synchronize, reopened]
@@ -69,9 +69,13 @@ jobs:
     # - Trigger on either "push" or "pull request" event for the origin repository owned branches
     # - Or trigger on "pull request target" event for external repositories to have access to secrets from origin repo context
     #   see https://github.com/orgs/community/discussions/26829
-    if: ${{ github.repository == 'MethanePowered/MethaneKit' && 
-            (github.event_name != 'pull_request_target' ||
-             github.event.pull_request.head.repo.full_name != github.repository) }}
+    if: ${{ github.repository == 'MethanePowered/MethaneKit' && (
+               github.event_name == 'push' ||
+              (github.event_name == 'pull_request' &&
+               github.event.pull_request.head.repo.full_name == github.repository) ||
+              (github.event_name == 'pull_request_target' &&
+               github.event.pull_request.head.repo.full_name != github.repository)
+            ) }}
 
     strategy:
       fail-fast: false
@@ -115,16 +119,35 @@ jobs:
       COMPILE_COMMANDS_FILE: Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json
 
     steps:
-      - name: Checkout repository
+      - name: Checkout origin repository branch
+        if: ${{ github.event_name != 'pull_request_target' }}
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Checkout fork repository branch
+        if: ${{ github.event_name == 'pull_request_target' }}
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Checkout base branch
+        if: ${{ github.event_name == 'pull_request_target' }}
+        run: |
+          git remote add upstream ${{ github.server_url }}/${{ github.event.pull_request.base.repo.full_name }}
+          git fetch upstream
+          git checkout -B ${{ github.event.pull_request.base.ref }} upstream/${{ github.event.pull_request.base.ref }}
+          git checkout ${{ github.event.pull_request.head.ref }}
+          git clean -ffdx && git reset --hard HEAD
 
       - name: Install Linux prerequisites
         if: ${{ matrix.os_name == 'linux' }}
         run: ./Build/Unix/CI/InstallLinuxPrerequisites.sh lcov
 
-      - name: Install Testspace
+      - name: Install TestSpace
+        if: ${{ github.event_name == 'push' }}
         uses: testspace-com/setup-testspace@v1
         with:
           domain: ${{ github.repository_owner }}
@@ -219,8 +242,8 @@ jobs:
           name: MethaneKit_${{ matrix.name }}_CoverageResults
           path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
 
-      - name: Upload Build Log and Code Coverage to Testspace server
-        if: ${{ success() || failure() }}
+      - name: Upload Build Log and Code Coverage to TestSpace server
+        if: ${{ github.event_name == 'push' && (success() || failure()) }}
         shell: bash
         run: |
           testspace \
@@ -242,11 +265,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ORGANIZATION: methane-powered
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          GITHUB_COMMIT_SHA: ${{ github.sha }}
-          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}"
-          GITHUB_PR_BRANCH: ${{ github.event.pull_request.head.ref }}"
-          GITHUB_PR_BASE: ${{ github.event.pull_request.base.ref }}"
+          GITHUB_COMMIT_SHA: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
+          GITHUB_PR_FLAG: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && 1 || 0 }}
+          GITHUB_PR_REPO: ${{ github.repository }}
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          GITHUB_PR_BASE: ${{ github.event.pull_request.base.ref }}
         run: |
             ./Build/Unix/CI/RunSonarScanner.sh \
               "${{ matrix.sonar_project_key }}" \
