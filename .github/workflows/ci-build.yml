@@ -46,7 +46,6 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            os_name: Windows
             name: "Win64_DX_Release"
             config_preset: "VS2022-Win64-DX-Default"
             build_preset: "VS2022-Win64-DX-Release"
@@ -56,7 +55,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win64_VK_Release"
             config_preset: "VS2022-Win64-VK-Default"
             build_preset: "VS2022-Win64-VK-Release"
@@ -66,7 +64,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win64_DX_Profile"
             config_preset: "VS2022-Win64-DX-Profile"
             build_preset: "VS2022-Win64-DX-Profile"
@@ -76,7 +73,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win64_VK_Profile"
             config_preset: "VS2022-Win64-VK-Profile"
             build_preset: "VS2022-Win64-VK-Profile"
@@ -86,7 +82,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win32_DX_Release"
             config_preset: "VS2022-Win32-DX-Default"
             build_preset: "VS2022-Win32-DX-Release"
@@ -96,7 +91,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win32_VK_Release"
             config_preset: "VS2022-Win32-VK-Default"
             build_preset: "VS2022-Win32-VK-Release"
@@ -106,7 +100,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win32_DX_Profile"
             config_preset: "VS2022-Win32-DX-Profile"
             build_preset: "VS2022-Win32-DX-Profile"
@@ -116,7 +109,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win32_VK_Profile"
             config_preset: "VS2022-Win32-VK-Profile"
             build_preset: "VS2022-Win32-VK-Profile"
@@ -126,7 +118,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: ubuntu-latest
-            os_name: Ubuntu
             name: "Ubuntu_VK_Release"
             config_preset: "Make-Lin-VK-Release"
             build_preset: "Make-Lin-VK-Release"
@@ -136,7 +127,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: ubuntu-latest
-            os_name: Ubuntu
             name: "Ubuntu_VK_Profile"
             config_preset: "Make-Lin-VK-Profile"
             build_preset: "Make-Lin-VK-Profile"
@@ -146,7 +136,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: macos-latest
-            os_name: MacOS
             name: "MacOS_VK_Release"
             config_preset: "Xcode-Mac-VK-Default"
             build_preset: "Xcode-Mac-VK-Release"
@@ -156,7 +145,6 @@ jobs:
             install_vulkan_sdk: true
 
           - os: macos-latest
-            os_name: MacOS
             name: "MacOS_MTL_Release"
             config_preset: "Xcode-Mac-MTL-Default"
             build_preset: "Xcode-Mac-MTL-Release"
@@ -166,7 +154,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: macos-latest
-            os_name: MacOS
             name: "MacOS_MTL_Profile"
             config_preset: "Xcode-Mac-MTL-Profile"
             build_preset: "Xcode-Mac-MTL-Profile"
@@ -176,7 +163,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: macos-latest
-            os_name: MacOS
             name: "iOS_Sim_MTL_Release"
             config_preset: "Xcode-iOS-Sim-MTL-Default"
             build_preset: "Xcode-iOS-Sim-MTL-Release"
@@ -186,7 +172,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: macos-latest
-            os_name: MacOS
             name: "tvOS_Sim_MTL_Release"
             config_preset: "Xcode-tvOS-Sim-MTL-Default"
             build_preset: "Xcode-tvOS-Sim-MTL-Release"
@@ -209,7 +194,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Linux prerequisites
-        if: ${{ matrix.os_name == 'Ubuntu' }}
+        if: ${{ runner.os == 'Linux' }}
         run: ./Build/Unix/CI/InstallLinuxPrerequisites.sh
 
       - name: Install TestSpace
@@ -237,13 +222,13 @@ jobs:
         run: ./Build/Unix/CI/CMakeBuildPreset.sh "${{ matrix.build_preset }}"
 
       - name: Run Unit-Tests on Unix
-        if: ${{ matrix.run_tests && matrix.os_name != 'Windows'}}
+        if: ${{ matrix.run_tests && runner.os != 'Windows'}}
         working-directory: ${{ env.INSTALL_DIR }}/Tests
         shell: bash
         run: ${{ github.workspace }}/Build/Unix/CI/RunUnitTests.sh junit
 
       - name: Run Unit-Tests on Windows
-        if: ${{ matrix.run_tests && matrix.os_name == 'Windows' }}
+        if: ${{ matrix.run_tests && runner.os == 'Windows' }}
         working-directory: ${{ env.INSTALL_DIR }}/Tests
         shell: cmd
         run: ${{ github.workspace }}\Build\Windows\CI\RunUnitTests.bat junit
@@ -257,17 +242,26 @@ jobs:
 
       - name: Upload Test Results and Build Log to TestSpace server
         if: ${{ github.repository == env.ORIGIN_REPOSITORY && matrix.run_tests && (success() || failure()) }}
-        run: testspace "[ ${{ matrix.name }} ]${{ env.INSTALL_DIR }}/Tests/Results/*.xml" "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
+        shell: bash
+        run: |
+          testspace \
+            "[ ${{ matrix.name }} ]${{ env.INSTALL_DIR }}/Tests/Results/*.xml" \
+            "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
       - name: Add README and Build-Info files
         if: ${{ success() || failure() }}
         shell: bash
+        env:
+          REPO_URL: ${{ github.repositoryUrl }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          CONFIG_PRESET: ${{ matrix.config_preset }}
+          BUILD_PRESET: ${{ matrix.build_preset }}
+          RUNNER_INFO: "${{ runner.name }}, ${{ runner.os }}, ${{ runner.arch }}"
         run: |
           cp README.md $INSTALL_DIR/README.md
-          ./Build/Unix/CI/WriteBuildInfo.sh \
-            "${{ github.repositoryUrl }}" "${{ github.ref_name }}" "${{ github.sha }}" "${{ github.run_id }}" \
-            "${{ matrix.config_preset }}" "${{ matrix.build_preset }}" \
-            "${{ runner.name }}, ${{ runner.os }}, ${{ runner.arch }}"
+          ./Build/Unix/CI/WriteBuildInfo.sh "$INSTALL_DIR/Build-Info.txt"            
 
       - name: Download Tracy release
         if: ${{ matrix.add_tracy_app && (success() || failure()) }}
@@ -308,5 +302,5 @@ jobs:
           color: ${{ env.badge_color }}
 
       - name: Windows disk space report
-        if: ${{ matrix.os_name == 'Windows' && always() }}
+        if: ${{ runner.os == 'Windows' && always() }}
         run: Get-PSDrive
