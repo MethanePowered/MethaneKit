@@ -86,7 +86,7 @@ Rhi::Device AppBase::GetDefaultDevice() const
     const std::vector<Rhi::Device>& devices = Rhi::System::Get().GetGpuDevices();
     META_CHECK_ARG_NOT_EMPTY_DESCR(devices, "no suitable GPU devices were found for application rendering");
 
-    if (static_cast<size_t>(m_settings.default_device_index) < devices.size())
+    if ((size_t)(m_settings.default_device_index) < devices.size())
         return devices[m_settings.default_device_index];
 
     return devices.front();

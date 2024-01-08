@@ -92,6 +92,11 @@ AppCameraController::HelpLines AppCameraController::GetHelp() const
         help_lines.emplace_back("", "Keyboard actions");
         help_lines.insert(help_lines.end(), keyboard_help_lines.begin(), keyboard_help_lines.end());
     }
+
+    if (m_weirdFlag)
+    {
+        help_lines.emplace_back("", fmt::format("Random staff {}", m_uninitialized));
+    }
     
     return help_lines;
 }
