@@ -41,9 +41,9 @@ Base implementation of the Methane graphics application.
 namespace Methane::Graphics
 {
 
-class AppBase // NOSONAR
+class AppBase
     : public Platform::App
-    , protected Data::Receiver<Rhi::IContextCallback> //NOSONAR
+    , protected Data::Receiver<Rhi::IContextCallback>
 {
 public:
     AppBase(const CombinedAppSettings& settings, Data::IProvider& textures_provider);
