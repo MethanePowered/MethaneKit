@@ -267,7 +267,7 @@ jobs:
           SONAR_ORGANIZATION: methane-powered
           GITHUB_COMMIT_SHA: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
           GITHUB_PR_FLAG: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && 1 || 0 }}
-          GITHUB_PR_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          GITHUB_PR_REPO: ${{ github.repository }}
           GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_PR_BRANCH: ${{ github.event.pull_request.head.ref }}
           GITHUB_PR_BASE: ${{ github.event.pull_request.base.ref }}
