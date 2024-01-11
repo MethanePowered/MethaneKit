@@ -82,7 +82,6 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            os_name: windows
             name: "Win64_DX_SonarScan"
             named_logo: Windows
             config_preset: "Ninja-Win-DX-Scan"
@@ -91,7 +90,6 @@ jobs:
             tests_coverage_reports: "Build/Output/Ninja-Win-DX-Scan/Install/Tests/Coverage/*.xml"
 
           - os: ubuntu-latest
-            os_name: linux
             name: "Ubuntu_VK_SonarScan"
             named_logo: Linux
             config_preset: "Ninja-Lin-VK-Scan"
@@ -100,7 +98,6 @@ jobs:
             tests_coverage_reports: "Build/Output/Ninja-Lin-VK-Scan/Build/MethaneTestCoverage.info"
 
           - os: macos-latest
-            os_name: macosx
             name: "MacOS_MTL_SonarScan"
             named_logo: Apple
             config_preset: "Ninja-Mac-MTL-Scan"
@@ -143,7 +140,7 @@ jobs:
           git clean -ffdx && git reset --hard HEAD
 
       - name: Install Linux prerequisites
-        if: ${{ matrix.os_name == 'linux' }}
+        if: ${{ runner.os == 'Linux' }}
         run: ./Build/Unix/CI/InstallLinuxPrerequisites.sh lcov
 
       - name: Install TestSpace
@@ -174,7 +171,7 @@ jobs:
           key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
       - name: Setup Developer Command Prompt for MSVC (VS2022 x64) to build with Ninja
-        if: ${{ matrix.os_name == 'windows' }}
+        if: ${{ runner.os == 'Windows' }}
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
@@ -197,33 +194,33 @@ jobs:
         run: ./Build/Unix/CI/CMakeBuildPreset.sh "${{ matrix.build_preset }}"
 
       - name: Download OpenCppCoverage
-        if: ${{ matrix.os_name == 'windows' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: powershell
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: ${{ github.workspace }}\Build\Windows\CI\DownloadOpenCppCoverageRelease.ps1
 
       - name: Run all unit-tests with OpenCppCoverage code coverage on Windows
-        if: ${{ matrix.os_name == 'windows' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: cmd
         working-directory: 'Build\Output\${{ matrix.config_preset }}\Install\Tests'
         run: |
-          ${{ github.workspace }}\Build\Windows\CI\RunUnitTestsWithCoverage.bat ^
+          ${{ github.workspace }}\Build\Windows\CI\RunUnitTestsWithCoverage.bat sonarqube cobertura ^
             "${{ github.workspace }}\Modules" ^
             "Build/Output/${{ matrix.config_preset }}/Install/Tests"
 
       - name: Run all unit-tests to collect SonarQube test results on Linux
-        if: ${{ matrix.os_name == 'linux' }}
+        if: ${{ runner.os == 'Linux' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
         run: ${{ github.workspace }}/Build/Unix/CI/RunUnitTests.sh sonarqube
 
       - name: Run all unit-tests with code coverage using CTest and GCov on Linux
-        if: ${{ matrix.os_name == 'linux' && (success() || failure()) }}
+        if: ${{ runner.os == 'Linux' && (success() || failure()) }}
         run: ./Build/Unix/CI/CMakeBuildPreset.sh "${{ matrix.build_preset }}" MethaneTestCoverage "$COVERAGE_LOG_FILE"
 
       - name: Run all unit-tests with LCov code coverage on MacOS
-        if: ${{ matrix.os_name == 'macosx' }}
+        if: ${{ runner.os == 'macOS' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
-        run: ${{ github.workspace }}/Build/Unix/CI/RunUnitTestsWithCoverage.sh
+        run: ${{ github.workspace }}/Build/Unix/CI/RunUnitTestsWithCoverage.sh sonarqube lcov
 
       - name: Generate Code Coverage Reports
         if: ${{ success() || failure() }}
@@ -255,7 +252,7 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
-          flags: unittests,${{ matrix.os_name }}
+          flags: unittests,${{ runner.os }}
           name: ${{ matrix.name }}
 
       - name: Run Sonar Scanner
@@ -272,8 +269,7 @@ jobs:
           GITHUB_PR_BRANCH: ${{ github.event.pull_request.head.ref }}
           GITHUB_PR_BASE: ${{ github.event.pull_request.base.ref }}
         run: |
-            ./Build/Unix/CI/RunSonarScanner.sh \
-              "${{ matrix.sonar_project_key }}" \
+            ./Build/Unix/CI/RunSonarScanner.sh "${{ matrix.sonar_project_key }}" \
               "Build/Output/${{ matrix.config_preset }}/Build" \
               "Build/Output/${{ matrix.config_preset }}/Install/Tests"
 
