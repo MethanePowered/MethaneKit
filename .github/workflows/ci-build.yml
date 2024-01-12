@@ -238,14 +238,14 @@ jobs:
         if: ${{ matrix.run_tests && (success() || failure()) }}
         with:
           name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.METHANE_VERSION_MAJOR }}.${{ env.METHANE_VERSION_MINOR }}.${{ env.METHANE_VERSION_PATCH }}.${{ env.METHANE_VERSION_BUILD }}
-          path: ${{ env.INSTALL_DIR }}/Tests/Results/*.xml
+          path: ${{ env.INSTALL_DIR }}/Tests/Results/junit/*.xml
 
       - name: Upload Test Results and Build Log to TestSpace server
         if: ${{ github.repository == env.ORIGIN_REPOSITORY && matrix.run_tests && (success() || failure()) }}
         shell: bash
         run: |
           testspace \
-            "[ ${{ matrix.name }} ]${{ env.INSTALL_DIR }}/Tests/Results/*.xml" \
+            "[ ${{ matrix.name }} ]${{ env.INSTALL_DIR }}/Tests/Results/junit/*.xml" \
             "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
       - name: Add README and Build-Info files
@@ -304,3 +304,13 @@ jobs:
       - name: Windows disk space report
         if: ${{ runner.os == 'Windows' && always() }}
         run: Get-PSDrive
+
+  event_file:
+    name: "Event File"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload Event File
+        uses: actions/upload-artifact@v3
+        with:
+          name: EventFile
+          path: ${{ github.event_path }}

@@ -1,8 +1,9 @@
 #!/bin/bash
 # CI script to run all unit-test executables "*Test" from current directory with code-coverage data collection
 set +e
-test_format="${1}"
-coverage_format="${2}"
+coverage_format="${1}"
+test_format="${2}"
+extra_test_format="${3}"
 result_error_level=0
 result_ext='.xml'
 prof_data_ext='.profdata'
@@ -11,17 +12,22 @@ lcov_ext='.lcov'
 test_results=''
 echo Running unit-tests and Converting LLVM code coverage data to lcov text format in directory $PWD
 mkdir Results
+mkdir Results/${test_format}
+mkdir Results/${extra_test_format}
 mkdir Coverage
 for test_exe in *Test
 do
-  ./$test_exe -r "${test_format}" -o "Results/$test_exe$result_ext"
+  out_test_result=Results/${test_format}/${test_exe}${result_ext}
+  out_extra_test_result=Results/${extra_test_format}/${test_exe}${result_ext}
+  ./$test_exe -r "${test_format}::out=${out_test_result}" \
+              -r "${extra_test_format}::out=${out_extra_test_result}"
   last_error_level=$?
   echo  - $test_exe - completed with $last_error_level exit status
   if [ $last_error_level != 0 ]; then
     result_error_level=$last_error_level
   fi
-  if [ -f "$PWD/Results/$test_exe$result_ext" ]; then
-    test_results+="$PWD/Results/$test_exe$result_ext,"
+  if [ -f "$PWD/${out_test_result}" ]; then
+    test_results+="$PWD/${out_test_result},"
   fi
   if [ ! -f default.profraw ]; then
     continue
