@@ -116,28 +116,18 @@ jobs:
       COMPILE_COMMANDS_FILE: Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json
 
     steps:
-      - name: Checkout origin repository branch
+      - name: Checkout pull-request merge commit from origin
         if: ${{ github.event_name != 'pull_request_target' }}
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Checkout fork repository branch
+      - name: Checkout pull-request merge commit from fork
         if: ${{ github.event_name == 'pull_request_target' }}
         uses: actions/checkout@v3
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: "${{ github.event.pull_request.merge_commit_sha }}"
           fetch-depth: 0
-
-      - name: Checkout base branch
-        if: ${{ github.event_name == 'pull_request_target' }}
-        run: |
-          git remote add upstream ${{ github.server_url }}/${{ github.event.pull_request.base.repo.full_name }}
-          git fetch upstream
-          git checkout -B ${{ github.event.pull_request.base.ref }} upstream/${{ github.event.pull_request.base.ref }}
-          git checkout ${{ github.event.pull_request.head.ref }}
-          git clean -ffdx && git reset --hard HEAD
 
       - name: Install Linux prerequisites
         if: ${{ runner.os == 'Linux' }}
@@ -204,14 +194,14 @@ jobs:
         shell: cmd
         working-directory: 'Build\Output\${{ matrix.config_preset }}\Install\Tests'
         run: |
-          ${{ github.workspace }}\Build\Windows\CI\RunUnitTestsWithCoverage.bat sonarqube cobertura ^
+          ${{ github.workspace }}\Build\Windows\CI\RunUnitTestsWithCoverage.bat cobertura sonarqube junit ^
             "${{ github.workspace }}\Modules" ^
-            "Build/Output/${{ matrix.config_preset }}/Install/Tests"
+            Build/Output/${{ matrix.config_preset }}/Install/Tests
 
-      - name: Run all unit-tests to collect SonarQube test results on Linux
+      - name: Run all unit-tests to collect SonarQube and JUnit test results on Linux
         if: ${{ runner.os == 'Linux' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
-        run: ${{ github.workspace }}/Build/Unix/CI/RunUnitTests.sh sonarqube
+        run: ${{ github.workspace }}/Build/Unix/CI/RunUnitTests.sh sonarqube junit
 
       - name: Run all unit-tests with code coverage using CTest and GCov on Linux
         if: ${{ runner.os == 'Linux' && (success() || failure()) }}
@@ -220,7 +210,7 @@ jobs:
       - name: Run all unit-tests with LCov code coverage on MacOS
         if: ${{ runner.os == 'macOS' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
-        run: ${{ github.workspace }}/Build/Unix/CI/RunUnitTestsWithCoverage.sh sonarqube lcov
+        run: ${{ github.workspace }}/Build/Unix/CI/RunUnitTestsWithCoverage.sh lcov sonarqube junit
 
       - name: Generate Code Coverage Reports
         if: ${{ success() || failure() }}
@@ -254,6 +244,16 @@ jobs:
           files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
           flags: unittests,${{ runner.os }}
           name: ${{ matrix.name }}
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        if: ${{ success() || failure() }}
+        with:
+          check_name: ${{ matrix.name }} Test Results
+          comment_title: ${{ matrix.name }} Test Results
+          files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/junit/*Test.xml
+          action_fail: true
+          action_fail_on_inconclusive: true
 
       - name: Run Sonar Scanner
         if: ${{ success() || failure() }}
