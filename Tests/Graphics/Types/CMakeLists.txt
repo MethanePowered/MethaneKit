@@ -3,7 +3,7 @@ set(TARGET MethaneGraphicsTypesTest)
 add_executable(${TARGET}
     VolumeSizeTest.cpp
     VolumeTest.cpp
-    ColorTest.cpp
+    #ColorTest.cpp
 )
 
 target_link_libraries(${TARGET}

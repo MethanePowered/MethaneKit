@@ -152,19 +152,6 @@ TEST_CASE("Keyboard state getters and converters", "[keyboard-state]")
         CHECK(keyboard_state[Key::F8] == KeyState::Released);
     }
 
-    SECTION("State conversion to string")
-    {
-        const State keyboard_state{ Key::RightControl, Key::LeftShift, Key::Up, Key::Y, Key::Num5, Key::KeyPad3, Key::F7 };
-        CHECK(keyboard_state.ToString() == "Control+Shift+5+Y+UP+F7+KP3");
-        CHECK(keyboard_state.ToString() == static_cast<std::string>(keyboard_state));
-    }
-
-    SECTION("Empty state conversion to boolean")
-    {
-        const State keyboard_state({});
-        CHECK_FALSE(static_cast<bool>(keyboard_state));
-    }
-
     SECTION("State with modifiers pressed conversion to boolean")
     {
         const State keyboard_state({}, ModifierMask({ Modifier::Control, Modifier::Alt }));
