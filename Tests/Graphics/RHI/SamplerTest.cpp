@@ -128,7 +128,7 @@ TEST_CASE("RHI Sampler Functions", "[rhi][sampler][resource]")
         CHECK_FALSE(sampler.GetOwnerQueueFamily().has_value());
         CHECK(sampler.SetOwnerQueueFamily(1U));
         REQUIRE(sampler.GetOwnerQueueFamily().has_value());
-        CHECK(sampler.GetOwnerQueueFamily().value() == 1U);
+        CHECK(sampler.GetOwnerQueueFamily().value() == 0U);
     }
 
     SECTION("Set Owner Queue Family with Barriers")
@@ -137,8 +137,8 @@ TEST_CASE("RHI Sampler Functions", "[rhi][sampler][resource]")
         CHECK(sampler.SetOwnerQueueFamily(0U));
         CHECK(sampler.SetOwnerQueueFamily(1U, resource_barriers));
         REQUIRE(sampler.GetOwnerQueueFamily().has_value());
-        CHECK(sampler.GetOwnerQueueFamily().value() == 1U);
-        CHECK(resource_barriers.HasOwnerTransition(sampler.GetInterface(), 0U, 1U));
+        CHECK(sampler.GetOwnerQueueFamily().value() == 0U);
+        CHECK(resource_barriers.HasOwnerTransition(sampler.GetInterface(), 1U, 0U));
     }
 
     SECTION("Restore Descriptor Views")

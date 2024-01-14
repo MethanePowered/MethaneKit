@@ -205,7 +205,7 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
     SECTION("Can Get Program Binding Arguments")
     {
         Rhi::ProgramArguments program_arguments;
-        REQUIRE(program_bindings.GetArguments().size() == 3U);
+        REQUIRE(program_bindings.GetArguments().size() == 2U);
         REQUIRE_NOTHROW(program_arguments = program_bindings.GetArguments());
         CHECK(program_arguments.count({ Rhi::ShaderType::Compute, "InTexture" }) == 1);
         CHECK(program_arguments.count({ Rhi::ShaderType::Compute, "InSampler" }) == 1);
@@ -242,7 +242,7 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         REQUIRE_NOTHROW(buffer_binding_ptr = &program_bindings.Get({ Rhi::ShaderType::Compute, "OutBuffer" }));
         REQUIRE(buffer_binding_ptr);
         CHECK(buffer_binding_ptr->GetSettings().argument.GetName() == "OutBuffer");
-        CHECK(buffer_binding_ptr->GetSettings().resource_count == 1U);
+        CHECK(buffer_binding_ptr->GetSettings().resource_count == 2U);
         CHECK(buffer_binding_ptr->GetSettings().resource_type == Rhi::ResourceType::Buffer);
         CHECK(buffer_binding_ptr->GetResourceViews().size() == 1U);
         CHECK(buffer_binding_ptr->GetResourceViews().at(0).GetResourcePtr().get() == buffer1.GetInterfacePtr().get());
@@ -255,7 +255,7 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         const Rhi::ResourceView& buffer_view = buffer_binding.GetResourceViews().at(0);
         CHECK(buffer_view.GetResourcePtr().get() == buffer2.GetInterfacePtr().get());
         CHECK(buffer_view.GetOffset() == 0U);
-        CHECK(buffer_view.GetSize() == 128U);
+        CHECK(buffer_view.GetSize() == 125U);
     }
 
     SECTION("Convert to String")

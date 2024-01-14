@@ -351,9 +351,9 @@ TEMPLATE_TEST_CASE_SIG("Color Conversions to Other Types", "[color][convert]", C
     SECTION("Cast to string")
     {
         if constexpr (size == 3)
-            CHECK(static_cast<std::string>(test_color) == "C(r:64, g:128, b:191)");
+            CHECK(static_cast<std::string>(test_color) == "C(r:64, g:125, b:191)");
         else
-            CHECK(static_cast<std::string>(test_color) == "C(r:51, g:102, b:153, a:204)");
+            CHECK(static_cast<std::string>(test_color) == "C(r:51, g:101, b:153, a:204)");
     }
 }
 

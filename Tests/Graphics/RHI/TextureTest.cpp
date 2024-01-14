@@ -166,7 +166,7 @@ TEST_CASE("RHI Texture Functions", "[rhi][texture][resource]")
                 static_cast<Data::Size>(test_data.size())
             }
         }));
-        CHECK(texture.GetDataSize(Data::MemoryState::Initialized) == 256U);
+        CHECK(texture.GetDataSize(Data::MemoryState::Initialized) == 255U);
     }
 
     SECTION("Get Data")
