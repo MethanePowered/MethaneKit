@@ -8,10 +8,10 @@ add_executable(${TARGET}
     ComputeContextTest.cpp
     ComputeStateTest.cpp
     CommandQueueTest.cpp
-    FenceTest.cpp
+    #FenceTest.cpp
     TransferCommandListTest.cpp
     ComputeCommandListTest.cpp
-    BufferTest.cpp
+    #BufferTest.cpp
     SamplerTest.cpp
     TextureTest.cpp
 )

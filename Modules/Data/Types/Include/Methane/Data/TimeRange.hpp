@@ -40,7 +40,7 @@ constexpr Timestamp g_one_sec_in_nanoseconds = 1000000000;
 [[nodiscard]]
 inline Timestamp ConvertTimeSecondsToNanoseconds(double seconds) noexcept
 {
-    return static_cast<Timestamp>(seconds * g_one_sec_in_nanoseconds);
+    return (Timestamp)(seconds * g_one_sec_in_nanoseconds);
 }
 
 [[nodiscard]]
@@ -52,7 +52,7 @@ inline Timestamp ConvertTicksToNanoseconds(Timestamp ticks, Frequency frequency)
 [[nodiscard]]
 inline float ConvertFrequencyToTickPeriod(Frequency frequency) noexcept
 {
-    return static_cast<float>(g_one_sec_in_nanoseconds) / static_cast<float>(frequency);
+    return (float)(g_one_sec_in_nanoseconds) / static_cast<float>(frequency);
 }
 
 #ifdef _WIN32

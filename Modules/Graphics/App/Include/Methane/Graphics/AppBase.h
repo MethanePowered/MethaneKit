@@ -41,9 +41,9 @@ Base implementation of the Methane graphics application.
 namespace Methane::Graphics
 {
 
-class AppBase // NOSONAR
+class AppBase
     : public Platform::App
-    , protected Data::Receiver<Rhi::IContextCallback> //NOSONAR
+    , protected Data::Receiver<Rhi::IContextCallback>
 {
 public:
     AppBase(const CombinedAppSettings& settings, Data::IProvider& textures_provider);
@@ -123,7 +123,7 @@ private:
     Rhi::Texture               m_depth_texture;
     Rhi::RenderPattern         m_screen_render_pattern;
     Rhi::ViewState             m_view_state;
-    bool                       m_restore_animations_enabled = true;
+    bool                       m_restore_animations_enabled;
 };
 
 } // namespace Methane::Graphics

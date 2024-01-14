@@ -95,6 +95,8 @@ private:
     std::string GetMouseActionName(ActionCamera::MouseAction action) const override;
 
     ActionCamera& m_action_camera;
+    int m_uninitialized;
+    bool m_weirdFlag;
 };
 
 } // namespace Methane::Graphics
