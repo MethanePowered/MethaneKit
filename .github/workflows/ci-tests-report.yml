@@ -12,6 +12,12 @@ on:
 jobs:
   test-report:
     name: ${{ matrix.name }} Test Report
+    if: ${{ github.event.workflow_run.conclusion != 'skipped' }}
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+      actions: read
 
     strategy:
       fail-fast: false
@@ -25,43 +31,32 @@ jobs:
           - name: "MacOS_VK_Release"
           - name: "MacOS_MTL_Release"
 
-    runs-on: ubuntu-latest
-
     steps:
-      - name: Generate Test Results Report
-        id: test-reporter
-        uses: dorny/test-reporter@v1
+      - name: Download Event File
+        uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615
         with:
-          artifact:  /MethaneKit_${{ matrix.name }}_TestResults_(.*)/
-          name: ${{ matrix.name }} Tests
-          path: '*_result.xml'
-          reporter: java-junit
-          fail-on-error: 'true'
+          run_id: ${{ github.event.workflow_run.id }}
+          name: EventFile
+          path: EventFile
 
-      - name: Add PR Comment with Test Results
-        uses: marocchino/sticky-pull-request-comment@v2
-        if: ${{ github.event.workflow_run.event == 'pull_request' && steps.test-reporter.outputs.conclusion == 'success' && (success() || failure()) }}
+      - name: Download Test Results
+        uses: dawidd6/action-download-artifact@v3
         with:
-          number: ${{ github.event.workflow_run.pull_requests[0].number }}
-          header: ${{ matrix.name }} Test Results
-          recreate: true
-          message: |
-            # ${{ matrix.name }} Test Results
-            
-            - :white_check_mark: ${{ steps.test-reporter.outputs.passed }} tests **passed**
-            - :x: ${{ steps.test-reporter.outputs.failed }} tests **failed**
-            - :warning: ${{ steps.test-reporter.outputs.skipped }} tests **skipped**
-            - :stopwatch: ${{ steps.test-reporter.outputs.time }} ms. run duration
+          run_id: ${{ github.event.workflow_run.id }}
+          name: ^MethaneKit_${{ matrix.name }}_TestResults_.*$
+          name_is_regexp: true
+          path: TestResults
+          allow_forks: true
 
-      - name: Add Commit Comment with Test Results
-        if: ${{ github.event.workflow_run.event == 'push' && steps.test-reporter.outputs.conclusion == 'success' && (success() || failure()) }}
-        uses: peter-evans/commit-comment@v2
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        if: ${{ success() || failure() }}
         with:
-          sha: ${{ github.event.workflow_run.head_sha }}
-          body: |
-            # ${{ matrix.name }} Test Results
-
-            - :white_check_mark: ${{ steps.test-reporter.outputs.passed }} tests **passed**
-            - :x: ${{ steps.test-reporter.outputs.failed }} tests **failed**
-            - :warning: ${{ steps.test-reporter.outputs.skipped }} tests **skipped**
-            - :stopwatch: ${{ steps.test-reporter.outputs.time }} ms. run duration
+          check_name: ${{ matrix.name }} Test Results
+          comment_title: ${{ matrix.name }} Test Results
+          files: TestResults/**/*Test.xml
+          event_file: EventFile/event.json
+          commit: ${{ github.event.workflow_run.head_sha }}
+          event_name: ${{ github.event.workflow_run.event }}
+          action_fail: true
+          action_fail_on_inconclusive: true

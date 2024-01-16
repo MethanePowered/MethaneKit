@@ -42,6 +42,7 @@ Vulkan implementation of the render context interface.
 #include <fmt/format.h>
 #include <magic_enum.hpp>
 #include <sstream>
+#include <cassert>
 
 namespace Methane::Graphics::Vulkan
 {

@@ -25,6 +25,8 @@ Icosahedron mesh generator with customizable vertex type
 
 #include "BaseMesh.hpp"
 
+#include <cassert>
+
 namespace Methane::Graphics
 {
 

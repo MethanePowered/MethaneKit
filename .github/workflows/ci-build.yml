@@ -12,6 +12,7 @@ on:
     - 'Tests/**'
     - 'Externals/**'
     - 'CMake/**'
+    - 'Build/*/CI/**'
     - 'CMakeLists.txt'
     - 'CMakePresets.json'
   pull_request:
@@ -23,32 +24,28 @@ on:
     - 'Tests/**'
     - 'Externals/**'
     - 'CMake/**'
+    - 'Build/*/CI/**'
     - 'CMakeLists.txt'
     - 'CMakePresets.json'
   schedule:
     - cron: '20 23 * * 3'  # Scheduled workflow will not run in GitHub forks by default
 
 env:
-  product_ver_major: 0
-  product_ver_minor: 7
-  product_ver_patch: 3
-  product_ver_build: ${{ github.run_number }}
-  tracy_release_version: "0.9.1"
-  vulkan_sdk_version: "1.3.250.1"
-  origin_repository: 'MethanePowered/MethaneKit'
-  # TSC Invariant check is disabled to allow running Catch test executables only for tests list query by CTest
-  TRACY_NO_INVARIANT_CHECK: 1
+  METHANE_VERSION_MAJOR: 0
+  METHANE_VERSION_MINOR: 7
+  METHANE_VERSION_PATCH: 4
+  METHANE_VERSION_BUILD: ${{ github.run_number }}
+  TRACY_RELEASE_VERSION: "0.9.1"
+  VULKAN_SDK_VERSION: "1.3.250.1"
+  ORIGIN_REPOSITORY: 'MethanePowered/MethaneKit'
 
 jobs:
   build:
-    name: ${{ matrix.name }}
-
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            os_name: Windows
             name: "Win64_DX_Release"
             config_preset: "VS2022-Win64-DX-Default"
             build_preset: "VS2022-Win64-DX-Release"
@@ -58,7 +55,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win64_VK_Release"
             config_preset: "VS2022-Win64-VK-Default"
             build_preset: "VS2022-Win64-VK-Release"
@@ -68,7 +64,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win64_DX_Profile"
             config_preset: "VS2022-Win64-DX-Profile"
             build_preset: "VS2022-Win64-DX-Profile"
@@ -78,7 +73,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win64_VK_Profile"
             config_preset: "VS2022-Win64-VK-Profile"
             build_preset: "VS2022-Win64-VK-Profile"
@@ -88,7 +82,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win32_DX_Release"
             config_preset: "VS2022-Win32-DX-Default"
             build_preset: "VS2022-Win32-DX-Release"
@@ -98,7 +91,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win32_VK_Release"
             config_preset: "VS2022-Win32-VK-Default"
             build_preset: "VS2022-Win32-VK-Release"
@@ -108,7 +100,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win32_DX_Profile"
             config_preset: "VS2022-Win32-DX-Profile"
             build_preset: "VS2022-Win32-DX-Profile"
@@ -118,7 +109,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: windows-latest
-            os_name: Windows
             name: "Win32_VK_Profile"
             config_preset: "VS2022-Win32-VK-Profile"
             build_preset: "VS2022-Win32-VK-Profile"
@@ -128,7 +118,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: ubuntu-latest
-            os_name: Ubuntu
             name: "Ubuntu_VK_Release"
             config_preset: "Make-Lin-VK-Release"
             build_preset: "Make-Lin-VK-Release"
@@ -138,7 +127,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: ubuntu-latest
-            os_name: Ubuntu
             name: "Ubuntu_VK_Profile"
             config_preset: "Make-Lin-VK-Profile"
             build_preset: "Make-Lin-VK-Profile"
@@ -148,7 +136,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: macos-latest
-            os_name: MacOS
             name: "MacOS_VK_Release"
             config_preset: "Xcode-Mac-VK-Default"
             build_preset: "Xcode-Mac-VK-Release"
@@ -158,7 +145,6 @@ jobs:
             install_vulkan_sdk: true
 
           - os: macos-latest
-            os_name: MacOS
             name: "MacOS_MTL_Release"
             config_preset: "Xcode-Mac-MTL-Default"
             build_preset: "Xcode-Mac-MTL-Release"
@@ -168,7 +154,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: macos-latest
-            os_name: MacOS
             name: "MacOS_MTL_Profile"
             config_preset: "Xcode-Mac-MTL-Profile"
             build_preset: "Xcode-Mac-MTL-Profile"
@@ -178,7 +163,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: macos-latest
-            os_name: MacOS
             name: "iOS_Sim_MTL_Release"
             config_preset: "Xcode-iOS-Sim-MTL-Default"
             build_preset: "Xcode-iOS-Sim-MTL-Release"
@@ -188,7 +172,6 @@ jobs:
             install_vulkan_sdk: false
 
           - os: macos-latest
-            os_name: MacOS
             name: "tvOS_Sim_MTL_Release"
             config_preset: "Xcode-tvOS-Sim-MTL-Default"
             build_preset: "Xcode-tvOS-Sim-MTL-Release"
@@ -197,6 +180,7 @@ jobs:
             add_tracy_app: false
             install_vulkan_sdk: false
 
+    name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
 
     env:
@@ -204,201 +188,129 @@ jobs:
       BUILD_LOG_FILE: Build/Output/${{ matrix.config_preset }}/Install/Build.log
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Install Linux prerequisites
-      if: ${{ matrix.os_name == 'Ubuntu' }}
-      run: |
-        sudo apt update
-        sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev p7zip
+      - name: Install Linux prerequisites
+        if: ${{ runner.os == 'Linux' }}
+        run: ./Build/Unix/CI/InstallLinuxPrerequisites.sh
 
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Install TestSpace
+        if: ${{ github.repository == env.ORIGIN_REPOSITORY }}
+        uses: testspace-com/setup-testspace@v1
+        with:
+          domain: ${{ github.repository_owner }}
 
-    - name: Install Testspace
-      if: ${{ github.repository == env.origin_repository }}
-      uses: testspace-com/setup-testspace@v1
-      with:
-        domain: ${{ github.repository_owner }}
+      - name: Install Vulkan SDK ${{ env.VULKAN_SDK_VERSION }}
+        if: ${{ matrix.install_vulkan_sdk }}
+        run: ./Build/Unix/CI/InstallVulkanSdk.sh "${{ env.VULKAN_SDK_VERSION }}" "${{ runner.tool_cache }}/VulkanSDK"
 
-    - name: Install Vulkan SDK ${{ env.vulkan_sdk_version }}
-      if: ${{ matrix.install_vulkan_sdk }}
-      run: |
-        runner_os=$(uname -s)
-        case $runner_os in
-          macOS|Darwin) sdk_os=mac ; sdk_os_subdir=macOS ;;
-          Linux) sdk_os=linux ; sdk_os_subdir=linux ;;
-          Windows|MINGW*) sdk_os=windows ; sdk_os_subdir=windows ;;
-          *) echo "Unknown runner_os: $runner_os" ; exit 7 ; ;;
-        esac
-        sdk_ver="${{ env.vulkan_sdk_version }}"
-        sdk_dir="${{ runner.tool_cache }}/VulkanSDK"
-        sdk_ver_dir="$sdk_dir/$sdk_ver/$sdk_os_subdir"
-        if [ -d "$sdk_ver_dir" ]; then
-          echo "Vulkan SDK version directory already exists: $sdk_ver_dir"
-        else
-          test -d $sdk_dir || mkdir -pv $sdk_dir
-          vulkan_sdk_url=https://github.com/MethanePowered/VulkanHeaders/releases/download/sdk-$sdk_ver/vulkan_sdk_$sdk_os.7z
-          echo "Downloading Vulkan SDK archive $vulkan_sdk_url ..."
-          curl -sSLo vulkan_sdk.7z $vulkan_sdk_url
-          echo "Unpacking Vulkan SDK archive to $sdk_dir ..."
-          7z x vulkan_sdk.7z -o$sdk_dir
-          if [ ! -d $sdk_ver_dir ]; then
-            echo "Vulkan SDK subdirectory not found: $sdk_ver_dir"
-            exit 7
-          fi
-        fi
-        echo "Setting VULKAN_SDK* environment variables..."
-        echo "VULKAN_SDK=$sdk_ver_dir" >> $GITHUB_ENV
-        echo "VULKAN_SDK_VERSION=$sdk_ver" >> $GITHUB_ENV
-        echo "VULKAN_SDK_PLATFORM=$sdk_os" >> $GITHUB_ENV
-        echo "PATH=$PATH:$sdk_ver_dir/bin" >> $GITHUB_ENV
-        echo "DYLD_LIBRARY_PATH=$sdk_ver_dir/lib:${DYLD_LIBRARY_PATH:-}" >> $GITHUB_ENV
+      - name: Initialize Externals Cache
+        uses: actions/cache@v3
+        with:
+          path: Build/Output/ExternalsCache
+          key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
-    - name: Initialize Externals Cache
-      uses: actions/cache@v3
-      with:
-        path: Build/Output/ExternalsCache
-        key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
+      - name: CMake Configure Preset ${{ matrix.config_preset }}
+        shell: bash
+        run: ./Build/Unix/CI/CMakeConfigurePreset.sh "${{ matrix.config_preset }}"
 
-    - name: CMake Configure Preset ${{ matrix.config_preset }}
-      shell: bash
-      run: |
-        set -o pipefail
-        mkdir -p "$INSTALL_DIR"
-        cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=${{ env.product_ver_build }} 2>&1 | tee $BUILD_LOG_FILE
+      - name: CMake Build Preset ${{ matrix.build_preset }}
+        shell: bash
+        run: ./Build/Unix/CI/CMakeBuildPreset.sh "${{ matrix.build_preset }}"
 
-    - name: CMake Build Preset ${{ matrix.build_preset }}
-      shell: bash
-      run: |
-        set -o pipefail
-        cmake --build --preset ${{ matrix.build_preset }} --target install --parallel 4 2>&1 | tee -a $BUILD_LOG_FILE
+      - name: Run Unit-Tests on Unix
+        if: ${{ matrix.run_tests && runner.os != 'Windows'}}
+        working-directory: ${{ env.INSTALL_DIR }}/Tests
+        shell: bash
+        run: ${{ github.workspace }}/Build/Unix/CI/RunUnitTests.sh junit
 
-    - name: Run Unit-Tests on Unix
-      if: ${{ matrix.run_tests && matrix.os_name != 'Windows'}}
-      working-directory: ${{ env.INSTALL_DIR }}/Tests
-      shell: bash
-      run: |
-        set +e
-        result_ext='_result.xml'
-        result_error_level=0
-        echo Running all unit-tests in directory $PWD
-        for test_exe in *Test
-        do
-          ./$test_exe -r junit -o "$test_exe$result_ext"
-          last_error_level=$?
-          echo  - $test_exe - completed with $last_error_level exit code
-          if [ $last_error_level != 0 ]; then
-            result_error_level=$last_error_level
-          fi
-        done
-        exit $result_error_level
+      - name: Run Unit-Tests on Windows
+        if: ${{ matrix.run_tests && runner.os == 'Windows' }}
+        working-directory: ${{ env.INSTALL_DIR }}/Tests
+        shell: cmd
+        run: ${{ github.workspace }}\Build\Windows\CI\RunUnitTests.bat junit
 
-    - name: Run Unit-Tests on Windows
-      if: ${{ matrix.run_tests && matrix.os_name == 'Windows' }}
-      working-directory: ${{ env.INSTALL_DIR }}/Tests
-      shell: cmd
-      run: |
-        setlocal enabledelayedexpansion
-        echo Running unit-tests in directory "%cd%"
-        set /A result_error_level=0
-        for /r "." %%a in (*Test.exe) do (
-          "%%~fa" -r junit -o "%%~fa_result.xml"
-          echo  - %%~na - completed with !errorlevel! exit status
-          if not !errorlevel!==0 (
-            set /A result_error_level=!errorlevel!
-          )
-        )
-        exit !result_error_level!
+      - name: Upload Test Results Artifact
+        uses: actions/upload-artifact@v3
+        if: ${{ matrix.run_tests && (success() || failure()) }}
+        with:
+          name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.METHANE_VERSION_MAJOR }}.${{ env.METHANE_VERSION_MINOR }}.${{ env.METHANE_VERSION_PATCH }}.${{ env.METHANE_VERSION_BUILD }}
+          path: ${{ env.INSTALL_DIR }}/Tests/Results/junit/*.xml
 
-    - name: Upload Test Results Artifact
-      uses: actions/upload-artifact@v3
-      if: ${{ matrix.run_tests && (success() || failure()) }}
-      with:
-        name: MethaneKit_${{ matrix.name }}_TestResults_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
-        path: ${{ env.INSTALL_DIR }}/Tests/*_result.xml
+      - name: Upload Test Results and Build Log to TestSpace server
+        if: ${{ github.repository == env.ORIGIN_REPOSITORY && matrix.run_tests && (success() || failure()) }}
+        shell: bash
+        run: |
+          testspace \
+            "[ ${{ matrix.name }} ]${{ env.INSTALL_DIR }}/Tests/Results/junit/*.xml" \
+            "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
-    - name: Upload Test Results and Build Log to Testspace server
-      if: ${{ github.repository == env.origin_repository && matrix.run_tests && (success() || failure()) }}
-      run: testspace "[ ${{ matrix.name }} ]${{ env.INSTALL_DIR }}/Tests/*_result.xml" "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
+      - name: Add README and Build-Info files
+        if: ${{ success() || failure() }}
+        shell: bash
+        env:
+          REPO_URL: ${{ github.repositoryUrl }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          CONFIG_PRESET: ${{ matrix.config_preset }}
+          BUILD_PRESET: ${{ matrix.build_preset }}
+          RUNNER_INFO: "${{ runner.name }}, ${{ runner.os }}, ${{ runner.arch }}"
+        run: |
+          cp README.md $INSTALL_DIR/README.md
+          ./Build/Unix/CI/WriteBuildInfo.sh "$INSTALL_DIR/Build-Info.txt"            
 
-    - name: Add README and BUILD files
-      if: ${{ success() || failure() }}
-      shell: bash
-      run: |
-        cp README.md $INSTALL_DIR/README.md
-        echo Methane Kit v.${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }} https://github.com/${{ github.repository }} > $INSTALL_DIR/Build-Info.txt
-        echo   - Git repository: ${{ github.repositoryUrl }}, branch: ${{ github.ref_name }}, commit SHA: ${{ github.sha }} >> $INSTALL_DIR/Build-Info.txt
-        echo   - GitHub Actions build url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }} >> $INSTALL_DIR/Build-Info.txt
-        echo   - Built with CMake configure preset ${{ matrix.config_preset }} and build preset ${{ matrix.build_preset }} >> $INSTALL_DIR/Build-Info.txt
-        echo   - Built on agent ${{ runner.name }}, ${{ runner.os }}, ${{ runner.arch }}: >> $INSTALL_DIR/Build-Info.txt
-        echo   - Builder agent ${{ matrix.os }} system information: >> $INSTALL_DIR/Build-Info.txt
+      - name: Download Tracy release
+        if: ${{ matrix.add_tracy_app && (success() || failure()) }}
+        shell: bash
+        run: ./Build/Unix/CI/DownloadTracyRelease.sh "${{ env.TRACY_RELEASE_VERSION }}" "$INSTALL_DIR/Apps"
 
-    - name: Add Windows System Information to BUILD file
-      if: ${{ matrix.os_name == 'Windows' && (success() || failure()) }}
-      run: systeminfo >> Build\Output\${{ matrix.config_preset }}\Install\Build-Info.txt
+      - name: Archive Build Artifacts
+        if: ${{ success() || failure() }}
+        shell: bash
+        working-directory: ${{ env.INSTALL_DIR }}
+        run: 7z a -t7z -mx=9 MethaneKit_${{ matrix.name }}.7z *
 
-    - name: Add Unix System Information to BUILD file
-      if: ${{ matrix.os_name != 'Windows' && (success() || failure()) }}
-      run: uname -a >>$INSTALL_DIR/Build-Info.txt
+      - name: Upload Archived Build Artifacts
+        if: ${{ success() || failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: MethaneKit_${{ matrix.name }}_${{ env.METHANE_VERSION_MAJOR }}.${{ env.METHANE_VERSION_MINOR }}.${{ env.METHANE_VERSION_PATCH }}.${{ env.METHANE_VERSION_BUILD }}
+          path: ${{ env.INSTALL_DIR }}/MethaneKit_${{ matrix.name }}.7z
 
-    - name: Download Tracy release
-      if: ${{ matrix.add_tracy_app && (success() || failure()) }}
-      shell: bash
-      run: |
-        curl -sSLo Tracy.7z https://github.com/MethanePowered/Tracy/releases/download/v${{ env.tracy_release_version }}/Tracy-${{ matrix.os_name }}-v${{ env.tracy_release_version }}.7z
-        7z x Tracy.7z -o$INSTALL_DIR/Apps
+      - name: Update Badge Parameters
+        id: badge-params
+        if: ${{ github.repository == env.ORIGIN_REPOSITORY && github.event_name == 'push' && always() }}
+        shell: bash
+        run: ./Build/Unix/CI/UpdateBadgeParameters.sh "${{ job.status }}"
 
-    - name: Archive Build Artifacts
-      if: ${{ success() || failure() }}
-      shell: bash
-      working-directory: ${{ env.INSTALL_DIR }}
-      run: 7z a -t7z -mx=9 MethaneKit_${{ matrix.name }}.7z *
+      - name: Update Badge JSON
+        if: ${{ github.repository == env.ORIGIN_REPOSITORY && github.event_name == 'push' && always() }}
+        uses: schneegans/dynamic-badges-action@v1.6.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 96d788046ccd52b45b3354a99f8569c3
+          filename: MethaneKit_${{ matrix.name }}_${{ github.ref_name }}.json
+          namedLogo: ${{ matrix.named_logo }} # https://simpleicons.org
+          label: ${{ matrix.name }}
+          labelColor: #f5f5f5
+          logoColor: #f5f5f5
+          message: ${{ env.badge_message }}
+          color: ${{ env.badge_color }}
 
-    - name: Upload Archived Build Artifacts
-      if: ${{ success() || failure() }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
-        path: ${{ env.INSTALL_DIR }}/MethaneKit_${{ matrix.name }}.7z
+      - name: Windows disk space report
+        if: ${{ runner.os == 'Windows' && always() }}
+        run: Get-PSDrive
 
-    - name: Update Badge Parameters
-      id: badge-params
-      if: ${{ github.repository == env.origin_repository && github.event_name == 'push' && always() }}
-      shell: bash
-      run: |
-        case "${{ job.status }}" in
-          "success")
-            echo "badge_message=passed" >> $GITHUB_ENV
-            echo "badge_color=#56a93c"  >> $GITHUB_ENV
-            ;;
-          "failure")
-            echo "badge_message=failed" >> $GITHUB_ENV
-            echo "badge_color=#cd6e57"  >> $GITHUB_ENV
-            ;;
-          "cancelled")
-            echo "badge_message=cancelled" >> $GITHUB_ENV
-            echo "badge_color=#9b9b9c"     >> $GITHUB_ENV
-            ;;
-          *)
-            echo "badge_message=undefined" >> $GITHUB_ENV
-            echo "badge_color=purple"      >> $GITHUB_ENV
-            ;;
-        esac
-
-    - name: Update Badge JSON
-      if: ${{ github.repository == env.origin_repository && github.event_name == 'push' && always() }}
-      uses: schneegans/dynamic-badges-action@v1.6.0 # https://github.com/marketplace/actions/dynamic-badges
-      with:
-        auth: ${{ secrets.GIST_TOKEN }}
-        gistID: 96d788046ccd52b45b3354a99f8569c3
-        filename: MethaneKit_${{ matrix.name }}_${{ github.ref_name }}.json
-        namedLogo: ${{ matrix.named_logo }} # https://simpleicons.org
-        label: ${{ matrix.name }}
-        labelColor: #f5f5f5
-        logoColor: #f5f5f5
-        message: ${{ env.badge_message }}
-        color: ${{ env.badge_color }}
-
-    - name: Windows disk space report
-      if: ${{ matrix.os_name == 'Windows' && always() }}
-      run: Get-PSDrive
+  event_file:
+    name: "Event File"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload Event File
+        uses: actions/upload-artifact@v3
+        with:
+          name: EventFile
+          path: ${{ github.event_path }}

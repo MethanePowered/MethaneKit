@@ -16,9 +16,12 @@ on:
       - 'Tests/**'
       - 'Externals/**'
       - 'CMake/**'
+      - 'Build/*/CI/**'
       - 'CMakeLists.txt'
       - 'CMakePresets.json'
 
+  # "Pull request" event runs in context of the target repository branch, but remote repos do not have access to secrets,
+  # it is used only for internal PRs from origin repository branches according to job condition below.
   pull_request:
     branches: [ master ]
     types: [opened, synchronize, reopened]
@@ -30,31 +33,55 @@ on:
       - 'Tests/**'
       - 'Externals/**'
       - 'CMake/**'
+      - 'Build/*/CI/**'
       - 'CMakeLists.txt'
       - 'CMakePresets.json'
+
+  # "Pull request target" event runs in context of the base repository and has access to secrets,
+  # it is used only for external PRs from forked repositories to origin according to job condition below.
+  pull_request_target:
+    branches: [ master ]
+    types: [ opened, synchronize, reopened ]
+    paths:
+      - 'Apps/**'
+      - 'Modules/**'
+      - 'Tests/**'
+      - 'Externals/**'
+      - 'CMake/**'
+      - 'Build/*/CI/**'
+      - 'CMakeLists.txt'
+      - 'CMakePresets.json'
+
   schedule:
     - cron: '20 23 * * 3' # Scheduled workflow will not run in GitHub forks by default
 
 env:
-  product_ver_major: 0
-  product_ver_minor: 7
-  product_ver_patch: 3
-  product_ver_build: ${{ github.run_number }}
-  sonar_server_url: "https://sonarcloud.io"
-  sonar_organization: methane-powered
-  TRACY_NO_INVARIANT_CHECK: 1
+  METHANE_VERSION_MAJOR: 0
+  METHANE_VERSION_MINOR: 7
+  METHANE_VERSION_PATCH: 4
+  METHANE_VERSION_BUILD: ${{ github.run_number }}
 
 jobs:
   sonar_scan:
     name: ${{ matrix.name }}
-    if: ${{ github.repository == 'MethanePowered/MethaneKit' }}
+
+    # Run sonar scan job only in context of the origin repository:
+    # - Trigger on either "push" or "pull request" event for the origin repository owned branches
+    # - Or trigger on "pull request target" event for external repositories to have access to secrets from origin repo context
+    #   see https://github.com/orgs/community/discussions/26829
+    if: ${{ github.repository == 'MethanePowered/MethaneKit' && (
+               github.event_name == 'push' ||
+              (github.event_name == 'pull_request' &&
+               github.event.pull_request.head.repo.full_name == github.repository) ||
+              (github.event_name == 'pull_request_target' &&
+               github.event.pull_request.head.repo.full_name != github.repository)
+            ) }}
 
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            os_name: windows
             name: "Win64_DX_SonarScan"
             named_logo: Windows
             config_preset: "Ninja-Win-DX-Scan"
@@ -63,7 +90,6 @@ jobs:
             tests_coverage_reports: "Build/Output/Ninja-Win-DX-Scan/Install/Tests/Coverage/*.xml"
 
           - os: ubuntu-latest
-            os_name: linux
             name: "Ubuntu_VK_SonarScan"
             named_logo: Linux
             config_preset: "Ninja-Lin-VK-Scan"
@@ -72,7 +98,6 @@ jobs:
             tests_coverage_reports: "Build/Output/Ninja-Lin-VK-Scan/Build/MethaneTestCoverage.info"
 
           - os: macos-latest
-            os_name: macosx
             name: "MacOS_MTL_SonarScan"
             named_logo: Apple
             config_preset: "Ninja-Mac-MTL-Scan"
@@ -91,23 +116,31 @@ jobs:
       COMPILE_COMMANDS_FILE: Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json
 
     steps:
-      - name: Checkout repository
+      - name: Checkout pull-request merge commit from origin
+        if: ${{ github.event_name != 'pull_request_target' }}
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2 # 2 commits are necessary for CodeCov diff
+
+      - name: Checkout pull-request merge commit from fork
+        if: ${{ github.event_name == 'pull_request_target' }}
+        uses: actions/checkout@v3
+        with:
+          ref: "${{ github.event.pull_request.merge_commit_sha }}"
+          fetch-depth: 2 # 2 commits are necessary for CodeCov diff
 
       - name: Install Linux prerequisites
-        if: ${{ matrix.os_name == 'linux' }}
-        run: |
-          sudo apt update
-          sudo apt install xcb libx11-dev libx11-xcb-dev libxcb-sync-dev libxcb-randr0-dev lcov
+        if: ${{ runner.os == 'Linux' }}
+        run: ./Build/Unix/CI/InstallLinuxPrerequisites.sh lcov
 
-      - name: Install Testspace
+      - name: Install TestSpace
+        if: ${{ github.event_name == 'push' }}
         uses: testspace-com/setup-testspace@v1
         with:
           domain: ${{ github.repository_owner }}
 
-      - name: Install .NET Core # Required to use ReportGenerator
+      # .NET Core is required by ReportGenerator
+      - name: Install .NET Core
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.400
@@ -115,6 +148,7 @@ jobs:
       - name: Install Sonar-Scanner
         uses: sonarsource/sonarcloud-github-c-cpp@v2
 
+      # Ninja build is required to generate compile commands file used by Sonar-Scanner
       - name: Install Ninja
         uses: MethanePowered/gha-setup-ninja@master
         with:
@@ -127,19 +161,18 @@ jobs:
           key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
 
       - name: Setup Developer Command Prompt for MSVC (VS2022 x64) to build with Ninja
-        if: ${{ matrix.os_name == 'windows' }}
+        if: ${{ runner.os == 'Windows' }}
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
 
       - name: CMake Configure Preset ${{ matrix.config_preset }}
         shell: bash
+        env:
+          # Set BUILD version to zero to benefit from SonarCloud analysis cache (version change invalidates cache at each run)
+          METHANE_VERSION_BUILD: 0
         run: |
-          set -o pipefail
-          mkdir -p "$INSTALL_DIR"
-          # set METHANE_VERSION_BUILD=0 to benefit from SonarCloud analysis cache, build version invalidates cache at each run
-          cmake --preset ${{ matrix.config_preset }} -DMETHANE_VERSION_MAJOR=${{ env.product_ver_major }} -DMETHANE_VERSION_MINOR=${{ env.product_ver_minor }} -DMETHANE_VERSION_PATCH=${{ env.product_ver_patch }} -DMETHANE_VERSION_BUILD=0 2>&1 | tee $BUILD_LOG_FILE
-          ls -la "$BUILD_DIR" 2>&1 | tee -a $BUILD_LOG_FILE
+          ./Build/Unix/CI/CMakeConfigurePreset.sh "${{ matrix.config_preset }}"
           if [ -f $COMPILE_COMMANDS_FILE ]; then
             cp "$COMPILE_COMMANDS_FILE" "$INSTALL_DIR"
           else
@@ -148,126 +181,36 @@ jobs:
 
       - name: CMake Build Preset ${{ matrix.build_preset }}
         shell: bash
-        run: |
-          set -o pipefail
-          cmake --build --preset ${{ matrix.build_preset }} --target install 2>&1 | tee -a $BUILD_LOG_FILE
+        run: ./Build/Unix/CI/CMakeBuildPreset.sh "${{ matrix.build_preset }}"
 
       - name: Download OpenCppCoverage
-        if: ${{ matrix.os_name == 'windows' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: powershell
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
-        run: |
-          Invoke-WebRequest -Uri 'https://github.com/MethanePowered/OpenCppCoverage/releases/download/release-0.9.9.0/OpenCppCoverage.zip' -OutFile 'OpenCppCoverage.zip'
-          Expand-Archive -Path 'OpenCppCoverage.zip' -DestinationPath 'OpenCppCoverage'
-          if (-not(Test-Path -Path 'OpenCppCoverage/OpenCppCoverage.exe' -PathType Leaf)) {
-            Get-ChildItem 'OpenCppCoverage'
-            throw 'OpenCppCoverage/OpenCppCoverage.exe executable was not found in unpacked content!'
-          }
+        run: ${{ github.workspace }}\Build\Windows\CI\DownloadOpenCppCoverageRelease.ps1
 
       - name: Run all unit-tests with OpenCppCoverage code coverage on Windows
-        if: ${{ matrix.os_name == 'windows' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: cmd
         working-directory: 'Build\Output\${{ matrix.config_preset }}\Install\Tests'
         run: |
-          chcp 65001 #set code page to utf-8
-          setlocal enabledelayedexpansion
-          set open_cpp_coverage_exe=OpenCppCoverage\OpenCppCoverage.exe
-          set test_results=
-          if not exist "%open_cpp_coverage_exe%" (
-            echo File path "%open_cpp_coverage_exe%" does not exist!
-            exit 101
-          )
-          echo Running unit-tests in directory "%cd%"
-          mkdir Results
-          mkdir Coverage
-          set /A result_error_level=0
-          for /r "." %%a in (*Test.exe) do (
-            echo %open_cpp_coverage_exe% --sources "${{ github.workspace }}\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
-            %open_cpp_coverage_exe% --sources "${{ github.workspace }}\Modules" --export_type=cobertura:Coverage\%%~na.xml -- "%%~fa" -r sonarqube -o "Results\%%~na.xml"
-            echo  - %%~na - completed with !errorlevel! exit status
-            if not !errorlevel!==0 (
-              set /A result_error_level=!errorlevel!
-            )
-            if .!test_results!==. (
-              set test_results=Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/%%~na.xml
-            ) else (
-              set test_results=!test_results!,Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/%%~na.xml
-            )
-          )
-          echo Test Result Files: %test_results%
-          echo test_results=%test_results%>> %GITHUB_ENV%
-          exit !result_error_level!
+          ${{ github.workspace }}\Build\Windows\CI\RunUnitTestsWithCoverage.bat cobertura sonarqube junit ^
+            "${{ github.workspace }}\Modules" ^
+            Build/Output/${{ matrix.config_preset }}/Install/Tests
 
-      - name: Run all unit-tests with GCov code coverage on Linux
-        if: ${{ matrix.os_name == 'linux' }}
+      - name: Run all unit-tests to collect SonarQube and JUnit test results on Linux
+        if: ${{ runner.os == 'Linux' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
-        run: |
-          set +e
-          result_ext='.xml'
-          test_results=''
-          result_error_level=0
-          echo Running unit-tests in directory $PWD
-          mkdir Results
-          for test_exe in *Test
-          do
-            ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
-            last_error_level=$?
-            echo  - $test_exe - completed with $last_error_level exit status
-            if [ $last_error_level != 0 ]; then
-              result_error_level=$last_error_level
-            fi
-            if [ -f "$PWD/Results/$test_exe$result_ext" ]; then
-              test_results+="$PWD/Results/$test_exe$result_ext,"
-            fi
-          done
-          echo "Test Result Files: $test_results"
-          echo "test_results=$test_results" >> $GITHUB_ENV
-          exit $result_error_level
+        run: ${{ github.workspace }}/Build/Unix/CI/RunUnitTests.sh sonarqube junit
 
-      - name: Collect tests code coverage using ctest and gcov/lcov on Linux
-        if: ${{ matrix.os_name == 'linux' && (success() || failure()) }}
-        run: |
-          set -o pipefail
-          cmake --build --preset ${{ matrix.build_preset }} --target MethaneTestCoverage 2>&1 | tee $COVERAGE_LOG_FILE
+      - name: Run all unit-tests with code coverage using CTest and GCov on Linux
+        if: ${{ runner.os == 'Linux' && (success() || failure()) }}
+        run: ./Build/Unix/CI/CMakeBuildPreset.sh "${{ matrix.build_preset }}" MethaneTestCoverage "$COVERAGE_LOG_FILE"
 
       - name: Run all unit-tests with LCov code coverage on MacOS
-        if: ${{ matrix.os_name == 'macosx' }}
+        if: ${{ runner.os == 'macOS' }}
         working-directory: 'Build/Output/${{ matrix.config_preset }}/Install/Tests'
-        run: |
-          set +e
-          result_error_level=0
-          result_ext='.xml'
-          prof_data_ext='.profdata'
-          prof_raw_ext='.profraw'
-          lcov_ext='.lcov'
-          test_results=''
-          echo Running unit-tests and Converting LLVM code coverage data to lcov text format in directory $PWD
-          mkdir Results
-          mkdir Coverage
-          for test_exe in *Test
-          do
-            ./$test_exe -r sonarqube -o "Results/$test_exe$result_ext"
-            last_error_level=$?
-            echo  - $test_exe - completed with $last_error_level exit status
-            if [ $last_error_level != 0 ]; then
-              result_error_level=$last_error_level
-            fi
-            if [ -f "$PWD/Results/$test_exe$result_ext" ]; then
-              test_results+="$PWD/Results/$test_exe$result_ext,"
-            fi
-            if [ ! -f default.profraw ]; then
-              continue
-            fi
-            mv default.profraw "$test_exe$prof_raw_ext"
-            xcrun llvm-profdata merge -o "$test_exe$prof_data_ext" "$test_exe$prof_raw_ext"
-            xcrun llvm-cov export -format lcov -instr-profile="$test_exe$prof_data_ext" -arch=x86_64 ./$test_exe > "./Coverage/$test_exe$lcov_ext"
-            echo    - Converted code coverage from "$test_exe$prof_raw_ext" to lcov text format "./Coverage/$test_exe$lcov_ext", $? exit status
-          done
-          echo "Test Result Files: $test_results"
-          echo "test_results=$test_results" >> $GITHUB_ENV
-          echo List of generated coverage files in directory $PWD/Coverage
-          ls -la ./Coverage
-          exit $result_error_level
+        run: ${{ github.workspace }}/Build/Unix/CI/RunUnitTestsWithCoverage.sh lcov sonarqube junit
 
       - name: Generate Code Coverage Reports
         if: ${{ success() || failure() }}
@@ -277,7 +220,7 @@ jobs:
           targetdir: 'Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report'
           reporttypes: 'Cobertura;SonarQube'
           title: 'Methane Tests Code Coverage for ${{ matrix.build_preset }}'
-          tag: '${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}'
+          tag: '${{ env.METHANE_VERSION_MAJOR }}.${{ env.METHANE_VERSION_MINOR }}.${{ env.METHANE_VERSION_PATCH }}.${{ env.METHANE_VERSION_BUILD }}'
 
       - name: Upload Code Coverage Cobertura Report
         if: ${{ success() || failure() }}
@@ -286,17 +229,41 @@ jobs:
           name: MethaneKit_${{ matrix.name }}_CoverageResults
           path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
 
-      - name: Upload Build Log and Code Coverage to Testspace server
-        if: ${{ success() || failure() }}
-        run: testspace "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
+      - name: Upload Build Log and Code Coverage to TestSpace server
+        if: ${{ github.event_name == 'push' && (success() || failure()) }}
+        shell: bash
+        run: |
+          testspace \
+            "[ ${{ matrix.name }} ]Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml" \
+            "[ ${{ matrix.name }} ]${{ env.BUILD_LOG_FILE }}"
 
-      - name: Upload Code Coverage to CodeCov server
-        if: ${{ success() || failure() }}
+      - name: Publish Code Coverage to CodeCov server
+        if: ${{ github.event_name != 'pull_request_target' && (success() || failure()) }}
         uses: codecov/codecov-action@v3
         with:
           files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
-          flags: unittests,${{ matrix.os_name }}
+          flags: unittests,${{ runner.os }}
           name: ${{ matrix.name }}
+
+      - name: Publish Code Coverage to CodeCov server (from PR target)
+        if: ${{ github.event_name == 'pull_request_target' && (success() || failure()) }}
+        uses: codecov/codecov-action@v3
+        with:
+          override_pr: ${{ github.event.pull_request.number }}
+          override_commit: ${{ github.event.pull_request.head.sha }}
+          files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
+          flags: unittests,${{ runner.os }}
+          name: ${{ matrix.name }}
+
+      - name: Publish Test Results to GitHub
+        if: ${{ success() || failure() }}
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        with:
+          check_name: ${{ matrix.name }} Test Results
+          comment_title: ${{ matrix.name }} Test Results
+          files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/junit/*Test.xml
+          action_fail: true
+          action_fail_on_inconclusive: true
 
       - name: Run Sonar Scanner
         if: ${{ success() || failure() }}
@@ -304,37 +271,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_ORGANIZATION: methane-powered
+          GITHUB_COMMIT_SHA: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
+          GITHUB_PR_FLAG: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && 1 || 0 }}
+          GITHUB_PR_REPO: ${{ github.repository }}
+          GITHUB_PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+          GITHUB_PR_BASE: ${{ github.event.pull_request.base.ref }}
         run: |
-          if [ "${{ matrix.os_name }}" == "windows" ]; then
-              SONAR_SCANNER_EXE=sonar-scanner.bat
-          else
-              SONAR_SCANNER_EXE=sonar-scanner
-          fi
-          # SONAR_SCANNER_EXE="$SONAR_SCANNER_EXE -X" # Uncomment to enable debug output
-          TESTS_DIR=Build/Output/${{ matrix.config_preset }}/Install/Tests
-          SONAR_SCAN_CMD="$SONAR_SCANNER_EXE --define sonar.host.url=${{ env.sonar_server_url }}"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.organization=${{ env.sonar_organization }}"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectKey=${{ matrix.sonar_project_key }}"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.projectVersion=${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.cfamily.compile-commands=Build/Output/${{ matrix.config_preset }}/Build/compile_commands.json"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.testExecutionReportPaths=${{ env.test_results }}"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.coverageReportPaths=$TESTS_DIR/Coverage/Report/SonarQube.xml"
-          SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.scm.revision=${{ github.sha }}"
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.provider=GitHub"
-            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.github.repository=MethanePowered/MethaneKit"
-            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.key=${{ github.event.pull_request.number }}"
-            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.branch=${{ github.event.pull_request.head.ref }}"
-            SONAR_SCAN_CMD="$SONAR_SCAN_CMD --define sonar.pullrequest.base=${{ github.event.pull_request.base.ref }}"
-          fi
-          set -o pipefail
-          echo "$SONAR_SCAN_CMD" | tee $SCAN_LOG_FILE
-          eval "$SONAR_SCAN_CMD" 2>&1 | tee -a $SCAN_LOG_FILE
-          cp sonar-project.properties $INSTALL_DIR
-          prop_files=(`find .sonar -name "sonar-scanner.properties"`)
-          for prop_file in "${prop_files[@]}"; do
-            cp $prop_file $INSTALL_DIR
-          done
+            ./Build/Unix/CI/RunSonarScanner.sh "${{ matrix.sonar_project_key }}" \
+              "Build/Output/${{ matrix.config_preset }}/Build" \
+              "Build/Output/${{ matrix.config_preset }}/Install/Tests"
 
       - name: Archive Scan Artifacts
         if: ${{ success() || failure() }}
@@ -346,35 +293,17 @@ jobs:
         if: ${{ success() || failure() }}
         uses: actions/upload-artifact@v3
         with:
-          name: MethaneKit_${{ matrix.name }}_${{ env.product_ver_major }}.${{ env.product_ver_minor }}.${{ env.product_ver_patch }}.${{ env.product_ver_build }}
+          name: MethaneKit_${{ matrix.name }}_${{ env.METHANE_VERSION_MAJOR }}.${{ env.METHANE_VERSION_MINOR }}.${{ env.METHANE_VERSION_PATCH }}.${{ env.METHANE_VERSION_BUILD }}
           path: Build/Output/${{ matrix.config_preset }}/Install/MethaneKit_${{ matrix.name }}.7z
 
       - name: Update Badge Parameters
         if: ${{ github.event_name == 'push' && always() }}
         shell: bash
-        run: |
-          case "${{ job.status }}" in
-            "success")
-              echo "badge_message=passed" >> $GITHUB_ENV
-              echo "badge_color=#56a93c"  >> $GITHUB_ENV
-              ;;
-            "failure")
-              echo "badge_message=failed" >> $GITHUB_ENV
-              echo "badge_color=#cd6e57"  >> $GITHUB_ENV
-              ;;
-            "cancelled")
-              echo "badge_message=cancelled" >> $GITHUB_ENV
-              echo "badge_color=#9b9b9c"     >> $GITHUB_ENV
-              ;;
-            *)
-              echo "badge_message=undefined" >> $GITHUB_ENV
-              echo "badge_color=purple"      >> $GITHUB_ENV
-              ;;
-          esac
+        run: ./Build/Unix/CI/UpdateBadgeParameters.sh "${{ job.status }}"
 
       - name: Update Badge JSON
         if: ${{ github.event_name == 'push' && always() }}
-        uses: schneegans/dynamic-badges-action@v1.6.0 # https://github.com/marketplace/actions/dynamic-badges
+        uses: schneegans/dynamic-badges-action@v1.6.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}
           gistID: 96d788046ccd52b45b3354a99f8569c3

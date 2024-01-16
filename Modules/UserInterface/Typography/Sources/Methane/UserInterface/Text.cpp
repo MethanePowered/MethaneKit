@@ -48,7 +48,9 @@ Methane text rendering primitive.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 #include <Methane/Pimpl.hpp>
+
 #include <memory>
+#include <cassert>
 
 namespace hlslpp // NOSONAR
 {

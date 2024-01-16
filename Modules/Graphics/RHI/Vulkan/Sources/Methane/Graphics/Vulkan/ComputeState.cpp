@@ -72,7 +72,7 @@ void ComputeState::Reset(const Settings& settings)
     const vk::ComputePipelineCreateInfo vk_pipeline_create_info(
         vk::PipelineCreateFlags(),
         vk_stages_info.back(),
-        program.GetNativePipelineLayout()
+        program.AcquireNativePipelineLayout()
     );
 
     auto pipe = m_vk_context.GetVulkanDevice().GetNativeDevice().createComputePipelineUnique(nullptr, vk_pipeline_create_info);

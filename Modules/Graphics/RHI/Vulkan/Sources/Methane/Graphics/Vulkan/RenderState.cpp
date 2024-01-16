@@ -410,7 +410,7 @@ vk::UniquePipeline RenderState::CreateNativePipeline(const ViewState* view_state
         &depth_stencil_info,
         &blending_info,
         IsNativePipelineDynamic() ? &dynamic_info : nullptr,
-        program.GetNativePipelineLayout(),
+        program.AcquireNativePipelineLayout(),
         render_pattern.GetNativeRenderPass()
     );
 

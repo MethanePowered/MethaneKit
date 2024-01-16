@@ -147,6 +147,10 @@
                 "METHANE_TRACY_PROFILING_ON_DEMAND": {
                     "type": "BOOL",
                     "value": "ON"
+                },
+                "METHANE_TESTS_BUILD_ENABLED": {
+                    "type": "BOOL",
+                    "value": "OFF"
                 }
             }
         },
