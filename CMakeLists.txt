@@ -142,6 +142,7 @@ message(STATUS "METHANE Tracy profiling on demand................ ${METHANE_TRAC
 message(STATUS "METHANE memory sanitizer......................... ${METHANE_MEMORY_SANITIZER_ENABLED}")
 
 if (APPLE)
+    message(STATUS "METHANE Metal shader converter (or SPIRV-Cross).. ${METHANE_METAL_SHADER_CONVERTER_ENABLED}")
     message(STATUS "METHANE Apple code signing....................... ${METHANE_APPLE_CODE_SIGNING_ENABLED} (dev.team: '${APPLE_DEVELOPMENT_TEAM}')")
 endif()
 
