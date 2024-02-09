@@ -297,12 +297,12 @@ jobs:
           path: Build/Output/${{ matrix.config_preset }}/Install/MethaneKit_${{ matrix.name }}.7z
 
       - name: Update Badge Parameters
-        if: ${{ github.event_name == 'push' && always() }}
+        if: ${{ (github.event_name == 'push' || github.event_name == 'schedule') && always() }}
         shell: bash
         run: ./Build/Unix/CI/UpdateBadgeParameters.sh "${{ job.status }}"
 
       - name: Update Badge JSON
-        if: ${{ github.event_name == 'push' && always() }}
+        if: ${{ (github.event_name == 'push' || github.event_name == 'schedule') && always() }}
         uses: schneegans/dynamic-badges-action@v1.6.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}
