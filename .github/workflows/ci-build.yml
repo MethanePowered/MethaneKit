@@ -283,12 +283,12 @@ jobs:
 
       - name: Update Badge Parameters
         id: badge-params
-        if: ${{ github.repository == env.ORIGIN_REPOSITORY && github.event_name == 'push' && always() }}
+        if: ${{ github.repository == env.ORIGIN_REPOSITORY && github.event_name != 'pull_request' && always() }}
         shell: bash
         run: ./Build/Unix/CI/UpdateBadgeParameters.sh "${{ job.status }}"
 
       - name: Update Badge JSON
-        if: ${{ github.repository == env.ORIGIN_REPOSITORY && github.event_name == 'push' && always() }}
+        if: ${{ github.repository == env.ORIGIN_REPOSITORY && github.event_name != 'pull_request' && always() }}
         uses: schneegans/dynamic-badges-action@v1.6.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}

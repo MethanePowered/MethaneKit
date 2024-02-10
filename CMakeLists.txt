@@ -93,6 +93,12 @@ if(APPLE)
     option(METHANE_APPLE_CODE_SIGNING_ENABLED "Enable code signing on Apple platforms" ${DEFAULT_APPLE_CODE_SIGNING_ENABLED})
 endif()
 
+if(CMAKE_VERSION VERSION_EQUAL "3.28.2" AND CMAKE_GENERATOR STREQUAL "Unix Makefiles")
+    message(WARNING "METHANE precompiled headers are forcibly disabled because of a bug"
+                    "in CMake version ${CMAKE_VERSION} with '${CMAKE_GENERATOR}' generator.")
+    set(METHANE_PRECOMPILED_HEADERS_ENABLED OFF CACHE BOOL "" FORCE)
+endif()
+
 # Methane version, build & product info
 set(METHANE_VERSION_SHORT "${METHANE_VERSION_MAJOR}.${METHANE_VERSION_MINOR}.${METHANE_VERSION_PATCH}")
 set(METHANE_VERSION_FULL  "${METHANE_VERSION_SHORT}.${METHANE_VERSION_BUILD}")
