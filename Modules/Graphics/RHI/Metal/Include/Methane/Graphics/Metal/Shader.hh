@@ -30,25 +30,25 @@ Metal implementation of the shader interface.
 namespace Methane::Graphics::Metal
 {
 
-struct ArgumentStructMember
+struct ArgumentBufferMember
 {
     uint32_t          offset;
     uint32_t          array_size;
     Rhi::ResourceType resource_type;
 
-    ArgumentStructMember(MTLStructMember* mtl_struct_member);
+    ArgumentBufferMember(MTLStructMember* mtl_struct_member);
 };
 
-struct ArgumentStructLayout
+struct ArgumentBufferLayout
 {
-    using Member = ArgumentStructMember;
+    using Member = ArgumentBufferMember;
     using MemberByName = std::map<std::string, Member>;
 
     uint32_t data_size;
     uint32_t alignment;
     MemberByName member_by_name;
 
-    ArgumentStructLayout(id<MTLBufferBinding> mtl_buffer_binding);
+    ArgumentBufferLayout(id<MTLBufferBinding> mtl_buffer_binding);
 };
 
 struct IContext;
@@ -62,19 +62,21 @@ public:
 
     // Base::Shader interface
     Ptrs<Base::ProgramArgumentBinding> GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const final;
-    
+
+    void SetNativeBindings(NSArray<id<MTLBinding>>* mtl_bindings);
+
     id<MTLFunction> GetNativeFunction() noexcept                           { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const Program& program) const;
-    void SetNativeBindings(NSArray<id<MTLBinding>>* mtl_bindings) noexcept { m_mtl_bindings = mtl_bindings; }
+    const Ptrs<ArgumentBufferLayout>& GetArgumentBufferLayouts() const noexcept { return m_argument_buffer_layouts; }
 
 private:
     const IContext& GetMetalContext() const noexcept;
 
     static id<MTLFunction> GetMetalLibraryFunction(const IContext& context, const Rhi::ShaderSettings& settings);
 
-    id<MTLFunction>                    m_mtl_function;
-    NSArray<id<MTLBinding>>*           m_mtl_bindings = nil;
-    mutable Ptrs<ArgumentStructLayout> m_argument_struct_layouts;
+    id<MTLFunction>            m_mtl_function;
+    NSArray<id<MTLBinding>>*   m_mtl_bindings = nil;
+    Ptrs<ArgumentBufferLayout> m_argument_buffer_layouts;
 };
 
 } // namespace Methane::Graphics::Metal

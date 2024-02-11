@@ -122,31 +122,10 @@ static uint32_t GetArraySizeOfStructMember(MTLStructMember* mtl_struct_member)
          : 1U;
 }
 
-ArgumentStructMember::ArgumentStructMember(MTLStructMember* mtl_struct_member)
-    : offset(mtl_struct_member.offset)
-    , array_size(GetArraySizeOfStructMember(mtl_struct_member))
-    , resource_type(GetResourceTypeOfMetalStructMember(mtl_struct_member))
+[[nodiscard]]
+inline bool IsArgumentBufferName(std::string_view argument_name)
 {
-}
-
-ArgumentStructLayout::ArgumentStructLayout(id<MTLBufferBinding> mtl_buffer_binding)
-    : data_size(mtl_buffer_binding.bufferDataSize)
-    , alignment(mtl_buffer_binding.bufferAlignment)
-{
-    META_FUNCTION_TASK();
-    MTLPointerType* mtl_buffer_pointer_type = mtl_buffer_binding.bufferPointerType;
-    if (!mtl_buffer_pointer_type ||
-        !mtl_buffer_pointer_type.elementStructType)
-        return;
-
-    MTLStructType* mtl_element_struct_type = mtl_buffer_pointer_type.elementStructType;
-    for(MTLStructMember* mtl_struct_member in mtl_element_struct_type.members)
-    {
-        member_by_name.try_emplace(
-            MacOS::ConvertFromNsString(mtl_struct_member.name),
-            ArgumentStructMember(mtl_struct_member)
-        );
-    }
+    return argument_name == "top_level_global_ab" || argument_name.find("spvDescriptorSet") == 0;
 }
 
 #ifdef METHANE_LOGGING_ENABLED
@@ -174,6 +153,33 @@ static std::string GetShaderArgumentInfo(const std::string& argument_name,
     return ss.str();
 }
 #endif
+
+ArgumentBufferMember::ArgumentBufferMember(MTLStructMember* mtl_struct_member)
+    : offset(mtl_struct_member.offset)
+    , array_size(GetArraySizeOfStructMember(mtl_struct_member))
+    , resource_type(GetResourceTypeOfMetalStructMember(mtl_struct_member))
+{
+}
+
+ArgumentBufferLayout::ArgumentBufferLayout(id<MTLBufferBinding> mtl_buffer_binding)
+    : data_size(mtl_buffer_binding.bufferDataSize)
+    , alignment(mtl_buffer_binding.bufferAlignment)
+{
+    META_FUNCTION_TASK();
+    MTLPointerType* mtl_buffer_pointer_type = mtl_buffer_binding.bufferPointerType;
+    if (!mtl_buffer_pointer_type ||
+        !mtl_buffer_pointer_type.elementStructType)
+        return;
+
+    MTLStructType* mtl_element_struct_type = mtl_buffer_pointer_type.elementStructType;
+    for(MTLStructMember* mtl_struct_member in mtl_element_struct_type.members)
+    {
+        member_by_name.try_emplace(
+            MacOS::ConvertFromNsString(mtl_struct_member.name),
+            ArgumentBufferMember(mtl_struct_member)
+        );
+    }
+}
 
 [[nodiscard]]
 id<MTLFunction> Shader::GetMetalLibraryFunction(const IContext& context, const Rhi::ShaderSettings& settings)
@@ -251,8 +257,9 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
 
         ProgramArgumentBindingSettings::StructOffsetByShaderType argument_buffer_offset_by_shader_type;
         if (argument_buffer_offset_opt)
+        {
             argument_buffer_offset_by_shader_type.emplace(Base::Shader::GetType(), *argument_buffer_offset_opt);
-
+        }
         argument_bindings.emplace_back(
             std::make_shared<ProgramBindings::ArgumentBinding>(
                 GetContext(),
@@ -271,8 +278,6 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         META_LOG(GetShaderArgumentInfo(argument_name, resource_type, array_length, argument_index, argument_buffer_offset_opt));
     };
 
-    m_argument_struct_layouts.clear();
-
     for(id<MTLBinding> mtl_binding in m_mtl_bindings)
     {
         if (!mtl_binding.argument || !mtl_binding.used)
@@ -286,15 +291,14 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         }
 
         const auto argument_index = static_cast<uint32_t>(mtl_binding.index);
-        if (mtl_binding.type == MTLBindingTypeBuffer &&
-            (argument_name == "top_level_global_ab" || argument_name.find("spvDescriptorSet") == 0))
+        if (mtl_binding.type == MTLBindingTypeBuffer && IsArgumentBufferName(argument_name))
         {
-            // Argument buffer structure
-            if (argument_index >= m_argument_struct_layouts.size())
-                m_argument_struct_layouts.resize(argument_index + 1);
-
-            m_argument_struct_layouts[argument_index] = std::make_shared<ArgumentStructLayout>(static_cast<id<MTLBufferBinding>>(mtl_binding));
-            for(const auto& [name, member] : m_argument_struct_layouts[argument_index]->member_by_name)
+            // Get arguments from argument buffer layout
+            META_CHECK_ARG_LESS_DESCR(argument_index, m_argument_buffer_layouts.size(),
+                                      "inconsistent argument buffer layouts");
+            META_CHECK_ARG_NOT_NULL_DESCR(m_argument_buffer_layouts[argument_index],
+                                          "undefined argument buffer layout at index {}", argument_index);
+            for(const auto& [name, member] : m_argument_buffer_layouts[argument_index]->member_by_name)
             {
                 add_argument_binding(
                     name,
@@ -304,7 +308,6 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                     member.offset
                 );
             }
-            continue;
         }
         else
         {
@@ -319,6 +322,29 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
     }
 
     return argument_bindings;
+}
+
+void Shader::SetNativeBindings(NSArray<id<MTLBinding>>* mtl_bindings)
+{
+    m_mtl_bindings = mtl_bindings;
+    m_argument_buffer_layouts.clear();
+
+    // Fill argument buffer layouts
+    for(id<MTLBinding> mtl_binding in m_mtl_bindings)
+    {
+        const std::string argument_name = MacOS::ConvertFromNsString(mtl_binding.name);
+        if (mtl_binding.argument && mtl_binding.used && mtl_binding.type == MTLBindingTypeBuffer &&
+            IsArgumentBufferName(argument_name))
+        {
+            // Argument buffer structure
+            const auto argument_index = static_cast<uint32_t>(mtl_binding.index);
+            if (argument_index >= m_argument_buffer_layouts.size())
+                m_argument_buffer_layouts.resize(argument_index + 1);
+
+            m_argument_buffer_layouts[argument_index] = std::make_shared<ArgumentBufferLayout>(
+                static_cast<id<MTLBufferBinding>>(mtl_binding));
+        }
+    }
 }
 
 MTLVertexDescriptor* Shader::GetNativeVertexDescriptor(const Program& program) const
