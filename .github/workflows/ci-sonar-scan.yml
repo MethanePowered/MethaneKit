@@ -118,13 +118,13 @@ jobs:
     steps:
       - name: Checkout pull-request merge commit from origin
         if: ${{ github.event_name != 'pull_request_target' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2 # 2 commits are necessary for CodeCov diff
 
       - name: Checkout pull-request merge commit from fork
         if: ${{ github.event_name == 'pull_request_target' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: "${{ github.event.pull_request.merge_commit_sha }}"
           fetch-depth: 2 # 2 commits are necessary for CodeCov diff
@@ -155,7 +155,7 @@ jobs:
           version: 1.11.1
 
       - name: Initialize Externals Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: Build/Output/ExternalsCache
           key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
@@ -224,7 +224,7 @@ jobs:
 
       - name: Upload Code Coverage Cobertura Report
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MethaneKit_${{ matrix.name }}_CoverageResults
           path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
@@ -291,7 +291,7 @@ jobs:
 
       - name: Upload Archived Scan Artifacts
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MethaneKit_${{ matrix.name }}_${{ env.METHANE_VERSION_MAJOR }}.${{ env.METHANE_VERSION_MINOR }}.${{ env.METHANE_VERSION_PATCH }}.${{ env.METHANE_VERSION_BUILD }}
           path: Build/Output/${{ matrix.config_preset }}/Install/MethaneKit_${{ matrix.name }}.7z
@@ -303,7 +303,7 @@ jobs:
 
       - name: Update Badge JSON
         if: ${{ (github.event_name == 'push' || github.event_name == 'schedule') && always() }}
-        uses: schneegans/dynamic-badges-action@v1.6.0
+        uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}
           gistID: 96d788046ccd52b45b3354a99f8569c3
