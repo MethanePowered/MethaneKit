@@ -31,6 +31,7 @@ Metal implementation of the shader interface.
 
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Platform/Apple/Types.hh>
+#include <Methane/Platform/Utils.h>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -39,6 +40,7 @@ Metal implementation of the shader interface.
 #endif
 
 #include <regex>
+#include <sstream>
 
 namespace Methane::Graphics::Metal
 {
@@ -59,7 +61,7 @@ static MTLVertexStepFunction GetVertexStepFunction(StepType step_type)
 }
 
 [[nodiscard]]
-static Rhi::IResource::Type GetResourceTypeByMetalArgumentType(MTLBindingType mtl_arg_type)
+static Rhi::ResourceType GetResourceTypeByMetalBindingType(MTLBindingType mtl_arg_type)
 {
     META_FUNCTION_TASK();
     switch(mtl_arg_type)
@@ -81,6 +83,97 @@ static uint32_t GetBindingArrayLength(id<MTLBinding> mtl_binding)
     id<MTLTextureBinding> mtl_texture_binding = static_cast<id<MTLTextureBinding>>(mtl_binding);
     return static_cast<uint32_t>(mtl_texture_binding.arrayLength);
 }
+
+[[nodiscard]]
+static Rhi::ResourceType GetResourceTypeByMetalDataType(MTLDataType mtl_data_type)
+{
+    META_FUNCTION_TASK();
+    switch(mtl_data_type)
+    {
+    case MTLDataTypePointer:
+        return Rhi::ResourceType::Buffer;
+    case MTLDataTypeTexture:
+        return Rhi::ResourceType::Texture;
+    case MTLDataTypeSampler:
+        return Rhi::ResourceType::Sampler;
+    default:
+        META_UNEXPECTED_ARG_RETURN(mtl_data_type, Rhi::ResourceType::Buffer);
+    }
+}
+
+[[nodiscard]]
+static Rhi::ResourceType GetResourceTypeOfMetalStructMember(MTLStructMember* mtl_struct_member)
+{
+    META_FUNCTION_TASK();
+    switch(mtl_struct_member.dataType)
+    {
+    case MTLDataTypeArray:
+        return GetResourceTypeByMetalDataType(static_cast<MTLArrayType*>(mtl_struct_member).elementType);
+    default:
+        return GetResourceTypeByMetalDataType(mtl_struct_member.dataType);
+    }
+}
+
+[[nodiscard]]
+static uint32_t GetArraySizeOfStructMember(MTLStructMember* mtl_struct_member)
+{
+    return mtl_struct_member.dataType == MTLDataTypeArray
+         ? static_cast<MTLArrayType*>(mtl_struct_member).arrayLength
+         : 1U;
+}
+
+ArgumentStructMember::ArgumentStructMember(MTLStructMember* mtl_struct_member)
+    : offset(mtl_struct_member.offset)
+    , array_size(GetArraySizeOfStructMember(mtl_struct_member))
+    , resource_type(GetResourceTypeOfMetalStructMember(mtl_struct_member))
+{
+}
+
+ArgumentStructLayout::ArgumentStructLayout(id<MTLBufferBinding> mtl_buffer_binding)
+    : data_size(mtl_buffer_binding.bufferDataSize)
+    , alignment(mtl_buffer_binding.bufferAlignment)
+{
+    META_FUNCTION_TASK();
+    MTLPointerType* mtl_buffer_pointer_type = mtl_buffer_binding.bufferPointerType;
+    if (!mtl_buffer_pointer_type ||
+        !mtl_buffer_pointer_type.elementStructType)
+        return;
+
+    MTLStructType* mtl_element_struct_type = mtl_buffer_pointer_type.elementStructType;
+    for(MTLStructMember* mtl_struct_member in mtl_element_struct_type.members)
+    {
+        member_by_name.try_emplace(
+            MacOS::ConvertFromNsString(mtl_struct_member.name),
+            ArgumentStructMember(mtl_struct_member)
+        );
+    }
+}
+
+#ifdef METHANE_LOGGING_ENABLED
+static std::string GetShaderArgumentInfo(const std::string& argument_name,
+                                         Rhi::ResourceType resource_type,
+                                         uint32_t array_length,
+                                         uint32_t argument_index,
+                                         std::optional<uint32_t> argument_buffer_offset_opt)
+{
+    META_FUNCTION_TASK();
+    std::stringstream ss;
+    ss << "  - " << magic_enum::enum_name(resource_type) << " \"" << argument_name << "\"";
+    if (array_length > 1)
+    {
+        ss << " array of size " << array_length;
+    }
+    if (argument_buffer_offset_opt)
+    {
+        ss << " in argument buffer index " << argument_index << " at offset " << argument_buffer_offset_opt.value();
+    }
+    else
+    {
+        ss << " argument index " << argument_index;
+    }
+    return ss.str();
+}
+#endif
 
 [[nodiscard]]
 id<MTLFunction> Shader::GetMetalLibraryFunction(const IContext& context, const Rhi::ShaderSettings& settings)
@@ -126,37 +219,6 @@ static std::string GetAttributeName(NSString* ns_reflect_attrib_name)
     return attrib_name;
 }
 
-#ifndef NDEBUG
-
-[[nodiscard]]
-static std::string GetMetalArgumentTypeName(MTLBindingType mtl_arg_type)
-{
-    META_FUNCTION_TASK();
-    switch(mtl_arg_type)
-    {
-        case MTLBindingTypeBuffer:             return "Buffer";
-        case MTLBindingTypeThreadgroupMemory:  return "Thread-group Memory";
-        case MTLBindingTypeTexture:            return "Texture";
-        case MTLBindingTypeSampler:            return "Sampler";
-        default:                                META_UNEXPECTED_ARG_RETURN(mtl_arg_type, "Unknown");
-    }
-}
-
-[[nodiscard]]
-static std::string GetMetalArgumentAccessName(MTLArgumentAccess mtl_arg_access)
-{
-    META_FUNCTION_TASK();
-    switch(mtl_arg_access)
-    {
-        case MTLArgumentAccessReadOnly:     return "R";
-        case MTLArgumentAccessReadWrite:    return "RW";
-        case MTLArgumentAccessWriteOnly:    return "W";
-        default:                            META_UNEXPECTED_ARG_RETURN(mtl_arg_access, "Unknown");
-    }
-}
-
-#endif // ifndef NDEBUG
-
 Shader::Shader(Rhi::ShaderType shader_type, const Base::Context& context, const Settings& settings)
     : Base::Shader(shader_type, context, settings)
     , m_mtl_function(GetMetalLibraryFunction(dynamic_cast<const IContext&>(context), settings))
@@ -171,10 +233,45 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
     Ptrs<Base::ProgramArgumentBinding> argument_bindings;
     if (m_mtl_bindings == nil)
         return argument_bindings;
-    
-#ifndef NDEBUG
-    NSLog(@"%s shader '%s' arguments:", magic_enum::enum_name(GetType()).data(), GetCompiledEntryFunctionName().c_str());
-#endif
+
+    META_LOG("{} shader '{}' arguments:", magic_enum::enum_name(GetType()), GetCompiledEntryFunctionName());
+
+    const auto add_argument_binding = [this, &argument_bindings, &argument_accessors]
+                                      (const std::string& argument_name,
+                                       Rhi::ResourceType resource_type,
+                                       uint32_t array_length,
+                                       uint32_t argument_index,
+                                       std::optional<uint32_t> argument_buffer_offset_opt)
+    {
+        const Rhi::IProgram::Argument shader_argument(GetType(), Base::Shader::GetCachedArgName(argument_name));
+        const auto argument_desc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Rhi::ProgramArgumentAccessor argument_desc = argument_desc_it == argument_accessors.end()
+                                                         ? Rhi::ProgramArgumentAccessor(shader_argument)
+                                                         : *argument_desc_it;
+
+        ProgramArgumentBindingSettings::StructOffsetByShaderType argument_buffer_offset_by_shader_type;
+        if (argument_buffer_offset_opt)
+            argument_buffer_offset_by_shader_type.emplace(Base::Shader::GetType(), *argument_buffer_offset_opt);
+
+        argument_bindings.emplace_back(
+            std::make_shared<ProgramBindings::ArgumentBinding>(
+                GetContext(),
+                ProgramArgumentBindingSettings
+                {
+                    {
+                        argument_desc,
+                        resource_type,
+                        array_length
+                    },
+                    argument_index,
+                    argument_buffer_offset_by_shader_type
+                }
+            ));
+
+        META_LOG(GetShaderArgumentInfo(argument_name, resource_type, array_length, argument_index, argument_buffer_offset_opt));
+    };
+
+    m_argument_struct_layouts.clear();
 
     for(id<MTLBinding> mtl_binding in m_mtl_bindings)
     {
@@ -187,39 +284,38 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
             // Skip input vertex buffers, since they are set with a separate IRenderCommandList call, not through resource bindings
             continue;
         }
-        
-        const Rhi::IProgram::Argument shader_argument(GetType(), Base::Shader::GetCachedArgName(argument_name));
-        const auto argument_desc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const Rhi::ProgramArgumentAccessor argument_desc = argument_desc_it == argument_accessors.end()
-                                                         ? Rhi::ProgramArgumentAccessor(shader_argument)
-                                                         : *argument_desc_it;
 
-        const uint32_t array_length = GetBindingArrayLength(mtl_binding);
-        argument_bindings.emplace_back(std::make_shared<ProgramBindings::ArgumentBinding>(
-            GetContext(),
-            ProgramArgumentBindingSettings
-            {
-                {
-                    argument_desc,
-                    GetResourceTypeByMetalArgumentType(mtl_binding.type),
-                    array_length,
-                },
-                static_cast<uint32_t>(mtl_binding.index)
-            }
-        ));
-        
-#ifndef NDEBUG
-        const std::string mtl_arg_type_name   = GetMetalArgumentTypeName(mtl_binding.type);
-        const std::string mtl_arg_access_name = GetMetalArgumentAccessName(mtl_binding.access);
-        if (array_length <= 1)
+        const auto argument_index = static_cast<uint32_t>(mtl_binding.index);
+        if (mtl_binding.type == MTLBindingTypeBuffer &&
+            (argument_name == "top_level_global_ab" || argument_name.find("spvDescriptorSet") == 0))
         {
-            NSLog(@"  - %s (%s) with name \"%@\" at index %u", mtl_arg_type_name.c_str(), mtl_arg_access_name.c_str(), mtl_binding.name, (uint32_t) mtl_binding.index);
+            // Argument buffer structure
+            if (argument_index >= m_argument_struct_layouts.size())
+                m_argument_struct_layouts.resize(argument_index + 1);
+
+            m_argument_struct_layouts[argument_index] = std::make_shared<ArgumentStructLayout>(static_cast<id<MTLBufferBinding>>(mtl_binding));
+            for(const auto& [name, member] : m_argument_struct_layouts[argument_index]->member_by_name)
+            {
+                add_argument_binding(
+                    name,
+                    member.resource_type,
+                    member.array_size,
+                    argument_index,
+                    member.offset
+                );
+            }
+            continue;
         }
         else
         {
-            NSLog(@"  - %s (%s) array of size %u with name \"%@\" at index %u", mtl_arg_type_name.c_str(), mtl_arg_access_name.c_str(), array_length, mtl_binding.name, (uint32_t) mtl_binding.index);
+            add_argument_binding(
+                argument_name,
+                GetResourceTypeByMetalBindingType(mtl_binding.type),
+                GetBindingArrayLength(mtl_binding),
+                argument_index,
+                std::nullopt
+            );
         }
-#endif
     }
 
     return argument_bindings;

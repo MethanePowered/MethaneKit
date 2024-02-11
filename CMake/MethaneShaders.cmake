@@ -113,6 +113,12 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER SH
         set(SHADER_METAL_PATH "${TARGET_SHADERS_DIR}/${SHADER_METAL_FILE}")
         set(GENERATE_METAL_TARGET ${FOR_TARGET}_Generate_${SHADER_METAL_FILE})
 
+        if(METHANE_METAL_ARGUMENT_BUFFERS_ENABLED)
+            set(EXTRA_OPTIONS --msl-argument-buffers --msl-argument-buffer-tier 1)
+        else()
+            set(EXTRA_OPTIONS --msl-decoration-binding)
+        endif()
+
         get_shader_profile(${SHADER_TYPE} ${PROFILE_VER} SHADER_PROFILE)
 
         add_custom_target(${GENERATE_METAL_TARGET}
@@ -121,7 +127,7 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER SH
             DEPENDS "${SHADERS_HLSL}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${TARGET_SHADERS_DIR}"
             COMMAND ${DXC_EXE} -spirv -T ${SHADER_PROFILE} -E ${OLD_ENTRY_POINT} ${SHADER_DEFINITION_ARGUMENTS} "${SHADERS_HLSL}" -Fo "${SHADER_SPIRV_PATH}"
-            COMMAND ${SPIRV_CROSS_EXE} --msl --msl-version 020101 --msl-decoration-binding --rename-entry-point ${OLD_ENTRY_POINT} ${NEW_ENTRY_POINT} ${SHADER_TYPE} --output "${SHADER_METAL_PATH}" "${SHADER_SPIRV_PATH}"
+            COMMAND ${SPIRV_CROSS_EXE} --msl --msl-version 020101 ${EXTRA_OPTIONS} --rename-entry-point ${OLD_ENTRY_POINT} ${NEW_ENTRY_POINT} ${SHADER_TYPE} --output "${SHADER_METAL_PATH}" "${SHADER_SPIRV_PATH}"
         )
 
         set_target_properties(${GENERATE_METAL_TARGET}

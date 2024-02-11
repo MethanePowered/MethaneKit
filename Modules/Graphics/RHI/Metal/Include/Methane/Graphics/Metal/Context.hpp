@@ -33,7 +33,7 @@ Metal template implementation of the base context interface.
 #include "Texture.hh"
 #include "Sampler.hh"
 #include "ProgramLibrary.hh"
-#include "DescriptorManager.h"
+#include "DescriptorManager.hh"
 
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/RHI/ICommandKit.h>
@@ -54,7 +54,7 @@ class Context
 {
 public:
     Context(Base::Device& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, std::make_unique<DescriptorManager>(), parallel_executor, settings)
+        : ContextBaseT(device, std::make_unique<DescriptorManager>(*this), parallel_executor, settings)
     { }
 
     // IContext overrides

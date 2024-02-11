@@ -27,13 +27,19 @@ Metal implementation of the program argument binding interface.
 
 #import <Metal/Metal.h>
 
+#include <map>
+
 namespace Methane::Graphics::Metal
 {
 
 struct ProgramArgumentBindingSettings final
     : Rhi::ProgramArgumentBindingSettings
 {
+    using StructOffset = uint32_t;
+    using StructOffsetByShaderType = std::map<Rhi::ShaderType, StructOffset>;
+
     uint32_t argument_index;
+    StructOffsetByShaderType argument_buffer_offset_by_shader_type;
 };
 
 class ProgramArgumentBinding final

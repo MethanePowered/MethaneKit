@@ -30,6 +30,27 @@ Metal implementation of the shader interface.
 namespace Methane::Graphics::Metal
 {
 
+struct ArgumentStructMember
+{
+    uint32_t          offset;
+    uint32_t          array_size;
+    Rhi::ResourceType resource_type;
+
+    ArgumentStructMember(MTLStructMember* mtl_struct_member);
+};
+
+struct ArgumentStructLayout
+{
+    using Member = ArgumentStructMember;
+    using MemberByName = std::map<std::string, Member>;
+
+    uint32_t data_size;
+    uint32_t alignment;
+    MemberByName member_by_name;
+
+    ArgumentStructLayout(id<MTLBufferBinding> mtl_buffer_binding);
+};
+
 struct IContext;
 class Program;
 
@@ -51,8 +72,9 @@ private:
 
     static id<MTLFunction> GetMetalLibraryFunction(const IContext& context, const Rhi::ShaderSettings& settings);
 
-    id<MTLFunction>          m_mtl_function;
-    NSArray<id<MTLBinding>>* m_mtl_bindings = nil;
+    id<MTLFunction>                    m_mtl_function;
+    NSArray<id<MTLBinding>>*           m_mtl_bindings = nil;
+    mutable Ptrs<ArgumentStructLayout> m_argument_struct_layouts;
 };
 
 } // namespace Methane::Graphics::Metal

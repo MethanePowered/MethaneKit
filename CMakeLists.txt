@@ -70,6 +70,7 @@ option(METHANE_OPEN_IMAGE_IO_ENABLED        "Enable using OpenImageIO library fo
 
 if(APPLE)
     option(METHANE_METAL_SHADER_CONVERTER_ENABLED "Enable Apple Metal Shader Converter instead of SPIRV-Cross" OFF)
+    option(METHANE_METAL_ARGUMENT_BUFFERS_ENABLED "Enable Metal Argument Buffers for Program Resource Bindings" OFF)
 endif()
 
 # Profiling and instrumentation configuration
@@ -97,6 +98,11 @@ if(CMAKE_VERSION VERSION_EQUAL "3.28.2" AND CMAKE_GENERATOR STREQUAL "Unix Makef
     message(WARNING "METHANE precompiled headers are forcibly disabled because of a bug"
                     "in CMake version ${CMAKE_VERSION} with '${CMAKE_GENERATOR}' generator.")
     set(METHANE_PRECOMPILED_HEADERS_ENABLED OFF CACHE BOOL "" FORCE)
+endif()
+
+if(METHANE_METAL_SHADER_CONVERTER_ENABLED AND NOT METHANE_METAL_ARGUMENT_BUFFERS_ENABLED)
+    message(WARNING "METHANE Metal Argument Buffer is forcibly enabled because it is required by Metal Shader Converter")
+    set(METHANE_METAL_ARGUMENT_BUFFERS_ENABLED ON CACHE BOOL "" FORCE)
 endif()
 
 # Methane version, build & product info
@@ -149,6 +155,7 @@ message(STATUS "METHANE memory sanitizer......................... ${METHANE_MEMO
 
 if (APPLE)
     message(STATUS "METHANE Metal shader converter (or SPIRV-Cross).. ${METHANE_METAL_SHADER_CONVERTER_ENABLED}")
+    message(STATUS "METHANE Metal argument buffers for bindings ..... ${METHANE_METAL_ARGUMENT_BUFFERS_ENABLED}")
     message(STATUS "METHANE Apple code signing....................... ${METHANE_APPLE_CODE_SIGNING_ENABLED} (dev.team: '${APPLE_DEVELOPMENT_TEAM}')")
 endif()
 

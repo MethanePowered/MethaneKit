@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2021 Evgeny Gorodetskiy
+Copyright 2024 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,24 +16,30 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Methane/Graphics/Metal/DescriptorManager.h
-Dummy Metal resource manager.
+FILE: Methane/Graphics/Metal/DescriptorManager.mm
+Metal descriptor manager of the argument buffer
 
 ******************************************************************************/
 
-#pragma once
-
-#include <Methane/Graphics/RHI/IDescriptorManager.h>
+#include <Methane/Graphics/Metal/DescriptorManager.hh>
+#include <Methane/Graphics/Metal/Buffer.hh>
 
 namespace Methane::Graphics::Metal
 {
 
-struct DescriptorManager final
-    : Rhi::IDescriptorManager
+DescriptorManager::DescriptorManager(Base::Context& context)
+    : Base::DescriptorManager(context)
 {
-    void AddProgramBindings(Rhi::IProgramBindings&) override {}
-    void CompleteInitialization() override {}
-    void Release() override {}
-};
+}
+
+void DescriptorManager::CompleteInitialization()
+{
+    Base::DescriptorManager::CompleteInitialization();
+}
+
+void DescriptorManager::Release()
+{
+    Base::DescriptorManager::Release();
+}
 
 } // namespace Methane::Graphics::Metal
