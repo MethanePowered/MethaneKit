@@ -26,6 +26,7 @@ Metal implementation of the program bindings interface.
 #include "ProgramArgumentBinding.hh"
 
 #include <Methane/Graphics/Base/ProgramBindings.h>
+#include <Methane/Data/Range.hpp>
 
 #import <Metal/Metal.h>
 
@@ -41,6 +42,7 @@ class ProgramBindings final
 {
 public:
     using ArgumentBinding = ProgramArgumentBinding;
+    using ArgumentsRange = Data::Range<Data::Index>;
     
     ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
@@ -52,12 +54,17 @@ public:
     // Base::ProgramBindings interface
     void CompleteInitialization() override { }
 
+    void CompleteInitialization(const ArgumentsRange& arg_range);
+    const ArgumentsRange& GetArgumentsRange() const { return m_argument_buffer_range; }
+
 private:
     template<typename FuncType> // function void(const ArgumentBinding&)
     void ForEachChangedArgumentBinding(const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior, FuncType functor) const;
 
     void Apply(RenderCommandList& argument_binding, ApplyBehaviorMask apply_behavior) const;
     void Apply(ComputeCommandList& compute_command_list, ApplyBehaviorMask apply_behavior) const;
+
+    ArgumentsRange m_argument_buffer_range;
 };
 
 } // namespace Methane::Graphics::Metal

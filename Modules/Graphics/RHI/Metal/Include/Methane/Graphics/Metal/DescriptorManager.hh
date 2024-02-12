@@ -24,6 +24,7 @@ Metal descriptor manager of the argument buffer
 #pragma once
 
 #include <Methane/Graphics/Base/DescriptorManager.h>
+#include <Methane/Data/RangeSet.hpp>
 
 namespace Methane::Graphics::Metal
 {
@@ -36,14 +37,18 @@ class DescriptorManager final
 public:
     explicit DescriptorManager(Base::Context& context);
 
-    const Buffer& GetArgumentBuffer() const { return *m_argumentBuffer; }
+    const Buffer* GetArgumentBuffer() const noexcept { return m_argument_buffer.get(); }
 
     // Rhi::IDescriptorManager
     void CompleteInitialization() override;
     void Release() override;
 
 private:
-    Ptr<Buffer> m_argumentBuffer;
+    using ArgumentsRangeSet = Data::RangeSet<Data::Index>;
+    using ArgumentsRange = Data::Range<Data::Index>;
+
+    ArgumentsRangeSet m_free_argument_ranges;
+    Ptr<Buffer>       m_argument_buffer;
 };
 
 } // namespace Methane::Graphics::Metal

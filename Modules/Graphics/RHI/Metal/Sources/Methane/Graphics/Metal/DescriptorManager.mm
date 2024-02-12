@@ -23,6 +23,8 @@ Metal descriptor manager of the argument buffer
 
 #include <Methane/Graphics/Metal/DescriptorManager.hh>
 #include <Methane/Graphics/Metal/Buffer.hh>
+#include <Methane/Graphics/Metal/Program.hh>
+#include <Methane/Graphics/Metal/ProgramBindings.hh>
 
 namespace Methane::Graphics::Metal
 {
@@ -34,12 +36,21 @@ DescriptorManager::DescriptorManager(Base::Context& context)
 
 void DescriptorManager::CompleteInitialization()
 {
-    Base::DescriptorManager::CompleteInitialization();
+    Data::Size cummulative_argument_buffer_size = 0U;
+    ForEachProgramBinding([&cummulative_argument_buffer_size](Rhi::IProgramBindings& program_bindings)
+    {
+        const Data::Size argument_buffer_size = static_cast<Program&>(program_bindings.GetProgram()).GetArgumentBuffersSize();
+        const ArgumentsRange arguments_range(cummulative_argument_buffer_size, argument_buffer_size);
+        static_cast<ProgramBindings&>(program_bindings).CompleteInitialization(arguments_range);
+        cummulative_argument_buffer_size += argument_buffer_size;
+    });
 }
 
 void DescriptorManager::Release()
 {
     Base::DescriptorManager::Release();
+    m_argument_buffer.reset();
+    m_free_argument_ranges.Clear();
 }
 
 } // namespace Methane::Graphics::Metal

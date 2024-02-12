@@ -44,6 +44,8 @@ Program::Program(const Base::Context& context, const Settings& settings)
         ReflectRenderPipelineArguments();
     else if (HasShader(Rhi::ShaderType::Compute))
         ReflectComputePipelineArguments();
+
+    InitArgumentBuffersSize();
 }
 
 Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
@@ -150,6 +152,18 @@ void Program::SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<id<M
     {
         GetMetalShader(shader_type).SetNativeBindings(mtl_arguments);
     }
+}
+
+void Program::InitArgumentBuffersSize()
+{
+    META_FUNCTION_TASK();
+    m_argument_buffers_size = 0U;
+    ForEachShader([this](const Base::Shader& shader)
+    {
+        for(const Ptr<ArgumentBufferLayout>& layout_ptr : static_cast<const Shader&>(shader).GetArgumentBufferLayouts())
+            if (layout_ptr)
+                m_argument_buffers_size += layout_ptr->data_size;
+    });
 }
 
 } // namespace Methane::Graphics::Metal

@@ -78,6 +78,14 @@ protected:
 
     Data::Size GetBindingsCountAndIncrement() noexcept { return m_bindings_count++; }
 
+    template<typename ShaderFuncType>
+    void ForEachShader(const ShaderFuncType& shader_functor)
+    {
+        for(const Ptr<Rhi::IShader>& shader_ptr : m_shaders_by_type)
+            if (shader_ptr)
+                shader_functor(static_cast<Base::Shader&>(*shader_ptr));
+    }
+
 private:
     const Context&         m_context;
     const Settings         m_settings;

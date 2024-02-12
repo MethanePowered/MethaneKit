@@ -46,14 +46,17 @@ public:
     
     id<MTLFunction> GetNativeShaderFunction(Rhi::ShaderType shader_type) noexcept;
     MTLVertexDescriptor* GetNativeVertexDescriptor() noexcept { return m_mtl_vertex_desc; }
+    Data::Size GetArgumentBuffersSize() const noexcept { return m_argument_buffers_size; }
 
 private:
     const IContext& GetMetalContext() const noexcept;
     void ReflectRenderPipelineArguments();
     void ReflectComputePipelineArguments();
     void SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<id<MTLBinding>>* mtl_arguments) noexcept;
+    void InitArgumentBuffersSize();
     
     MTLVertexDescriptor* m_mtl_vertex_desc = nil;
+    Data::Size           m_argument_buffers_size = 0U;
 };
 
 } // namespace Methane::Graphics::Metal
