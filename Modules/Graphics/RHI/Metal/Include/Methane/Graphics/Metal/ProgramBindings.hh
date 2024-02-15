@@ -54,12 +54,25 @@ public:
     // Base::ProgramBindings interface
     void CompleteInitialization() override { }
 
-    void CompleteInitialization(const ArgumentsRange& arg_range);
+    void CompleteInitialization(Data::Bytes& argument_buffer_data, const ArgumentsRange& arg_range);
+
     const ArgumentsRange& GetArgumentsRange() const { return m_argument_buffer_range; }
 
 private:
     template<typename FuncType> // function void(const ArgumentBinding&)
-    void ForEachChangedArgumentBinding(const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior, FuncType functor) const;
+    void ForEachChangedArgumentBinding(const Base::ProgramBindings* applied_program_bindings_ptr,
+                                       ApplyBehaviorMask apply_behavior,
+                                       FuncType functor) const;
+
+    void SetRenderResources(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
+                            const Base::ProgramBindings* applied_program_bindings_ptr,
+                            ApplyBehaviorMask apply_behavior) const;
+    void SetComputeResources(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder,
+                             const Base::ProgramBindings* applied_program_bindings_ptr,
+                             ApplyBehaviorMask apply_behavior) const;
+
+    void SetRenderArgumentBuffers(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder) const;
+    void SetComputeArgumentBuffers(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder) const;
 
     void Apply(RenderCommandList& argument_binding, ApplyBehaviorMask apply_behavior) const;
     void Apply(ComputeCommandList& compute_command_list, ApplyBehaviorMask apply_behavior) const;

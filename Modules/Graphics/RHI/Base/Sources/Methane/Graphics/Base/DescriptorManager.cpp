@@ -40,6 +40,19 @@ DescriptorManager::DescriptorManager(Context& context, bool is_parallel_bindings
 void DescriptorManager::CompleteInitialization()
 {
     META_FUNCTION_TASK();
+    ReleaseExpiredProgramBindings();
+    CompleteProgramBindingsInitialization();
+}
+
+void DescriptorManager::Release()
+{
+    META_FUNCTION_TASK();
+    m_program_bindings.clear();
+}
+
+void DescriptorManager::ReleaseExpiredProgramBindings()
+{
+    META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_program_bindings_mutex);
 
     const auto program_bindings_end_it = std::remove_if(m_program_bindings.begin(), m_program_bindings.end(),
@@ -48,7 +61,11 @@ void DescriptorManager::CompleteInitialization()
     );
 
     m_program_bindings.erase(program_bindings_end_it, m_program_bindings.end());
+}
 
+void DescriptorManager::CompleteProgramBindingsInitialization()
+{
+    META_FUNCTION_TASK();
     constexpr auto binding_initialization_completer = [](const WeakPtr<Rhi::IProgramBindings>& program_bindings_wptr)
     {
         META_FUNCTION_TASK();
@@ -60,6 +77,7 @@ void DescriptorManager::CompleteInitialization()
         static_cast<ProgramBindings&>(*program_bindings_ptr).CompleteInitialization();
     };
 
+    std::scoped_lock lock_guard(m_program_bindings_mutex);
     if (m_is_parallel_bindings_processing_enabled)
     {
         tf::Taskflow task_flow;
@@ -71,12 +89,6 @@ void DescriptorManager::CompleteInitialization()
         for (const WeakPtr<Rhi::IProgramBindings>& program_bindings_wptr : m_program_bindings)
             binding_initialization_completer(program_bindings_wptr);
     }
-}
-
-void DescriptorManager::Release()
-{
-    META_FUNCTION_TASK();
-    m_program_bindings.clear();
 }
 
 void DescriptorManager::AddProgramBindings(Rhi::IProgramBindings& program_bindings)

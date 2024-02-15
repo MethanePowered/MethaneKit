@@ -155,15 +155,15 @@ static std::string GetShaderArgumentInfo(const std::string& argument_name,
 #endif
 
 ArgumentBufferMember::ArgumentBufferMember(MTLStructMember* mtl_struct_member)
-    : offset(mtl_struct_member.offset)
+    : offset(static_cast<Data::Size>(mtl_struct_member.offset))
     , array_size(GetArraySizeOfStructMember(mtl_struct_member))
     , resource_type(GetResourceTypeOfMetalStructMember(mtl_struct_member))
 {
 }
 
 ArgumentBufferLayout::ArgumentBufferLayout(id<MTLBufferBinding> mtl_buffer_binding)
-    : data_size(mtl_buffer_binding.bufferDataSize)
-    , alignment(mtl_buffer_binding.bufferAlignment)
+    : data_size(static_cast<Data::Size>(mtl_buffer_binding.bufferDataSize))
+    , alignment(static_cast<Data::Size>(mtl_buffer_binding.bufferAlignment))
 {
     META_FUNCTION_TASK();
     MTLPointerType* mtl_buffer_pointer_type = mtl_buffer_binding.bufferPointerType;
@@ -296,9 +296,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
             // Get arguments from argument buffer layout
             META_CHECK_ARG_LESS_DESCR(argument_index, m_argument_buffer_layouts.size(),
                                       "inconsistent argument buffer layouts");
-            META_CHECK_ARG_NOT_NULL_DESCR(m_argument_buffer_layouts[argument_index],
-                                          "undefined argument buffer layout at index {}", argument_index);
-            for(const auto& [name, member] : m_argument_buffer_layouts[argument_index]->member_by_name)
+            for(const auto& [name, member] : m_argument_buffer_layouts[argument_index].member_by_name)
             {
                 add_argument_binding(
                     name,
@@ -328,6 +326,7 @@ void Shader::SetNativeBindings(NSArray<id<MTLBinding>>* mtl_bindings)
 {
     m_mtl_bindings = mtl_bindings;
     m_argument_buffer_layouts.clear();
+    m_argument_buffer_layouts_size = 0U;
 
     // Fill argument buffer layouts
     for(id<MTLBinding> mtl_binding in m_mtl_bindings)
@@ -341,9 +340,20 @@ void Shader::SetNativeBindings(NSArray<id<MTLBinding>>* mtl_bindings)
             if (argument_index >= m_argument_buffer_layouts.size())
                 m_argument_buffer_layouts.resize(argument_index + 1);
 
-            m_argument_buffer_layouts[argument_index] = std::make_shared<ArgumentBufferLayout>(
-                static_cast<id<MTLBufferBinding>>(mtl_binding));
+            m_argument_buffer_layouts[argument_index] = ArgumentBufferLayout(static_cast<id<MTLBufferBinding>>(mtl_binding));
+            m_argument_buffer_layouts_size += m_argument_buffer_layouts[argument_index].data_size;
         }
+    }
+
+    // Calculate consecutive offsets for sequential layouts
+    Data::Size layout_offset = 0U;
+    for(ArgumentBufferLayout& layout : m_argument_buffer_layouts)
+    {
+        for(auto& [name, member] : layout.member_by_name)
+        {
+            member.offset += layout_offset;
+        }
+        layout_offset += layout.data_size;
     }
 }
 

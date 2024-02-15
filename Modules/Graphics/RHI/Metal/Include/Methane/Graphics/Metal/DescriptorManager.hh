@@ -24,31 +24,38 @@ Metal descriptor manager of the argument buffer
 #pragma once
 
 #include <Methane/Graphics/Base/DescriptorManager.h>
+#include <Methane/Graphics/RHI/IBuffer.h>
+#include <Methane/Graphics/RHI/IContext.h>
+#include <Methane/Data/Receiver.hpp>
 #include <Methane/Data/RangeSet.hpp>
 
 namespace Methane::Graphics::Metal
 {
 
-class Buffer;
-
 class DescriptorManager final
     : public Base::DescriptorManager
+    , public Data::Receiver<Rhi::IContextCallback>
 {
 public:
     explicit DescriptorManager(Base::Context& context);
 
-    const Buffer* GetArgumentBuffer() const noexcept { return m_argument_buffer.get(); }
+    const Rhi::IBuffer* GetArgumentBuffer() const noexcept { return m_argument_buffer_ptr.get(); }
 
-    // Rhi::IDescriptorManager
+    // Rhi::IDescriptorManager overrides
     void CompleteInitialization() override;
     void Release() override;
 
+    // Rhi::IContextCallback overrides
+    void OnContextCompletingInitialization(Rhi::IContext&) override;
+    void OnContextInitialized(Rhi::IContext&) override {}
+    void OnContextReleased(Rhi::IContext&) override {}
+
 private:
-    using ArgumentsRangeSet = Data::RangeSet<Data::Index>;
     using ArgumentsRange = Data::Range<Data::Index>;
 
-    ArgumentsRangeSet m_free_argument_ranges;
-    Ptr<Buffer>       m_argument_buffer;
+    void UpdateArgumentBufferData(Data::Bytes&& argument_buffer_data);
+
+    Ptr<Rhi::IBuffer> m_argument_buffer_ptr;
 };
 
 } // namespace Methane::Graphics::Metal

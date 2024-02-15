@@ -197,12 +197,6 @@ void ProgramBindings::SetResourcesForArguments(const ResourceViewsByArgument& re
     }
 }
 
-void ProgramBindings::Initialize()
-{
-    META_FUNCTION_TASK();
-    static_cast<Program&>(GetProgram()).GetVulkanContext().GetVulkanDescriptorManager().AddProgramBindings(*this);
-}
-
 void ProgramBindings::CompleteInitialization()
 {
     META_FUNCTION_TASK();

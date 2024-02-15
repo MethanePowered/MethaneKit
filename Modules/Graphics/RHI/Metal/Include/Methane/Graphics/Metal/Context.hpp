@@ -55,7 +55,9 @@ class Context
 public:
     Context(Base::Device& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, std::make_unique<DescriptorManager>(*this), parallel_executor, settings)
-    { }
+    {
+        Data::Emitter<Rhi::IContextCallback>::Connect(dynamic_cast<DescriptorManager&>(ContextBaseT::GetDescriptorManager()));
+    }
 
     // IContext overrides
 

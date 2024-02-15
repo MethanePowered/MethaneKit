@@ -46,7 +46,7 @@ class ProgramBindings
 {
 public:
     using ArgumentBinding  = ProgramArgumentBinding;
-    using ArgumentBindings = std::unordered_map<Rhi::IProgram::Argument, Ptr<ArgumentBinding>, Rhi::IProgram::Argument::Hash>;
+    using ArgumentBindings = std::unordered_map<Rhi::ProgramArgument, Ptr<ArgumentBinding>, Rhi::IProgram::Argument::Hash>;
 
     ProgramBindings(Program& program, Data::Index frame_index);
     ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
@@ -66,6 +66,7 @@ public:
     explicit operator std::string() const final;
 
     // ProgramBindings interface
+    virtual void Initialize();
     virtual void CompleteInitialization() = 0;
     virtual void Apply(CommandList& command_list, ApplyBehaviorMask apply_behavior = ApplyBehaviorMask(~0U)) const = 0;
 

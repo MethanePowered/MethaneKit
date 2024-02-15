@@ -27,6 +27,8 @@ Metal implementation of the program interface.
 
 #import <Metal/Metal.h>
 
+#include <vector>
+
 namespace Methane::Graphics::Metal
 {
 
@@ -37,16 +39,26 @@ class Program final
     : public Base::Program
 {
 public:
+    struct ShaderArgumentBufferLayout
+    {
+        Rhi::ShaderType shader_type;
+        Data::Size      data_size;
+        Data::Index     index;
+    };
+
+    using ShaderArgumentBufferLayouts = std::vector<ShaderArgumentBufferLayout>;
+
     Program(const Base::Context& context, const Settings& settings);
 
     // IProgram interface
     [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index) override;
 
-    Shader& GetMetalShader(Rhi::ShaderType shader_type) noexcept;
+    Shader& GetMetalShader(Rhi::ShaderType shader_type) const;
     
     id<MTLFunction> GetNativeShaderFunction(Rhi::ShaderType shader_type) noexcept;
     MTLVertexDescriptor* GetNativeVertexDescriptor() noexcept { return m_mtl_vertex_desc; }
     Data::Size GetArgumentBuffersSize() const noexcept { return m_argument_buffers_size; }
+    const ShaderArgumentBufferLayouts& GetShaderArgumentBufferLayouts() const noexcept { return m_shader_argument_buffer_layouts; }
 
 private:
     const IContext& GetMetalContext() const noexcept;
@@ -54,9 +66,13 @@ private:
     void ReflectComputePipelineArguments();
     void SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<id<MTLBinding>>* mtl_arguments) noexcept;
     void InitArgumentBuffersSize();
-    
-    MTLVertexDescriptor* m_mtl_vertex_desc = nil;
-    Data::Size           m_argument_buffers_size = 0U;
+
+    // Base::Program overrides
+    Ptr<ArgumentBinding> CreateArgumentBindingInstance(const Ptr<ArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const override;
+
+    MTLVertexDescriptor*        m_mtl_vertex_desc = nil;
+    Data::Size                  m_argument_buffers_size = 0U;
+    ShaderArgumentBufferLayouts m_shader_argument_buffer_layouts;
 };
 
 } // namespace Methane::Graphics::Metal

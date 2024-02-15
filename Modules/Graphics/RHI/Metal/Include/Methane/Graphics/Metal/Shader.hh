@@ -32,8 +32,8 @@ namespace Methane::Graphics::Metal
 
 struct ArgumentBufferMember
 {
-    uint32_t          offset;
-    uint32_t          array_size;
+    Data::Size        offset;
+    Data::Size        array_size;
     Rhi::ResourceType resource_type;
 
     ArgumentBufferMember(MTLStructMember* mtl_struct_member);
@@ -44,12 +44,15 @@ struct ArgumentBufferLayout
     using Member = ArgumentBufferMember;
     using MemberByName = std::map<std::string, Member>;
 
-    uint32_t data_size;
-    uint32_t alignment;
+    Data::Size   data_size = 0U;
+    Data::Size   alignment = 0U;
     MemberByName member_by_name;
 
     ArgumentBufferLayout(id<MTLBufferBinding> mtl_buffer_binding);
+    ArgumentBufferLayout() = default;
 };
+
+using ArgumentBufferLayouts = std::vector<ArgumentBufferLayout>;
 
 struct IContext;
 class Program;
@@ -67,16 +70,18 @@ public:
 
     id<MTLFunction> GetNativeFunction() noexcept                           { return m_mtl_function; }
     MTLVertexDescriptor* GetNativeVertexDescriptor(const Program& program) const;
-    const Ptrs<ArgumentBufferLayout>& GetArgumentBufferLayouts() const noexcept { return m_argument_buffer_layouts; }
+    const ArgumentBufferLayouts& GetArgumentBufferLayouts() const noexcept { return m_argument_buffer_layouts; }
+    Data::Size GetArgumentBufferLayoutsSize() const noexcept { return m_argument_buffer_layouts_size; }
 
 private:
     const IContext& GetMetalContext() const noexcept;
 
     static id<MTLFunction> GetMetalLibraryFunction(const IContext& context, const Rhi::ShaderSettings& settings);
 
-    id<MTLFunction>            m_mtl_function;
-    NSArray<id<MTLBinding>>*   m_mtl_bindings = nil;
-    Ptrs<ArgumentBufferLayout> m_argument_buffer_layouts;
+    id<MTLFunction>          m_mtl_function;
+    NSArray<id<MTLBinding>>* m_mtl_bindings = nil;
+    ArgumentBufferLayouts    m_argument_buffer_layouts;
+    Data::Size               m_argument_buffer_layouts_size;
 };
 
 } // namespace Methane::Graphics::Metal

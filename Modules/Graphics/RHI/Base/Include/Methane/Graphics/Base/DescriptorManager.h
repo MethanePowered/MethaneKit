@@ -56,6 +56,9 @@ protected:
     Context&       GetContext()       { return m_context; }
     const Context& GetContext() const { return m_context; }
 
+    void ReleaseExpiredProgramBindings();
+    void CompleteProgramBindingsInitialization();
+
     template<typename BindingsFuncType>
     void ForEachProgramBinding(const BindingsFuncType& bindings_functor)
     {

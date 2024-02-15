@@ -36,21 +36,56 @@ DescriptorManager::DescriptorManager(Base::Context& context)
 
 void DescriptorManager::CompleteInitialization()
 {
-    Data::Size cummulative_argument_buffer_size = 0U;
-    ForEachProgramBinding([&cummulative_argument_buffer_size](Rhi::IProgramBindings& program_bindings)
+    // Argument buffer initialization is done in OnContextCompletingInitialization callback,
+    // so that buffer data is uploaded to the GPU in UploadResources() in Base::Context::CompleteInitialization()
+}
+
+void DescriptorManager::OnContextCompletingInitialization(Rhi::IContext&)
+{
+    META_FUNCTION_TASK();
+    Base::DescriptorManager::ReleaseExpiredProgramBindings();
+
+    // Fill argument buffer and send its data to GPU before UploadResources() in Base::Context::CompleteInitialization()
+    Data::Size total_argument_buffer_size = 0U;
+    Data::Bytes argument_buffer_data;
+    ForEachProgramBinding([&total_argument_buffer_size, &argument_buffer_data](Rhi::IProgramBindings& program_bindings)
     {
         const Data::Size argument_buffer_size = static_cast<Program&>(program_bindings.GetProgram()).GetArgumentBuffersSize();
-        const ArgumentsRange arguments_range(cummulative_argument_buffer_size, argument_buffer_size);
-        static_cast<ProgramBindings&>(program_bindings).CompleteInitialization(arguments_range);
-        cummulative_argument_buffer_size += argument_buffer_size;
+        const ArgumentsRange arguments_range(total_argument_buffer_size, total_argument_buffer_size + argument_buffer_size);
+        total_argument_buffer_size += argument_buffer_size;
+        argument_buffer_data.resize(total_argument_buffer_size);
+        static_cast<ProgramBindings&>(program_bindings).CompleteInitialization(argument_buffer_data, arguments_range);
     });
+
+    if (m_argument_buffer_ptr && total_argument_buffer_size < m_argument_buffer_ptr->GetSettings().size)
+    {
+        UpdateArgumentBufferData(std::move(argument_buffer_data));
+    }
+    else
+    {
+        m_argument_buffer_ptr.reset();
+        if (!total_argument_buffer_size)
+            return;
+
+        m_argument_buffer_ptr = GetContext().CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(total_argument_buffer_size));
+        UpdateArgumentBufferData(std::move(argument_buffer_data));
+    }
 }
 
 void DescriptorManager::Release()
 {
     Base::DescriptorManager::Release();
-    m_argument_buffer.reset();
-    m_free_argument_ranges.Clear();
+    m_argument_buffer_ptr.reset();
+}
+
+void DescriptorManager::UpdateArgumentBufferData(Data::Bytes&& argument_buffer_data)
+{
+    META_FUNCTION_TASK();
+
+    // Compute queue is used as a target command queue for the argument buffer data transfer,
+    // because in Metal it queue ownership does not matter.
+    Rhi::ICommandQueue& compute_queue = GetContext().GetDefaultCommandKit(Rhi::CommandListType::Compute).GetQueue();
+    m_argument_buffer_ptr->SetData(compute_queue, Rhi::SubResource(std::move(argument_buffer_data)));
 }
 
 } // namespace Methane::Graphics::Metal

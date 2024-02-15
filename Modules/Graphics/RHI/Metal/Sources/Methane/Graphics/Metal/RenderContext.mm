@@ -103,7 +103,6 @@ void RenderContext::Release()
 void RenderContext::Initialize(Base::Device& device, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
-
     Context<Base::RenderContext>::Initialize(device, is_callback_emitted);
     
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE

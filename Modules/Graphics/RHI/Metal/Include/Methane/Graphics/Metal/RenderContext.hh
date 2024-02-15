@@ -38,7 +38,8 @@ class RenderContext final
     : public Context<Base::RenderContext>
 {
 public:
-    RenderContext(const Platform::AppEnvironment& env, Base::Device& device, tf::Executor& parallel_executor, const Settings& settings);
+    RenderContext(const Platform::AppEnvironment& env, Base::Device& device,
+                  tf::Executor& parallel_executor, const Settings& settings);
     ~RenderContext() override;
 
     // IContext interface

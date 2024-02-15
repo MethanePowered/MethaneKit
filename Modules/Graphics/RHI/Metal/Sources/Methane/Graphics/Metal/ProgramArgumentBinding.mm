@@ -22,9 +22,13 @@ Metal implementation of the program argument binding interface.
 ******************************************************************************/
 
 #include <Methane/Graphics/Metal/ProgramArgumentBinding.hh>
+#include <Methane/Graphics/Metal/Program.hh>
+#include <Methane/Graphics/Metal/Shader.hh>
 #include <Methane/Graphics/Metal/Buffer.hh>
 #include <Methane/Graphics/Metal/Texture.hh>
 #include <Methane/Graphics/Metal/Sampler.hh>
+
+#include <magic_enum.hpp>
 
 namespace Methane::Graphics::Metal
 {
@@ -37,12 +41,25 @@ using NativeOffsets       = ProgramArgumentBinding::NativeOffsets;
 ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, const Settings& settings)
     : Base::ProgramArgumentBinding(context, settings)
     , m_settings_mt(settings)
-{ }
+{
+}
 
 Ptr<Base::ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy() const
 {
     META_FUNCTION_TASK();
     return std::make_shared<ProgramArgumentBinding>(*this);
+}
+
+void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& other)
+{
+    META_FUNCTION_TASK();
+    Base::ProgramArgumentBinding::MergeSettings(other);
+
+    const Settings& metal_settings = dynamic_cast<const ProgramArgumentBinding&>(other).GetMetalSettings();
+    META_CHECK_ARG_EQUAL(m_settings_mt.argument_index, metal_settings.argument_index);
+    for(const auto& [shader_type, struct_offset] : metal_settings.argument_buffer_offset_by_shader_type)
+        if (m_settings_mt.argument_buffer_offset_by_shader_type.find(shader_type) == m_settings_mt.argument_buffer_offset_by_shader_type.end())
+            m_settings_mt.argument_buffer_offset_by_shader_type.emplace(shader_type, struct_offset);
 }
 
 bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
@@ -85,6 +102,22 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     default: META_UNEXPECTED_ARG(m_settings_mt.resource_type);
     }
     return true;
+}
+
+void ProgramArgumentBinding::UpdateArgumentBufferOffsets(const Program& program)
+{
+    META_FUNCTION_TASK();
+    Data::Size arg_buffer_offset = 0U;
+    for(Rhi::ShaderType shader_type : program.GetShaderTypes())
+    {
+        if (arg_buffer_offset > 0U)
+        {
+            auto argument_buffer_offset_it = m_settings_mt.argument_buffer_offset_by_shader_type.find(shader_type);
+            if (argument_buffer_offset_it != m_settings_mt.argument_buffer_offset_by_shader_type.end())
+                argument_buffer_offset_it->second += arg_buffer_offset;
+        }
+        arg_buffer_offset += program.GetMetalShader(shader_type).GetArgumentBufferLayoutsSize();
+    }
 }
 
 } // namespace Methane::Graphics::Metal

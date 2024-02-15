@@ -24,6 +24,8 @@ Base implementation of the program bindings interface.
 #include <Methane/Graphics/Base/ProgramBindings.h>
 #include <Methane/Graphics/Base/Program.h>
 #include <Methane/Graphics/Base/Resource.h>
+#include <Methane/Graphics/Base/DescriptorManager.h>
+#include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/Base/CommandList.h>
 
 #include <Methane/Graphics/RHI/IBuffer.h>
@@ -152,7 +154,6 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
         // Remove unused resources from transition barriers applied for program bindings:
         m_resource_state_transition_barriers_ptr->RemoveStateTransition(old_resource_view.GetResource());
         RemoveTransitionResourceStates(argument_binding, old_resource_view.GetResource());
-
     }
 
     for(const Rhi::IResource::View& new_resource_view : new_resource_views)
@@ -251,6 +252,14 @@ ProgramBindings::operator std::string() const
 
     ss << ".";
     return ss.str();
+}
+
+void ProgramBindings::Initialize()
+{
+    META_FUNCTION_TASK();
+    const auto& program = static_cast<Program&>(GetProgram());
+    Rhi::IDescriptorManager& descriptor_manager = program.GetContext().GetDescriptorManager();
+    descriptor_manager.AddProgramBindings(*this);
 }
 
 Rhi::IProgram::Arguments ProgramBindings::GetUnboundArguments() const

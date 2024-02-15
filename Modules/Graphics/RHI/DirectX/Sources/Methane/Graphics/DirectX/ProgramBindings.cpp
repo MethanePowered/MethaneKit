@@ -93,12 +93,10 @@ ProgramBindings::~ProgramBindings()
 void ProgramBindings::Initialize()
 {
     META_FUNCTION_TASK();
+    Base::ProgramBindings::Initialize();
+
     const auto& program = static_cast<Program&>(GetProgram());
-    DescriptorManager& descriptor_manager = program.GetDirectContext().GetDirectDescriptorManager();
-
-    descriptor_manager.AddProgramBindings(*this);
-
-    if (descriptor_manager.IsDeferredHeapAllocation())
+    if (program.GetDirectContext().GetDirectDescriptorManager().IsDeferredHeapAllocation())
     {
         program.GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::CompleteInitialization);
     }

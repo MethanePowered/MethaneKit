@@ -23,44 +23,8 @@ Base implementation of the program argument binding interface.
 
 #include <Methane/Graphics/Base/ProgramArgumentBinding.h>
 #include <Methane/Graphics/Base/ProgramBindings.h>
-
+#include <Methane/Graphics/RHI/TypeFormatters.hpp>
 #include <Methane/Data/EnumMaskUtil.hpp>
-
-#include <fmt/format.h>
-#include <fmt/ranges.h>
-
-template<>
-struct fmt::formatter<Methane::Graphics::Rhi::IResource::View>
-{
-    template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Rhi::IResource::View& rl, FormatContext& ctx) const
-    { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
-
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
-    { return ctx.end(); }
-};
-
-template<>
-struct fmt::formatter<Methane::Graphics::Rhi::ProgramArgumentAccessor>
-{
-    template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ProgramArgumentAccessor& rl, FormatContext& ctx) const
-    { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
-
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
-    { return ctx.end(); }
-};
-
-template<>
-struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsageMask>
-{
-    template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsageMask& rl, FormatContext& ctx) const
-    { return format_to(ctx.out(), "{}", Methane::Data::GetEnumMaskName(rl)); }
-
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
-    { return ctx.end(); }
-};
 
 namespace Methane::Graphics::Base
 {

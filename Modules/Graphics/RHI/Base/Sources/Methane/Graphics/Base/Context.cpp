@@ -57,7 +57,9 @@ Context::Context(Device& device, UniquePtr<Rhi::IDescriptorManager>&& descriptor
     , m_device_ptr(device.GetPtr<Device>())
     , m_descriptor_manager_ptr(std::move(descriptor_manager_ptr))
     , m_parallel_executor(parallel_executor)
-{ }
+{
+    META_FUNCTION_TASK();
+}
 
 Context::~Context() = default;
 

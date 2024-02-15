@@ -50,7 +50,10 @@ Program::Program(const Base::Context& context, const Settings& settings)
 
 Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
-    return std::make_shared<Metal::ProgramBindings>(*this, resource_views_by_argument, frame_index);
+    META_FUNCTION_TASK();
+    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, resource_views_by_argument, frame_index);
+    program_bindings_ptr->Initialize();
+    return program_bindings_ptr;
 }
 
 const IContext& Program::GetMetalContext() const noexcept
@@ -59,7 +62,7 @@ const IContext& Program::GetMetalContext() const noexcept
     return dynamic_cast<const IContext&>(GetContext());
 }
 
-Shader& Program::GetMetalShader(Rhi::ShaderType shader_type) noexcept
+Shader& Program::GetMetalShader(Rhi::ShaderType shader_type) const
 {
     META_FUNCTION_TASK();
     return static_cast<Shader&>(GetShaderRef(shader_type));
@@ -99,10 +102,11 @@ void Program::ReflectRenderPipelineArguments()
     const id<MTLDevice>& mtl_device = GetMetalContext().GetMetalDevice().GetNativeDevice();
 
     MTLRenderPipelineReflection* mtl_render_pipeline_reflection = nil;
-    id<MTLRenderPipelineState> mtl_render_pipeline_state = [mtl_device newRenderPipelineStateWithDescriptor: mtl_reflection_state_desc
-                                                                                                    options: MTLPipelineOptionArgumentInfo
-                                                                                                 reflection: &mtl_render_pipeline_reflection
-                                                                                                      error: &ns_error];
+    id<MTLRenderPipelineState> mtl_render_pipeline_state =
+        [mtl_device newRenderPipelineStateWithDescriptor: mtl_reflection_state_desc
+                                                 options: MTLPipelineOptionArgumentInfo
+                                              reflection: &mtl_render_pipeline_reflection
+                                                   error: &ns_error];
 
     META_CHECK_ARG_NOT_NULL_DESCR(mtl_render_pipeline_state,
                                   "Failed to create dummy pipeline state for program reflection: {}",
@@ -129,10 +133,11 @@ void Program::ReflectComputePipelineArguments()
     const id<MTLDevice>& mtl_device = GetMetalContext().GetMetalDevice().GetNativeDevice();
 
     MTLComputePipelineReflection* mtl_compute_pipeline_reflection = nil;
-    id<MTLComputePipelineState> mtl_compute_pipeline_state = [mtl_device newComputePipelineStateWithDescriptor: mtl_reflection_state_desc
-                                                                                                       options: MTLPipelineOptionArgumentInfo
-                                                                                                    reflection: &mtl_compute_pipeline_reflection
-                                                                                                         error: &ns_error];
+    id<MTLComputePipelineState> mtl_compute_pipeline_state =
+        [mtl_device newComputePipelineStateWithDescriptor: mtl_reflection_state_desc
+                                                  options: MTLPipelineOptionArgumentInfo
+                                               reflection: &mtl_compute_pipeline_reflection
+                                                    error: &ns_error];
 
     META_CHECK_ARG_NOT_NULL_DESCR(mtl_compute_pipeline_state,
                                   "Failed to create compute pipeline state for program reflection: {}",
@@ -160,10 +165,35 @@ void Program::InitArgumentBuffersSize()
     m_argument_buffers_size = 0U;
     ForEachShader([this](const Base::Shader& shader)
     {
-        for(const Ptr<ArgumentBufferLayout>& layout_ptr : static_cast<const Shader&>(shader).GetArgumentBufferLayouts())
-            if (layout_ptr)
-                m_argument_buffers_size += layout_ptr->data_size;
+        const auto& metal_shader = static_cast<const Shader&>(shader);
+        Data::Index layout_index = 0U;
+        for(const ArgumentBufferLayout& layout : metal_shader.GetArgumentBufferLayouts())
+        {
+            m_shader_argument_buffer_layouts.push_back({ shader.GetType(), layout.data_size, layout_index });
+            m_argument_buffers_size += layout.data_size;
+            layout_index++;
+        }
     });
+}
+
+Ptr<Base::ProgramArgumentBinding> Program::CreateArgumentBindingInstance(const Ptr<Base::ProgramArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+
+    // Argument Bindings which are using Metal Argument Buffer, always create a copy.
+    // TODO: Change this when type of argument binding (Mutable, Constant, FrameConstant) will be defined on shader level
+    //       and thus will result in splitting of arguments to separate argument buffers.
+    auto& metal_argument_binding = static_cast<ProgramArgumentBinding&>(*argument_binding_ptr);
+    if (metal_argument_binding.IsArgumentBufferMode())
+    {
+        Ptr<Base::ProgramArgumentBinding> arg_binding_ptr = metal_argument_binding.CreateCopy();
+        META_CHECK_ARG_NOT_NULL(arg_binding_ptr);
+        static_cast<ProgramArgumentBinding&>(*arg_binding_ptr).UpdateArgumentBufferOffsets(*this);
+        return arg_binding_ptr;
+    }
+
+    return Base::Program::CreateArgumentBindingInstance(argument_binding_ptr, frame_index);
 }
 
 } // namespace Methane::Graphics::Metal

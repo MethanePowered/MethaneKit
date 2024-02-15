@@ -52,7 +52,7 @@ Program::Program(const Base::Context& context, const Settings& settings)
 Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    auto program_bindings_ptr = std::make_shared<Vulkan::ProgramBindings>(*this, resource_views_by_argument, frame_index);
+    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, resource_views_by_argument, frame_index);
     program_bindings_ptr->Initialize();
     return program_bindings_ptr;
 }

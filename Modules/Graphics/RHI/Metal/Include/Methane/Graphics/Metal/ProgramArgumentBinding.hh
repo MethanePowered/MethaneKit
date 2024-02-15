@@ -42,6 +42,8 @@ struct ProgramArgumentBindingSettings final
     StructOffsetByShaderType argument_buffer_offset_by_shader_type;
 };
 
+class Program;
+
 class ProgramArgumentBinding final
     : public Base::ProgramArgumentBinding
 {
@@ -56,18 +58,22 @@ public:
 
     // Base::ProgramArgumentBinding interface
     [[nodiscard]] Ptr<Base::ProgramArgumentBinding> CreateCopy() const override;
+    void MergeSettings(const Base::ProgramArgumentBinding& other) override;
 
     // IArgumentBinding interface
     bool SetResourceViews(const Rhi::IResource::Views& resource_views) override;
 
-    const Settings&            GetMetalSettings() const noexcept { return m_settings_mt; }
-    const NativeSamplerStates& GetNativeSamplerStates() const { return m_mtl_sampler_states; }
-    const NativeTextures&      GetNativeTextures() const      { return m_mtl_textures; }
-    const NativeBuffers&       GetNativeBuffers() const       { return m_mtl_buffers; }
-    const NativeOffsets&       GetBufferOffsets() const       { return m_mtl_buffer_offsets; }
+    void UpdateArgumentBufferOffsets(const Program& program);
+
+    bool                       IsArgumentBufferMode() const noexcept { return !m_settings_mt.argument_buffer_offset_by_shader_type.empty(); }
+    const Settings&            GetMetalSettings() const noexcept     { return m_settings_mt; }
+    const NativeSamplerStates& GetNativeSamplerStates() const        { return m_mtl_sampler_states; }
+    const NativeTextures&      GetNativeTextures() const             { return m_mtl_textures; }
+    const NativeBuffers&       GetNativeBuffers() const              { return m_mtl_buffers; }
+    const NativeOffsets&       GetBufferOffsets() const              { return m_mtl_buffer_offsets; }
 
 private:
-    const Settings      m_settings_mt;
+    Settings            m_settings_mt;
     NativeSamplerStates m_mtl_sampler_states;
     NativeTextures      m_mtl_textures;
     NativeBuffers       m_mtl_buffers;
