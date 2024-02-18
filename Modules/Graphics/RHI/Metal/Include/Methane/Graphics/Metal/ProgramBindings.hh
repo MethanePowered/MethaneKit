@@ -74,6 +74,18 @@ private:
     void SetRenderArgumentBuffers(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder) const;
     void SetComputeArgumentBuffers(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder) const;
 
+    using NativeResourceUsageAndStage = std::pair<MTLResourceUsage, MTLRenderStages>;
+    using NativeResourcesByUsage = std::map<NativeResourceUsageAndStage, ArgumentBinding::NativeResources>;
+    NativeResourcesByUsage CollectChangedResourcesByUsage(const Base::ProgramBindings* applied_program_bindings_ptr,
+                                                          ApplyBehaviorMask apply_behavior) const;
+
+    void UseRenderResources(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
+                            const Base::ProgramBindings* applied_program_bindings_ptr,
+                            ApplyBehaviorMask apply_behavior) const;
+    void UseComputeResources(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder,
+                            const Base::ProgramBindings* applied_program_bindings_ptr,
+                            ApplyBehaviorMask apply_behavior) const;
+
     void Apply(RenderCommandList& argument_binding, ApplyBehaviorMask apply_behavior) const;
     void Apply(ComputeCommandList& compute_command_list, ApplyBehaviorMask apply_behavior) const;
 

@@ -85,9 +85,11 @@ void SetRenderResources(Rhi::ShaderType shader_type, const id <MTLRenderCommandE
         case Rhi::ShaderType::Vertex:
             [mtl_cmd_encoder setVertexBuffers:mtl_buffers.data() offsets:buffer_offsets.data() withRange:args_range];
             break;
+
         case Rhi::ShaderType::Pixel:
             [mtl_cmd_encoder setFragmentBuffers:mtl_buffers.data() offsets:buffer_offsets.data() withRange:args_range];
             break;
+
         default:
             META_UNEXPECTED_ARG(shader_type);
     }
@@ -95,7 +97,7 @@ void SetRenderResources(Rhi::ShaderType shader_type, const id <MTLRenderCommandE
 
 template<>
 void SetRenderResource(Rhi::ShaderType shader_type, const id <MTLRenderCommandEncoder>& mtl_cmd_encoder,
-                       __unsafe_unretained id <MTLTexture> mtl_texture, uint32_t arg_index, NSUInteger)
+                       __unsafe_unretained id<MTLTexture> mtl_texture, uint32_t arg_index, NSUInteger)
 {
     META_FUNCTION_TASK();
     switch (shader_type)
@@ -103,9 +105,11 @@ void SetRenderResource(Rhi::ShaderType shader_type, const id <MTLRenderCommandEn
         case Rhi::ShaderType::Vertex:
             [mtl_cmd_encoder setVertexTexture:mtl_texture atIndex:arg_index];
             break;
+
         case Rhi::ShaderType::Pixel:
             [mtl_cmd_encoder setFragmentTexture:mtl_texture atIndex:arg_index];
             break;
+
         default:
             META_UNEXPECTED_ARG(shader_type);
     }
@@ -496,10 +500,11 @@ void ProgramBindings::SetRenderArgumentBuffers(const id<MTLRenderCommandEncoder>
     META_CHECK_ARG_NOT_NULL_DESCR(argument_buffer_ptr, "Argument Buffer is not initialized in Descriptor Manager.");
 
     const id<MTLBuffer>& mtl_argument_buffer = argument_buffer_ptr->GetNativeBuffer();
+    Data::Size arg_layout_offset = 0U;
     for(const Program::ShaderArgumentBufferLayout& arg_layout : program.GetShaderArgumentBufferLayouts())
     {
-        const Data::Index arg_buffer_offset = m_argument_buffer_range.GetStart() + arg_layout.data_size;
-        META_CHECK_ARG_LESS_OR_EQUAL_DESCR(arg_buffer_offset, m_argument_buffer_range.GetEnd(), "invalid offset in argument buffer");
+        const Data::Index arg_buffer_offset = m_argument_buffer_range.GetStart() + arg_layout_offset;
+        META_CHECK_ARG_LESS_DESCR(arg_buffer_offset, m_argument_buffer_range.GetEnd(), "invalid offset in argument buffer");
         switch(arg_layout.shader_type)
         {
         case Rhi::ShaderType::Vertex:
@@ -517,6 +522,7 @@ void ProgramBindings::SetRenderArgumentBuffers(const id<MTLRenderCommandEncoder>
         default:
             META_UNEXPECTED_ARG(arg_layout.shader_type);
         }
+        arg_layout_offset += arg_layout.data_size;
     }
 }
 
@@ -540,6 +546,51 @@ void ProgramBindings::SetComputeArgumentBuffers(const id<MTLComputeCommandEncode
     }
 }
 
+ProgramBindings::NativeResourcesByUsage ProgramBindings::CollectChangedResourcesByUsage(
+                                                            const Base::ProgramBindings* applied_program_bindings_ptr,
+                                                            ApplyBehaviorMask apply_behavior) const
+{
+    META_FUNCTION_TASK();
+    NativeResourcesByUsage resources_by_usage;
+    ForEachChangedArgumentBinding(applied_program_bindings_ptr, apply_behavior,
+        [&resources_by_usage](const ArgumentBinding& argument_binding)
+        {
+            const NativeResourceUsageAndStage usage_and_stage(argument_binding.GetNativeResouceUsage(),
+                                                              argument_binding.GetNativeRenderStages());
+            argument_binding.CollectNativeResources(resources_by_usage[usage_and_stage]);
+        });
+    return resources_by_usage;
+}
+
+void ProgramBindings::UseRenderResources(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
+                                         const Base::ProgramBindings* applied_program_bindings_ptr,
+                                         ApplyBehaviorMask apply_behavior) const
+{
+    META_FUNCTION_TASK();
+    NativeResourcesByUsage resources_by_usage = CollectChangedResourcesByUsage(applied_program_bindings_ptr, apply_behavior);
+    for(const auto& [mtl_usage_and_stage, mtl_resources] : resources_by_usage)
+    {
+        [mtl_cmd_encoder useResources:mtl_resources.data()
+                                count:mtl_resources.size()
+                                usage:mtl_usage_and_stage.first
+                               stages:mtl_usage_and_stage.second];
+    }
+}
+
+void ProgramBindings::UseComputeResources(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder,
+                                         const Base::ProgramBindings* applied_program_bindings_ptr,
+                                         ApplyBehaviorMask apply_behavior) const
+{
+    META_FUNCTION_TASK();
+    NativeResourcesByUsage resources_by_usage = CollectChangedResourcesByUsage(applied_program_bindings_ptr, apply_behavior);
+    for(const auto& [mtl_usage_and_stage, mtl_resources] : resources_by_usage)
+    {
+        [mtl_cmd_encoder useResources:mtl_resources.data()
+                                count:mtl_resources.size()
+                                usage:mtl_usage_and_stage.first];
+    }
+}
+
 void ProgramBindings::Apply(RenderCommandList& render_command_list, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
@@ -550,6 +601,7 @@ void ProgramBindings::Apply(RenderCommandList& render_command_list, ApplyBehavio
     }
     else
     {
+        UseRenderResources(mtl_cmd_encoder, render_command_list.GetProgramBindingsPtr(), apply_behavior);
         SetRenderArgumentBuffers(mtl_cmd_encoder);
     }
 }
@@ -564,6 +616,7 @@ void ProgramBindings::Apply(ComputeCommandList& compute_command_list, ApplyBehav
     }
     else
     {
+        UseComputeResources(mtl_cmd_encoder, compute_command_list.GetProgramBindingsPtr(), apply_behavior);
         SetComputeArgumentBuffers(mtl_cmd_encoder);
     }
 }

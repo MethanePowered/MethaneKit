@@ -68,6 +68,7 @@ void DescriptorManager::OnContextCompletingInitialization(Rhi::IContext&)
             return;
 
         m_argument_buffer_ptr = GetContext().CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(total_argument_buffer_size));
+        m_argument_buffer_ptr->SetName("Global Argument Buffer");
         UpdateArgumentBufferData(std::move(argument_buffer_data));
     }
 }

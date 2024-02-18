@@ -38,9 +38,26 @@ using NativeTextures      = ProgramArgumentBinding::NativeTextures;
 using NativeSamplerStates = ProgramArgumentBinding::NativeSamplerStates;
 using NativeOffsets       = ProgramArgumentBinding::NativeOffsets;
 
+static MTLRenderStages ConvertShaderTypeToMetalRenderStages(Rhi::ShaderType shader_type)
+{
+    META_FUNCTION_TASK();
+    MTLRenderStages mtl_render_stages{};
+    switch(shader_type)
+    {
+        case Rhi::ShaderType::All:    mtl_render_stages |= MTLRenderStageVertex
+                                                        |  MTLRenderStageFragment; break;
+        case Rhi::ShaderType::Vertex: mtl_render_stages |= MTLRenderStageVertex; break;
+        case Rhi::ShaderType::Pixel:  mtl_render_stages |= MTLRenderStageFragment; break;
+        case Rhi::ShaderType::Compute: /* Compute is not Render stage */ break;
+        default: META_UNEXPECTED_ARG(shader_type);
+    }
+    return mtl_render_stages;
+}
+
 ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, const Settings& settings)
     : Base::ProgramArgumentBinding(context, settings)
     , m_settings_mt(settings)
+    , m_mtl_render_stages(ConvertShaderTypeToMetalRenderStages(settings.argument.GetShaderType()))
 {
 }
 
@@ -68,6 +85,7 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
         return false;
 
+    m_mtl_resource_usage = {};
     m_mtl_sampler_states.clear();
     m_mtl_textures.clear();
     m_mtl_buffers.clear();
@@ -85,8 +103,12 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     case Rhi::ResourceType::Texture:
         m_mtl_textures.reserve(resource_views.size());
         std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_mtl_textures),
-                       [](const Rhi::ResourceView& resource_view)
-                           { return dynamic_cast<const Texture&>(resource_view.GetResource()).GetNativeTexture(); });
+                       [this](const Rhi::ResourceView& resource_view)
+                       {
+                            const auto& texture = dynamic_cast<const Texture&>(resource_view.GetResource());
+                            m_mtl_resource_usage |= texture.GetNativeResourceUsage();
+                            return texture.GetNativeTexture();
+                       });
         break;
 
     case Rhi::ResourceType::Buffer:
@@ -94,7 +116,9 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
         m_mtl_buffer_offsets.reserve(resource_views.size());
         for (const Rhi::ResourceView& resource_view : resource_views)
         {
-            m_mtl_buffers.push_back(dynamic_cast<const Buffer&>(resource_view.GetResource()).GetNativeBuffer());
+            const auto& buffer = dynamic_cast<const Buffer&>(resource_view.GetResource());
+            m_mtl_resource_usage |= buffer.GetNativeResourceUsage();
+            m_mtl_buffers.push_back(buffer.GetNativeBuffer());
             m_mtl_buffer_offsets.push_back(static_cast<NSUInteger>(resource_view.GetOffset()));
         }
         break;
@@ -117,6 +141,30 @@ void ProgramArgumentBinding::UpdateArgumentBufferOffsets(const Program& program)
                 argument_buffer_offset_it->second += arg_buffer_offset;
         }
         arg_buffer_offset += program.GetMetalShader(shader_type).GetArgumentBufferLayoutsSize();
+    }
+}
+
+void ProgramArgumentBinding::CollectNativeResources(NativeResources& resources) const
+{
+    META_FUNCTION_TASK();
+    switch(m_settings_mt.resource_type)
+    {
+        case Rhi::ResourceType::Texture:
+            std::transform(m_mtl_textures.begin(), m_mtl_textures.end(), std::back_inserter(resources),
+                           [](const id<MTLTexture>& mtl_texture) { return static_cast<id<MTLResource>>(mtl_texture); });
+            break;
+
+        case Rhi::ResourceType::Buffer:
+            std::transform(m_mtl_buffers.begin(), m_mtl_buffers.end(), std::back_inserter(resources),
+                           [](const id<MTLBuffer>& mtl_buffer) { return static_cast<id<MTLResource>>(mtl_buffer); });
+            break;
+
+        case Rhi::ResourceType::Sampler:
+            // Skip samplers, because MTLSamplerState is not inherited from MTLResource
+            break;
+
+        default:
+            META_UNEXPECTED_ARG(m_settings_mt.resource_type);
     }
 }
 

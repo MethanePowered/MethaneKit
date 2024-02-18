@@ -80,7 +80,10 @@ Texture::Texture(const Base::Context& context, const Settings& settings)
     , m_mtl_texture(settings.type == ITexture::Type::FrameBuffer
                       ? nil // actual frame buffer texture descriptor is set in UpdateFrameBuffer()
                       : [GetMetalContext().GetMetalDevice().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
-{ }
+{
+    META_FUNCTION_TASK();
+    SetNativeResourceUsage(ConvertResourceUsageMaskToMetal(settings.usage_mask));
+}
 
 bool Texture::SetName(std::string_view name)
 {

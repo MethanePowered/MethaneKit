@@ -48,11 +48,12 @@ class ProgramArgumentBinding final
     : public Base::ProgramArgumentBinding
 {
 public:
-    using Settings            = ProgramArgumentBindingSettings;
-    using NativeBuffers       = std::vector<__unsafe_unretained id<MTLBuffer>>;
-    using NativeTextures      = std::vector<__unsafe_unretained id<MTLTexture>>;
-    using NativeSamplerStates = std::vector<__unsafe_unretained id<MTLSamplerState>>;
-    using NativeOffsets       = std::vector<NSUInteger>;
+    using Settings             = ProgramArgumentBindingSettings;
+    using NativeResources      = std::vector<__unsafe_unretained id<MTLResource>>;
+    using NativeBuffers        = std::vector<__unsafe_unretained id<MTLBuffer>>;
+    using NativeTextures       = std::vector<__unsafe_unretained id<MTLTexture>>;
+    using NativeSamplerStates  = std::vector<__unsafe_unretained id<MTLSamplerState>>;
+    using NativeOffsets        = std::vector<NSUInteger>;
 
     ProgramArgumentBinding(const Base::Context& context, const Settings& settings);
 
@@ -65,15 +66,21 @@ public:
 
     void UpdateArgumentBufferOffsets(const Program& program);
 
-    bool                       IsArgumentBufferMode() const noexcept { return !m_settings_mt.argument_buffer_offset_by_shader_type.empty(); }
-    const Settings&            GetMetalSettings() const noexcept     { return m_settings_mt; }
-    const NativeSamplerStates& GetNativeSamplerStates() const        { return m_mtl_sampler_states; }
-    const NativeTextures&      GetNativeTextures() const             { return m_mtl_textures; }
-    const NativeBuffers&       GetNativeBuffers() const              { return m_mtl_buffers; }
-    const NativeOffsets&       GetBufferOffsets() const              { return m_mtl_buffer_offsets; }
+    bool                       IsArgumentBufferMode() const noexcept   { return !m_settings_mt.argument_buffer_offset_by_shader_type.empty(); }
+    const Settings&            GetMetalSettings() const noexcept       { return m_settings_mt; }
+    MTLResourceUsage           GetNativeResouceUsage() const noexcept  { return m_mtl_resource_usage; }
+    MTLRenderStages            GetNativeRenderStages() const noexcept  { return m_mtl_render_stages; }
+    const NativeSamplerStates& GetNativeSamplerStates() const noexcept { return m_mtl_sampler_states; }
+    const NativeTextures&      GetNativeTextures() const noexcept      { return m_mtl_textures; }
+    const NativeBuffers&       GetNativeBuffers() const noexcept       { return m_mtl_buffers; }
+    const NativeOffsets&       GetBufferOffsets() const noexcept       { return m_mtl_buffer_offsets; }
+
+    void CollectNativeResources(NativeResources& resources) const;
 
 private:
     Settings            m_settings_mt;
+    MTLResourceUsage    m_mtl_resource_usage = MTLResourceUsageRead;
+    MTLRenderStages     m_mtl_render_stages;
     NativeSamplerStates m_mtl_sampler_states;
     NativeTextures      m_mtl_textures;
     NativeBuffers       m_mtl_buffers;
