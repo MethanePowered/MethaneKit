@@ -47,6 +47,9 @@ namespace Methane::Graphics::Metal
 
 using StepType = Base::Program::InputBufferLayout::StepType;
 
+// Equals size of array MTLVertexBufferLayoutDescriptorArray
+constexpr uint32_t g_max_vertex_shader_input_buffers_count = 31U;
+
 [[nodiscard]]
 static MTLVertexStepFunction GetVertexStepFunction(StepType step_type)
 {
@@ -357,13 +360,19 @@ void Shader::SetNativeBindings(NSArray<id<MTLBinding>>* mtl_bindings)
     }
 }
 
-MTLVertexDescriptor* Shader::GetNativeVertexDescriptor(const Program& program) const
+Shader::VertexDescriptorAndStartBufferIndex Shader::GetNativeVertexDescriptor(const Program& program) const
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_EQUAL(GetType(), Rhi::ShaderType::Vertex);
+
     MTLVertexDescriptor* mtl_vertex_desc = [[MTLVertexDescriptor alloc] init];
     [mtl_vertex_desc reset];
-    
+
+    const Base::Program::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
+    const Data::Index start_buffer_index = g_max_vertex_shader_input_buffers_count - input_buffer_layouts.size();
+
     std::vector<uint32_t> input_buffer_byte_offsets;
+    input_buffer_byte_offsets.reserve(input_buffer_layouts.size());
     for(MTLVertexAttribute* mtl_vertex_attrib in m_mtl_function.vertexAttributes)
     {
         if (!mtl_vertex_attrib.active)
@@ -381,24 +390,24 @@ MTLVertexDescriptor* Shader::GetNativeVertexDescriptor(const Program& program) c
         
         MTLVertexAttributeDescriptor* mtl_vertex_attrib_desc = mtl_vertex_desc.attributes[mtl_vertex_attrib.attributeIndex];
         mtl_vertex_attrib_desc.format       = mtl_vertex_format;
-        mtl_vertex_attrib_desc.bufferIndex  = attrib_slot;
+        mtl_vertex_attrib_desc.bufferIndex  = start_buffer_index + attrib_slot;
         mtl_vertex_attrib_desc.offset       = attrib_byte_offset;
-        
+
         attrib_byte_offset += attrib_size;
     }
-    
-    const Base::Program::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
+
     META_CHECK_ARG_EQUAL(input_buffer_byte_offsets.size(), input_buffer_layouts.size());
-    for(uint32_t buffer_index = 0; buffer_index < input_buffer_layouts.size(); ++buffer_index)
+
+    for(uint32_t buffer_index = 0U; buffer_index < input_buffer_layouts.size(); ++buffer_index)
     {
         const Base::Program::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];
-        MTLVertexBufferLayoutDescriptor* layout_desc = mtl_vertex_desc.layouts[buffer_index];
+        MTLVertexBufferLayoutDescriptor* layout_desc = mtl_vertex_desc.layouts[start_buffer_index + buffer_index];
         layout_desc.stride       = input_buffer_byte_offsets[buffer_index];
         layout_desc.stepRate     = input_buffer_layout.step_rate;
         layout_desc.stepFunction = GetVertexStepFunction(input_buffer_layout.step_type);
     }
     
-    return mtl_vertex_desc;
+    return std::make_pair(mtl_vertex_desc, start_buffer_index);
 }
 
 const IContext& Shader::GetMetalContext() const noexcept

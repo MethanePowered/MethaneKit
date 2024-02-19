@@ -79,7 +79,7 @@ void Program::ReflectRenderPipelineArguments()
     META_FUNCTION_TASK();
     const Settings& settings = Base::Program::GetSettings();
 
-    m_mtl_vertex_desc = GetMetalShader(Rhi::ShaderType::Vertex).GetNativeVertexDescriptor(*this);
+    std::tie(m_mtl_vertex_desc, m_start_vertex_buffer_index) = GetMetalShader(Rhi::ShaderType::Vertex).GetNativeVertexDescriptor(*this);
 
     // Create dummy pipeline state to get program reflection of vertex and fragment shader arguments
     MTLRenderPipelineDescriptor* mtl_reflection_state_desc = [MTLRenderPipelineDescriptor new];

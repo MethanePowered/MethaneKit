@@ -57,6 +57,7 @@ public:
     
     id<MTLFunction> GetNativeShaderFunction(Rhi::ShaderType shader_type) noexcept;
     MTLVertexDescriptor* GetNativeVertexDescriptor() noexcept { return m_mtl_vertex_desc; }
+    Data::Index GetStartVertexBufferIndex() const noexcept { return m_start_vertex_buffer_index; }
     Data::Size GetArgumentBuffersSize() const noexcept { return m_argument_buffers_size; }
     const ShaderArgumentBufferLayouts& GetShaderArgumentBufferLayouts() const noexcept { return m_shader_argument_buffer_layouts; }
 
@@ -71,6 +72,7 @@ private:
     Ptr<ArgumentBinding> CreateArgumentBindingInstance(const Ptr<ArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const override;
 
     MTLVertexDescriptor*        m_mtl_vertex_desc = nil;
+    Data::Index                 m_start_vertex_buffer_index = 0U;
     Data::Size                  m_argument_buffers_size = 0U;
     ShaderArgumentBufferLayouts m_shader_argument_buffer_layouts;
 };

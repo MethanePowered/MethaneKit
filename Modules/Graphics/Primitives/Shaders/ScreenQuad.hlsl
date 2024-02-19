@@ -57,7 +57,7 @@ struct PSInput
     float2 texcoord : TEXCOORD;
 };
 
-ConstantBuffer<ScreenQuadConstants> g_constants : register(b1);
+ConstantBuffer<ScreenQuadConstants> g_constants : register(b0);
 
 #ifndef TEXTURE_DISABLED
 Texture2D<TTEXEL> g_texture : register(t0);

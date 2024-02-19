@@ -68,10 +68,12 @@ public:
 
     void SetNativeBindings(NSArray<id<MTLBinding>>* mtl_bindings);
 
-    id<MTLFunction> GetNativeFunction() noexcept                           { return m_mtl_function; }
-    MTLVertexDescriptor* GetNativeVertexDescriptor(const Program& program) const;
-    const ArgumentBufferLayouts& GetArgumentBufferLayouts() const noexcept { return m_argument_buffer_layouts; }
-    Data::Size GetArgumentBufferLayoutsSize() const noexcept { return m_argument_buffer_layouts_size; }
+    id<MTLFunction>              GetNativeFunction() noexcept                  { return m_mtl_function; }
+    const ArgumentBufferLayouts& GetArgumentBufferLayouts() const noexcept     { return m_argument_buffer_layouts; }
+    Data::Size                   GetArgumentBufferLayoutsSize() const noexcept { return m_argument_buffer_layouts_size; }
+
+    using VertexDescriptorAndStartBufferIndex = std::pair<MTLVertexDescriptor*, Data::Index>;
+    VertexDescriptorAndStartBufferIndex GetNativeVertexDescriptor(const Program& program) const;
 
 private:
     const IContext& GetMetalContext() const noexcept;

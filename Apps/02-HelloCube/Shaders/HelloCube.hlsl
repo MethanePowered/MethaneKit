@@ -38,7 +38,7 @@ struct PSInput
 };
 
 #ifdef UNIFORMS_BUFFER_ENABLED
-ConstantBuffer<Uniforms> g_uniforms : register(b1);
+ConstantBuffer<Uniforms> g_uniforms : register(b0);
 #endif
 
 PSInput CubeVS(VSInput input)

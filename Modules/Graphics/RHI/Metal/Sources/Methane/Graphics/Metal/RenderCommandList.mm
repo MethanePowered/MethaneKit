@@ -25,7 +25,9 @@ Metal implementation of the render command list interface.
 #include <Methane/Graphics/Metal/RenderCommandList.hh>
 #include <Methane/Graphics/Metal/ParallelRenderCommandList.hh>
 #include <Methane/Graphics/Metal/RenderPass.hh>
+#include <Methane/Graphics/Metal/RenderState.hh>
 #include <Methane/Graphics/Metal/RenderContext.hh>
+#include <Methane/Graphics/Metal/Program.hh>
 #include <Methane/Graphics/Metal/Buffer.hh>
 #include <Methane/Graphics/Metal/BufferSet.hh>
 
@@ -91,6 +93,7 @@ void RenderCommandList::ResetWithState(Rhi::IRenderState& render_state, IDebugGr
     META_FUNCTION_TASK();
     ResetCommandEncoder();
     Base::RenderCommandList::ResetWithState(render_state, debug_group_ptr);
+    m_start_vertex_buffer_index = GetStartVertexBufferIndex();
 }
 
 void RenderCommandList::ResetCommandEncoder()
@@ -128,7 +131,7 @@ bool RenderCommandList::SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool s
     const BufferSet& metal_vertex_buffers = static_cast<const BufferSet&>(vertex_buffers);
     const std::vector<id<MTLBuffer>>& mtl_buffers = metal_vertex_buffers.GetNativeBuffers();
     const std::vector<NSUInteger>&    mtl_offsets = metal_vertex_buffers.GetNativeOffsets();
-    const NSRange                     mtl_range{ 0U, metal_vertex_buffers.GetCount() };
+    const NSRange                     mtl_range{ m_start_vertex_buffer_index, metal_vertex_buffers.GetCount() };
     [mtl_cmd_encoder setVertexBuffers:mtl_buffers.data() offsets:mtl_offsets.data() withRange:mtl_range];
 
     return true;
@@ -150,8 +153,8 @@ void RenderCommandList::DrawIndexed(Primitive primitive, uint32_t index_count, u
     const Buffer& metal_index_buffer = static_cast<const Buffer&>(*drawing_state.index_buffer_ptr);
     const MTLPrimitiveType mtl_primitive_type = PrimitiveTypeToMetal(primitive);
     const MTLIndexType     mtl_index_type     = metal_index_buffer.GetNativeIndexType();
-    const id <MTLBuffer>& mtl_index_buffer = metal_index_buffer.GetNativeBuffer();
-    const uint32_t mtl_index_stride = mtl_index_type == MTLIndexTypeUInt32 ? 4 : 2;
+    const id <MTLBuffer>&  mtl_index_buffer   = metal_index_buffer.GetNativeBuffer();
+    const uint32_t         mtl_index_stride   = mtl_index_type == MTLIndexTypeUInt32 ? 4 : 2;
 
     const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
     META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
@@ -220,6 +223,16 @@ RenderPass& RenderCommandList::GetMetalRenderPass()
 {
     META_FUNCTION_TASK();
     return static_cast<class RenderPass&>(GetPass());
+}
+
+Data::Index RenderCommandList::GetStartVertexBufferIndex() const
+{
+    META_FUNCTION_TASK();
+    const DrawingState& drawing_state = GetDrawingState();
+    META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.render_state_ptr, "render state must be initialized in command list reset");
+    const Ptr<Rhi::IProgram>& program_ptr = drawing_state.render_state_ptr->GetSettings().program_ptr;
+    META_CHECK_ARG_NOT_NULL_DESCR(program_ptr, "program in render state must be initialized");
+    return static_cast<Program&>(*program_ptr).GetStartVertexBufferIndex();
 }
 
 } // namespace Methane::Graphics::Metal

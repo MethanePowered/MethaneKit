@@ -49,9 +49,9 @@ struct PSInput
 #endif
 };
 
-ConstantBuffer<Constants>     g_constants       : register(b1);
-ConstantBuffer<SceneUniforms> g_scene_uniforms  : register(b2);
-ConstantBuffer<MeshUniforms>  g_mesh_uniforms   : register(b3);
+ConstantBuffer<Constants>     g_constants       : register(b0);
+ConstantBuffer<SceneUniforms> g_scene_uniforms  : register(b1);
+ConstantBuffer<MeshUniforms>  g_mesh_uniforms   : register(b2);
 
 #ifdef ENABLE_SHADOWS
 Texture2D    g_shadow_map      : register(t0);
