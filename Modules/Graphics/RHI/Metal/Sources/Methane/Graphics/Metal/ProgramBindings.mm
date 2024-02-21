@@ -30,6 +30,7 @@ Metal implementation of the program bindings interface.
 #include <Methane/Graphics/Metal/RenderCommandList.hh>
 #include <Methane/Graphics/Metal/ComputeCommandList.hh>
 
+#include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -45,6 +46,56 @@ constexpr ProgramBindings::ApplyBehaviorMask g_constant_once_and_changes_only({
     ProgramBindings::ApplyBehavior::ConstantOnce,
     ProgramBindings::ApplyBehavior::ChangesOnly
 });
+
+#ifdef METHANE_LOGGING_ENABLED
+
+static std::string GetNativeResourceUsageName(MTLResourceUsage mtl_resource_usage)
+{
+    std::stringstream ss;
+    if (mtl_resource_usage & MTLResourceUsageRead)
+        ss << "Read";
+
+    if (mtl_resource_usage & MTLResourceUsageWrite)
+    {
+        if (ss.rdbuf()->in_avail() > 0)
+            ss << "|";
+        ss << "Write";
+    }
+
+    return ss.str();
+}
+
+static std::string GetNativeRenderStageNames(MTLRenderStages mtl_render_stages)
+{
+    std::stringstream ss;
+    if (mtl_render_stages & MTLRenderStageVertex)
+        ss << "Vertex";
+
+    if (mtl_render_stages & MTLRenderStageFragment)
+    {
+        if (ss.rdbuf()->in_avail() > 0)
+            ss << "|";
+        ss << "Fragment";
+    }
+
+    return ss.str();
+}
+
+static std::string GetNativeResourceLabels(const ProgramArgumentBinding::NativeResources& mtl_resources)
+{
+    META_FUNCTION_TASK();
+    std::stringstream ss;
+    for(size_t index = 0; index < mtl_resources.size(); ++index)
+    {
+        const auto& mtl_resource = mtl_resources[index];
+        ss << "'" << mtl_resource.label.UTF8String << "'";
+        if (index < mtl_resources.size() - 1)
+            ss << ", ";
+    }
+    return ss.str();
+}
+
+#endif // METHANE_LOGGING_ENABLED
 
 template<typename TMetalResource>
 void SetRenderResource(Rhi::ShaderType shader_type, const id <MTLRenderCommandEncoder>& mtl_cmd_encoder,
@@ -291,7 +342,7 @@ void SetComputeResourcesForAll(const id <MTLComputeCommandEncoder>& mtl_cmd_enco
     }
 }
 
-static void WriteNativeBufferAddresses(const NativeBuffers& native_buffers, const NativeOffsets& offsets, uint64_t* buffer_ptr)
+static void WriteNativeBufferAddresses(const NativeBuffers& native_buffers, const NativeOffsets& offsets, uint64_t* argument_ptr)
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_EQUAL(native_buffers.size(), offsets.size());
@@ -299,28 +350,33 @@ static void WriteNativeBufferAddresses(const NativeBuffers& native_buffers, cons
     {
         const auto& native_buffer = native_buffers[buffer_index];
         const uint64_t offset = offsets[buffer_index];
-        *buffer_ptr = native_buffer.gpuAddress + offset;
-        buffer_ptr++;
+        *argument_ptr = native_buffer.gpuAddress + offset;
+        META_LOG("        {}) buffer '{}' address '{}'", buffer_index, native_buffer.label.UTF8String, *argument_ptr);
+        argument_ptr++;
     }
 }
 
-static void WriteNativeTextureIds(const NativeTextures& native_textures, uint64_t* buffer_ptr)
+static void WriteNativeTextureIds(const NativeTextures& native_textures, uint64_t* argument_ptr)
 {
     META_FUNCTION_TASK();
-    for(const auto& native_texture : native_textures)
+    for(size_t texture_index = 0; texture_index < native_textures.size(); ++texture_index)
     {
-        *buffer_ptr = native_texture.gpuResourceID._impl;
-        buffer_ptr++;
+        const auto& native_texture = native_textures[texture_index];
+        *argument_ptr = native_texture.gpuResourceID._impl;
+        META_LOG("        {}) texture '{}' gpu resource id '{}'", texture_index, native_texture.label.UTF8String, *argument_ptr);
+        argument_ptr++;
     }
 }
 
-static void WriteNativeSamplerIds(const NativeSamplerStates& native_samplers, uint64_t* buffer_ptr)
+static void WriteNativeSamplerIds(const NativeSamplerStates& native_samplers, uint64_t* argument_ptr)
 {
     META_FUNCTION_TASK();
-    for(const auto& native_sampler : native_samplers)
+    for(size_t sampler_index = 0; sampler_index < native_samplers.size(); ++sampler_index)
     {
-        *buffer_ptr = native_sampler.gpuResourceID._impl;
-        buffer_ptr++;
+        const auto& native_sampler = native_samplers[sampler_index];
+        *argument_ptr = native_sampler.gpuResourceID._impl;
+        META_LOG("        {}) sampler gpu resource id '{}'", sampler_index, *argument_ptr);
+        argument_ptr++;
     }
 }
 
@@ -382,13 +438,20 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
 void ProgramBindings::CompleteInitialization(Data::Bytes& argument_buffer_data, const ArgumentsRange& arg_range)
 {
     META_FUNCTION_TASK();
+    META_LOG("  - Writing program '{}' bindings '{}' in arg-buffer range [{}, {}):",
+             Base::ProgramBindings::GetProgram().GetName(), GetName(),
+             arg_range.GetStart(), arg_range.GetEnd());
+
     m_argument_buffer_range = arg_range;
     Data::Byte* arg_data_ptr = argument_buffer_data.data() + arg_range.GetStart();
+
     for (const auto& [program_arg, arg_binding_ptr]: GetArgumentBindings())
     {
         const auto& metal_argument_binding = static_cast<const ArgumentBinding&>(*arg_binding_ptr);
         for(const auto& [shader_type, arg_offset] : metal_argument_binding.GetMetalSettings().argument_buffer_offset_by_shader_type)
         {
+            META_LOG("    - {} shader argument '{}' binding at offset {}:",
+                     magic_enum::enum_name(shader_type), metal_argument_binding.GetSettings().argument.GetName(), arg_offset);
             WriteArgumentBindingResourceIds(metal_argument_binding, reinterpret_cast<uint64_t*>(arg_data_ptr + arg_offset));
         }
     }
@@ -494,6 +557,9 @@ void ProgramBindings::SetComputeResources(const id<MTLComputeCommandEncoder>& mt
 void ProgramBindings::SetRenderArgumentBuffers(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder) const
 {
     META_FUNCTION_TASK();
+    META_LOG("  - Apply render program binding '{}' with argument buffer range [{}, {}):",
+             GetName(), m_argument_buffer_range.GetStart(), m_argument_buffer_range.GetEnd());
+
     const auto& program = static_cast<Program&>(GetProgram());
     auto& descriptor_manager = static_cast<DescriptorManager&>(program.GetContext().GetDescriptorManager());
     const auto* argument_buffer_ptr = static_cast<const Buffer*>(descriptor_manager.GetArgumentBuffer());
@@ -501,10 +567,14 @@ void ProgramBindings::SetRenderArgumentBuffers(const id<MTLRenderCommandEncoder>
 
     const id<MTLBuffer>& mtl_argument_buffer = argument_buffer_ptr->GetNativeBuffer();
     Data::Size arg_layout_offset = 0U;
+
     for(const Program::ShaderArgumentBufferLayout& arg_layout : program.GetShaderArgumentBufferLayouts())
     {
         const Data::Index arg_buffer_offset = m_argument_buffer_range.GetStart() + arg_layout_offset;
         META_CHECK_ARG_LESS_DESCR(arg_buffer_offset, m_argument_buffer_range.GetEnd(), "invalid offset in argument buffer");
+        META_LOG("    - {} shader argument buffer [{}] at range offset {}",
+                 magic_enum::enum_name(arg_layout.shader_type), arg_layout.index, arg_layout_offset);
+
         switch(arg_layout.shader_type)
         {
         case Rhi::ShaderType::Vertex:
@@ -522,6 +592,7 @@ void ProgramBindings::SetRenderArgumentBuffers(const id<MTLRenderCommandEncoder>
         default:
             META_UNEXPECTED_ARG(arg_layout.shader_type);
         }
+
         arg_layout_offset += arg_layout.data_size;
     }
 }
@@ -529,20 +600,29 @@ void ProgramBindings::SetRenderArgumentBuffers(const id<MTLRenderCommandEncoder>
 void ProgramBindings::SetComputeArgumentBuffers(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder) const
 {
     META_FUNCTION_TASK();
+    META_LOG("  - Apply compute program binding '{}' with argument buffer range [{}, {}):",
+             GetName(), m_argument_buffer_range.GetStart(), m_argument_buffer_range.GetEnd());
+
     const auto& program = static_cast<Program&>(GetProgram());
     auto& descriptor_manager = static_cast<DescriptorManager&>(program.GetContext().GetDescriptorManager());
     const auto* argument_buffer_ptr = static_cast<const Buffer*>(descriptor_manager.GetArgumentBuffer());
     META_CHECK_ARG_NOT_NULL_DESCR(argument_buffer_ptr, "Argument Buffer is not initialized in Descriptor Manager.");
 
     const id<MTLBuffer>& mtl_argument_buffer = argument_buffer_ptr->GetNativeBuffer();
+    Data::Size arg_layout_offset = 0U;
+
     for(const Program::ShaderArgumentBufferLayout& arg_layout : program.GetShaderArgumentBufferLayouts())
     {
-        const Data::Index arg_buffer_offset = m_argument_buffer_range.GetStart() + arg_layout.data_size;
+        const Data::Index arg_buffer_offset = m_argument_buffer_range.GetStart() + arg_layout_offset;
         META_CHECK_ARG_LESS_DESCR(arg_buffer_offset, m_argument_buffer_range.GetEnd(), "invalid offset in argument buffer");
         META_CHECK_ARG_EQUAL(arg_layout.shader_type, Rhi::ShaderType::Compute);
+        META_LOG("    - Compute shader argument buffer [{}] at range offset {}", arg_layout.index, arg_layout_offset);
+
         [mtl_cmd_encoder setBuffer:mtl_argument_buffer
                             offset:arg_buffer_offset
                            atIndex:arg_layout.index];
+
+        arg_layout_offset += arg_layout.data_size;
     }
 }
 
@@ -555,9 +635,16 @@ ProgramBindings::NativeResourcesByUsage ProgramBindings::CollectChangedResources
     ForEachChangedArgumentBinding(applied_program_bindings_ptr, apply_behavior,
         [&resources_by_usage](const ArgumentBinding& argument_binding)
         {
+            ProgramArgumentBinding::NativeResources argument_resources;
+            argument_binding.CollectNativeResources(argument_resources);
+            if (argument_resources.empty())
+                return;
+
             const NativeResourceUsageAndStage usage_and_stage(argument_binding.GetNativeResouceUsage(),
                                                               argument_binding.GetNativeRenderStages());
-            argument_binding.CollectNativeResources(resources_by_usage[usage_and_stage]);
+            std::move(argument_resources.begin(), argument_resources.end(),
+                      std::back_inserter(resources_by_usage[usage_and_stage]));
+
         });
     return resources_by_usage;
 }
@@ -567,9 +654,15 @@ void ProgramBindings::UseRenderResources(const id<MTLRenderCommandEncoder>& mtl_
                                          ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
+    META_LOG("  - Make resident of render program binding '{}' resources:", GetName());
     NativeResourcesByUsage resources_by_usage = CollectChangedResourcesByUsage(applied_program_bindings_ptr, apply_behavior);
     for(const auto& [mtl_usage_and_stage, mtl_resources] : resources_by_usage)
     {
+        META_LOG("    - {} of {} shader resources: {}.",
+                 GetNativeResourceUsageName(mtl_usage_and_stage.first),
+                 GetNativeRenderStageNames(mtl_usage_and_stage.second),
+                 GetNativeResourceLabels(mtl_resources));
+
         [mtl_cmd_encoder useResources:mtl_resources.data()
                                 count:mtl_resources.size()
                                 usage:mtl_usage_and_stage.first
@@ -582,9 +675,14 @@ void ProgramBindings::UseComputeResources(const id<MTLComputeCommandEncoder>& mt
                                          ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
+    META_LOG("  - Make resident of compute program binding '{}' resources:", GetName());
     NativeResourcesByUsage resources_by_usage = CollectChangedResourcesByUsage(applied_program_bindings_ptr, apply_behavior);
     for(const auto& [mtl_usage_and_stage, mtl_resources] : resources_by_usage)
     {
+        META_LOG("    - {} of compute shader resources: {}.",
+                 GetNativeResourceUsageName(mtl_usage_and_stage.first),
+                 GetNativeResourceLabels(mtl_resources));
+
         [mtl_cmd_encoder useResources:mtl_resources.data()
                                 count:mtl_resources.size()
                                 usage:mtl_usage_and_stage.first];

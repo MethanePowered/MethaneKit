@@ -43,6 +43,7 @@ void DescriptorManager::CompleteInitialization()
 void DescriptorManager::OnContextCompletingInitialization(Rhi::IContext&)
 {
     META_FUNCTION_TASK();
+    META_LOG("Metal Descriptor Manager is completing initialization of the global argument buffer...");
     Base::DescriptorManager::ReleaseExpiredProgramBindings();
 
     // Fill argument buffer and send its data to GPU before UploadResources() in Base::Context::CompleteInitialization()
@@ -57,20 +58,19 @@ void DescriptorManager::OnContextCompletingInitialization(Rhi::IContext&)
         static_cast<ProgramBindings&>(program_bindings).CompleteInitialization(argument_buffer_data, arguments_range);
     });
 
-    if (m_argument_buffer_ptr && total_argument_buffer_size < m_argument_buffer_ptr->GetSettings().size)
-    {
-        UpdateArgumentBufferData(std::move(argument_buffer_data));
-    }
-    else
+    if (!total_argument_buffer_size)
     {
         m_argument_buffer_ptr.reset();
-        if (!total_argument_buffer_size)
-            return;
+        return;
+    }
 
+    if (!m_argument_buffer_ptr || total_argument_buffer_size > m_argument_buffer_ptr->GetSettings().size)
+    {
         m_argument_buffer_ptr = GetContext().CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(total_argument_buffer_size));
         m_argument_buffer_ptr->SetName("Global Argument Buffer");
-        UpdateArgumentBufferData(std::move(argument_buffer_data));
     }
+
+    UpdateArgumentBufferData(std::move(argument_buffer_data));
 }
 
 void DescriptorManager::Release()
@@ -82,6 +82,8 @@ void DescriptorManager::Release()
 void DescriptorManager::UpdateArgumentBufferData(Data::Bytes&& argument_buffer_data)
 {
     META_FUNCTION_TASK();
+    if (argument_buffer_data.empty())
+        return;
 
     // Compute queue is used as a target command queue for the argument buffer data transfer,
     // because in Metal it queue ownership does not matter.

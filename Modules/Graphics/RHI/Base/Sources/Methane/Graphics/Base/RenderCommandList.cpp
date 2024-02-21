@@ -93,7 +93,9 @@ void RenderCommandList::ResetWithStateOnce(Rhi::IRenderState& render_state, IDeb
 void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::RenderStateGroupMask state_groups)
 {
     META_FUNCTION_TASK();
-    META_LOG("{} Command list '{}' SET RENDER STATE '{}':\n{}", magic_enum::enum_name(GetType()), GetName(), render_state.GetName(), static_cast<std::string>(render_state.GetSettings()));
+    META_LOG("{} Command list '{}' SET RENDER STATE '{}':\n{}",
+             magic_enum::enum_name(GetType()), GetName(), render_state.GetName(),
+             static_cast<std::string>(render_state.GetSettings()));
 
     VerifyEncodingState();
 
@@ -139,8 +141,7 @@ void RenderCommandList::SetViewState(Rhi::IViewState& view_state)
     }
 
     META_LOG("{} Command list '{}' SET VIEW STATE:\n{}",
-             magic_enum::enum_name(GetType()), GetName(),
-             drawing_state.view_state_ptr ? static_cast<std::string>(drawing_state.view_state_ptr->GetSettings()) : std::string());
+             magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(view_state.GetSettings()));
     drawing_state.view_state_ptr = static_cast<ViewState*>(&view_state);
     drawing_state.view_state_ptr->Apply(*this);
     drawing_state.changes |= DrawingState::Change::ViewState;
