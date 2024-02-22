@@ -117,6 +117,10 @@ Sampler::Sampler(const Base::Context& context, const Settings& settings)
 #ifndef APPLE_TVOS
     m_mtl_sampler_desc.borderColor     = ConvertBorderColorToMetal(settings.border_color);
 #endif
+
+#ifdef ARGUMENT_BUFFERS_ENABLED
+    m_mtl_sampler_desc.supportArgumentBuffers = YES;
+#endif
     
     ResetSamplerState();
 }
