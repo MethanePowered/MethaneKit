@@ -131,6 +131,9 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
 void ProgramArgumentBinding::UpdateArgumentBufferOffsets(const Program& program)
 {
     META_FUNCTION_TASK();
+    if (m_settings_mt.argument_buffer_offset_by_shader_type.empty())
+        return;
+
     Data::Size arg_buffer_offset = 0U;
     for(Rhi::ShaderType shader_type : program.GetShaderTypes())
     {

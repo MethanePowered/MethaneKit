@@ -415,7 +415,9 @@ Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgu
                                                        const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);
+    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);
+    program_bindings_ptr->Initialize();
+    return program_bindings_ptr;
 }
 
 void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const
@@ -441,6 +443,7 @@ void ProgramBindings::CompleteInitialization(Data::Bytes& argument_buffer_data, 
     META_LOG("  - Writing program '{}' bindings '{}' in arg-buffer range [{}, {}):",
              Base::ProgramBindings::GetProgram().GetName(), GetName(),
              arg_range.GetStart(), arg_range.GetEnd());
+    META_CHECK_ARG_LESS_OR_EQUAL(arg_range.GetEnd(), argument_buffer_data.size());
 
     m_argument_buffer_range = arg_range;
     Data::Byte* arg_data_ptr = argument_buffer_data.data() + arg_range.GetStart();
@@ -452,6 +455,7 @@ void ProgramBindings::CompleteInitialization(Data::Bytes& argument_buffer_data, 
         {
             META_LOG("    - {} shader argument '{}' binding at offset {}:",
                      magic_enum::enum_name(shader_type), metal_argument_binding.GetSettings().argument.GetName(), arg_offset);
+            META_CHECK_ARG_LESS(arg_offset, arg_range.GetLength());
             WriteArgumentBindingResourceIds(metal_argument_binding, reinterpret_cast<uint64_t*>(arg_data_ptr + arg_offset));
         }
     }

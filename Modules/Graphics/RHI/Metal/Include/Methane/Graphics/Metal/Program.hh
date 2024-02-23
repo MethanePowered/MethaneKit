@@ -69,6 +69,7 @@ private:
     void InitArgumentBuffersSize();
 
     // Base::Program overrides
+    void InitArgumentBindings(const ArgumentAccessors& argument_accessors) override;
     Ptr<ArgumentBinding> CreateArgumentBindingInstance(const Ptr<ArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const override;
 
     MTLVertexDescriptor*        m_mtl_vertex_desc = nil;

@@ -185,7 +185,7 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
 }
 
 Rhi::IProgramBindings::ResourceViewsByArgument ProgramBindings::ReplaceResourceViews(const ArgumentBindings& argument_bindings,
-                                                                                    const ResourceViewsByArgument& replace_resource_views) const
+                                                                                     const ResourceViewsByArgument& replace_resource_views) const
 {
     META_FUNCTION_TASK();
     ResourceViewsByArgument resource_views_by_argument = replace_resource_views;

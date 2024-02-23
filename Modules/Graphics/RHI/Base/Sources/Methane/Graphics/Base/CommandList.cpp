@@ -137,8 +137,8 @@ void CommandList::SetProgramBindings(Rhi::IProgramBindings& program_bindings, Rh
     if (m_command_state.program_bindings_ptr == std::addressof(program_bindings))
         return;
 
-    META_LOG("{} Command list '{}' SET PROGRAM BINDINGS for program '{}':\n{}",
-             magic_enum::enum_name(GetType()), GetName(), program_bindings.GetProgram().GetName(),
+    META_LOG("{} Command list '{}' SET PROGRAM BINDINGS '{}':\n{}",
+             magic_enum::enum_name(GetType()), GetName(), program_bindings.GetName(),
              static_cast<std::string>(program_bindings));
 
     auto& program_bindings_base = static_cast<ProgramBindings&>(program_bindings);

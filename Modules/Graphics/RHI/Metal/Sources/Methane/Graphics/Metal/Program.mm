@@ -176,6 +176,18 @@ void Program::InitArgumentBuffersSize()
     });
 }
 
+void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
+{
+    META_FUNCTION_TASK();
+    Base::Program::InitArgumentBindings(argument_accessors);
+
+    // Update argument buffer offsets of the initialized argument bindings
+    for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
+    {
+        static_cast<ProgramArgumentBinding&>(*argument_binding_ptr).UpdateArgumentBufferOffsets(*this);
+    }
+}
+
 Ptr<Base::ProgramArgumentBinding> Program::CreateArgumentBindingInstance(const Ptr<Base::ProgramArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const
 {
     META_FUNCTION_TASK();
@@ -187,10 +199,7 @@ Ptr<Base::ProgramArgumentBinding> Program::CreateArgumentBindingInstance(const P
     auto& metal_argument_binding = static_cast<ProgramArgumentBinding&>(*argument_binding_ptr);
     if (metal_argument_binding.IsArgumentBufferMode())
     {
-        Ptr<Base::ProgramArgumentBinding> arg_binding_ptr = metal_argument_binding.CreateCopy();
-        META_CHECK_ARG_NOT_NULL(arg_binding_ptr);
-        static_cast<ProgramArgumentBinding&>(*arg_binding_ptr).UpdateArgumentBufferOffsets(*this);
-        return arg_binding_ptr;
+        return metal_argument_binding.CreateCopy();
     }
 
     return Base::Program::CreateArgumentBindingInstance(argument_binding_ptr, frame_index);
