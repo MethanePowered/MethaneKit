@@ -35,6 +35,14 @@ DescriptorManager::DescriptorManager(Base::Context& context)
 {
 }
 
+void DescriptorManager::UpdateProgramBindings(ProgramBindings& program_bindings)
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_argument_buffer_mutex);
+    program_bindings.CompleteInitialization(m_argument_buffer_data);
+    GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
+}
+
 void DescriptorManager::AddProgramBindings(Rhi::IProgramBindings& program_bindings)
 {
     META_FUNCTION_TASK();
@@ -43,6 +51,7 @@ void DescriptorManager::AddProgramBindings(Rhi::IProgramBindings& program_bindin
     if (!arguments_range_size)
         return;
 
+    std::scoped_lock lock_guard(m_argument_buffer_mutex);
     const ArgumentsRange arguments_range = ReserveArgumentsRange(arguments_range_size);
     metal_program_bindings.CompleteInitialization(m_argument_buffer_data, arguments_range);
     GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
@@ -75,7 +84,16 @@ void DescriptorManager::OnContextCompletingInitialization(Rhi::IContext&)
 
     if (!m_argument_buffer_ptr || m_argument_buffer_data.size() > m_argument_buffer_ptr->GetSettings().size)
     {
-        m_argument_buffer_ptr = GetContext().CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(m_argument_buffer_data.size()));
+        Rhi::BufferSettings argument_buffer_settings
+        {
+            Rhi::BufferType::Constant,
+            Rhi::ResourceUsageMask(Rhi::ResourceUsage::ShaderRead),
+            static_cast<Data::Size>(m_argument_buffer_data.size()),
+            0U,
+            PixelFormat::Unknown,
+            Rhi::BufferStorageMode::Managed
+        };
+        m_argument_buffer_ptr = GetContext().CreateBuffer(argument_buffer_settings);
         m_argument_buffer_ptr->SetName("Global Argument Buffer");
     }
 
@@ -97,7 +115,6 @@ DescriptorManager::ArgumentsRange DescriptorManager::ReserveArgumentsRange(Data:
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_ZERO_DESCR(range_size, "unable to reserve empty arguments range");
-    std::scoped_lock lock_guard(m_argument_buffer_mutex);
 
     if (const ArgumentsRange reserved_range = Data::ReserveRange(m_argument_buffer_free_ranges, range_size);
         reserved_range)

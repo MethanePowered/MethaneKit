@@ -389,12 +389,15 @@ static void WriteArgumentBindingResourceIds(const ProgramArgumentBinding& arg_bi
         case Rhi::ResourceType::Buffer:
             WriteNativeBufferAddresses(arg_binding.GetNativeBuffers(), arg_binding.GetBufferOffsets(), buffer_ptr);
             break;
+
         case Rhi::ResourceType::Texture:
             WriteNativeTextureIds(arg_binding.GetNativeTextures(), buffer_ptr);
             break;
+
         case Rhi::ResourceType::Sampler:
             WriteNativeSamplerIds(arg_binding.GetNativeSamplerStates(), buffer_ptr);
             break;
+
         default:
             META_UNEXPECTED_ARG(resource_type);
     }
@@ -450,15 +453,21 @@ void ProgramBindings::CompleteInitialization()
 void ProgramBindings::CompleteInitialization(Data::Bytes& argument_buffer_data, const ArgumentsRange& arg_range)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_FALSE(arg_range.IsEmpty());
+    m_argument_buffer_range = arg_range;
+    CompleteInitialization(argument_buffer_data);
+}
+
+void ProgramBindings::CompleteInitialization(Data::Bytes& argument_buffer_data)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_FALSE_DESCR(m_argument_buffer_range.IsEmpty(), "argument buffer range is not initialized");
     META_LOG("  - Writing program '{}' bindings '{}' in arg-buffer range [{}, {}):",
              Base::ProgramBindings::GetProgram().GetName(), GetName(),
-             arg_range.GetStart(), arg_range.GetEnd());
-    META_CHECK_ARG_FALSE(arg_range.IsEmpty());
-    META_CHECK_ARG_LESS_OR_EQUAL(arg_range.GetEnd(), argument_buffer_data.size());
+             m_argument_buffer_range.GetStart(), m_argument_buffer_range.GetEnd());
+    META_CHECK_ARG_LESS_OR_EQUAL(m_argument_buffer_range.GetEnd(), argument_buffer_data.size());
 
-    m_argument_buffer_range = arg_range;
-    Data::Byte* arg_data_ptr = argument_buffer_data.data() + arg_range.GetStart();
-
+    Data::Byte* arg_data_ptr = argument_buffer_data.data() + m_argument_buffer_range.GetStart();
     for (const auto& [program_arg, arg_binding_ptr]: GetArgumentBindings())
     {
         const auto& metal_argument_binding = static_cast<const ArgumentBinding&>(*arg_binding_ptr);
@@ -466,7 +475,7 @@ void ProgramBindings::CompleteInitialization(Data::Bytes& argument_buffer_data, 
         {
             META_LOG("    - {} shader argument '{}' binding at offset {}:",
                      magic_enum::enum_name(shader_type), metal_argument_binding.GetSettings().argument.GetName(), arg_offset);
-            META_CHECK_ARG_LESS(arg_offset, arg_range.GetLength());
+            META_CHECK_ARG_LESS(arg_offset, m_argument_buffer_range.GetLength());
             WriteArgumentBindingResourceIds(metal_argument_binding, reinterpret_cast<uint64_t*>(arg_data_ptr + arg_offset));
         }
     }
@@ -732,6 +741,17 @@ void ProgramBindings::Apply(ComputeCommandList& compute_command_list, ApplyBehav
         UseComputeResources(mtl_cmd_encoder, compute_command_list.GetProgramBindingsPtr(), apply_behavior);
         SetComputeArgumentBuffers(mtl_cmd_encoder);
     }
+}
+
+void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::IResource::Views&, const Rhi::IResource::Views&)
+{
+    META_FUNCTION_TASK();
+    if (m_argument_buffer_range.IsEmpty())
+        return;
+
+    const auto& program = static_cast<Program&>(GetProgram());
+    auto& descriptor_manager = static_cast<DescriptorManager&>(program.GetContext().GetDescriptorManager());
+    descriptor_manager.UpdateProgramBindings(*this);
 }
 
 } // namespace Methane::Graphics::Metal

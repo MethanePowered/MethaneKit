@@ -71,9 +71,13 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
                                   "can not set resource view_id with non-zero offset to non-addressable resource binding");
     }
 
-    Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(&Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged, std::cref(*this), std::cref(m_resource_views), std::cref(resource_views));
-
+    const auto prev_resource_views = m_resource_views;
     m_resource_views = resource_views;
+
+    Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
+        &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged,
+        std::cref(*this), std::cref(prev_resource_views), std::cref(m_resource_views)
+    );
     return true;
 }
 

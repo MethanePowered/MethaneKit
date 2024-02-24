@@ -56,6 +56,7 @@ public:
     void CompleteInitialization() override;
 
     void CompleteInitialization(Data::Bytes& argument_buffer_data, const ArgumentsRange& arg_range);
+    void CompleteInitialization(Data::Bytes& argument_buffer_data);
 
     const ArgumentsRange& GetArgumentsRange() const { return m_argument_buffer_range; }
 
@@ -89,6 +90,9 @@ private:
 
     void Apply(RenderCommandList& argument_binding, ApplyBehaviorMask apply_behavior) const;
     void Apply(ComputeCommandList& compute_command_list, ApplyBehaviorMask apply_behavior) const;
+
+    // IProgramBindings::IProgramArgumentBindingCallback
+    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::IResource::Views&, const Rhi::IResource::Views&) override;
 
     ArgumentsRange m_argument_buffer_range;
 };

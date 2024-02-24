@@ -126,8 +126,8 @@ Rhi::IProgram& ProgramBindings::GetProgram() const
 }
 
 void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding& argument_binding,
-                                                                       const Rhi::IResource::Views& old_resource_views,
-                                                                       const Rhi::IResource::Views& new_resource_views)
+                                                                   const Rhi::IResource::Views& old_resource_views,
+                                                                   const Rhi::IResource::Views& new_resource_views)
 {
     META_FUNCTION_TASK();
     if (!m_resource_state_transition_barriers_ptr)

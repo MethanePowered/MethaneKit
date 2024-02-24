@@ -35,6 +35,8 @@ Metal descriptor manager of the argument buffer
 namespace Methane::Graphics::Metal
 {
 
+class ProgramBindings;
+
 class DescriptorManager final
     : public Base::DescriptorManager
     , public Data::Receiver<Rhi::IContextCallback>
@@ -43,6 +45,7 @@ public:
     explicit DescriptorManager(Base::Context& context);
 
     const Rhi::IBuffer* GetArgumentBuffer() const noexcept { return m_argument_buffer_ptr.get(); }
+    void UpdateProgramBindings(ProgramBindings& program_bindings);
 
     // Rhi::IDescriptorManager overrides
     void AddProgramBindings(Rhi::IProgramBindings& program_bindings) override;

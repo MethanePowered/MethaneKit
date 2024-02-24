@@ -82,7 +82,7 @@ void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& o
 bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
-    if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
+    if (GetResourceViews() == resource_views)
         return false;
 
     m_mtl_resource_usage = {};
@@ -125,7 +125,11 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
 
     default: META_UNEXPECTED_ARG(m_settings_mt.resource_type);
     }
-    return true;
+
+    // Base class is called after updating native resources, so that
+    // IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged callback
+    // would be called after all resource view changes were applied
+    return Base::ProgramArgumentBinding::SetResourceViews(resource_views);
 }
 
 void ProgramArgumentBinding::UpdateArgumentBufferOffsets(const Program& program)
