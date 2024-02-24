@@ -40,9 +40,11 @@ void DescriptorManager::AddProgramBindings(Rhi::IProgramBindings& program_bindin
     META_FUNCTION_TASK();
     auto& metal_program_bindings = dynamic_cast<ProgramBindings&>(program_bindings);
     const Data::Size arguments_range_size = static_cast<Program&>(program_bindings.GetProgram()).GetArgumentBuffersSize();
+    if (!arguments_range_size)
+        return;
+
     const ArgumentsRange arguments_range = ReserveArgumentsRange(arguments_range_size);
     metal_program_bindings.CompleteInitialization(m_argument_buffer_data, arguments_range);
-
     GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
 }
 
@@ -109,6 +111,9 @@ DescriptorManager::ArgumentsRange DescriptorManager::ReserveArgumentsRange(Data:
 void DescriptorManager::ReleaseArgumentsRange(const ArgumentsRange& range)
 {
     META_FUNCTION_TASK();
+    if (range.IsEmpty())
+        return;
+
     std::scoped_lock lock_guard(m_argument_buffer_mutex);
     m_argument_buffer_free_ranges.Add(range);
 }

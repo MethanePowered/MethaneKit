@@ -51,7 +51,7 @@ SubResource::SubResource(Data::Bytes&& data, const Index& index, BytesRangeOpt d
 { }
 
 SubResource::SubResource(const Data::Bytes& data, const Index& index, BytesRangeOpt data_range) noexcept
-    : SubResource(data.data(), data.size(), index, data_range)
+    : SubResource(data.data(), static_cast<Data::Size>(data.size()), index, data_range)
 { }
 
 SubResource::SubResource(Data::ConstRawPtr data_ptr, Data::Size size, const Index& index, BytesRangeOpt data_range) noexcept
