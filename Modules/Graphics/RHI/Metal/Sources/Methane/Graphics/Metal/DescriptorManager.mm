@@ -34,6 +34,13 @@ DescriptorManager::DescriptorManager(Base::Context& context)
 {
 }
 
+void DescriptorManager::AddProgramBindings(Rhi::IProgramBindings& program_bindings)
+{
+    META_FUNCTION_TASK();
+    Base::DescriptorManager::AddProgramBindings(program_bindings);
+    GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
+}
+
 void DescriptorManager::CompleteInitialization()
 {
     // Argument buffer initialization is done in OnContextCompletingInitialization callback,

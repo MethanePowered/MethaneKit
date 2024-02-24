@@ -285,7 +285,7 @@ private:
     using FrameResources = TextFrameResources;
     using PerFrameResources = std::vector<TextFrameResources>;
 
-    Context& m_ui_context;
+    Context&            m_ui_context;
     SettingsUtf32       m_settings;
     UnitRect            m_frame_rect;
     FrameSize           m_render_attachment_size = FrameSize::Max();

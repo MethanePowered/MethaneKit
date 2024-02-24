@@ -54,10 +54,8 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
 
     META_CHECK_ARG_NOT_EMPTY_DESCR(resource_views, "can not set empty resources for resource binding");
 
-    const bool            is_addressable_binding = m_settings.argument.IsAddressable();
-    const Rhi::IResource::Type bound_resource_type    = m_settings.resource_type;
-    META_UNUSED(is_addressable_binding);
-    META_UNUSED(bound_resource_type);
+    [[maybe_unused]] const bool              is_addressable_binding = m_settings.argument.IsAddressable();
+    [[maybe_unused]] const Rhi::IResource::Type bound_resource_type = m_settings.resource_type;
 
     for (const Rhi::IResource::View& resource_view : resource_views)
     {

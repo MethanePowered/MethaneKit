@@ -42,6 +42,7 @@ public:
     const Rhi::IBuffer* GetArgumentBuffer() const noexcept { return m_argument_buffer_ptr.get(); }
 
     // Rhi::IDescriptorManager overrides
+    void AddProgramBindings(Rhi::IProgramBindings& program_bindings) override;
     void CompleteInitialization() override;
     void Release() override;
 

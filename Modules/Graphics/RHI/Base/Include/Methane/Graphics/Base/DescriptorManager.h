@@ -48,7 +48,7 @@ public:
     explicit DescriptorManager(Context& context, bool is_parallel_bindings_processing_enabled = true);
 
     // IDescriptorManager interface
-    void AddProgramBindings(Rhi::IProgramBindings& program_bindings) final;
+    void AddProgramBindings(Rhi::IProgramBindings& program_bindings) override;
     void CompleteInitialization() override;
     void Release() override;
 

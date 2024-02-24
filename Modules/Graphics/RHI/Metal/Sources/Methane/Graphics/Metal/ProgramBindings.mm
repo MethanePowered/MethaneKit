@@ -437,12 +437,17 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
     }
 }
 
+void ProgramBindings::CompleteInitialization()
+{
+}
+
 void ProgramBindings::CompleteInitialization(Data::Bytes& argument_buffer_data, const ArgumentsRange& arg_range)
 {
     META_FUNCTION_TASK();
     META_LOG("  - Writing program '{}' bindings '{}' in arg-buffer range [{}, {}):",
              Base::ProgramBindings::GetProgram().GetName(), GetName(),
              arg_range.GetStart(), arg_range.GetEnd());
+    META_CHECK_ARG_FALSE(arg_range.IsEmpty());
     META_CHECK_ARG_LESS_OR_EQUAL(arg_range.GetEnd(), argument_buffer_data.size());
 
     m_argument_buffer_range = arg_range;

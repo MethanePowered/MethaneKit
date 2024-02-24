@@ -52,7 +52,7 @@ public:
     void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 
     // Base::ProgramBindings interface
-    void CompleteInitialization() override { }
+    void CompleteInitialization() override;
 
     void CompleteInitialization(Data::Bytes& argument_buffer_data, const ArgumentsRange& arg_range);
 
