@@ -205,6 +205,14 @@ Rhi::IProgramBindings::ResourceViewsByArgument ProgramBindings::ReplaceResourceV
     return resource_views_by_argument;
 }
 
+void ProgramBindings::RemoveFromDescriptorManager()
+{
+    META_FUNCTION_TASK();
+    const auto& program = static_cast<Program&>(GetProgram());
+    Rhi::IDescriptorManager& descriptor_manager = program.GetContext().GetDescriptorManager();
+    descriptor_manager.RemoveProgramBindings(*this);
+}
+
 void ProgramBindings::SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument)
 {
     META_FUNCTION_TASK();

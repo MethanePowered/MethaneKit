@@ -86,6 +86,7 @@ target_link_libraries(${TARGET}
     PRIVATE
         MethaneBuildOptions
         MethaneDataPrimitives
+        MethaneDataRangeSet
         MethanePlatformUtils
         MethaneInstrumentation
         TaskFlow

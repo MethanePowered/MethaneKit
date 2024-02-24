@@ -122,7 +122,8 @@ public:
 
     SubResource() = default;
     explicit SubResource(Data::Bytes&& data, const Index& index = {}, BytesRangeOpt data_range = {}) noexcept;
-    SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index = {}, BytesRangeOpt data_range = {}) noexcept;
+    explicit SubResource(const Data::Bytes& data, const Index& index = {}, BytesRangeOpt data_range = {}) noexcept;
+    SubResource(Data::ConstRawPtr data_ptr, Data::Size size, const Index& index = {}, BytesRangeOpt data_range = {}) noexcept;
     ~SubResource() = default;
 
     [[nodiscard]] const Index& GetIndex() const noexcept

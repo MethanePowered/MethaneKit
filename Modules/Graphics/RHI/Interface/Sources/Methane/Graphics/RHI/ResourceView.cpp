@@ -50,8 +50,12 @@ SubResource::SubResource(Data::Bytes&& data, const Index& index, BytesRangeOpt d
     , m_data_range(std::move(data_range))
 { }
 
-SubResource::SubResource(Data::ConstRawPtr p_data, Data::Size size, const Index& index, BytesRangeOpt data_range) noexcept
-    : Data::Chunk(p_data, size)
+SubResource::SubResource(const Data::Bytes& data, const Index& index, BytesRangeOpt data_range) noexcept
+    : SubResource(data.data(), data.size(), index, data_range)
+{ }
+
+SubResource::SubResource(Data::ConstRawPtr data_ptr, Data::Size size, const Index& index, BytesRangeOpt data_range) noexcept
+    : Data::Chunk(data_ptr, size)
     , m_index(index)
     , m_data_range(std::move(data_range))
 { }

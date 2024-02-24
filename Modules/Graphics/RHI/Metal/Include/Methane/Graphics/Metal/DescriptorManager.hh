@@ -28,6 +28,9 @@ Metal descriptor manager of the argument buffer
 #include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Data/Receiver.hpp>
 #include <Methane/Data/RangeSet.hpp>
+#include <Methane/Instrumentation.h>
+
+#include <mutex>
 
 namespace Methane::Graphics::Metal
 {
@@ -43,6 +46,7 @@ public:
 
     // Rhi::IDescriptorManager overrides
     void AddProgramBindings(Rhi::IProgramBindings& program_bindings) override;
+    void RemoveProgramBindings(Rhi::IProgramBindings& program_bindings) override;
     void CompleteInitialization() override;
     void Release() override;
 
@@ -53,10 +57,15 @@ public:
 
 private:
     using ArgumentsRange = Data::Range<Data::Index>;
+    using ArgumentsRangeSet = Data::RangeSet<Data::Index>;
 
-    void UpdateArgumentBufferData(Data::Bytes&& argument_buffer_data);
+    ArgumentsRange ReserveArgumentsRange(Data::Size range_size);
+    void ReleaseArgumentsRange(const ArgumentsRange& range);
 
-    Ptr<Rhi::IBuffer> m_argument_buffer_ptr;
+    TracyLockable(std::mutex, m_argument_buffer_mutex);
+    Data::Bytes               m_argument_buffer_data;
+    ArgumentsRangeSet         m_argument_buffer_free_ranges;
+    Ptr<Rhi::IBuffer>         m_argument_buffer_ptr;
 };
 
 } // namespace Methane::Graphics::Metal

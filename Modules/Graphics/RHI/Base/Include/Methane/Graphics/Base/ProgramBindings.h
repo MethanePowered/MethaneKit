@@ -88,8 +88,8 @@ protected:
     // IProgramBindings::IProgramArgumentBindingCallback
     void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::IResource::Views&, const Rhi::IResource::Views&) override;
 
+    void RemoveFromDescriptorManager();
     void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
-
     void InitializeArgumentBindings(const ProgramBindings* other_program_bindings_ptr = nullptr);
     ResourceViewsByArgument ReplaceResourceViews(const ArgumentBindings& argument_bindings,
                                                  const ResourceViewsByArgument& replace_resource_views) const;

@@ -411,6 +411,12 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
     : Base::ProgramBindings(other_program_bindings, replace_resource_views_by_argument, frame_index)
 { }
 
+ProgramBindings::~ProgramBindings()
+{
+    META_FUNCTION_TASK();
+    Base::ProgramBindings::RemoveFromDescriptorManager();
+}
+
 Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument,
                                                        const Opt<Data::Index>& frame_index)
 {

@@ -49,6 +49,7 @@ public:
 
     // IDescriptorManager interface
     void AddProgramBindings(Rhi::IProgramBindings& program_bindings) override;
+    void RemoveProgramBindings(Rhi::IProgramBindings&) override {}
     void CompleteInitialization() override;
     void Release() override;
 
