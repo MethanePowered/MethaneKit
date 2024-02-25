@@ -51,6 +51,9 @@ public:
     bool                      SetResourceViews(const Rhi::ResourceViews& resource_views) override;
     explicit operator std::string() const final;
 
+    bool GetEmitCallbackEnabled() const noexcept { return m_emit_callback_enabled; }
+    void SetEmitCallbackEnabled(bool enabled)    { m_emit_callback_enabled = enabled; }
+
     Ptr<ProgramArgumentBinding> GetPtr() { return shared_from_this(); }
 
     bool IsAlreadyApplied(const Rhi::IProgram& program,
@@ -64,6 +67,7 @@ private:
     const Context&     m_context;
     const Settings     m_settings;
     Rhi::ResourceViews m_resource_views;
+    bool               m_emit_callback_enabled = true;
 };
 
 } // namespace Methane::Graphics::Base

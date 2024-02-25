@@ -37,6 +37,8 @@ class Program;
 class RenderCommandList;
 class ComputeCommandList;
 
+//#define METAL_USE_ALL_RESOURCES
+
 class ProgramBindings final
     : public Base::ProgramBindings
 {
@@ -78,8 +80,9 @@ private:
 
     using NativeResourceUsageAndStage = std::pair<MTLResourceUsage, MTLRenderStages>;
     using NativeResourcesByUsage = std::map<NativeResourceUsageAndStage, ArgumentBinding::NativeResources>;
-    NativeResourcesByUsage CollectChangedResourcesByUsage(const Base::ProgramBindings* applied_program_bindings_ptr,
-                                                          ApplyBehaviorMask apply_behavior) const;
+    void UpdateNativeResources();
+    NativeResourcesByUsage GetChangedResourcesByUsage(const Base::ProgramBindings* applied_program_bindings_ptr,
+                                                      ApplyBehaviorMask apply_behavior) const;
 
     void UseRenderResources(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
                             const Base::ProgramBindings* applied_program_bindings_ptr,
@@ -95,6 +98,10 @@ private:
     void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::IResource::Views&, const Rhi::IResource::Views&) override;
 
     ArgumentsRange m_argument_buffer_range;
+
+#ifdef METAL_USE_ALL_RESOURCES
+    NativeResourcesByUsage m_mtl_resources_by_usage;
+#endif
 };
 
 } // namespace Methane::Graphics::Metal

@@ -98,7 +98,8 @@ void CommandList::Reset(IDebugGroup* debug_group_ptr)
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_state_mutex);
 
-    META_CHECK_ARG_DESCR(m_state, m_state != State::Committed && m_state != State::Executing, "can not reset command list in committed or executing state");
+    META_CHECK_ARG_DESCR(m_state, m_state < State::Committed,
+                         "can not reset command list in committed or executing state");
     META_LOG("{} Command list '{}' RESET commands encoding{}", magic_enum::enum_name(m_type), GetName(),
              debug_group_ptr ? fmt::format(" with debug group '{}'", debug_group_ptr->GetName()) : "");
 

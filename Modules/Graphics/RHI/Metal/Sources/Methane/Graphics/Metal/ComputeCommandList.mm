@@ -43,8 +43,9 @@ void ComputeCommandList::Reset(Rhi::ICommandListDebugGroup* debug_group_ptr)
         return;
     }
 
-    const id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
-    InitializeCommandEncoder([mtl_cmd_buffer computeCommandEncoder]);
+    InitializeCommandBufferAndEncoder([](id<MTLCommandBuffer> mtl_cmd_buffer)
+                                      { return [mtl_cmd_buffer computeCommandEncoder]; });
+    
     Base::CommandList::Reset(debug_group_ptr);
 }
 

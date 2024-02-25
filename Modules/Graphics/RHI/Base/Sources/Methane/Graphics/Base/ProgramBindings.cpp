@@ -176,11 +176,8 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
         if (m_binding_by_argument.count(program_argument))
             continue;
 
-        Ptr<ProgramBindings::ArgumentBinding> argument_binding_instance_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
-        if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == Rhi::ProgramArgumentAccessType::Mutable)
-            argument_binding_instance_ptr->Connect(*this);
-
-        m_binding_by_argument.try_emplace(program_argument, std::move(argument_binding_instance_ptr));
+        m_binding_by_argument.try_emplace(program_argument,
+                                          program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index));
     }
 }
 
@@ -218,8 +215,10 @@ void ProgramBindings::SetResourcesForArguments(const ResourceViewsByArgument& re
     META_FUNCTION_TASK();
     for (const auto& [program_argument, resource_views] : resource_views_by_argument)
     {
-        Rhi::IProgramBindings::IArgumentBinding& argument_binding = Get(program_argument);
+        auto& argument_binding = dynamic_cast<ArgumentBinding&>(Get(program_argument));
+        argument_binding.SetEmitCallbackEnabled(false); // do not emit callback during initialization
         argument_binding.SetResourceViews(resource_views);
+        argument_binding.SetEmitCallbackEnabled(true);
         AddTransitionResourceStates(argument_binding);
     }
     InitResourceRefsByAccess();
@@ -268,6 +267,12 @@ void ProgramBindings::Initialize()
     const auto& program = static_cast<Program&>(GetProgram());
     Rhi::IDescriptorManager& descriptor_manager = program.GetContext().GetDescriptorManager();
     descriptor_manager.AddProgramBindings(*this);
+
+    // Connect to argument bindings callback after program bindings construction
+    // to prevent back calls during resource views setup
+    for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
+        if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == Rhi::ProgramArgumentAccessType::Mutable)
+            argument_binding_ptr->Connect(*this);
 }
 
 Rhi::IProgram::Arguments ProgramBindings::GetUnboundArguments() const

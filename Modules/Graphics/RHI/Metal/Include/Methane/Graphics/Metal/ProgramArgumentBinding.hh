@@ -70,17 +70,17 @@ public:
     const Settings&            GetMetalSettings() const noexcept       { return m_settings_mt; }
     MTLResourceUsage           GetNativeResouceUsage() const noexcept  { return m_mtl_resource_usage; }
     MTLRenderStages            GetNativeRenderStages() const noexcept  { return m_mtl_render_stages; }
+    const NativeResources&     GetNativeResources() const noexcept     { return m_mtl_resources; }
     const NativeSamplerStates& GetNativeSamplerStates() const noexcept { return m_mtl_sampler_states; }
     const NativeTextures&      GetNativeTextures() const noexcept      { return m_mtl_textures; }
     const NativeBuffers&       GetNativeBuffers() const noexcept       { return m_mtl_buffers; }
     const NativeOffsets&       GetBufferOffsets() const noexcept       { return m_mtl_buffer_offsets; }
 
-    void CollectNativeResources(NativeResources& resources) const;
-
 private:
     Settings            m_settings_mt;
     MTLResourceUsage    m_mtl_resource_usage = MTLResourceUsageRead;
     MTLRenderStages     m_mtl_render_stages;
+    NativeResources     m_mtl_resources;
     NativeSamplerStates m_mtl_sampler_states;
     NativeTextures      m_mtl_textures;
     NativeBuffers       m_mtl_buffers;

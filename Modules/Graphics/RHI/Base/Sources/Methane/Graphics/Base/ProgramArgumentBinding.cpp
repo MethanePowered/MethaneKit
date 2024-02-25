@@ -74,10 +74,12 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
     const auto prev_resource_views = m_resource_views;
     m_resource_views = resource_views;
 
-    Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
-        &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged,
-        std::cref(*this), std::cref(prev_resource_views), std::cref(m_resource_views)
-    );
+    if (m_emit_callback_enabled)
+        Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
+            &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged,
+            std::cref(*this), std::cref(prev_resource_views), std::cref(m_resource_views)
+        );
+    
     return true;
 }
 

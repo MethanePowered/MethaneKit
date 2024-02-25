@@ -173,30 +173,33 @@ public:
     }
 
 protected:
-    const id<MTLCommandBuffer>& InitializeCommandBuffer()
+    template<typename EncoderInitializerFuncType> // void(id<MTLCommandBuffer>)
+    void InitializeCommandBufferAndEncoder(const EncoderInitializerFuncType& encoder_initializer)
     {
         META_FUNCTION_TASK();
         std::scoped_lock lock_guard(m_cmd_buffer_mutex);
 
-        if (m_mtl_cmd_buffer)
-            return m_mtl_cmd_buffer;
+        if (!m_mtl_cmd_buffer)
+        {
+            const id <MTLCommandQueue>& mtl_command_queue = GetMetalCommandQueue().GetNativeCommandQueue();
+            META_CHECK_ARG_NOT_NULL(mtl_command_queue);
 
-        const id<MTLCommandQueue>& mtl_command_queue = GetMetalCommandQueue().GetNativeCommandQueue();
-        META_CHECK_ARG_NOT_NULL(mtl_command_queue);
-
-        m_mtl_cmd_buffer = [mtl_command_queue commandBuffer];
-        m_mtl_cmd_buffer.label = m_ns_name;
+            m_mtl_cmd_buffer = [mtl_command_queue commandBuffer];
+            m_mtl_cmd_buffer.label = m_ns_name;
+        }
 
         META_CHECK_ARG_NOT_NULL(m_mtl_cmd_buffer);
-        return m_mtl_cmd_buffer;
+        m_mtl_cmd_encoder = encoder_initializer(m_mtl_cmd_buffer);
+        m_mtl_cmd_encoder.label = m_ns_name;
     }
 
-    void InitializeCommandEncoder(const MTLCommandEncoderId& mtl_cmd_encoder)
+    template<typename EncoderInitializerFuncType> // void(id<MTLCommandBuffer>)
+    void InitializeCommandEncoder(const EncoderInitializerFuncType& encoder_initializer)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
+        std::scoped_lock lock_guard(m_cmd_buffer_mutex);
 
-        m_mtl_cmd_encoder = mtl_cmd_encoder;
+        m_mtl_cmd_encoder = encoder_initializer(m_mtl_cmd_buffer);
         m_mtl_cmd_encoder.label = m_ns_name;
     }
 

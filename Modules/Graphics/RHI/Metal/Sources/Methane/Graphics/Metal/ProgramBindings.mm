@@ -406,13 +406,17 @@ static void WriteArgumentBindingResourceIds(const ProgramArgumentBinding& arg_bi
 ProgramBindings::ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument,
                                  Data::Index frame_index)
     : Base::ProgramBindings(program, resource_views_by_argument, frame_index)
-{ }
+{
+    UpdateNativeResources();
+}
 
 ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
                                  const ResourceViewsByArgument& replace_resource_views_by_argument,
                                  const Opt<Data::Index>& frame_index)
     : Base::ProgramBindings(other_program_bindings, replace_resource_views_by_argument, frame_index)
-{ }
+{
+    UpdateNativeResources();
+}
 
 ProgramBindings::~ProgramBindings()
 {
@@ -650,7 +654,27 @@ void ProgramBindings::SetComputeArgumentBuffers(const id<MTLComputeCommandEncode
     }
 }
 
-ProgramBindings::NativeResourcesByUsage ProgramBindings::CollectChangedResourcesByUsage(
+void ProgramBindings::UpdateNativeResources()
+{
+    META_FUNCTION_TASK();
+#ifdef METAL_USE_ALL_RESOURCES
+    m_mtl_resources_by_usage.clear();
+    for(const auto& [argument, argument_binding_ptr] : GetArgumentBindings())
+    {
+        const auto& argument_binding = static_cast<const ArgumentBinding&>(*argument_binding_ptr);
+        const ProgramArgumentBinding::NativeResources& argument_resources = argument_binding.GetNativeResources();
+        if (argument_resources.empty())
+            return;
+
+        const NativeResourceUsageAndStage usage_and_stage(argument_binding.GetNativeResouceUsage(),
+                                                          argument_binding.GetNativeRenderStages());
+        std::move(argument_resources.begin(), argument_resources.end(),
+                  std::back_inserter(m_mtl_resources_by_usage[usage_and_stage]));
+    }
+#endif
+}
+
+ProgramBindings::NativeResourcesByUsage ProgramBindings::GetChangedResourcesByUsage(
                                                             const Base::ProgramBindings* applied_program_bindings_ptr,
                                                             ApplyBehaviorMask apply_behavior) const
 {
@@ -659,8 +683,7 @@ ProgramBindings::NativeResourcesByUsage ProgramBindings::CollectChangedResources
     ForEachChangedArgumentBinding(applied_program_bindings_ptr, apply_behavior,
         [&resources_by_usage](const ArgumentBinding& argument_binding)
         {
-            ProgramArgumentBinding::NativeResources argument_resources;
-            argument_binding.CollectNativeResources(argument_resources);
+            const ProgramArgumentBinding::NativeResources& argument_resources = argument_binding.GetNativeResources();
             if (argument_resources.empty())
                 return;
 
@@ -674,13 +697,17 @@ ProgramBindings::NativeResourcesByUsage ProgramBindings::CollectChangedResources
 }
 
 void ProgramBindings::UseRenderResources(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
-                                         const Base::ProgramBindings* applied_program_bindings_ptr,
-                                         ApplyBehaviorMask apply_behavior) const
+                                         [[maybe_unused]] const Base::ProgramBindings* applied_program_bindings_ptr,
+                                         [[maybe_unused]] ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
     META_LOG("  - Make resident of render program binding '{}' resources:", GetName());
-    NativeResourcesByUsage resources_by_usage = CollectChangedResourcesByUsage(applied_program_bindings_ptr, apply_behavior);
-    for(const auto& [mtl_usage_and_stage, mtl_resources] : resources_by_usage)
+#ifdef METAL_USE_ALL_RESOURCES
+    const NativeResourcesByUsage& mtl_resources_by_usage = m_mtl_resources_by_usage;
+#else
+    const NativeResourcesByUsage mtl_resources_by_usage = GetChangedResourcesByUsage(applied_program_bindings_ptr, apply_behavior);
+#endif
+    for(const auto& [mtl_usage_and_stage, mtl_resources] : mtl_resources_by_usage)
     {
         META_LOG("    - {} of {} shader resources: {}.",
                  GetNativeResourceUsageName(mtl_usage_and_stage.first),
@@ -695,13 +722,17 @@ void ProgramBindings::UseRenderResources(const id<MTLRenderCommandEncoder>& mtl_
 }
 
 void ProgramBindings::UseComputeResources(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder,
-                                         const Base::ProgramBindings* applied_program_bindings_ptr,
-                                         ApplyBehaviorMask apply_behavior) const
+                                          [[maybe_unused]] const Base::ProgramBindings* applied_program_bindings_ptr,
+                                          [[maybe_unused]] ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
     META_LOG("  - Make resident of compute program binding '{}' resources:", GetName());
-    NativeResourcesByUsage resources_by_usage = CollectChangedResourcesByUsage(applied_program_bindings_ptr, apply_behavior);
-    for(const auto& [mtl_usage_and_stage, mtl_resources] : resources_by_usage)
+#ifdef METAL_USE_ALL_RESOURCES
+    const NativeResourcesByUsage& mtl_resources_by_usage = m_mtl_resources_by_usage;
+#else
+    NativeResourcesByUsage mtl_resources_by_usage = GetChangedResourcesByUsage(applied_program_bindings_ptr, apply_behavior);
+#endif
+    for(const auto& [mtl_usage_and_stage, mtl_resources] : mtl_resources_by_usage)
     {
         META_LOG("    - {} of compute shader resources: {}.",
                  GetNativeResourceUsageName(mtl_usage_and_stage.first),
@@ -752,6 +783,8 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
     const auto& program = static_cast<Program&>(GetProgram());
     auto& descriptor_manager = static_cast<DescriptorManager&>(program.GetContext().GetDescriptorManager());
     descriptor_manager.UpdateProgramBindings(*this);
+
+    UpdateNativeResources();
 }
 
 } // namespace Methane::Graphics::Metal

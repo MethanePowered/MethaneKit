@@ -65,6 +65,9 @@ private:
     ArgumentsRange ReserveArgumentsRange(Data::Size range_size);
     void ReleaseArgumentsRange(const ArgumentsRange& range);
 
+    void CreateArgumentsBuffer();
+    void UpdateArgumentsBuffer();
+
     TracyLockable(std::mutex, m_argument_buffer_mutex);
     Data::Bytes               m_argument_buffer_data;
     ArgumentsRangeSet         m_argument_buffer_free_ranges;

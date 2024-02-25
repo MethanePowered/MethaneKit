@@ -105,7 +105,9 @@ void RenderCommandList::ResetCommandEncoder()
     if (IsParallel())
     {
         META_CHECK_ARG_NOT_NULL(m_parallel_render_command_list_ptr);
-        InitializeCommandEncoder([m_parallel_render_command_list_ptr->GetNativeCommandEncoder() renderCommandEncoder]);
+        const id<MTLParallelRenderCommandEncoder> mtl_parallel_render_command_encoder = m_parallel_render_command_list_ptr->GetNativeCommandEncoder();
+        InitializeCommandEncoder([mtl_parallel_render_command_encoder](id<MTLCommandBuffer>)
+                                 { return [mtl_parallel_render_command_encoder renderCommandEncoder]; });
     }
     else
     {
@@ -113,9 +115,8 @@ void RenderCommandList::ResetCommandEncoder()
         // then render pass descriptor should be reset with new frame drawable
         MTLRenderPassDescriptor* mtl_render_pass = GetMetalRenderPass().GetNativeDescriptor(!IsCommandBufferInitialized());
         META_CHECK_ARG_NOT_NULL(mtl_render_pass);
-
-        const id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
-        InitializeCommandEncoder([mtl_cmd_buffer renderCommandEncoderWithDescriptor:mtl_render_pass]);
+        InitializeCommandBufferAndEncoder([&mtl_render_pass](id<MTLCommandBuffer> mtl_cmd_buffer)
+                                          { return [mtl_cmd_buffer renderCommandEncoderWithDescriptor: mtl_render_pass]; });
     }
 }
 
