@@ -30,6 +30,9 @@ Metal implementation of the program bindings interface.
 
 #import <Metal/Metal.h>
 
+#include <map>
+#include <set>
+
 namespace Methane::Graphics::Metal
 {
 
@@ -61,6 +64,7 @@ public:
     void CompleteInitialization(Data::Bytes& argument_buffer_data);
 
     const ArgumentsRange& GetArgumentsRange() const { return m_argument_buffer_range; }
+    bool IsUsingNativeResource(__unsafe_unretained id<MTLResource> mtl_resource) const;
 
 private:
     template<typename FuncType> // function void(const ArgumentBinding&)
@@ -80,16 +84,14 @@ private:
 
     using NativeResourceUsageAndStage = std::pair<MTLResourceUsage, MTLRenderStages>;
     using NativeResourcesByUsage = std::map<NativeResourceUsageAndStage, ArgumentBinding::NativeResources>;
-    void UpdateNativeResources();
-    NativeResourcesByUsage GetChangedResourcesByUsage(const Base::ProgramBindings* applied_program_bindings_ptr,
-                                                      ApplyBehaviorMask apply_behavior) const;
+    using NativeResourceSet      = std::set<__unsafe_unretained id<MTLResource>>;
+    void UpdateUsedResources();
+    NativeResourcesByUsage GetChangedResourcesByUsage(const Base::ProgramBindings* applied_program_bindings_ptr) const;
 
     void UseRenderResources(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
-                            const Base::ProgramBindings* applied_program_bindings_ptr,
-                            ApplyBehaviorMask apply_behavior) const;
+                            const Base::ProgramBindings* applied_program_bindings_ptr) const;
     void UseComputeResources(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder,
-                            const Base::ProgramBindings* applied_program_bindings_ptr,
-                            ApplyBehaviorMask apply_behavior) const;
+                            const Base::ProgramBindings* applied_program_bindings_ptr) const;
 
     void Apply(RenderCommandList& argument_binding, ApplyBehaviorMask apply_behavior) const;
     void Apply(ComputeCommandList& compute_command_list, ApplyBehaviorMask apply_behavior) const;
@@ -98,10 +100,7 @@ private:
     void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::IResource::Views&, const Rhi::IResource::Views&) override;
 
     ArgumentsRange m_argument_buffer_range;
-
-#ifdef METAL_USE_ALL_RESOURCES
-    NativeResourcesByUsage m_mtl_resources_by_usage;
-#endif
+    NativeResourceSet m_mtl_used_resources;
 };
 
 } // namespace Methane::Graphics::Metal

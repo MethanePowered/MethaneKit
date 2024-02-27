@@ -407,7 +407,7 @@ ProgramBindings::ProgramBindings(Program& program, const ResourceViewsByArgument
                                  Data::Index frame_index)
     : Base::ProgramBindings(program, resource_views_by_argument, frame_index)
 {
-    UpdateNativeResources();
+    UpdateUsedResources();
 }
 
 ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
@@ -415,7 +415,7 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
                                  const Opt<Data::Index>& frame_index)
     : Base::ProgramBindings(other_program_bindings, replace_resource_views_by_argument, frame_index)
 {
-    UpdateNativeResources();
+    UpdateUsedResources();
 }
 
 ProgramBindings::~ProgramBindings()
@@ -483,6 +483,11 @@ void ProgramBindings::CompleteInitialization(Data::Bytes& argument_buffer_data)
             WriteArgumentBindingResourceIds(metal_argument_binding, reinterpret_cast<uint64_t*>(arg_data_ptr + arg_offset));
         }
     }
+}
+
+bool ProgramBindings::IsUsingNativeResource(__unsafe_unretained id<MTLResource> mtl_resource) const
+{
+    return m_mtl_used_resources.count(mtl_resource);
 }
 
 template<typename FuncType> // function void(const ArgumentBinding&)
@@ -654,61 +659,66 @@ void ProgramBindings::SetComputeArgumentBuffers(const id<MTLComputeCommandEncode
     }
 }
 
-void ProgramBindings::UpdateNativeResources()
+void ProgramBindings::UpdateUsedResources()
 {
     META_FUNCTION_TASK();
-#ifdef METAL_USE_ALL_RESOURCES
-    m_mtl_resources_by_usage.clear();
+    m_mtl_used_resources.clear();
     for(const auto& [argument, argument_binding_ptr] : GetArgumentBindings())
     {
         const auto& argument_binding = static_cast<const ArgumentBinding&>(*argument_binding_ptr);
         const ProgramArgumentBinding::NativeResources& argument_resources = argument_binding.GetNativeResources();
-        if (argument_resources.empty())
-            return;
-
-        const NativeResourceUsageAndStage usage_and_stage(argument_binding.GetNativeResouceUsage(),
-                                                          argument_binding.GetNativeRenderStages());
-        std::move(argument_resources.begin(), argument_resources.end(),
-                  std::back_inserter(m_mtl_resources_by_usage[usage_and_stage]));
+        std::copy(argument_resources.begin(), argument_resources.end(),
+                  std::inserter(m_mtl_used_resources, m_mtl_used_resources.begin()));
     }
-#endif
 }
 
 ProgramBindings::NativeResourcesByUsage ProgramBindings::GetChangedResourcesByUsage(
-                                                            const Base::ProgramBindings* applied_program_bindings_ptr,
-                                                            ApplyBehaviorMask apply_behavior) const
+                                                         const Base::ProgramBindings* applied_program_bindings_ptr) const
 {
     META_FUNCTION_TASK();
     NativeResourcesByUsage resources_by_usage;
-    ForEachChangedArgumentBinding(applied_program_bindings_ptr, apply_behavior,
-        [&resources_by_usage](const ArgumentBinding& argument_binding)
-        {
-            const ProgramArgumentBinding::NativeResources& argument_resources = argument_binding.GetNativeResources();
-            if (argument_resources.empty())
-                return;
+    const ProgramBindings* metal_applied_program_bindings_ptr = static_cast<const ProgramBindings*>(applied_program_bindings_ptr);
+    for (const auto& [program_arg, arg_binding_ptr]: GetArgumentBindings())
+    {
+        const auto& metal_argument_binding = static_cast<const ArgumentBinding&>(*arg_binding_ptr);
+        const ProgramArgumentBinding::NativeResources& argument_resources = metal_argument_binding.GetNativeResources();
+        if (argument_resources.empty())
+            continue;
 
-            const NativeResourceUsageAndStage usage_and_stage(argument_binding.GetNativeResouceUsage(),
-                                                              argument_binding.GetNativeRenderStages());
+        const NativeResourceUsageAndStage usage_and_stage(metal_argument_binding.GetNativeResouceUsage(),
+                                                          metal_argument_binding.GetNativeRenderStages());
+
+        if (metal_applied_program_bindings_ptr)
+        {
+            if (!arg_binding_ptr->GetSettings().argument.IsConstant())
+                for (const auto& mtl_resource: argument_resources)
+                    if (!metal_applied_program_bindings_ptr->IsUsingNativeResource(mtl_resource))
+                        resources_by_usage[usage_and_stage].push_back(mtl_resource);
+        }
+        else
+        {
             std::move(argument_resources.begin(), argument_resources.end(),
                       std::back_inserter(resources_by_usage[usage_and_stage]));
-
-        });
+        }
+    }
     return resources_by_usage;
 }
 
 void ProgramBindings::UseRenderResources(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
-                                         [[maybe_unused]] const Base::ProgramBindings* applied_program_bindings_ptr,
-                                         [[maybe_unused]] ApplyBehaviorMask apply_behavior) const
+                                         const Base::ProgramBindings* applied_program_bindings_ptr) const
 {
     META_FUNCTION_TASK();
-    META_LOG("  - Make resident of render program binding '{}' resources:", GetName());
-#ifdef METAL_USE_ALL_RESOURCES
-    const NativeResourcesByUsage& mtl_resources_by_usage = m_mtl_resources_by_usage;
-#else
-    const NativeResourcesByUsage mtl_resources_by_usage = GetChangedResourcesByUsage(applied_program_bindings_ptr, apply_behavior);
-#endif
-    for(const auto& [mtl_usage_and_stage, mtl_resources] : mtl_resources_by_usage)
+    [[maybe_unused]] bool is_first_use_resources = true;
+    for(const auto& [mtl_usage_and_stage, mtl_resources] : GetChangedResourcesByUsage(applied_program_bindings_ptr))
     {
+#ifdef METHANE_LOGGING_ENABLED
+        if (is_first_use_resources)
+        {
+            META_LOG("  - Make resident of render program binding '{}' resources:", GetName());
+            is_first_use_resources = false;
+        }
+#endif
+
         META_LOG("    - {} of {} shader resources: {}.",
                  GetNativeResourceUsageName(mtl_usage_and_stage.first),
                  GetNativeRenderStageNames(mtl_usage_and_stage.second),
@@ -722,18 +732,20 @@ void ProgramBindings::UseRenderResources(const id<MTLRenderCommandEncoder>& mtl_
 }
 
 void ProgramBindings::UseComputeResources(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder,
-                                          [[maybe_unused]] const Base::ProgramBindings* applied_program_bindings_ptr,
-                                          [[maybe_unused]] ApplyBehaviorMask apply_behavior) const
+                                          const Base::ProgramBindings* applied_program_bindings_ptr) const
 {
     META_FUNCTION_TASK();
-    META_LOG("  - Make resident of compute program binding '{}' resources:", GetName());
-#ifdef METAL_USE_ALL_RESOURCES
-    const NativeResourcesByUsage& mtl_resources_by_usage = m_mtl_resources_by_usage;
-#else
-    NativeResourcesByUsage mtl_resources_by_usage = GetChangedResourcesByUsage(applied_program_bindings_ptr, apply_behavior);
-#endif
-    for(const auto& [mtl_usage_and_stage, mtl_resources] : mtl_resources_by_usage)
+    [[maybe_unused]] bool is_first_use_resources = true;
+    for(const auto& [mtl_usage_and_stage, mtl_resources] : GetChangedResourcesByUsage(applied_program_bindings_ptr))
     {
+#ifdef METHANE_LOGGING_ENABLED
+        if (is_first_use_resources)
+        {
+            META_LOG("  - Make resident of compute program binding '{}' resources:", GetName());
+            is_first_use_resources = false;
+        }
+#endif // METHANE_LOGGING_ENABLED
+
         META_LOG("    - {} of compute shader resources: {}.",
                  GetNativeResourceUsageName(mtl_usage_and_stage.first),
                  GetNativeResourceLabels(mtl_resources));
@@ -754,7 +766,7 @@ void ProgramBindings::Apply(RenderCommandList& render_command_list, ApplyBehavio
     }
     else
     {
-        UseRenderResources(mtl_cmd_encoder, render_command_list.GetProgramBindingsPtr(), apply_behavior);
+        UseRenderResources(mtl_cmd_encoder, render_command_list.GetProgramBindingsPtr());
         SetRenderArgumentBuffers(mtl_cmd_encoder);
     }
 }
@@ -769,7 +781,7 @@ void ProgramBindings::Apply(ComputeCommandList& compute_command_list, ApplyBehav
     }
     else
     {
-        UseComputeResources(mtl_cmd_encoder, compute_command_list.GetProgramBindingsPtr(), apply_behavior);
+        UseComputeResources(mtl_cmd_encoder, compute_command_list.GetProgramBindingsPtr());
         SetComputeArgumentBuffers(mtl_cmd_encoder);
     }
 }
@@ -784,7 +796,7 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
     auto& descriptor_manager = static_cast<DescriptorManager&>(program.GetContext().GetDescriptorManager());
     descriptor_manager.UpdateProgramBindings(*this);
 
-    UpdateNativeResources();
+    UpdateUsedResources();
 }
 
 } // namespace Methane::Graphics::Metal

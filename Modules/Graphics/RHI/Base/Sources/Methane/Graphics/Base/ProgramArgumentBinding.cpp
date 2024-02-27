@@ -79,7 +79,7 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
             &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged,
             std::cref(*this), std::cref(prev_resource_views), std::cref(m_resource_views)
         );
-    
+
     return true;
 }
 
@@ -107,8 +107,7 @@ bool ProgramArgumentBinding::IsAlreadyApplied(const Rhi::IProgram& program,
 
     // 2) No need in setting resource binding to the same location
     //    as a previous resource binding set in the same command list for the same program
-    if (const Rhi::IProgramBindings::IArgumentBinding& previous_argument_argument_binding = applied_program_bindings.Get(m_settings.argument);
-        previous_argument_argument_binding.GetResourceViews() == m_resource_views)
+    if (applied_program_bindings.Get(m_settings.argument).GetResourceViews() == m_resource_views)
         return true;
 
     return false;
