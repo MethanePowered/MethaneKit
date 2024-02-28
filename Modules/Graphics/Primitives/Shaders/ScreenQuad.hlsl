@@ -57,11 +57,11 @@ struct PSInput
     float2 texcoord : TEXCOORD;
 };
 
-ConstantBuffer<ScreenQuadConstants> g_constants : register(b0);
+ConstantBuffer<ScreenQuadConstants> g_constants : register(b0, META_ARG_MUTABLE);
 
 #ifndef TEXTURE_DISABLED
-Texture2D<TTEXEL> g_texture : register(t0);
-SamplerState      g_sampler : register(s0);
+Texture2D<TTEXEL> g_texture : register(t0, META_ARG_MUTABLE);
+SamplerState      g_sampler : register(s0, META_ARG_CONSTANT);
 #endif
 
 PSInput QuadVS(VSInput input)

@@ -49,18 +49,18 @@ struct PSInput
 #endif
 };
 
-ConstantBuffer<Constants>     g_constants       : register(b0);
-ConstantBuffer<SceneUniforms> g_scene_uniforms  : register(b1);
-ConstantBuffer<MeshUniforms>  g_mesh_uniforms   : register(b2);
+ConstantBuffer<Constants>     g_constants       : register(b0, META_ARG_CONSTANT);
+ConstantBuffer<SceneUniforms> g_scene_uniforms  : register(b1, META_ARG_FRAME_CONSTANT);
+ConstantBuffer<MeshUniforms>  g_mesh_uniforms   : register(b2, META_ARG_MUTABLE);
 
 #ifdef ENABLE_SHADOWS
-Texture2D    g_shadow_map      : register(t0);
-SamplerState g_shadow_sampler  : register(s0);
+Texture2D    g_shadow_map      : register(t0, META_ARG_FRAME_CONSTANT);
+SamplerState g_shadow_sampler  : register(s0, META_ARG_CONSTANT);
 #endif
 
 #ifdef ENABLE_TEXTURING
-Texture2D    g_texture         : register(t1);
-SamplerState g_texture_sampler : register(s1);
+Texture2D    g_texture         : register(t1, META_ARG_MUTABLE);
+SamplerState g_texture_sampler : register(s1, META_ARG_CONSTANT);
 #endif
 
 PSInput CubeVS(VSInput input)

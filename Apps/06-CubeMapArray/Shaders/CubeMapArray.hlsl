@@ -36,9 +36,9 @@ struct PSInput
     float4 uvwi      : UVFACE;
 };
 
-ConstantBuffer<Uniforms>  g_uniforms      : register(b0);
-TextureCubeArray          g_texture_array : register(t0);
-SamplerState              g_sampler       : register(s0);
+ConstantBuffer<Uniforms>  g_uniforms      : register(b0, META_ARG_FRAME_CONSTANT);
+TextureCubeArray          g_texture_array : register(t0, META_ARG_CONSTANT);
+SamplerState              g_sampler       : register(s0, META_ARG_CONSTANT);
 
 PSInput CubeVS(VSInput input)
 {

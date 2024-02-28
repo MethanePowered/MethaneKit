@@ -85,6 +85,32 @@ function(get_generated_shader_extension OUT_SHADER_EXT)
     endif()
 endfunction()
 
+function(get_hlsl_compile_definitions OUT_HLSL_COMPILE_DEFINITIONS)
+    set(${OUT_HLSL_COMPILE_DEFINITIONS}
+        -D META_ARG_CONSTANT=space0
+        -D META_ARG_FRAME_CONSTANT=space1
+        -D META_ARG_MUTABLE=space2
+        -D META_ARG_MUTABLE_ADDRESS=space3
+        PARENT_SCOPE)
+endfunction()
+
+function(get_hlsl_compile_flags OUT_HLSL_COMPILE_FLAGS)
+    get_hlsl_compile_definitions(HLSL_COMPILE_FLAGS)
+    set(HLSL_COMPILE_FLAGS ${HLSL_COMPILE_FLAGS} -Wno-ignored-attributes )
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(HLSL_COMPILE_FLAGS ${HLSL_COMPILE_FLAGS} /Od)
+    else()
+        set(HLSL_COMPILE_FLAGS ${HLSL_COMPILE_FLAGS} /O3 /Gfa /all_resources_bound)
+    endif()
+
+    if(METHANE_SHADERS_CODEVIEW_ENABLED OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(HLSL_COMPILE_FLAGS ${HLSL_COMPILE_FLAGS} /Zi /Qembed_debug)
+    endif()
+
+    set(${OUT_HLSL_COMPILE_FLAGS} ${HLSL_COMPILE_FLAGS} PARENT_SCOPE)
+endfunction()
+
 function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER SHADER_TYPES OUT_SHADERS_METAL OUT_GENERATE_METAL_TARGETS)
     get_target_shaders_dir(${FOR_TARGET} TARGET_SHADERS_DIR)
     get_file_name(${SHADERS_HLSL} SHADERS_NAME)
@@ -120,13 +146,14 @@ function(generate_metal_shaders_from_hlsl FOR_TARGET SHADERS_HLSL PROFILE_VER SH
         endif()
 
         get_shader_profile(${SHADER_TYPE} ${PROFILE_VER} SHADER_PROFILE)
+        get_hlsl_compile_definitions(HLSL_DEFINITIONS)
 
         add_custom_target(${GENERATE_METAL_TARGET}
             COMMENT "Generating Metal shader source code from HLSL " ${NEW_ENTRY_POINT} " for application " ${TARGET}
             BYPRODUCTS "${SHADER_METAL_PATH}"
             DEPENDS "${SHADERS_HLSL}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${TARGET_SHADERS_DIR}"
-            COMMAND ${DXC_EXE} -spirv -T ${SHADER_PROFILE} -E ${OLD_ENTRY_POINT} ${SHADER_DEFINITION_ARGUMENTS} "${SHADERS_HLSL}" -Fo "${SHADER_SPIRV_PATH}"
+            COMMAND ${DXC_EXE} -spirv -T ${SHADER_PROFILE} -E ${OLD_ENTRY_POINT} ${SHADER_DEFINITION_ARGUMENTS} "${SHADERS_HLSL}" -Fo "${SHADER_SPIRV_PATH}" ${HLSL_DEFINITIONS}
             COMMAND ${SPIRV_CROSS_EXE} --msl --msl-version 020101 ${EXTRA_OPTIONS} --rename-entry-point ${OLD_ENTRY_POINT} ${NEW_ENTRY_POINT} ${SHADER_TYPE} --output "${SHADER_METAL_PATH}" "${SHADER_SPIRV_PATH}"
         )
 
@@ -267,17 +294,7 @@ function(compile_hlsl_shaders FOR_TARGET SHADERS_HLSL PROFILE_VER SHADER_TYPES O
         set(OUTPUT_TYPE_ARG -spirv -fspv-reflect)
     endif()
 
-    set(EXTRA_COMPILE_FLAGS -Wno-ignored-attributes)
-
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(EXTRA_COMPILE_FLAGS ${EXTRA_COMPILE_FLAGS} /Od)
-    else()
-        set(EXTRA_COMPILE_FLAGS ${EXTRA_COMPILE_FLAGS} /O3 /Gfa /all_resources_bound)
-    endif()
-
-    if(METHANE_SHADERS_CODEVIEW_ENABLED OR CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(EXTRA_COMPILE_FLAGS ${EXTRA_COMPILE_FLAGS} /Zi /Qembed_debug)
-    endif()
+    get_hlsl_compile_flags(EXTRA_COMPILE_FLAGS)
 
     foreach(KEY_VALUE_STRING ${SHADER_TYPES})
         trim_spaces(${KEY_VALUE_STRING} KEY_VALUE_STRING)
