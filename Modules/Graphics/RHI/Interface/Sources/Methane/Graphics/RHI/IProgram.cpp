@@ -98,7 +98,7 @@ ProgramArgumentNotFoundException::ProgramArgumentNotFoundException(const IProgra
     : std::invalid_argument(fmt::format("Program '{}' does not have argument '{}' of {} shader.",
                                         program.GetName(), argument.GetName(), magic_enum::enum_name(argument.GetShaderType())))
     , m_program(program)
-    , m_argument_ptr(std::make_unique<IProgram::Argument>(argument))
+    , m_argument(argument)
 { }
 
 Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)

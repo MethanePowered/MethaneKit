@@ -229,7 +229,7 @@ Rhi::IProgramBindings::IArgumentBinding& ProgramBindings::Get(const Rhi::IProgra
     META_FUNCTION_TASK();
     const auto binding_by_argument_it = m_binding_by_argument.find(shader_argument);
     if (binding_by_argument_it == m_binding_by_argument.end())
-        throw Rhi::IProgram::Argument::NotFoundException(*m_program_ptr, shader_argument);
+        throw Rhi::ProgramArgumentNotFoundException(*m_program_ptr, shader_argument);
 
     return *binding_by_argument_it->second;
 }
