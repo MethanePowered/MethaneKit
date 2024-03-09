@@ -112,15 +112,6 @@ public:
         const Rhi::RenderContext render_context = render_pattern.GetRenderContext();
         static const QuadMesh<ScreenQuadVertex> s_quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
         const Rhi::IShader::MacroDefinitions ps_macro_definitions = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
-        Rhi::ProgramArgumentAccessors program_argument_accessors {
-            { { Rhi::ShaderType::Pixel, "g_constants" }, Rhi::ProgramArgumentAccessType::Mutable }
-        };
-
-        if (m_settings.texture_mode != TextureMode::Disabled)
-        {
-            program_argument_accessors.emplace(Rhi::ShaderType::Pixel, "g_texture", Rhi::ProgramArgumentAccessType::Mutable);
-            program_argument_accessors.emplace(Rhi::ShaderType::Pixel, "g_sampler", Rhi::ProgramArgumentAccessType::Constant);
-        }
 
         const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
         const std::string state_name = fmt::format("{} Render State", quad_name);
@@ -149,7 +140,7 @@ public:
                                 Rhi::IProgram::InputBufferLayout::ArgumentSemantics { s_quad_mesh.GetVertexLayout().GetSemantics() }
                             }
                         },
-                        program_argument_accessors,
+                        Rhi::ProgramArgumentAccessors{ },
                         render_pattern.GetAttachmentFormats(),
                     }),
                 render_pattern

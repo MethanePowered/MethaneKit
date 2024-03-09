@@ -68,8 +68,8 @@ protected:
     const FrameArgumentBindings&    GetFrameArgumentBindings() const noexcept { return m_frame_bindings_by_argument; }
     const Ptr<ArgumentBinding>&     GetFrameArgumentBinding(Data::Index frame_index, const Rhi::ProgramArgumentAccessor& argument_accessor) const;
 
-    virtual void InitArgumentBindings(const ArgumentAccessors& argument_accessors);
-    virtual Ptr<ArgumentBinding>    CreateArgumentBindingInstance(const Ptr<ArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const;
+    virtual void                 InitArgumentBindings();
+    virtual Ptr<ArgumentBinding> CreateArgumentBindingInstance(const Ptr<ArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const;
 
     Rhi::IShader& GetShaderRef(Rhi::ShaderType shader_type) const;
     uint32_t GetInputBufferIndexByArgumentSemantic(const std::string& argument_semantic) const;
@@ -89,7 +89,7 @@ protected:
 
 private:
     const Context&         m_context;
-    const Settings         m_settings;
+    Settings               m_settings;
     const ShadersByType    m_shaders_by_type;
     const Rhi::ShaderTypes m_shader_types;
     ArgumentBindings       m_binding_by_argument;

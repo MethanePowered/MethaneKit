@@ -484,10 +484,6 @@ private:
 
 The compiled vertex shader is loaded from resources with respect to macro definition `UNIFORMS_BUFFER_ENABLED`,
 which was used to compile it at build-time using CMake function `add_methane_shaders_source`.
-Also `ProgramArgumentAccessors` now describe new program argument `g_uniforms`: it contains shader type where it is used
-and type of access to the argument `ProgramArgumentAccessor::Type::FrameConstant`, which means that only one buffer
-is bound to this program argument at each frame (argument is constant per frame). Other argument accessor types include 
-`Constant` (bound to single resource all the time) and `Mutable` (can be bound to different resources).
 
 ```cpp
 class HelloCubeApp final : public GraphicsApp
@@ -509,11 +505,6 @@ class HelloCubeApp final : public GraphicsApp
                         {
                             { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions } },
                             { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
-                        },
-                        ...
-                        Rhi::ProgramArgumentAccessors
-                        {
-                            { { Rhi::ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccessType::FrameConstant }
                         },
                         ...
                     }

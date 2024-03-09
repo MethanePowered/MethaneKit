@@ -90,7 +90,6 @@ function(get_hlsl_compile_definitions OUT_HLSL_COMPILE_DEFINITIONS)
         -D META_ARG_CONSTANT=space0
         -D META_ARG_FRAME_CONSTANT=space1
         -D META_ARG_MUTABLE=space2
-        -D META_ARG_MUTABLE_ADDRESS=space3
         PARENT_SCOPE)
 endfunction()
 

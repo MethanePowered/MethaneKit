@@ -65,7 +65,7 @@ protected:
 
 private:
     const Context&     m_context;
-    const Settings     m_settings;
+    Settings           m_settings;
     Rhi::ResourceViews m_resource_views;
     bool               m_emit_callback_enabled = true;
 };

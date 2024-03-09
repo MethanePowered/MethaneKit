@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2024 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ private:
     void InitArgumentBuffersSize();
 
     // Base::Program overrides
-    void InitArgumentBindings(const ArgumentAccessors& argument_accessors) override;
+    void InitArgumentBindings() override;
     Ptr<ArgumentBinding> CreateArgumentBindingInstance(const Ptr<ArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const override;
 
     MTLVertexDescriptor*        m_mtl_vertex_desc = nil;

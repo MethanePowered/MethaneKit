@@ -146,16 +146,7 @@ void ShadowCubeApp::Init()
                         rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                rhi::ProgramArgumentAccessors
-                {
-                    { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, rhi::ProgramArgumentAccessor::Type::Mutable       },
-                    { { rhi::ShaderType::Pixel,  "g_scene_uniforms" }, rhi::ProgramArgumentAccessor::Type::FrameConstant },
-                    { { rhi::ShaderType::Pixel,  "g_constants"      }, rhi::ProgramArgumentAccessor::Type::Constant      },
-                    { { rhi::ShaderType::Pixel,  "g_shadow_map"     }, rhi::ProgramArgumentAccessor::Type::FrameConstant },
-                    { { rhi::ShaderType::Pixel,  "g_shadow_sampler" }, rhi::ProgramArgumentAccessor::Type::Constant      },
-                    { { rhi::ShaderType::Pixel,  "g_texture"        }, rhi::ProgramArgumentAccessor::Type::Mutable       },
-                    { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, rhi::ProgramArgumentAccessor::Type::Constant      },
-                },
+                rhi::ProgramArgumentAccessors{ },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }
         ),
@@ -196,10 +187,7 @@ void ShadowCubeApp::Init()
                     { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), vs_main, textured_definitions } },
                 },
                 final_state_settings.program.GetSettings().input_buffer_layouts,
-                rhi::ProgramArgumentAccessors
-                {
-                    { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, rhi::ProgramArgumentAccessor::Type::Mutable },
-                },
+                rhi::ProgramArgumentAccessors{ },
                 m_shadow_pass_pattern.GetAttachmentFormats()
             }
         ),

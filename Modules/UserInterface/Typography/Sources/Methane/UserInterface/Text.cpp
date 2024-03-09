@@ -340,13 +340,7 @@ public:
                                 rhi::Program::InputBufferLayout::ArgumentSemantics{ "POSITION", "TEXCOORD" }
                             }
                         },
-                        rhi::ProgramArgumentAccessors
-                        {
-                            { { rhi::ShaderType::Vertex, "g_uniforms" },  rhi::ProgramArgumentAccessor::Type::Mutable },
-                            { { rhi::ShaderType::Pixel,  "g_constants" }, rhi::ProgramArgumentAccessor::Type::Mutable },
-                            { { rhi::ShaderType::Pixel,  "g_texture" },   rhi::ProgramArgumentAccessor::Type::Mutable },
-                            { { rhi::ShaderType::Pixel,  "g_sampler" },   rhi::ProgramArgumentAccessor::Type::Constant },
-                        },
+                        rhi::ProgramArgumentAccessors{ },
                         render_pattern.GetAttachmentFormats()
                     }),
                 render_pattern

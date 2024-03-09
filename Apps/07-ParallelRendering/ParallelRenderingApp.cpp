@@ -148,9 +148,9 @@ void ParallelRenderingApp::Init()
                 },
                 rhi::ProgramArgumentAccessors
                 {
-                    { { rhi::ShaderType::All,   "g_uniforms"      }, rhi::ProgramArgumentAccessor::Type::Mutable, true },
-                    { { rhi::ShaderType::Pixel, "g_texture_array" }, rhi::ProgramArgumentAccessor::Type::Constant },
-                    { { rhi::ShaderType::Pixel, "g_sampler"       }, rhi::ProgramArgumentAccessor::Type::Constant },
+                    // Addressable argument is manually defined
+                    { { rhi::ShaderType::All, "g_uniforms" }, rhi::ProgramArgumentAccessor::Type::Mutable, true },
+                    // Other arguments are defined in shader register spaces
                 },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }

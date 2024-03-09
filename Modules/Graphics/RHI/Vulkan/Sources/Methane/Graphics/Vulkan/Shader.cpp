@@ -163,18 +163,21 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
 
     for (const spirv_cross::Resource& resource : spirv_resources)
     {
-        const Rhi::IProgram::Argument shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
-        const auto argument_acc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const Rhi::ProgramArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
-                                                   ? Rhi::ProgramArgumentAccessor(shader_argument)
-                                                   : *argument_acc_it;
-
         const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
         const uint32_t array_size = GetArraySize(spirv_type);
 
         ProgramBindings::ArgumentBinding::ByteCodeMap byte_code_map{ shader_type };
         META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationDescriptorSet, byte_code_map.descriptor_set_offset));
         META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationBinding, byte_code_map.binding_offset));
+
+        const uint32_t descriptor_set_id = spirv_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+        const Rhi::ProgramArgumentAccessType arg_access_type = Rhi::ProgramArgumentAccessor::GetTypeByRegisterSpace(descriptor_set_id);
+
+        const Rhi::ProgramArgument shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
+        const Rhi::ProgramArgumentAccessor* argument_accessor_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Rhi::ProgramArgumentAccessor argument_acc = argument_accessor_ptr
+                                                          ? *argument_accessor_ptr
+                                                          : Rhi::ProgramArgumentAccessor(shader_argument, arg_access_type);
 
         argument_bindings.push_back(std::make_shared<ProgramBindings::ArgumentBinding>(
             shader.GetContext(),

@@ -125,7 +125,7 @@ Program::Program(const Base::Context& context, const Settings& settings)
     , m_dx_context(dynamic_cast<const IContext&>(context))
 {
     META_FUNCTION_TASK();
-    InitArgumentBindings(settings.argument_accessors);
+    InitArgumentBindings();
     InitRootSignature();
 }
 

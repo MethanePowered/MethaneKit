@@ -122,13 +122,7 @@ void TexturedCubeApp::Init()
                             rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                         }
                     },
-                    rhi::ProgramArgumentAccessors
-                    {
-                        { { rhi::ShaderType::All,   "g_uniforms"  }, rhi::ProgramArgumentAccessor::Type::FrameConstant },
-                        { { rhi::ShaderType::Pixel, "g_constants" }, rhi::ProgramArgumentAccessor::Type::Constant },
-                        { { rhi::ShaderType::Pixel, "g_texture"   }, rhi::ProgramArgumentAccessor::Type::Constant },
-                        { { rhi::ShaderType::Pixel, "g_sampler"   }, rhi::ProgramArgumentAccessor::Type::Constant },
-                    },
+                    rhi::ProgramArgumentAccessors{ },
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }
             ),

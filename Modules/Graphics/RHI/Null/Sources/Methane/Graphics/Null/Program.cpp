@@ -44,7 +44,7 @@ void Program::SetArgumentBindings(const ResourceArgumentDescs& argument_descript
     {
         dynamic_cast<Shader&>(GetShaderRef(shader_type)).InitArgumentBindings(argument_descriptions);
     }
-    Base::Program::InitArgumentBindings(GetSettings().argument_accessors);
+    Base::Program::InitArgumentBindings();
 }
 
 } // namespace Methane::Graphics::Null

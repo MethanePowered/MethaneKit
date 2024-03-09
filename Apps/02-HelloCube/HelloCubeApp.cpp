@@ -158,14 +158,7 @@ public:
                                 Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION" , "COLOR" }
                             }
                         },
-#ifdef UNIFORMS_BUFFER_ENABLED
-                        Rhi::ProgramArgumentAccessors
-                        {
-                            { { Rhi::ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccessType::FrameConstant }
-                        },
-#else
                         Rhi::ProgramArgumentAccessors{ },
-#endif
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),

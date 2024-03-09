@@ -34,10 +34,15 @@ namespace Methane::Graphics::Rhi
 
 static const std::hash<std::string_view> g_argument_name_hash;
 
+inline size_t GetProgramArgumentHash(ShaderType shader_type, std::string_view argument_name)
+{
+    return g_argument_name_hash(argument_name) ^ (magic_enum::enum_index(shader_type).value() << 1);
+}
+
 ProgramArgument::ProgramArgument(ShaderType shader_type, std::string_view argument_name) noexcept
     : m_shader_type(shader_type)
     , m_name(argument_name)
-    , m_hash(g_argument_name_hash(m_name) ^ (magic_enum::enum_index(shader_type).value() << 1))
+    , m_hash(GetProgramArgumentHash(shader_type, argument_name))
 { }
 
 bool ProgramArgument::operator==(const ProgramArgument& other) const noexcept
@@ -58,6 +63,25 @@ ProgramArgument::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
     return fmt::format("{} shaders argument '{}'", magic_enum::enum_name(m_shader_type), m_name);
+}
+
+void ProgramArgument::MergeShaderTypes(ShaderType shader_type)
+{
+    META_FUNCTION_TASK();
+    ShaderTypes merged_shader_types{ m_shader_type, shader_type };
+    if (merged_shader_types != g_all_shader_types)
+        return;
+
+    m_shader_type = ShaderType::All;
+    m_hash = GetProgramArgumentHash(m_shader_type, m_name);
+}
+
+ProgramArgumentAccessor::Type ProgramArgumentAccessor::GetTypeByRegisterSpace(uint32_t register_space)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_LESS_DESCR(register_space, magic_enum::enum_count<ProgramArgumentAccessor::Type>(),
+                              "shader register space is out of values range for Rhi::ProgramArgumentAccessType enum");
+    return static_cast<ProgramArgumentAccessor::Type>(register_space);
 }
 
 ProgramArgumentAccessor::ProgramArgumentAccessor(ShaderType shader_type, std::string_view argument_name, Type accessor_type, bool addressable) noexcept
@@ -83,15 +107,16 @@ ProgramArgumentAccessor::operator std::string() const noexcept
     return fmt::format("{} ({}{})", ProgramArgument::operator std::string(), magic_enum::enum_name(m_accessor_type), (m_addressable ? ", Addressable" : ""));
 }
 
-ProgramArgumentAccessors::const_iterator IProgram::FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const ProgramArgument& argument)
+const ProgramArgumentAccessor* IProgram::FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const ProgramArgument& argument)
 {
     META_FUNCTION_TASK();
-    if (const auto argument_desc_it = argument_accessors.find(argument);
-        argument_desc_it != argument_accessors.end())
-        return argument_desc_it;
+    if (const auto arg_access_it = argument_accessors.find(argument);
+        arg_access_it != argument_accessors.end())
+        return &*arg_access_it;
 
     const Argument all_shaders_argument(ShaderType::All, argument.GetName());
-    return argument_accessors.find(all_shaders_argument);
+    const auto arg_access_it = argument_accessors.find(all_shaders_argument);
+    return arg_access_it == argument_accessors.end() ? nullptr : &*arg_access_it;
 }
 
 ProgramArgumentNotFoundException::ProgramArgumentNotFoundException(const IProgram& program, const ProgramArgument& argument)

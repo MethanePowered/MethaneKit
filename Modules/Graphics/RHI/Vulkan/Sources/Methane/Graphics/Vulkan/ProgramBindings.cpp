@@ -163,16 +163,13 @@ void ProgramBindings::SetResourcesForArguments(const ResourceViewsByArgument& re
     Base::ProgramBindings::SetResourcesForArguments(resource_views_by_argument);
 
     auto& program = static_cast<Program&>(GetProgram());
-    const Rhi::ProgramArgumentAccessors& program_argument_accessors = program.GetSettings().argument_accessors;
     std::vector<std::vector<uint32_t>> dynamic_offsets_by_set_index;
     dynamic_offsets_by_set_index.resize(m_descriptor_sets.size());
 
-    ForEachArgumentBinding([&program, &program_argument_accessors, &dynamic_offsets_by_set_index]
-                           (const Rhi::IProgram::Argument& program_argument, const ArgumentBinding& argument_binding)
+    ForEachArgumentBinding([&program, &dynamic_offsets_by_set_index]
+                           (const Rhi::IProgram::Argument&, const ArgumentBinding& argument_binding)
         {
-            const auto program_accessor_it = Rhi::IProgram::FindArgumentAccessor(program_argument_accessors, program_argument);
-            META_CHECK_ARG(program_argument, program_accessor_it != program_argument_accessors.end());
-            const Rhi::ProgramArgumentAccessor& program_argument_accessor = *program_accessor_it;
+            const Rhi::ProgramArgumentAccessor& program_argument_accessor = argument_binding.GetSettings().argument;
             if (!program_argument_accessor.IsAddressable())
                 return;
 

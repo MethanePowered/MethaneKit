@@ -68,30 +68,32 @@ const Ptr<Rhi::IShader>& Program::GetShader(Rhi::ShaderType shader_type) const
     return m_shaders_by_type[magic_enum::enum_index(shader_type).value()];
 }
 
-void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
+void Program::InitArgumentBindings()
 {
     META_FUNCTION_TASK();
     Rhi::ShaderTypes all_shader_types;
     std::map<std::string_view, Rhi::ShaderTypes, std::less<>> shader_types_by_argument_name_map;
-    
+    std::map<Argument, Ptr<ArgumentBinding>> binding_by_argument;
+
     m_binding_by_argument.clear();
     for (const Ptr<Rhi::IShader>& shader_ptr : m_settings.shaders)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(shader_ptr, "empty shader pointer in program is not allowed");
         const Rhi::ShaderType shader_type = shader_ptr->GetType();
         all_shader_types.insert(shader_type);
-        
-        const Ptrs<ProgramArgumentBinding> argument_bindings = static_cast<const Shader&>(*shader_ptr).GetArgumentBindings(argument_accessors);
-        for (const Ptr<ProgramBindings::ArgumentBinding>& argument_binging_ptr : argument_bindings)
+
+        const auto& shader = static_cast<const Shader&>(*shader_ptr);
+        const Ptrs<ProgramArgumentBinding> argument_binding_ptrs = shader.GetArgumentBindings(m_settings.argument_accessors);
+        for(const Ptr<ProgramArgumentBinding>& argument_binding_ptr : argument_binding_ptrs)
         {
-            META_CHECK_ARG_NOT_NULL_DESCR(argument_binging_ptr, "empty resource binding provided by shader");
-            const Argument& shader_argument = argument_binging_ptr->GetSettings().argument;
-            if (const auto [it, added] = m_binding_by_argument.try_emplace(shader_argument, argument_binging_ptr);
+            META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "empty resource binding provided by shader");
+            const Argument& shader_argument = argument_binding_ptr->GetSettings().argument;
+            shader_types_by_argument_name_map[shader_argument.GetName()].insert(shader_argument.GetShaderType());
+            if (const auto [it, added] = m_binding_by_argument.try_emplace(shader_argument, argument_binding_ptr);
                 !added)
             {
-                it->second->MergeSettings(*argument_binging_ptr);
+                it->second->MergeSettings(*argument_binding_ptr);
             }
-            shader_types_by_argument_name_map[shader_argument.GetName()].insert(shader_argument.GetShaderType());
         }
     }
 
@@ -101,7 +103,16 @@ void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
         for (const auto& [argument_name, shader_types]: shader_types_by_argument_name_map)
         {
             if (shader_types != all_shader_types)
+            {
+                for(Rhi::ShaderType shader_type : shader_types)
+                {
+                    const Argument shader_argument(shader_type, argument_name);
+                    const auto argument_and_binding_it = m_binding_by_argument.find(shader_argument);
+                    META_CHECK_ARG_TRUE(argument_and_binding_it != m_binding_by_argument.end() && argument_and_binding_it->second);
+                    m_settings.argument_accessors.emplace(argument_and_binding_it->second->GetSettings().argument);
+                }
                 continue;
+            }
 
             Ptr<ProgramBindings::ArgumentBinding> argument_binding_ptr;
             for (Rhi::ShaderType shader_type: all_shader_types)
@@ -121,7 +132,9 @@ void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
             }
 
             META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "failed to create resource binding for argument '{}'", argument_name);
-            m_binding_by_argument.try_emplace(Argument{ Rhi::ShaderType::All, argument_name }, argument_binding_ptr);
+            const Argument all_shaders_argument{ Rhi::ShaderType::All, argument_name };
+            m_binding_by_argument.try_emplace(all_shaders_argument, argument_binding_ptr);
+            m_settings.argument_accessors.emplace(all_shaders_argument, argument_binding_ptr->GetSettings().argument.GetAccessorType());
         }
     }
 

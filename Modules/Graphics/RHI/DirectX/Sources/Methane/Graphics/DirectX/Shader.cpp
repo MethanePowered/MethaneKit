@@ -184,11 +184,10 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const Rhi::IProgram::Argument shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
-        const auto argument_acc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const Rhi::ProgramArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
-                                                   ? Rhi::ProgramArgumentAccessor(shader_argument)
-                                                   : *argument_acc_it;
+        const Rhi::ProgramArgument shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
+        const Rhi::ProgramArgumentAccessor* argument_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Rhi::ProgramArgumentAccessor argument_acc = argument_ptr ? *argument_ptr
+                                                        : Rhi::ProgramArgumentAccessor(shader_argument);
 
         ProgramBindings::ArgumentBinding::Type dx_binding_type = ProgramBindings::ArgumentBinding::Type::DescriptorTable;
         if (argument_acc.IsAddressable())

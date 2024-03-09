@@ -105,12 +105,7 @@ void CubeMapArrayApp::Init()
                         rhi::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                rhi::ProgramArgumentAccessors
-                {
-                    { { rhi::ShaderType::All,   "g_uniforms"      }, rhi::ProgramArgumentAccessor::Type::FrameConstant },
-                    { { rhi::ShaderType::Pixel, "g_texture_array" }, rhi::ProgramArgumentAccessor::Type::Constant },
-                    { { rhi::ShaderType::Pixel, "g_sampler"       }, rhi::ProgramArgumentAccessor::Type::Constant },
-                },
+                rhi::ProgramArgumentAccessors{ },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }),
         GetScreenRenderPattern()
@@ -175,9 +170,9 @@ void CubeMapArrayApp::Init()
 
         // Configure program resource bindings
         frame.cube.program_bindings = m_render_state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::All,   "g_uniforms"      }, { { frame.cube.uniforms_buffer.GetInterface()  } } },
-            { { rhi::ShaderType::Pixel, "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture().GetInterface() } } },
-            { { rhi::ShaderType::Pixel, "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
+            { { rhi::ShaderType::Vertex, "g_uniforms"      }, { { frame.cube.uniforms_buffer.GetInterface()  } } },
+            { { rhi::ShaderType::Pixel,  "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture().GetInterface() } } },
+            { { rhi::ShaderType::Pixel,  "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
         }, frame.index);
         frame.cube.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
 

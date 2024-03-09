@@ -47,6 +47,7 @@ enum class ShaderType : uint32_t
 };
 
 using ShaderTypes = std::set<ShaderType>;
+static const ShaderTypes g_all_shader_types = { ShaderType::Vertex, ShaderType::Pixel };
 
 struct ShaderMacroDefinition
 {

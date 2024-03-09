@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2024 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -126,9 +126,28 @@ static uint32_t GetArraySizeOfStructMember(MTLStructMember* mtl_struct_member)
 }
 
 [[nodiscard]]
-inline bool IsArgumentBufferName(std::string_view argument_name)
+static bool IsArgumentBufferName(std::string_view argument_name, Rhi::ProgramArgumentAccessType& arg_access_type)
 {
-    return argument_name == "top_level_global_ab" || argument_name.find("spvDescriptorSet") == 0;
+    META_FUNCTION_TASK();
+    if (argument_name == "top_level_global_ab")
+    {
+        arg_access_type = Rhi::ProgramArgumentAccessType::Mutable;
+        return true;
+    }
+
+    static const std::regex s_descriptor_set_regex("spvDescriptorSet(\\d+)");
+
+    std::smatch id_match;
+    const std::string argument_name_str(argument_name);
+    if (std::regex_match(argument_name_str, id_match, s_descriptor_set_regex) &&
+        id_match.size() == 2)
+    {
+        const uint32_t register_space = std::stoi(id_match[1]);
+        arg_access_type = Rhi::ProgramArgumentAccessor::GetTypeByRegisterSpace(register_space);
+        return true;
+    }
+
+    return false;
 }
 
 #ifdef METHANE_LOGGING_ENABLED
@@ -247,16 +266,17 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
 
     const auto add_argument_binding = [this, &argument_bindings, &argument_accessors]
                                       (const std::string& argument_name,
+                                       Rhi::ProgramArgumentAccessType argument_access,
                                        Rhi::ResourceType resource_type,
                                        uint32_t array_length,
                                        uint32_t argument_index,
                                        std::optional<uint32_t> argument_buffer_offset_opt)
     {
-        const Rhi::IProgram::Argument shader_argument(GetType(), Base::Shader::GetCachedArgName(argument_name));
-        const auto argument_desc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const Rhi::ProgramArgumentAccessor argument_desc = argument_desc_it == argument_accessors.end()
-                                                         ? Rhi::ProgramArgumentAccessor(shader_argument)
-                                                         : *argument_desc_it;
+        const Rhi::ProgramArgument shader_argument(GetType(), Base::Shader::GetCachedArgName(argument_name));
+        const Rhi::ProgramArgumentAccessor* argument_accessor_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Rhi::ProgramArgumentAccessor& argument_accessor = argument_accessor_ptr
+                                                              ? *argument_accessor_ptr
+                                                              : Rhi::ProgramArgumentAccessor(shader_argument, argument_access);
 
         ProgramArgumentBindingSettings::StructOffsetByShaderType argument_buffer_offset_by_shader_type;
         if (argument_buffer_offset_opt)
@@ -269,7 +289,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                 ProgramArgumentBindingSettings
                 {
                     {
-                        argument_desc,
+                        argument_accessor,
                         resource_type,
                         array_length
                     },
@@ -294,7 +314,8 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         }
 
         const auto argument_index = static_cast<uint32_t>(mtl_binding.index);
-        if (mtl_binding.type == MTLBindingTypeBuffer && IsArgumentBufferName(argument_name))
+        Rhi::ProgramArgumentAccessType arg_access_type = Rhi::ProgramArgumentAccessType::Mutable;
+        if (mtl_binding.type == MTLBindingTypeBuffer && IsArgumentBufferName(argument_name, arg_access_type))
         {
             // Get arguments from argument buffer layout
             META_CHECK_ARG_LESS_DESCR(argument_index, m_argument_buffer_layouts.size(),
@@ -303,6 +324,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
             {
                 add_argument_binding(
                     name,
+                    arg_access_type,
                     member.resource_type,
                     member.array_size,
                     argument_index,
@@ -314,6 +336,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         {
             add_argument_binding(
                 argument_name,
+                arg_access_type,
                 GetResourceTypeByMetalBindingType(mtl_binding.type),
                 GetBindingArrayLength(mtl_binding),
                 argument_index,
@@ -334,9 +357,11 @@ void Shader::SetNativeBindings(NSArray<id<MTLBinding>>* mtl_bindings)
     // Fill argument buffer layouts
     for(id<MTLBinding> mtl_binding in m_mtl_bindings)
     {
+        Rhi::ProgramArgumentAccessType arg_access_type = Rhi::ProgramArgumentAccessType::Mutable;
         const std::string argument_name = MacOS::ConvertFromNsString(mtl_binding.name);
-        if (mtl_binding.argument && mtl_binding.used && mtl_binding.type == MTLBindingTypeBuffer &&
-            IsArgumentBufferName(argument_name))
+        if (mtl_binding.argument && mtl_binding.used &&
+            mtl_binding.type == MTLBindingTypeBuffer &&
+            IsArgumentBufferName(argument_name, arg_access_type))
         {
             // Argument buffer structure
             const auto argument_index = static_cast<uint32_t>(mtl_binding.index);

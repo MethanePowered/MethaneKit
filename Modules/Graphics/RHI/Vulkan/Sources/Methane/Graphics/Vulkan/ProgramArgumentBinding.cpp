@@ -72,6 +72,7 @@ void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& o
 {
     META_FUNCTION_TASK();
     Base::ProgramArgumentBinding::MergeSettings(other);
+    m_settings_vk.argument = Base::ProgramArgumentBinding::GetSettings().argument;
 
     const Settings& settings_vk = dynamic_cast<const ProgramArgumentBinding&>(other).GetVulkanSettings();
     META_CHECK_ARG_EQUAL(m_settings_vk.descriptor_type, settings_vk.descriptor_type);

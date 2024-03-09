@@ -38,9 +38,11 @@ void ProgramArgumentBinding::MergeSettings(const ProgramArgumentBinding& other)
 {
     META_FUNCTION_TASK();
     const Settings& settings = other.GetSettings();
-    META_CHECK_ARG_EQUAL(settings.argument, m_settings.argument);
+    META_CHECK_ARG_EQUAL(settings.argument.GetName(), m_settings.argument.GetName());
+    META_CHECK_ARG_EQUAL(settings.argument.GetAccessorType(), m_settings.argument.GetAccessorType());
     META_CHECK_ARG_EQUAL(settings.resource_type, m_settings.resource_type);
     META_CHECK_ARG_EQUAL(settings.resource_count, m_settings.resource_count);
+    m_settings.argument.MergeShaderTypes(settings.argument.GetShaderType());
 }
 
 bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resource_views)

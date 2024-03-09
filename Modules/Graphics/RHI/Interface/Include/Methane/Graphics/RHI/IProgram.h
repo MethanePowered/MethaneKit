@@ -81,6 +81,8 @@ public:
     [[nodiscard]] bool operator<(const ProgramArgument& other) const noexcept;
     [[nodiscard]] virtual explicit operator std::string() const noexcept;
 
+    void MergeShaderTypes(ShaderType shader_type);
+
 private:
     ShaderType       m_shader_type;
     std::string_view m_name;
@@ -102,11 +104,13 @@ private:
     ProgramArgument m_argument;
 };
 
+// NOTE: Access Type enum values should strictly match with
+// register space values of 'META_ARG_*' shader definitions from MethaneShaders.cmake:
 enum class ProgramArgumentAccessType : uint32_t
 {
-    Constant,
-    FrameConstant,
-    Mutable
+    Constant,      // META_ARG_CONSTANT(0)
+    FrameConstant, // META_ARG_FRAME_CONSTANT(1)
+    Mutable        // META_ARG_MUTABLE(2)
 };
 
 using ProgramArgumentAccessMask = Data::EnumMask<ProgramArgumentAccessType>;
@@ -119,7 +123,10 @@ public:
     using Type = ProgramArgumentAccessType;
     using Mask = ProgramArgumentAccessMask;
 
-    ProgramArgumentAccessor(ShaderType shader_type, std::string_view argument_name, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
+    static Type GetTypeByRegisterSpace(uint32_t register_space);
+
+    ProgramArgumentAccessor(ShaderType shader_type, std::string_view argument_name,
+                            Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
     ProgramArgumentAccessor(const ProgramArgument& argument, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
 
     [[nodiscard]] size_t GetAccessorIndex() const noexcept;
@@ -161,7 +168,8 @@ struct IProgram
     using ArgumentAccessors       = ProgramArgumentAccessors;
     using ResourceViewsByArgument = std::unordered_map<Argument, ResourceViews, Argument::Hash>;
 
-    static ArgumentAccessors::const_iterator FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const Argument& argument);
+    static const ArgumentAccessor*      FindArgumentAccessor(const ArgumentAccessors& argument_accessors,
+                                                             const Argument& argument);
 
     // Create IProgram instance
     [[nodiscard]] static Ptr<IProgram> Create(const IContext& context, const Settings& settings);

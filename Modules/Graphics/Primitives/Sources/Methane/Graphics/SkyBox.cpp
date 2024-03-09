@@ -113,12 +113,7 @@ private:
                         Rhi::Program::InputBufferLayout::ArgumentSemantics { mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                Rhi::ProgramArgumentAccessors
-                {
-                    { { Rhi::ShaderType::Vertex, "g_skybox_uniforms" }, Rhi::ProgramArgumentAccessType::FrameConstant },
-                    { { Rhi::ShaderType::Pixel,  "g_skybox_texture"  }, Rhi::ProgramArgumentAccessType::Constant      },
-                    { { Rhi::ShaderType::Pixel,  "g_texture_sampler" }, Rhi::ProgramArgumentAccessType::Constant      },
-                },
+                Rhi::ProgramArgumentAccessors{ },
                 render_pattern.GetAttachmentFormats()
             });
         m_program.SetName("Sky-box shading");

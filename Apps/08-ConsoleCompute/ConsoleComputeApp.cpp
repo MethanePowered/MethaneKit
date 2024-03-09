@@ -149,12 +149,7 @@ void ConsoleComputeApp::Init()
 
     m_compute_state = m_compute_context.CreateComputeState({
             m_compute_context.CreateProgram({
-            rhi::Program::ShaderSet { { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } } },
-            rhi::ProgramInputBufferLayouts { },
-            rhi::ProgramArgumentAccessors
-            {
-                { { rhi::ShaderType::Compute, "g_frame_texture" }, rhi::ProgramArgumentAccessor::Type::Mutable },
-            },
+            rhi::Program::ShaderSet { { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } } }
         }),
         rhi::ThreadGroupSize(16U, 16U, 1U)
     });

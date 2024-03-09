@@ -214,11 +214,6 @@ description here.
 - Pixel and vertex shaders are loaded for specific combination of macro definitions used during compilation during build.
   This macro definitions set is described in `rhi::Shader::MacroDefinitions` variable `textured_shadows_definitions` which
   is passed to `rhi::Program::ShaderSet` description structure.
-- Configuration of `rhi::ProgramArgumentAccessors` is more complex than for simple cube mesh and mostly describes
-  Pixel-shader specific argument accessor types, except `g_mesh_uniforms` for Vertex-shader.
-  `g_constants`, `g_shadow_sampler`, `g_texture_sampler` arguments are used with `Constant` type, 
-  `g_scene_uniforms` and `g_shadow_map` arguments are used with `FrameConstant` type while others have `Mutable` type, 
-  meaning that they can bind to different resources for different draw calls of any frame.
 
 ```cpp
     // ========= Final Pass Render & View States =========
@@ -245,16 +240,7 @@ description here.
                         rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                rhi::ProgramArgumentAccessors
-                {
-                    { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, rhi::ProgramArgumentAccessor::Type::Mutable       },
-                    { { rhi::ShaderType::Pixel,  "g_scene_uniforms" }, rhi::ProgramArgumentAccessor::Type::FrameConstant },
-                    { { rhi::ShaderType::Pixel,  "g_constants"      }, rhi::ProgramArgumentAccessor::Type::Constant      },
-                    { { rhi::ShaderType::Pixel,  "g_shadow_map"     }, rhi::ProgramArgumentAccessor::Type::FrameConstant },
-                    { { rhi::ShaderType::Pixel,  "g_shadow_sampler" }, rhi::ProgramArgumentAccessor::Type::Constant      },
-                    { { rhi::ShaderType::Pixel,  "g_texture"        }, rhi::ProgramArgumentAccessor::Type::Mutable       },
-                    { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, rhi::ProgramArgumentAccessor::Type::Constant      },
-                },
+                rhi::ProgramArgumentAccessors{ },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }
         ),
@@ -306,10 +292,7 @@ Vertex shader since it will be used for rendering to depth buffer only without c
                     { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), vs_main, textured_definitions } },
                 },
                 final_state_settings.program.GetSettings().input_buffer_layouts,
-                rhi::ProgramArgumentAccessors
-                {
-                    { { rhi::ShaderType::Vertex, "g_mesh_uniforms" }, rhi::ProgramArgumentAccessor::Type::Mutable },
-                },
+                rhi::ProgramArgumentAccessors{ },
                 m_shadow_pass_pattern.GetAttachmentFormats()
             }
         ),

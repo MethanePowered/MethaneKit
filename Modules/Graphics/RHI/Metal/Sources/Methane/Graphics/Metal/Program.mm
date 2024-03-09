@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2024 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -117,13 +117,12 @@ void Program::ReflectRenderPipelineArguments()
 
     SetNativeShaderArguments(Rhi::ShaderType::Vertex, mtl_render_pipeline_reflection.vertexBindings);
     SetNativeShaderArguments(Rhi::ShaderType::Pixel,  mtl_render_pipeline_reflection.fragmentBindings);
-    InitArgumentBindings(settings.argument_accessors);
+    InitArgumentBindings();
 }
 
 void Program::ReflectComputePipelineArguments()
 {
     META_FUNCTION_TASK();
-    const Settings& settings = Base::Program::GetSettings();
 
     // Create dummy pipeline state to get program reflection of vertex and fragment shader arguments
     MTLComputePipelineDescriptor* mtl_reflection_state_desc = [MTLComputePipelineDescriptor new];
@@ -147,7 +146,7 @@ void Program::ReflectComputePipelineArguments()
         return;
 
     SetNativeShaderArguments(Rhi::ShaderType::Compute, mtl_compute_pipeline_reflection.bindings);
-    InitArgumentBindings(settings.argument_accessors);
+    InitArgumentBindings();
 }
 
 void Program::SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<id<MTLBinding>>* mtl_arguments) noexcept
@@ -176,10 +175,10 @@ void Program::InitArgumentBuffersSize()
     });
 }
 
-void Program::InitArgumentBindings(const ArgumentAccessors& argument_accessors)
+void Program::InitArgumentBindings()
 {
     META_FUNCTION_TASK();
-    Base::Program::InitArgumentBindings(argument_accessors);
+    Base::Program::InitArgumentBindings();
 
     // Update argument buffer offsets of the initialized argument bindings
     for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())

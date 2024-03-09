@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2024 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -71,6 +71,7 @@ void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& o
 {
     META_FUNCTION_TASK();
     Base::ProgramArgumentBinding::MergeSettings(other);
+    m_settings_mt.argument = Base::ProgramArgumentBinding::GetSettings().argument;
 
     const Settings& metal_settings = dynamic_cast<const ProgramArgumentBinding&>(other).GetMetalSettings();
     META_CHECK_ARG_EQUAL(m_settings_mt.argument_index, metal_settings.argument_index);

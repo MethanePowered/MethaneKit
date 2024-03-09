@@ -291,8 +291,6 @@ void TexturedCubeApp::Init()
 
 `Rhi::Program` object is created in `Rhi::Program::Settings` structure using `GetRenderContext().CreateProgram(...)` factory method.
 Vertex and Pixel shaders are created and loaded from embedded resources as pre-compiled byte-code.
-Program settings also include additional description `Rhi::ProgramArgumentAccessors` of program arguments bound to graphics resources.
-Argument description defines specific access modifiers for program arguments used in `Rhi::ProgramBindings` object.
 Also, it is important to note that render state settings enables depth testing for correct rendering of cube faces.
 Finally, render state is created using settings structure via `GetRenderContext().CreateRenderState(...)` factory method.
 
@@ -320,13 +318,7 @@ void TexturedCubeApp::Init()
                             rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                         }
                     },
-                    rhi::ProgramArgumentAccessors
-                    {
-                        { { rhi::ShaderType::All,   "g_uniforms"  }, rhi::ProgramArgumentAccessor::Type::FrameConstant },
-                        { { rhi::ShaderType::Pixel, "g_constants" }, rhi::ProgramArgumentAccessor::Type::Constant },
-                        { { rhi::ShaderType::Pixel, "g_texture"   }, rhi::ProgramArgumentAccessor::Type::Constant },
-                        { { rhi::ShaderType::Pixel, "g_sampler"   }, rhi::ProgramArgumentAccessor::Type::Constant },
-                    },
+                    rhi::ProgramArgumentAccessors{ },
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }
             ),
