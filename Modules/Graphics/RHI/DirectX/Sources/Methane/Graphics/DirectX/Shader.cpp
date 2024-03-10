@@ -184,10 +184,11 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
         ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
 
+        const Rhi::ProgramArgumentAccessType arg_access_type = Rhi::ProgramArgumentAccessor::GetTypeByRegisterSpace(binding_desc.Space);
         const Rhi::ProgramArgument shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
         const Rhi::ProgramArgumentAccessor* argument_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
         const Rhi::ProgramArgumentAccessor argument_acc = argument_ptr ? *argument_ptr
-                                                        : Rhi::ProgramArgumentAccessor(shader_argument);
+                                                        : Rhi::ProgramArgumentAccessor(shader_argument, arg_access_type);
 
         ProgramBindings::ArgumentBinding::Type dx_binding_type = ProgramBindings::ArgumentBinding::Type::DescriptorTable;
         if (argument_acc.IsAddressable())
@@ -232,10 +233,6 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                << ", space="        << binding_desc.Space
                << ", flags="        << binding_desc.uFlags
                << ", id="           << binding_desc.uID;
-        if (argument_acc_it == argument_accessors.end())
-        {
-            log_ss << ", no user argument description was found, using default";
-        }
         if (resource_index < shader_desc.BoundResources - 1)
             log_ss << std::endl;
 #endif
