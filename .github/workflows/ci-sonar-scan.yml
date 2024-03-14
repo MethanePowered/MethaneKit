@@ -231,6 +231,7 @@ jobs:
 
       - name: Upload Build Log and Code Coverage to TestSpace server
         if: ${{ github.event_name == 'push' && (success() || failure()) }}
+        continue-on-error: true # testspace will fail if test result already exists for current build id, but it's OK on build re-run.
         shell: bash
         run: |
           testspace \
