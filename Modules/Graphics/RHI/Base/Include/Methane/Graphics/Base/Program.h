@@ -64,9 +64,9 @@ protected:
     using ArgumentBindings      = ProgramBindings::ArgumentBindings;
     using FrameArgumentBindings = std::unordered_map<IProgram::Argument, Ptrs<ArgumentBinding>, IProgram::Argument::Hash>;
 
-    const ArgumentBindings&         GetArgumentBindings() const noexcept      { return m_binding_by_argument; }
-    const FrameArgumentBindings&    GetFrameArgumentBindings() const noexcept { return m_frame_bindings_by_argument; }
-    const Ptr<ArgumentBinding>&     GetFrameArgumentBinding(Data::Index frame_index, const Rhi::ProgramArgumentAccessor& argument_accessor) const;
+    const ArgumentBindings&      GetArgumentBindings() const noexcept      { return m_binding_by_argument; }
+    const FrameArgumentBindings& GetFrameArgumentBindings() const noexcept { return m_frame_bindings_by_argument; }
+    const Ptr<ArgumentBinding>&  GetFrameArgumentBinding(Data::Index frame_index, const Rhi::ProgramArgumentAccessor& argument_accessor) const;
 
     virtual void                 InitArgumentBindings();
     virtual Ptr<ArgumentBinding> CreateArgumentBindingInstance(const Ptr<ArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const;

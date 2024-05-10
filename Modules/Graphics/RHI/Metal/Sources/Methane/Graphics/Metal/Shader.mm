@@ -93,14 +93,10 @@ static Rhi::ResourceType GetResourceTypeByMetalDataType(MTLDataType mtl_data_typ
     META_FUNCTION_TASK();
     switch(mtl_data_type)
     {
-    case MTLDataTypePointer:
-        return Rhi::ResourceType::Buffer;
-    case MTLDataTypeTexture:
-        return Rhi::ResourceType::Texture;
-    case MTLDataTypeSampler:
-        return Rhi::ResourceType::Sampler;
-    default:
-        META_UNEXPECTED_ARG_RETURN(mtl_data_type, Rhi::ResourceType::Buffer);
+    case MTLDataTypePointer: return Rhi::ResourceType::Buffer;
+    case MTLDataTypeTexture: return Rhi::ResourceType::Texture;
+    case MTLDataTypeSampler: return Rhi::ResourceType::Sampler;
+    default:                 META_UNEXPECTED_ARG_RETURN(mtl_data_type, Rhi::ResourceType::Buffer);
     }
 }
 
@@ -112,6 +108,7 @@ static Rhi::ResourceType GetResourceTypeOfMetalStructMember(MTLStructMember* mtl
     {
     case MTLDataTypeArray:
         return GetResourceTypeByMetalDataType(static_cast<MTLArrayType*>(mtl_struct_member).elementType);
+
     default:
         return GetResourceTypeByMetalDataType(mtl_struct_member.dataType);
     }
@@ -272,7 +269,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                                        uint32_t argument_index,
                                        std::optional<uint32_t> argument_buffer_offset_opt)
     {
-        const Rhi::ProgramArgument shader_argument(GetType(), Base::Shader::GetCachedArgName(argument_name));
+        const Rhi::ProgramArgument shader_argument(Base::Shader::GetType(), Base::Shader::GetCachedArgName(argument_name));
         const Rhi::ProgramArgumentAccessor* argument_accessor_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
         const Rhi::ProgramArgumentAccessor& argument_accessor = argument_accessor_ptr
                                                               ? *argument_accessor_ptr
@@ -352,7 +349,6 @@ void Shader::SetNativeBindings(NSArray<id<MTLBinding>>* mtl_bindings)
 {
     m_mtl_bindings = mtl_bindings;
     m_argument_buffer_layouts.clear();
-    m_argument_buffer_layouts_size = 0U;
 
     // Fill argument buffer layouts
     for(id<MTLBinding> mtl_binding in m_mtl_bindings)
@@ -369,20 +365,17 @@ void Shader::SetNativeBindings(NSArray<id<MTLBinding>>* mtl_bindings)
                 m_argument_buffer_layouts.resize(argument_index + 1);
 
             m_argument_buffer_layouts[argument_index] = ArgumentBufferLayout(static_cast<id<MTLBufferBinding>>(mtl_binding));
-            m_argument_buffer_layouts_size += m_argument_buffer_layouts[argument_index].data_size;
         }
     }
+}
 
-    // Calculate consecutive offsets for sequential layouts
-    Data::Size layout_offset = 0U;
-    for(ArgumentBufferLayout& layout : m_argument_buffer_layouts)
-    {
-        for(auto& [name, member] : layout.member_by_name)
-        {
-            member.offset += layout_offset;
-        }
-        layout_offset += layout.data_size;
-    }
+const ArgumentBufferLayout* Shader::GetArgumentBufferLayoutPtr(const Rhi::ProgramArgumentAccessType access_type) const
+{
+    META_FUNCTION_TASK();
+    const auto argument_buffer_index = static_cast<uint32_t>(access_type);
+    return argument_buffer_index < m_argument_buffer_layouts.size()
+         ? &m_argument_buffer_layouts[argument_buffer_index]
+         : nullptr;
 }
 
 Shader::VertexDescriptorAndStartBufferIndex Shader::GetNativeVertexDescriptor(const Program& program) const

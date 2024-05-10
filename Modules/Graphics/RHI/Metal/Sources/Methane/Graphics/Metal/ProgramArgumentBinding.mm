@@ -76,8 +76,13 @@ void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& o
     const Settings& metal_settings = dynamic_cast<const ProgramArgumentBinding&>(other).GetMetalSettings();
     META_CHECK_ARG_EQUAL(m_settings_mt.argument_index, metal_settings.argument_index);
     for(const auto& [shader_type, struct_offset] : metal_settings.argument_buffer_offset_by_shader_type)
-        if (m_settings_mt.argument_buffer_offset_by_shader_type.find(shader_type) == m_settings_mt.argument_buffer_offset_by_shader_type.end())
+    {
+        const auto argument_buffer_offset_it = m_settings_mt.argument_buffer_offset_by_shader_type.find(shader_type);
+        if (argument_buffer_offset_it == m_settings_mt.argument_buffer_offset_by_shader_type.end())
             m_settings_mt.argument_buffer_offset_by_shader_type.emplace(shader_type, struct_offset);
+        else if (!argument_buffer_offset_it->second)
+            argument_buffer_offset_it->second = struct_offset;
+    }
 }
 
 bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
@@ -148,13 +153,18 @@ void ProgramArgumentBinding::UpdateArgumentBufferOffsets(const Program& program)
     Data::Size arg_buffer_offset = 0U;
     for(Rhi::ShaderType shader_type : program.GetShaderTypes())
     {
-        if (arg_buffer_offset > 0U)
+        if (arg_buffer_offset)
         {
-            auto argument_buffer_offset_it = m_settings_mt.argument_buffer_offset_by_shader_type.find(shader_type);
-            if (argument_buffer_offset_it != m_settings_mt.argument_buffer_offset_by_shader_type.end())
+            if (const auto argument_buffer_offset_it = m_settings_mt.argument_buffer_offset_by_shader_type.find(shader_type);
+                argument_buffer_offset_it != m_settings_mt.argument_buffer_offset_by_shader_type.end())
                 argument_buffer_offset_it->second += arg_buffer_offset;
         }
-        arg_buffer_offset += program.GetMetalShader(shader_type).GetArgumentBufferLayoutsSize();
+
+        const Rhi::ProgramArgumentAccessType arg_access_type = m_settings_mt.argument.GetAccessorType();
+        if (const ArgumentBufferLayout* layout_ptr = program.GetMetalShader(shader_type).GetArgumentBufferLayoutPtr(arg_access_type))
+        {
+            arg_buffer_offset += layout_ptr->data_size;
+        }
     }
 }
 

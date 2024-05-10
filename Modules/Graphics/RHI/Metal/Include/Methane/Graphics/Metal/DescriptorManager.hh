@@ -26,11 +26,15 @@ Metal descriptor manager of the argument buffer
 #include <Methane/Graphics/Base/DescriptorManager.h>
 #include <Methane/Graphics/RHI/IBuffer.h>
 #include <Methane/Graphics/RHI/IContext.h>
+#include <Methane/Graphics/RHI/IProgram.h>
 #include <Methane/Data/Receiver.hpp>
 #include <Methane/Data/RangeSet.hpp>
 #include <Methane/Instrumentation.h>
 
+#include <magic_enum.hpp>
+
 #include <mutex>
+#include <array>
 
 namespace Methane::Graphics::Metal
 {
@@ -42,36 +46,63 @@ class DescriptorManager final
     , public Data::Receiver<Rhi::IContextCallback>
 {
 public:
+    using ArgumentsRange    = Data::Range<Data::Index>;
+    using ArgumentsRangeSet = Data::RangeSet<Data::Index>;
+
+    class ArgumentsBuffer
+    {
+        friend class DescriptorManager;
+
+    public:
+        ArgumentsBuffer(Rhi::ProgramArgumentAccessType access_type);
+
+        Rhi::ProgramArgumentAccessType GetAccessType() const noexcept { return m_access_type; }
+        Data::Index                    GetIndex() const noexcept      { return static_cast<Data::Index>(m_access_type); }
+        Data::Size                     GetDataSize() const noexcept   { return static_cast<Data::Size>(m_data.size()); }
+        const Data::Bytes&             GetData() const noexcept       { return m_data; }
+        Data::Byte*                    GetDataPtr() noexcept          { return m_data.data(); }
+        const Rhi::IBuffer*            GetBuffer() const noexcept     { return m_buffer_ptr.get(); }
+
+        ArgumentsRange ReserveRange(Data::Size range_size);
+        void ReleaseRange(const ArgumentsRange& range);
+
+        void Update(const Base::Context& context);
+
+    private:
+        void CreateBuffer(const Base::Context& context);
+        void Release();
+
+        const Rhi::ProgramArgumentAccessType m_access_type;
+        Data::Bytes                          m_data;
+        ArgumentsRangeSet                    m_free_ranges;
+        Ptr<Rhi::IBuffer>                    m_buffer_ptr;
+        TracyLockable(std::mutex,            m_mutex);
+    };
+
     explicit DescriptorManager(Base::Context& context);
 
-    const Rhi::IBuffer* GetArgumentBuffer() const noexcept { return m_argument_buffer_ptr.get(); }
-    void UpdateProgramBindings(ProgramBindings& program_bindings);
+    ArgumentsBuffer& GetArgumentsBuffer(Rhi::ProgramArgumentAccessType access_type) noexcept;
+    const ArgumentsBuffer& GetArgumentsBuffer(Rhi::ProgramArgumentAccessType access_type) const noexcept;
 
     // Rhi::IDescriptorManager overrides
+    void CompleteInitialization() override { } // Replaced with initialization in OnContextCompletingInitialization()
     void AddProgramBindings(Rhi::IProgramBindings& program_bindings) override;
     void RemoveProgramBindings(Rhi::IProgramBindings& program_bindings) override;
-    void CompleteInitialization() override;
     void Release() override;
 
     // Rhi::IContextCallback overrides
-    void OnContextCompletingInitialization(Rhi::IContext&) override;
+    void OnContextCompletingInitialization(Rhi::IContext& context) override;
     void OnContextInitialized(Rhi::IContext&) override {}
     void OnContextReleased(Rhi::IContext&) override {}
 
 private:
-    using ArgumentsRange = Data::Range<Data::Index>;
-    using ArgumentsRangeSet = Data::RangeSet<Data::Index>;
+    using ArgumentsBufferByAccessType = std::array<ArgumentsBuffer, magic_enum::enum_count<Rhi::ProgramArgumentAccessType>()>;
 
-    ArgumentsRange ReserveArgumentsRange(Data::Size range_size);
-    void ReleaseArgumentsRange(const ArgumentsRange& range);
-
-    void CreateArgumentsBuffer();
-    void UpdateArgumentsBuffer();
-
-    TracyLockable(std::mutex, m_argument_buffer_mutex);
-    Data::Bytes               m_argument_buffer_data;
-    ArgumentsRangeSet         m_argument_buffer_free_ranges;
-    Ptr<Rhi::IBuffer>         m_argument_buffer_ptr;
+    ArgumentsBufferByAccessType m_arguments_buffer_by_access_type{{ // Order by value of access type
+        { /* 0: */ Rhi::ProgramArgumentAccessType::Constant },
+        { /* 1: */ Rhi::ProgramArgumentAccessType::FrameConstant },
+        { /* 2: */ Rhi::ProgramArgumentAccessType::Mutable },
+    }};
 };
 
 } // namespace Methane::Graphics::Metal

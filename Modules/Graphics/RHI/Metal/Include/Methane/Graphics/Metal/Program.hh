@@ -28,6 +28,7 @@ Metal implementation of the program interface.
 #import <Metal/Metal.h>
 
 #include <vector>
+#include <array>
 
 namespace Methane::Graphics::Metal
 {
@@ -39,11 +40,13 @@ class Program final
     : public Base::Program
 {
 public:
+    using ArgumentsRange = Data::Range<Data::Index>;
+
     struct ShaderArgumentBufferLayout
     {
-        Rhi::ShaderType shader_type;
-        Data::Size      data_size;
-        Data::Index     index;
+        Rhi::ShaderType                shader_type;
+        Data::Size                     data_size;
+        Rhi::ProgramArgumentAccessType access_type;
     };
 
     using ShaderArgumentBufferLayouts = std::vector<ShaderArgumentBufferLayout>;
@@ -58,24 +61,29 @@ public:
     id<MTLFunction> GetNativeShaderFunction(Rhi::ShaderType shader_type) noexcept;
     MTLVertexDescriptor* GetNativeVertexDescriptor() noexcept { return m_mtl_vertex_desc; }
     Data::Index GetStartVertexBufferIndex() const noexcept { return m_start_vertex_buffer_index; }
-    Data::Size GetArgumentBuffersSize() const noexcept { return m_argument_buffers_size; }
     const ShaderArgumentBufferLayouts& GetShaderArgumentBufferLayouts() const noexcept { return m_shader_argument_buffer_layouts; }
+    Data::Size GetArgumentsBufferRangeSize(Rhi::ProgramArgumentAccessType access_type) const noexcept;
+    const ArgumentsRange& GetConstantArgumentBufferRange() const noexcept { return m_constant_argument_buffer_range; }
+    const ArgumentsRange& GetFrameConstantArgumentBufferRange(Data::Index frame_index) const;
 
 private:
     const IContext& GetMetalContext() const noexcept;
     void ReflectRenderPipelineArguments();
     void ReflectComputePipelineArguments();
     void SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<id<MTLBinding>>* mtl_arguments) noexcept;
-    void InitArgumentBuffersSize();
+    void InitArgumentRangeSizesAndConstantRanges();
 
     // Base::Program overrides
     void InitArgumentBindings() override;
-    Ptr<ArgumentBinding> CreateArgumentBindingInstance(const Ptr<ArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const override;
 
-    MTLVertexDescriptor*        m_mtl_vertex_desc = nil;
-    Data::Index                 m_start_vertex_buffer_index = 0U;
-    Data::Size                  m_argument_buffers_size = 0U;
-    ShaderArgumentBufferLayouts m_shader_argument_buffer_layouts;
+    using ArgumentBufferSizeByAccessType = std::array<Data::Size, magic_enum::enum_count<Rhi::ProgramArgumentAccessType>()>;
+
+    MTLVertexDescriptor*           m_mtl_vertex_desc = nil;
+    Data::Index                    m_start_vertex_buffer_index = 0U;
+    ArgumentBufferSizeByAccessType m_arguments_range_size_by_access_type;
+    ShaderArgumentBufferLayouts    m_shader_argument_buffer_layouts;
+    ArgumentsRange                 m_constant_argument_buffer_range;
+    std::vector<ArgumentsRange>    m_frame_constant_argument_buffer_ranges;
 };
 
 } // namespace Methane::Graphics::Metal

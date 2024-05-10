@@ -30,120 +30,152 @@ Metal descriptor manager of the argument buffer
 namespace Methane::Graphics::Metal
 {
 
-DescriptorManager::DescriptorManager(Base::Context& context)
-    : Base::DescriptorManager(context)
-{
-}
-
-void DescriptorManager::UpdateProgramBindings(ProgramBindings& program_bindings)
+DescriptorManager::ArgumentsBuffer::ArgumentsBuffer(Rhi::ProgramArgumentAccessType access_type)
+    : m_access_type(access_type)
 {
     META_FUNCTION_TASK();
-    std::scoped_lock lock_guard(m_argument_buffer_mutex);
-    program_bindings.CompleteInitialization(m_argument_buffer_data);
-    UpdateArgumentsBuffer();
+}
+
+DescriptorManager::ArgumentsRange DescriptorManager::ArgumentsBuffer::ReserveRange(Data::Size range_size)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_ZERO_DESCR(range_size, "unable to reserve empty arguments range");
+    std::scoped_lock lock_guard(m_mutex);
+
+    if (const ArgumentsRange reserved_range = Data::ReserveRange(m_free_ranges, range_size))
+    {
+        return reserved_range;
+    }
+
+    const ArgumentsRange arguments_range(m_data.size(), m_data.size() + range_size);
+    m_data.resize(m_data.size() + range_size);
+    return arguments_range;
+}
+
+void DescriptorManager::ArgumentsBuffer::ReleaseRange(const ArgumentsRange& range)
+{
+    META_FUNCTION_TASK();
+    if (range.IsEmpty())
+        return;
+
+    std::scoped_lock lock_guard(m_mutex);
+    m_free_ranges.Add(range);
+}
+
+void DescriptorManager::ArgumentsBuffer::Update(const Base::Context& context)
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_mutex);
+
+    if (m_data.empty())
+    {
+        m_buffer_ptr.reset();
+        return;
+    }
+
+    if (!m_buffer_ptr || m_data.size() > m_buffer_ptr->GetSettings().size)
+    {
+        CreateBuffer(context);
+    }
+
+    // Compute queue is used as a target command queue for the argument buffer data transfer,
+    // because in Metal it queue ownership does not matter.
+    Rhi::ICommandQueue& compute_queue = context.GetDefaultCommandKit(Rhi::CommandListType::Compute).GetQueue();
+    m_buffer_ptr->SetData(compute_queue, Rhi::SubResource(m_data));
+}
+
+void DescriptorManager::ArgumentsBuffer::CreateBuffer(const Base::Context& context)
+{
+    META_FUNCTION_TASK();
+    m_buffer_ptr = context.CreateBuffer(
+        Rhi::BufferSettings
+            {
+                Rhi::BufferType::Constant,
+                Rhi::ResourceUsageMask(Rhi::ResourceUsage::ShaderRead),
+                static_cast<Data::Size>(m_data.size()),
+                0U,
+                PixelFormat::Unknown,
+                Rhi::BufferStorageMode::Managed
+            });
+    m_buffer_ptr->SetName(fmt::format("{} Argument Buffer", magic_enum::enum_name(m_access_type)));
+}
+
+void DescriptorManager::ArgumentsBuffer::Release()
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_mutex);
+    m_buffer_ptr.reset();
+}
+
+DescriptorManager::DescriptorManager(Base::Context& context)
+    : Base::DescriptorManager(context, false)
+{
 }
 
 void DescriptorManager::AddProgramBindings(Rhi::IProgramBindings& program_bindings)
 {
     META_FUNCTION_TASK();
+    Base::DescriptorManager::AddProgramBindings(program_bindings);
+
     auto& metal_program_bindings = dynamic_cast<ProgramBindings&>(program_bindings);
-    const Data::Size arguments_range_size = static_cast<Program&>(program_bindings.GetProgram()).GetArgumentBuffersSize();
-    if (!arguments_range_size)
+    auto& metal_program = static_cast<Program&>(program_bindings.GetProgram());
+    const Data::Size mutable_args_range_size = metal_program.GetArgumentsBufferRangeSize(Rhi::ProgramArgumentAccessType::Mutable);
+    if (!mutable_args_range_size)
         return;
 
-    std::scoped_lock lock_guard(m_argument_buffer_mutex);
-    const ArgumentsRange arguments_range = ReserveArgumentsRange(arguments_range_size);
-    metal_program_bindings.CompleteInitialization(m_argument_buffer_data, arguments_range);
+    ArgumentsBuffer& mutable_args_buffer = GetArgumentsBuffer(Rhi::ProgramArgumentAccessType::Mutable);
+    metal_program_bindings.SetMutableArgumentsRange(mutable_args_buffer.ReserveRange(mutable_args_range_size));
     GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
 }
 
 void DescriptorManager::RemoveProgramBindings(Rhi::IProgramBindings& program_bindings)
 {
     META_FUNCTION_TASK();
+    Base::DescriptorManager::RemoveProgramBindings(program_bindings);
+
     auto& metal_program_bindings = dynamic_cast<ProgramBindings&>(program_bindings);
-    ReleaseArgumentsRange(metal_program_bindings.GetArgumentsRange());
+    const ArgumentsRange& mutable_args_range = metal_program_bindings.GetMutableArgumentsRange();
+    if (!mutable_args_range.IsEmpty())
+    {
+        GetArgumentsBuffer(Rhi::ProgramArgumentAccessType::Mutable).ReleaseRange(mutable_args_range);
+    }
 }
 
-void DescriptorManager::CompleteInitialization()
-{
-    // Argument buffer initialization is done in OnContextCompletingInitialization callback,
-    // so that buffer data is uploaded to the GPU in UploadResources() in Base::Context::CompleteInitialization()
-}
-
-void DescriptorManager::OnContextCompletingInitialization(Rhi::IContext&)
+void DescriptorManager::OnContextCompletingInitialization(Rhi::IContext& context)
 {
     META_FUNCTION_TASK();
     META_LOG("Metal Descriptor Manager is completing initialization of the global argument buffer...");
-    std::scoped_lock lock_guard(m_argument_buffer_mutex);
-    UpdateArgumentsBuffer();
+
+    // Complete initialization of program bindings before resources upload in Base::Context::CompleteInitialization()
+    Base::DescriptorManager::CompleteInitialization();
+
+    // Update argument buffers on the GPU to be uploaded right after this callback in Base::Context::CompleteInitialization()
+    auto& base_context = dynamic_cast<Base::Context&>(context);
+    for(ArgumentsBuffer& arg_buffer : m_arguments_buffer_by_access_type)
+    {
+        arg_buffer.Update(base_context);
+    }
 }
 
 void DescriptorManager::Release()
 {
+    META_FUNCTION_TASK();
     Base::DescriptorManager::Release();
 
-    std::scoped_lock lock_guard(m_argument_buffer_mutex);
-    m_argument_buffer_ptr.reset();
-}
-
-DescriptorManager::ArgumentsRange DescriptorManager::ReserveArgumentsRange(Data::Size range_size)
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_ZERO_DESCR(range_size, "unable to reserve empty arguments range");
-    if (const ArgumentsRange reserved_range = Data::ReserveRange(m_argument_buffer_free_ranges, range_size);
-        reserved_range)
+    for(ArgumentsBuffer& arg_buffer : m_arguments_buffer_by_access_type)
     {
-        return reserved_range;
+        arg_buffer.Release();
     }
-    const ArgumentsRange arguments_range(m_argument_buffer_data.size(), m_argument_buffer_data.size() + range_size);
-    m_argument_buffer_data.resize(m_argument_buffer_data.size() + range_size);
-    return arguments_range;
 }
 
-void DescriptorManager::ReleaseArgumentsRange(const ArgumentsRange& range)
+const DescriptorManager::ArgumentsBuffer& DescriptorManager::GetArgumentsBuffer(Rhi::ProgramArgumentAccessType access_type) const noexcept
 {
-    META_FUNCTION_TASK();
-    if (range.IsEmpty())
-        return;
-
-    std::scoped_lock lock_guard(m_argument_buffer_mutex);
-    m_argument_buffer_free_ranges.Add(range);
+    return m_arguments_buffer_by_access_type[static_cast<uint32_t>(access_type)];
 }
 
-void DescriptorManager::CreateArgumentsBuffer()
+DescriptorManager::ArgumentsBuffer& DescriptorManager::GetArgumentsBuffer(Rhi::ProgramArgumentAccessType access_type) noexcept
 {
-    META_FUNCTION_TASK();
-    Rhi::BufferSettings argument_buffer_settings
-    {
-        Rhi::BufferType::Constant,
-        Rhi::ResourceUsageMask(Rhi::ResourceUsage::ShaderRead),
-        static_cast<Data::Size>(m_argument_buffer_data.size()),
-        0U,
-        PixelFormat::Unknown,
-        Rhi::BufferStorageMode::Managed
-    };
-    m_argument_buffer_ptr = GetContext().CreateBuffer(argument_buffer_settings);
-    m_argument_buffer_ptr->SetName("Global Argument Buffer");
-}
-
-void DescriptorManager::UpdateArgumentsBuffer()
-{
-    META_FUNCTION_TASK();
-    if (m_argument_buffer_data.empty())
-    {
-        m_argument_buffer_ptr.reset();
-        return;
-    }
-
-    if (!m_argument_buffer_ptr || m_argument_buffer_data.size() > m_argument_buffer_ptr->GetSettings().size)
-    {
-        CreateArgumentsBuffer();
-    }
-
-    // Compute queue is used as a target command queue for the argument buffer data transfer,
-    // because in Metal it queue ownership does not matter.
-    Rhi::ICommandQueue& compute_queue = GetContext().GetDefaultCommandKit(Rhi::CommandListType::Compute).GetQueue();
-    m_argument_buffer_ptr->SetData(compute_queue, Rhi::SubResource(m_argument_buffer_data));
+    return m_arguments_buffer_by_access_type[static_cast<uint32_t>(access_type)];
 }
 
 } // namespace Methane::Graphics::Metal

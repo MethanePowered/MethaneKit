@@ -132,6 +132,7 @@ public:
     [[nodiscard]] size_t GetAccessorIndex() const noexcept;
     [[nodiscard]] Type   GetAccessorType() const noexcept  { return m_accessor_type; }
     [[nodiscard]] bool   IsAddressable() const noexcept    { return m_addressable; }
+    [[nodiscard]] bool   IsMutable() const noexcept        { return m_accessor_type == Type::Mutable; }
     [[nodiscard]] bool   IsConstant() const noexcept       { return m_accessor_type == Type::Constant; }
     [[nodiscard]] bool   IsFrameConstant() const noexcept  { return m_accessor_type == Type::FrameConstant; }
     [[nodiscard]] explicit operator std::string() const noexcept final;

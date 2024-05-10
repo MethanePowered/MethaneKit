@@ -39,6 +39,7 @@ namespace Methane::Graphics::Metal
 class Program;
 class RenderCommandList;
 class ComputeCommandList;
+class DescriptorManager;
 
 //#define METAL_USE_ALL_RESOURCES
 
@@ -48,7 +49,7 @@ class ProgramBindings final
 public:
     using ArgumentBinding = ProgramArgumentBinding;
     using ArgumentsRange = Data::Range<Data::Index>;
-    
+
     ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
     ~ProgramBindings() override;
@@ -60,13 +61,19 @@ public:
     // Base::ProgramBindings interface
     void CompleteInitialization() override;
 
-    void CompleteInitialization(Data::Bytes& argument_buffer_data, const ArgumentsRange& arg_range);
-    void CompleteInitialization(Data::Bytes& argument_buffer_data);
+    void SetMutableArgumentsRange(const ArgumentsRange& mutable_arg_range);
+    const ArgumentsRange& GetMutableArgumentsRange() const { return m_mutable_argument_buffer_range; }
 
-    const ArgumentsRange& GetArgumentsRange() const { return m_argument_buffer_range; }
     bool IsUsingNativeResource(__unsafe_unretained id<MTLResource> mtl_resource) const;
+    Program& GetMetalProgram() const;
 
 private:
+    bool WriteArgumentsBufferRange(DescriptorManager& descriptor_manager,
+                                   Rhi::ProgramArgumentAccessType access_type,
+                                   const ArgumentsRange& args_range);
+
+    const ArgumentsRange& GetArgumentsRange(Rhi::ProgramArgumentAccessType access_type) const;
+
     template<typename FuncType> // function void(const ArgumentBinding&)
     void ForEachChangedArgumentBinding(const Base::ProgramBindings* applied_program_bindings_ptr,
                                        ApplyBehaviorMask apply_behavior,
@@ -83,8 +90,8 @@ private:
     void SetComputeArgumentBuffers(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder) const;
 
     using NativeResourceUsageAndStage = std::pair<MTLResourceUsage, MTLRenderStages>;
-    using NativeResourcesByUsage = std::map<NativeResourceUsageAndStage, ArgumentBinding::NativeResources>;
-    using NativeResourceSet      = std::set<__unsafe_unretained id<MTLResource>>;
+    using NativeResourcesByUsage      = std::map<NativeResourceUsageAndStage, ArgumentBinding::NativeResources>;
+    using NativeResourceSet           = std::set<__unsafe_unretained id<MTLResource>>;
     void UpdateUsedResources();
     NativeResourcesByUsage GetChangedResourcesByUsage(const Base::ProgramBindings* applied_program_bindings_ptr) const;
 
@@ -99,7 +106,8 @@ private:
     // IProgramBindings::IProgramArgumentBindingCallback
     void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::IResource::Views&, const Rhi::IResource::Views&) override;
 
-    ArgumentsRange m_argument_buffer_range;
+    bool              m_argument_buffers_initialized = false;
+    ArgumentsRange    m_mutable_argument_buffer_range;
     NativeResourceSet m_mtl_used_resources;
 };
 

@@ -70,7 +70,7 @@ public:
 
     id<MTLFunction>              GetNativeFunction() noexcept                  { return m_mtl_function; }
     const ArgumentBufferLayouts& GetArgumentBufferLayouts() const noexcept     { return m_argument_buffer_layouts; }
-    Data::Size                   GetArgumentBufferLayoutsSize() const noexcept { return m_argument_buffer_layouts_size; }
+    const ArgumentBufferLayout*  GetArgumentBufferLayoutPtr(const Rhi::ProgramArgumentAccessType access_type) const;
 
     using VertexDescriptorAndStartBufferIndex = std::pair<MTLVertexDescriptor*, Data::Index>;
     VertexDescriptorAndStartBufferIndex GetNativeVertexDescriptor(const Program& program) const;
@@ -83,7 +83,6 @@ private:
     id<MTLFunction>          m_mtl_function;
     NSArray<id<MTLBinding>>* m_mtl_bindings = nil;
     ArgumentBufferLayouts    m_argument_buffer_layouts;
-    Data::Size               m_argument_buffer_layouts_size;
 };
 
 } // namespace Methane::Graphics::Metal

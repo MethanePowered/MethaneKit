@@ -26,8 +26,10 @@ Metal implementation of the program interface.
 #include <Methane/Graphics/Metal/Shader.hh>
 #include <Methane/Graphics/Metal/IContext.h>
 #include <Methane/Graphics/Metal/Device.hh>
+#include <Methane/Graphics/Metal/DescriptorManager.hh>
 #include <Methane/Graphics/Metal/Types.hh>
 #include <Methane/Graphics/Base/Context.h>
+#include <Methane/Graphics/RHI/IRenderContext.h>
 
 #include <Methane/Platform/Apple/Types.hh>
 #include <Methane/Instrumentation.h>
@@ -45,7 +47,7 @@ Program::Program(const Base::Context& context, const Settings& settings)
     else if (HasShader(Rhi::ShaderType::Compute))
         ReflectComputePipelineArguments();
 
-    InitArgumentBuffersSize();
+    InitArgumentRangeSizesAndConstantRanges();
 }
 
 Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
@@ -72,6 +74,17 @@ id<MTLFunction> Program::GetNativeShaderFunction(Rhi::ShaderType shader_type) no
 {
     META_FUNCTION_TASK();
     return HasShader(shader_type) ? static_cast<Shader&>(GetShaderRef(shader_type)).GetNativeFunction() : nil;
+}
+
+Data::Size Program::GetArgumentsBufferRangeSize(Rhi::ProgramArgumentAccessType access_type) const noexcept
+{
+    return m_arguments_range_size_by_access_type[static_cast<uint32_t>(access_type)];
+}
+
+const Program::ArgumentsRange& Program::GetFrameConstantArgumentBufferRange(Data::Index frame_index) const
+{
+    META_CHECK_ARG_LESS(frame_index, m_frame_constant_argument_buffer_ranges.size());
+    return m_frame_constant_argument_buffer_ranges[frame_index];
 }
 
 void Program::ReflectRenderPipelineArguments()
@@ -158,21 +171,59 @@ void Program::SetNativeShaderArguments(Rhi::ShaderType shader_type, NSArray<id<M
     }
 }
 
-void Program::InitArgumentBuffersSize()
+void Program::InitArgumentRangeSizesAndConstantRanges()
 {
     META_FUNCTION_TASK();
-    m_argument_buffers_size = 0U;
+    m_shader_argument_buffer_layouts.clear();
+    std::fill(m_arguments_range_size_by_access_type.begin(), m_arguments_range_size_by_access_type.end(), 0U);
+
     ForEachShader([this](const Base::Shader& shader)
     {
         const auto& metal_shader = static_cast<const Shader&>(shader);
-        Data::Index layout_index = 0U;
-        for(const ArgumentBufferLayout& layout : metal_shader.GetArgumentBufferLayouts())
+        Data::Index arg_buffer_index = 0U;
+        for(const ArgumentBufferLayout& arg_buffer_layout : metal_shader.GetArgumentBufferLayouts())
         {
-            m_shader_argument_buffer_layouts.push_back({ shader.GetType(), layout.data_size, layout_index });
-            m_argument_buffers_size += layout.data_size;
-            layout_index++;
+            META_CHECK_ARG_LESS(arg_buffer_index, m_arguments_range_size_by_access_type.size());
+            if (!arg_buffer_layout.data_size)
+            {
+                arg_buffer_index++;
+                continue;
+            }
+
+            m_shader_argument_buffer_layouts.push_back({
+                shader.GetType(),
+                arg_buffer_layout.data_size,
+                static_cast<Rhi::ProgramArgumentAccessType>(arg_buffer_index)
+            });
+
+            m_arguments_range_size_by_access_type[arg_buffer_index] += arg_buffer_layout.data_size;
+            arg_buffer_index++;
         }
     });
+
+    const Base::Context& context = GetContext();
+    auto& descriptor_manager = static_cast<DescriptorManager&>(GetContext().GetDescriptorManager());
+
+    if (const Data::Size const_args_range_size = GetArgumentsBufferRangeSize(Rhi::ProgramArgumentAccessType::Constant))
+    {
+        auto& const_args_buffer = descriptor_manager.GetArgumentsBuffer(Rhi::ProgramArgumentAccessType::Constant);
+        m_constant_argument_buffer_range = const_args_buffer.ReserveRange(const_args_range_size);
+    }
+
+    const uint32_t frames_count = context.GetType() == Rhi::IContext::Type::Render
+                                ? dynamic_cast<const Rhi::IRenderContext&>(context).GetSettings().frame_buffers_count
+                                : 1U;
+    m_frame_constant_argument_buffer_ranges.resize(frames_count);
+    std::fill(m_frame_constant_argument_buffer_ranges.begin(), m_frame_constant_argument_buffer_ranges.end(), ArgumentsRange{});
+
+    if (const Data::Size frame_const_args_range_size = GetArgumentsBufferRangeSize(Rhi::ProgramArgumentAccessType::FrameConstant))
+    {
+        auto& frame_const_args_buffer = descriptor_manager.GetArgumentsBuffer(Rhi::ProgramArgumentAccessType::FrameConstant);
+        for(size_t frame_index = 0; frame_index < frames_count; ++frame_index)
+        {
+            m_frame_constant_argument_buffer_ranges[frame_index] = frame_const_args_buffer.ReserveRange(frame_const_args_range_size);
+        }
+    }
 }
 
 void Program::InitArgumentBindings()
@@ -185,23 +236,13 @@ void Program::InitArgumentBindings()
     {
         static_cast<ProgramArgumentBinding&>(*argument_binding_ptr).UpdateArgumentBufferOffsets(*this);
     }
-}
 
-Ptr<Base::ProgramArgumentBinding> Program::CreateArgumentBindingInstance(const Ptr<Base::ProgramArgumentBinding>& argument_binding_ptr, Data::Index frame_index) const
-{
-    META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
-
-    // Argument Bindings which are using Metal Argument Buffer, always create a copy.
-    // TODO: Change this when type of argument binding (Mutable, Constant, FrameConstant) will be defined on shader level
-    //       and thus will result in splitting of arguments to separate argument buffers.
-    auto& metal_argument_binding = static_cast<ProgramArgumentBinding&>(*argument_binding_ptr);
-    if (metal_argument_binding.IsArgumentBufferMode())
-    {
-        return metal_argument_binding.CreateCopy();
-    }
-
-    return Base::Program::CreateArgumentBindingInstance(argument_binding_ptr, frame_index);
+    // Update argument buffer offsets in frame argument bindings, except of the first one, which is updated in above loop
+    for (const auto& [program_argument, frame_argument_binding_ptrs] : GetFrameArgumentBindings())
+        for(Data::Index frame_index = 1; frame_index < frame_argument_binding_ptrs.size(); ++frame_index)
+        {
+            static_cast<ProgramArgumentBinding&>(*frame_argument_binding_ptrs[frame_index]).UpdateArgumentBufferOffsets(*this);
+        }
 }
 
 } // namespace Methane::Graphics::Metal
