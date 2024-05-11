@@ -25,6 +25,7 @@ Metal implementation of the program bindings interface.
 
 #include "ProgramArgumentBinding.hh"
 
+#include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Graphics/Base/ProgramBindings.h>
 #include <Methane/Data/Range.hpp>
 
@@ -43,12 +44,31 @@ class DescriptorManager;
 
 //#define METAL_USE_ALL_RESOURCES
 
+template<Rhi::CommandListType command_type> struct Command
+{
+    using EncoderType = void;
+    using RhiListType = void;
+};
+
+template<> struct Command<Rhi::CommandListType::Render>
+{
+    using EncoderType = __unsafe_unretained id<MTLRenderCommandEncoder>;
+    using RhiListType = RenderCommandList;
+};
+
+template<> struct Command<Rhi::CommandListType::Compute>
+{
+    using EncoderType = __unsafe_unretained id<MTLComputeCommandEncoder>;
+    using RhiListType = ComputeCommandList;
+};
+
 class ProgramBindings final
     : public Base::ProgramBindings
 {
 public:
     using ArgumentBinding = ProgramArgumentBinding;
-    using ArgumentsRange = Data::Range<Data::Index>;
+    using ArgumentsRange  = Data::Range<Data::Index>;
+    using CommandType     = Rhi::CommandListType;
 
     ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
@@ -79,29 +99,26 @@ private:
                                        ApplyBehaviorMask apply_behavior,
                                        FuncType functor) const;
 
-    void SetRenderResources(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
-                            const Base::ProgramBindings* applied_program_bindings_ptr,
-                            ApplyBehaviorMask apply_behavior) const;
-    void SetComputeResources(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder,
-                             const Base::ProgramBindings* applied_program_bindings_ptr,
-                             ApplyBehaviorMask apply_behavior) const;
+    template<CommandType command_type, typename CommandEncoderType = typename Command<command_type>::EncoderType>
+    void SetMetalResources(const CommandEncoderType& mtl_cmd_encoder,
+                           const Base::ProgramBindings* applied_program_bindings_ptr,
+                           ApplyBehaviorMask apply_behavior) const;
 
-    void SetRenderArgumentBuffers(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder) const;
-    void SetComputeArgumentBuffers(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder) const;
+    template<CommandType command_type, typename CommandEncoderType = typename Command<command_type>::EncoderType>
+    void SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_encoder) const;
+
+    template<CommandType command_type, typename CommandEncoderType = typename Command<command_type>::EncoderType>
+    void UseMetalResources(const CommandEncoderType& mtl_cmd_encoder,
+                           const Base::ProgramBindings* applied_program_bindings_ptr) const;
 
     using NativeResourceUsageAndStage = std::pair<MTLResourceUsage, MTLRenderStages>;
     using NativeResourcesByUsage      = std::map<NativeResourceUsageAndStage, ArgumentBinding::NativeResources>;
     using NativeResourceSet           = std::set<__unsafe_unretained id<MTLResource>>;
-    void UpdateUsedResources();
     NativeResourcesByUsage GetChangedResourcesByUsage(const Base::ProgramBindings* applied_program_bindings_ptr) const;
+    void UpdateUsedResources();
 
-    void UseRenderResources(const id<MTLRenderCommandEncoder>& mtl_cmd_encoder,
-                            const Base::ProgramBindings* applied_program_bindings_ptr) const;
-    void UseComputeResources(const id<MTLComputeCommandEncoder>& mtl_cmd_encoder,
-                            const Base::ProgramBindings* applied_program_bindings_ptr) const;
-
-    void Apply(RenderCommandList& argument_binding, ApplyBehaviorMask apply_behavior) const;
-    void Apply(ComputeCommandList& compute_command_list, ApplyBehaviorMask apply_behavior) const;
+    template<CommandType command_type, typename CommandListType = typename Command<command_type>::RhiListType>
+    void Apply(CommandListType& command_list, ApplyBehaviorMask apply_behavior) const;
 
     // IProgramBindings::IProgramArgumentBindingCallback
     void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::IResource::Views&, const Rhi::IResource::Views&) override;

@@ -42,9 +42,7 @@ enum class CommandListType
     Transfer,
     Render,
     ParallelRender,
-    Compute,
-
-    Count
+    Compute
 };
 
 enum class CommandListState
@@ -52,7 +50,7 @@ enum class CommandListState
     Pending,
     Encoding,
     Committed,
-    Executing,
+    Executing
 };
 
 struct ICommandList;

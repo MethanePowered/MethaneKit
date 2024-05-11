@@ -30,6 +30,7 @@ Base implementation of the context interface.
 #include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Data/Emitter.hpp>
 
+#include <magic_enum.hpp>
 #include <array>
 #include <string>
 
@@ -105,7 +106,7 @@ protected:
     virtual void OnGpuWaitComplete(WaitFor wait_for);
 
 private:
-    using CommandKitPtrByType = std::array<Ptr<Rhi::ICommandKit>, static_cast<size_t>(Rhi::CommandListType::Count)>;
+    using CommandKitPtrByType = std::array<Ptr<Rhi::ICommandKit>, magic_enum::enum_count<Rhi::CommandListType>()>;
     using CommandKitByQueue   = std::map<Rhi::ICommandQueue*, Ptr<Rhi::ICommandKit>>;
 
     template<Rhi::CommandListPurpose cmd_list_purpose>
