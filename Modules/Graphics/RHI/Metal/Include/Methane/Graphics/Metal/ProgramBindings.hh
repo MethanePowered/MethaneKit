@@ -105,7 +105,9 @@ private:
                            ApplyBehaviorMask apply_behavior) const;
 
     template<CommandType command_type, typename CommandEncoderType = typename Command<command_type>::EncoderType>
-    void SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_encoder) const;
+    void SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_encoder,
+                                 const Base::ProgramBindings* applied_program_bindings_ptr,
+                                 ApplyBehaviorMask apply_behavior) const;
 
     template<CommandType command_type, typename CommandEncoderType = typename Command<command_type>::EncoderType>
     void UseMetalResources(const CommandEncoderType& mtl_cmd_encoder,

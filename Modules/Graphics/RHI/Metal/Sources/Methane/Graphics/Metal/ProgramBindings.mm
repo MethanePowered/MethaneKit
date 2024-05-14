@@ -649,7 +649,9 @@ void ProgramBindings::SetMetalResources(const CommandEncoderType& mtl_cmd_encode
 }
 
 template<CommandType command_type, typename CommandEncoderType>
-void ProgramBindings::SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_encoder) const
+void ProgramBindings::SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_encoder,
+                                              const Base::ProgramBindings* applied_program_bindings_ptr,
+                                              ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
     META_LOG("  - Apply {} program binding '{}' with argument buffers:", magic_enum::enum_name<command_type>(), GetName());
@@ -661,6 +663,12 @@ void ProgramBindings::SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_
 
     for(const Program::ShaderArgumentBufferLayout& arg_layout : program.GetShaderArgumentBufferLayouts())
     {
+        // Skip setup of constant argument bindings, when program bindings were already applied to command list:
+        if (apply_behavior.HasAnyBits(g_constant_once_and_changes_only) &&
+            arg_layout.access_type != Rhi::ProgramArgumentAccessType::Mutable &&
+            applied_program_bindings_ptr)
+            continue;
+
         const DescriptorManager::ArgumentsBuffer& args_buffer = descriptor_manager.GetArgumentsBuffer(arg_layout.access_type);
         const auto buffer_ptr = static_cast<const Buffer*>(args_buffer.GetBuffer());
         META_CHECK_ARG_NOT_NULL_DESCR(buffer_ptr, "{} argument buffer is not initialized in Descriptor Manager!",
@@ -796,14 +804,15 @@ void ProgramBindings::Apply(CommandListType& command_list, ApplyBehaviorMask app
 {
     META_FUNCTION_TASK();
     const auto& mtl_cmd_encoder = command_list.GetNativeCommandEncoder();
+    const Base::ProgramBindings* applied_program_bindings_ptr = command_list.GetProgramBindingsPtr();
     if (m_argument_buffers_initialized)
     {
-        UseMetalResources<command_type>(mtl_cmd_encoder, command_list.GetProgramBindingsPtr());
-        SetMetalArgumentBuffers<command_type>(mtl_cmd_encoder);
+        UseMetalResources<command_type>(mtl_cmd_encoder, applied_program_bindings_ptr);
+        SetMetalArgumentBuffers<command_type>(mtl_cmd_encoder, applied_program_bindings_ptr, apply_behavior);
     }
     else
     {
-        SetMetalResources<command_type>(mtl_cmd_encoder, command_list.GetProgramBindingsPtr(), apply_behavior);
+        SetMetalResources<command_type>(mtl_cmd_encoder, applied_program_bindings_ptr, apply_behavior);
     }
 }
 
