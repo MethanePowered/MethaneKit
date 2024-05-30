@@ -60,20 +60,7 @@ struct ProgramInputBufferLayout
 using ProgramInputBufferLayouts = std::vector<ProgramInputBufferLayout>;
 
 struct IProgram;
-class ProgramArgument;
-
-class ProgramArgumentNotFoundException : public std::invalid_argument
-{
-public:
-    ProgramArgumentNotFoundException(const IProgram& program, const ProgramArgument& argument);
-
-    [[nodiscard]] const IProgram&        GetProgram() const noexcept  { return m_program; }
-    [[nodiscard]] const ProgramArgument& GetArgument() const noexcept { return *m_argument_ptr; }
-
-private:
-    const IProgram& m_program;
-    UniquePtr<ProgramArgument> m_argument_ptr;
-};
+class ProgramArgumentNotFoundException;
 
 class ProgramArgument
 {
@@ -100,6 +87,19 @@ private:
     ShaderType       m_shader_type;
     std::string_view m_name;
     size_t           m_hash;
+};
+
+class ProgramArgumentNotFoundException : public std::invalid_argument
+{
+public:
+    ProgramArgumentNotFoundException(const IProgram& program, const ProgramArgument& argument);
+
+    [[nodiscard]] const IProgram&        GetProgram() const noexcept  { return m_program; }
+    [[nodiscard]] const ProgramArgument& GetArgument() const noexcept { return m_argument; }
+
+private:
+    const IProgram& m_program;
+    ProgramArgument m_argument;
 };
 
 enum class ProgramArgumentAccessType : uint32_t
