@@ -1,8 +1,8 @@
 CPMAddPackage(
     NAME FMT
     GITHUB_REPOSITORY MethanePowered/FMT
-    GIT_TAG 10.0.0
-    VERSION 10.0.0
+    GIT_TAG 10.2.1
+    VERSION 10.2.1
 )
 
 set_target_properties(fmt
