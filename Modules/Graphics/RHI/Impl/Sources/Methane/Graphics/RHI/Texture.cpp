@@ -193,6 +193,18 @@ const Opt<uint32_t>& Texture::GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetOwnerQueueFamily();
 }
 
+Rhi::ResourceView Texture::GetTextureView(const SubResource::Index& subresource_index,
+                                          const SubResource::Count& subresource_count,
+                                          Opt<Rhi::TextureDimensionType> texture_dimension_type_opt) const
+{
+    return GetImpl(m_impl_ptr).GetTextureView(subresource_index, subresource_count, texture_dimension_type_opt);
+}
+
+Rhi::ResourceView Texture::GetResourceView() const
+{
+    return GetImpl(m_impl_ptr).GetResourceView();
+}
+
 void Texture::Connect(Data::Receiver<IResourceCallback>& receiver) const
 {
     GetImpl(m_impl_ptr).Data::Emitter<IResourceCallback>::Connect(receiver);

@@ -183,6 +183,16 @@ const Opt<uint32_t>& Buffer::GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetOwnerQueueFamily();
 }
 
+Rhi::ResourceView Buffer::GetBufferView(Data::Size offset, Data::Size size) const
+{
+    return GetImpl(m_impl_ptr).GetBufferView(offset, size);
+}
+
+Rhi::ResourceView Buffer::GetResourceView() const
+{
+    return GetImpl(m_impl_ptr).GetResourceView();
+}
+
 void Buffer::Connect(Data::Receiver<IResourceCallback>& receiver) const
 {
     GetImpl(m_impl_ptr).Data::Emitter<IResourceCallback>::Connect(receiver);

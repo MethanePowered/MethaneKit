@@ -45,7 +45,7 @@ void ProgramArgumentBinding::MergeSettings(const ProgramArgumentBinding& other)
     m_settings.argument.MergeShaderTypes(settings.argument.GetShaderType());
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resource_views)
+bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
     if (m_resource_views == resource_views)
@@ -82,6 +82,24 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
             std::cref(*this), std::cref(prev_resource_views), std::cref(m_resource_views)
         );
 
+    return true;
+}
+
+bool ProgramArgumentBinding::SetResourceView(const Rhi::ResourceView& resource_view)
+{
+    return SetResourceViews(Rhi::ResourceViews{ resource_view });
+}
+
+bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_constant)
+{
+    META_FUNCTION_TASK();
+    if (m_root_constant == root_constant)
+        return false;
+
+    if (m_settings.argument.IsConstant() && m_root_constant)
+        throw ConstantModificationException(GetSettings().argument);
+
+    m_root_constant = root_constant;
     return true;
 }
 

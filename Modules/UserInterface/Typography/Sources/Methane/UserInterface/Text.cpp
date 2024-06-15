@@ -175,7 +175,7 @@ public:
         if (!m_program_bindings.IsInitialized())
             return false;
 
-        m_program_bindings.Get({ rhi::ShaderType::Pixel, "g_texture" }).SetResourceViews({ { m_atlas_texture.GetInterface() } });
+        m_program_bindings.Get({ rhi::ShaderType::Pixel, "g_texture" }).SetResourceView(m_atlas_texture.GetResourceView());
         return true;
     }
 
@@ -247,7 +247,7 @@ public:
 
             if (m_program_bindings.IsInitialized())
             {
-                m_program_bindings.Get({ rhi::ShaderType::Vertex, "g_uniforms" }).SetResourceViews({ { m_uniforms_buffer.GetInterface() } });
+                m_program_bindings.Get({ rhi::ShaderType::Vertex, "g_uniforms" }).SetResourceView(m_uniforms_buffer.GetResourceView());
             }
         }
         m_uniforms_buffer.SetData(render_context.GetRenderCommandKit().GetQueue(),
@@ -268,10 +268,10 @@ public:
         META_CHECK_ARG_TRUE(m_uniforms_buffer.IsInitialized());
 
         m_program_bindings = state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_uniforms" },  { { m_uniforms_buffer.GetInterface() } } },
-            { { rhi::ShaderType::Pixel,  "g_constants" }, { { const_buffer.GetInterface() } } },
-            { { rhi::ShaderType::Pixel,  "g_texture" },   { { m_atlas_texture.GetInterface() } } },
-            { { rhi::ShaderType::Pixel,  "g_sampler" },   { { atlas_sampler.GetInterface() } } },
+            { { rhi::ShaderType::Vertex, "g_uniforms" },  m_uniforms_buffer.GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_constants" }, const_buffer.GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_texture" },   m_atlas_texture.GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_sampler" },   atlas_sampler.GetResourceView() },
         });
         m_program_bindings.SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
     }

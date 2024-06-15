@@ -49,6 +49,9 @@ public:
     const Settings&           GetSettings() const noexcept override     { return m_settings; }
     const Rhi::ResourceViews& GetResourceViews() const noexcept final   { return m_resource_views; }
     bool                      SetResourceViews(const Rhi::ResourceViews& resource_views) override;
+    bool                      SetResourceView(const Rhi::ResourceView& resource_view) override;
+    const Rhi::RootConstant&  GetRootConstant() const noexcept final    { return m_root_constant; }
+    bool                      SetRootConstant(const Rhi::RootConstant& root_constant) override;
     explicit operator std::string() const final;
 
     bool GetEmitCallbackEnabled() const noexcept { return m_emit_callback_enabled; }
@@ -67,6 +70,7 @@ private:
     const Context&     m_context;
     Settings           m_settings;
     Rhi::ResourceViews m_resource_views;
+    Rhi::RootConstant  m_root_constant;
     bool               m_emit_callback_enabled = true;
 };
 

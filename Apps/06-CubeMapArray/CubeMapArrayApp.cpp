@@ -170,9 +170,9 @@ void CubeMapArrayApp::Init()
 
         // Configure program resource bindings
         frame.cube.program_bindings = m_render_state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_uniforms"      }, { { frame.cube.uniforms_buffer.GetInterface()  } } },
-            { { rhi::ShaderType::Pixel,  "g_texture_array" }, { { m_cube_buffers_ptr->GetTexture().GetInterface() } } },
-            { { rhi::ShaderType::Pixel,  "g_sampler"       }, { { m_texture_sampler.GetInterface() } } },
+            { { rhi::ShaderType::Vertex, "g_uniforms"      }, frame.cube.uniforms_buffer.GetResourceView()       },
+            { { rhi::ShaderType::Pixel,  "g_texture_array" }, m_cube_buffers_ptr->GetTexture().GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_sampler"       }, m_texture_sampler.GetResourceView()                },
         }, frame.index);
         frame.cube.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
 

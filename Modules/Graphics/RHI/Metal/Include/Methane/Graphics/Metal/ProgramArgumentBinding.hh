@@ -62,7 +62,7 @@ public:
     void MergeSettings(const Base::ProgramArgumentBinding& other) override;
 
     // IArgumentBinding interface
-    bool SetResourceViews(const Rhi::IResource::Views& resource_views) override;
+    bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
 
     void UpdateArgumentBufferOffsets(const Program& program);
 

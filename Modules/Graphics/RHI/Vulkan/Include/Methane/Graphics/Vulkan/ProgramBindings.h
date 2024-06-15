@@ -44,11 +44,11 @@ class ProgramBindings final
 public:
     using ArgumentBinding = ProgramArgumentBinding;
 
-    ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
-    ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
+    ProgramBindings(Program& program, const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index);
+    ProgramBindings(const ProgramBindings& other_program_bindings, const BindingValueByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
 
     // IProgramBindings interface
-    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index) override;
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const BindingValueByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index) override;
     void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 
     // Base::ProgramBindings interface
@@ -61,7 +61,7 @@ private:
     // IObjectCallback interface
     void OnObjectNameChanged(Rhi::IObject&, const std::string&) override; // IProgram name changed
 
-    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
+    void SetResourcesForArguments(const BindingValueByArgument& binding_value_by_argument);
 
     template<typename FuncType> // function void(const IProgram::Argument&, ArgumentBinding&)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;

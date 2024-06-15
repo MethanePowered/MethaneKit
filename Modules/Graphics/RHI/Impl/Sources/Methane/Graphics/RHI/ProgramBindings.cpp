@@ -48,12 +48,12 @@ ProgramBindings::ProgramBindings(IProgramBindings& interface_ref)
 {
 }
 
-ProgramBindings::ProgramBindings(const Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
-    : ProgramBindings(IProgramBindings::Create(program.GetInterface(), resource_views_by_argument, frame_index))
+ProgramBindings::ProgramBindings(const Program& program, const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index)
+    : ProgramBindings(IProgramBindings::Create(program.GetInterface(), binding_value_by_argument, frame_index))
 {
 }
 
-ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument,
+ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, const BindingValueByArgument& replace_resource_views_by_argument,
                                  const Opt<Data::Index>& frame_index)
     : ProgramBindings(other_program_bindings.GetInterface().CreateCopy(replace_resource_views_by_argument, frame_index))
 {

@@ -51,6 +51,12 @@ uint32_t Buffer::GetFormattedItemsCount() const noexcept
     return m_settings.item_stride_size > 0U ? GetDataSize(Data::MemoryState::Initialized) / m_settings.item_stride_size : 0U;
 }
 
+Rhi::ResourceView Buffer::GetBufferView(Data::Size offset, Data::Size size)
+{
+    META_FUNCTION_TASK();
+    return Rhi::ResourceView(dynamic_cast<Rhi::IResource&>(*this), offset, size);
+}
+
 void Buffer::SetData(Rhi::ICommandQueue&, const SubResource& sub_resource)
 {
     META_FUNCTION_TASK();

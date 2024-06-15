@@ -446,15 +446,15 @@ static void WriteArgumentBindingResourceIds(const ProgramArgumentBinding& arg_bi
     }
 }
 
-ProgramBindings::ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument,
+ProgramBindings::ProgramBindings(Program& program, const BindingValueByArgument& binding_value_by_argument,
                                  Data::Index frame_index)
-    : Base::ProgramBindings(program, resource_views_by_argument, frame_index)
+    : Base::ProgramBindings(program, binding_value_by_argument, frame_index)
 {
     UpdateUsedResources();
 }
 
 ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
-                                 const ResourceViewsByArgument& replace_resource_views_by_argument,
+                                 const BindingValueByArgument& replace_resource_views_by_argument,
                                  const Opt<Data::Index>& frame_index)
     : Base::ProgramBindings(other_program_bindings, replace_resource_views_by_argument, frame_index)
 {
@@ -467,7 +467,7 @@ ProgramBindings::~ProgramBindings()
     Base::ProgramBindings::RemoveFromDescriptorManager();
 }
 
-Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument,
+Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgument& replace_resource_views_by_argument,
                                                        const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
@@ -817,8 +817,8 @@ void ProgramBindings::Apply(CommandListType& command_list, ApplyBehaviorMask app
 }
 
 void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding& arg_binding,
-                                                                   const Rhi::IResource::Views&,
-                                                                   const Rhi::IResource::Views&)
+                                                                   const Rhi::ResourceViews&,
+                                                                   const Rhi::ResourceViews&)
 {
     META_FUNCTION_TASK();
     if (!m_argument_buffers_initialized)

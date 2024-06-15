@@ -54,6 +54,7 @@ public:
     [[nodiscard]] const Opt<uint32_t>& GetOwnerQueueFamily() const noexcept final { return m_owner_queue_family_index_opt; }
     [[nodiscard]] UsageMask            GetUsage() const noexcept final            { return m_usage_mask; }
     [[nodiscard]] const Rhi::IContext& GetContext() const noexcept final;
+    [[nodiscard]] Rhi::ResourceView    GetResourceView() final;
 
     bool SetState(State state, Ptr<IBarriers>& out_barriers) final;
     bool SetState(State state) final;

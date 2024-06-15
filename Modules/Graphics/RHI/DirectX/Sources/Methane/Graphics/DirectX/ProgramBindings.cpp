@@ -56,14 +56,14 @@ uint32_t DescriptorsCountByAccess::operator[](Rhi::ProgramArgumentAccessType acc
     return m_count_by_access_type[magic_enum::enum_index(access_type).value()];
 }
 
-ProgramBindings::ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
-    : Base::ProgramBindings(program, resource_views_by_argument, frame_index)
+ProgramBindings::ProgramBindings(Program& program, const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index)
+    : Base::ProgramBindings(program, binding_value_by_argument, frame_index)
 {
     META_FUNCTION_TASK();
     ReserveDescriptorHeapRanges();
 }
 
-ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, const BindingValueByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
     : Base::ProgramBindings(other_program_bindings, replace_resource_views_by_argument, frame_index)
     , m_descriptor_heap_reservations_by_type(other_program_bindings.m_descriptor_heap_reservations_by_type)
 {
@@ -113,7 +113,7 @@ void ProgramBindings::CompleteInitialization()
     UpdateRootParameterBindings();
 }
 
-Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
     auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);

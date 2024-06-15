@@ -203,7 +203,7 @@ public:
     using Id       = ResourceViewId;
 
     ResourceView(IResource& resource, const Settings& settings);
-    ResourceView(IResource& resource, Data::Size offset = 0U, Data::Size size = 0U);
+    explicit ResourceView(IResource& resource, Data::Size offset = 0U, Data::Size size = 0U);
     ResourceView(IResource& resource,
                  const SubResource::Index& subresource_index,
                  const SubResource::Count& subresource_count = {},

@@ -84,27 +84,30 @@ ProgramArgumentAccessor::Type ProgramArgumentAccessor::GetTypeByRegisterSpace(ui
     return static_cast<ProgramArgumentAccessor::Type>(register_space);
 }
 
-ProgramArgumentAccessor::ProgramArgumentAccessor(ShaderType shader_type, std::string_view argument_name, Type accessor_type, bool addressable) noexcept
-    : ProgramArgument(shader_type, argument_name)
-    , m_accessor_type(accessor_type)
-    , m_addressable(addressable)
+ProgramArgumentAccessor::ProgramArgumentAccessor(ShaderType shader_type, std::string_view arg_name, Type access_type, Modifier modifier) noexcept
+    : ProgramArgument(shader_type, arg_name)
+    , m_access_type(access_type)
+    , m_access_modifier(modifier)
 { }
 
-ProgramArgumentAccessor::ProgramArgumentAccessor(const ProgramArgument& argument, Type accessor_type, bool addressable) noexcept
+ProgramArgumentAccessor::ProgramArgumentAccessor(const ProgramArgument& argument, Type access_type, Modifier modifier) noexcept
     : ProgramArgument(argument)
-    , m_accessor_type(accessor_type)
-    , m_addressable(addressable)
+    , m_access_type(access_type)
+    , m_access_modifier(modifier)
 { }
 
 size_t ProgramArgumentAccessor::GetAccessorIndex() const noexcept
 {
-    return magic_enum::enum_index(m_accessor_type).value();
+    return magic_enum::enum_index(m_access_type).value();
 }
 
 ProgramArgumentAccessor::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
-    return fmt::format("{} ({}{})", ProgramArgument::operator std::string(), magic_enum::enum_name(m_accessor_type), (m_addressable ? ", Addressable" : ""));
+    return fmt::format("{} ({}, {})",
+                       ProgramArgument::operator std::string(),
+                       magic_enum::enum_name(m_access_type),
+                       magic_enum::enum_name(m_access_modifier));
 }
 
 const ProgramArgumentAccessor* IProgram::FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const ProgramArgument& argument)

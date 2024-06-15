@@ -142,9 +142,9 @@ Program::~Program()
     }
 }
 
-Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<Rhi::IProgramBindings> Program::CreateBindings(const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index)
 {
-    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, resource_views_by_argument, frame_index);
+    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, binding_value_by_argument, frame_index);
     program_bindings_ptr->Initialize();
     return program_bindings_ptr;
 }

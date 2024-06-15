@@ -234,14 +234,20 @@ public:
             Rhi::BufferSettings::ForConstantBuffer(static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants))));
         m_const_buffer.SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
 
-        Rhi::ProgramBindings::ResourceViewsByArgument program_binding_resource_views = {
-            { { Rhi::ShaderType::Pixel, "g_constants" }, { { m_const_buffer.GetInterface() } } }
+        Rhi::ProgramBindings::BindingValueByArgument program_binding_resource_views = {
+            { { Rhi::ShaderType::Pixel, "g_constants" }, m_const_buffer.GetResourceView() }
         };
 
         if (m_settings.texture_mode != TextureMode::Disabled)
         {
-            program_binding_resource_views.try_emplace(Rhi::Program::Argument(Rhi::ShaderType::Pixel, "g_texture"), Rhi::ResourceViews{ { m_texture.GetInterface()         } });
-            program_binding_resource_views.try_emplace(Rhi::Program::Argument(Rhi::ShaderType::Pixel, "g_sampler"), Rhi::ResourceViews{ { m_texture_sampler.GetInterface() } });
+            program_binding_resource_views.try_emplace(
+                Rhi::ProgramArgument(Rhi::ShaderType::Pixel, "g_texture"),
+                m_texture.GetResourceView()
+            );
+            program_binding_resource_views.try_emplace(
+                Rhi::ProgramArgument(Rhi::ShaderType::Pixel, "g_sampler"),
+                m_texture_sampler.GetResourceView()
+            );
         }
 
         m_const_program_bindings = m_render_state.GetProgram().CreateBindings(program_binding_resource_views);
@@ -295,7 +301,7 @@ public:
             return;
 
         m_texture = texture;
-        m_const_program_bindings.Get({ Rhi::ShaderType::Pixel, "g_texture" }).SetResourceViews({ { m_texture.GetInterface() } });
+        m_const_program_bindings.Get({ Rhi::ShaderType::Pixel, "g_texture" }).SetResourceView(m_texture.GetResourceView());
     }
 
     [[nodiscard]] const Settings& GetQuadSettings() const noexcept

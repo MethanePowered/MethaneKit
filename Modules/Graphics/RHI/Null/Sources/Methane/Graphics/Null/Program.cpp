@@ -33,9 +33,9 @@ Program::Program(const Base::Context& context, const Settings& settings)
 {
 }
 
-Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<Rhi::IProgramBindings> Program::CreateBindings(const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index)
 {
-    return std::make_shared<ProgramBindings>(*this, resource_views_by_argument, frame_index);
+    return std::make_shared<ProgramBindings>(*this, binding_value_by_argument, frame_index);
 }
 
 void Program::SetArgumentBindings(const ResourceArgumentDescs& argument_descriptions)

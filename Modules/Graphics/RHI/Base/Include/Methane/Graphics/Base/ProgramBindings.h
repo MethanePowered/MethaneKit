@@ -49,8 +49,8 @@ public:
     using ArgumentBindings = std::unordered_map<Rhi::ProgramArgument, Ptr<ArgumentBinding>, Rhi::IProgram::Argument::Hash>;
 
     ProgramBindings(Program& program, Data::Index frame_index);
-    ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
-    ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
+    ProgramBindings(Program& program, const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index);
+    ProgramBindings(const ProgramBindings& other_program_bindings, const BindingValueByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const Opt<Data::Index>& frame_index);
     ProgramBindings(ProgramBindings&&) noexcept = default;
 
@@ -86,21 +86,21 @@ public:
 
 protected:
     // IProgramBindings::IProgramArgumentBindingCallback
-    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::IResource::Views&, const Rhi::IResource::Views&) override;
+    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::ResourceViews&, const Rhi::ResourceViews&) override;
 
     void RemoveFromDescriptorManager();
-    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
+    void SetResourcesForArguments(const BindingValueByArgument& binding_value_by_argument);
     void InitializeArgumentBindings(const ProgramBindings* other_program_bindings_ptr = nullptr);
-    ResourceViewsByArgument ReplaceResourceViews(const ArgumentBindings& argument_bindings,
-                                                 const ResourceViewsByArgument& replace_resource_views) const;
+    BindingValueByArgument ReplaceResourceViews(const ArgumentBindings& argument_bindings,
+                                                 const BindingValueByArgument& replace_resource_views) const;
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
     const Refs<Rhi::IResource>& GetResourceRefsByAccess(Rhi::ProgramArgumentAccessType access_type) const;
 
     void ClearTransitionResourceStates();
-    void RemoveTransitionResourceStates(const Rhi::IProgramBindings::IArgumentBinding& argument_binding, const Rhi::IResource& resource);
-    void AddTransitionResourceState(const Rhi::IProgramBindings::IArgumentBinding& argument_binding, Rhi::IResource& resource);
-    void AddTransitionResourceStates(const Rhi::IProgramBindings::IArgumentBinding& argument_binding);
+    void RemoveTransitionResourceStates(const Rhi::IProgramArgumentBinding& argument_binding, const Rhi::IResource& resource);
+    void AddTransitionResourceState(const Rhi::IProgramArgumentBinding& argument_binding, Rhi::IResource& resource);
+    void AddTransitionResourceStates(const Rhi::IProgramArgumentBinding& argument_binding);
 
 private:
     struct ResourceAndState

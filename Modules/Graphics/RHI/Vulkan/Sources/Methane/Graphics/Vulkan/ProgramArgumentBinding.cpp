@@ -93,7 +93,7 @@ bool AddDescriptor(std::vector<VkDescriptorType>& descriptors, size_t total_desc
     return true;
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resource_views)
+bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
     if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))

@@ -108,6 +108,16 @@ Data::Size Texture::GetSubResourceDataSize(const SubResource::Index& sub_resourc
     return m_sub_resource_sizes[sub_resource_index.GetRawIndex(m_sub_resource_count)];
 }
 
+Rhi::ResourceView Texture::GetTextureView(const SubResource::Index& subresource_index,
+                                          const SubResource::Count& subresource_count,
+                                          Opt<Rhi::TextureDimensionType> texture_dimension_type_opt)
+{
+    META_FUNCTION_TASK();
+    return Rhi::ResourceView(dynamic_cast<Rhi::IResource&>(*this),
+                             subresource_index, subresource_count,
+                             texture_dimension_type_opt);
+}
+
 void Texture::SetData(Rhi::ICommandQueue&, const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();

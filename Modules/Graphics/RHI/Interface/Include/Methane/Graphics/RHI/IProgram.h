@@ -28,15 +28,18 @@ pipeline via state object and used to create resource binding objects.
 #include "IObject.h"
 #include "ResourceView.h"
 
-#include <Methane/Memory.hpp>
+#include <Methane/Data/Chunk.hpp>
 #include <Methane/Data/EnumMask.hpp>
 #include <Methane/Graphics/Types.h>
+#include <Methane/Memory.hpp>
+#include <Methane/Checks.hpp>
 
 #include <vector>
 #include <string>
 #include <string_view>
 #include <unordered_set>
 #include <unordered_map>
+#include <variant>
 
 namespace Methane::Graphics::Rhi
 {
@@ -58,8 +61,6 @@ struct ProgramInputBufferLayout
 };
 
 using ProgramInputBufferLayouts = std::vector<ProgramInputBufferLayout>;
-
-struct IProgram;
 class ProgramArgumentNotFoundException;
 
 class ProgramArgument
@@ -117,6 +118,13 @@ enum class ProgramArgumentAccessType : uint32_t
 
 using ProgramArgumentAccessMask = Data::EnumMask<ProgramArgumentAccessType>;
 
+enum class ProgramArgumentAccessModifier
+{
+    ResourceView,    // Default argument access by descriptor from resource view
+    ResourceAddress, // Addressable argument access to resource view with offset and size
+    RootConstant     // 32-bit constant(s) stored in the root signature
+};
+
 using ProgramArguments = std::unordered_set<ProgramArgument, ProgramArgument::Hash>;
 
 class ProgramArgumentAccessor : public ProgramArgument
@@ -124,24 +132,31 @@ class ProgramArgumentAccessor : public ProgramArgument
 public:
     using Type = ProgramArgumentAccessType;
     using Mask = ProgramArgumentAccessMask;
+    using Modifier = ProgramArgumentAccessModifier;
 
     static Type GetTypeByRegisterSpace(uint32_t register_space);
 
-    ProgramArgumentAccessor(ShaderType shader_type, std::string_view argument_name,
-                            Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
-    ProgramArgumentAccessor(const ProgramArgument& argument, Type accessor_type = Type::Mutable, bool addressable = false) noexcept;
+    ProgramArgumentAccessor(ShaderType shader_type,
+                            std::string_view arg_name,
+                            Type access_type = Type::Mutable,
+                            Modifier modifier = Modifier::ResourceView) noexcept;
+
+    ProgramArgumentAccessor(const ProgramArgument& argument,
+                            Type access_type = Type::Mutable,
+                            Modifier modifier = Modifier::ResourceView) noexcept;
 
     [[nodiscard]] size_t GetAccessorIndex() const noexcept;
-    [[nodiscard]] Type   GetAccessorType() const noexcept  { return m_accessor_type; }
-    [[nodiscard]] bool   IsAddressable() const noexcept    { return m_addressable; }
-    [[nodiscard]] bool   IsMutable() const noexcept        { return m_accessor_type == Type::Mutable; }
-    [[nodiscard]] bool   IsConstant() const noexcept       { return m_accessor_type == Type::Constant; }
-    [[nodiscard]] bool   IsFrameConstant() const noexcept  { return m_accessor_type == Type::FrameConstant; }
+    [[nodiscard]] Type   GetAccessorType() const noexcept  { return m_access_type; }
+    [[nodiscard]] bool   IsAddressable() const noexcept    { return m_access_modifier == Modifier::ResourceAddress; }
+    [[nodiscard]] bool   IsRootConstant() const noexcept   { return m_access_modifier == Modifier::RootConstant; }
+    [[nodiscard]] bool   IsMutable() const noexcept        { return m_access_type == Type::Mutable; }
+    [[nodiscard]] bool   IsConstant() const noexcept       { return m_access_type == Type::Constant; }
+    [[nodiscard]] bool   IsFrameConstant() const noexcept  { return m_access_type == Type::FrameConstant; }
     [[nodiscard]] explicit operator std::string() const noexcept final;
 
 private:
-    Type m_accessor_type = Type::Mutable;
-    bool m_addressable   = false;
+    Type     m_access_type     = Type::Mutable;
+    Modifier m_access_modifier = Modifier::ResourceView;
 };
 
 using ProgramArgumentAccessors = std::unordered_set<ProgramArgumentAccessor, ProgramArgumentAccessor::Hash>;
@@ -158,27 +173,51 @@ struct ProgramSettings
 struct IContext;
 struct IProgramBindings;
 
+class RootConstant
+    : public Data::Chunk
+{
+public:
+    RootConstant() = default;
+
+    template<typename T>
+    explicit RootConstant(T&& value)
+        : Data::Chunk(std::forward<T>(value))
+    { }
+
+    template<typename T>
+    const T& GetValue() const
+    {
+        META_CHECK_ARG_EQUAL_DESCR(sizeof(T), Data::Chunk::GetDataSize(),
+                                   "size of value type does not match with root constant data size");
+        return reinterpret_cast<const T&>(Data::Chunk::GetDataPtr()); // NOSONAR
+    }
+};
+
+using ProgramArgumentBindingValue = std::variant<ResourceView, ResourceViews, RootConstant>;
+
 struct IProgram
     : virtual IObject // NOSONAR
 {
-    using Shaders                 = ProgramShaders;
-    using Settings                = ProgramSettings;
-    using InputBufferLayout       = ProgramInputBufferLayout;
-    using InputBufferLayouts      = ProgramInputBufferLayouts;
-    using Argument                = ProgramArgument;
-    using Arguments               = ProgramArguments;
-    using ArgumentAccessor        = ProgramArgumentAccessor;
-    using ArgumentAccessors       = ProgramArgumentAccessors;
-    using ResourceViewsByArgument = std::unordered_map<Argument, ResourceViews, Argument::Hash>;
+    using Shaders                = ProgramShaders;
+    using Settings               = ProgramSettings;
+    using InputBufferLayout      = ProgramInputBufferLayout;
+    using InputBufferLayouts     = ProgramInputBufferLayouts;
+    using Argument               = ProgramArgument;
+    using Arguments              = ProgramArguments;
+    using ArgumentAccessor       = ProgramArgumentAccessor;
+    using ArgumentAccessors      = ProgramArgumentAccessors;
+    using ArgumentBindingValue   = ProgramArgumentBindingValue;
+    using BindingValueByArgument = std::unordered_map<Argument, ArgumentBindingValue, Argument::Hash>;
 
-    static const ArgumentAccessor*      FindArgumentAccessor(const ArgumentAccessors& argument_accessors,
-                                                             const Argument& argument);
+    static const ArgumentAccessor* FindArgumentAccessor(const ArgumentAccessors& argument_accessors,
+                                                        const Argument& argument);
 
     // Create IProgram instance
     [[nodiscard]] static Ptr<IProgram> Create(const IContext& context, const Settings& settings);
 
     // IProgram interface
-    [[nodiscard]] virtual Ptr<IProgramBindings> CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U) = 0;
+    [[nodiscard]] virtual Ptr<IProgramBindings> CreateBindings(const BindingValueByArgument& binding_value_by_argument,
+                                                               Data::Index frame_index = 0U) = 0;
     [[nodiscard]] virtual const Settings&       GetSettings() const noexcept = 0;
     [[nodiscard]] virtual const ShaderTypes&    GetShaderTypes() const noexcept = 0;
     [[nodiscard]] virtual const Ptr<IShader>&   GetShader(ShaderType shader_type) const = 0;

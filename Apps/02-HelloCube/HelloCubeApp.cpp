@@ -201,7 +201,7 @@ public:
 
             // Configure program resource bindings
             frame.program_bindings = m_render_state.GetProgram().CreateBindings({
-                { { Rhi::ShaderType::Vertex, "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } }
+                { { Rhi::ShaderType::Vertex, "g_uniforms"  }, frame.uniforms_buffer.GetResourceView() }
             }, frame.index);
             frame.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
 #else

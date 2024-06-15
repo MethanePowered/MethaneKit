@@ -142,4 +142,10 @@ bool Resource::SetOwnerQueueFamily(uint32_t family_index)
     return true;
 }
 
+Rhi::ResourceView Resource::GetResourceView()
+{
+    META_FUNCTION_TASK();
+    return Rhi::ResourceView(dynamic_cast<Rhi::IResource&>(*this));
+}
+
 } // namespace Methane::Graphics::Base

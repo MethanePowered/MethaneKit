@@ -63,7 +63,7 @@ public:
     using Arguments               = ProgramArguments;
     using ArgumentAccessor        = ProgramArgumentAccessor;
     using ArgumentAccessors       = ProgramArgumentAccessors;
-    using ResourceViewsByArgument = IProgram::ResourceViewsByArgument;
+    using BindingValueByArgument = IProgram::BindingValueByArgument;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Program);
     META_PIMPL_METHODS_COMPARE_DECLARE(Program);
@@ -86,7 +86,7 @@ public:
     META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IProgram interface methods
-    [[nodiscard]] META_PIMPL_API ProgramBindings        CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U) const;
+    [[nodiscard]] META_PIMPL_API ProgramBindings        CreateBindings(const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index = 0U) const;
     [[nodiscard]] META_PIMPL_API const ProgramSettings& GetSettings() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const ShaderTypes&     GetShaderTypes() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API Shader                 GetShader(ShaderType shader_type) const;

@@ -70,12 +70,12 @@ public:
     using ArgumentsRange  = Data::Range<Data::Index>;
     using CommandType     = Rhi::CommandListType;
 
-    ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
-    ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
+    ProgramBindings(Program& program, const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index);
+    ProgramBindings(const ProgramBindings& other_program_bindings, const BindingValueByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
     ~ProgramBindings() override;
 
     // IProgramBindings interface
-    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index) override;
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const BindingValueByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index) override;
     void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 
     // Base::ProgramBindings interface
@@ -123,7 +123,7 @@ private:
     void Apply(CommandListType& command_list, ApplyBehaviorMask apply_behavior) const;
 
     // IProgramBindings::IProgramArgumentBindingCallback
-    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::IResource::Views&, const Rhi::IResource::Views&) override;
+    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::ResourceViews&, const Rhi::ResourceViews&) override;
 
     bool              m_argument_buffers_initialized = false;
     ArgumentsRange    m_mutable_argument_buffer_range;

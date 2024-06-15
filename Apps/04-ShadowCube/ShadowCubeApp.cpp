@@ -229,13 +229,13 @@ void ShadowCubeApp::Init()
 
         // Shadow-pass resource bindings for cube rendering
         frame.shadow_pass.cube.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { frame.shadow_pass.cube.uniforms_buffer.GetInterface() } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, frame.shadow_pass.cube.uniforms_buffer.GetResourceView() },
         }, frame.index);
         frame.shadow_pass.cube.program_bindings.SetName(fmt::format("Cube Shadow-Pass Bindings {}", frame.index));
 
         // Shadow-pass resource bindings for floor rendering
         frame.shadow_pass.floor.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { frame.shadow_pass.floor.uniforms_buffer.GetInterface() } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, frame.shadow_pass.floor.uniforms_buffer.GetResourceView() },
         }, frame.index);
         frame.shadow_pass.floor.program_bindings.SetName(fmt::format("Floor Shadow-Pass Bindings {}", frame.index));
 
@@ -265,20 +265,20 @@ void ShadowCubeApp::Init()
 
         // Final-pass resource bindings for cube rendering
         frame.final_pass.cube.program_bindings = final_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.cube.uniforms_buffer.GetInterface()  } } },
-            { { rhi::ShaderType::Pixel,  "g_scene_uniforms" }, { { frame.scene_uniforms_buffer.GetInterface()            } } },
-            { { rhi::ShaderType::Pixel,  "g_constants"      }, { { m_const_buffer.GetInterface()                         } } },
-            { { rhi::ShaderType::Pixel,  "g_shadow_map"     }, { { frame.shadow_pass.rt_texture.GetInterface()           } } },
-            { { rhi::ShaderType::Pixel,  "g_shadow_sampler" }, { { m_shadow_sampler.GetInterface()                       } } },
-            { { rhi::ShaderType::Pixel,  "g_texture"        }, { { m_cube_buffers_ptr->GetTexture().GetInterface()       } } },
-            { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, { { m_texture_sampler.GetInterface()                      } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, frame.final_pass.cube.uniforms_buffer.GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_scene_uniforms" }, frame.scene_uniforms_buffer.GetResourceView()           },
+            { { rhi::ShaderType::Pixel,  "g_constants"      }, m_const_buffer.GetResourceView()                        },
+            { { rhi::ShaderType::Pixel,  "g_shadow_map"     }, frame.shadow_pass.rt_texture.GetResourceView()          },
+            { { rhi::ShaderType::Pixel,  "g_shadow_sampler" }, m_shadow_sampler.GetResourceView()                      },
+            { { rhi::ShaderType::Pixel,  "g_texture"        }, m_cube_buffers_ptr->GetTexture().GetResourceView()      },
+            { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, m_texture_sampler.GetResourceView()                     },
         }, frame.index);
         frame.final_pass.cube.program_bindings.SetName(fmt::format("Cube Final-Pass Bindings {}", frame.index));
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         frame.final_pass.floor.program_bindings = rhi::ProgramBindings(frame.final_pass.cube.program_bindings, {
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.floor.uniforms_buffer.GetInterface() } } },
-            { { rhi::ShaderType::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexture().GetInterface()      } } },
+            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, frame.final_pass.floor.uniforms_buffer.GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_texture"        }, m_floor_buffers_ptr->GetTexture().GetResourceView() },
         }, frame.index);
         frame.final_pass.floor.program_bindings.SetName(fmt::format("Floor Final-Pass Bindings {}", frame.index));
 

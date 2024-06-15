@@ -39,7 +39,7 @@ namespace Methane::Graphics::Vulkan
 {
 
 ProgramBindings::ProgramBindings(Program& program,
-                                 const ResourceViewsByArgument& resource_views_by_argument,
+                                 const BindingValueByArgument& binding_value_by_argument,
                                  Data::Index frame_index)
     : Base::ProgramBindings(program, frame_index)
 {
@@ -101,12 +101,12 @@ ProgramBindings::ProgramBindings(Program& program,
     });
 
     UpdateMutableDescriptorSetName();
-    SetResourcesForArguments(resource_views_by_argument);
+    SetResourcesForArguments(binding_value_by_argument);
     VerifyAllArgumentsAreBoundToResources();
 }
 
 ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
-                                 const ResourceViewsByArgument& replace_resource_view_by_argument,
+                                 const BindingValueByArgument& replace_resource_view_by_argument,
                                  const Opt<Data::Index>& frame_index)
     : Base::ProgramBindings(other_program_bindings, frame_index)
     , m_descriptor_sets(other_program_bindings.m_descriptor_sets)
@@ -149,7 +149,7 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
     VerifyAllArgumentsAreBoundToResources();
 }
 
-Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
     auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);
@@ -157,10 +157,10 @@ Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgu
     return program_bindings_ptr;
 }
 
-void ProgramBindings::SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument)
+void ProgramBindings::SetResourcesForArguments(const BindingValueByArgument& binding_value_by_argument)
 {
     META_FUNCTION_TASK();
-    Base::ProgramBindings::SetResourcesForArguments(resource_views_by_argument);
+    Base::ProgramBindings::SetResourcesForArguments(binding_value_by_argument);
 
     auto& program = static_cast<Program&>(GetProgram());
     std::vector<std::vector<uint32_t>> dynamic_offsets_by_set_index;

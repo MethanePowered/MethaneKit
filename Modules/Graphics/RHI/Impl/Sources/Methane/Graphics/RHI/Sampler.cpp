@@ -162,6 +162,11 @@ const Opt<uint32_t>& Sampler::GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetOwnerQueueFamily();
 }
 
+Rhi::ResourceView Sampler::GetResourceView() const
+{
+    return GetImpl(m_impl_ptr).GetResourceView();
+}
+
 void Sampler::Connect(Data::Receiver<IResourceCallback>& receiver) const
 {
     GetImpl(m_impl_ptr).Data::Emitter<IResourceCallback>::Connect(receiver);

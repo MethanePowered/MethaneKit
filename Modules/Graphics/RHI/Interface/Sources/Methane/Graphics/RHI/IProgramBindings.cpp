@@ -57,9 +57,9 @@ ProgramBindingsUnboundArgumentsException::ProgramBindingsUnboundArgumentsExcepti
     , m_unbound_arguments(unbound_arguments)
 { }
 
-Ptr<IProgramBindings> IProgramBindings::Create(IProgram& program, const IProgram::ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<IProgramBindings> IProgramBindings::Create(IProgram& program, const IProgram::BindingValueByArgument& binding_value_by_argument, Data::Index frame_index)
 {
-    return program.CreateBindings(resource_views_by_argument, frame_index);
+    return program.CreateBindings(binding_value_by_argument, frame_index);
 }
 
 } // namespace Methane::Graphics::Rhi

@@ -155,10 +155,10 @@ void TexturedCubeApp::Init()
 
         // Configure program resource bindings
         frame.program_bindings = m_render_state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::All,   "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } },
-            { { rhi::ShaderType::Pixel, "g_constants" }, { { m_const_buffer.GetInterface()        } } },
-            { { rhi::ShaderType::Pixel, "g_texture"   }, { { m_cube_texture.GetInterface()        } } },
-            { { rhi::ShaderType::Pixel, "g_sampler"   }, { { m_texture_sampler.GetInterface()     } } },
+            { { rhi::ShaderType::All,   "g_uniforms"  }, frame.uniforms_buffer.GetResourceView() },
+            { { rhi::ShaderType::Pixel, "g_constants" }, m_const_buffer.GetResourceView() },
+            { { rhi::ShaderType::Pixel, "g_texture"   }, m_cube_texture.GetResourceView() },
+            { { rhi::ShaderType::Pixel, "g_sampler"   }, m_texture_sampler.GetResourceView() },
         }, frame.index);
         frame.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
 

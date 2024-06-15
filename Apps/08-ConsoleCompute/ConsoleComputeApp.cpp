@@ -173,7 +173,7 @@ void ConsoleComputeApp::Init()
     m_frame_texture.SetName("Game of Life Frame Texture");
 
     m_compute_bindings = m_compute_state.GetProgram().CreateBindings({
-        { { rhi::ShaderType::Compute, "g_frame_texture" }, { { m_frame_texture.GetInterface() } } },
+        { { rhi::ShaderType::Compute, "g_frame_texture" }, m_frame_texture.GetResourceView() },
     });
     m_compute_bindings.SetName("Game of Life Compute Bindings");
 

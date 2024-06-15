@@ -43,6 +43,14 @@ public:
         , m_data_size(static_cast<Size>(m_data_storage.size()))
     { }
 
+    template<typename T>
+    explicit Chunk(T&& value)
+        : m_data_storage(std::addressof(value), sizeof(value))
+        , m_data_ptr(m_data_storage.data())
+        , m_data_size(static_cast<Size>(m_data_storage.size()))
+    {
+    }
+
     explicit Chunk(const Chunk& other)
         : m_data_storage(other.m_data_storage)
         , m_data_ptr(m_data_storage.empty() ? other.m_data_ptr : m_data_storage.data())
@@ -69,6 +77,23 @@ public:
         m_data_ptr     = m_data_storage.empty() ? other.m_data_ptr : m_data_storage.data();
         m_data_size    = m_data_storage.empty() ? other.m_data_size : static_cast<Size>(m_data_storage.size());
         return *this;
+    }
+
+    bool operator==(const Chunk& other) const noexcept
+    {
+        return m_data_ptr == other.m_data_ptr
+             ? m_data_size == other.m_data_size
+             : memcmp(m_data_ptr, other.m_data_ptr, m_data_size) == 0;
+    }
+
+    bool operator!=(const Chunk& other) const noexcept
+    {
+        return !operator==(other);
+    }
+
+    operator bool() const noexcept
+    {
+        return !IsEmptyOrNull();
     }
 
     [[nodiscard]] bool IsEmptyOrNull() const noexcept { return !m_data_ptr || !m_data_size; }

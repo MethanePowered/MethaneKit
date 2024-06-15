@@ -149,9 +149,9 @@ public:
         META_FUNCTION_TASK();
         META_CHECK_ARG_TRUE(uniforms_buffer.IsInitialized());
         return Rhi::ProgramBindings(m_program, {
-            { { Rhi::ShaderType::Vertex, "g_skybox_uniforms" }, { { uniforms_buffer.GetInterface()             } } },
-            { { Rhi::ShaderType::Pixel,  "g_skybox_texture"  }, { { m_mesh_buffers.GetTexture().GetInterface() } } },
-            { { Rhi::ShaderType::Pixel,  "g_texture_sampler" }, { { m_texture_sampler.GetInterface()           } } },
+            { { Rhi::ShaderType::Vertex, "g_skybox_uniforms" }, uniforms_buffer.GetResourceView() },
+            { { Rhi::ShaderType::Pixel,  "g_skybox_texture"  }, m_mesh_buffers.GetTexture().GetResourceView() },
+            { { Rhi::ShaderType::Pixel,  "g_texture_sampler" }, m_texture_sampler.GetResourceView() },
         }, frame_index);
     }
 
