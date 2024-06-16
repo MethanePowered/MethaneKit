@@ -46,12 +46,12 @@ struct fmt::formatter<Methane::Graphics::Rhi::ProgramArgument>
 namespace Methane::Graphics::Rhi
 {
 
-ProgramArgumentConstantModificationException::ProgramArgumentConstantModificationException(const Rhi::IProgram::Argument& argument)
+ProgramArgumentConstantModificationException::ProgramArgumentConstantModificationException(const Rhi::ProgramArgument& argument)
     : std::logic_error(fmt::format("Can not modify constant argument binding '{}' of {} shaders.",
                                    argument.GetName(), magic_enum::enum_name(argument.GetShaderType())))
 { }
 
-ProgramBindingsUnboundArgumentsException::ProgramBindingsUnboundArgumentsException(const Rhi::IProgram& program, const Rhi::IProgram::Arguments& unbound_arguments)
+ProgramBindingsUnboundArgumentsException::ProgramBindingsUnboundArgumentsException(const Rhi::IProgram& program, const Rhi::ProgramArguments& unbound_arguments)
     : std::runtime_error(fmt::format("Some arguments of program '{}' are not bound to any resource:\n{}", program.GetName(), unbound_arguments))
     , m_program(program)
     , m_unbound_arguments(unbound_arguments)

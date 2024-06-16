@@ -48,7 +48,7 @@ public:
     ProgramBindings(const ProgramBindings& other_program_bindings, const BindingValueByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
 
     // IProgramBindings interface
-    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const BindingValueByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index) override;
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const BindingValueByArgument& replace_binding_value_by_argument, const Opt<Data::Index>& frame_index) override;
     void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 
     // Base::ProgramBindings interface
@@ -63,7 +63,7 @@ private:
 
     void SetResourcesForArguments(const BindingValueByArgument& binding_value_by_argument);
 
-    template<typename FuncType> // function void(const IProgram::Argument&, ArgumentBinding&)
+    template<typename FuncType> // function void(const ProgramArgument&, ArgumentBinding&)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
     void UpdateMutableDescriptorSetName();
 

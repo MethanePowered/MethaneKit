@@ -46,7 +46,7 @@ class ProgramBindings
 {
 public:
     using ArgumentBinding  = ProgramArgumentBinding;
-    using ArgumentBindings = std::unordered_map<Rhi::ProgramArgument, Ptr<ArgumentBinding>, Rhi::IProgram::Argument::Hash>;
+    using ArgumentBindings = std::unordered_map<Rhi::ProgramArgument, Ptr<ArgumentBinding>, Rhi::ProgramArgument::Hash>;
 
     ProgramBindings(Program& program, Data::Index frame_index);
     ProgramBindings(Program& program, const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index);
@@ -58,11 +58,11 @@ public:
     ProgramBindings& operator=(ProgramBindings&& other) = delete;
 
     // IProgramBindings interface
-    Rhi::IProgram&                  GetProgram() const final;
-    const Rhi::IProgram::Arguments& GetArguments() const noexcept final     { return m_arguments; }
-    Data::Index                     GetFrameIndex() const noexcept final    { return m_frame_index; }
-    Data::Index                     GetBindingsIndex() const noexcept final { return m_bindings_index; }
-    IArgumentBinding&               Get(const Rhi::IProgram::Argument& shader_argument) const final;
+    Rhi::IProgram&               GetProgram() const final;
+    const Rhi::ProgramArguments& GetArguments() const noexcept final     { return m_arguments; }
+    Data::Index                  GetFrameIndex() const noexcept final    { return m_frame_index; }
+    Data::Index                  GetBindingsIndex() const noexcept final { return m_bindings_index; }
+    IArgumentBinding&            Get(const Rhi::ProgramArgument& shader_argument) const final;
     explicit operator std::string() const final;
 
     // ProgramBindings interface
@@ -70,7 +70,7 @@ public:
     virtual void CompleteInitialization() = 0;
     virtual void Apply(CommandList& command_list, ApplyBehaviorMask apply_behavior = ApplyBehaviorMask(~0U)) const = 0;
 
-    Rhi::IProgram::Arguments GetUnboundArguments() const;
+    Rhi::ProgramArguments GetUnboundArguments() const;
 
     template<typename CommandListType>
     void ApplyResourceTransitionBarriers(CommandListType& command_list,
@@ -120,7 +120,7 @@ private:
 
     const Ptr<Rhi::IProgram>             m_program_ptr;
     Data::Index                          m_frame_index;
-    Rhi::IProgram::Arguments             m_arguments;
+    Rhi::ProgramArguments             m_arguments;
     ArgumentBindings                     m_binding_by_argument;
     ResourceStatesByAccess               m_transition_resource_states_by_access;
     ResourceRefsByAccess                 m_resource_refs_by_access;

@@ -26,20 +26,13 @@ pipeline via state object and used to create resource binding objects.
 
 #include "IShader.h"
 #include "IObject.h"
-#include "ResourceView.h"
+#include "ProgramArgument.h"
 
-#include <Methane/Data/Chunk.hpp>
-#include <Methane/Data/EnumMask.hpp>
-#include <Methane/Graphics/Types.h>
 #include <Methane/Memory.hpp>
-#include <Methane/Checks.hpp>
 
 #include <vector>
-#include <string>
 #include <string_view>
-#include <unordered_set>
 #include <unordered_map>
-#include <variant>
 
 namespace Methane::Graphics::Rhi
 {
@@ -61,105 +54,6 @@ struct ProgramInputBufferLayout
 };
 
 using ProgramInputBufferLayouts = std::vector<ProgramInputBufferLayout>;
-class ProgramArgumentNotFoundException;
-
-class ProgramArgument
-{
-public:
-    using NotFoundException = ProgramArgumentNotFoundException;
-
-    struct Hash
-    {
-        [[nodiscard]] size_t operator()(const ProgramArgument& arg) const { return arg.m_hash; }
-    };
-
-    ProgramArgument(ShaderType shader_type, std::string_view argument_name) noexcept;
-    virtual ~ProgramArgument() = default;
-
-    [[nodiscard]] ShaderType       GetShaderType() const noexcept { return m_shader_type; }
-    [[nodiscard]] std::string_view GetName() const noexcept       { return m_name; }
-    [[nodiscard]] size_t           GetHash() const noexcept       { return m_hash; }
-
-    [[nodiscard]] bool operator==(const ProgramArgument& other) const noexcept;
-    [[nodiscard]] bool operator<(const ProgramArgument& other) const noexcept;
-    [[nodiscard]] virtual explicit operator std::string() const noexcept;
-
-    void MergeShaderTypes(ShaderType shader_type);
-
-private:
-    ShaderType       m_shader_type;
-    std::string_view m_name;
-    size_t           m_hash;
-};
-
-struct IProgram;
-
-class ProgramArgumentNotFoundException : public std::invalid_argument
-{
-public:
-    ProgramArgumentNotFoundException(const IProgram& program, const ProgramArgument& argument);
-
-    [[nodiscard]] const IProgram&        GetProgram() const noexcept  { return m_program; }
-    [[nodiscard]] const ProgramArgument& GetArgument() const noexcept { return m_argument; }
-
-private:
-    const IProgram& m_program;
-    ProgramArgument m_argument;
-};
-
-// NOTE: Access Type enum values should strictly match with
-// register space values of 'META_ARG_*' shader definitions from MethaneShaders.cmake:
-enum class ProgramArgumentAccessType : uint32_t
-{
-    Constant,      // META_ARG_CONSTANT(0)
-    FrameConstant, // META_ARG_FRAME_CONSTANT(1)
-    Mutable        // META_ARG_MUTABLE(2)
-};
-
-using ProgramArgumentAccessMask = Data::EnumMask<ProgramArgumentAccessType>;
-
-enum class ProgramArgumentAccessModifier
-{
-    ResourceView,    // Default argument access by descriptor from resource view
-    ResourceAddress, // Addressable argument access to resource view with offset and size
-    RootConstant     // 32-bit constant(s) stored in the root signature
-};
-
-using ProgramArguments = std::unordered_set<ProgramArgument, ProgramArgument::Hash>;
-
-class ProgramArgumentAccessor : public ProgramArgument
-{
-public:
-    using Type = ProgramArgumentAccessType;
-    using Mask = ProgramArgumentAccessMask;
-    using Modifier = ProgramArgumentAccessModifier;
-
-    static Type GetTypeByRegisterSpace(uint32_t register_space);
-
-    ProgramArgumentAccessor(ShaderType shader_type,
-                            std::string_view arg_name,
-                            Type access_type = Type::Mutable,
-                            Modifier modifier = Modifier::ResourceView) noexcept;
-
-    ProgramArgumentAccessor(const ProgramArgument& argument,
-                            Type access_type = Type::Mutable,
-                            Modifier modifier = Modifier::ResourceView) noexcept;
-
-    [[nodiscard]] size_t GetAccessorIndex() const noexcept;
-    [[nodiscard]] Type   GetAccessorType() const noexcept  { return m_access_type; }
-    [[nodiscard]] bool   IsAddressable() const noexcept    { return m_access_modifier == Modifier::ResourceAddress; }
-    [[nodiscard]] bool   IsRootConstant() const noexcept   { return m_access_modifier == Modifier::RootConstant; }
-    [[nodiscard]] bool   IsMutable() const noexcept        { return m_access_type == Type::Mutable; }
-    [[nodiscard]] bool   IsConstant() const noexcept       { return m_access_type == Type::Constant; }
-    [[nodiscard]] bool   IsFrameConstant() const noexcept  { return m_access_type == Type::FrameConstant; }
-    [[nodiscard]] explicit operator std::string() const noexcept final;
-
-private:
-    Type     m_access_type     = Type::Mutable;
-    Modifier m_access_modifier = Modifier::ResourceView;
-};
-
-using ProgramArgumentAccessors = std::unordered_set<ProgramArgumentAccessor, ProgramArgumentAccessor::Hash>;
 using ProgramShaders = Ptrs<IShader>;
 
 struct ProgramSettings
@@ -173,28 +67,6 @@ struct ProgramSettings
 struct IContext;
 struct IProgramBindings;
 
-class RootConstant
-    : public Data::Chunk
-{
-public:
-    RootConstant() = default;
-
-    template<typename T>
-    explicit RootConstant(T&& value)
-        : Data::Chunk(std::forward<T>(value))
-    { }
-
-    template<typename T>
-    const T& GetValue() const
-    {
-        META_CHECK_ARG_EQUAL_DESCR(sizeof(T), Data::Chunk::GetDataSize(),
-                                   "size of value type does not match with root constant data size");
-        return reinterpret_cast<const T&>(Data::Chunk::GetDataPtr()); // NOSONAR
-    }
-};
-
-using ProgramArgumentBindingValue = std::variant<ResourceView, ResourceViews, RootConstant>;
-
 struct IProgram
     : virtual IObject // NOSONAR
 {
@@ -207,7 +79,7 @@ struct IProgram
     using ArgumentAccessor       = ProgramArgumentAccessor;
     using ArgumentAccessors      = ProgramArgumentAccessors;
     using ArgumentBindingValue   = ProgramArgumentBindingValue;
-    using BindingValueByArgument = std::unordered_map<Argument, ArgumentBindingValue, Argument::Hash>;
+    using BindingValueByArgument = ProgramBindingValueByArgument;
 
     static const ArgumentAccessor* FindArgumentAccessor(const ArgumentAccessors& argument_accessors,
                                                         const Argument& argument);

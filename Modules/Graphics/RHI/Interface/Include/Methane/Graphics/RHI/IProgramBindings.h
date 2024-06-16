@@ -23,7 +23,7 @@ Methane program bindings interface for resources binding to program arguments.
 
 #pragma once
 
-#include "IProgram.h"
+#include "ProgramArgument.h"
 #include "IResource.h"
 #include "IObject.h"
 
@@ -50,7 +50,7 @@ class ProgramArgumentConstantModificationException
     : public std::logic_error
 {
 public:
-    explicit ProgramArgumentConstantModificationException(const IProgram::Argument& argument);
+    explicit ProgramArgumentConstantModificationException(const ProgramArgument& argument);
 };
 
 struct ProgramArgumentBindingSettings
@@ -87,17 +87,19 @@ enum class ProgramBindingsApplyBehavior : uint32_t
 
 using ProgramBindingsApplyBehaviorMask = Data::EnumMask<ProgramBindingsApplyBehavior>;
 
+struct IProgram;
+
 class ProgramBindingsUnboundArgumentsException: public std::runtime_error
 {
 public:
-    ProgramBindingsUnboundArgumentsException(const IProgram& program, const IProgram::Arguments& unbound_arguments);
+    ProgramBindingsUnboundArgumentsException(const IProgram& program, const ProgramArguments& unbound_arguments);
 
-    [[nodiscard]] const IProgram&            GetProgram() const noexcept { return m_program; }
-    [[nodiscard]] const IProgram::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
+    [[nodiscard]] const IProgram&         GetProgram() const noexcept   { return m_program; }
+    [[nodiscard]] const ProgramArguments& GetArguments() const noexcept { return m_unbound_arguments; }
 
 private:
-    const IProgram&           m_program;
-    const IProgram::Arguments m_unbound_arguments;
+    const IProgram&        m_program;
+    const ProgramArguments m_unbound_arguments;
 };
 
 struct IProgramBindings
@@ -105,16 +107,19 @@ struct IProgramBindings
 {
     using IArgumentBindingCallback  = IProgramArgumentBindingCallback;
     using IArgumentBinding          = IProgramArgumentBinding;
-    using BindingValueByArgument    = IProgram::BindingValueByArgument;
+    using BindingValueByArgument    = ProgramBindingValueByArgument;
     using ApplyBehavior             = ProgramBindingsApplyBehavior;
     using ApplyBehaviorMask         = ProgramBindingsApplyBehaviorMask;
     using UnboundArgumentsException = ProgramBindingsUnboundArgumentsException;
 
     // Create IProgramBindings instance
-    [[nodiscard]] static Ptr<IProgramBindings> Create(IProgram& program, const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index = 0U);
+    [[nodiscard]] static Ptr<IProgramBindings> Create(IProgram& program,
+                                                      const BindingValueByArgument& binding_value_by_argument,
+                                                      Data::Index frame_index = 0U);
 
     // IProgramBindings interface
-    [[nodiscard]] virtual Ptr<IProgramBindings>   CreateCopy(const IProgram::BindingValueByArgument& replace_resource_views_by_argument = {}, const Opt<Data::Index>& frame_index = {}) = 0;
+    [[nodiscard]] virtual Ptr<IProgramBindings>   CreateCopy(const BindingValueByArgument& replace_binding_value_by_argument = {},
+                                                             const Opt<Data::Index>& frame_index = {}) = 0;
     [[nodiscard]] virtual IProgram&               GetProgram() const = 0;
     [[nodiscard]] virtual IArgumentBinding&       Get(const ProgramArgument& shader_argument) const = 0;
     [[nodiscard]] virtual const ProgramArguments& GetArguments() const noexcept = 0;

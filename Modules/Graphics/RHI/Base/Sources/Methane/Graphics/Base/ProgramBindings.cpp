@@ -239,7 +239,7 @@ void ProgramBindings::SetResourcesForArguments(const BindingValueByArgument& bin
     InitResourceRefsByAccess();
 }
 
-Rhi::IProgramArgumentBinding& ProgramBindings::Get(const Rhi::IProgram::Argument& shader_argument) const
+Rhi::IProgramArgumentBinding& ProgramBindings::Get(const Rhi::ProgramArgument& shader_argument) const
 {
     META_FUNCTION_TASK();
     const auto binding_by_argument_it = m_binding_by_argument.find(shader_argument);
@@ -290,10 +290,10 @@ void ProgramBindings::Initialize()
             argument_binding_ptr->Connect(*this);
 }
 
-Rhi::IProgram::Arguments ProgramBindings::GetUnboundArguments() const
+Rhi::ProgramArguments ProgramBindings::GetUnboundArguments() const
 {
     META_FUNCTION_TASK();
-    Rhi::IProgram::Arguments unbound_arguments;
+    Rhi::ProgramArguments unbound_arguments;
     for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
@@ -310,7 +310,7 @@ void ProgramBindings::VerifyAllArgumentsAreBoundToResources() const
 {
     META_FUNCTION_TASK();
     // Verify that resources are set for all program arguments
-    if (Rhi::IProgram::Arguments unbound_arguments = GetUnboundArguments();
+    if (Rhi::ProgramArguments unbound_arguments = GetUnboundArguments();
         !unbound_arguments.empty())
     {
         throw UnboundArgumentsException(*m_program_ptr, unbound_arguments);

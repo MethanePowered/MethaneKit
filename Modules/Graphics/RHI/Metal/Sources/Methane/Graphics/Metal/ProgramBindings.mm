@@ -467,11 +467,11 @@ ProgramBindings::~ProgramBindings()
     Base::ProgramBindings::RemoveFromDescriptorManager();
 }
 
-Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgument& replace_resource_views_by_argument,
+Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgument& replace_binding_value_by_argument,
                                                        const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);
+    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, replace_binding_value_by_argument, frame_index);
     program_bindings_ptr->Initialize();
     return program_bindings_ptr;
 }

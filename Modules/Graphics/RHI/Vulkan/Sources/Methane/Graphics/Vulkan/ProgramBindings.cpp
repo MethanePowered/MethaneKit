@@ -86,7 +86,7 @@ ProgramBindings::ProgramBindings(Program& program,
     };
 
     // Initialize each argument binding with descriptor set pointer and binding index
-    ForEachArgumentBinding([&program, &descriptor_set_selector](const Rhi::IProgram::Argument& program_argument, ArgumentBinding& argument_binding)
+    ForEachArgumentBinding([&program, &descriptor_set_selector](const Rhi::ProgramArgument& program_argument, ArgumentBinding& argument_binding)
     {
         const ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetVulkanSettings();
         const Rhi::ProgramArgumentAccessType access_type = argument_binding_settings.argument.GetAccessorType();
@@ -135,7 +135,7 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
         vk_mutable_descriptor_set = copy_mutable_descriptor_set;
 
         // Update mutable argument bindings with a pointer to the copied descriptor set
-        ForEachArgumentBinding([&vk_mutable_descriptor_set](const Rhi::IProgram::Argument&, ArgumentBinding& argument_binding)
+        ForEachArgumentBinding([&vk_mutable_descriptor_set](const Rhi::ProgramArgument&, ArgumentBinding& argument_binding)
         {
             if (argument_binding.GetVulkanSettings().argument.GetAccessorType() != Rhi::ProgramArgumentAccessType::Mutable)
                 return;
@@ -149,10 +149,11 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
     VerifyAllArgumentsAreBoundToResources();
 }
 
-Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgument& replace_binding_value_by_argument,
+                                                       const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);
+    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, replace_binding_value_by_argument, frame_index);
     program_bindings_ptr->Initialize();
     return program_bindings_ptr;
 }
@@ -167,7 +168,7 @@ void ProgramBindings::SetResourcesForArguments(const BindingValueByArgument& bin
     dynamic_offsets_by_set_index.resize(m_descriptor_sets.size());
 
     ForEachArgumentBinding([&program, &dynamic_offsets_by_set_index]
-                           (const Rhi::IProgram::Argument&, const ArgumentBinding& argument_binding)
+                           (const Rhi::ProgramArgument&, const ArgumentBinding& argument_binding)
         {
             const Rhi::ProgramArgumentAccessor& program_argument_accessor = argument_binding.GetSettings().argument;
             if (!program_argument_accessor.IsAddressable())
@@ -199,7 +200,7 @@ void ProgramBindings::CompleteInitialization()
     META_FUNCTION_TASK();
     META_LOG("Update descriptor sets on GPU for program bindings '{}'", GetName());
 
-    ForEachArgumentBinding([](const Rhi::IProgram::Argument&, ArgumentBinding& argument_binding)
+    ForEachArgumentBinding([](const Rhi::ProgramArgument&, ArgumentBinding& argument_binding)
     {
         argument_binding.UpdateDescriptorSetsOnGpu();
     });
@@ -262,7 +263,7 @@ void ProgramBindings::OnObjectNameChanged(IObject&, const std::string&)
     UpdateMutableDescriptorSetName();
 }
 
-template<typename FuncType> // function void(const Rhi::IProgram::Argument&, ArgumentBinding&)
+template<typename FuncType> // function void(const Rhi::ProgramArgument&, ArgumentBinding&)
 void ProgramBindings::ForEachArgumentBinding(FuncType argument_binding_function) const
 {
     META_FUNCTION_TASK();

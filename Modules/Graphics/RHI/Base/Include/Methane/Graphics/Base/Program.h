@@ -62,7 +62,7 @@ public:
 protected:
     using ArgumentBinding       = ProgramBindings::ArgumentBinding;
     using ArgumentBindings      = ProgramBindings::ArgumentBindings;
-    using FrameArgumentBindings = std::unordered_map<IProgram::Argument, Ptrs<ArgumentBinding>, IProgram::Argument::Hash>;
+    using FrameArgumentBindings = std::unordered_map<Rhi::ProgramArgument, Ptrs<ArgumentBinding>, Rhi::ProgramArgument::Hash>;
 
     const ArgumentBindings&      GetArgumentBindings() const noexcept      { return m_binding_by_argument; }
     const FrameArgumentBindings& GetFrameArgumentBindings() const noexcept { return m_frame_bindings_by_argument; }

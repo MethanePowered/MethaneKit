@@ -28,10 +28,11 @@ Null implementation of the program bindings interface.
 namespace Methane::Graphics::Null
 {
 
-Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgument& replace_binding_value_by_argument,
+                                                       const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);
+    return std::make_shared<ProgramBindings>(*this, replace_binding_value_by_argument, frame_index);
 }
 
 } // namespace Methane::Graphics::Null

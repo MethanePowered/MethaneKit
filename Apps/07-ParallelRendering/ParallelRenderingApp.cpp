@@ -152,7 +152,7 @@ void ParallelRenderingApp::Init()
                     {
                         { rhi::ShaderType::All, "g_uniforms" },
                         rhi::ProgramArgumentAccessor::Type::Mutable,
-                        rhi::ProgramArgumentAccessor::Modifier::ResourceAddress
+                        rhi::ProgramArgumentAccessor::ValueType::ResourceAddress
                     },
                     // Other arguments are defined in shader register spaces
                 },
