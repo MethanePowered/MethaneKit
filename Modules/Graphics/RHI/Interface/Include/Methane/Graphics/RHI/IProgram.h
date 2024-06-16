@@ -58,6 +58,8 @@ struct ProgramInputBufferLayout
 };
 
 using ProgramInputBufferLayouts = std::vector<ProgramInputBufferLayout>;
+
+struct IProgram;
 class ProgramArgumentNotFoundException;
 
 class ProgramArgument
