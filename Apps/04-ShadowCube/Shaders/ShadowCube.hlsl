@@ -25,7 +25,7 @@ Optional macro definition: ENABLE_SHADOWS, ENABLE_TEXTURING
 ******************************************************************************/
 
 #include "ShadowCubeUniforms.h"
-#include "..\..\Common\Shaders\Primitives.hlsl"
+#include "../../Common/Shaders/Primitives.hlsl"
 
 struct VSInput
 {

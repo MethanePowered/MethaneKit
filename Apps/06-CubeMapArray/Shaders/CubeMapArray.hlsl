@@ -22,7 +22,7 @@ Shaders for cube-map array textured rendering with Phong lighting model
 ******************************************************************************/
 
 #include "CubeMapArrayUniforms.h"
-#include "..\..\Common\Shaders\Primitives.hlsl"
+#include "../../Common/Shaders/Primitives.hlsl"
 
 struct VSInput
 {

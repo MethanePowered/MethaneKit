@@ -22,7 +22,7 @@ Shaders for textured cube rendering with Phong lighting model
 ******************************************************************************/
 
 #include "TexturedCubeUniforms.h"
-#include "..\..\Common\Shaders\Primitives.hlsl"
+#include "../../Common/Shaders/Primitives.hlsl"
 
 struct VSInput
 {
