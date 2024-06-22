@@ -65,8 +65,10 @@ protected:
     virtual void Compute() = 0;
     virtual void Present(ftxui::Canvas& canvas) = 0;
     virtual void Restart() = 0;
+    virtual void ResetRules() = 0;
 
     int GetComputeDeviceIndex() const   { return m_compute_device_index; }
+    int GetGameRuleIndex() const        { return m_game_rule_index; }
     std::mutex& GetScreenRefreshMutex() { return m_screen_refresh_mutex; }
 
     void InitUserInterface();
@@ -77,11 +79,13 @@ private:
 
     ftxui::ScreenInteractive     m_screen{ ftxui::ScreenInteractive::Fullscreen() };
     ftxui::RadioboxOption        m_compute_device_option{ ftxui::RadioboxOption::Simple() };
+    ftxui::RadioboxOption        m_game_rule_option{ ftxui::RadioboxOption::Simple() };
     ftxui::Component             m_root;
     std::mutex                   m_screen_refresh_mutex;
     std::atomic<bool>            m_screen_refresh_enabled{ true };
     bool                         m_30fps_screen_refresh_limit_enabled{ true };
     int                          m_compute_device_index = 0;
+    int                          m_game_rule_index      = 0;
     data::FrameSize              m_field_size{ 2048U, 2048U };
     data::FrameRect              m_frame_rect;
     std::optional<data::Point2I> m_mouse_pressed_pos;

@@ -68,7 +68,15 @@ void ConsoleComputeApp::Init()
 }
 ```
 
-Additionally, 2D Image Texture is created with `R8Uint` pixel format which is used for `ShaderRead`, `ShaderWrite` and `Readback`
+Buffer is created to keep game rule index for rule-set selection in the shader constant buffer:
+
+```cpp
+    m_constant_buffer = m_compute_context.CreateBuffer(
+        rhi::BufferSettings::ForConstantBuffer(sizeof(Constants), false, true));
+    m_constant_buffer.SetName("Constant Buffer");
+```
+
+Finally, 2D Image Texture is created with `R8Uint` pixel format which is used for `ShaderRead`, `ShaderWrite` and `Readback`
 of texture data after compute iteration. `ProgramBindings` instance is created for binding the texture to compute shader
 argument `g_frame_texture` defined in [HLSL shader](#hlsl-compute-shader). Texture is initialized with random cells data
 on CPU and uploaded to the GPU using transfer queue.
@@ -91,6 +99,7 @@ void ConsoleComputeApp::Init()
     m_frame_texture.SetName("Game of Life Frame Texture");
 
     m_compute_bindings = m_compute_state.GetProgram().CreateBindings({
+        { { rhi::ShaderType::Compute, "g_constants"     }, m_constant_buffer.GetResourceView() },
         { { rhi::ShaderType::Compute, "g_frame_texture" }, { { m_frame_texture.GetInterface() } } },
     });
     m_compute_bindings.SetName("Game of Life Compute Bindings");

@@ -21,7 +21,10 @@ Compute shader for Conway's Game of Life
 
 ******************************************************************************/
 
-RWTexture2D<uint> g_frame_texture : register(u0, META_ARG_MUTABLE);
+#include "GameOfLifeRules.h"
+
+ConstantBuffer<Constants> g_constants     : register(b0, META_ARG_CONSTANT);
+RWTexture2D<uint>         g_frame_texture : register(u0, META_ARG_MUTABLE);
 
 [numthreads(16, 16, 1)]
 void MainCS(uint3 id : SV_DispatchThreadID)
@@ -47,16 +50,8 @@ void MainCS(uint3 id : SV_DispatchThreadID)
         }
     }
 
-    if (g_frame_texture[id.xy] > 0)
-    {
-        // Any live cell with two or three live neighbours survives.
-        // All other live cells die in the next generation.
-        g_frame_texture[id.xy] = (alive_neighbors_count == 2 || alive_neighbors_count == 3) ? 1 : 0;
-    }
-    else
-    {
-        // Any dead cell with three live neighbours becomes a live cell.
-        // All other dead cells stay dead.
-        g_frame_texture[id.xy] = (alive_neighbors_count == 3) ? 1 : 0;
-    }
+    g_frame_texture[id.xy] = ( g_frame_texture[id.xy] > 0
+                               ? IsCellSurvived(g_constants.game_rule_id, alive_neighbors_count)
+                               : IsCellBorn(g_constants.game_rule_id, alive_neighbors_count)
+                             ) ? 1 : 0;
 }

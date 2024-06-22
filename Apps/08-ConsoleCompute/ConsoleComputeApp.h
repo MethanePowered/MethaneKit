@@ -59,6 +59,7 @@ protected:
     void Compute() override;
     void Present(ftxui::Canvas& canvas) override;
     void Restart() override;
+    void ResetRules() override;
 
 private:
     void RandomizeFrameData();
@@ -69,6 +70,7 @@ private:
     rhi::ComputeState       m_compute_state;
     rhi::ComputeCommandList m_compute_cmd_list;
     rhi::CommandListSet     m_compute_cmd_list_set;
+    rhi::Buffer             m_constant_buffer;
     rhi::Texture            m_frame_texture;
     rhi::ProgramBindings    m_compute_bindings;
     rhi::SubResource        m_frame_data;
