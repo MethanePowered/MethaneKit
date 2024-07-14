@@ -112,7 +112,7 @@ Data::Bytes& RootConstantBuffer::GetData()
 Rhi::IBuffer& RootConstantBuffer::GetBuffer()
 {
     META_FUNCTION_TASK();
-    if (m_buffer_ptr || m_buffer_ptr->GetSettings().size >= m_deferred_size)
+    if (m_buffer_ptr && m_buffer_ptr->GetSettings().size >= m_deferred_size)
         return *m_buffer_ptr;
 
     const auto buffer_settings = Rhi::BufferSettings::ForConstantBuffer(m_deferred_size, true, false);
