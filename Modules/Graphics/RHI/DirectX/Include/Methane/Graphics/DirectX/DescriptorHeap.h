@@ -67,9 +67,9 @@ enum class DescriptorHeapType : uint32_t
 struct DescriptorHeapSettings
 {
     DescriptorHeapType type;
-    Data::Size           size;
-    bool                 deferred_allocation;
-    bool                 shader_visible;
+    Data::Size         size;
+    bool               deferred_allocation;
+    bool               shader_visible;
 };
 
 class DescriptorHeap;

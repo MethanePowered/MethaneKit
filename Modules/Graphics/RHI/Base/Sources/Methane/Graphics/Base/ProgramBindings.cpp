@@ -165,6 +165,13 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
     }
 }
 
+void ProgramBindings::OnProgramArgumentBindingRootConstantChanged([[maybe_unused]] const IArgumentBinding& argument_binding,
+                                                                  [[maybe_unused]] const Rhi::RootConstant& old_root_constant,
+                                                                  [[maybe_unused]] const Rhi::RootConstant& new_root_constant)
+{
+    META_FUNCTION_TASK();
+}
+
 void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_program_bindings_ptr)
 {
     META_FUNCTION_TASK();

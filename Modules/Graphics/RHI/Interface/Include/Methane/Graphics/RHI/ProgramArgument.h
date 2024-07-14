@@ -25,6 +25,7 @@ Methane program argument, accessor and related types.
 
 #include "IShader.h"
 #include "ResourceView.h"
+#include "RootConstant.h"
 
 #include <Methane/Data/Chunk.hpp>
 #include <Methane/Data/EnumMask.hpp>
@@ -126,13 +127,14 @@ public:
                             Type access_type = Type::Mutable,
                             ValueType value_type = ValueType::ResourceView) noexcept;
 
-    [[nodiscard]] size_t GetAccessorIndex() const noexcept;
-    [[nodiscard]] Type   GetAccessorType() const noexcept  { return m_access_type; }
-    [[nodiscard]] bool   IsAddressable() const noexcept    { return m_value_type == ValueType::ResourceAddress; }
-    [[nodiscard]] bool   IsRootConstant() const noexcept   { return m_value_type == ValueType::RootConstant; }
-    [[nodiscard]] bool   IsMutable() const noexcept        { return m_access_type == Type::Mutable; }
-    [[nodiscard]] bool   IsConstant() const noexcept       { return m_access_type == Type::Constant; }
-    [[nodiscard]] bool   IsFrameConstant() const noexcept  { return m_access_type == Type::FrameConstant; }
+    [[nodiscard]] size_t    GetAccessorIndex() const noexcept;
+    [[nodiscard]] Type      GetAccessorType() const noexcept   { return m_access_type; }
+    [[nodiscard]] ValueType GetValueType() const noexcept      { return m_value_type; }
+    [[nodiscard]] bool      IsAddressable() const noexcept     { return m_value_type == ValueType::ResourceAddress; }
+    [[nodiscard]] bool      IsRootConstant() const noexcept    { return m_value_type == ValueType::RootConstant; }
+    [[nodiscard]] bool      IsMutable() const noexcept         { return m_access_type == Type::Mutable; }
+    [[nodiscard]] bool      IsConstant() const noexcept        { return m_access_type == Type::Constant; }
+    [[nodiscard]] bool      IsFrameConstant() const noexcept   { return m_access_type == Type::FrameConstant; }
     [[nodiscard]] explicit operator std::string() const noexcept final;
 
 private:
@@ -140,28 +142,7 @@ private:
     ValueType m_value_type  = ValueType::ResourceView;
 };
 
-using ProgramArgumentAccessors = std::unordered_set<ProgramArgumentAccessor, ProgramArgumentAccessor::Hash>;
-
-class RootConstant
-    : public Data::Chunk
-{
-public:
-    RootConstant() = default;
-
-    template<typename T>
-    explicit RootConstant(T&& value)
-        : Data::Chunk(std::forward<T>(value))
-    { }
-
-    template<typename T>
-    const T& GetValue() const
-    {
-        META_CHECK_ARG_EQUAL_DESCR(sizeof(T), Data::Chunk::GetDataSize(),
-                                   "size of value type does not match with root constant data size");
-        return reinterpret_cast<const T&>(Data::Chunk::GetDataPtr()); // NOSONAR
-    }
-};
-
+using ProgramArgumentAccessors      = std::unordered_set<ProgramArgumentAccessor, ProgramArgumentAccessor::Hash>;
 using ProgramArgumentBindingValue   = std::variant<ResourceView, ResourceViews, RootConstant>;
 using ProgramBindingValueByArgument = std::unordered_map<ProgramArgument, ProgramArgumentBindingValue, ProgramArgument::Hash>;
 

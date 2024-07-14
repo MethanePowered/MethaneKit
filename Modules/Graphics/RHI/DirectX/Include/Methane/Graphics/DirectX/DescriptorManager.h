@@ -76,8 +76,8 @@ private:
 
     using DescriptorHeapTypes = std::array<UniquePtrs<DescriptorHeap>, static_cast<size_t>(DescriptorHeap::Type::Undefined)>;
 
-    bool                      m_deferred_heap_allocation = false;
-    DescriptorHeapTypes       m_descriptor_heap_types;
+    bool                m_deferred_heap_allocation = false;
+    DescriptorHeapTypes m_descriptor_heap_types;
 };
 
 } // namespace Methane::Graphics::DirectX

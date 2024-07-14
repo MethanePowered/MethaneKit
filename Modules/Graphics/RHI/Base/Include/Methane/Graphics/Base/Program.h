@@ -25,6 +25,7 @@ Base implementation of the program interface.
 
 #include "Shader.h"
 #include "ProgramBindings.h"
+#include "RootConstantBuffer.h"
 
 #include <Methane/Graphics/RHI/IProgram.h>
 #include <Methane/Instrumentation.h>
@@ -79,6 +80,9 @@ protected:
 
     Data::Size GetBindingsCountAndIncrement() noexcept { return m_bindings_count++; }
 
+    RootConstantBuffer&       GetRootConstantBuffer()       { return m_root_constant_buffer; }
+    const RootConstantBuffer& GetRootConstantBuffer() const { return m_root_constant_buffer; }
+
     template<typename ShaderFuncType>
     void ForEachShader(const ShaderFuncType& shader_functor)
     {
@@ -95,6 +99,7 @@ private:
     ArgumentBindings       m_binding_by_argument;
     FrameArgumentBindings  m_frame_bindings_by_argument;
     Data::Size             m_bindings_count = 0u;
+    RootConstantBuffer     m_root_constant_buffer;
 };
 
 } // namespace Methane::Graphics::Base

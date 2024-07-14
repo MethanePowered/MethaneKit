@@ -99,7 +99,14 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
     if (m_settings.argument.IsConstant() && m_root_constant)
         throw ConstantModificationException(GetSettings().argument);
 
+    const auto prev_root_constant = m_root_constant;
     m_root_constant = root_constant;
+
+    if (m_emit_callback_enabled)
+        Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
+            &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
+            std::cref(*this), std::cref(prev_root_constant), std::cref(m_root_constant)
+        );
     return true;
 }
 
