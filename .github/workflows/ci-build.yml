@@ -3,6 +3,7 @@
 name: '🏗️ CI Build'
 
 on:
+  workflow_dispatch:
   push:
     branches: [ master, develop ]
     paths:

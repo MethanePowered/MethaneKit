@@ -3,6 +3,7 @@
 name: "🔮 CI CodeQL Scan"
 
 on:
+  workflow_dispatch:
   push:
     branches: [ master ]
     paths:

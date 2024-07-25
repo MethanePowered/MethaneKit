@@ -6,6 +6,7 @@
 name: '🎯 CI Sonar Scan'
 
 on:
+  workflow_dispatch:
   push:
     branches: [ master, develop ]
     paths:
