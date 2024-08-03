@@ -241,7 +241,7 @@ jobs:
 
       - name: Publish Code Coverage to CodeCov server
         if: ${{ github.event_name != 'pull_request_target' && (success() || failure()) }}
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
           flags: unittests,${{ runner.os }}
@@ -249,7 +249,7 @@ jobs:
 
       - name: Publish Code Coverage to CodeCov server (from PR target)
         if: ${{ github.event_name == 'pull_request_target' && (success() || failure()) }}
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           override_pr: ${{ github.event.pull_request.number }}
           override_commit: ${{ github.event.pull_request.head.sha }}
