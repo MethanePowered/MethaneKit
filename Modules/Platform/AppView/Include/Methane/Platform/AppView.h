@@ -32,6 +32,10 @@ and by Methane App implementations.
 #import "iOS/AppViewMetal.hh"
 #endif
 
+#else // __OBJC__
+
+#include <stdint.h>
+
 #endif // __OBJC__
 
 #include <stdexcept>
