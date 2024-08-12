@@ -21,7 +21,7 @@ Shaders for colored cube rendering
 
 ******************************************************************************/
 
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
 #include "HelloCubeUniforms.h"
 #endif
 
@@ -37,14 +37,14 @@ struct PSInput
     float4 color    : COLOR;
 };
 
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
 ConstantBuffer<Uniforms> g_uniforms : register(b0, META_ARG_FRAME_CONSTANT);
 #endif
 
 PSInput CubeVS(VSInput input)
 {
     PSInput output;
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
     output.position = mul(float4(input.position, 1.F), g_uniforms.mvp_matrix);
 #else
     output.position = float4(input.position, 1.F);

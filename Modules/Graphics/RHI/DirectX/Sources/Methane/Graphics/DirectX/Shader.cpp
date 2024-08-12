@@ -115,6 +115,22 @@ static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepTyp
     }
 }
 
+[[nodiscard]]
+static D3D12_SHADER_BUFFER_DESC GetConstantBufferDesc(ID3D12ShaderReflection& shader_reflection,
+                                                      const D3D12_SHADER_INPUT_BIND_DESC& binding_desc)
+{
+    if (binding_desc.Type != D3D_SIT_CBUFFER)
+        return {};
+
+    ID3D12ShaderReflectionConstantBuffer* buffer_reflection_ptr = shader_reflection.GetConstantBufferByName(binding_desc.Name);
+    META_CHECK_ARG_NOT_NULL_DESCR(buffer_reflection_ptr,
+                                  "Failed to get buffer reflection from shader for argument \"{}\"", binding_desc.Name);
+
+    D3D12_SHADER_BUFFER_DESC buffer_desc = {};
+    ThrowIfFailed(buffer_reflection_ptr->GetDesc(&buffer_desc));
+    return buffer_desc;
+}
+
 Shader::Shader(Type type, const Base::Context& context, const Settings& settings)
     : Base::Shader(type, context, settings)
 {
@@ -170,7 +186,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
     Ptrs<Base::ProgramArgumentBinding> argument_bindings;
 
     D3D12_SHADER_DESC shader_desc{};
-    m_cp_reflection->GetDesc(&shader_desc);
+    ThrowIfFailed(m_cp_reflection->GetDesc(&shader_desc));
 
 #ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
@@ -189,9 +205,16 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         const Rhi::ProgramArgumentAccessor* argument_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
         const Rhi::ProgramArgumentAccessor argument_acc = argument_ptr ? *argument_ptr
                                                         : Rhi::ProgramArgumentAccessor(shader_argument, arg_access_type);
+        const D3D12_SHADER_BUFFER_DESC buffer_desc = GetConstantBufferDesc(*m_cp_reflection.Get(), binding_desc);
 
-        ProgramBindings::ArgumentBinding::Type dx_binding_type = ProgramBindings::ArgumentBinding::Type::DescriptorTable;
-        if (argument_acc.IsAddressable())
+        ProgramArgumentBindingType dx_binding_type = ProgramArgumentBindingType::DescriptorTable;
+        if (argument_acc.IsRootConstant())
+        {
+            dx_binding_type = buffer_desc.Size <= 4
+                            ? ProgramArgumentBindingType::Constant32Bit
+                            : ProgramArgumentBindingType::ConstantBufferView;
+        }
+        else if (argument_acc.IsAddressable())
         {
             if (IsUnorderedAccessInputType(binding_desc.Type))
                 // SRV or UAV root descriptors can only be Raw or Structured buffers, textures must be bound through DescriptorTable
@@ -206,13 +229,14 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
 
         argument_bindings.push_back(std::make_shared<ProgramBindings::ArgumentBinding>(
             GetContext(),
-            ProgramBindings::ArgumentBinding::Settings
+            ProgramArgumentBindingSettings
             {
-                Rhi::IProgramArgumentBinding::Settings
+                Rhi::ProgramArgumentBindingSettings
                 {
                     argument_acc,
                     GetResourceTypeByInputAndDimensionType(binding_desc.Type, binding_desc.Dimension),
-                    binding_desc.BindCount
+                    binding_desc.BindCount,
+                    buffer_desc.Size
                 },
                 dx_binding_type,
                 binding_desc.Type,
@@ -227,6 +251,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                << ": type="         << magic_enum::enum_name(binding_desc.Type)
                << ", dimension="    << magic_enum::enum_name(binding_desc.Dimension)
                << ", return_type="  << magic_enum::enum_name(binding_desc.ReturnType)
+               << ", buffer_size="  << buffer_desc.Size
                << ", samples_count="<< binding_desc.NumSamples
                << ", count="        << binding_desc.BindCount
                << ", point="        << binding_desc.BindPoint

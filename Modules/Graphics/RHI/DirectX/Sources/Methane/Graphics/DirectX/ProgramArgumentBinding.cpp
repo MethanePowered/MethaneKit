@@ -142,6 +142,24 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     return true;
 }
 
+bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_constant)
+{
+    META_FUNCTION_TASK();
+    if (!Base::ProgramArgumentBinding::SetRootConstant(root_constant))
+        return false;
+
+    const Rhi::ResourceViews& resource_views = Base::ProgramArgumentBinding::GetResourceViews();
+
+    m_resource_views_dx.clear();
+    std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_resource_views_dx),
+        [this](const Rhi::ResourceView& resource_view)
+        { return ResourceView(resource_view, m_shader_usage); });
+
+    // Request complete initialization to update root constant buffer views
+    GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
+    return true;
+}
+
 void ProgramArgumentBinding::SetDescriptorRange(const DescriptorRange& descriptor_range)
 {
     META_FUNCTION_TASK();

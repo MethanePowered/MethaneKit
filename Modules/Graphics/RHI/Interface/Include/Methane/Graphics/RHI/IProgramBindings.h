@@ -58,7 +58,8 @@ struct ProgramArgumentBindingSettings
 {
     ProgramArgumentAccessor argument;
     ResourceType            resource_type;
-    uint32_t                resource_count = 1;
+    uint32_t                resource_count = 1U;
+    uint32_t                buffer_size = 0U;
 };
 
 struct IProgramArgumentBinding
@@ -73,7 +74,7 @@ struct IProgramArgumentBinding
     [[nodiscard]] virtual const ResourceViews& GetResourceViews() const noexcept = 0;
     virtual bool                               SetResourceViews(const ResourceViews& resource_views) = 0;
     virtual bool                               SetResourceView(const ResourceView& resource_view) = 0;
-    [[nodiscard]] virtual const RootConstant&  GetRootConstant() const noexcept = 0;
+    [[nodiscard]] virtual RootConstant         GetRootConstant() const = 0;
     virtual bool                               SetRootConstant(const RootConstant& root_constant) = 0;
     [[nodiscard]] virtual explicit operator std::string() const = 0;
 };

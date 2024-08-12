@@ -286,15 +286,23 @@ ProgramBindings::operator std::string() const
 void ProgramBindings::Initialize()
 {
     META_FUNCTION_TASK();
-    const auto& program = static_cast<Program&>(GetProgram());
+    auto& program = static_cast<Program&>(GetProgram());
     Rhi::IDescriptorManager& descriptor_manager = program.GetContext().GetDescriptorManager();
     descriptor_manager.AddProgramBindings(*this);
 
     // Connect to argument bindings callback after program bindings construction
     // to prevent back calls during resource views setup
     for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
+    {
+        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr,
+                                      "no resource binding is set for program argument '{}'",
+                                      program_argument.GetName());
+
+        argument_binding_ptr->Initialize(program);
+
         if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == Rhi::ProgramArgumentAccessType::Mutable)
             argument_binding_ptr->Connect(*this);
+    }
 }
 
 Rhi::ProgramArguments ProgramBindings::GetUnboundArguments() const
@@ -303,9 +311,12 @@ Rhi::ProgramArguments ProgramBindings::GetUnboundArguments() const
     Rhi::ProgramArguments unbound_arguments;
     for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
+        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr,
+                                      "no resource binding is set for program argument '{}'",
+                                      program_argument.GetName());
 
-        if (argument_binding_ptr->GetResourceViews().empty())
+        if (!argument_binding_ptr->GetSettings().argument.IsRootConstant() &&
+            argument_binding_ptr->GetResourceViews().empty())
         {
             unbound_arguments.insert(program_argument);
         }

@@ -125,7 +125,7 @@ private:
 
     const Ptr<Rhi::IProgram>             m_program_ptr;
     Data::Index                          m_frame_index;
-    Rhi::ProgramArguments             m_arguments;
+    Rhi::ProgramArguments                m_arguments;
     ArgumentBindings                     m_binding_by_argument;
     ResourceStatesByAccess               m_transition_resource_states_by_access;
     ResourceRefsByAccess                 m_resource_refs_by_access;

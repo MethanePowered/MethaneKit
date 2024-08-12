@@ -61,7 +61,7 @@ Program::Program(const Context& context, const Settings& settings)
     , m_settings(settings)
     , m_shaders_by_type(CreateShadersByType(settings.shaders))
     , m_shader_types(CreateShaderTypes(settings.shaders))
-    , m_root_constant_buffer(context)
+    , m_root_constant_buffer(const_cast<Context&>(context)) // FIXME: get rid of const-cast required to Connect ot signal
 { }
 
 const Ptr<Rhi::IShader>& Program::GetShader(Rhi::ShaderType shader_type) const

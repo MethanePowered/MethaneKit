@@ -25,6 +25,8 @@ bound to Program using ProgramArgumentBinging as RootConstant.
 #pragma once
 
 #include <Methane/Graphics/RHI/RootConstant.h>
+#include <Methane/Graphics/RHI/ResourceView.h>
+#include <Methane/Graphics/RHI/IContext.h>
 
 #include <Methane/Memory.hpp>
 #include <Methane/Data/Types.h>
@@ -50,9 +52,11 @@ public:
     RootConstantAccessor(RootConstantBuffer& buffer, const Range& buffer_range);
     ~RootConstantAccessor();
 
+    [[nodiscard]] Rhi::RootConstant GetRootConstant() const;
+    bool SetRootConstant(const Rhi::RootConstant& root_constant) const;
+
     const Range& GetBufferRange() const noexcept { return m_buffer_range; }
-    Rhi::RootConstant GetRootConstant() const;
-    void SetRootConstant(const Rhi::RootConstant& root_constant);
+    const Rhi::ResourceView GetResourceView() const;
 
 private:
     Ref<RootConstantBuffer> m_buffer;
@@ -62,15 +66,16 @@ private:
 class Context;
 
 class RootConstantBuffer
+    : private Data::Receiver<Rhi::IContextCallback> //NOSONAR
 {
 public:
     using Accessor = RootConstantAccessor;
 
-    explicit RootConstantBuffer(const Context& context);
+    explicit RootConstantBuffer(Context& context);
     ~RootConstantBuffer();
 
-    UniquePtr<Accessor> ReserveRootConstant(Data::Size root_constant_size);
-    void ReleaseRootConstant(const Accessor& reservation);
+    [[nodiscard]] UniquePtr<Accessor> ReserveRootConstant(Data::Size root_constant_size);
+    void ReleaseRootConstant(const Accessor& accessor);
     void SetRootConstant(const Accessor& accessor, const Rhi::RootConstant& root_constant);
 
     Data::Bytes&  GetData();
@@ -79,9 +84,17 @@ public:
 private:
     using RangeSet = Data::RangeSet<Data::Index>;
 
-    const Context&    m_context;
+    void UpdateGpuBuffer(Rhi::ICommandQueue& target_cmd_queue);
+
+    // Rhi::IContextCallback overrides
+    void OnContextCompletingInitialization(Rhi::IContext& context) final;
+    void OnContextReleased(Rhi::IContext&) final;
+    void OnContextInitialized(Rhi::IContext&) final;
+
+    Context&          m_context;
     Data::Size        m_deferred_size = 0U;
     Data::Bytes       m_buffer_data;
+    bool              m_buffer_data_changed = false;
     Ptr<Rhi::IBuffer> m_buffer_ptr;
     RangeSet          m_free_ranges;
 };

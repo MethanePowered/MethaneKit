@@ -58,7 +58,9 @@ public:
     bool                     HasShader(Rhi::ShaderType shader_type) const       { return !!GetShader(shader_type); }
     Data::Size               GetBindingsCount() const noexcept final            { return m_bindings_count; }
 
-    const Context& GetContext() const { return m_context; }
+    const Context&            GetContext() const            { return m_context; }
+    RootConstantBuffer&       GetRootConstantBuffer()       { return m_root_constant_buffer; }
+    const RootConstantBuffer& GetRootConstantBuffer() const { return m_root_constant_buffer; }
 
 protected:
     using ArgumentBinding       = ProgramBindings::ArgumentBinding;
@@ -80,9 +82,6 @@ protected:
 
     Data::Size GetBindingsCountAndIncrement() noexcept { return m_bindings_count++; }
 
-    RootConstantBuffer&       GetRootConstantBuffer()       { return m_root_constant_buffer; }
-    const RootConstantBuffer& GetRootConstantBuffer() const { return m_root_constant_buffer; }
-
     template<typename ShaderFuncType>
     void ForEachShader(const ShaderFuncType& shader_functor)
     {
@@ -96,10 +95,10 @@ private:
     Settings               m_settings;
     const ShadersByType    m_shaders_by_type;
     const Rhi::ShaderTypes m_shader_types;
+    RootConstantBuffer     m_root_constant_buffer;
     ArgumentBindings       m_binding_by_argument;
     FrameArgumentBindings  m_frame_bindings_by_argument;
     Data::Size             m_bindings_count = 0u;
-    RootConstantBuffer     m_root_constant_buffer;
 };
 
 } // namespace Methane::Graphics::Base

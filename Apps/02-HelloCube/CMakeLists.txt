@@ -18,9 +18,9 @@ foreach(VARIANT ${SIMPLE_VARIANT} ${UNIFORMS_VARIANT})
     )
 
     if(VARIANT STREQUAL "${UNIFORMS_VARIANT}")
-        set(VERTEX_SHADER_DEFINES ":UNIFORMS_BUFFER_ENABLED")
+        set(VERTEX_SHADER_DEFINES ":UNIFORMS_ENABLED")
         target_compile_definitions(${TARGET}
-            PRIVATE UNIFORMS_BUFFER_ENABLED
+            PRIVATE UNIFORMS_ENABLED
         )
     endif()
 

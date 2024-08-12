@@ -55,14 +55,14 @@ class ProgramBindings;
 class Program // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
-    using Settings                = ProgramSettingsImpl;
-    using ShaderSet               = ProgramSettingsImpl::ShaderSet;
-    using InputBufferLayout       = ProgramInputBufferLayout;
-    using InputBufferLayouts      = ProgramInputBufferLayouts;
-    using Argument                = ProgramArgument;
-    using Arguments               = ProgramArguments;
-    using ArgumentAccessor        = ProgramArgumentAccessor;
-    using ArgumentAccessors       = ProgramArgumentAccessors;
+    using Settings               = ProgramSettingsImpl;
+    using ShaderSet              = ProgramSettingsImpl::ShaderSet;
+    using InputBufferLayout      = ProgramInputBufferLayout;
+    using InputBufferLayouts     = ProgramInputBufferLayouts;
+    using Argument               = ProgramArgument;
+    using Arguments              = ProgramArguments;
+    using ArgumentAccessor       = ProgramArgumentAccessor;
+    using ArgumentAccessors      = ProgramArgumentAccessors;
     using BindingValueByArgument = IProgram::BindingValueByArgument;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Program);

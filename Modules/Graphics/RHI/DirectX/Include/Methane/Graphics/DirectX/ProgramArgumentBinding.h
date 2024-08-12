@@ -46,6 +46,7 @@ enum class ProgramArgumentBindingType : uint32_t
     ConstantBufferView,
     ShaderResourceView,
     UnorderedAccessView,
+    Constant32Bit,
 };
 
 struct ProgramArgumentBindingSettings
@@ -84,6 +85,7 @@ public:
 
     // IArgumentBinding interface
     bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
+    bool SetRootConstant(const Rhi::RootConstant& root_constant) override;
 
     const Settings&        GetDirectSettings() const noexcept      { return m_settings_dx; }
     uint32_t               GetRootParameterIndex() const noexcept  { return m_root_parameter_index; }

@@ -31,7 +31,9 @@ namespace Methane::Graphics::Base
 {
 
 class Context;
+class Program;
 class ProgramBindings;
+class RootConstantAccessor;
 
 class ProgramArgumentBinding
     : public Rhi::IProgramArgumentBinding
@@ -40,6 +42,7 @@ class ProgramArgumentBinding
 {
 public:
     ProgramArgumentBinding(const Context& context, const Settings& settings);
+    ProgramArgumentBinding(const ProgramArgumentBinding& other);
 
     // Base::ProgramArgumentBinding interface
     [[nodiscard]] virtual Ptr<ProgramArgumentBinding> CreateCopy() const = 0;
@@ -50,7 +53,7 @@ public:
     const Rhi::ResourceViews& GetResourceViews() const noexcept final   { return m_resource_views; }
     bool                      SetResourceViews(const Rhi::ResourceViews& resource_views) override;
     bool                      SetResourceView(const Rhi::ResourceView& resource_view) override;
-    const Rhi::RootConstant&  GetRootConstant() const noexcept final    { return m_root_constant; }
+    Rhi::RootConstant         GetRootConstant() const final;
     bool                      SetRootConstant(const Rhi::RootConstant& root_constant) override;
     explicit operator std::string() const final;
 
@@ -59,6 +62,7 @@ public:
 
     Ptr<ProgramArgumentBinding> GetPtr() { return shared_from_this(); }
 
+    void Initialize(Program& program);
     bool IsAlreadyApplied(const Rhi::IProgram& program,
                           const ProgramBindings& applied_program_bindings,
                           bool check_binding_value_changes = true) const;
@@ -67,11 +71,11 @@ protected:
     const Context& GetContext() const noexcept { return m_context; }
 
 private:
-    const Context&     m_context;
-    Settings           m_settings;
-    Rhi::ResourceViews m_resource_views;
-    Rhi::RootConstant  m_root_constant;
-    bool               m_emit_callback_enabled = true;
+    const Context&                  m_context;
+    Settings                        m_settings;
+    Rhi::ResourceViews              m_resource_views;
+    UniquePtr<RootConstantAccessor> m_root_constant_accessor_ptr;
+    bool                            m_emit_callback_enabled = true;
 };
 
 } // namespace Methane::Graphics::Base

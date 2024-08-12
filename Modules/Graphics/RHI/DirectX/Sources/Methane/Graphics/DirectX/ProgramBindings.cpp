@@ -271,9 +271,8 @@ void ProgramBindings::AddRootParameterBindingsForArgument(ArgumentBinding& argum
     using DXBindingType     = ArgumentBinding::Type;
     using DXDescriptorRange = ArgumentBinding::DescriptorRange;
 
-    const ArgumentBinding::Settings& binding_settings = argument_binding.GetDirectSettings();
-
-    if (binding_settings.type == DXBindingType::DescriptorTable)
+    if (const ArgumentBinding::Settings& binding_settings = argument_binding.GetDirectSettings();
+        binding_settings.type == DXBindingType::DescriptorTable)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(p_heap_reservation, "descriptor heap reservation is not available for \"Descriptor Table\" resource binding");
         const auto&              dx_descriptor_heap = static_cast<const DescriptorHeap&>(p_heap_reservation->heap.get());
@@ -287,10 +286,9 @@ void ProgramBindings::AddRootParameterBindingsForArgument(ArgumentBinding& argum
             0
         });
     }
-
-    for (const ResourceView& resource_view_dx : argument_binding.GetDirectResourceViews())
+    else
     {
-        if (binding_settings.type != DXBindingType::DescriptorTable)
+        for (const ResourceView& resource_view_dx : argument_binding.GetDirectResourceViews())
         {
             AddRootParameterBinding(binding_settings.argument, {
                 argument_binding,
@@ -377,6 +375,13 @@ void ProgramBindings::RootParameterBinding::Apply(ID3D12GraphicsCommandList& d3d
             d3d12_command_list.SetGraphicsRootUnorderedAccessView(root_parameter_index, gpu_virtual_address);
         else if constexpr (command_list_type == Rhi::CommandListType::Compute)
             d3d12_command_list.SetComputeRootUnorderedAccessView(root_parameter_index, gpu_virtual_address);
+        break;
+
+    case ArgumentBinding::Type::Constant32Bit:
+        if constexpr (command_list_type == Rhi::CommandListType::Render)
+            d3d12_command_list.SetGraphicsRoot32BitConstant(root_parameter_index, argument_binding.GetRootConstant().GetValue<UINT>(), 0U);
+        else if constexpr (command_list_type == Rhi::CommandListType::Compute)
+            d3d12_command_list.SetComputeRoot32BitConstant(root_parameter_index, argument_binding.GetRootConstant().GetValue<UINT>(), 0U);
         break;
 
     default:

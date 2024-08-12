@@ -45,11 +45,10 @@ public:
 
     template<typename T>
     explicit Chunk(T&& value)
-        : m_data_storage(std::addressof(value), sizeof(value))
+        : m_data_storage(GetByteAddress(value), GetByteAddress(value) + sizeof(T))
         , m_data_ptr(m_data_storage.data())
         , m_data_size(static_cast<Size>(m_data_storage.size()))
-    {
-    }
+    { }
 
     explicit Chunk(const Chunk& other)
         : m_data_storage(other.m_data_storage)
@@ -81,9 +80,11 @@ public:
 
     bool operator==(const Chunk& other) const noexcept
     {
-        return m_data_ptr == other.m_data_ptr
-             ? m_data_size == other.m_data_size
-             : memcmp(m_data_ptr, other.m_data_ptr, m_data_size) == 0;
+        if (m_data_ptr == other.m_data_ptr)
+            return m_data_size == other.m_data_size;
+
+            return m_data_size == other.m_data_size &&
+                   memcmp(m_data_ptr, other.m_data_ptr, m_data_size) == 0;
     }
 
     bool operator!=(const Chunk& other) const noexcept
@@ -98,6 +99,11 @@ public:
 
     [[nodiscard]] bool IsEmptyOrNull() const noexcept { return !m_data_ptr || !m_data_size; }
     [[nodiscard]] bool IsDataStored() const noexcept  { return !m_data_storage.empty(); }
+
+    static Chunk StoreFrom(const Chunk& other)
+    {
+        return Chunk(Bytes(other.GetDataPtr(), other.GetDataEndPtr()));
+    }
 
     template<typename T = Byte>
     [[nodiscard]] Size GetDataSize() const noexcept
@@ -124,6 +130,12 @@ public:
     }
 
 private:
+    template<typename T>
+    static const std::byte* GetByteAddress(T&& value)
+    {
+        return reinterpret_cast<const std::byte*>(std::addressof(value)); // NOSONAR
+    }
+
     // Data storage is used only when m_data_storage is not managed by m_data_storage provider and
     // returned with chunk (when m_data_storage is loaded from file, for example)
     Bytes       m_data_storage;

@@ -23,6 +23,7 @@ Base implementation of the program argument binding interface.
 
 #include <Methane/Graphics/Base/ProgramArgumentBinding.h>
 #include <Methane/Graphics/Base/ProgramBindings.h>
+#include <Methane/Graphics/Base/Program.h>
 #include <Methane/Graphics/RHI/TypeFormatters.hpp>
 #include <Methane/Data/EnumMaskUtil.hpp>
 
@@ -32,6 +33,13 @@ namespace Methane::Graphics::Base
 ProgramArgumentBinding::ProgramArgumentBinding(const Context& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
+{ }
+
+ProgramArgumentBinding::ProgramArgumentBinding(const ProgramArgumentBinding& other)
+    : m_context(other.m_context)
+    , m_settings(other.m_settings)
+    , m_resource_views(other.m_resource_views)
+    , m_emit_callback_enabled(other.m_emit_callback_enabled)
 { }
 
 void ProgramArgumentBinding::MergeSettings(const ProgramArgumentBinding& other)
@@ -48,6 +56,10 @@ void ProgramArgumentBinding::MergeSettings(const ProgramArgumentBinding& other)
 bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
+    META_CHECK_ARG_FALSE_DESCR(m_settings.argument.IsRootConstant(),
+                              "Can not set resource view for argument which is marked with "
+                              "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\".");
+
     if (m_resource_views == resource_views)
         return false;
 
@@ -90,23 +102,43 @@ bool ProgramArgumentBinding::SetResourceView(const Rhi::ResourceView& resource_v
     return SetResourceViews(Rhi::ResourceViews{ resource_view });
 }
 
+Rhi::RootConstant ProgramArgumentBinding::GetRootConstant() const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_ARG_NOT_NULL_DESCR(m_root_constant_accessor_ptr,
+                                  "Root constant accessor of argument binding is not initialized!");
+    return m_root_constant_accessor_ptr->GetRootConstant();
+}
+
 bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_constant)
 {
     META_FUNCTION_TASK();
-    if (m_root_constant == root_constant)
-        return false;
+    META_CHECK_ARG_TRUE_DESCR(m_settings.argument.IsRootConstant(),
+                              "Can not set root constant for argument with is not marked with "
+                              "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\".");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_root_constant_accessor_ptr,
+                                  "Program argument root constant accessor is not initialized!");
+    META_CHECK_ARG_FALSE_DESCR(root_constant.IsEmptyOrNull(),
+                               "Can not set empty or null root constant to shader argument.");
+    META_CHECK_ARG_EQUAL_DESCR(root_constant.GetDataSize(), m_settings.buffer_size,
+                               "Size of root constant does not match shader argument buffer size.");
 
-    if (m_settings.argument.IsConstant() && m_root_constant)
+    if (m_settings.argument.IsConstant())
         throw ConstantModificationException(GetSettings().argument);
 
-    const auto prev_root_constant = m_root_constant;
-    m_root_constant = root_constant;
+    const auto prev_root_constant = Rhi::RootConstant::StoreFrom(m_root_constant_accessor_ptr->GetRootConstant());
+    if (!m_root_constant_accessor_ptr->SetRootConstant(root_constant))
+        return false;
+
+    m_resource_views.clear();
+    m_resource_views.emplace_back(m_root_constant_accessor_ptr->GetResourceView());
 
     if (m_emit_callback_enabled)
         Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
             &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
-            std::cref(*this), std::cref(prev_root_constant), std::cref(m_root_constant)
+            std::cref(*this), std::cref(prev_root_constant), std::cref(root_constant)
         );
+
     return true;
 }
 
@@ -114,6 +146,15 @@ ProgramArgumentBinding::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("{} is bound to {}", m_settings.argument, fmt::join(m_resource_views, ", "));
+}
+
+void ProgramArgumentBinding::Initialize(Program& program)
+{
+    META_FUNCTION_TASK();
+    if (m_settings.argument.IsRootConstant())
+    {
+        m_root_constant_accessor_ptr = program.GetRootConstantBuffer().ReserveRootConstant(m_settings.buffer_size);
+    }
 }
 
 bool ProgramArgumentBinding::IsAlreadyApplied(const Rhi::IProgram& program,

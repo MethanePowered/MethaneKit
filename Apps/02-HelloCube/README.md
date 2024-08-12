@@ -10,13 +10,13 @@ This tutorial demonstrates colored cube rendering implemented in just 220 lines 
 - [Shaders/HelloCubeUniforms.h](Shaders/HelloCubeUniforms.h)
 
 Tutorial demonstrates the following Methane Kit features and techniques additionally to demonstrated in [Hello Triangle](../01-HelloTriangle):
-- **Simple version** (when macros `UNIFORMS_BUFFER_ENABLED` is not defined):
+- **Simple version** (when macros `UNIFORMS_ENABLED` is not defined):
   - Create vertex and index buffers on GPU and filling them with data from CPU.
   - Generate cube mesh vertices and indices data with custom vertex layout.
   - Use time animation for camera rotation.
   - Create camera view and projection matrices.
   - Transform cube vertices with camera matrices on CPU and update vertex buffers on GPU.
-- **Uniforms version** (when macros `UNIFORMS_BUFFER_ENABLED` is defined):
+- **Uniforms version** (when macros `UNIFORMS_ENABLED` is defined):
   - Use uniform buffer to upload MVP matrix to GPU and transform vertices on GPU in vertex shader.
   - Use program bindings to bind uniform buffer to the graphics pipeline and make it available to shaders.
 
@@ -400,20 +400,20 @@ MVP matrix from this buffer is used in vertex shader `CubeVS`  to transform vert
 coordinates on GPU.
 
 ```cpp
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
 #include "HelloCubeUniforms.h"
 #endif
 
 ...
 
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
 ConstantBuffer<Uniforms> g_uniforms : register(b0);
 #endif
 
 PSInput CubeVS(VSInput input)
 {
     PSInput output;
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
     output.position = mul(float4(input.position, 1.F), g_uniforms.mvp_matrix);
 #else
     output.position = float4(input.position, 1.F);
@@ -423,7 +423,7 @@ PSInput CubeVS(VSInput input)
 }
 ```
 
-In order to compile vertex shader with `UNIFORMS_BUFFER_ENABLED` macro definition, we add it to shader types
+In order to compile vertex shader with `UNIFORMS_ENABLED` macro definition, we add it to shader types
 description in `CMakeLists.txt` inside `add_methane_shaders_source` function.
 
 ```cmake
@@ -432,7 +432,7 @@ add_methane_shaders_source(
     SOURCE Shaders/HelloCube.hlsl
     VERSION 6_0
     TYPES
-        vert=CubeVS:UNIFORMS_BUFFER_ENABLED
+        vert=CubeVS:UNIFORMS_ENABLED
         frag=CubePS
 )
 ```
@@ -482,7 +482,7 @@ private:
 }
 ```
 
-The compiled vertex shader is loaded from resources with respect to macro definition `UNIFORMS_BUFFER_ENABLED`,
+The compiled vertex shader is loaded from resources with respect to macro definition `UNIFORMS_ENABLED`,
 which was used to compile it at build-time using CMake function `add_methane_shaders_source`.
 
 ```cpp
@@ -494,7 +494,7 @@ class HelloCubeApp final : public GraphicsApp
     {
         ...
 
-        const Rhi::Shader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_BUFFER_ENABLED", "" } };
+        const Rhi::Shader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_ENABLED", "" } };
         m_render_state = GetRenderContext().CreateRenderState(
             Rhi::RenderState::Settings
             {
