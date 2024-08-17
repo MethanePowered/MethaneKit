@@ -31,6 +31,7 @@ bound to Program using ProgramArgumentBinging as RootConstant.
 #include <Methane/Memory.hpp>
 #include <Methane/Data/Types.h>
 #include <Methane/Data/RangeSet.hpp>
+#include <Methane/Data/Receiver.hpp>
 
 namespace Methane::Graphics::Rhi
 {

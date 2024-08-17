@@ -80,11 +80,9 @@ public:
 
     bool operator==(const Chunk& other) const noexcept
     {
-        if (m_data_ptr == other.m_data_ptr)
-            return m_data_size == other.m_data_size;
-
-            return m_data_size == other.m_data_size &&
-                   memcmp(m_data_ptr, other.m_data_ptr, m_data_size) == 0;
+        return m_data_size == other.m_data_size &&
+               (m_data_ptr == other.m_data_ptr ||
+                memcmp(m_data_ptr, other.m_data_ptr, m_data_size) == 0);
     }
 
     bool operator!=(const Chunk& other) const noexcept
