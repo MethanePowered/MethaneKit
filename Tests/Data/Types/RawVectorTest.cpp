@@ -30,7 +30,7 @@ Unit-tests of the RawVector data type
 #include <sstream>
 #include <array>
 
-#ifndef __GNUC__
+#ifndef __GNUC_PREREQ
 #define __GNUC_PREREQ(X,Y) 0
 #endif
 
