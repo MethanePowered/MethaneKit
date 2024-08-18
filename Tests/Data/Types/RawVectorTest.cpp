@@ -30,6 +30,10 @@ Unit-tests of the RawVector data type
 #include <sstream>
 #include <array>
 
+#ifndef __GNUC__
+#define __GNUC_PREREQ(X,Y) 0
+#endif
+
 using namespace Methane::Data;
 using Catch::Approx;
 
@@ -184,7 +188,7 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Conversions to Other Types", "[vector][conver
 //        during RTL pass: fwprop1
 //        Tests/Data/Types/RawVectorTest.cpp: In function ‘CATCH2_INTERNAL_TEMPLATE_TEST_16’:
 //        Tests/Data/Types/RawVectorTest.cpp:202:1: internal compiler error: in simplify_const_unary_operation, at simplify-rtx.cc:2204
-#if !defined(__GNUC__) || !__GNUC_PREREQ(13,0)
+#if !__GNUC_PREREQ(13,0)
     SECTION("Cast to string")
     {
         std::stringstream ss;
@@ -200,7 +204,7 @@ TEMPLATE_TEST_CASE_SIG("Raw Vector Conversions to Other Types", "[vector][conver
         const HlslVector<T, size> hlsl_vec = raw_vec.AsHlsl();
         CHECK(hlslpp::all(hlsl_vec == CreateHlslVector(raw_arr)));
     }
-#endif // !defined(__GNUC__) || !__GNUC_PREREQ(13,0)
+#endif // !__GNUC_PREREQ(13,0)
 }
 
 TEMPLATE_TEST_CASE_SIG("Raw Vector Component Accessors and Property Getters", "[vector][accessors]", VECTOR_TYPES_MATRIX)
