@@ -43,6 +43,7 @@ class ProgramArgumentBinding
 public:
     ProgramArgumentBinding(const Context& context, const Settings& settings);
     ProgramArgumentBinding(const ProgramArgumentBinding& other);
+    ~ProgramArgumentBinding() override;
 
     // Base::ProgramArgumentBinding interface
     [[nodiscard]] virtual Ptr<ProgramArgumentBinding> CreateCopy() const = 0;

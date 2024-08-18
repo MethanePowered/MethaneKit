@@ -44,6 +44,8 @@ ProgramArgumentBinding::ProgramArgumentBinding(const ProgramArgumentBinding& oth
     , m_emit_callback_enabled(other.m_emit_callback_enabled)
 { }
 
+ProgramArgumentBinding::~ProgramArgumentBinding() = default;
+
 void ProgramArgumentBinding::MergeSettings(const ProgramArgumentBinding& other)
 {
     META_FUNCTION_TASK();

@@ -154,7 +154,7 @@ else() # Clang or GCC on Linux/MacOS
 
     target_compile_options(MethaneBuildOptions INTERFACE
         # -flto - use the link-time optimizer
-        $<$<CONFIG:Release>:-flto>
+        $<$<CONFIG:Release>:-flto=auto>
         # Set maximum warnings level & treat warnings as errors
         -Wall -Wextra -Werror
         # Disable useless Clang and GCC warnings
@@ -163,7 +163,7 @@ else() # Clang or GCC on Linux/MacOS
 
     target_link_options(MethaneBuildOptions INTERFACE
         # -flto - use the link-time optimizer
-        $<$<CONFIG:Release>:-flto>
+        $<$<CONFIG:Release>:-flto=auto>
     )
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # GCC
