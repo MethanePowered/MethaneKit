@@ -419,7 +419,8 @@ void ProgramBindings::InitResourceRefsByAccess()
     for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
         META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
-        std::set<Rhi::IResource*>& unique_resources = unique_resources_by_access[argument_binding_ptr->GetSettings().argument.GetAccessorIndex()];
+        const size_t accessor_index = argument_binding_ptr->GetSettings().argument.GetAccessorIndex();
+        std::set<Rhi::IResource*>& unique_resources = unique_resources_by_access[accessor_index];
         for (const Rhi::IResource::View& resource_view : argument_binding_ptr->GetResourceViews())
         {
             unique_resources.emplace(resource_view.GetResourcePtr().get());

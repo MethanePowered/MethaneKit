@@ -99,6 +99,37 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
         return false;
 
+    AddDescriptorsForResourceViews(resource_views);
+    return true;
+}
+
+bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_constant)
+{
+    META_FUNCTION_TASK();
+    if (!Base::ProgramArgumentBinding::SetRootConstant(root_constant))
+        return false;
+
+    AddDescriptorsForResourceViews(Base::ProgramArgumentBinding::GetResourceViews());
+    return true;
+}
+
+void ProgramArgumentBinding::UpdateDescriptorSetsOnGpu()
+{
+    META_FUNCTION_TASK();
+    if (m_vk_descriptor_images.empty() && m_vk_descriptor_buffers.empty() && m_vk_buffer_views.empty())
+        return;
+
+    const auto& vulkan_context = dynamic_cast<const IContext&>(GetContext());
+    vulkan_context.GetVulkanDevice().GetNativeDevice().updateDescriptorSets(m_vk_write_descriptor_set, {});
+
+    m_vk_descriptor_images.clear();
+    m_vk_descriptor_buffers.clear();
+    m_vk_buffer_views.clear();
+}
+
+void ProgramArgumentBinding::AddDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views)
+{
+    META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_NULL(m_vk_descriptor_set_ptr);
 
     m_vk_descriptor_images.clear();
@@ -140,21 +171,6 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     {
         UpdateDescriptorSetsOnGpu();
     }
-    return true;
-}
-
-void ProgramArgumentBinding::UpdateDescriptorSetsOnGpu()
-{
-    META_FUNCTION_TASK();
-    if (m_vk_descriptor_images.empty() && m_vk_descriptor_buffers.empty() && m_vk_buffer_views.empty())
-        return;
-
-    const auto& vulkan_context = dynamic_cast<const IContext&>(GetContext());
-    vulkan_context.GetVulkanDevice().GetNativeDevice().updateDescriptorSets(m_vk_write_descriptor_set, {});
-
-    m_vk_descriptor_images.clear();
-    m_vk_descriptor_buffers.clear();
-    m_vk_buffer_views.clear();
 }
 
 } // namespace Methane::Graphics::Vulkan

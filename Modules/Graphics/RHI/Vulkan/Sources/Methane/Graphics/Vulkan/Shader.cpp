@@ -165,6 +165,7 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
     {
         const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
         const uint32_t array_size = GetArraySize(spirv_type);
+        const uint32_t buffer_size = spirv_compiler.get_declared_struct_size(spirv_type);
 
         ProgramBindings::ArgumentBinding::ByteCodeMap byte_code_map{ shader_type };
         META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationDescriptorSet, byte_code_map.descriptor_set_offset));
@@ -187,7 +188,8 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
                 {
                     argument_acc,
                     resource_type,
-                    array_size
+                    array_size,
+                    buffer_size
                 },
                 UpdateDescriptorType(vk_descriptor_type, argument_acc),
                 { std::move(byte_code_map) }

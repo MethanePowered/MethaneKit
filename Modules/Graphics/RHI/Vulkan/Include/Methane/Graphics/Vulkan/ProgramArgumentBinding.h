@@ -70,10 +70,13 @@ public:
     // IArgumentBinding interface
     const Settings& GetSettings() const noexcept override { return m_settings_vk; }
     bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
+    bool SetRootConstant(const Rhi::RootConstant& root_constant) override;
 
     void UpdateDescriptorSetsOnGpu();
 
 private:
+    void AddDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views);
+
     Settings                              m_settings_vk;
     const vk::DescriptorSet*              m_vk_descriptor_set_ptr = nullptr;
     uint32_t                              m_vk_binding_value      = 0U;
