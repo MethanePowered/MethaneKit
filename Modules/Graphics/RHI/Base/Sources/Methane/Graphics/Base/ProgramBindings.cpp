@@ -299,9 +299,7 @@ void ProgramBindings::Initialize()
                                       program_argument.GetName());
 
         argument_binding_ptr->Initialize(program);
-
-        if (argument_binding_ptr->GetSettings().argument.GetAccessorType() == Rhi::ProgramArgumentAccessType::Mutable)
-            argument_binding_ptr->Connect(*this);
+        argument_binding_ptr->Connect(*this);
     }
 }
 

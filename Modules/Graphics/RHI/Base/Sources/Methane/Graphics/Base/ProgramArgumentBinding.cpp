@@ -89,7 +89,10 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
                                   "can not set resource view_id with non-zero offset to non-addressable resource binding");
     }
 
-    const auto prev_resource_views = m_resource_views;
+    Rhi::ResourceViews prev_resource_views;
+    if (m_emit_callback_enabled)
+        prev_resource_views = m_resource_views;
+
     m_resource_views = resource_views;
 
     if (m_emit_callback_enabled)
@@ -130,7 +133,10 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
     if (m_settings.argument.IsConstant())
         throw ConstantModificationException(GetSettings().argument);
 
-    const auto prev_root_constant = Rhi::RootConstant::StoreFrom(m_root_constant_accessor_ptr->GetRootConstant());
+    Rhi::RootConstant prev_root_constant;
+    if (m_emit_callback_enabled)
+        prev_root_constant = Rhi::RootConstant::StoreFrom(m_root_constant_accessor_ptr->GetRootConstant());
+
     if (!m_root_constant_accessor_ptr->SetRootConstant(root_constant))
         return false;
 

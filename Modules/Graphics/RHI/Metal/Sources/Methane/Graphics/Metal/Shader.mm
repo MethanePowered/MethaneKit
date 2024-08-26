@@ -88,6 +88,17 @@ static uint32_t GetBindingArrayLength(id<MTLBinding> mtl_binding)
 }
 
 [[nodiscard]]
+static uint32_t GetBindingBufferSize(id<MTLBinding> mtl_binding)
+{
+    META_FUNCTION_TASK();
+    if (mtl_binding.type != MTLBindingTypeBuffer)
+        return 0U;
+
+    id<MTLBufferBinding> mtl_buffer_binding = static_cast<id<MTLBufferBinding>>(mtl_binding);
+    return static_cast<uint32_t>(mtl_buffer_binding.bufferDataSize);
+}
+
+[[nodiscard]]
 static Rhi::ResourceType GetResourceTypeByMetalDataType(MTLDataType mtl_data_type)
 {
     META_FUNCTION_TASK();
@@ -120,6 +131,41 @@ static uint32_t GetArraySizeOfStructMember(MTLStructMember* mtl_struct_member)
     return mtl_struct_member.dataType == MTLDataTypeArray
          ? static_cast<MTLArrayType*>(mtl_struct_member).arrayLength
          : 1U;
+}
+
+[[nodiscard]]
+static uint32_t GetArrayByteSize(MTLArrayType* mtl_array_type)
+{
+    return mtl_array_type.arrayLength * mtl_array_type.stride;
+}
+
+[[nodiscard]]
+static uint32_t GetBufferSizeOfStructMember(MTLStructMember* mtl_struct_member)
+{
+    switch(mtl_struct_member.dataType)
+    {
+        case MTLDataTypePointer:
+            return mtl_struct_member.pointerType.dataSize;
+
+        case MTLDataTypeArray:
+            return GetArrayByteSize(mtl_struct_member.arrayType);
+            break;
+
+        case MTLDataTypeStruct:
+        {
+            uint32_t struct_size = 0U;
+            for(MTLStructMember* mtl_sub_member in static_cast<MTLStructType*>(mtl_struct_member).members)
+                struct_size += GetBufferSizeOfStructMember(mtl_sub_member);
+            return struct_size;
+        } break;
+
+        case MTLDataTypeTexture:
+        case MTLDataTypeSampler:
+            return 0U;
+
+        default:
+            return TypeConverter::ByteSizeOfDataType(mtl_struct_member.dataType);
+    }
 }
 
 [[nodiscard]]
@@ -176,6 +222,7 @@ static std::string GetShaderArgumentInfo(const std::string& argument_name,
 ArgumentBufferMember::ArgumentBufferMember(MTLStructMember* mtl_struct_member)
     : offset(static_cast<Data::Size>(mtl_struct_member.offset))
     , array_size(GetArraySizeOfStructMember(mtl_struct_member))
+    , buffer_size(GetBufferSizeOfStructMember(mtl_struct_member))
     , resource_type(GetResourceTypeOfMetalStructMember(mtl_struct_member))
 {
 }
@@ -266,6 +313,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                                        Rhi::ProgramArgumentAccessType argument_access,
                                        Rhi::ResourceType resource_type,
                                        uint32_t array_length,
+                                       uint32_t buffer_size,
                                        uint32_t argument_index,
                                        std::optional<uint32_t> argument_buffer_offset_opt)
     {
@@ -288,7 +336,8 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                     {
                         argument_accessor,
                         resource_type,
-                        array_length
+                        array_length,
+                        buffer_size
                     },
                     argument_index,
                     argument_buffer_offset_by_shader_type
@@ -324,6 +373,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                     arg_access_type,
                     member.resource_type,
                     member.array_size,
+                    member.buffer_size,
                     argument_index,
                     member.offset
                 );
@@ -336,6 +386,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                 arg_access_type,
                 GetResourceTypeByMetalBindingType(mtl_binding.type),
                 GetBindingArrayLength(mtl_binding),
+                GetBindingBufferSize(mtl_binding),
                 argument_index,
                 std::nullopt
             );

@@ -38,6 +38,24 @@ using NativeTextures      = ProgramArgumentBinding::NativeTextures;
 using NativeSamplerStates = ProgramArgumentBinding::NativeSamplerStates;
 using NativeOffsets       = ProgramArgumentBinding::NativeOffsets;
 
+class CallbackBlocker
+{
+public:
+    CallbackBlocker(ProgramArgumentBinding& program_argument_binding)
+        : m_program_argument_binding(program_argument_binding)
+    {
+        m_program_argument_binding.SetEmitCallbackEnabled(false);
+    }
+
+    ~CallbackBlocker()
+    {
+        m_program_argument_binding.SetEmitCallbackEnabled(true);
+    }
+
+private:
+    ProgramArgumentBinding& m_program_argument_binding;
+};
+
 static MTLRenderStages ConvertShaderTypeToMetalRenderStages(Rhi::ShaderType shader_type)
 {
     META_FUNCTION_TASK();
@@ -88,8 +106,66 @@ void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& o
 bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
-    if (GetResourceViews() == resource_views)
+    CallbackBlocker callback_blocker(*this);
+
+    const Rhi::ResourceViews prev_resource_views = GetResourceViews();
+    if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
         return false;
+
+    SetMetalResourcesForViews(resource_views);
+
+    Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
+        &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged,
+        std::cref(*this), std::cref(prev_resource_views), std::cref(GetResourceViews())
+    );
+    return true;
+}
+
+bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_constant)
+{
+    META_FUNCTION_TASK();
+    CallbackBlocker callback_blocker(*this);
+
+    const auto prev_root_constant = Rhi::RootConstant::StoreFrom(GetRootConstant());
+    if (!Base::ProgramArgumentBinding::SetRootConstant(root_constant))
+        return false;
+
+    SetMetalResourcesForViews(Base::ProgramArgumentBinding::GetResourceViews());
+
+    Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
+        &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
+        std::cref(*this), std::cref(prev_root_constant), std::cref(root_constant)
+    );
+    return true;
+}
+
+void ProgramArgumentBinding::UpdateArgumentBufferOffsets(const Program& program)
+{
+    META_FUNCTION_TASK();
+    if (m_settings_mt.argument_buffer_offset_by_shader_type.empty())
+        return;
+
+    Data::Size arg_buffer_offset = 0U;
+    for(Rhi::ShaderType shader_type : program.GetShaderTypes())
+    {
+        if (arg_buffer_offset)
+        {
+            if (const auto argument_buffer_offset_it = m_settings_mt.argument_buffer_offset_by_shader_type.find(shader_type);
+                argument_buffer_offset_it != m_settings_mt.argument_buffer_offset_by_shader_type.end())
+                argument_buffer_offset_it->second += arg_buffer_offset;
+        }
+
+        const Rhi::ProgramArgumentAccessType arg_access_type = m_settings_mt.argument.GetAccessorType();
+        if (const ArgumentBufferLayout* layout_ptr = program.GetMetalShader(shader_type).GetArgumentBufferLayoutPtr(arg_access_type))
+        {
+            arg_buffer_offset += layout_ptr->data_size;
+        }
+    }
+}
+
+void ProgramArgumentBinding::SetMetalResourcesForViews(const Rhi::ResourceViews& resource_views)
+{
+    META_FUNCTION_TASK();
 
     m_mtl_resource_usage = {};
     m_mtl_resources.clear();
@@ -137,35 +213,6 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     }
 
     std::copy(mtl_resource_set.begin(), mtl_resource_set.end(), std::back_inserter(m_mtl_resources));
-
-    // Base class is called after updating native resources, so that
-    // IArgumentBindingCallback::OnProgramArgumentBindingResourceViewsChanged callback
-    // would be called after all resource view changes were applied
-    return Base::ProgramArgumentBinding::SetResourceViews(resource_views);
-}
-
-void ProgramArgumentBinding::UpdateArgumentBufferOffsets(const Program& program)
-{
-    META_FUNCTION_TASK();
-    if (m_settings_mt.argument_buffer_offset_by_shader_type.empty())
-        return;
-
-    Data::Size arg_buffer_offset = 0U;
-    for(Rhi::ShaderType shader_type : program.GetShaderTypes())
-    {
-        if (arg_buffer_offset)
-        {
-            if (const auto argument_buffer_offset_it = m_settings_mt.argument_buffer_offset_by_shader_type.find(shader_type);
-                argument_buffer_offset_it != m_settings_mt.argument_buffer_offset_by_shader_type.end())
-                argument_buffer_offset_it->second += arg_buffer_offset;
-        }
-
-        const Rhi::ProgramArgumentAccessType arg_access_type = m_settings_mt.argument.GetAccessorType();
-        if (const ArgumentBufferLayout* layout_ptr = program.GetMetalShader(shader_type).GetArgumentBufferLayoutPtr(arg_access_type))
-        {
-            arg_buffer_offset += layout_ptr->data_size;
-        }
-    }
 }
 
 } // namespace Methane::Graphics::Metal

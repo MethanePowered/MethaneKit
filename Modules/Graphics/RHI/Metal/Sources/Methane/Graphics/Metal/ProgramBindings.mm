@@ -347,7 +347,8 @@ void SetMetalResourcesForAll(Rhi::ShaderType shader_type,
                              uint32_t arg_index, const std::vector<NSUInteger>& offsets = std::vector<NSUInteger>())
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EMPTY(mtl_resources);
+    if (mtl_resources.empty())
+        return;
 
     if constexpr (command_type == CommandType::Render)
     {
@@ -501,20 +502,28 @@ void ProgramBindings::CompleteInitialization()
     const auto& program = GetMetalProgram();
     auto& descriptor_manager = static_cast<DescriptorManager&>(program.GetContext().GetDescriptorManager());
 
-    if (!m_argument_buffers_initialized)
+    if (!m_argument_buffer_initialized_access_types.HasAnyBit(Rhi::ProgramArgumentAccessType::Constant) &&
+        WriteArgumentsBufferRange(descriptor_manager,
+                                  Rhi::ProgramArgumentAccessType::Constant,
+                                  program.GetConstantArgumentBufferRange()))
     {
-        m_argument_buffers_initialized |= WriteArgumentsBufferRange(descriptor_manager,
-                                                                    Rhi::ProgramArgumentAccessType::Constant,
-                                                                    program.GetConstantArgumentBufferRange());
-
-        m_argument_buffers_initialized |= WriteArgumentsBufferRange(descriptor_manager,
-                                                                    Rhi::ProgramArgumentAccessType::FrameConstant,
-                                                                    program.GetFrameConstantArgumentBufferRange(GetFrameIndex()));
+         m_argument_buffer_initialized_access_types.SetBitOn(Rhi::ProgramArgumentAccessType::Constant);
     }
 
-    m_argument_buffers_initialized |= WriteArgumentsBufferRange(descriptor_manager,
-                                                                Rhi::ProgramArgumentAccessType::Mutable,
-                                                                m_mutable_argument_buffer_range);
+    if (!m_argument_buffer_initialized_access_types.HasAnyBit(Rhi::ProgramArgumentAccessType::FrameConstant) &&
+        WriteArgumentsBufferRange(descriptor_manager,
+                                  Rhi::ProgramArgumentAccessType::FrameConstant,
+                                  program.GetFrameConstantArgumentBufferRange(GetFrameIndex())))
+    {
+        m_argument_buffer_initialized_access_types.SetBitOn(Rhi::ProgramArgumentAccessType::FrameConstant);
+    }
+
+    if (WriteArgumentsBufferRange(descriptor_manager,
+                                  Rhi::ProgramArgumentAccessType::Mutable,
+                                  m_mutable_argument_buffer_range))
+    {
+        m_argument_buffer_initialized_access_types.SetBitOn(Rhi::ProgramArgumentAccessType::Mutable);
+    }
 }
 
 bool ProgramBindings::WriteArgumentsBufferRange(DescriptorManager& descriptor_manager,
@@ -767,6 +776,26 @@ void ProgramBindings::UpdateUsedResources()
     }
 }
 
+void ProgramBindings::UpdateArgumentBuffer(const IArgumentBinding& changed_arg_binding)
+{
+    META_FUNCTION_TASK();
+
+    const Rhi::ProgramArgumentAccessType access_type = changed_arg_binding.GetSettings().argument.GetAccessorType();
+    if (m_mtl_used_resources.empty() || access_type == Rhi::ProgramArgumentAccessType::Mutable)
+    {
+        UpdateUsedResources();
+    }
+
+    CompleteInitialization();
+
+    if (m_argument_buffer_initialized_access_types.HasAnyBit(access_type))
+    {
+        // Update argument buffer data on GPU:
+        const Base::Context& context = GetMetalProgram().GetContext();
+        static_cast<DescriptorManager&>(context.GetDescriptorManager()).GetArgumentsBuffer(access_type).Update(context);
+    }
+}
+
 ProgramBindings::NativeResourcesByUsage ProgramBindings::GetChangedResourcesByUsage(
                                                          const Base::ProgramBindings* applied_program_bindings_ptr) const
 {
@@ -780,7 +809,7 @@ ProgramBindings::NativeResourcesByUsage ProgramBindings::GetChangedResourcesByUs
         if (argument_resources.empty())
             continue;
 
-        const NativeResourceUsageAndStage usage_and_stage(metal_argument_binding.GetNativeResouceUsage(),
+        const NativeResourceUsageAndStage usage_and_stage(metal_argument_binding.GetNativeResourceUsage(),
                                                           metal_argument_binding.GetNativeRenderStages());
 
         if (metal_applied_program_bindings_ptr)
@@ -805,7 +834,7 @@ void ProgramBindings::Apply(CommandListType& command_list, ApplyBehaviorMask app
     META_FUNCTION_TASK();
     const auto& mtl_cmd_encoder = command_list.GetNativeCommandEncoder();
     const Base::ProgramBindings* applied_program_bindings_ptr = command_list.GetProgramBindingsPtr();
-    if (m_argument_buffers_initialized)
+    if (static_cast<bool>(m_argument_buffer_initialized_access_types))
     {
         UseMetalResources<command_type>(mtl_cmd_encoder, applied_program_bindings_ptr);
         SetMetalArgumentBuffers<command_type>(mtl_cmd_encoder, applied_program_bindings_ptr, apply_behavior);
@@ -821,16 +850,15 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
                                                                    const Rhi::ResourceViews&)
 {
     META_FUNCTION_TASK();
-    if (!m_argument_buffers_initialized)
-        return;
+    UpdateArgumentBuffer(arg_binding);
+}
 
-    UpdateUsedResources();
-    CompleteInitialization();
-
-    // Update argument buffer data on GPU:
-    const Rhi::ProgramArgumentAccessType access_type = arg_binding.GetSettings().argument.GetAccessorType();
-    const Base::Context& context = GetMetalProgram().GetContext();
-    static_cast<DescriptorManager&>(context.GetDescriptorManager()).GetArgumentsBuffer(access_type).Update(context);
+void ProgramBindings::OnProgramArgumentBindingRootConstantChanged(const IArgumentBinding& arg_binding,
+                                                                  const Rhi::RootConstant&,
+                                                                  const Rhi::RootConstant&)
+{
+    META_FUNCTION_TASK();
+    UpdateArgumentBuffer(arg_binding);
 }
 
 } // namespace Methane::Graphics::Metal

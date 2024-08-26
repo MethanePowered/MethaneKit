@@ -118,14 +118,18 @@ private:
     using NativeResourceSet           = std::set<__unsafe_unretained id<MTLResource>>;
     NativeResourcesByUsage GetChangedResourcesByUsage(const Base::ProgramBindings* applied_program_bindings_ptr) const;
     void UpdateUsedResources();
+    void UpdateArgumentBuffer(const IArgumentBinding& changed_arg_binding);
 
     template<CommandType command_type, typename CommandListType = typename Command<command_type>::RhiListType>
     void Apply(CommandListType& command_list, ApplyBehaviorMask apply_behavior) const;
 
     // IProgramBindings::IProgramArgumentBindingCallback
     void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::ResourceViews&, const Rhi::ResourceViews&) override;
+    void OnProgramArgumentBindingRootConstantChanged(const IArgumentBinding&, const Rhi::RootConstant&, const Rhi::RootConstant&) override;
 
-    bool              m_argument_buffers_initialized = false;
+    using AccessTypeMask = Data::EnumMask<Rhi::ProgramArgumentAccessType>;
+
+    AccessTypeMask    m_argument_buffer_initialized_access_types;
     ArgumentsRange    m_mutable_argument_buffer_range;
     NativeResourceSet m_mtl_used_resources;
 };

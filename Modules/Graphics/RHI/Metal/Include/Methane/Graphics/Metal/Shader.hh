@@ -34,6 +34,7 @@ struct ArgumentBufferMember
 {
     Data::Size        offset;
     Data::Size        array_size;
+    Data::Size        buffer_size;
     Rhi::ResourceType resource_type;
 
     ArgumentBufferMember(MTLStructMember* mtl_struct_member);

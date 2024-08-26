@@ -63,12 +63,13 @@ public:
 
     // IArgumentBinding interface
     bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
+    bool SetRootConstant(const Rhi::RootConstant& root_constant) override;
 
     void UpdateArgumentBufferOffsets(const Program& program);
 
     bool                       IsArgumentBufferMode() const noexcept   { return !m_settings_mt.argument_buffer_offset_by_shader_type.empty(); }
     const Settings&            GetMetalSettings() const noexcept       { return m_settings_mt; }
-    MTLResourceUsage           GetNativeResouceUsage() const noexcept  { return m_mtl_resource_usage; }
+    MTLResourceUsage           GetNativeResourceUsage() const noexcept { return m_mtl_resource_usage; }
     MTLRenderStages            GetNativeRenderStages() const noexcept  { return m_mtl_render_stages; }
     const NativeResources&     GetNativeResources() const noexcept     { return m_mtl_resources; }
     const NativeSamplerStates& GetNativeSamplerStates() const noexcept { return m_mtl_sampler_states; }
@@ -77,6 +78,8 @@ public:
     const NativeOffsets&       GetBufferOffsets() const noexcept       { return m_mtl_buffer_offsets; }
 
 private:
+    void SetMetalResourcesForViews(const Rhi::ResourceViews& resource_views);
+
     Settings            m_settings_mt;
     MTLResourceUsage    m_mtl_resource_usage = MTLResourceUsageRead;
     MTLRenderStages     m_mtl_render_stages;

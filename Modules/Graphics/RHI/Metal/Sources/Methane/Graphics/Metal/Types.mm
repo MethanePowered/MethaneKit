@@ -29,6 +29,10 @@ Methane graphics types converters to Metal native types.
 namespace Methane::Graphics::Metal
 {
 
+constexpr uint32_t g_component_64bit_byte_size = 8;
+constexpr uint32_t g_component_32bit_byte_size = 4;
+constexpr uint32_t g_component_16bit_byte_size = 2;
+
 MTLIndexType TypeConverter::DataFormatToMetalIndexType(PixelFormat data_format)
 {
     META_FUNCTION_TASK();
@@ -173,59 +177,55 @@ MTLVertexFormat TypeConverter::MetalDataTypeToVertexFormat(MTLDataType data_type
 uint32_t TypeConverter::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format)
 {
     META_FUNCTION_TASK();
-
-    const uint32_t component_32bit_byte_size = 4;
-    const uint32_t component_16bit_byte_size = 2;
-    
     switch(vertex_format)
     {
         case MTLVertexFormatFloat:
         case MTLVertexFormatInt:
         case MTLVertexFormatUInt:
-            return 1 * component_32bit_byte_size;
+            return 1 * g_component_32bit_byte_size;
 
         case MTLVertexFormatFloat2:
         case MTLVertexFormatInt2:
         case MTLVertexFormatUInt2:
-            return 2 * component_32bit_byte_size;
+            return 2 * g_component_32bit_byte_size;
 
         case MTLVertexFormatFloat3:
         case MTLVertexFormatInt3:
         case MTLVertexFormatUInt3:
-            return 3 * component_32bit_byte_size;
+            return 3 * g_component_32bit_byte_size;
 
         case MTLVertexFormatFloat4:
         case MTLVertexFormatInt4:
         case MTLVertexFormatUInt4:
-            return 4 * component_32bit_byte_size;
+            return 4 * g_component_32bit_byte_size;
 
         case MTLVertexFormatHalf:
         case MTLVertexFormatShort:
         case MTLVertexFormatShortNormalized:
         case MTLVertexFormatUShort:
         case MTLVertexFormatUShortNormalized:
-            return 1 * component_16bit_byte_size;
+            return 1 * g_component_16bit_byte_size;
 
         case MTLVertexFormatHalf2:
         case MTLVertexFormatShort2:
         case MTLVertexFormatShort2Normalized:
         case MTLVertexFormatUShort2:
         case MTLVertexFormatUShort2Normalized:
-            return 2 * component_16bit_byte_size;
+            return 2 * g_component_16bit_byte_size;
 
         case MTLVertexFormatHalf3:
         case MTLVertexFormatShort3:
         case MTLVertexFormatShort3Normalized:
         case MTLVertexFormatUShort3:
         case MTLVertexFormatUShort3Normalized:
-            return 3 * component_16bit_byte_size;
+            return 3 * g_component_16bit_byte_size;
 
         case MTLVertexFormatHalf4:
         case MTLVertexFormatShort4:
         case MTLVertexFormatShort4Normalized:
         case MTLVertexFormatUShort4:
         case MTLVertexFormatUShort4Normalized:
-            return 4 * component_16bit_byte_size;
+            return 4 * g_component_16bit_byte_size;
             
         case MTLVertexFormatChar:
         case MTLVertexFormatCharNormalized:
@@ -253,6 +253,153 @@ uint32_t TypeConverter::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format)
 
         default:
             META_UNEXPECTED_ARG_RETURN(vertex_format, 0);
+    }
+}
+
+uint32_t TypeConverter::ByteSizeOfDataType(MTLDataType data_type)
+{
+    META_FUNCTION_TASK();
+    switch(data_type)
+    {
+        case MTLDataTypeLong:
+        case MTLDataTypeULong:
+            return 1U * g_component_64bit_byte_size;
+
+        case MTLDataTypeLong2:
+        case MTLDataTypeULong2:
+            return 2U * g_component_64bit_byte_size;
+
+        case MTLDataTypeLong3:
+        case MTLDataTypeULong3:
+            return 3U * g_component_64bit_byte_size;
+
+        case MTLDataTypeLong4:
+        case MTLDataTypeULong4:
+            return 4U * g_component_64bit_byte_size;
+
+        case MTLDataTypeFloat:
+        case MTLDataTypeInt:
+        case MTLDataTypeUInt:
+        case MTLDataTypeRGB10A2Unorm:
+        case MTLDataTypeRG11B10Float:
+        case MTLDataTypeRGB9E5Float:
+            return 1U * g_component_32bit_byte_size;
+
+        case MTLDataTypeFloat2:
+        case MTLDataTypeInt2:
+        case MTLDataTypeUInt2:
+            return 2U * g_component_32bit_byte_size;
+
+        case MTLDataTypeFloat3:
+        case MTLDataTypeInt3:
+        case MTLDataTypeUInt3:
+            return 3U * g_component_32bit_byte_size;
+
+        case MTLDataTypeFloat4:
+        case MTLDataTypeInt4:
+        case MTLDataTypeUInt4:
+        case MTLDataTypeFloat2x2:
+            return 4U * g_component_32bit_byte_size;
+
+        case MTLDataTypeFloat2x3:
+        case MTLDataTypeFloat3x2:
+            return 6U * g_component_32bit_byte_size;
+
+        case MTLDataTypeFloat2x4:
+        case MTLDataTypeFloat4x2:
+            return 8U * g_component_32bit_byte_size;
+
+        case MTLDataTypeFloat3x3:
+            return 9U * g_component_32bit_byte_size;
+
+        case MTLDataTypeFloat3x4:
+        case MTLDataTypeFloat4x3:
+            return 12U * g_component_32bit_byte_size;
+
+        case MTLDataTypeFloat4x4:
+            return 16U * g_component_32bit_byte_size;
+
+        case MTLDataTypeHalf:
+        case MTLDataTypeBFloat:
+        case MTLDataTypeShort:
+        case MTLDataTypeUShort:
+        case MTLDataTypeR16Unorm:
+        case MTLDataTypeR16Snorm:
+            return 1U * g_component_16bit_byte_size;
+
+        case MTLDataTypeHalf2:
+        case MTLDataTypeBFloat2:
+        case MTLDataTypeShort2:
+        case MTLDataTypeUShort2:
+        case MTLDataTypeRG16Unorm:
+        case MTLDataTypeRG16Snorm:
+            return 2U * g_component_16bit_byte_size;
+
+        case MTLDataTypeHalf3:
+        case MTLDataTypeBFloat3:
+        case MTLDataTypeShort3:
+        case MTLDataTypeUShort3:
+        case MTLDataTypeRGBA8Unorm:
+        case MTLDataTypeRGBA8Unorm_sRGB:
+            return 3U * g_component_16bit_byte_size;
+
+        case MTLDataTypeHalf4:
+        case MTLDataTypeBFloat4:
+        case MTLDataTypeShort4:
+        case MTLDataTypeUShort4:
+        case MTLDataTypeHalf2x2:
+        case MTLDataTypeRGBA16Unorm:
+        case MTLDataTypeRGBA16Snorm:
+            return 4U * g_component_16bit_byte_size;
+
+        case MTLDataTypeHalf2x3:
+        case MTLDataTypeHalf3x2:
+            return 6U * g_component_16bit_byte_size;
+
+        case MTLDataTypeHalf2x4:
+        case MTLDataTypeHalf4x2:
+            return 8U * g_component_16bit_byte_size;
+
+        case MTLDataTypeHalf3x3:
+            return 9U * g_component_16bit_byte_size;
+
+        case MTLDataTypeHalf3x4:
+        case MTLDataTypeHalf4x3:
+            return 12U * g_component_16bit_byte_size;
+
+        case MTLDataTypeHalf4x4:
+            return 16U * g_component_16bit_byte_size;
+
+        case MTLDataTypeBool:
+        case MTLDataTypeChar:
+        case MTLDataTypeUChar:
+        case MTLDataTypeR8Unorm:
+        case MTLDataTypeR8Snorm:
+            return 1U;
+
+        case MTLDataTypeBool2:
+        case MTLDataTypeChar2:
+        case MTLDataTypeUChar2:
+        case MTLDataTypeRG8Unorm:
+        case MTLDataTypeRG8Snorm:
+            return 2U;
+
+        case MTLDataTypeBool3:
+        case MTLDataTypeChar3:
+        case MTLDataTypeUChar3:
+            return 3U;
+
+        case MTLDataTypeBool4:
+        case MTLDataTypeChar4:
+        case MTLDataTypeUChar4:
+        case MTLDataTypeRGBA8Snorm:
+            return 4U;
+
+        case MTLDataTypeNone:
+            return 0U;
+
+        default:
+            META_UNEXPECTED_ARG_RETURN(data_type, 0U);
     }
 }
 
