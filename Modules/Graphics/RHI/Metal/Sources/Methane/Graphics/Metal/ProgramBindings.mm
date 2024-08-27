@@ -502,27 +502,13 @@ void ProgramBindings::CompleteInitialization()
     const auto& program = GetMetalProgram();
     auto& descriptor_manager = static_cast<DescriptorManager&>(program.GetContext().GetDescriptorManager());
 
-    if (!m_argument_buffer_initialized_access_types.HasAnyBit(Rhi::ProgramArgumentAccessType::Constant) &&
-        WriteArgumentsBufferRange(descriptor_manager,
-                                  Rhi::ProgramArgumentAccessType::Constant,
-                                  program.GetConstantArgumentBufferRange()))
+    for(Rhi::ProgramArgumentAccessType access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccessType>())
     {
-         m_argument_buffer_initialized_access_types.SetBitOn(Rhi::ProgramArgumentAccessType::Constant);
-    }
-
-    if (!m_argument_buffer_initialized_access_types.HasAnyBit(Rhi::ProgramArgumentAccessType::FrameConstant) &&
-        WriteArgumentsBufferRange(descriptor_manager,
-                                  Rhi::ProgramArgumentAccessType::FrameConstant,
-                                  program.GetFrameConstantArgumentBufferRange(GetFrameIndex())))
-    {
-        m_argument_buffer_initialized_access_types.SetBitOn(Rhi::ProgramArgumentAccessType::FrameConstant);
-    }
-
-    if (WriteArgumentsBufferRange(descriptor_manager,
-                                  Rhi::ProgramArgumentAccessType::Mutable,
-                                  m_mutable_argument_buffer_range))
-    {
-        m_argument_buffer_initialized_access_types.SetBitOn(Rhi::ProgramArgumentAccessType::Mutable);
+        if (!m_argument_buffer_initialized_access_types.HasAnyBit(access_type) &&
+            WriteArgumentsBufferRange(descriptor_manager, access_type, GetArgumentsRange(access_type)))
+        {
+             m_argument_buffer_initialized_access_types.SetBitOn(access_type);
+        }
     }
 }
 
@@ -732,7 +718,8 @@ void ProgramBindings::UseMetalResources(const CommandEncoderType& mtl_cmd_encode
 {
     META_FUNCTION_TASK();
     [[maybe_unused]] bool is_first_use_resources = true;
-    for(const auto& [mtl_usage_and_stage, mtl_resources] : GetChangedResourcesByUsage(applied_program_bindings_ptr))
+    const NativeResourcesByUsage changed_resources_by_usage = GetChangedResourcesByUsage(applied_program_bindings_ptr);
+    for(const auto& [mtl_usage_and_stage, mtl_resources] : changed_resources_by_usage)
     {
 #ifdef METHANE_LOGGING_ENABLED
         if (is_first_use_resources)
@@ -779,16 +766,15 @@ void ProgramBindings::UpdateUsedResources()
 void ProgramBindings::UpdateArgumentBuffer(const IArgumentBinding& changed_arg_binding)
 {
     META_FUNCTION_TASK();
-
     const Rhi::ProgramArgumentAccessType access_type = changed_arg_binding.GetSettings().argument.GetAccessorType();
     if (m_mtl_used_resources.empty() || access_type == Rhi::ProgramArgumentAccessType::Mutable)
     {
         UpdateUsedResources();
     }
 
-    CompleteInitialization();
-
-    if (m_argument_buffer_initialized_access_types.HasAnyBit(access_type))
+    const auto& program = GetMetalProgram();
+    if (auto& descriptor_manager = static_cast<DescriptorManager&>(program.GetContext().GetDescriptorManager());
+        WriteArgumentsBufferRange(descriptor_manager, access_type, GetArgumentsRange(access_type)))
     {
         // Update argument buffer data on GPU:
         const Base::Context& context = GetMetalProgram().GetContext();
