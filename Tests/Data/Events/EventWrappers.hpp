@@ -72,16 +72,26 @@ public:
     using Transmitter::Reset;
 };
 
+
+
 class TestReceiver
     : public Receiver<ITestEvents>
 {
-public:
-    TestReceiver() = default;
-    explicit TestReceiver(size_t id) : m_id(id) { }
+    static inline std::vector<size_t> s_called_receiver_ids;
 
-    void Bind(TestEmitter& emitter)
+public:
+    static const std::vector<size_t>& GetCalledReceiverIds() { return s_called_receiver_ids; }
+    static void ClearCalledReceiverIds() { s_called_receiver_ids.clear(); }
+
+    TestReceiver() = default;
+    explicit TestReceiver(size_t id, bool register_called_ids = false)
+        : m_id(id)
+        , m_register_called_ids(register_called_ids)
+    { }
+
+    void Bind(TestEmitter& emitter, uint32_t priority)
     {
-        emitter.Connect(*this);
+        emitter.Connect(*this, priority);
     }
 
     void Unbind(TestEmitter& emitter)
@@ -89,12 +99,12 @@ public:
         emitter.Disconnect(*this);
     }
 
-    void CheckBind(TestEmitter& emitter, bool new_connection = true)
+    void CheckBind(TestEmitter& emitter, uint32_t priority = 0U, bool new_connection = true)
     {
         const size_t connected_receivers_count = emitter.GetConnectedReceiversCount();
         const size_t connected_emitters_count  = GetConnectedEmittersCount();
 
-        CHECK_NOTHROW(Bind(emitter));
+        CHECK_NOTHROW(Bind(emitter, priority));
 
         CHECK(emitter.GetConnectedReceiversCount() == connected_receivers_count + static_cast<size_t>(new_connection));
         CHECK(GetConnectedEmittersCount()          == connected_emitters_count  + static_cast<size_t>(new_connection));
@@ -132,6 +142,8 @@ protected:
     void Foo() override
     {
         m_foo_call_count++;
+        if (m_register_called_ids)
+            s_called_receiver_ids.emplace_back(m_id);
     }
 
     void Bar(int a, bool b, float c) override
@@ -140,6 +152,8 @@ protected:
         m_bar_a = a;
         m_bar_b = b;
         m_bar_c = c;
+        if (m_register_called_ids)
+            s_called_receiver_ids.emplace_back(m_id);
     }
 
     void Call(const CallFunc& f) override
@@ -150,6 +164,7 @@ protected:
 
 private:
     const size_t m_id = 0;
+    const bool   m_register_called_ids = false;
     uint32_t     m_foo_call_count = 0U;
     uint32_t     m_bar_call_count = 0U;
     uint32_t     m_func_call_count = 0U;

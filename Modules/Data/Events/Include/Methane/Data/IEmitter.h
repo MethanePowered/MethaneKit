@@ -23,6 +23,8 @@ Event emitter abstract interface
 
 #pragma once
 
+#include <cstdint>
+
 namespace Methane::Data
 {
 
@@ -32,7 +34,7 @@ class Receiver;
 template<class EventType>
 struct IEmitter
 {
-    virtual void Connect(Receiver<EventType>& receiver) = 0;
+    virtual void Connect(Receiver<EventType>& receiver, uint32_t priority = 0) = 0;
     virtual void Disconnect(Receiver<EventType>& receiver) = 0;
 
     virtual ~IEmitter() = default;
