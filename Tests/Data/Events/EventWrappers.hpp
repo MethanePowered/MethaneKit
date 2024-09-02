@@ -72,24 +72,22 @@ public:
     using Transmitter::Reset;
 };
 
-
-
 class TestReceiver
     : public Receiver<ITestEvents>
 {
-    static inline std::vector<size_t> s_called_receiver_ids;
-
 public:
-    static const std::vector<size_t>& GetCalledReceiverIds() { return s_called_receiver_ids; }
+    using Ids = std::vector<uint32_t>;
+
+    static const Ids& GetCalledReceiverIds() { return s_called_receiver_ids; }
     static void ClearCalledReceiverIds() { s_called_receiver_ids.clear(); }
 
     TestReceiver() = default;
-    explicit TestReceiver(size_t id, bool register_called_ids = false)
+    explicit TestReceiver(uint32_t id, bool register_called_ids = false)
         : m_id(id)
         , m_register_called_ids(register_called_ids)
     { }
 
-    void Bind(TestEmitter& emitter, uint32_t priority)
+    void Bind(TestEmitter& emitter, uint32_t priority = 0U)
     {
         emitter.Connect(*this, priority);
     }
@@ -121,7 +119,7 @@ public:
         CHECK(GetConnectedEmittersCount()          == connected_emitters_count  - static_cast<size_t>(existing_connection));
     }
 
-    size_t   GetId() const           { return m_id; }
+    uint32_t GetId() const           { return m_id; }
 
     bool     IsFooCalled() const     { return m_foo_call_count > 0U; }
     uint32_t GetFooCallCount() const { return m_foo_call_count; }
@@ -163,14 +161,16 @@ protected:
     }
 
 private:
-    const size_t m_id = 0;
-    const bool   m_register_called_ids = false;
-    uint32_t     m_foo_call_count = 0U;
-    uint32_t     m_bar_call_count = 0U;
-    uint32_t     m_func_call_count = 0U;
-    int          m_bar_a = 0;
-    bool         m_bar_b = false;
-    float        m_bar_c = 0.f;
+    static inline Ids s_called_receiver_ids;
+
+    const uint32_t m_id = 0;
+    const bool     m_register_called_ids = false;
+    uint32_t       m_foo_call_count = 0U;
+    uint32_t       m_bar_call_count = 0U;
+    uint32_t       m_func_call_count = 0U;
+    int            m_bar_a = 0;
+    bool           m_bar_b = false;
+    float          m_bar_c = 0.f;
 };
 
 constexpr int   g_bar_a = 1;

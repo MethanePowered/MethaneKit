@@ -151,7 +151,7 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         TestReceiver::ClearCalledReceiverIds();
         CHECK_NOTHROW(emitter.EmitFoo());
 
-        const std::vector<size_t> expected_calls_order{ 5, 4, 3, 2, 1 };
+        const TestReceiver::Ids expected_calls_order{ 5, 4, 3, 2, 1 };
         CHECK(TestReceiver::GetCalledReceiverIds() == expected_calls_order);
     }
 
