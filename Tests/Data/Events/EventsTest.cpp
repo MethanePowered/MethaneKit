@@ -135,23 +135,26 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
     SECTION("Emit by priority")
     {
         TestEmitter emitter;
-        std::array<TestReceiver, 5> receivers{
-            TestReceiver(1, true),
-            TestReceiver(3, true),
-            TestReceiver(5, true),
-            TestReceiver(2, true),
-            TestReceiver(4, true),
+        std::array<TestReceiver, 8> receivers{
+            TestReceiver( 1, true),
+            TestReceiver( 3, true),
+            TestReceiver( 0, true),
+            TestReceiver(-1, true),
+            TestReceiver( 5, true),
+            TestReceiver( 2, true),
+            TestReceiver(-2, true),
+            TestReceiver( 4, true)
         };
 
         for(TestReceiver& receiver : receivers)
         {
-            receiver.Bind(emitter, receiver.GetId());
+            receiver.Bind(emitter, static_cast<int32_t>(receiver.GetId()));
         }
 
         TestReceiver::ClearCalledReceiverIds();
         CHECK_NOTHROW(emitter.EmitFoo());
 
-        const TestReceiver::Ids expected_calls_order{ 5, 4, 3, 2, 1 };
+        const TestReceiver::Ids expected_calls_order{ 5, 4, 3, 2, 1, 0, -1, -2 };
         CHECK(TestReceiver::GetCalledReceiverIds() == expected_calls_order);
     }
 

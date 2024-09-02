@@ -61,7 +61,7 @@ public:
         : m_target_emitter_ptr(&target_emitter)
     { }
 
-    void Connect(Receiver<EventType>& receiver, uint32_t priority = 0) final
+    void Connect(Receiver<EventType>& receiver, int32_t priority = 0) final
     {
         if (!m_target_emitter_ptr)
             throw NoTargetError(*this);

@@ -36,7 +36,7 @@ template<typename EventType>
 class Emitter // NOSONAR - custom destructor is required, rule of zero is not applicable
     : public virtual IEmitter<EventType> // NOSONAR - virtual inheritance is required
 {
-    using ReceiverAndPriority = std::pair<Receiver<EventType>*, uint32_t>;
+    using ReceiverAndPriority = std::pair<Receiver<EventType>*, int32_t>;
     static bool CompareReceiverAndPriority(const ReceiverAndPriority& left, const ReceiverAndPriority& right)
     {
         return left.second > right.second;
@@ -88,7 +88,7 @@ public:
         return *this;
     }
 
-    void Connect(Receiver<EventType>& receiver, uint32_t priority = 0U) noexcept final
+    void Connect(Receiver<EventType>& receiver, int32_t priority = 0) noexcept final
     {
         META_FUNCTION_TASK();
         std::lock_guard lock(m_connected_receivers_mutex);
