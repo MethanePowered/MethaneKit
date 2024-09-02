@@ -266,14 +266,14 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         TestEmitter emitter;
         Ptrs<TestReceiver> receivers_ptrs(5);
 
-        size_t receiver_index = 0;
+        uint32_t receiver_index = 0;
         for(Ptr<TestReceiver>& receiver_ptr : receivers_ptrs)
         {
             receiver_ptr = std::make_shared<TestReceiver>(receiver_index++);
             receiver_ptr->CheckBind(emitter);
         }
 
-        CHECK_NOTHROW(emitter.EmitCall([&receivers_ptrs](size_t receiver_index)
+        CHECK_NOTHROW(emitter.EmitCall([&receivers_ptrs](uint32_t receiver_index)
         {
              receivers_ptrs[receiver_index].reset();
         }));

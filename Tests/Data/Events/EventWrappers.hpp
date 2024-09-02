@@ -33,7 +33,7 @@ namespace Methane::Data
 
 struct ITestEvents
 {
-    using CallFunc = std::function<void(size_t /*receiver_id*/)>;
+    using CallFunc = std::function<void(uint32_t /*receiver_id*/)>;
 
     virtual void Foo() = 0;
     virtual void Bar(int a, bool b, float c) = 0;
