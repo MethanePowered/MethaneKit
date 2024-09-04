@@ -94,15 +94,6 @@ void TexturedCubeApp::Init()
         index_data_size
     });
 
-    // Create constants buffer for frame rendering
-    const auto constants_data_size = static_cast<Data::Size>(sizeof(m_shader_constants));
-    m_const_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(constants_data_size));
-    m_const_buffer.SetName("Constants Buffer");
-    m_const_buffer.SetData(render_cmd_queue, {
-        reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants), // NOSONAR
-        constants_data_size
-    });
-
     // Create render state with program
     m_render_state = GetRenderContext().CreateRenderState(
         rhi::RenderState::Settings
@@ -122,7 +113,19 @@ void TexturedCubeApp::Init()
                             rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                         }
                     },
-                    rhi::ProgramArgumentAccessors{ },
+                    rhi::ProgramArgumentAccessors
+                    {   // Define arguments as root constant
+                        {
+                            { rhi::ShaderType::Pixel, "g_constants" },
+                            rhi::ProgramArgumentAccessType::Constant,
+                            rhi::ProgramArgumentValueType::RootConstant
+                        },
+                        {
+                            { rhi::ShaderType::All, "g_uniforms" },
+                            rhi::ProgramArgumentAccessType::FrameConstant,
+                            rhi::ProgramArgumentValueType::RootConstant
+                        }
+                    },
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }
             ),
@@ -146,19 +149,14 @@ void TexturedCubeApp::Init()
     );
 
     // Create frame buffer resources
-    const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
+    const rhi::RootConstant shader_root_constant(m_shader_constants);
     for(TexturedCubeFrame& frame : GetFrames())
     {
-        // Create uniforms buffer with volatile parameters for frame rendering
-        frame.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
-        frame.uniforms_buffer.SetName(fmt::format("Uniforms Buffer {}", frame.index));
-
         // Configure program resource bindings
         frame.program_bindings = m_render_state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::All,   "g_uniforms"  }, frame.uniforms_buffer.GetResourceView() },
-            { { rhi::ShaderType::Pixel, "g_constants" }, m_const_buffer.GetResourceView() },
+            { { rhi::ShaderType::Pixel, "g_constants" }, shader_root_constant },
             { { rhi::ShaderType::Pixel, "g_texture"   }, m_cube_texture.GetResourceView() },
-            { { rhi::ShaderType::Pixel, "g_sampler"   }, m_texture_sampler.GetResourceView() },
+            { { rhi::ShaderType::Pixel, "g_sampler"   }, m_texture_sampler.GetResourceView() }
         }, frame.index);
         frame.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
 
@@ -198,6 +196,10 @@ bool TexturedCubeApp::Update()
     // Update Model, View, Projection matrices based on camera location
     m_shader_uniforms.mvp_matrix   = hlslpp::transpose(hlslpp::mul(m_shader_uniforms.model_matrix, m_camera.GetViewProjMatrix()));
     m_shader_uniforms.eye_position = m_camera.GetOrientation().eye;
+
+    const TexturedCubeFrame& frame = GetCurrentFrame();
+    frame.program_bindings.Get({ rhi::ShaderType::All, "g_uniforms" })
+                          .SetRootConstant(rhi::RootConstant(m_shader_uniforms));
     
     return true;
 }
@@ -207,10 +209,7 @@ bool TexturedCubeApp::Render()
     if (!UserInterfaceApp::Render())
         return false;
 
-    // Update uniforms buffer related to current frame
     const TexturedCubeFrame& frame = GetCurrentFrame();
-    const rhi::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.uniforms_buffer.SetData(render_cmd_queue, m_shader_uniforms_subresource);
 
     // Issue commands for cube rendering
     META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
@@ -225,7 +224,7 @@ bool TexturedCubeApp::Render()
 
     // Execute command list on render queue and present frame to screen
     frame.render_cmd_list.Commit();
-    render_cmd_queue.Execute(frame.execute_cmd_list_set);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(frame.execute_cmd_list_set);
     GetRenderContext().Present();
 
     return true;
@@ -235,7 +234,6 @@ void TexturedCubeApp::OnContextReleased(rhi::IContext& context)
 {
     m_texture_sampler = {};
     m_cube_texture = {};
-    m_const_buffer = {};
     m_index_buffer = {};
     m_vertex_buffer_set = {};
     m_render_state = {};

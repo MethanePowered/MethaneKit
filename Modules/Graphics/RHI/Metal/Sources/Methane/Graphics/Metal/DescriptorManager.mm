@@ -30,10 +30,39 @@ Metal descriptor manager of the argument buffer
 namespace Methane::Graphics::Metal
 {
 
-DescriptorManager::ArgumentsBuffer::ArgumentsBuffer(Rhi::ProgramArgumentAccessType access_type)
-    : m_access_type(access_type)
+DescriptorManager::ArgumentsBuffer::ArgumentsBuffer(const Base::Context& context, Rhi::ProgramArgumentAccessType access_type)
+    : m_context(context)
+    , m_access_type(access_type)
 {
     META_FUNCTION_TASK();
+}
+
+const Rhi::IBuffer* DescriptorManager::ArgumentsBuffer::GetBuffer() const
+{
+    META_FUNCTION_TASK();
+    if (m_data.empty())
+    {
+        m_buffer_ptr.reset();
+    }
+    else if (!m_buffer_ptr || m_data.size() > m_buffer_ptr->GetSettings().size)
+    {
+        CreateBuffer();
+    }
+    return m_buffer_ptr.get();
+}
+
+Rhi::IBuffer* DescriptorManager::ArgumentsBuffer::GetBuffer()
+{
+    META_FUNCTION_TASK();
+    if (m_data.empty())
+    {
+        m_buffer_ptr.reset();
+    }
+    else if (!m_buffer_ptr || m_data.size() > m_buffer_ptr->GetSettings().size)
+    {
+        CreateBuffer();
+    }
+    return m_buffer_ptr.get();
 }
 
 DescriptorManager::ArgumentsRange DescriptorManager::ArgumentsBuffer::ReserveRange(Data::Size range_size)
@@ -43,9 +72,7 @@ DescriptorManager::ArgumentsRange DescriptorManager::ArgumentsBuffer::ReserveRan
     std::scoped_lock lock_guard(m_mutex);
 
     if (const ArgumentsRange reserved_range = Data::ReserveRange(m_free_ranges, range_size))
-    {
         return reserved_range;
-    }
 
     const ArgumentsRange arguments_range(m_data.size(), m_data.size() + range_size);
     m_data.resize(m_data.size() + range_size);
@@ -62,32 +89,25 @@ void DescriptorManager::ArgumentsBuffer::ReleaseRange(const ArgumentsRange& rang
     m_free_ranges.Add(range);
 }
 
-void DescriptorManager::ArgumentsBuffer::Update(const Base::Context& context)
+void DescriptorManager::ArgumentsBuffer::Update()
 {
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_mutex);
 
-    if (m_data.empty())
-    {
-        m_buffer_ptr.reset();
+    Rhi::IBuffer* buffer_ptr = GetBuffer();
+    if (!buffer_ptr)
         return;
-    }
-
-    if (!m_buffer_ptr || m_data.size() > m_buffer_ptr->GetSettings().size)
-    {
-        CreateBuffer(context);
-    }
 
     // Compute queue is used as a target command queue for the argument buffer data transfer,
-    // because in Metal it queue ownership does not matter.
-    Rhi::ICommandQueue& compute_queue = context.GetDefaultCommandKit(Rhi::CommandListType::Compute).GetQueue();
-    m_buffer_ptr->SetData(compute_queue, Rhi::SubResource(m_data));
+    // because in Metal queue ownership does not matter.
+    Rhi::ICommandQueue& compute_queue = m_context.GetDefaultCommandKit(Rhi::CommandListType::Compute).GetQueue();
+    buffer_ptr->SetData(compute_queue, Rhi::SubResource(m_data));
 }
 
-void DescriptorManager::ArgumentsBuffer::CreateBuffer(const Base::Context& context)
+void DescriptorManager::ArgumentsBuffer::CreateBuffer() const
 {
     META_FUNCTION_TASK();
-    m_buffer_ptr = context.CreateBuffer(
+    m_buffer_ptr = m_context.CreateBuffer(
         Rhi::BufferSettings
             {
                 Rhi::BufferType::Constant,
@@ -109,6 +129,11 @@ void DescriptorManager::ArgumentsBuffer::Release()
 
 DescriptorManager::DescriptorManager(Base::Context& context)
     : Base::DescriptorManager(context, false)
+    , m_arguments_buffer_by_access_type{{ // Order by value of access type
+        { /* 0: */ context, Rhi::ProgramArgumentAccessType::Constant },
+        { /* 1: */ context, Rhi::ProgramArgumentAccessType::FrameConstant },
+        { /* 2: */ context, Rhi::ProgramArgumentAccessType::Mutable },
+    }}
 {
 }
 
@@ -141,7 +166,7 @@ void DescriptorManager::RemoveProgramBindings(Rhi::IProgramBindings& program_bin
     }
 }
 
-void DescriptorManager::OnContextCompletingInitialization(Rhi::IContext& context)
+void DescriptorManager::OnContextCompletingInitialization(Rhi::IContext&)
 {
     META_FUNCTION_TASK();
     META_LOG("Metal Descriptor Manager is completing initialization of the global argument buffer...");
@@ -150,10 +175,9 @@ void DescriptorManager::OnContextCompletingInitialization(Rhi::IContext& context
     Base::DescriptorManager::CompleteInitialization();
 
     // Update argument buffers on the GPU to be uploaded right after this callback in Base::Context::CompleteInitialization()
-    auto& base_context = dynamic_cast<Base::Context&>(context);
     for(ArgumentsBuffer& arg_buffer : m_arguments_buffer_by_access_type)
     {
-        arg_buffer.Update(base_context);
+        arg_buffer.Update();
     }
 }
 

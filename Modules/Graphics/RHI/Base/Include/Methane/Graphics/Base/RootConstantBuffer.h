@@ -31,7 +31,7 @@ bound to Program using ProgramArgumentBinging as RootConstant.
 #include <Methane/Memory.hpp>
 #include <Methane/Data/Types.h>
 #include <Methane/Data/RangeSet.hpp>
-#include <Methane/Data/Receiver.hpp>
+#include <Methane/Data/Emitter.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -58,6 +58,7 @@ public:
 
     const Range& GetBufferRange() const noexcept { return m_buffer_range; }
     const Rhi::ResourceView GetResourceView() const;
+    RootConstantBuffer& GetRootConstantBuffer() const { return m_buffer.get(); }
 
 private:
     Ref<RootConstantBuffer> m_buffer;
@@ -66,14 +67,22 @@ private:
 
 class Context;
 
+struct IRootConstantBufferCallback
+{
+    virtual void OnRootConstantBufferChanged(RootConstantBuffer& root_constant_buffer) = 0;
+    virtual ~IRootConstantBufferCallback() = default;
+};
+
 class RootConstantBuffer
-    : private Data::Receiver<Rhi::IContextCallback> //NOSONAR
+    : public Data::Emitter<IRootConstantBufferCallback>
+    , private Data::Receiver<Rhi::IContextCallback> //NOSONAR
 {
 public:
+    using ICallback = IRootConstantBufferCallback;
     using Accessor = RootConstantAccessor;
 
     explicit RootConstantBuffer(Context& context);
-    ~RootConstantBuffer();
+    ~RootConstantBuffer() override;
 
     [[nodiscard]] UniquePtr<Accessor> ReserveRootConstant(Data::Size root_constant_size);
     void ReleaseRootConstant(const Accessor& accessor);

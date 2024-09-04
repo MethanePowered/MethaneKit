@@ -24,7 +24,7 @@ Base implementation of the program argument binding interface.
 #pragma once
 
 #include <Methane/Graphics/RHI/IProgramBindings.h>
-#include <Methane/Graphics/RHI/IResource.h>
+#include <Methane/Graphics/Base/RootConstantBuffer.h>
 #include <Methane/Data/Emitter.hpp>
 
 namespace Methane::Graphics::Base
@@ -34,11 +34,13 @@ class Context;
 class Program;
 class ProgramBindings;
 class RootConstantAccessor;
+class RootConstantBuffer;
 
 class ProgramArgumentBinding
     : public Rhi::IProgramArgumentBinding
     , public Data::Emitter<Rhi::IProgramArgumentBindingCallback>
     , public std::enable_shared_from_this<ProgramArgumentBinding>
+    , protected Data::Receiver<IRootConstantBufferCallback>
 {
 public:
     ProgramArgumentBinding(const Context& context, const Settings& settings);
@@ -70,6 +72,9 @@ public:
 
 protected:
     const Context& GetContext() const noexcept { return m_context; }
+
+    // IRootConstantBufferCallback overrides...
+    void OnRootConstantBufferChanged(RootConstantBuffer& root_constant_buffer) override;
 
 private:
     const Context&                  m_context;

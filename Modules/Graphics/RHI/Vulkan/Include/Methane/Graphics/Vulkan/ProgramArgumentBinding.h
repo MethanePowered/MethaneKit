@@ -74,8 +74,12 @@ public:
 
     void UpdateDescriptorSetsOnGpu();
 
+protected:
+    // IRootConstantBufferCallback overrides...
+    void OnRootConstantBufferChanged(Base::RootConstantBuffer& root_constant_buffer) override;
+
 private:
-    void AddDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views);
+    void SetDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views);
 
     Settings                              m_settings_vk;
     const vk::DescriptorSet*              m_vk_descriptor_set_ptr = nullptr;

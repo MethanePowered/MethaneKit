@@ -108,7 +108,7 @@ void RootConstantBuffer::SetRootConstant(const Accessor& accessor, const Rhi::Ro
     Data::Bytes&           data       = GetData();
     const Accessor::Range& data_range = accessor.GetBufferRange();
 
-    META_CHECK_ARG_EQUAL_DESCR(data_range.GetLength(), root_constant.GetDataSize(), "root constant size is unexpected");
+    META_CHECK_ARG_EQUAL_DESCR(data_range.GetLength(), root_constant.GetDataSize(), "wrong root constant size");
     std::copy(root_constant.GetDataPtr(), root_constant.GetDataEndPtr(), data.data() + data_range.GetStart());
 
     m_buffer_data_changed = true;
@@ -131,8 +131,14 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
     if (m_buffer_ptr && m_buffer_ptr->GetSettings().size >= m_deferred_size)
         return *m_buffer_ptr;
 
+    const bool buffer_changed = !!m_buffer_ptr;
     const auto buffer_settings = Rhi::BufferSettings::ForConstantBuffer(m_deferred_size, true, false);
     m_buffer_ptr               = m_context.CreateBuffer(buffer_settings);
+    m_buffer_ptr->SetName("Global Root Constants Buffer");
+    m_buffer_data_changed = false;
+
+    if (buffer_changed)
+        Emit(&ICallback::OnRootConstantBufferChanged, *this);
 
     return *m_buffer_ptr;
 }

@@ -165,9 +165,9 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
     }
 }
 
-void ProgramBindings::OnProgramArgumentBindingRootConstantChanged([[maybe_unused]] const IArgumentBinding& argument_binding,
-                                                                  [[maybe_unused]] const Rhi::RootConstant& old_root_constant,
-                                                                  [[maybe_unused]] const Rhi::RootConstant& new_root_constant)
+void ProgramBindings::OnProgramArgumentBindingRootConstantChanged([[maybe_unused]] const IArgumentBinding&,
+                                                                  [[maybe_unused]] const Rhi::RootConstant&,
+                                                                  [[maybe_unused]] const Rhi::RootConstant&)
 {
     META_FUNCTION_TASK();
 }
@@ -175,10 +175,11 @@ void ProgramBindings::OnProgramArgumentBindingRootConstantChanged([[maybe_unused
 void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_program_bindings_ptr)
 {
     META_FUNCTION_TASK();
-    const auto& program = static_cast<const Program&>(GetProgram());
+    auto& program = static_cast<Program&>(GetProgram());
     const ArgumentBindings& argument_bindings = other_program_bindings_ptr
                                               ? other_program_bindings_ptr->GetArgumentBindings()
                                               : program.GetArgumentBindings();
+
     for (const auto& [program_argument, argument_binding_ptr] : argument_bindings)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
@@ -186,8 +187,10 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
         if (m_binding_by_argument.count(program_argument))
             continue;
 
-        m_binding_by_argument.try_emplace(program_argument,
-                                          program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index));
+        const Ptr<ArgumentBinding> new_argument_binding_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
+        new_argument_binding_ptr->Initialize(program);
+
+        m_binding_by_argument.try_emplace(program_argument, argument_binding_ptr);
     }
 }
 
@@ -298,7 +301,6 @@ void ProgramBindings::Initialize()
                                       "no resource binding is set for program argument '{}'",
                                       program_argument.GetName());
 
-        argument_binding_ptr->Initialize(program);
         argument_binding_ptr->Connect(*this);
     }
 }

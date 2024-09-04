@@ -89,7 +89,7 @@ static std::string GetNativeResourceLabels(const ProgramArgumentBinding::NativeR
     for(size_t index = 0; index < mtl_resources.size(); ++index)
     {
         const auto& mtl_resource = mtl_resources[index];
-        ss << "'" << mtl_resource.label.UTF8String << "'";
+        ss << "'" << (mtl_resource.label ? mtl_resource.label.UTF8String : "N/A") << "'";
         if (index < mtl_resources.size() - 1)
             ss << ", ";
     }
@@ -395,7 +395,9 @@ static void WriteNativeBufferAddresses(const NativeBuffers& native_buffers, cons
         const auto& native_buffer = native_buffers[buffer_index];
         const uint64_t offset = offsets[buffer_index];
         *argument_ptr = native_buffer.gpuAddress + offset;
-        META_LOG("        {}) buffer '{}' address '{}'", buffer_index, native_buffer.label.UTF8String, *argument_ptr);
+        META_LOG("        {}) buffer '{}' address '{}'", buffer_index,
+                 native_buffer.label ? native_buffer.label.UTF8String : "N/A",
+                 *argument_ptr);
         argument_ptr++;
     }
 }
@@ -778,7 +780,7 @@ void ProgramBindings::UpdateArgumentBuffer(const IArgumentBinding& changed_arg_b
     {
         // Update argument buffer data on GPU:
         const Base::Context& context = GetMetalProgram().GetContext();
-        static_cast<DescriptorManager&>(context.GetDescriptorManager()).GetArgumentsBuffer(access_type).Update(context);
+        static_cast<DescriptorManager&>(context.GetDescriptorManager()).GetArgumentsBuffer(access_type).Update();
     }
 }
 

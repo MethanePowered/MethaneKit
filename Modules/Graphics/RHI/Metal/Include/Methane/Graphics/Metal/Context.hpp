@@ -56,7 +56,12 @@ public:
     Context(Base::Device& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
         : ContextBaseT(device, std::make_unique<DescriptorManager>(*this), parallel_executor, settings)
     {
-        Data::Emitter<Rhi::IContextCallback>::Connect(dynamic_cast<DescriptorManager&>(ContextBaseT::GetDescriptorManager()));
+        // NOTE: set low priority of receiver callback, to be called after all other receivers - program bindings,
+        // which is required to guarantee that arguments buffer will be allocated before argument bindings initialization
+        Data::Emitter<Rhi::IContextCallback>::Connect(
+            dynamic_cast<DescriptorManager&>(ContextBaseT::GetDescriptorManager()),
+            static_cast<int32_t>(Data::ConnectionPriority::Low)
+        );
     }
 
     // IContext overrides

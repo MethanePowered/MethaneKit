@@ -33,6 +33,8 @@ namespace hlslpp // NOSONAR
 #pragma pack(pop)
 }
 
+static_assert(sizeof(hlslpp::Constants) % 16 == 0, "Size of Constants struct should have 16 byte alignment!");
+
 namespace Methane::Tutorials
 {
 
@@ -41,7 +43,6 @@ namespace rhi = Methane::Graphics::Rhi;
 
 struct TexturedCubeFrame final : Graphics::AppFrame
 {
-    rhi::Buffer            uniforms_buffer;
     rhi::ProgramBindings   program_bindings;
     rhi::RenderCommandList render_cmd_list;
     rhi::CommandListSet    execute_cmd_list_set;
@@ -83,14 +84,8 @@ private:
     rhi::RenderState m_render_state;
     rhi::BufferSet   m_vertex_buffer_set;
     rhi::Buffer      m_index_buffer;
-    rhi::Buffer      m_const_buffer;
     rhi::Texture     m_cube_texture;
     rhi::Sampler     m_texture_sampler;
-
-    const rhi::SubResource m_shader_uniforms_subresource{
-        reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), // NOSONAR
-        sizeof(hlslpp::Uniforms)
-    };
 };
 
 } // namespace Methane::Tutorials

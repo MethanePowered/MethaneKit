@@ -123,7 +123,7 @@ private:
     template<CommandType command_type, typename CommandListType = typename Command<command_type>::RhiListType>
     void Apply(CommandListType& command_list, ApplyBehaviorMask apply_behavior) const;
 
-    // IProgramBindings::IProgramArgumentBindingCallback
+    // IProgramArgumentBindingCallback
     void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::ResourceViews&, const Rhi::ResourceViews&) override;
     void OnProgramArgumentBindingRootConstantChanged(const IArgumentBinding&, const Rhi::RootConstant&, const Rhi::RootConstant&) override;
 

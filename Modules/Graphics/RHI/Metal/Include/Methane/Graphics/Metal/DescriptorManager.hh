@@ -54,28 +54,30 @@ public:
         friend class DescriptorManager;
 
     public:
-        ArgumentsBuffer(Rhi::ProgramArgumentAccessType access_type);
+        ArgumentsBuffer(const Base::Context& context, Rhi::ProgramArgumentAccessType access_type);
 
         Rhi::ProgramArgumentAccessType GetAccessType() const noexcept { return m_access_type; }
-        Data::Index                    GetIndex() const noexcept      { return static_cast<Data::Index>(m_access_type); }
-        Data::Size                     GetDataSize() const noexcept   { return static_cast<Data::Size>(m_data.size()); }
-        const Data::Bytes&             GetData() const noexcept       { return m_data; }
-        Data::Byte*                    GetDataPtr() noexcept          { return m_data.data(); }
-        const Rhi::IBuffer*            GetBuffer() const noexcept     { return m_buffer_ptr.get(); }
+
+        Data::Index         GetIndex() const noexcept      { return static_cast<Data::Index>(m_access_type); }
+        Data::Size          GetDataSize() const noexcept   { return static_cast<Data::Size>(m_data.size()); }
+        const Data::Bytes&  GetData() const noexcept       { return m_data; }
+        Data::Byte*         GetDataPtr() noexcept          { return m_data.data(); }
+        const Rhi::IBuffer* GetBuffer() const;
+        Rhi::IBuffer*       GetBuffer();
 
         ArgumentsRange ReserveRange(Data::Size range_size);
         void ReleaseRange(const ArgumentsRange& range);
-
-        void Update(const Base::Context& context);
+        void Update();
 
     private:
-        void CreateBuffer(const Base::Context& context);
+        void CreateBuffer() const;
         void Release();
 
+        const Base::Context&                 m_context;
         const Rhi::ProgramArgumentAccessType m_access_type;
         Data::Bytes                          m_data;
         ArgumentsRangeSet                    m_free_ranges;
-        Ptr<Rhi::IBuffer>                    m_buffer_ptr;
+        mutable Ptr<Rhi::IBuffer>            m_buffer_ptr;
         TracyLockable(std::mutex,            m_mutex);
     };
 
@@ -98,11 +100,7 @@ public:
 private:
     using ArgumentsBufferByAccessType = std::array<ArgumentsBuffer, magic_enum::enum_count<Rhi::ProgramArgumentAccessType>()>;
 
-    ArgumentsBufferByAccessType m_arguments_buffer_by_access_type{{ // Order by value of access type
-        { /* 0: */ Rhi::ProgramArgumentAccessType::Constant },
-        { /* 1: */ Rhi::ProgramArgumentAccessType::FrameConstant },
-        { /* 2: */ Rhi::ProgramArgumentAccessType::Mutable },
-    }};
+    ArgumentsBufferByAccessType m_arguments_buffer_by_access_type;
 };
 
 } // namespace Methane::Graphics::Metal

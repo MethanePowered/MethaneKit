@@ -163,6 +163,20 @@ void ProgramArgumentBinding::UpdateArgumentBufferOffsets(const Program& program)
     }
 }
 
+void ProgramArgumentBinding::OnRootConstantBufferChanged(Base::RootConstantBuffer& root_constant_buffer)
+{
+    META_FUNCTION_TASK();
+    Base::ProgramArgumentBinding::OnRootConstantBufferChanged(root_constant_buffer);
+
+    SetMetalResourcesForViews(Base::ProgramArgumentBinding::GetResourceViews());
+
+    const Rhi::RootConstant root_constants = GetRootConstant();
+    Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
+        &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
+        std::cref(*this), std::cref(root_constants), std::cref(root_constants)
+    );
+}
+
 void ProgramArgumentBinding::SetMetalResourcesForViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
