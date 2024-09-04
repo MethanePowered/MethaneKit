@@ -38,6 +38,7 @@ ProgramArgumentBinding::ProgramArgumentBinding(const Context& context, const Set
 ProgramArgumentBinding::ProgramArgumentBinding(const ProgramArgumentBinding& other)
     : Emitter(other)
     , enable_shared_from_this(other)
+    , Receiver(other)
     , m_context(other.m_context)
     , m_settings(other.m_settings)
     , m_resource_views(other.m_resource_views)
