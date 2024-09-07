@@ -48,7 +48,7 @@ RootConstantAccessor::~RootConstantAccessor()
 Rhi::RootConstant RootConstantAccessor::GetRootConstant() const
 {
     META_FUNCTION_TASK();
-    return Rhi::RootConstant(m_buffer.get().GetData().data(), m_buffer_range.GetLength());
+    return Rhi::RootConstant(m_buffer.get().GetData().data() + m_buffer_range.GetStart(), m_buffer_range.GetLength());
 }
 
 bool RootConstantAccessor::SetRootConstant(const Rhi::RootConstant& root_constant) const
