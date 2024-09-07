@@ -187,10 +187,10 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
         if (m_binding_by_argument.count(program_argument))
             continue;
 
-        const Ptr<ArgumentBinding> new_argument_binding_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
+        Ptr<ArgumentBinding> new_argument_binding_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
         new_argument_binding_ptr->Initialize(program);
 
-        m_binding_by_argument.try_emplace(program_argument, argument_binding_ptr);
+        m_binding_by_argument.try_emplace(program_argument, std::move(new_argument_binding_ptr));
     }
 }
 

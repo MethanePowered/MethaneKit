@@ -59,9 +59,12 @@ void ProgramArgumentBinding::SetDescriptorSetBinding(const vk::DescriptorSet& de
 void ProgramArgumentBinding::SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept
 {
     META_FUNCTION_TASK();
-    m_vk_descriptor_set_ptr = &descriptor_set;
+    if (m_vk_descriptor_set == descriptor_set)
+        return;
 
-    if (const Rhi::ResourceViews& resource_views = Base::ProgramArgumentBinding::GetResourceViews();
+    m_vk_descriptor_set = descriptor_set;
+
+    if (const Rhi::ResourceViews& resource_views = GetResourceViews();
         !resource_views.empty())
     {
         SetDescriptorsForResourceViews(resource_views);
@@ -115,7 +118,7 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
     if (!Base::ProgramArgumentBinding::SetRootConstant(root_constant))
         return false;
 
-    SetDescriptorsForResourceViews(Base::ProgramArgumentBinding::GetResourceViews());
+    SetDescriptorsForResourceViews(GetResourceViews());
     return true;
 }
 
@@ -138,9 +141,9 @@ void ProgramArgumentBinding::OnRootConstantBufferChanged(Base::RootConstantBuffe
     META_FUNCTION_TASK();
     Base::ProgramArgumentBinding::OnRootConstantBufferChanged(root_constant_buffer);
 
-    if (m_vk_descriptor_set_ptr)
+    if (m_vk_descriptor_set)
     {
-        SetDescriptorsForResourceViews(Base::ProgramArgumentBinding::GetResourceViews());
+        SetDescriptorsForResourceViews(GetResourceViews());
     }
 
     const Rhi::RootConstant root_constants = GetRootConstant();
@@ -153,7 +156,7 @@ void ProgramArgumentBinding::OnRootConstantBufferChanged(Base::RootConstantBuffe
 void ProgramArgumentBinding::SetDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_vk_descriptor_set_ptr);
+    META_CHECK_ARG_TRUE_DESCR(!!m_vk_descriptor_set, "program argument binding descriptor set was not initialized!");
 
     m_vk_descriptor_images.clear();
     m_vk_descriptor_buffers.clear();
@@ -176,7 +179,7 @@ void ProgramArgumentBinding::SetDescriptorsForResourceViews(const Rhi::ResourceV
     }
 
     m_vk_write_descriptor_set = vk::WriteDescriptorSet(
-        *m_vk_descriptor_set_ptr,
+        m_vk_descriptor_set,
         m_vk_binding_value,
         0U,
         m_settings_vk.descriptor_type,

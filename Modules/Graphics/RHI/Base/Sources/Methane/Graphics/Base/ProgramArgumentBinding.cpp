@@ -141,6 +141,8 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
     if (m_settings.argument.IsConstant() && !m_resource_views.empty())
         throw ConstantModificationException(GetSettings().argument);
 
+    // FIXME: Backend buffer changes inside GetResourceView call,
+    //        which executes callback OnRootConstantBufferChanged, which also updates resource views:
     const Rhi::ResourceView root_constant_resource_view = m_root_constant_accessor_ptr->GetResourceView();
     m_resource_views.clear();
     m_resource_views.emplace_back(root_constant_resource_view);
@@ -163,7 +165,8 @@ ProgramArgumentBinding::operator std::string() const
 void ProgramArgumentBinding::Initialize(Program& program)
 {
     META_FUNCTION_TASK();
-    if (m_settings.argument.IsRootConstant())
+    if (m_settings.argument.IsRootConstant() &&
+        !m_root_constant_accessor_ptr)
     {
         RootConstantBuffer& root_constant_buffer = program.GetRootConstantBuffer();
         m_root_constant_accessor_ptr = root_constant_buffer.ReserveRootConstant(m_settings.buffer_size);

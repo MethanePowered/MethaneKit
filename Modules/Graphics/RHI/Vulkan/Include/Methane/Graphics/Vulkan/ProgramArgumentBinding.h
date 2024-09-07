@@ -82,7 +82,7 @@ private:
     void SetDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views);
 
     Settings                              m_settings_vk;
-    const vk::DescriptorSet*              m_vk_descriptor_set_ptr = nullptr;
+    vk::DescriptorSet                     m_vk_descriptor_set;
     uint32_t                              m_vk_binding_value      = 0U;
     vk::WriteDescriptorSet                m_vk_write_descriptor_set;
     std::vector<vk::DescriptorImageInfo>  m_vk_descriptor_images;

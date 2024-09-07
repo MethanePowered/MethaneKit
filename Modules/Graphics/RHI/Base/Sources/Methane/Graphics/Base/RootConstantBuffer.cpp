@@ -70,6 +70,7 @@ const Rhi::ResourceView RootConstantAccessor::GetResourceView() const
 RootConstantBuffer::RootConstantBuffer(Context& context)
     : m_context(context)
 {
+    META_FUNCTION_TASK();
     dynamic_cast<Data::IEmitter<IContextCallback>&>(context).Connect(*this);
 }
 
