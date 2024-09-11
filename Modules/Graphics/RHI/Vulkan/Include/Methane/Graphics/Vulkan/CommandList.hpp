@@ -284,6 +284,14 @@ protected:
         if (!m_vk_command_buffer_encoding_flags[cmd_buffer_index])
             return;
 
+        if (m_debug_group_command_buffer_type == cmd_buffer_type)
+        {
+            while(Base::CommandList::HasOpenDebugGroups())
+            {
+                PopDebugGroup();
+            }
+        }
+
         m_vk_unique_command_buffers[cmd_buffer_index].get().end();
         m_vk_command_buffer_encoding_flags[cmd_buffer_index] = false;
     }

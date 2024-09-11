@@ -80,10 +80,7 @@ void CommandList::PushDebugGroup(IDebugGroup& debug_group)
 void CommandList::PopDebugGroup()
 {
     META_FUNCTION_TASK();
-    if (m_open_debug_groups.empty())
-    {
-        throw std::underflow_error("Can not pop debug group, since no debug groups were pushed");
-    }
+    META_CHECK_ARG_NOT_EMPTY_DESCR(m_open_debug_groups, "Can not pop debug group, since no debug groups were pushed");
 
     META_LOG("{} Command list '{}' POP debug group '{}'", magic_enum::enum_name(m_type), GetName(), GetTopOpenDebugGroup()->GetName());
 #ifdef METHANE_DEBUG_GROUP_FRAMES_ENABLED

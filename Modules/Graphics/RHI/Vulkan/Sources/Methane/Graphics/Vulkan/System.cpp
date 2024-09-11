@@ -154,7 +154,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
     // FIXME: disable warning on Apple "VkSemaphore is a timeline semaphore, but VkSubmitInfo does not include an instance of VkTimelineSemaphoreSubmitInfo",
     //        which was introduced as the result of the workaround of crash on vk::Queue::submit with vk::SubmitInfo containing a pointer to vk::TimelineSemaphoreSubmitInfo
     //        see Vulkan::CommandListSet::Execute() for more details
-    if (callback_data_ptr->messageIdNumber == -410448035) // VUID-VkSubmitInfo-pWaitSemaphores-03239
+    if (callback_data_ptr->messageIdNumber == -410448035 ||  // VUID-VkSubmitInfo-pWaitSemaphores-03239
+        callback_data_ptr->messageIdNumber == 1901485743)    // VUID-vkQueueSubmit-pCommandBuffers-00065
         return VK_FALSE;
 #endif
 

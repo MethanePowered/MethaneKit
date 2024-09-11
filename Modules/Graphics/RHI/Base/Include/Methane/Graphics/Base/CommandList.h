@@ -123,8 +123,8 @@ protected:
     void InitializeTimestampQueries();
     void BeginGpuZone();
     void EndGpuZone();
-
     void VerifyEncodingState() const;
+    bool HasOpenDebugGroups() const noexcept { return !m_open_debug_groups.empty(); }
 
 private:
     using DebugGroupStack  = std::stack<Ptr<DebugGroup>>;

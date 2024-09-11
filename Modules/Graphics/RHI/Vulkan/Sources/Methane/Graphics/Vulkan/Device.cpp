@@ -52,6 +52,7 @@ namespace Methane::Graphics::Vulkan
 
 static const std::vector<std::string_view> g_common_device_extensions{
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+    VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME,
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     VK_EXT_CALIBRATED_TIMESTAMPS_EXTENSION_NAME,
 #endif
