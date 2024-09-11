@@ -148,7 +148,7 @@ void ProgramArgumentBinding::OnRootConstantBufferChanged(Base::RootConstantBuffe
 
     const Rhi::RootConstant root_constants = GetRootConstant();
     Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
-        &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
+        &Rhi::IProgramArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
         std::cref(*this), std::cref(root_constants), std::cref(root_constants)
     );
 }

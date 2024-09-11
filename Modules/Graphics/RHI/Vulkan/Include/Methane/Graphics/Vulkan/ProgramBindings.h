@@ -57,6 +57,12 @@ public:
     void Apply(ICommandList& command_list, const Rhi::ICommandQueue& command_queue,
                const Base::ProgramBindings* p_applied_program_bindings, ApplyBehaviorMask apply_behavior) const;
 
+protected:
+    // IProgramBindings::IProgramArgumentBindingCallback
+    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&,
+                                                      const Rhi::ResourceViews&,
+                                                      const Rhi::ResourceViews&) override;
+
 private:
     // IObjectCallback interface
     void OnObjectNameChanged(Rhi::IObject&, const std::string&) override; // IProgram name changed
@@ -65,6 +71,7 @@ private:
 
     template<typename FuncType> // function void(const ProgramArgument&, ArgumentBinding&)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
+    void UpdateDynamicDescriptorOffsets();
     void UpdateMutableDescriptorSetName();
 
     mutable Ptr<Rhi::IResourceBarriers> m_resource_ownership_transition_barriers_ptr;

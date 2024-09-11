@@ -114,7 +114,7 @@ void TexturedCubeApp::Init()
                         }
                     },
                     rhi::ProgramArgumentAccessors
-                    {   // Define arguments as root constant
+                    {   // Define arguments as root constants
                         {
                             { rhi::ShaderType::Pixel, "g_constants" },
                             rhi::ProgramArgumentAccessType::Constant,
@@ -149,12 +149,11 @@ void TexturedCubeApp::Init()
     );
 
     // Create frame buffer resources
-    const rhi::RootConstant shader_root_constant(m_shader_constants);
     for(TexturedCubeFrame& frame : GetFrames())
     {
         // Configure program resource bindings
         frame.program_bindings = m_render_state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::Pixel, "g_constants" }, shader_root_constant },
+            { { rhi::ShaderType::Pixel, "g_constants" }, rhi::RootConstant(m_shader_constants) },
             { { rhi::ShaderType::Pixel, "g_texture"   }, m_cube_texture.GetResourceView() },
             { { rhi::ShaderType::Pixel, "g_sampler"   }, m_texture_sampler.GetResourceView() }
         }, frame.index);

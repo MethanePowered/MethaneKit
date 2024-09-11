@@ -162,37 +162,7 @@ void ProgramBindings::SetResourcesForArguments(const BindingValueByArgument& bin
 {
     META_FUNCTION_TASK();
     Base::ProgramBindings::SetResourcesForArguments(binding_value_by_argument);
-
-    auto& program = static_cast<Program&>(GetProgram());
-    std::vector<std::vector<uint32_t>> dynamic_offsets_by_set_index;
-    dynamic_offsets_by_set_index.resize(m_descriptor_sets.size());
-
-    ForEachArgumentBinding([&program, &dynamic_offsets_by_set_index]
-                           (const Rhi::ProgramArgument&, const ArgumentBinding& argument_binding)
-        {
-            const Rhi::ProgramArgumentAccessor& program_argument_accessor = argument_binding.GetSettings().argument;
-            if (!program_argument_accessor.IsAddressable())
-                return;
-
-            const Program::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(program_argument_accessor.GetAccessorType());
-            META_CHECK_ARG_TRUE(layout_info.index_opt.has_value());
-            META_CHECK_ARG_LESS(*layout_info.index_opt, dynamic_offsets_by_set_index.size());
-            std::vector<uint32_t>& dynamic_offsets = dynamic_offsets_by_set_index[*layout_info.index_opt];
-            dynamic_offsets.clear();
-
-            const Rhi::ResourceViews& resource_views = argument_binding.GetResourceViews();
-            std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(dynamic_offsets),
-                           [](const Rhi::IResource::View& resource_view)
-                           { return resource_view.GetOffset(); });
-        });
-
-    m_dynamic_offsets.clear();
-    m_dynamic_offset_index_by_set_index.clear();
-    for (const std::vector<uint32_t>& dynamic_offsets : dynamic_offsets_by_set_index)
-    {
-        m_dynamic_offset_index_by_set_index.emplace_back(static_cast<uint32_t>(m_dynamic_offsets.size()));
-        m_dynamic_offsets.insert(m_dynamic_offsets.end(), dynamic_offsets.begin(), dynamic_offsets.end());
-    }
+    UpdateDynamicDescriptorOffsets();
 }
 
 void ProgramBindings::CompleteInitialization()
@@ -257,6 +227,15 @@ void ProgramBindings::Apply(ICommandList& command_list_vk, const Rhi::ICommandQu
                                          m_dynamic_offsets.data() + first_dynamic_offset_index);
 }
 
+void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding& argument_binding,
+                                                                   const Rhi::ResourceViews& old_resource_views,
+                                                                   const Rhi::ResourceViews& new_resource_views)
+{
+    META_FUNCTION_TASK();
+    Base::ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(argument_binding, old_resource_views, new_resource_views);
+    UpdateDynamicDescriptorOffsets();
+}
+
 void ProgramBindings::OnObjectNameChanged(IObject&, const std::string&)
 {
     META_FUNCTION_TASK();
@@ -271,6 +250,41 @@ void ProgramBindings::ForEachArgumentBinding(FuncType argument_binding_function)
     {
         META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
         argument_binding_function(program_argument, static_cast<ArgumentBinding&>(*argument_binding_ptr));
+    }
+}
+
+void ProgramBindings::UpdateDynamicDescriptorOffsets()
+{
+    META_FUNCTION_TASK();
+    auto& program = static_cast<Program&>(GetProgram());
+    std::vector<std::vector<uint32_t>> dynamic_offsets_by_set_index;
+    dynamic_offsets_by_set_index.resize(m_descriptor_sets.size());
+
+    ForEachArgumentBinding([&program, &dynamic_offsets_by_set_index]
+                           (const Rhi::ProgramArgument&, const ArgumentBinding& argument_binding)
+        {
+            const Rhi::ProgramArgumentAccessor& program_argument_accessor = argument_binding.GetSettings().argument;
+            if (!program_argument_accessor.IsAddressable())
+                return;
+
+            const Program::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(program_argument_accessor.GetAccessorType());
+            META_CHECK_ARG_TRUE(layout_info.index_opt.has_value());
+            META_CHECK_ARG_LESS(*layout_info.index_opt, dynamic_offsets_by_set_index.size());
+            std::vector<uint32_t>& dynamic_offsets = dynamic_offsets_by_set_index[*layout_info.index_opt];
+            dynamic_offsets.clear();
+
+            const Rhi::ResourceViews& resource_views = argument_binding.GetResourceViews();
+            std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(dynamic_offsets),
+                           [](const Rhi::IResource::View& resource_view)
+                           { return resource_view.GetOffset(); });
+        });
+
+    m_dynamic_offsets.clear();
+    m_dynamic_offset_index_by_set_index.clear();
+    for (const std::vector<uint32_t>& dynamic_offsets : dynamic_offsets_by_set_index)
+    {
+        m_dynamic_offset_index_by_set_index.emplace_back(static_cast<uint32_t>(m_dynamic_offsets.size()));
+        m_dynamic_offsets.insert(m_dynamic_offsets.end(), dynamic_offsets.begin(), dynamic_offsets.end());
     }
 }
 

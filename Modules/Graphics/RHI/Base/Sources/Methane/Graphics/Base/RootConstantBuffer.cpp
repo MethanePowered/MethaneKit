@@ -136,7 +136,9 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
     const auto buffer_settings = Rhi::BufferSettings::ForConstantBuffer(m_deferred_size, true, false);
     m_buffer_ptr               = m_context.CreateBuffer(buffer_settings);
     m_buffer_ptr->SetName("Global Root Constants Buffer");
-    m_buffer_data_changed = false;
+
+    // After recreating the buffer it has to be filled with previous arguments data in UpdateGpuBuffer
+    m_buffer_data_changed = true;
 
     if (buffer_changed)
         Emit(&ICallback::OnRootConstantBufferChanged, *this);
@@ -153,6 +155,7 @@ void RootConstantBuffer::UpdateGpuBuffer(Rhi::ICommandQueue& target_cmd_queue)
     META_CHECK_ARG_NOT_EMPTY(m_buffer_data);
     Rhi::IBuffer& buffer = GetBuffer();
     buffer.SetData(target_cmd_queue, Rhi::SubResource(m_buffer_data));
+    m_buffer_data_changed = false;
 }
 
 void RootConstantBuffer::OnContextCompletingInitialization(Rhi::IContext& context)

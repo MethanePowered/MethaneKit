@@ -173,23 +173,22 @@ SubResourceIndex::operator std::string() const noexcept
 bool ResourceViewSettings::operator<(const ResourceViewSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    // Do not include 'offset' in the less comparison, because native views are created without offset which is applied dynamically
-    return std::tie(subresource_index, subresource_count, /*offset,*/ size) <
-           std::tie(other.subresource_index, other.subresource_count, /*other.offset,*/ other.size);
+    return std::tie(subresource_index, subresource_count, offset, size, texture_dimension_type_opt) <
+           std::tie(other.subresource_index, other.subresource_count, other.offset, other.size, other.texture_dimension_type_opt);
 }
 
 bool ResourceViewSettings::operator==(const ResourceViewSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(subresource_index, subresource_count, offset, size) ==
-           std::tie(other.subresource_index, other.subresource_count, other.offset, other.size);
+    return std::tie(subresource_index, subresource_count, offset, size, texture_dimension_type_opt) ==
+           std::tie(other.subresource_index, other.subresource_count, other.offset, other.size, other.texture_dimension_type_opt);
 }
 
 bool ResourceViewSettings::operator!=(const ResourceViewSettings& other) const noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(subresource_index, subresource_count, offset, size) !=
-           std::tie(other.subresource_index, other.subresource_count, other.offset, other.size);
+    return std::tie(subresource_index, subresource_count, offset, size, texture_dimension_type_opt) !=
+           std::tie(other.subresource_index, other.subresource_count, other.offset, other.size, other.texture_dimension_type_opt);
 }
 
 ResourceViewId::ResourceViewId(ResourceUsageMask usage, const ResourceViewSettings& settings)
