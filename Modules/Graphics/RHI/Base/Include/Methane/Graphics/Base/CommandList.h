@@ -86,6 +86,7 @@ public:
     virtual void Execute(const CompletedCallback& completed_callback = {});
     virtual void Complete(); // Called from command queue thread, which is tracking GPU execution
 
+    bool HasOpenDebugGroups() const noexcept { return !m_open_debug_groups.empty(); }
     DebugGroup* GetTopOpenDebugGroup() const;
     void PushOpenDebugGroup(IDebugGroup& debug_group);
     void ClearOpenDebugGroups();
@@ -124,7 +125,6 @@ protected:
     void BeginGpuZone();
     void EndGpuZone();
     void VerifyEncodingState() const;
-    bool HasOpenDebugGroups() const noexcept { return !m_open_debug_groups.empty(); }
 
 private:
     using DebugGroupStack  = std::stack<Ptr<DebugGroup>>;
