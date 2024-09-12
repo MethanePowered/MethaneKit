@@ -148,15 +148,7 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
     if (!Base::ProgramArgumentBinding::SetRootConstant(root_constant))
         return false;
 
-    const Rhi::ResourceViews& resource_views = Base::ProgramArgumentBinding::GetResourceViews();
-
-    m_resource_views_dx.clear();
-    std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_resource_views_dx),
-        [this](const Rhi::ResourceView& resource_view)
-        { return ResourceView(resource_view, m_shader_usage); });
-
-    // Request complete initialization to update root constant buffer views
-    GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
+    UpdateDirectResourceViews(Base::ProgramArgumentBinding::GetResourceViews());
     return true;
 }
 
@@ -183,6 +175,26 @@ void ProgramArgumentBinding::SetDescriptorHeapReservation(const DescriptorHeapRe
                               "argument binding reservation must be made in shader visible descriptor heap of type '{}'",
                               magic_enum::enum_name(m_descriptor_range.heap_type));
     m_p_descriptor_heap_reservation = p_reservation;
+}
+
+void ProgramArgumentBinding::OnRootConstantBufferChanged(Base::RootConstantBuffer& root_constant_buffer)
+{
+    META_FUNCTION_TASK();
+    Base::ProgramArgumentBinding::OnRootConstantBufferChanged(root_constant_buffer);
+    UpdateDirectResourceViews(Base::ProgramArgumentBinding::GetResourceViews());
+}
+
+void ProgramArgumentBinding::UpdateDirectResourceViews(const Rhi::ResourceViews& resource_views)
+{
+    META_FUNCTION_TASK();
+    m_resource_views_dx.clear();
+
+    std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_resource_views_dx),
+        [this](const Rhi::ResourceView& resource_view)
+        { return ResourceView(resource_view, m_shader_usage); });
+
+    // Request complete initialization to update root constant buffer views
+    GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
 }
 
 } // namespace Methane::Graphics::DirectX

@@ -97,7 +97,13 @@ public:
     void SetDescriptorRange(const DescriptorRange& descriptor_range);
     void SetDescriptorHeapReservation(const DescriptorHeapReservation* p_reservation);
 
+protected:
+    // IRootConstantBufferCallback overrides...
+    void OnRootConstantBufferChanged(Base::RootConstantBuffer& root_constant_buffer) override;
+
 private:
+    void UpdateDirectResourceViews(const Rhi::ResourceViews& resource_views);
+
     const Settings                   m_settings_dx;
     const Rhi::ResourceUsageMask     m_shader_usage;
     uint32_t                         m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
