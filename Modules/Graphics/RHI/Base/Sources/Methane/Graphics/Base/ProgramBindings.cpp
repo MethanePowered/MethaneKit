@@ -105,7 +105,7 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, 
     : ProgramBindings(other_program_bindings, frame_index)
 {
     META_FUNCTION_TASK();
-    SetResourcesForArguments(ReplaceResourceViews(other_program_bindings.GetArgumentBindings(), replace_resource_views_by_argument));
+    SetResourcesForArguments(ReplaceBindingValues(other_program_bindings.GetArgumentBindings(), replace_resource_views_by_argument));
     VerifyAllArgumentsAreBoundToResources();
 }
 
@@ -194,7 +194,7 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
     }
 }
 
-Rhi::IProgramBindings::BindingValueByArgument ProgramBindings::ReplaceResourceViews(const ArgumentBindings& argument_bindings,
+Rhi::IProgramBindings::BindingValueByArgument ProgramBindings::ReplaceBindingValues(const ArgumentBindings& argument_bindings,
                                                                                      const BindingValueByArgument& replace_resource_views) const
 {
     META_FUNCTION_TASK();
@@ -202,15 +202,19 @@ Rhi::IProgramBindings::BindingValueByArgument ProgramBindings::ReplaceResourceVi
     for (const auto& [program_argument, argument_binding_ptr] : argument_bindings)
     {
         META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
+        const ProgramArgumentBinding::Settings& argument_settings = argument_binding_ptr->GetSettings();
 
         // NOTE:
         // constant resource bindings are reusing single binding-object for the whole program,
         // so there's no need in setting its value, since it was already set by the original resource binding
-        if (argument_binding_ptr->GetSettings().argument.IsConstant() ||
+        if (argument_settings.argument.IsConstant() ||
             binding_value_by_argument.count(program_argument))
             continue;
 
-        binding_value_by_argument.try_emplace(program_argument, argument_binding_ptr->GetResourceViews());
+        if (argument_settings.argument.IsRootConstant())
+            binding_value_by_argument.try_emplace(program_argument, argument_binding_ptr->GetRootConstant());
+        else
+            binding_value_by_argument.try_emplace(program_argument, argument_binding_ptr->GetResourceViews());
     }
     return binding_value_by_argument;
 }

@@ -145,7 +145,7 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
     }
 
     UpdateMutableDescriptorSetName();
-    SetResourcesForArguments(ReplaceResourceViews(other_program_bindings.GetArgumentBindings(), replace_resource_view_by_argument));
+    SetResourcesForArguments(ReplaceBindingValues(other_program_bindings.GetArgumentBindings(), replace_resource_view_by_argument));
     VerifyAllArgumentsAreBoundToResources();
 }
 

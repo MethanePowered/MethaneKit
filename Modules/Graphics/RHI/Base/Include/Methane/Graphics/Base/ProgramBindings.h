@@ -96,7 +96,7 @@ protected:
     void RemoveFromDescriptorManager();
     void SetResourcesForArguments(const BindingValueByArgument& binding_value_by_argument);
     void InitializeArgumentBindings(const ProgramBindings* other_program_bindings_ptr = nullptr);
-    BindingValueByArgument ReplaceResourceViews(const ArgumentBindings& argument_bindings,
+    BindingValueByArgument ReplaceBindingValues(const ArgumentBindings& argument_bindings,
                                                  const BindingValueByArgument& replace_resource_views) const;
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
