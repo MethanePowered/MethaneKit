@@ -30,9 +30,7 @@ struct MeshUniforms
 {
     float4x4 model_matrix;
     float4x4 mvp_matrix;
-#ifdef ENABLE_SHADOWS
     float4x4 shadow_mvpx_matrix;
-#endif
 };
 
 #endif // SHADOW_CUBE_UNIFORMS_H

@@ -43,7 +43,14 @@ struct Vertex
     };
 };
 
-static const gfx::FrameSize g_shadow_map_size(1024, 1024);
+static const gfx::FrameSize    g_shadow_map_size(1024, 1024);
+static const float             g_scene_scale = 15.F;
+static const hlslpp::Constants g_scene_constants{
+    { 1.F, 1.F, 0.74F, 1.F }, // - light_color
+    700.F,                    // - light_power
+    0.04F,                    // - light_ambient_factor
+    30.F                      // - light_specular_factor
+};
 
 ShadowCubeApp::ShadowCubeApp()
     : UserInterfaceApp(
@@ -90,18 +97,6 @@ void ShadowCubeApp::Init()
     m_floor_buffers_ptr = std::make_unique<TexturedMeshBuffers>(render_cmd_queue, floor_mesh, "Floor");
     m_floor_buffers_ptr->SetTexture(GetImageLoader().LoadImageToTexture2D(render_cmd_queue, "MarbleWhite.jpg", image_options, "Floor Texture"));
 
-    const auto constants_data_size      = static_cast<Data::Size>(sizeof(hlslpp::Constants));
-    const auto scene_uniforms_data_size = static_cast<Data::Size>(sizeof(hlslpp::SceneUniforms));
-    const auto mesh_uniforms_data_size  = static_cast<Data::Size>(sizeof(hlslpp::MeshUniforms));
-
-    // Create constants buffer for frame rendering
-    m_const_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(constants_data_size));
-    m_const_buffer.SetName("Constants Buffer");
-    m_const_buffer.SetData(render_cmd_queue, {
-        reinterpret_cast<Data::ConstRawPtr>(&m_scene_constants), // NOSONAR
-        sizeof(m_scene_constants)
-    });
-
     // Create sampler for cube and floor textures sampling
     m_texture_sampler = render_context.CreateSampler(
         rhi::Sampler::Settings
@@ -146,17 +141,34 @@ void ShadowCubeApp::Init()
                         rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                rhi::ProgramArgumentAccessors{ },
+                rhi::ProgramArgumentAccessors
+                {
+                    {
+                        { rhi::ShaderType::Pixel, "g_constants" },
+                        rhi::ProgramArgumentAccessType::Constant,
+                        rhi::ProgramArgumentValueType::RootConstant
+                    },
+                    {
+                        { rhi::ShaderType::Pixel, "g_scene_uniforms" },
+                        rhi::ProgramArgumentAccessType::FrameConstant,
+                        rhi::ProgramArgumentValueType::RootConstant
+                    },
+                    {
+                        { rhi::ShaderType::Vertex, "g_mesh_uniforms" },
+                        rhi::ProgramArgumentAccessType::Mutable,
+                        rhi::ProgramArgumentValueType::RootConstant
+                    }
+                },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }
         ),
         GetScreenRenderPattern()
     };
-    final_state_settings.program.SetName("Textured, Shadows & Lighting");
+    final_state_settings.program.SetName("Texturing, Shadows & Lighting");
     final_state_settings.depth.enabled = true;
 
     m_final_pass.render_state = render_context.CreateRenderState( final_state_settings);
-    m_final_pass.render_state.SetName("Final pass render state");
+    m_final_pass.render_state.SetName("Final Pass Render State");
     m_final_pass.view_state = GetViewState();
 
     // ========= Shadow Pass Render & View States =========
@@ -187,7 +199,14 @@ void ShadowCubeApp::Init()
                     { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), vs_main, textured_definitions } },
                 },
                 final_state_settings.program.GetSettings().input_buffer_layouts,
-                rhi::ProgramArgumentAccessors{ },
+                rhi::ProgramArgumentAccessors
+                {
+                    {
+                        { rhi::ShaderType::Vertex, "g_mesh_uniforms" },
+                        rhi::ProgramArgumentAccessType::Mutable,
+                        rhi::ProgramArgumentValueType::RootConstant
+                    }
+                },
                 m_shadow_pass_pattern.GetAttachmentFormats()
             }
         ),
@@ -213,31 +232,15 @@ void ShadowCubeApp::Init()
 
     for(ShadowCubeFrame& frame : GetFrames())
     {
-        // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.scene_uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(scene_uniforms_data_size, false, true));
-        frame.scene_uniforms_buffer.SetName(fmt::format("Scene Uniforms Buffer {}", frame.index));
-
         // ========= Shadow Pass Resources =========
 
-        // Create uniforms buffer for Cube rendering in Shadow pass
-        frame.shadow_pass.cube.uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
-        frame.shadow_pass.cube.uniforms_buffer.SetName(fmt::format("Cube Uniforms Buffer for Shadow Pass {}", frame.index));
-
-        // Create uniforms buffer for Floor rendering in Shadow pass
-        frame.shadow_pass.floor.uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
-        frame.shadow_pass.floor.uniforms_buffer.SetName(fmt::format("Floor Uniforms Buffer for Shadow Pass {}", frame.index));
-
         // Shadow-pass resource bindings for cube rendering
-        frame.shadow_pass.cube.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, frame.shadow_pass.cube.uniforms_buffer.GetResourceView() },
-        }, frame.index);
-        frame.shadow_pass.cube.program_bindings.SetName(fmt::format("Cube Shadow-Pass Bindings {}", frame.index));
+        frame.shadow_pass.cube_program_bindings = shadow_state_settings.program.CreateBindings({ }, frame.index);
+        frame.shadow_pass.cube_program_bindings.SetName(fmt::format("Cube Shadow-Pass Bindings {}", frame.index));
 
         // Shadow-pass resource bindings for floor rendering
-        frame.shadow_pass.floor.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, frame.shadow_pass.floor.uniforms_buffer.GetResourceView() },
-        }, frame.index);
-        frame.shadow_pass.floor.program_bindings.SetName(fmt::format("Floor Shadow-Pass Bindings {}", frame.index));
+        frame.shadow_pass.floor_program_bindings = shadow_state_settings.program.CreateBindings({}, frame.index);
+        frame.shadow_pass.floor_program_bindings.SetName(fmt::format("Floor Shadow-Pass Bindings {}", frame.index));
 
         // Create depth texture for shadow map rendering
         frame.shadow_pass.rt_texture = render_context.CreateTexture(shadow_texture_settings);
@@ -255,32 +258,21 @@ void ShadowCubeApp::Init()
 
         // ========= Final Pass Resources =========
 
-        // Create uniforms buffer for Cube rendering in Final pass
-        frame.final_pass.cube.uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
-        frame.final_pass.cube.uniforms_buffer.SetName(fmt::format("Cube Uniforms Buffer for Final Pass {}", frame.index));
-
-        // Create uniforms buffer for Floor rendering in Final pass
-        frame.final_pass.floor.uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
-        frame.final_pass.floor.uniforms_buffer.SetName(fmt::format("Floor Uniforms Buffer for Final Pass {}", frame.index));
-
         // Final-pass resource bindings for cube rendering
-        frame.final_pass.cube.program_bindings = final_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, frame.final_pass.cube.uniforms_buffer.GetResourceView() },
-            { { rhi::ShaderType::Pixel,  "g_scene_uniforms" }, frame.scene_uniforms_buffer.GetResourceView()           },
-            { { rhi::ShaderType::Pixel,  "g_constants"      }, m_const_buffer.GetResourceView()                        },
-            { { rhi::ShaderType::Pixel,  "g_shadow_map"     }, frame.shadow_pass.rt_texture.GetResourceView()          },
-            { { rhi::ShaderType::Pixel,  "g_shadow_sampler" }, m_shadow_sampler.GetResourceView()                      },
-            { { rhi::ShaderType::Pixel,  "g_texture"        }, m_cube_buffers_ptr->GetTexture().GetResourceView()      },
-            { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, m_texture_sampler.GetResourceView()                     },
+        frame.final_pass.cube_program_bindings = final_state_settings.program.CreateBindings({
+            { { rhi::ShaderType::Pixel,  "g_constants"      }, rhi::RootConstant(g_scene_constants)               },
+            { { rhi::ShaderType::Pixel,  "g_shadow_map"     }, frame.shadow_pass.rt_texture.GetResourceView()     },
+            { { rhi::ShaderType::Pixel,  "g_shadow_sampler" }, m_shadow_sampler.GetResourceView()                 },
+            { { rhi::ShaderType::Pixel,  "g_texture"        }, m_cube_buffers_ptr->GetTexture().GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, m_texture_sampler.GetResourceView()                },
         }, frame.index);
-        frame.final_pass.cube.program_bindings.SetName(fmt::format("Cube Final-Pass Bindings {}", frame.index));
+        frame.final_pass.cube_program_bindings.SetName(fmt::format("Cube Final-Pass Bindings {}", frame.index));
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
-        frame.final_pass.floor.program_bindings = rhi::ProgramBindings(frame.final_pass.cube.program_bindings, {
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, frame.final_pass.floor.uniforms_buffer.GetResourceView() },
+        frame.final_pass.floor_program_bindings = rhi::ProgramBindings(frame.final_pass.cube_program_bindings, {
             { { rhi::ShaderType::Pixel,  "g_texture"        }, m_floor_buffers_ptr->GetTexture().GetResourceView() },
         }, frame.index);
-        frame.final_pass.floor.program_bindings.SetName(fmt::format("Floor Final-Pass Bindings {}", frame.index));
+        frame.final_pass.floor_program_bindings.SetName(fmt::format("Floor Final-Pass Bindings {}", frame.index));
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.
         frame.final_pass.rt_texture  = frame.screen_texture;
@@ -330,42 +322,58 @@ bool ShadowCubeApp::Update()
     if (!UserInterfaceApp::Update())
         return false;
 
-    // Prepare homogenous [-1,1] to texture [0,1] coordinates transformation matrix
-    static const hlslpp::float4x4 s_homogen_to_texture_coords_matrix = hlslpp::mul(hlslpp::float4x4::scale(0.5F, -0.5F, 1.F), hlslpp::float4x4::translation(0.5F, 0.5F, 0.F));
-
     // Update scene uniforms
-    m_scene_uniforms.eye_position    = hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F);
-    m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
+    const rhi::RootConstant scene_uniforms_constant(
+        hlslpp::SceneUniforms{
+            /* eye_position   */ hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F),
+            /* light_position */ m_light_camera.GetOrientation().eye
+        });
 
-    hlslpp::float4x4 scale_matrix = hlslpp::float4x4::scale(m_scene_scale);
+    // Prepare homogenous [-1,1] to texture [0,1] coordinates transformation matrix
+    static const hlslpp::float4x4 s_homogen_to_texture_coords_matrix = hlslpp::mul(
+        hlslpp::float4x4::scale(0.5F, -0.5F, 1.F),
+        hlslpp::float4x4::translation(0.5F, 0.5F, 0.F)
+    );
 
-    // Cube model matrix
-    hlslpp::float4x4 cube_model_matrix = hlslpp::mul(hlslpp::float4x4::translation(0.F, 0.5F, 0.F), scale_matrix); // move up by half of cube model height
+    const hlslpp::float4x4 scale_matrix = hlslpp::float4x4::scale(g_scene_scale);
+    const hlslpp::float4x4 cube_model_matrix = hlslpp::mul(hlslpp::float4x4::translation(0.F, 0.5F, 0.F), scale_matrix);
+
+    const ShadowCubeFrame& frame = GetCurrentFrame();
 
     // Update Cube uniforms
-    m_cube_buffers_ptr->SetFinalPassUniforms(hlslpp::MeshUniforms{
-        hlslpp::transpose(cube_model_matrix),
-        hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_view_camera.GetViewProjMatrix())),
-        hlslpp::transpose(hlslpp::mul(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
-    });
-    m_cube_buffers_ptr->SetShadowPassUniforms(hlslpp::MeshUniforms{
-        hlslpp::transpose(cube_model_matrix),
-        hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix())),
-        hlslpp::float4x4()
-    });
+    frame.final_pass.cube_program_bindings.Get({ rhi::ShaderType::Pixel, "g_scene_uniforms"  }).SetRootConstant(scene_uniforms_constant);
+    frame.final_pass.cube_program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms"  }).SetRootConstant(
+        rhi::RootConstant(hlslpp::MeshUniforms{
+            hlslpp::transpose(cube_model_matrix),
+            hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_view_camera.GetViewProjMatrix())),
+            hlslpp::transpose(hlslpp::mul(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
+        })
+    );
+    frame.shadow_pass.cube_program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms"  }).SetRootConstant(
+        rhi::RootConstant(hlslpp::MeshUniforms{
+            hlslpp::transpose(cube_model_matrix),
+            hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix())),
+            hlslpp::float4x4()
+        })
+    );
 
     // Update Floor uniforms
-    m_floor_buffers_ptr->SetFinalPassUniforms(hlslpp::MeshUniforms{
-        hlslpp::transpose(scale_matrix),
-        hlslpp::transpose(hlslpp::mul(scale_matrix, m_view_camera.GetViewProjMatrix())),
-        hlslpp::transpose(hlslpp::mul(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
-    });
-    m_floor_buffers_ptr->SetShadowPassUniforms(hlslpp::MeshUniforms{
-        hlslpp::transpose(scale_matrix),
-        hlslpp::transpose(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix())),
-        hlslpp::float4x4()
-    });
-    
+    frame.final_pass.floor_program_bindings.Get({ rhi::ShaderType::Pixel, "g_scene_uniforms"  }).SetRootConstant(scene_uniforms_constant);
+    frame.final_pass.floor_program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms"  }).SetRootConstant(
+        rhi::RootConstant(hlslpp::MeshUniforms{
+            hlslpp::transpose(scale_matrix),
+            hlslpp::transpose(hlslpp::mul(scale_matrix, m_view_camera.GetViewProjMatrix())),
+            hlslpp::transpose(hlslpp::mul(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
+        })
+    );
+    frame.shadow_pass.floor_program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms"  }).SetRootConstant(
+        rhi::RootConstant(hlslpp::MeshUniforms{
+            hlslpp::transpose(scale_matrix),
+            hlslpp::transpose(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix())),
+            hlslpp::float4x4()
+        })
+    );
+
     return true;
 }
 
@@ -374,16 +382,8 @@ bool ShadowCubeApp::Render()
     if (!UserInterfaceApp::Render())
         return false;
 
-    // Upload uniform buffers to GPU
-    const ShadowCubeFrame& frame = GetCurrentFrame();
-    const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.scene_uniforms_buffer.SetData(render_cmd_queue, m_scene_uniforms_subresource);
-    frame.shadow_pass.floor.uniforms_buffer.SetData(render_cmd_queue, m_floor_buffers_ptr->GetShadowPassUniformsSubresource());
-    frame.shadow_pass.cube.uniforms_buffer.SetData(render_cmd_queue, m_cube_buffers_ptr->GetShadowPassUniformsSubresource());
-    frame.final_pass.floor.uniforms_buffer.SetData(render_cmd_queue, m_floor_buffers_ptr->GetFinalPassUniformsSubresource());
-    frame.final_pass.cube.uniforms_buffer.SetData(render_cmd_queue, m_cube_buffers_ptr->GetFinalPassUniformsSubresource());
-
     // Record commands for shadow & final render passes
+    const ShadowCubeFrame& frame = GetCurrentFrame();
     RenderScene(m_shadow_pass, frame.shadow_pass);
     RenderScene(m_final_pass, frame.final_pass);
 
@@ -403,8 +403,8 @@ void ShadowCubeApp::RenderScene(const RenderPassState& render_pass, const Shadow
     cmd_list.SetViewState(render_pass.view_state);
 
     // Draw scene with cube and floor
-    m_cube_buffers_ptr->Draw(cmd_list, render_pass_resources.cube.program_bindings);
-    m_floor_buffers_ptr->Draw(cmd_list, render_pass_resources.floor.program_bindings);
+    m_cube_buffers_ptr->Draw(cmd_list, render_pass_resources.cube_program_bindings);
+    m_floor_buffers_ptr->Draw(cmd_list, render_pass_resources.floor_program_bindings);
 
     if (render_pass.is_final_pass)
     {
@@ -424,7 +424,6 @@ void ShadowCubeApp::OnContextReleased(rhi::IContext& context)
 
     m_shadow_sampler = {};
     m_texture_sampler = {};
-    m_const_buffer = {};
     m_shadow_pass_pattern = {};
 
     UserInterfaceApp::OnContextReleased(context);
