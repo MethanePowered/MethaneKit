@@ -18,12 +18,13 @@ struct Constants
     float  light_power;
     float  light_ambient_factor;
     float  light_specular_factor;
+    float  _padding;
 };
 
 struct SceneUniforms
 {
     float4   eye_position;
-    float3   light_position;
+    float4   light_position;
 };
 
 struct MeshUniforms

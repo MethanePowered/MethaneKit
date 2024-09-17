@@ -326,7 +326,7 @@ bool ShadowCubeApp::Update()
     const rhi::RootConstant scene_uniforms_constant(
         hlslpp::SceneUniforms{
             /* eye_position   */ hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F),
-            /* light_position */ m_light_camera.GetOrientation().eye
+            /* light_position */ hlslpp::float4(m_light_camera.GetOrientation().eye, 1.F)
         });
 
     // Prepare homogenous [-1,1] to texture [0,1] coordinates transformation matrix

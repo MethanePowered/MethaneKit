@@ -83,7 +83,7 @@ PSInput CubeVS(VSInput input)
 
 float4 CubePS(PSInput input) : SV_TARGET
 {
-    const float3 fragment_to_light             = normalize(g_scene_uniforms.light_position - input.world_position);
+    const float3 fragment_to_light             = normalize(g_scene_uniforms.light_position.xyz - input.world_position);
     const float3 fragment_to_eye               = normalize(g_scene_uniforms.eye_position.xyz - input.world_position);
     const float3 light_reflected_from_fragment = reflect(-fragment_to_light, input.world_normal);
 
@@ -105,7 +105,7 @@ float4 CubePS(PSInput input) : SV_TARGET
     const float4 ambient_color  = texel_color * g_constants.light_ambient_factor;
     const float4 base_color     = texel_color * g_constants.light_color * g_constants.light_power;
 
-    const float  distance       = length(g_scene_uniforms.light_position - input.world_position);
+    const float  distance       = length(g_scene_uniforms.light_position.xyz - input.world_position);
     const float  diffuse_part   = clamp(dot(fragment_to_light, input.world_normal), 0.0, 1.0);
     const float4 diffuse_color  = base_color * diffuse_part / (distance * distance);
 

@@ -123,13 +123,14 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE_DESCR(m_settings.argument.IsRootConstant(),
                               "Can not set root constant for argument with is not marked with "
-                              "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\".");
+                              "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\"");
     META_CHECK_ARG_NOT_NULL_DESCR(m_root_constant_accessor_ptr,
-                                  "Program argument root constant accessor is not initialized!");
+                                  "program argument root constant accessor is not initialized");
     META_CHECK_ARG_FALSE_DESCR(root_constant.IsEmptyOrNull(),
                                "Can not set empty or null root constant to shader argument.");
     META_CHECK_ARG_EQUAL_DESCR(root_constant.GetDataSize(), m_settings.buffer_size,
-                               "Size of root constant does not match shader argument buffer size.");
+                               "Size of root constant does not match buffer size ({}) for shader argument '{}'",
+                               m_settings.buffer_size, static_cast<std::string>(m_settings.argument).c_str());
 
     Rhi::RootConstant prev_root_constant;
     if (m_emit_callback_enabled)
