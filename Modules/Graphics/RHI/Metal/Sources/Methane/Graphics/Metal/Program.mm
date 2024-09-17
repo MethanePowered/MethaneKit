@@ -117,7 +117,7 @@ void Program::ReflectRenderPipelineArguments()
     MTLRenderPipelineReflection* mtl_render_pipeline_reflection = nil;
     id<MTLRenderPipelineState> mtl_render_pipeline_state =
         [mtl_device newRenderPipelineStateWithDescriptor: mtl_reflection_state_desc
-                                                 options: MTLPipelineOptionArgumentInfo
+                                                 options: MTLPipelineOptionBindingInfo
                                               reflection: &mtl_render_pipeline_reflection
                                                    error: &ns_error];
 
@@ -147,7 +147,7 @@ void Program::ReflectComputePipelineArguments()
     MTLComputePipelineReflection* mtl_compute_pipeline_reflection = nil;
     id<MTLComputePipelineState> mtl_compute_pipeline_state =
         [mtl_device newComputePipelineStateWithDescriptor: mtl_reflection_state_desc
-                                                  options: MTLPipelineOptionArgumentInfo
+                                                  options: MTLPipelineOptionBindingInfo
                                                reflection: &mtl_compute_pipeline_reflection
                                                     error: &ns_error];
 
