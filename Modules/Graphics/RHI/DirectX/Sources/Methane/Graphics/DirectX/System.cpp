@@ -115,7 +115,7 @@ System::~System()
     UnregisterAdapterChangeEvent();
 #endif
 
-    m_cp_factory.Reset();
+    m_factory_cptr.Reset();
 
     ClearDevices();
     ReportLiveObjects();
@@ -131,8 +131,8 @@ void System::Initialize()
         dxgi_factory_flags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
 
-    ThrowIfFailed(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&m_cp_factory)));
-    META_CHECK_ARG_NOT_NULL(m_cp_factory);
+    ThrowIfFailed(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&m_factory_cptr)));
+    META_CHECK_ARG_NOT_NULL(m_factory_cptr);
 
 #ifdef ADAPTERS_CHANGE_HANDLING
     RegisterAdapterChangeEvent();
@@ -144,8 +144,8 @@ void System::Initialize()
 void System::RegisterAdapterChangeEvent()
 {
     META_FUNCTION_TASK();
-    wrl::ComPtr<IDXGIFactory7> cp_factory7;
-    if (!SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
+    wrl::ComPtr<IDXGIFactory7 factory7_cptr;
+    if (!SUCCEEDED(m_factory_cptr->QueryInterface(IID_PPV_ARGS&factory7_cptr))))
         return;
 
     m_adapter_change_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
@@ -154,20 +154,20 @@ void System::RegisterAdapterChangeEvent()
         ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    META_CHECK_ARG_NOT_NULL(cp_factory7);
-    ThrowIfFailed(cp_factory7->RegisterAdaptersChangedEvent(m_adapter_change_event, &m_adapter_change_registration_cookie));
+    META_CHECK_ARG_NOT_NULL(factory7_cptr);
+    ThrowIfFailed(factory7_cptr->RegisterAdaptersChangedEvent(m_adapter_change_event, &m_adapter_change_registration_cookie));
 }
 
 void System::UnregisterAdapterChangeEvent()
 {
     META_FUNCTION_TASK();
-    wrl::ComPtr<IDXGIFactory7> cp_factory7;
+    wrl::ComPtr<IDXGIFactory7 factory7_cptr;
     if (m_adapter_change_registration_cookie == 0 ||
-        !SUCCEEDED(m_cp_factory->QueryInterface(IID_PPV_ARGS(&cp_factory7))))
+        !SUCCEEDED(m_factory_cptr->QueryInterface(IID_PPV_ARGS&factory7_cptr))))
         return;
 
-    META_CHECK_ARG_NOT_NULL(cp_factory7);
-    ThrowIfFailed(cp_factory7->UnregisterAdaptersChangedEvent(m_adapter_change_registration_cookie));
+    META_CHECK_ARG_NOT_NULL(factory7_cptr);
+    ThrowIfFailed(factory7_cptr->UnregisterAdaptersChangedEvent(m_adapter_change_registration_cookie));
     m_adapter_change_registration_cookie = 0;
 
     CloseHandle(m_adapter_change_event);
@@ -182,7 +182,7 @@ void System::CheckForChanges()
 
 #ifdef ADAPTERS_CHANGE_HANDLING
     const bool adapters_changed = m_adapter_change_event ? WaitForSingleObject(m_adapter_change_event, 0) == WAIT_OBJECT_0
-                                                         : !m_cp_factory->IsCurrent();
+                                                         : !m_factory_cptr->IsCurrent();
 
     if (!adapters_changed)
         return;
@@ -225,45 +225,45 @@ const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Platform::AppEnvironmen
 const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_cp_factory);
+    META_CHECK_ARG_NOT_NULL(m_factory_cptr);
 
     const D3D_FEATURE_LEVEL dx_feature_level = D3D_FEATURE_LEVEL_11_0;
     SetDeviceCapabilities(required_device_caps);
     ClearDevices();
 
-    IDXGIAdapter1* p_adapter = nullptr;
-    for (UINT adapter_index = 0; DXGI_ERROR_NOT_FOUND != m_cp_factory->EnumAdapters1(adapter_index, &p_adapter); ++adapter_index)
+    IDXGIAdapter1* adapter_ptr = nullptr;
+    for (UINT adapter_index = 0; DXGI_ERROR_NOT_FOUND != m_factory_cptr->EnumAdapters1(adapter_index, &adapter_ptr); ++adapter_index)
     {
-        META_CHECK_ARG_NOT_NULL(p_adapter);
-        if (IsSoftwareAdapterDxgi(*p_adapter))
+        META_CHECK_ARG_NOT_NULL(adapter_ptr);
+        if (IsSoftwareAdapterDxgi(*adapter_ptr))
             continue;
 
-        AddDevice(p_adapter, dx_feature_level);
+        AddDevice(adapter_ptr, dx_feature_level);
     }
 
-    wrl::ComPtr<IDXGIAdapter> cp_warp_adapter;
-    m_cp_factory->EnumWarpAdapter(IID_PPV_ARGS(&cp_warp_adapter));
-    if (cp_warp_adapter)
+    wrl::ComPtr<IDXGIAdapter> warp_adapter_cptr;
+    m_factory_cptr->EnumWarpAdapter(IID_PPV_ARGS(&warp_adapter_cptr));
+    if(warp_adapter_cptr)
     {
-        AddDevice(cp_warp_adapter, dx_feature_level);
+        AddDevice(warp_adapter_cptr, dx_feature_level);
     }
 
     return GetGpuDevices();
 }
 
-void System::AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level)
+void System::AddDevice(const wrl::ComPtr<IDXGIAdapter>& adapter_cptr, D3D_FEATURE_LEVEL feature_level)
 {
     META_FUNCTION_TASK();
 
     // Check to see if the adapter supports Direct3D 12, but don't create the actual device yet
-    if (!SUCCEEDED(D3D12CreateDevice(cp_adapter.Get(), feature_level, _uuidof(ID3D12Device), nullptr)))
+    if (!SUCCEEDED(D3D12CreateDevice(adapter_cptr.Get(), feature_level, _uuidof(ID3D12Device), nullptr)))
         return;
 
-    if (const Rhi::DeviceFeatureMask device_supported_features = Device::GetSupportedFeatures(cp_adapter, feature_level);
+    if (const Rhi::DeviceFeatureMask device_supported_features = Device::GetSupportedFeatures(adapter_cptr, feature_level);
         !device_supported_features.HasBits(GetDeviceCapabilities().features))
         return;
 
-    Base::System::AddDevice(std::make_shared<Device>(cp_adapter, feature_level, GetDeviceCapabilities()));
+    Base::System::AddDevice(std::make_shared<Device>(adapter_cptr, feature_level, GetDeviceCapabilities()));
 }
 
 void System::ReportLiveObjects() const noexcept

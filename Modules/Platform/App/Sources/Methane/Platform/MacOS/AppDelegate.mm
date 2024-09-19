@@ -40,15 +40,15 @@ using namespace Methane::Platform;
 
 @synthesize window = m_window;
 
-- (id) initWithApp : (AppMac*) p_app andSettings : (const AppBase::Settings*) p_settings
+- (id) initWithApp : (AppMac*) app_ptr andSettings : (const AppBase::Settings*) settings_ptr
 {
     META_FUNCTION_TASK();
     self = [super init];
-    if (!self || !p_settings)
+    if (!self || !settings_ptr)
         return nil;
 
     NSScreen* ns_main_screen = [NSScreen mainScreen];
-    const Methane::Data::FloatSize& frame_size = p_settings->size;
+    const Methane::Data::FloatSize& frame_size = settings_ptr->size;
     const auto& ns_frame_size = ns_main_screen.frame.size;
     
     CGFloat frame_width = frame_size.GetWidth() < 1.0
@@ -58,7 +58,7 @@ using namespace Methane::Platform;
                            ? ns_frame_size.height * (frame_size.GetHeight() > 0.0 ? frame_size.GetHeight() : 0.7)
                            : static_cast<CGFloat>(frame_size.GetHeight());
     
-    const Methane::Data::FrameSize& min_frame_size = p_settings->min_size;
+    const Methane::Data::FrameSize& min_frame_size = settings_ptr->min_size;
     NSRect frame = NSMakeRect(0, 0, frame_width, frame_height);
 
     NSUInteger style_mask = NSWindowStyleMaskTitled |
@@ -70,17 +70,17 @@ using namespace Methane::Platform;
 
     m_window = [[NSWindow alloc] initWithContentRect:frame styleMask:style_mask backing:backing defer:YES];
     m_window.contentMinSize = NSMakeSize(static_cast<CGFloat>(min_frame_size.GetWidth()), static_cast<CGFloat>(min_frame_size.GetHeight()));
-    m_window.title    = MacOS::ConvertToNsString(p_settings->name);
+    m_window.title    = MacOS::ConvertToNsString(settings_ptr->name);
 
-    m_window_delegate = [[WindowDelegate alloc] initWithApp:p_app];
+    m_window_delegate = [[WindowDelegate alloc] initWithApp:app_ptr];
     m_window.delegate = m_window_delegate;
 
     [m_window center];
     
     NSRect backing_frame = [ns_main_screen convertRectToBacking:frame];
-    self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
+    self.viewController = [[AppViewController alloc] initWithApp:app_ptr andFrameRect:backing_frame];
 
-    p_app->SetWindow(m_window);
+    app_ptr->SetWindow(m_window);
     return self;
 }
 
@@ -129,18 +129,18 @@ using namespace Methane::Platform;
 {
     META_FUNCTION_TASK();
     #pragma unused(notification)
-    AppMac* p_app = [self.viewController getApp];
-    META_CHECK_ARG_NOT_NULL(p_app);
-    p_app->SetFullScreenInternal(true);
+    AppMac* app_ptr = [self.viewController getApp];
+    META_CHECK_ARG_NOT_NULL(app_ptr);
+    app_ptr->SetFullScreenInternal(true);
 }
 
 - (void) windowWillExitFullScreen:(NSNotification *)notification
 {
     META_FUNCTION_TASK();
     #pragma unused(notification)
-    AppMac* p_app = [self.viewController getApp];
-    META_CHECK_ARG_NOT_NULL(p_app);
-    p_app->SetFullScreenInternal(false);
+    AppMac* app_ptr = [self.viewController getApp];
+    META_CHECK_ARG_NOT_NULL(app_ptr);
+    app_ptr->SetFullScreenInternal(false);
 }
 
 - (void) applicationWillTerminate:(NSNotification *)notification

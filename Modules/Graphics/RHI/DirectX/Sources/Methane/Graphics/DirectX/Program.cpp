@@ -155,8 +155,8 @@ bool Program::SetName(std::string_view name)
     if (!Base::Program::SetName(name))
         return false;
 
-    META_CHECK_ARG_NOT_NULL(m_cp_root_signature);
-    m_cp_root_signature->SetName(nowide::widen(name).c_str());
+    META_CHECK_ARG_NOT_NULL(m_root_signature_cptr);
+    m_root_signature_cptr->SetName(nowide::widen(name).c_str());
     return true;
 }
 
@@ -230,8 +230,8 @@ void Program::InitRootSignature()
     D3D12_FEATURE_DATA_ROOT_SIGNATURE feature_data{};
     feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
 
-    const wrl::ComPtr<ID3D12Device>& cp_native_device = GetDirectContext().GetDirectDevice().GetNativeDevice();
-    if (FAILED(cp_native_device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &feature_data, sizeof(feature_data))))
+    const wrl::ComPtr<ID3D12Device>& native_device_cptr = GetDirectContext().GetDirectDevice().GetNativeDevice();
+    if (FAILED(native_device_cptr->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &feature_data, sizeof(feature_data))))
     {
         feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
     }
@@ -239,7 +239,8 @@ void Program::InitRootSignature()
     wrl::ComPtr<ID3DBlob> root_signature_blob;
     wrl::ComPtr<ID3DBlob> error_blob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&root_signature_desc, feature_data.HighestVersion, &root_signature_blob, &error_blob), error_blob);
-    ThrowIfFailed(cp_native_device->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_cp_root_signature)), cp_native_device.Get());
+    ThrowIfFailed(native_device_cptr->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(),
+                                                          IID_PPV_ARGS(&m_root_signature_cptr)), native_device_cptr.Get());
 }
 
 DescriptorHeap::Range Program::ReserveDescriptorRange(DescriptorHeap& heap, ArgumentAccessor::Type access_type, uint32_t range_length)

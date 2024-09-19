@@ -53,9 +53,9 @@ inline bool ConvertFromNsBool(BOOL value)
     return value == YES;
 }
 
-inline std::string ConvertFromNsString(const NSString* p_ns_str)
+inline std::string ConvertFromNsString(const NSString* ns_str_ptr)
 {
-    return p_ns_str ? std::string([p_ns_str UTF8String]) : std::string();
+    return ns_str_ptr ? std::string([ns_str_ptr UTF8String]) : std::string();
 }
 
 } // namespace Methane::MacOS

@@ -36,13 +36,13 @@ namespace pin = Methane::Platform::Input;
 
 @implementation AppViewController
 {
-    pal::AppMac*     m_p_app;
+    pal::AppMac*     m_app_ptr;
     NSRect  m_frame_rect;
     bool        m_is_initialized;
     std::string m_error;
 }
 
-- (id) initWithApp : (pal::AppMac*) p_app andFrameRect : (NSRect) frame_rect
+- (id) initWithApp : (pal::AppMac*) app_ptr andFrameRect : (NSRect) frame_rect
 {
     META_FUNCTION_TASK();
 
@@ -50,7 +50,7 @@ namespace pin = Methane::Platform::Input;
     if (!self)
         return nil;
     
-    m_p_app = p_app;
+    m_app_ptr = app_ptr;
     m_frame_rect = frame_rect;
     m_is_initialized = false;
     
@@ -60,19 +60,19 @@ namespace pin = Methane::Platform::Input;
 -(NSWindow*) window
 {
     META_FUNCTION_TASK();
-    return m_p_app ? m_p_app->GetWindow() : nil;
+    return m_app_ptr ? m_app_ptr->GetWindow() : nil;
 }
 
 - (pal::AppMac*) getApp
 {
-    return m_p_app;
+    return m_app_ptr;
 }
 
 - (void) loadView
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
-    m_p_app->InitContextWithErrorHandling({ self }, data::FrameSize(m_frame_rect.size.width, m_frame_rect.size.height));
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    m_app_ptr->InitContextWithErrorHandling({ self }, data::FrameSize(m_frame_rect.size.width, m_frame_rect.size.height));
 }
 
 - (void)viewDidLoad
@@ -85,27 +85,27 @@ namespace pin = Methane::Platform::Input;
 - (void)appView: (nonnull AppViewMetal *) view drawableSizeWillChange: (CGSize)size
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
 
     if (!m_is_initialized)
     {
-        m_is_initialized = m_p_app->InitWithErrorHandling();
+        m_is_initialized = m_app_ptr->InitWithErrorHandling();
     }
     m_frame_rect = [view frame];
-    m_p_app->Resize( data::FrameSize(size.width, size.height), false);
+    m_app_ptr->Resize( data::FrameSize(size.width, size.height), false);
 }
 
 - (void) drawInView: (nonnull AppViewMetal*) view
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(view)
 
     if (!m_is_initialized)
     {
-        m_is_initialized = m_p_app->InitWithErrorHandling();
+        m_is_initialized = m_app_ptr->InitWithErrorHandling();
     }
-    m_p_app->UpdateAndRenderWithErrorHandling();
+    m_app_ptr->UpdateAndRenderWithErrorHandling();
 }
 
 // ====== Keyboard event handlers ======
@@ -113,27 +113,27 @@ namespace pin = Methane::Platform::Input;
 - (void) keyDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnKeyboardChanged,
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnKeyboardChanged,
         pin::Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), pin::Keyboard::KeyState::Pressed);
 }
 
 - (void) keyUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnKeyboardChanged,
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnKeyboardChanged,
         pin::Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), pin::Keyboard::KeyState::Released);
 }
 
 - (void) flagsChanged:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnModifiersChanged, pin::Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetModifiers());
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnModifiersChanged, pin::Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetModifiers());
 }
 
 // ====== Mouse event handlers ======
@@ -141,32 +141,32 @@ namespace pin = Methane::Platform::Input;
 - (void)mouseMoved:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
 
     NSPoint pos = [event locationInWindow];
     pos.x *= self.view.window.backingScaleFactor;
     pos.y = (m_frame_rect.size.height - pos.y) * self.view.window.backingScaleFactor;
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMousePositionChanged,
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMousePositionChanged,
                                            pin::Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
 }
 
 - (void)mouseDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
                                            pin::Mouse::Button::Left, pin::Mouse::ButtonState::Pressed);
 }
 
 - (void)mouseUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
                                            pin::Mouse::Button::Left, pin::Mouse::ButtonState::Released);
 }
 
@@ -179,20 +179,20 @@ namespace pin = Methane::Platform::Input;
 - (void)rightMouseDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
                                            pin::Mouse::Button::Right, pin::Mouse::ButtonState::Pressed);
 }
 
 - (void)rightMouseUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
                                            pin::Mouse::Button::Right, pin::Mouse::ButtonState::Released);
 }
 
@@ -205,18 +205,18 @@ namespace pin = Methane::Platform::Input;
 - (void)otherMouseDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
                                            static_cast<pin::Mouse::Button>(static_cast<int>([event buttonNumber])), pin::Mouse::ButtonState::Pressed);
 }
 
 - (void)otherMouseUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
                                            static_cast<pin::Mouse::Button>(static_cast<int>([event buttonNumber])), pin::Mouse::ButtonState::Released);
 }
 
@@ -229,25 +229,25 @@ namespace pin = Methane::Platform::Input;
 - (void)mouseEntered:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseInWindowChanged, true);
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseInWindowChanged, true);
 }
 
 - (void)mouseExited:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseInWindowChanged, false);
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseInWindowChanged, false);
 }
 
 - (void)scrollWheel:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
 
     pin::Mouse::Scroll scroll([event scrollingDeltaX], -[event scrollingDeltaY]);
     if ([event hasPreciseScrollingDeltas])
@@ -256,7 +256,7 @@ namespace pin = Methane::Platform::Input;
     if (fabs(scroll.GetX()) < 0.00001 && fabs(scroll.GetY()) > 0.00001)
         return;
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseScrollChanged, scroll);
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseScrollChanged, scroll);
 }
 
 @end

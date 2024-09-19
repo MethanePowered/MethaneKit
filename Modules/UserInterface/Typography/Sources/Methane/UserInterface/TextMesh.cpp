@@ -50,7 +50,7 @@ void ForEachTextCharacterInRange(const Font::Impl& font, const FontChars& text_c
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(char_positions);
-    const FontChar* p_prev_text_char = nullptr;
+    const FontChar* prev_text_char_ptr = nullptr;
 
     for (size_t char_index = index_range.first; char_index < index_range.second; ++char_index)
     {
@@ -66,7 +66,7 @@ void ForEachTextCharacterInRange(const Font::Impl& font, const FontChars& text_c
         if (text_char.IsLineBreak())
         {
             char_positions.emplace_back(0, char_pos.GetY() + font.GetLineHeight(), true);
-            p_prev_text_char = nullptr;
+            prev_text_char_ptr = nullptr;
             continue;
         }
 
@@ -77,25 +77,25 @@ void ForEachTextCharacterInRange(const Font::Impl& font, const FontChars& text_c
             char_pos.SetX(0);
             char_pos.SetY(char_pos.GetY() + font.GetLineHeight());
             char_pos.is_line_start = true;
-            p_prev_text_char = nullptr;
+            prev_text_char_ptr = nullptr;
         }
 
-        if (!p_prev_text_char && char_index && !text_chars[char_index - 1].get().IsLineBreak())
-            p_prev_text_char = &(text_chars[char_index - 1].get());
+        if (!prev_text_char_ptr && char_index && !text_chars[char_index - 1].get().IsLineBreak())
+            prev_text_char_ptr = &(text_chars[char_index - 1].get());
 
-        if (p_prev_text_char)
-            char_pos += font.GetKerning(*p_prev_text_char, text_char);
+        if(prev_text_char_ptr)
+            char_pos += font.GetKerning(*prev_text_char_ptr, text_char);
 
         switch (const CharAction action = process_char_at_position(text_char, char_pos, char_index); action)
         {
         case CharAction::Continue:
             char_positions.emplace_back(char_pos.GetX() + text_char.GetAdvance().GetX(), char_pos.GetY());
-            p_prev_text_char = &text_char;
+            prev_text_char_ptr = &text_char;
             break;
 
         case CharAction::Wrap:
             char_positions.emplace_back(0, char_pos.GetY() + font.GetLineHeight(), true);
-            p_prev_text_char = nullptr;
+            prev_text_char_ptr = nullptr;
             break;
 
         case CharAction::Stop:

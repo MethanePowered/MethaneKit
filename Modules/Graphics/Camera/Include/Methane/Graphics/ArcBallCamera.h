@@ -66,9 +66,9 @@ protected:
     inline float GetRadiusInPixels(const Data::FloatSize& screen_size) const noexcept
     { return std::min(screen_size.GetWidth(), screen_size.GetHeight()) * m_radius_ratio / 2.F; }
 
-    inline bool          IsExternalViewCamera() const noexcept  { return m_p_view_camera; }
-    inline const Camera* GetExternalViewCamera() const noexcept { return m_p_view_camera; }
-    inline const Camera& GetViewCamera() const noexcept         { return m_p_view_camera ? *m_p_view_camera : *this; }
+    inline bool          IsExternalViewCamera() const noexcept  { return m_view_camera_ptr; }
+    inline const Camera* GetExternalViewCamera() const noexcept { return m_view_camera_ptr; }
+    inline const Camera& GetViewCamera() const noexcept         { return m_view_camera_ptr ? *m_view_camera_ptr : *this; }
 
     void ApplyLookDirection(const hlslpp::float3& look_dir);
     void RotateInView(const hlslpp::float3& view_axis, float angle_rad, const Orientation& base_orientation);
@@ -77,7 +77,7 @@ protected:
     inline void SetMousePressedOrientation(const Orientation& orientation) noexcept { m_mouse_pressed_orientation = orientation; }
 
 private:
-    const Camera*    m_p_view_camera             = nullptr;
+    const Camera*    m_view_camera_ptr             = nullptr;
     Pivot            m_pivot;
     float            m_radius_ratio              = 0.9F;
     SphereProjection m_mouse_pressed_on_sphere   { };

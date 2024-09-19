@@ -55,7 +55,7 @@ public:
     void Initialize(Base::Device& device, bool is_callback_emitted = true) override;
     void Release() override;
 
-    const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_cp_swap_chain; }
+    const wrl::ComPtr<IDXGISwapChain3>& GetNativeSwapChain() const { return m_swap_chain_cptr; }
 
 protected:
     // Base::RenderContext overrides
@@ -68,7 +68,7 @@ private:
     void WaitForSwapChainLatency();
 
     const Platform::AppEnvironment m_platform_env;
-    wrl::ComPtr<IDXGISwapChain3>   m_cp_swap_chain;
+    wrl::ComPtr<IDXGISwapChain3>   m_swap_chain_cptr;
     HANDLE                         m_frame_latency_waitable_object {};
     bool                           m_is_tearing_supported = false;
 };

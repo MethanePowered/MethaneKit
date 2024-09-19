@@ -184,7 +184,7 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
 }
 
 void ProgramBindings::Apply(ICommandList& command_list_vk, const Rhi::ICommandQueue& command_queue,
-                            const Base::ProgramBindings* p_applied_program_bindings, ApplyBehaviorMask apply_behavior) const
+                            const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
     META_CHECK_ARG_NOT_EMPTY(m_descriptor_sets);
@@ -193,7 +193,7 @@ void ProgramBindings::Apply(ICommandList& command_list_vk, const Rhi::ICommandQu
     apply_access.SetBitOn(Rhi::ProgramArgumentAccessType::Mutable);
     uint32_t first_descriptor_set_layout_index = 0U;
 
-    if (apply_behavior == ApplyBehaviorMask(ApplyBehavior::ConstantOnce) && p_applied_program_bindings)
+    if (apply_behavior == ApplyBehaviorMask(ApplyBehavior::ConstantOnce) && applied_program_bindings_ptr)
     {
         if (!m_has_mutable_descriptor_set)
             return;

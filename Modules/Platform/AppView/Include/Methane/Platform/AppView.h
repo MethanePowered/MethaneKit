@@ -57,7 +57,7 @@ using NativeAppViewPtr = NativeAppView*;
 
 struct AppView
 {
-    NativeAppViewPtr p_native_view;
+    NativeAppViewPtr native_view_ptr;
 };
 
 class AppViewResizeRequiredError

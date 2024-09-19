@@ -32,11 +32,11 @@ using namespace Methane::Platform;
 
 @implementation WindowDelegate
 {
-    AppMac*         m_p_app;
+    AppMac*         m_app_ptr;
     Data::FrameSize m_frame_size;
 }
 
-- (id) initWithApp : (AppMac*) p_app
+- (id) initWithApp : (AppMac*) app_ptr
 {
     META_FUNCTION_TASK();
 
@@ -44,7 +44,7 @@ using namespace Methane::Platform;
     if (!self)
         return nil;
 
-    m_p_app = p_app;
+    m_app_ptr = app_ptr;
     
     return self;
 }
@@ -52,73 +52,73 @@ using namespace Methane::Platform;
 - (void) windowDidEnterFullScreen:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
-    m_p_app->SetFullScreen(true);
+    m_app_ptr->SetFullScreen(true);
 }
 
 - (void) windowDidExitFullScreen:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
-    m_p_app->SetFullScreen(false);
+    m_app_ptr->SetFullScreen(false);
 }
 
 - (void) windowDidMiniaturize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
-    m_p_app->Resize(m_p_app->GetFrameSize(), true);
+    m_app_ptr->Resize(m_app_ptr->GetFrameSize(), true);
 }
 
 - (void) windowDidDeminiaturize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
-    m_p_app->Resize(m_p_app->GetFrameSize(), false);
+    m_app_ptr->Resize(m_app_ptr->GetFrameSize(), false);
 }
 
 - (void) windowWillStartLiveResize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
-    m_p_app->StartResizing();
+    m_app_ptr->StartResizing();
 }
 
 - (void) windowDidEndLiveResize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
-    m_p_app->EndResizing();
+    m_app_ptr->EndResizing();
 }
 
 - (void) windowDidBecomeKey:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
-    m_p_app->SetKeyboardFocus(true);
+    m_app_ptr->SetKeyboardFocus(true);
 }
 
 - (void) windowDidResignKey:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
-    m_p_app->SetKeyboardFocus(false);
+    m_app_ptr->SetKeyboardFocus(false);
 }
 
 @end

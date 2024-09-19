@@ -62,10 +62,10 @@ void AppMac::InitContext(const Platform::AppEnvironment& /*env*/, const Data::Fr
 {
     META_FUNCTION_TASK();
     AppView app_view = GetView();
-    META_CHECK_ARG_NOT_NULL(app_view.p_native_view);
+    META_CHECK_ARG_NOT_NULL(app_view.native_view_ptr);
     META_CHECK_ARG_NOT_NULL(m_ns_window);
 
-    [m_ns_window.contentView addSubview: app_view.p_native_view];
+    [m_ns_window.contentView addSubview: app_view.native_view_ptr];
 }
 
 int AppMac::Run(const RunArgs& args)

@@ -125,12 +125,12 @@ ImageData ImageLoader::LoadImageData(const std::string& image_path, Data::Size c
     int image_width = 0;
     int image_height = 0;
     int image_channels_count = 0;
-    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(raw_image_data.GetDataPtr()), // NOSONAR
-                                                  static_cast<int>(raw_image_data.GetDataSize()),
-                                                  &image_width, &image_height, &image_channels_count,
-                                                  static_cast<int>(channels_count));
+    stbi_uc* image_data_ptr = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(raw_image_data.GetDataPtr()), // NOSONAR
+                                                    static_cast<int>(raw_image_data.GetDataSize()),
+                                                    &image_width, &image_height, &image_channels_count,
+                                                    static_cast<int>(channels_count));
 
-    META_CHECK_ARG_NOT_NULL_DESCR(p_image_data, "failed to load image data from memory");
+    META_CHECK_ARG_NOT_NULL_DESCR(image_data_ptr, "failed to load image data from memory");
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_width, 1, "invalid image width");
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_height, 1, "invalid image height");
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 1, "invalid image channels count");
@@ -143,16 +143,16 @@ ImageData ImageLoader::LoadImageData(const std::string& image_path, Data::Size c
 
     if (create_copy)
     {
-        Data::Bytes image_data_copy(reinterpret_cast<Data::ConstRawPtr>(p_image_data), // NOSONAR
-                                    reinterpret_cast<Data::ConstRawPtr>(p_image_data + image_data_size)); // NOSONAR
+        Data::Bytes image_data_copy(reinterpret_cast<Data::ConstRawPtr>(image_data_ptr), // NOSONAR
+                                    reinterpret_cast<Data::ConstRawPtr>(image_data_ptr + image_data_size)); // NOSONAR
         ImageData image_data(image_dimensions, static_cast<uint32_t>(image_channels_count), Data::Chunk(std::move(image_data_copy)));
-        stbi_image_free(p_image_data);
+        stbi_image_free(image_data_ptr);
         return image_data;
     }
     else
     {
         return ImageData(image_dimensions, static_cast<uint32_t>(image_channels_count),
-                         Data::Chunk(reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size)); // NOSONAR
+                         Data::Chunk(reinterpret_cast<Data::ConstRawPtr>(image_data_ptr), image_data_size)); // NOSONAR
     }
 
 #endif

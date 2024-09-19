@@ -34,7 +34,7 @@ namespace Methane::Platform { class AppMac; }
 @property (nonatomic, strong, nonnull) IBOutlet AppViewController* viewController;
 @property (nonatomic, readwrite, nullable, retain) NSWindow* window;
 
-- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andSettings : (const Methane::Platform::AppBase::Settings* _Nonnull) p_settings;
+- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) app_ptr andSettings : (const Methane::Platform::AppBase::Settings* _Nonnull) settings_ptr;
 - (void) run;
 - (void) alert : (nonnull NSString*) ns_title withInformation: (nonnull NSString*) ns_info andStyle: (NSAlertStyle) ns_alert_style;
 

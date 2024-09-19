@@ -91,7 +91,7 @@ static void ConfigureDeviceDebugFeature(const wrl::ComPtr<ID3D12Device>& device_
 
 #endif
 
-Rhi::DeviceFeatureMask Device::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*cp_adapter*/, D3D_FEATURE_LEVEL /*feature_level*/)
+Rhi::DeviceFeatureMask Device::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& /*adapter_cptr*/, D3D_FEATURE_LEVEL /*feature_level*/)
 {
     META_FUNCTION_TASK();
     Rhi::DeviceFeatureMask supported_features;
@@ -102,11 +102,11 @@ Rhi::DeviceFeatureMask Device::GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapt
     return supported_features;
 }
 
-Device::Device(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities)
-    : Base::Device(GetAdapterNameDxgi(*cp_adapter.Get()),
-                   IsSoftwareAdapterDxgi(static_cast<IDXGIAdapter1&>(*cp_adapter.Get())),
+Device::Device(const wrl::ComPtr<IDXGIAdapter>& adapter_cptr, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities)
+    : Base::Device(GetAdapterNameDxgi(*adapter_cptr.Get()),
+                   IsSoftwareAdapterDxgi(static_cast<IDXGIAdapter1&>(*adapter_cptr.Get())),
                    capabilities)
-    , m_cp_adapter(cp_adapter)
+    , m_adapter_cptr(adapter_cptr)
     , m_feature_level(feature_level)
 { }
 
@@ -132,9 +132,9 @@ bool Device::SetName(std::string_view name)
     if (!Base::Device::SetName(name))
         return false;
 
-    if (m_cp_device)
+    if (m_device_cptr)
     {
-        m_cp_device->SetName(nowide::widen(name).c_str());
+        m_device_cptr->SetName(nowide::widen(name).c_str());
     }
     return true;
 }
@@ -142,17 +142,17 @@ bool Device::SetName(std::string_view name)
 const wrl::ComPtr<ID3D12Device>& Device::GetNativeDevice() const
 {
     META_FUNCTION_TASK();
-    if (m_cp_device)
-        return m_cp_device;
+    if (m_device_cptr)
+        return m_device_cptr;
 
-    ThrowIfFailed(D3D12CreateDevice(m_cp_adapter.Get(), m_feature_level, IID_PPV_ARGS(&m_cp_device)));
+    ThrowIfFailed(D3D12CreateDevice(m_adapter_cptr.Get(), m_feature_level, IID_PPV_ARGS(&m_device_cptr)));
     if (!GetName().empty())
     {
-        m_cp_device->SetName(nowide::widen(GetName()).c_str());
+        m_device_cptr->SetName(nowide::widen(GetName()).c_str());
     }
 
     if (D3D12_FEATURE_DATA_D3D12_OPTIONS5 feature_options_5{};
-        m_cp_device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &feature_options_5, sizeof(feature_options_5)) == S_OK)
+        m_device_cptr->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS5, &feature_options_5, sizeof(feature_options_5)) == S_OK)
     {
         m_feature_options_5 = feature_options_5;
     }
@@ -160,7 +160,7 @@ const wrl::ComPtr<ID3D12Device>& Device::GetNativeDevice() const
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     if (Platform::Windows::IsDeveloperModeEnabled())
     {
-        ThrowIfFailed(m_cp_device->SetStablePowerState(TRUE), m_cp_device.Get());
+        ThrowIfFailed(m_device_cptr->SetStablePowerState(TRUE), m_device_cptr.Get());
     }
     else
     {
@@ -171,16 +171,16 @@ const wrl::ComPtr<ID3D12Device>& Device::GetNativeDevice() const
 #endif
 
 #ifdef _DEBUG
-    ConfigureDeviceDebugFeature(m_cp_device);
+    ConfigureDeviceDebugFeature(m_device_cptr);
 #endif
 
-    return m_cp_device;
+    return m_device_cptr;
 }
 
 void Device::ReleaseNativeDevice()
 {
     META_FUNCTION_TASK();
-    m_cp_device.Reset();
+    m_device_cptr.Reset();
 }
 
 } // namespace Methane::Graphics::DirectX

@@ -53,13 +53,13 @@ namespace pin = Methane::Platform::Input;
 
 @implementation AppViewController
 {
-    pal::AppIOS* m_p_app;
+    pal::AppIOS* m_app_ptr;
     CGRect       m_frame_rect;
     bool         m_is_initialized;
     std::string  m_error;
 }
 
-- (id)initWithApp : (pal::AppIOS*) p_app andFrameRect : (CGRect) frame_rect
+- (id)initWithApp : (pal::AppIOS*) app_ptr andFrameRect : (CGRect) frame_rect
 {
     META_FUNCTION_TASK();
 
@@ -67,7 +67,7 @@ namespace pin = Methane::Platform::Input;
     if (!self)
         return nil;
 
-    m_p_app = p_app;
+    m_app_ptr = app_ptr;
     m_frame_rect = frame_rect;
     m_is_initialized = false;
 
@@ -77,19 +77,19 @@ namespace pin = Methane::Platform::Input;
 -(nullable UIWindow*) window
 {
     META_FUNCTION_TASK();
-    return m_p_app ? m_p_app->GetWindow() : nil;
+    return m_app_ptr ? m_app_ptr->GetWindow() : nil;
 }
 
 - (pal::AppIOS*) getApp
 {
-    return m_p_app;
+    return m_app_ptr;
 }
 
 - (void) loadView
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
-    m_p_app->InitContextWithErrorHandling({ self }, data::FrameSize(m_frame_rect.size.width, m_frame_rect.size.height));
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    m_app_ptr->InitContextWithErrorHandling({ self }, data::FrameSize(m_frame_rect.size.width, m_frame_rect.size.height));
 }
 
 - (void)viewDidLoad
@@ -104,27 +104,27 @@ namespace pin = Methane::Platform::Input;
 - (void)appView: (nonnull AppViewMetal *) view drawableSizeWillChange: (CGSize)size
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
 
     if (!m_is_initialized)
     {
-        m_is_initialized = m_p_app->InitWithErrorHandling();
+        m_is_initialized = m_app_ptr->InitWithErrorHandling();
     }
     m_frame_rect = [view frame];
-    m_p_app->Resize( data::FrameSize(size.width, size.height), false);
+    m_app_ptr->Resize( data::FrameSize(size.width, size.height), false);
 }
 
 - (void) drawInView: (nonnull AppViewMetal*) view
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     #pragma unused(view)
 
     if (!m_is_initialized)
     {
-        m_is_initialized = m_p_app->InitWithErrorHandling();
+        m_is_initialized = m_app_ptr->InitWithErrorHandling();
     }
-    m_p_app->UpdateAndRenderWithErrorHandling();
+    m_app_ptr->UpdateAndRenderWithErrorHandling();
 }
 
 - (void)touchesBegan:(NSSet<UITouch *> *)touches
@@ -192,22 +192,22 @@ namespace pin = Methane::Platform::Input;
 - (void)handleTouchPosition:(UITouch *) touch
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
 
     CGPoint pos = [touch locationInView:self.view];
     UIScreen* ns_main_screen = [UIScreen mainScreen];
     pos.x *= ns_main_screen.nativeScale;
     pos.y *= ns_main_screen.nativeScale;
 
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMousePositionChanged, pin::Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMousePositionChanged, pin::Mouse::Position{ static_cast<int>(pos.x), static_cast<int>(pos.y) });
 }
 
 - (void) handeTouches:(NSSet<UITouch *> *)touches withMouseButtonChange:(pin::Mouse::ButtonState) mouse_button_state
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_p_app);
+    META_CHECK_ARG_NOT_NULL(m_app_ptr);
     const pin::Mouse::Button mouse_button = pin::GetMouseButtonByTouchesCount(static_cast<uint32_t>(touches.count));
-    m_p_app->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged, mouse_button, mouse_button_state);
+    m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged, mouse_button, mouse_button_state);
 }
 
 @end

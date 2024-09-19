@@ -82,26 +82,26 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(Rhi::CommandListType com
 static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const Device& device, D3D12_COMMAND_LIST_TYPE command_list_type)
 {
     META_FUNCTION_TASK();
-    const wrl::ComPtr<ID3D12Device>& cp_device = device.GetNativeDevice();
-    META_CHECK_ARG_NOT_NULL(cp_device);
+    const wrl::ComPtr<ID3D12Device>& device_cptr = device.GetNativeDevice();
+    META_CHECK_ARG_NOT_NULL(device_cptr);
 
     D3D12_COMMAND_QUEUE_DESC queue_desc{};
     queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     queue_desc.Type = command_list_type;
 
-    wrl::ComPtr<ID3D12CommandQueue> cp_command_queue;
-    ThrowIfFailed(cp_device->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&cp_command_queue)), cp_device.Get());
-    return cp_command_queue;
+    wrl::ComPtr<ID3D12CommandQueue> command_queue_cptr;
+    ThrowIfFailed(device_cptr->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(&command_queue_cptr)), device_cptr.Get());
+    return command_queue_cptr;
 }
 
 CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type)
     : Base::CommandQueueTracking(context, command_lists_type)
     , m_dx_context(dynamic_cast<const IContext&>(context))
-    , m_cp_command_queue(CreateNativeCommandQueue(m_dx_context.GetDirectDevice(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
+    , m_command_queue_cptr(CreateNativeCommandQueue(m_dx_context.GetDirectDevice(), GetNativeCommandListType(command_lists_type, context.GetOptions())))
 {
     META_FUNCTION_TASK();
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
-    m_tracy_context = TracyD3D12Context(GetDirectContext().GetDirectDevice().GetNativeDevice().Get(), m_cp_command_queue.Get());
+    m_tracy_context = TracyD3D12Context(GetDirectContext().GetDirectDevice().GetNativeDevice().Get(), m_command_queue_cptr.Get());
 #endif
 }
 
@@ -159,7 +159,7 @@ bool CommandQueue::SetName(std::string_view name)
         return false;
 
     Base::CommandQueueTracking::SetName(name);
-    m_cp_command_queue->SetName(nowide::widen(name).c_str());
+    m_command_queue_cptr->SetName(nowide::widen(name).c_str());
 
 #if defined(METHANE_GPU_INSTRUMENTATION_ENABLED) && METHANE_GPU_INSTRUMENTATION_ENABLED == 2
     TracyD3D12ContextName(m_tracy_context, GetName().data(), static_cast<uint16_t>(name.length()));
@@ -185,8 +185,8 @@ void CommandQueue::CompleteExecution(const Opt<Data::Index>& frame_index)
 ID3D12CommandQueue& CommandQueue::GetNativeCommandQueue()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_cp_command_queue);
-    return *m_cp_command_queue.Get();
+    META_CHECK_ARG_NOT_NULL(m_command_queue_cptr);
+    return *m_command_queue_cptr.Get();
 }
 
 } // namespace Methane::Graphics::DirectX

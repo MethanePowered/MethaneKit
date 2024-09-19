@@ -83,9 +83,9 @@ public:
         m_descriptor_manager_init_settings.default_heap_sizes        = descriptor_manager.GetDescriptorHeapSizes(true, false);
         m_descriptor_manager_init_settings.shader_visible_heap_sizes = descriptor_manager.GetDescriptorHeapSizes(true, true);
 
-        for(wrl::ComPtr<ID3D12QueryHeap>& cp_query_heap : m_query_heaps)
+        for(wrl::ComPtr<ID3D12QueryHeap>& query_heap_cptr : m_query_heaps)
         {
-            cp_query_heap.Reset();
+            query_heap_cptr.Reset();
         }
         GetDirectMutableDevice().ReleaseNativeDevice();
 
@@ -162,17 +162,17 @@ public:
     {
         META_FUNCTION_TASK();
         META_CHECK_ARG_LESS(static_cast<size_t>(type), m_query_heaps.size());
-        wrl::ComPtr<ID3D12QueryHeap>& cp_query_heap = m_query_heaps[type];
-        if (!cp_query_heap)
+        wrl::ComPtr<ID3D12QueryHeap> query_heap_cptr = m_query_heaps[type];
+        if (!query_heap_cptr)
         {
             D3D12_QUERY_HEAP_DESC query_heap_desc{};
             query_heap_desc.Count = max_query_count;
             query_heap_desc.Type  = type;
-            ThrowIfFailed(GetDirectDevice().GetNativeDevice()->CreateQueryHeap(&query_heap_desc, IID_PPV_ARGS(&cp_query_heap)),
+            ThrowIfFailed(GetDirectDevice().GetNativeDevice()->CreateQueryHeap(&query_heap_desc, IID_PPV_ARGS(&query_heap_cptr)),
                           GetDirectDevice().GetNativeDevice().Get());
         }
-        META_CHECK_ARG_NOT_NULL(cp_query_heap);
-        return *cp_query_heap.Get();
+        META_CHECK_ARG_NOT_NULL(query_heap_cptr);
+        return*query_heap_cptr.Get();
     }
 
 protected:

@@ -361,16 +361,16 @@ void RenderPass::Begin(Base::RenderCommandList& command_list)
 
     SetNativeDescriptorHeaps(command_list_dx);
 
-    ID3D12GraphicsCommandList4* p_dx_command_list_4 = command_list_dx.GetNativeCommandList4();
+    ID3D12GraphicsCommandList4* dx_command_list_4_ptr = command_list_dx.GetNativeCommandList4();
     if (!m_is_native_render_pass_available.has_value() || m_is_native_render_pass_available.value())
     {
-        m_is_native_render_pass_available = !!p_dx_command_list_4;
+        m_is_native_render_pass_available = !!dx_command_list_4_ptr;
     }
 
     if (m_is_native_render_pass_available.value())
     {
         // Begin render pass
-        p_dx_command_list_4->BeginRenderPass(
+        dx_command_list_4_ptr->BeginRenderPass(
             static_cast<UINT>(m_render_target_descs.size()), m_render_target_descs.data(),
             m_depth_stencil_desc ? &*m_depth_stencil_desc : nullptr,
             m_pass_flags
@@ -401,9 +401,9 @@ void RenderPass::End(Base::RenderCommandList& command_list)
 
     if (m_is_native_render_pass_available.has_value() && m_is_native_render_pass_available.value())
     {
-        ID3D12GraphicsCommandList4* p_dx_command_list_4 = static_cast<RenderCommandList&>(command_list).GetNativeCommandList4();
-        META_CHECK_ARG_NOT_NULL(p_dx_command_list_4);
-        p_dx_command_list_4->EndRenderPass();
+        ID3D12GraphicsCommandList4* dx_command_list_4_ptr = static_cast<RenderCommandList&>(command_list).GetNativeCommandList4();
+        META_CHECK_ARG_NOT_NULL(dx_command_list_4_ptr);
+        dx_command_list_4_ptr->EndRenderPass();
     }
 
     if (GetBasePattern().GetSettings().is_final_pass)
@@ -433,8 +433,8 @@ void RenderPass::SetNativeRenderTargets(const RenderCommandList& dx_command_list
 {
     META_FUNCTION_TASK();
     const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& rt_cpu_handles = GetNativeRenderTargetCPUHandles();
-    const D3D12_CPU_DESCRIPTOR_HANDLE* p_depth_stencil_cpu_handle = GetNativeDepthStencilCPUHandle();
-    dx_command_list.GetNativeCommandList().OMSetRenderTargets(static_cast<UINT>(rt_cpu_handles.size()), rt_cpu_handles.data(), FALSE, p_depth_stencil_cpu_handle);
+    const D3D12_CPU_DESCRIPTOR_HANDLE* depth_stencil_cpu_handle_ptr = GetNativeDepthStencilCPUHandle();
+    dx_command_list.GetNativeCommandList().OMSetRenderTargets(static_cast<UINT>(rt_cpu_handles.size()), rt_cpu_handles.data(), FALSE, depth_stencil_cpu_handle_ptr);
 }
 
 const std::vector<ID3D12DescriptorHeap*>& RenderPass::GetNativeDescriptorHeaps() const

@@ -111,7 +111,7 @@ public:
     DescriptorHeap(const Base::Context& context, const Settings& settings);
     ~DescriptorHeap() override;
 
-    [[nodiscard]] ID3D12DescriptorHeap*       GetNativeDescriptorHeap() noexcept           { return m_cp_descriptor_heap.Get();  }
+    [[nodiscard]] ID3D12DescriptorHeap*       GetNativeDescriptorHeap() noexcept           { return m_descriptor_heap_cptr.Get();  }
     [[nodiscard]] D3D12_DESCRIPTOR_HEAP_TYPE  GetNativeDescriptorHeapType() const noexcept { return m_descriptor_heap_type; }
     [[nodiscard]] D3D12_CPU_DESCRIPTOR_HANDLE GetNativeCpuDescriptorHandle(uint32_t descriptor_index) const;
     [[nodiscard]] D3D12_GPU_DESCRIPTOR_HANDLE GetNativeGpuDescriptorHandle(uint32_t descriptor_index) const;
@@ -145,7 +145,7 @@ private:
     TracyLockable(std::mutex,         m_modification_mutex);
     D3D12_DESCRIPTOR_HEAP_TYPE        m_descriptor_heap_type;
     uint32_t                          m_descriptor_size;
-    wrl::ComPtr<ID3D12DescriptorHeap> m_cp_descriptor_heap;
+    wrl::ComPtr<ID3D12DescriptorHeap> m_descriptor_heap_cptr;
 };
 
 } // namespace Methane::Graphics::DirectX

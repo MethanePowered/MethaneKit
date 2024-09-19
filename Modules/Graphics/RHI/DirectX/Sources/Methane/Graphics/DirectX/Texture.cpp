@@ -349,13 +349,13 @@ bool Texture::SetName(std::string_view name)
     if (!Resource::SetName(name))
         return false;
 
-    if (m_cp_upload_resource)
+    if (m_upload_resource_cptr)
     {
-        m_cp_upload_resource->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
+        m_upload_resource_cptr->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
     }
-    if (m_cp_read_back_resource)
+    if (m_read_back_resource_cptr)
     {
-        m_cp_read_back_resource->SetName(nowide::widen(fmt::format("{} Read-back Resource", name)).c_str());
+        m_read_back_resource_cptr->SetName(nowide::widen(fmt::format("{} Read-back Resource", name)).c_str());
     }
 
     return true;
@@ -364,7 +364,7 @@ bool Texture::SetName(std::string_view name)
 void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_cp_upload_resource, "Only Image textures support data upload from CPU.");
+    META_CHECK_ARG_NOT_NULL_DESCR(m_upload_resource_cptr, "Only Image textures support data upload from CPU.");
 
     Base::Texture::SetData(target_cmd_queue, sub_resources);
 
@@ -400,7 +400,7 @@ void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& 
     // Upload texture subresources data to GPU via intermediate upload resource
     const TransferCommandList& upload_cmd_list = PrepareResourceTransfer(TransferOperation::Upload, target_cmd_queue, State::CopyDest);
     UpdateSubresources(&upload_cmd_list.GetNativeCommandList(),
-                       GetNativeResource(), m_cp_upload_resource.Get(), 0, 0,
+                       GetNativeResource(), m_upload_resource_cptr.Get(), 0, 0,
                        static_cast<UINT>(dx_sub_resources.size()), dx_sub_resources.data());
     GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
 }
@@ -410,7 +410,7 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const Su
     META_FUNCTION_TASK();
     META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
                               "getting texture data from GPU is allowed for buffers with CPU Read-back flag only");
-    META_CHECK_ARG_NOT_NULL(m_cp_read_back_resource);
+    META_CHECK_ARG_NOT_NULL(m_read_back_resource_cptr);
 
     ValidateSubResource(sub_resource_index, data_range);
 
@@ -430,7 +430,7 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const Su
         }
     };
     const CD3DX12_TEXTURE_COPY_LOCATION src_copy_location(GetNativeResource(), sub_resource_raw_index);
-    const CD3DX12_TEXTURE_COPY_LOCATION dst_copy_location(m_cp_read_back_resource.Get(), src_footprint);
+    const CD3DX12_TEXTURE_COPY_LOCATION dst_copy_location(m_read_back_resource_cptr.Get(), src_footprint);
     transfer_cmd_list.GetNativeCommandList().CopyTextureRegion(&dst_copy_location, 0, 0, 0, &src_copy_location, nullptr);
 
     GetBaseContext().UploadResources();
@@ -440,21 +440,21 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const Su
     const Data::Index data_end               = data_start + data_length;
 
     const CD3DX12_RANGE read_range(data_start, data_start + data_length);
-    Data::RawPtr        p_sub_resource_data = nullptr;
+    Data::RawPtr sub_resource_data_ptr = nullptr;
     ThrowIfFailed(
-        m_cp_read_back_resource->Map(sub_resource_raw_index, &read_range,
-                                     reinterpret_cast<void**>(&p_sub_resource_data)), // NOSONAR
+        m_read_back_resource_cptr->Map(sub_resource_raw_index, &read_range,
+                                     reinterpret_cast<void**>(&sub_resource_data_ptr)), // NOSONAR
         GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
     );
 
-    META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
+    META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
 
-    stdext::checked_array_iterator source_data_it(p_sub_resource_data, data_end);
+    stdext::checked_array_iterator source_data_it(sub_resource_data_ptr, data_end);
     Data::Bytes                    sub_resource_data(data_length, {});
     std::copy(source_data_it + data_start, source_data_it + data_end, sub_resource_data.begin());
 
     const CD3DX12_RANGE zero_write_range(0, 0);
-    m_cp_read_back_resource->Unmap(sub_resource_raw_index, &zero_write_range);
+    m_read_back_resource_cptr->Unmap(sub_resource_raw_index, &zero_write_range);
 
     return SubResource(std::move(sub_resource_data), sub_resource_index, data_range);
 }
@@ -526,11 +526,11 @@ void Texture::InitializeAsImage()
     InitializeCommittedResource(resource_desc, D3D12_HEAP_TYPE_DEFAULT, Rhi::ResourceState::CopyDest);
 
     const UINT64 texture_buffer_size = GetRequiredIntermediateSize(GetNativeResource(), 0, GetSubresourceCount().GetRawCount());
-    m_cp_upload_resource = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(texture_buffer_size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+    m_upload_resource_cptr = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(texture_buffer_size), D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
 
     if (settings.usage_mask.HasAnyBit(Usage::ReadBack))
     {
-        m_cp_read_back_resource = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(texture_buffer_size), D3D12_HEAP_TYPE_READBACK, D3D12_RESOURCE_STATE_COPY_DEST);
+        m_read_back_resource_cptr = CreateCommittedResource(CD3DX12_RESOURCE_DESC::Buffer(texture_buffer_size), D3D12_HEAP_TYPE_READBACK, D3D12_RESOURCE_STATE_COPY_DEST);
     }
 }
 
@@ -552,12 +552,12 @@ void Texture::InitializeAsFrameBuffer()
     META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Usage::RenderTarget), "frame-buffer texture supports only 'RenderTarget' usage");
     META_CHECK_ARG_TRUE_DESCR(GetSettings().frame_index_opt.has_value(), "frame-buffer texture requires frame-index to be set in texture settings");
 
-    wrl::ComPtr<ID3D12Resource> cp_resource;
+    wrl::ComPtr<ID3D12Resource> resource_cptr;
     ThrowIfFailed(
-        static_cast<const RenderContext&>(GetDirectContext()).GetNativeSwapChain()->GetBuffer(settings.frame_index_opt.value(), IID_PPV_ARGS(&cp_resource)),
+        static_cast<const RenderContext&>(GetDirectContext()).GetNativeSwapChain()->GetBuffer(settings.frame_index_opt.value(), IID_PPV_ARGS(&resource_cptr)),
         GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
     );
-    SetNativeResourceComPtr(cp_resource);
+    SetNativeResourceComPtr(resource_cptr);
 }
 
 void Texture::InitializeAsDepthStencil()
@@ -701,8 +701,8 @@ void Texture::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_reso
         {
             for (uint32_t mip = 1; mip < tex_metadata.mipLevels; ++mip)
             {
-                const ::DirectX::Image* p_mip_image = scratch_image.GetImage(mip, item, depth);
-                META_CHECK_ARG_NOT_NULL_DESCR(p_mip_image,
+                const ::DirectX::Image* mip_image_ptr = scratch_image.GetImage(mip, item, depth);
+                META_CHECK_ARG_NOT_NULL_DESCR(mip_image_ptr,
                                               "failed to generate mipmap level {} for array item {} in depth {} of texture '{}'",
                                               mip, item, depth, GetName());
 
@@ -710,9 +710,9 @@ void Texture::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_reso
                 META_CHECK_ARG_LESS(dx_sub_resource_index, dx_sub_resources.size());
 
                 D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[dx_sub_resource_index];
-                dx_sub_resource.pData       = p_mip_image->pixels;
-                dx_sub_resource.RowPitch    = p_mip_image->rowPitch;
-                dx_sub_resource.SlicePitch  = p_mip_image->slicePitch;
+                dx_sub_resource.pData      = mip_image_ptr->pixels;
+                dx_sub_resource.RowPitch   = mip_image_ptr->rowPitch;
+                dx_sub_resource.SlicePitch = mip_image_ptr->slicePitch;
             }
         }
     }

@@ -396,8 +396,8 @@ private:
 #define TRACY_GPU_SCOPE_TYPE Methane::Tracy::GpuScope
 #define TRACY_GPU_SCOPE_INIT(gpu_context) gpu_context
 
-#define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location) \
-    gpu_scope.Begin(p_location)
+#define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, location_ptr) \
+    gpu_scope.Begin(location_ptr)
 
 #define TRACY_GPU_SCOPE_BEGIN_UNNAMED(gpu_scope) \
     gpu_scope.Begin(__LINE__, __FUNCTION__,  __FILE__)
@@ -405,9 +405,9 @@ private:
 #define TRACY_GPU_SCOPE_BEGIN_NAMED(gpu_scope, name) \
     gpu_scope.Begin(name, __LINE__, __FUNCTION__,  __FILE__)
 
-#define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, p_location) \
+#define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, location_ptr) \
     if (gpu_scope.GetState() != Methane::Tracy::GpuScope::State::Begun) \
-        gpu_scope.Begin(p_location)
+        gpu_scope.Begin(location_ptr)
 
 #define TRACY_GPU_SCOPE_TRY_BEGIN_UNNAMED(gpu_scope) \
     if (gpu_scope.GetState() != Methane::Tracy::GpuScope::State::Begun) \
@@ -461,10 +461,10 @@ struct SourceLocationStub { };
 #define TRACY_SOURCE_LOCATION_ALLOC(name) 0U
 #define TRACY_GPU_SCOPE_TYPE char* /* NOSONAR */
 #define TRACY_GPU_SCOPE_INIT(gpu_context) nullptr
-#define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location)
+#define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, location_ptr)
 #define TRACY_GPU_SCOPE_BEGIN_UNNAMED(gpu_scope)
 #define TRACY_GPU_SCOPE_BEGIN_NAMED(gpu_scope, name)
-#define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, p_location)
+#define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, location_ptr)
 #define TRACY_GPU_SCOPE_TRY_BEGIN_UNNAMED(gpu_scope)
 #define TRACY_GPU_SCOPE_TRY_BEGIN_NAMED(gpu_scope, name)
 #define TRACY_GPU_SCOPE_BEGIN(gpu_scope, name)

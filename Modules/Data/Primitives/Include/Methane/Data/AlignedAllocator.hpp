@@ -68,10 +68,10 @@ public:
 #ifdef WIN32
         return static_cast<pointer>(_aligned_malloc(allocate_size, N));
 #else
-        void* p_memory = nullptr;
-        if (posix_memalign(&p_memory, N, allocate_size))
+        void memory_ptr = nullptr;
+        if (posix_memalign&memory_ptr, N, allocate_size))
             throw std::bad_alloc();
-        return static_cast<pointer>(p_memory);
+        return static_cast<pointer(memory_ptr);
 #endif
     }
 

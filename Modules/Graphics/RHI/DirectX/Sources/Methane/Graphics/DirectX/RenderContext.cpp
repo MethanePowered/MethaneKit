@@ -102,7 +102,7 @@ void RenderContext::Release()
 {
     META_FUNCTION_TASK();
 
-    m_cp_swap_chain.Reset();
+    m_swap_chain_cptr.Reset();
 
     Context<Base::RenderContext>::Release();
 }
@@ -137,12 +137,13 @@ void RenderContext::Initialize(Base::Device& device, bool is_callback_emitted)
     swap_chain_desc.SampleDesc.Count = 1;
     swap_chain_desc.Flags            = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT; // requires Windows 8.1
 
-    const wrl::ComPtr<IDXGIFactory5>& cp_dxgi_factory = System::Get().GetNativeFactory();
-    META_CHECK_ARG_NOT_NULL(cp_dxgi_factory);
+    const wrl::ComPtr<IDXGIFactory5>& dxgi_factory_cptr = System::Get().GetNativeFactory();
+    META_CHECK_ARG_NOT_NULL(dxgi_factory_cptr);
 
     BOOL present_tearing_support = FALSE;
-    ID3D12Device* p_native_device = GetDirectDevice().GetNativeDevice().Get();
-    ThrowIfFailed(cp_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_tearing_support, sizeof(present_tearing_support)), p_native_device);
+    ID3D12Device* native_device_ptr = GetDirectDevice().GetNativeDevice().Get();
+    ThrowIfFailed(dxgi_factory_cptr->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &present_tearing_support,
+                                                         sizeof(present_tearing_support)), native_device_ptr);
     if (present_tearing_support)
     {
         swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
@@ -153,16 +154,17 @@ void RenderContext::Initialize(Base::Device& device, bool is_callback_emitted)
         m_is_tearing_supported = false;
     }
 
-    wrl::ComPtr<IDXGISwapChain1> cp_swap_chain;
+    wrl::ComPtr<IDXGISwapChain1> swap_chain_cptr;
     ID3D12CommandQueue& dx_command_queue = GetDirectDefaultCommandQueue(Rhi::CommandListType::Render).GetNativeCommandQueue();
-    ThrowIfFailed(cp_dxgi_factory->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc, nullptr, nullptr, &cp_swap_chain), p_native_device);
+    ThrowIfFailed(dxgi_factory_cptr->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc,
+                                                            nullptr, nullptr, &swap_chain_cptr), native_device_ptr);
 
-    META_CHECK_ARG_NOT_NULL(cp_swap_chain);
-    ThrowIfFailed(cp_swap_chain.As(&m_cp_swap_chain), p_native_device);
+    META_CHECK_ARG_NOT_NULL(swap_chain_cptr);
+    ThrowIfFailed(swap_chain_cptr.As(&m_swap_chain_cptr), native_device_ptr);
 
     // Create waitable object to reduce frame latency (https://docs.microsoft.com/en-us/windows/uwp/gaming/reduce-latency-with-dxgi-1-3-swap-chains)
-    m_cp_swap_chain->SetMaximumFrameLatency(settings.frame_buffers_count);
-    m_frame_latency_waitable_object = m_cp_swap_chain->GetFrameLatencyWaitableObject();
+    m_swap_chain_cptr->SetMaximumFrameLatency(settings.frame_buffers_count);
+    m_frame_latency_waitable_object = m_swap_chain_cptr->GetFrameLatencyWaitableObject();
     META_CHECK_ARG_NOT_ZERO_DESCR(m_frame_latency_waitable_object, "swap-chain waitable object is null");
 
     if (settings.is_full_screen)
@@ -172,7 +174,7 @@ void RenderContext::Initialize(Base::Device& device, bool is_callback_emitted)
     }
 
     // With tearing support enabled we will handle ALT+Enter key presses in the window message loop rather than let DXGI handle it by calling SetFullscreenState
-    ThrowIfFailed(cp_dxgi_factory->MakeWindowAssociation(m_platform_env.window_handle, DXGI_MWA_NO_ALT_ENTER), p_native_device);
+    ThrowIfFailed(dxgi_factory_cptr->MakeWindowAssociation(m_platform_env.window_handle, DXGI_MWA_NO_ALT_ENTER), native_device_ptr);
 
     UpdateFrameBufferIndex();
 
@@ -189,8 +191,9 @@ void RenderContext::Resize(const FrameSize& frame_size)
 
     // Resize the swap chain to the desired dimensions
     DXGI_SWAP_CHAIN_DESC1 desc{};
-    m_cp_swap_chain->GetDesc1(&desc);
-    ThrowIfFailed(m_cp_swap_chain->ResizeBuffers(GetSettings().frame_buffers_count, frame_size.GetWidth(), frame_size.GetHeight(), desc.Format, desc.Flags),
+    m_swap_chain_cptr->GetDesc1(&desc);
+    ThrowIfFailed(m_swap_chain_cptr->ResizeBuffers(GetSettings().frame_buffers_count, frame_size.GetWidth(),
+                                                   frame_size.GetHeight(), desc.Format, desc.Flags),
                   GetDirectDevice().GetNativeDevice().Get());
 
     UpdateFrameBufferIndex();
@@ -207,8 +210,8 @@ void RenderContext::Present()
     const uint32_t present_flags  = GetPresentFlags();
     const uint32_t vsync_interval = GetPresentVSyncInterval();
 
-    META_CHECK_ARG_NOT_NULL(m_cp_swap_chain);
-    ThrowIfFailed(m_cp_swap_chain->Present(vsync_interval, present_flags),
+    META_CHECK_ARG_NOT_NULL(m_swap_chain_cptr);
+    ThrowIfFailed(m_swap_chain_cptr->Present(vsync_interval, present_flags),
                   GetDirectDevice().GetNativeDevice().Get());
 
     Context<Base::RenderContext>::OnCpuPresentComplete();
@@ -218,8 +221,8 @@ void RenderContext::Present()
 uint32_t RenderContext::GetNextFrameBufferIndex()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_cp_swap_chain);
-    return m_cp_swap_chain->GetCurrentBackBufferIndex();
+    META_CHECK_ARG_NOT_NULL(m_swap_chain_cptr);
+    return m_swap_chain_cptr->GetCurrentBackBufferIndex();
 }
 
 void RenderContext::WaitForSwapChainLatency()

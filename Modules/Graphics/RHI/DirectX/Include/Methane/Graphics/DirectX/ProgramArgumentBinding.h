@@ -95,7 +95,7 @@ public:
 
     void SetRootParameterIndex(uint32_t root_parameter_index)      { m_root_parameter_index = root_parameter_index; }
     void SetDescriptorRange(const DescriptorRange& descriptor_range);
-    void SetDescriptorHeapReservation(const DescriptorHeapReservation* p_reservation);
+    void SetDescriptorHeapReservation(const DescriptorHeapReservation* reservation_ptr);
 
 protected:
     // IRootConstantBufferCallback overrides...
@@ -108,9 +108,9 @@ private:
     const Rhi::ResourceUsageMask     m_shader_usage;
     uint32_t                         m_root_parameter_index = std::numeric_limits<uint32_t>::max();;
     DescriptorRange                  m_descriptor_range;
-    const DescriptorHeapReservation* m_p_descriptor_heap_reservation = nullptr;
+    const DescriptorHeapReservation* m_descriptor_heap_reservation_ptr = nullptr;
     ResourceViews                    m_resource_views_dx;
-    const wrl::ComPtr<ID3D12Device>  m_cp_native_device;
+    const wrl::ComPtr<ID3D12Device>  m_native_device_cptr;
 };
 
 } // namespace Methane::Graphics::DirectX

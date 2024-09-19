@@ -55,7 +55,7 @@ public:
     void CompleteInitialization() override;
 
     void Apply(ICommandList& command_list, const Rhi::ICommandQueue& command_queue,
-               const Base::ProgramBindings* p_applied_program_bindings, ApplyBehaviorMask apply_behavior) const;
+               const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const;
 
 protected:
     // IProgramBindings::IProgramArgumentBindingCallback

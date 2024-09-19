@@ -59,9 +59,9 @@ static const Device& GetDirectDeviceFromContext(const Rhi::IContext& context)
 inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Rhi::IShader>& shader_ptr)
 {
     META_FUNCTION_TASK();
-    const Data::Chunk* p_byte_code_chunk = shader_ptr ? static_cast<const Shader&>(*shader_ptr).GetNativeByteCode() : nullptr;
-    return p_byte_code_chunk
-        ? CD3DX12_SHADER_BYTECODE(p_byte_code_chunk->GetDataPtr(), p_byte_code_chunk->GetDataSize())
+    const Data::Chunk* byte_code_chunk_ptr = shader_ptr ? static_cast<const Shader&>(*shader_ptr).GetNativeByteCode() : nullptr;
+    return byte_code_chunk_ptr
+        ? CD3DX12_SHADER_BYTECODE(byte_code_chunk_ptr->GetDataPtr(), byte_code_chunk_ptr->GetDataSize())
         : CD3DX12_SHADER_BYTECODE(nullptr, 0);
 }
 
@@ -86,7 +86,7 @@ void ComputeState::Reset(const Settings& settings)
     m_pipeline_state_desc.CachedPSO      = {};
     m_pipeline_state_desc.Flags          = {};
 
-    m_cp_pipeline_state.Reset();
+    m_pipeline_state_cptr.Reset();
 }
 
 void ComputeState::Apply(Base::ComputeCommandList& command_list)
@@ -105,9 +105,9 @@ bool ComputeState::SetName(std::string_view name)
     if (!Base::ComputeState::SetName(name))
         return false;
 
-    if (m_cp_pipeline_state)
+    if (m_pipeline_state_cptr)
     {
-        m_cp_pipeline_state->SetName(nowide::widen(name).c_str());
+        m_pipeline_state_cptr->SetName(nowide::widen(name).c_str());
     }
     return true;
 }
@@ -115,22 +115,23 @@ bool ComputeState::SetName(std::string_view name)
 void ComputeState::InitializeNativePipelineState()
 {
     META_FUNCTION_TASK();
-    if (m_cp_pipeline_state)
+    if (m_pipeline_state_cptr)
         return;
 
-    const wrl::ComPtr<ID3D12Device>& cp_native_device = GetDirectDevice().GetNativeDevice();
-    ThrowIfFailed(cp_native_device->CreateComputePipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)), cp_native_device.Get());
+    const wrl::ComPtr<ID3D12Device> native_device_cptr = GetDirectDevice().GetNativeDevice();
+    ThrowIfFailed(native_device_cptr->CreateComputePipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_pipeline_state_cptr)),
+                  native_device_cptr.Get());
     SetName(GetName());
 }
 
 wrl::ComPtr<ID3D12PipelineState>& ComputeState::GetNativePipelineState()
 {
     META_FUNCTION_TASK();
-    if (!m_cp_pipeline_state)
+    if (!m_pipeline_state_cptr)
     {
         InitializeNativePipelineState();
     }
-    return m_cp_pipeline_state;
+    return m_pipeline_state_cptr;
 }
 
 Program& ComputeState::GetDirectProgram()

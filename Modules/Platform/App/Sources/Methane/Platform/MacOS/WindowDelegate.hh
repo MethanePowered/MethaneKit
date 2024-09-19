@@ -27,6 +27,6 @@ namespace Methane { namespace Platform { class AppMac; } }
 
 @interface WindowDelegate : NSObject<NSWindowDelegate>
 
-- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app;
+- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) app_ptr;
 
 @end

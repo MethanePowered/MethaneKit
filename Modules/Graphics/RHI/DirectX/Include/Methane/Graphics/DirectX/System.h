@@ -58,12 +58,12 @@ public:
     const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps) override;
     const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps) override;
 
-    [[nodiscard]] const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_cp_factory; }
+    [[nodiscard]] const wrl::ComPtr<IDXGIFactory5>& GetNativeFactory() const noexcept { return m_factory_cptr; }
     void ReportLiveObjects() const noexcept;
 
 private:
     void Initialize();
-    void AddDevice(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
+    void AddDevice(const wrl::ComPtr<IDXGIAdapter>& adapter_cptr, D3D_FEATURE_LEVEL feature_level);
 
 #ifdef ADAPTERS_CHANGE_HANDLING
     void RegisterAdapterChangeEvent();
@@ -73,7 +73,7 @@ private:
     DWORD  m_adapter_change_registration_cookie = 0;
 #endif
 
-    wrl::ComPtr<IDXGIFactory5> m_cp_factory;
+    wrl::ComPtr<IDXGIFactory5> m_factory_cptr;
 };
 
 } // namespace Methane::Graphics::DirectX

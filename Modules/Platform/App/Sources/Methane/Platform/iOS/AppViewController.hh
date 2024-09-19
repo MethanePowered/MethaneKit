@@ -31,7 +31,7 @@ namespace Methane::Platform { class AppIOS; }
 
 @property (nonatomic, readonly, nullable) UIWindow* window;
 
-- (id _Nullable)initWithApp : (Methane::Platform::AppIOS* _Nonnull) p_app andFrameRect : (CGRect) frame;
+- (id _Nullable)initWithApp : (Methane::Platform::AppIOS* _Nonnull) app_ptr andFrameRect : (CGRect) frame;
 - (Methane::Platform::AppIOS* _Nonnull) getApp;
 
 @end

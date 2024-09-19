@@ -86,11 +86,11 @@ void RenderCommandList::ResetNative(const Ptr<RenderState>& render_state_ptr)
     SetNativeCommitted(false);
     SetCommandListState(Rhi::CommandListState::Encoding);
 
-    ID3D12PipelineState* p_dx_initial_state = render_state_ptr ? render_state_ptr->GetNativePipelineState().Get() : nullptr;
+    ID3D12PipelineState* dx_initial_state_ptr = render_state_ptr ? render_state_ptr->GetNativePipelineState().Get() : nullptr;
     ID3D12CommandAllocator& dx_cmd_allocator = GetNativeCommandAllocatorRef();
-    ID3D12Device* p_native_device = GetDirectCommandQueue().GetDirectContext().GetDirectDevice().GetNativeDevice().Get();
-    ThrowIfFailed(dx_cmd_allocator.Reset(), p_native_device);
-    ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, p_dx_initial_state), p_native_device);
+    ID3D12Device* native_device_ptr = GetDirectCommandQueue().GetDirectContext().GetDirectDevice().GetNativeDevice().Get();
+    ThrowIfFailed(dx_cmd_allocator.Reset(), native_device_ptr);
+    ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, dx_initial_state_ptr), native_device_ptr);
 
     BeginGpuZone();
 

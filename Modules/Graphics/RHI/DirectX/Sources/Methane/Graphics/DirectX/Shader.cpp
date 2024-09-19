@@ -161,12 +161,12 @@ Shader::Shader(Type type, const Base::Context& context, const Settings& settings
             settings.source_compile_target.c_str(),
             shader_compile_flags,
             0,
-            &m_cp_byte_code,
+            &m_byte_code_cptr,
             &error_blob
         ), error_blob);
 
-        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(static_cast<Data::ConstRawPtr>(m_cp_byte_code->GetBufferPointer()),
-                                                             static_cast<Data::Size>(m_cp_byte_code->GetBufferSize()));
+        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(static_cast<Data::ConstRawPtr>(m_byte_code_cptr->GetBufferPointer()),
+                                                             static_cast<Data::Size>(m_byte_code_cptr->GetBufferSize()));
     }
     else
     {
@@ -175,18 +175,18 @@ Shader::Shader(Type type, const Base::Context& context, const Settings& settings
     }
 
     META_CHECK_ARG_NOT_NULL(m_byte_code_chunk_ptr);
-    ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->GetDataPtr(), m_byte_code_chunk_ptr->GetDataSize(), IID_PPV_ARGS(&m_cp_reflection)));
+    ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->GetDataPtr(), m_byte_code_chunk_ptr->GetDataSize(), IID_PPV_ARGS(&m_reflection_cptr)));
 }
 
 Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_cp_reflection);
+    META_CHECK_ARG_NOT_NULL(m_reflection_cptr);
 
     Ptrs<Base::ProgramArgumentBinding> argument_bindings;
 
     D3D12_SHADER_DESC shader_desc{};
-    ThrowIfFailed(m_cp_reflection->GetDesc(&shader_desc));
+    ThrowIfFailed(m_reflection_cptr->GetDesc(&shader_desc));
 
 #ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
@@ -198,14 +198,14 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
     for (UINT resource_index = 0; resource_index < shader_desc.BoundResources; ++resource_index)
     {
         D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
-        ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
+        ThrowIfFailed(m_reflection_cptr->GetResourceBindingDesc(resource_index, &binding_desc));
 
         const Rhi::ProgramArgumentAccessType arg_access_type = Rhi::ProgramArgumentAccessor::GetTypeByRegisterSpace(binding_desc.Space);
         const Rhi::ProgramArgument shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
         const Rhi::ProgramArgumentAccessor* argument_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
         const Rhi::ProgramArgumentAccessor argument_acc = argument_ptr ? *argument_ptr
                                                         : Rhi::ProgramArgumentAccessor(shader_argument, arg_access_type);
-        const D3D12_SHADER_BUFFER_DESC buffer_desc = GetConstantBufferDesc(*m_cp_reflection.Get(), binding_desc);
+        const D3D12_SHADER_BUFFER_DESC buffer_desc = GetConstantBufferDesc(*m_reflection_cptr.Get(), binding_desc);
 
         ProgramArgumentBindingType dx_binding_type = ProgramArgumentBindingType::DescriptorTable;
         if (argument_acc.IsRootConstant())
@@ -270,10 +270,10 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
 std::vector<D3D12_INPUT_ELEMENT_DESC> Shader::GetNativeProgramInputLayout(const Program& program) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_cp_reflection);
+    META_CHECK_ARG_NOT_NULL(m_reflection_cptr);
 
     D3D12_SHADER_DESC shader_desc{};
-    m_cp_reflection->GetDesc(&shader_desc);
+    m_reflection_cptr->GetDesc(&shader_desc);
 
 #ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
@@ -287,7 +287,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> Shader::GetNativeProgramInputLayout(const 
     for (UINT param_index = 0; param_index < shader_desc.InputParameters; ++param_index)
     {
         D3D12_SIGNATURE_PARAMETER_DESC param_desc{};
-        m_cp_reflection->GetInputParameterDesc(param_index, &param_desc);
+        m_reflection_cptr->GetInputParameterDesc(param_index, &param_desc);
 
 #ifdef METHANE_LOGGING_ENABLED
         log_ss << "  - Parameter "     << param_index

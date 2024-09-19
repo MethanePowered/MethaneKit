@@ -51,46 +51,47 @@ namespace Methane::ITT
 class Event
 {
 public:
-    Event(const __itt_domain* p_domain, __itt_string_handle* p_name) noexcept
-    : m_id(__itt_id_make(const_cast<__itt_domain*>(p_domain), reinterpret_cast<unsigned long long>(p_name))) // NOSONAR
-        , m_p_domain(p_domain)
+    Event(const __itt_domain* domain_ptr, __itt_string_handle* name_ptr) noexcept
+    : m_id(__itt_id_make(const_cast<__itt_domain*>(domain_ptr), reinterpret_cast<unsigned long long>(name_ptr))) // NOSONAR
+        , m_domain_ptr(domain_ptr)
     { }
 
     template<class T>
-    typename std::enable_if<std::is_floating_point_v<T>, void>::type AddArg(__itt_string_handle* p_name, const T& value) const noexcept
+    typename std::enable_if<std::is_floating_point_v<T>, void>::type
+    AddArg(__itt_string_handle* name_ptr, const T& value) const noexcept
     {
         double double_value = static_cast<double>(value);
-        __itt_metadata_add(m_p_domain, m_id, p_name, __itt_metadata_double, 1, &double_value);
+        __itt_metadata_add(m_domain_ptr, m_id, name_ptr, __itt_metadata_double, 1, &double_value);
     }
 
-    void AddArg(__itt_string_handle* p_name, int64_t value) const noexcept
+    void AddArg(__itt_string_handle* name_ptr, int64_t value) const noexcept
     {
-        __itt_metadata_add(m_p_domain, m_id, p_name, __itt_metadata_s64, 1, &value);
+        __itt_metadata_add(m_domain_ptr, m_id, name_ptr, __itt_metadata_s64, 1, &value);
     }
 
-    void AddArg(__itt_string_handle* p_name, const char* value) const noexcept
+    void AddArg(__itt_string_handle* name_ptr, const char* value) const noexcept
     {
 #if ITT_PLATFORM==ITT_PLATFORM_WIN && (defined(UNICODE) || defined(_UNICODE))
         // string value must be converted to wchar_t
-        __itt_metadata_str_add(m_p_domain, m_id, p_name, nowide::widen(value).c_str(), 0);
+        __itt_metadata_str_add(m_domain_ptr, m_id, name_ptr, nowide::widen(value).c_str(), 0);
 #else
-        __itt_metadata_str_add(m_p_domain, m_id, p_name, value, 0);
+        __itt_metadata_str_add(m_domain_ptr, m_id, name_ptr, value, 0);
 #endif
     }
 
-    void AddArg(__itt_string_handle* p_name, void const* const p_value) const noexcept
+    void AddArg(__itt_string_handle* name_ptr, void const* const value_ptr) const noexcept
     {
-        __itt_metadata_add(m_p_domain, m_id, p_name, __itt_metadata_unknown, 1, const_cast<void*>(p_value));
+        __itt_metadata_add(m_domain_ptr, m_id, name_ptr, __itt_metadata_unknown, 1, const_cast<void*>(value_ptr));
     }
 
-    void AddArg(__itt_string_handle* p_name, const std::string& value) const noexcept
+    void AddArg(__itt_string_handle* name_ptr, const std::string& value) const noexcept
     {
-        AddArg(p_name, value.c_str());
+        AddArg(name_ptr, value.c_str());
     }
 
 protected:
     __itt_id            m_id = __itt_null;
-    const __itt_domain* m_p_domain;
+    const __itt_domain* m_domain_ptr;
 };
 
 class Marker : public Event
@@ -104,23 +105,23 @@ public:
         Task    = __itt_scope_task, //means a task that will long until another marker with task scope in this thread occurs
     };
 
-    Marker(const __itt_domain* p_domain, const char* p_name, Scope scope) noexcept
-        : Marker(p_domain, UNICODE_AGNOSTIC(__itt_string_handle_create)(p_name), scope)
+    Marker(const __itt_domain* domain_ptr, const char* name_ptr, Scope scope) noexcept
+        : Marker(domain_ptr, UNICODE_AGNOSTIC(__itt_string_handle_create)(name_ptr), scope)
     { }
 
     void Notify() const noexcept
     {
-        __itt_marker(m_p_domain, m_id, m_p_name, m_scope);
+        __itt_marker(m_domain_ptr, m_id, m_name_ptr, m_scope);
     }
 
 private:
-    Marker(const __itt_domain* p_domain, __itt_string_handle* p_itt_name, Scope scope) noexcept
-        : Event(p_domain, p_itt_name)
-        , m_p_name(p_itt_name)
+    Marker(const __itt_domain* domain_ptr, __itt_string_handle* itt_name_ptr, Scope scope) noexcept
+        : Event(domain_ptr, itt_name_ptr)
+        , m_name_ptr(itt_name_ptr)
         , m_scope(static_cast<__itt_scope>(scope))
     { }
 
-    __itt_string_handle* m_p_name;
+    __itt_string_handle* m_name_ptr;
     __itt_scope          m_scope;
 };
 
@@ -128,16 +129,16 @@ template<bool bRegion = true>
 class Task : public Event
 {
 public:
-    Task(const __itt_domain* p_domain, __itt_string_handle* p_name) noexcept
-        : Event(p_domain, p_name)
+    Task(const __itt_domain* domain_ptr, __itt_string_handle* name_ptr) noexcept
+        : Event(domain_ptr, name_ptr)
     {
         if (bRegion)
         {
-            __itt_region_begin(m_p_domain, m_id, __itt_null, p_name);
+            __itt_region_begin(m_domain_ptr, m_id, __itt_null, name_ptr);
         }
         else
         {
-            __itt_task_begin(m_p_domain, m_id, __itt_null, p_name);
+            __itt_task_begin(m_domain_ptr, m_id, __itt_null, name_ptr);
         }
     }
 
@@ -145,11 +146,11 @@ public:
     {
         if (bRegion)
         {
-            __itt_region_end(m_p_domain, m_id);
+            __itt_region_end(m_domain_ptr, m_id);
         }
         else
         {
-            __itt_task_end(m_p_domain);
+            __itt_task_end(m_domain_ptr);
         }
     }
 };
@@ -168,8 +169,8 @@ template<typename ValueType>
 class Counter
 {
 public:
-    Counter(const char* p_name, const char* p_domain) noexcept
-        : m_id(UNICODE_AGNOSTIC(__itt_counter_create_typed)(p_name, p_domain, GetMetadataType(ValueType{})))
+    Counter(const char* name_ptr, const char* domain_ptr) noexcept
+        : m_id(UNICODE_AGNOSTIC(__itt_counter_create_typed)(name_ptr, domain_ptr, GetMetadataType(ValueType{})))
     { }
     Counter(Counter&& other) : m_id(std::move(other.m_id)) {}
     ~Counter() { __itt_counter_destroy(m_id); }

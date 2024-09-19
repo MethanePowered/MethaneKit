@@ -330,11 +330,11 @@ static void AddIconData(const Data::Chunk& icon_data, std::vector<uint32_t>& com
     int image_width = 0;
     int image_height = 0;
     int image_channels_count = 0;
-    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(icon_data.GetDataPtr()), // NOSONAR
+    stbi_uc image_data_ptr = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(icon_data.GetDataPtr()), // NOSONAR
                                                   static_cast<int>(icon_data.GetDataSize()),
                                                   &image_width, &image_height, &image_channels_count, 4);
 
-    META_CHECK_ARG_NOT_NULL_DESCR(p_image_data, "failed to load image data from memory");
+    META_CHECK_ARG_NOT_NULL_DESCR(image_data_ptr, "failed to load image data from memory");
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_width, 2, "invalid image width");
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_height, 2, "invalid image height");
     META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 3, "invalid image channels count");
@@ -348,7 +348,7 @@ static void AddIconData(const Data::Chunk& icon_data, std::vector<uint32_t>& com
         {
             uint32_t bgra_pixel_data = 0;
             uint8_t* bgra_pixel = reinterpret_cast<uint8_t*>(&bgra_pixel_data); // NOSONAR
-            uint8_t* rgba_pixel = &p_image_data[(y * image_width + x) * 4];     // NOSONAR
+            uint8_t* rgba_pixel&image_data_ptr[(y * image_width + x) * 4];     // NOSONAR
 
             bgra_pixel[0] = rgba_pixel[2];
             bgra_pixel[1] = rgba_pixel[1];

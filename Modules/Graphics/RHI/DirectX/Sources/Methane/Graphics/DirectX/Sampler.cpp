@@ -180,26 +180,26 @@ static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDirectX(Rhi::ISampler::Add
     }
 }
 
-static void SetColor(const Color4F& in_color, FLOAT* p_out_color)
+static void SetColor(const Color4F& in_color, FLOAT* out_color_ptr)
 {
     META_FUNCTION_TASK();
     for (Data::Size i = 0; i < Color4F::Size; ++i)
     {
-        p_out_color[i] = in_color[i];
+        out_color_ptr[i] = in_color[i];
     }
 }
 
-static void ConvertBorderColorToDXColor(Rhi::ISampler::BorderColor border_color, FLOAT* p_out_color)
+static void ConvertBorderColorToDXColor(Rhi::ISampler::BorderColor border_color, FLOAT* out_color_ptr)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(p_out_color);
+    META_CHECK_ARG_NOT_NULL(out_color_ptr);
     using BorderColor = Rhi::ISampler::BorderColor;
     
     switch (border_color)
     {
-    case BorderColor::TransparentBlack: SetColor({ 0.F, 0.F, 0.F, 0.F }, p_out_color); break;
-    case BorderColor::OpaqueBlack:      SetColor({ 0.F, 0.F, 0.F, 1.F }, p_out_color); break;
-    case BorderColor::OpaqueWhite:      SetColor({ 1.F, 1.F, 1.F, 1.F }, p_out_color); break;
+    case BorderColor::TransparentBlack: SetColor({ 0.F, 0.F, 0.F, 0.F }, out_color_ptr); break;
+    case BorderColor::OpaqueBlack:      SetColor({ 0.F, 0.F, 0.F, 1.F }, out_color_ptr); break;
+    case BorderColor::OpaqueWhite:      SetColor({ 1.F, 1.F, 1.F, 1.F }, out_color_ptr); break;
     default:                            META_UNEXPECTED_ARG(border_color);
     }
 }

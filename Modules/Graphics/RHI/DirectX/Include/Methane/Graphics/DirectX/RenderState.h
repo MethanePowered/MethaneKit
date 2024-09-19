@@ -59,7 +59,7 @@ private:
     const RenderContext& GetDirectRenderContext() const noexcept;
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC m_pipeline_state_desc{ };
-    wrl::ComPtr<ID3D12PipelineState>   m_cp_pipeline_state;
+    wrl::ComPtr<ID3D12PipelineState>   m_pipeline_state_cptr;
     std::array<float, 4>               m_blend_factor{ 0.0, 0.0, 0.0, 0.0 };
 };
 

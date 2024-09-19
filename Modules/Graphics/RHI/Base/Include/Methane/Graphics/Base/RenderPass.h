@@ -82,8 +82,8 @@ private:
     bool                  m_is_begun = false;
     mutable Refs<Texture> m_color_attachment_textures;
     mutable Ptrs<Texture> m_non_frame_buffer_attachment_textures;
-    mutable Texture*      m_p_depth_attachment_texture = nullptr;
-    mutable Texture*      m_p_stencil_attachment_texture = nullptr;
+    mutable Texture*      m_depth_attachment_texture_ptr = nullptr;
+    mutable Texture*      m_stencil_attachment_texture_ptr = nullptr;
 };
 
 } // namespace Methane::Graphics::Base

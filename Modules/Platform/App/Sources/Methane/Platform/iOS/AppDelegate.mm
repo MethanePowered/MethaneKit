@@ -45,13 +45,13 @@ using namespace Methane::Platform;
     if (!self)
         return nil;
     
-    AppIOS  * p_app          = AppIOS::GetInstance();
-    UIScreen* ns_main_screen = [UIScreen mainScreen];
-    const auto& ns_frame_size = ns_main_screen.bounds.size;
+    AppIOS*   app_ptr          = AppIOS::GetInstance();
+    UIScreen* ns_main_screen   = [UIScreen mainScreen];
+    const auto& ns_frame_size  = ns_main_screen.bounds.size;
     const CGRect backing_frame = CGRectMake(0.f, 0.f,
                                             ns_frame_size.width * ns_main_screen.nativeScale,
                                             ns_frame_size.height * ns_main_screen.nativeScale);
-    self.viewController = [[AppViewController alloc] initWithApp:p_app andFrameRect:backing_frame];
+    self.viewController = [[AppViewController alloc] initWithApp:app_ptr andFrameRect:backing_frame];
     
     m_window = nil;
     return self;

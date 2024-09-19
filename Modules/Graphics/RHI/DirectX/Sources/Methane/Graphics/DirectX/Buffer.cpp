@@ -72,7 +72,7 @@ Buffer::Buffer(const Base::Context& context, const Settings& orig_settings)
     if (is_private_storage)
     {
         resource_desc.Width = Data::AlignUp(resource_desc.Width, UINT64(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT));
-        m_cp_upload_resource = CreateCommittedResource(resource_desc, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+        m_upload_resource_cptr = CreateCommittedResource(resource_desc, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
     }
 
     // Resources on D3D12_HEAP_TYPE_UPLOAD heaps requires D3D12_RESOURCE_STATE_GENERIC_READ or D3D12_RESOURCE_STATE_RESOLVE_SOURCE, which can not be changed.
@@ -86,9 +86,9 @@ bool Buffer::SetName(std::string_view name)
     if (!Resource::SetName(name))
         return false;
 
-    if (m_cp_upload_resource)
+    if (m_upload_resource_cptr)
     {
-        m_cp_upload_resource->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
+        m_upload_resource_cptr->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
     }
     return true;
 }
@@ -101,19 +101,19 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& su
     const Settings&     settings = GetSettings();
     const CD3DX12_RANGE zero_read_range(0U, 0U);
     const bool       is_private_storage = settings.storage_mode == IBuffer::StorageMode::Private;
-    ID3D12Resource&      d3d12_resource = is_private_storage ? *m_cp_upload_resource.Get() : GetNativeResourceRef();
+    ID3D12Resource&      d3d12_resource = is_private_storage ? *m_upload_resource_cptr.Get() : GetNativeResourceRef();
 
     // Using zero range, since we're not going to read this resource on CPU
     const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(Rhi::SubResourceCount());
-    Data::RawPtr      p_sub_resource_data    = nullptr;
+    Data::RawPtr sub_resource_data_ptr    = nullptr;
     ThrowIfFailed(
         d3d12_resource.Map(sub_resource_raw_index, &zero_read_range,
-                           reinterpret_cast<void**>(&p_sub_resource_data)), // NOSONAR
+                           reinterpret_cast<void**>(&sub_resource_data_ptr)), // NOSONAR
         GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
     );
 
-    META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
-    stdext::checked_array_iterator target_data_it(p_sub_resource_data, sub_resource.GetDataSize());
+    META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+    stdext::checked_array_iterator target_data_it(sub_resource_data_ptr, sub_resource.GetDataSize());
     std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
 
     if (sub_resource.HasDataRange())
@@ -131,7 +131,7 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& su
 
     // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
     const TransferCommandList& upload_cmd_list = PrepareResourceTransfer(TransferOperation::Upload, target_cmd_queue, State::CopyDest);
-    upload_cmd_list.GetNativeCommandList().CopyBufferRegion(GetNativeResource(), 0U, m_cp_upload_resource.Get(), 0U, settings.size);
+    upload_cmd_list.GetNativeCommandList().CopyBufferRegion(GetNativeResource(), 0U, m_upload_resource_cptr.Get(), 0U, settings.size);
     GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
 }
 

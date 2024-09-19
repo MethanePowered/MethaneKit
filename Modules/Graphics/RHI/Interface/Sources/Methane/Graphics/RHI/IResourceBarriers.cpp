@@ -39,17 +39,17 @@ ResourceBarrierId::ResourceBarrierId(Type type, Rhi::IResource& resource) noexce
 bool ResourceBarrierId::operator<(const ResourceBarrierId& other) const noexcept
 {
     META_FUNCTION_TASK();
-    const Rhi::IResource* p_this_resource  = std::addressof(m_resource_ref.get());
-    const Rhi::IResource* p_other_resource = std::addressof(other.GetResource());
-    return std::tie(m_type, p_this_resource) < std::tie(other.m_type, p_other_resource);
+    const Rhi::IResource* this_resource_ptr  = std::addressof(m_resource_ref.get());
+    const Rhi::IResource* other_resource_ptr = std::addressof(other.GetResource());
+    return std::tie(m_type, this_resource_ptr) < std::tie(other.m_type, other_resource_ptr);
 }
 
 bool ResourceBarrierId::operator==(const ResourceBarrierId& other) const noexcept
 {
     META_FUNCTION_TASK();
-    const Rhi::IResource* p_this_resource  = std::addressof(m_resource_ref.get());
-    const Rhi::IResource* p_other_resource = std::addressof(other.GetResource());
-    return std::tie(m_type, p_this_resource) == std::tie(other.m_type, p_other_resource);
+    const Rhi::IResource* this_resource_ptr  = std::addressof(m_resource_ref.get());
+    const Rhi::IResource* other_resource_ptr = std::addressof(other.GetResource());
+    return std::tie(m_type, this_resource_ptr) == std::tie(other.m_type, other_resource_ptr);
 }
 
 bool ResourceBarrierId::operator!=(const ResourceBarrierId& other) const noexcept

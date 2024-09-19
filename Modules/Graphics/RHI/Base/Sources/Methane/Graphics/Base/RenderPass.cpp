@@ -51,7 +51,7 @@ bool RenderPass::Update(const Rhi::RenderPassSettings& settings)
 
     m_non_frame_buffer_attachment_textures.clear();
     m_color_attachment_textures.clear();
-    m_p_depth_attachment_texture = nullptr;
+    m_depth_attachment_texture_ptr = nullptr;
 
     InitAttachmentStates();
     return true;
@@ -115,10 +115,10 @@ void RenderPass::SetAttachmentStates(const Opt<Rhi::ResourceState>& color_state,
 
     if (depth_state)
     {
-        if (Texture* p_depth_texture = GetDepthAttachmentTexture();
-            p_depth_texture)
+        if (Texture* depth_texture_ptr = GetDepthAttachmentTexture();
+            depth_texture_ptr)
         {
-            p_depth_texture->SetState(*depth_state);
+            depth_texture_ptr->SetState(*depth_state);
         }
     }
 }
@@ -141,10 +141,10 @@ void RenderPass::SetAttachmentStates(const Opt<Rhi::ResourceState>& color_state,
 
     if (depth_state)
     {
-        if (Texture* p_depth_texture = GetDepthAttachmentTexture();
-            p_depth_texture)
+        if (Texture* depth_texture_ptr = GetDepthAttachmentTexture();
+            depth_texture_ptr)
         {
-            attachment_states_changed |= p_depth_texture->SetState(*depth_state, transition_barriers_ptr);
+            attachment_states_changed |= depth_texture_ptr->SetState(*depth_state, transition_barriers_ptr);
         }
     }
 
@@ -180,29 +180,29 @@ const Refs<Texture>& RenderPass::GetColorAttachmentTextures() const
 Texture* RenderPass::GetDepthAttachmentTexture() const
 {
     META_FUNCTION_TASK();
-    if (m_p_depth_attachment_texture)
-        return m_p_depth_attachment_texture;
+    if (m_depth_attachment_texture_ptr)
+        return m_depth_attachment_texture_ptr;
 
     const Opt<Rhi::RenderPassDepthAttachment>& depth_attachment_opt = GetPattern().GetSettings().depth_attachment;
     if (!depth_attachment_opt)
         return nullptr;
 
-    m_p_depth_attachment_texture = static_cast<Texture*>(GetAttachmentTextureView(*depth_attachment_opt).GetTexturePtr().get());
-    return m_p_depth_attachment_texture;
+    m_depth_attachment_texture_ptr = static_cast<Texture*>(GetAttachmentTextureView(*depth_attachment_opt).GetTexturePtr().get());
+    return m_depth_attachment_texture_ptr;
 }
 
 Texture* RenderPass::GetStencilAttachmentTexture() const
 {
     META_FUNCTION_TASK();
-    if (m_p_stencil_attachment_texture)
-        return m_p_stencil_attachment_texture;
+    if (m_stencil_attachment_texture_ptr)
+        return m_stencil_attachment_texture_ptr;
 
     const Opt<StencilAttachment>& stencil_attachment_opt = GetPattern().GetSettings().stencil_attachment;
     if (!stencil_attachment_opt)
         return nullptr;
 
-    m_p_stencil_attachment_texture = static_cast<Texture*>(GetAttachmentTextureView(*stencil_attachment_opt).GetTexturePtr().get());
-    return m_p_stencil_attachment_texture;
+    m_stencil_attachment_texture_ptr = static_cast<Texture*>(GetAttachmentTextureView(*stencil_attachment_opt).GetTexturePtr().get());
+    return m_stencil_attachment_texture_ptr;
 }
 
 const Ptrs<Texture>& RenderPass::GetNonFrameBufferAttachmentTextures() const
