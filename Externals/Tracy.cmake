@@ -17,5 +17,6 @@ if(NOT MSVC)
     target_compile_options(TracyClient
         PRIVATE
             -Wno-unused-result # ignoring return value of 'fscanf' declared with attribute ‘warn_unused_result’
+            -Wno-deprecated-declarations # ignore warning: 'sprintf' is deprecated
     )
 endif()
