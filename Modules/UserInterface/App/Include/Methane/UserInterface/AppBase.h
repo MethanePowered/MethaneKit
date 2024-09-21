@@ -82,8 +82,8 @@ protected:
     [[nodiscard]] HeadsUpDisplay*           GetHeadsUpDisplay() const noexcept { return m_hud_ptr.get(); }
 
     [[nodiscard]] IApp::Settings& GetAppSettings() noexcept                    { return m_app_settings; }
-    [[nodiscard]] const Context&  GetUIContext() const                         { META_CHECK_ARG_NOT_NULL(m_ui_context_ptr); return *m_ui_context_ptr; }
-    [[nodiscard]] Context&        GetUIContext()                               { META_CHECK_ARG_NOT_NULL(m_ui_context_ptr); return *m_ui_context_ptr; }
+    [[nodiscard]] const Context&  GetUIContext() const                         { META_CHECK_NOT_NULL(m_ui_context_ptr); return *m_ui_context_ptr; }
+    [[nodiscard]] Context&        GetUIContext()                               { META_CHECK_NOT_NULL(m_ui_context_ptr); return *m_ui_context_ptr; }
 
 private:
     struct TextPanel

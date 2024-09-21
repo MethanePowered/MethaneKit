@@ -251,7 +251,7 @@ void TypographyApp::UpdateFontAtlasBadges()
     // Remove obsolete font atlas badges
     for(auto badge_it = m_font_atlas_badges.begin(); badge_it != m_font_atlas_badges.end();)
     {
-        META_CHECK_ARG_NOT_NULL(*badge_it);
+        META_CHECK_NOT_NULL(*badge_it);
         if (const gui::Badge& badge = **badge_it;
             std::any_of(fonts.begin(), fonts.end(),
                 [&badge, &context](const gui::Font& font)
@@ -297,7 +297,7 @@ void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
     gui::UnitSize badge_margins(gui::Units::Dots, g_margin_size_in_dots, g_margin_size_in_dots);
     for(const Ptr<gui::Badge>& badge_atlas_ptr : m_font_atlas_badges)
     {
-        META_CHECK_ARG_NOT_NULL(badge_atlas_ptr);
+        META_CHECK_NOT_NULL(badge_atlas_ptr);
         const gui::UnitSize atlas_size = GetUIContext().ConvertTo<gui::Units::Dots>(badge_atlas_ptr->GetTexture().GetSettings().dimensions.AsRectSize());
         badge_atlas_ptr->FrameResize(gui::UnitSize(gui::Units::Pixels, frame_size), atlas_size, badge_margins);
         badge_margins += gui::UnitSize(gui::Units::Dots, atlas_size.GetWidth() + g_margin_size_in_dots, 0U);

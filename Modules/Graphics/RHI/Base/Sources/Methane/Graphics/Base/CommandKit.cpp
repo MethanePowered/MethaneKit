@@ -65,10 +65,10 @@ CommandKit::CommandKit(const Rhi::IContext& context, Rhi::CommandListType cmd_li
     META_FUNCTION_TASK();
     if (context.GetType() == Rhi::ContextType::Compute)
     {
-        META_CHECK_ARG_NOT_EQUAL_DESCR(cmd_list_type, Rhi::CommandListType::Render,
+        META_CHECK_NOT_EQUAL_DESCR(cmd_list_type, Rhi::CommandListType::Render,
                                        "compute context can not be used to create render command queues");
     }
-    META_CHECK_ARG_NOT_EQUAL_DESCR(cmd_list_type, Rhi::CommandListType::ParallelRender,
+    META_CHECK_NOT_EQUAL_DESCR(cmd_list_type, Rhi::CommandListType::ParallelRender,
                                    "command queue should be created with Render type to support ParallelRender command lists");
 }
 
@@ -135,7 +135,7 @@ Rhi::ICommandList& CommandKit::GetList(Rhi::CommandListId cmd_list_id = 0U) cons
 {
     META_FUNCTION_TASK();
     const CommandListIndex cmd_list_index = GetCommandListIndexById(cmd_list_id);
-    META_CHECK_ARG_LESS_DESCR(cmd_list_index, g_max_cmd_lists_count, "no more than 32 command lists are supported in one command kit");
+    META_CHECK_LESS_DESCR(cmd_list_index, g_max_cmd_lists_count, "no more than 32 command lists are supported in one command kit");
     if (cmd_list_index >= m_cmd_list_ptrs.size())
         m_cmd_list_ptrs.resize(cmd_list_index + 1);
 
@@ -148,7 +148,7 @@ Rhi::ICommandList& CommandKit::GetList(Rhi::CommandListId cmd_list_id = 0U) cons
     case Rhi::CommandListType::Transfer: cmd_list_ptr = GetQueue().CreateTransferCommandList(); break;
     case Rhi::CommandListType::Render:   cmd_list_ptr = RenderCommandList::CreateForSynchronization(GetQueue()); break;
     case Rhi::CommandListType::Compute:  cmd_list_ptr = GetQueue().CreateComputeCommandList(); break;
-    default: META_UNEXPECTED_ARG(m_cmd_list_type);
+    default: META_UNEXPECTED(m_cmd_list_type);
     }
 
     cmd_list_ptr->SetName(fmt::format("{} Helper List {}", GetName(), GetCommandListNameById(cmd_list_id)));
@@ -184,7 +184,7 @@ Rhi::ICommandList& CommandKit::GetListForEncoding(Rhi::CommandListId cmd_list_id
 Rhi::ICommandListSet& CommandKit::GetListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EMPTY(cmd_list_ids);
+    META_CHECK_NOT_EMPTY(cmd_list_ids);
     const CommandListSetId cmd_list_set_id = GetCommandListSetId(cmd_list_ids, frame_index_opt);
 
     Ptr<Rhi::ICommandListSet>& cmd_list_set_ptr = m_cmd_list_set_by_id[cmd_list_set_id];
@@ -252,12 +252,12 @@ CommandKit::CommandListIndex CommandKit::GetCommandListIndexById(Rhi::CommandLis
 CommandKit::CommandListSetId CommandKit::GetCommandListSetId(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS_DESCR(cmd_list_ids.size(), g_max_cmd_lists_count, "too many command lists in a set");
+    META_CHECK_LESS_DESCR(cmd_list_ids.size(), g_max_cmd_lists_count, "too many command lists in a set");
     uint32_t set_id = 0;
     for(const uint32_t cmd_list_id : cmd_list_ids)
     {
         const uint32_t cmd_list_index = GetCommandListIndexById(cmd_list_id);
-        META_CHECK_ARG_LESS_DESCR(cmd_list_index, g_max_cmd_lists_count, "no more than 32 command lists are supported in one command kit");
+        META_CHECK_LESS_DESCR(cmd_list_index, g_max_cmd_lists_count, "no more than 32 command lists are supported in one command kit");
         set_id += 1 << cmd_list_index;
     }
     return CommandListSetId(frame_index_opt, set_id);

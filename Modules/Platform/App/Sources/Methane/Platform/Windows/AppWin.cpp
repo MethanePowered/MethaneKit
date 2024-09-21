@@ -48,7 +48,7 @@ static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
     case AppBase::Message::Type::Information:   return MB_ICONINFORMATION | MB_OK;
     case AppBase::Message::Type::Warning:       return MB_ICONWARNING | MB_OK;
     case AppBase::Message::Type::Error:         return MB_ICONERROR | MB_OK;
-    default:                                    META_UNEXPECTED_ARG_RETURN(msg_type, 0);
+    default:                                    META_UNEXPECTED_RETURN(msg_type, 0);
     }
 }
 
@@ -76,7 +76,7 @@ static float GetDeviceScaleRatio(DEVICE_SCALE_FACTOR device_scale_factor)
     case SCALE_400_PERCENT:           return 4.F;
     case SCALE_450_PERCENT:           return 4.5F;
     case SCALE_500_PERCENT:           return 5.F;
-    default: META_UNEXPECTED_ARG_RETURN(device_scale_factor, 1.F);
+    default: META_UNEXPECTED_RETURN(device_scale_factor, 1.F);
     }
 }
 
@@ -501,7 +501,7 @@ void AppWin::ScheduleAlert()
         return;
 
     const BOOL post_result = PostMessage(m_env.window_handle, WM_ALERT, 0, 0);
-    META_CHECK_ARG_TRUE_DESCR(post_result, "failed to post window message");
+    META_CHECK_TRUE_DESCR(post_result, "failed to post window message");
 }
 
 void AppWin::SetWindowTitle(const std::string& title_text)
@@ -511,7 +511,7 @@ void AppWin::SetWindowTitle(const std::string& title_text)
         return;
 
     BOOL set_result = SetWindowTextW(m_env.window_handle, nowide::widen(title_text).c_str());
-    META_CHECK_ARG_TRUE_DESCR(set_result, "failed to update window title");
+    META_CHECK_TRUE_DESCR(set_result, "failed to update window title");
 }
 
 bool AppWin::SetFullScreen(bool is_full_screen)
@@ -520,7 +520,7 @@ bool AppWin::SetFullScreen(bool is_full_screen)
     if (!AppBase::SetFullScreen(is_full_screen))
         return false;
 
-    META_CHECK_ARG_NOT_NULL(m_env.window_handle);
+    META_CHECK_NOT_NULL(m_env.window_handle);
     
     RECT    window_rect{};
     int32_t window_style    = WS_OVERLAPPEDWINDOW;
@@ -565,7 +565,7 @@ float AppWin::GetContentScalingFactor() const
     META_FUNCTION_TASK();
     DEVICE_SCALE_FACTOR device_scale_factor = DEVICE_SCALE_FACTOR_INVALID;
     HMONITOR monitor_handle = MonitorFromWindow(m_env.window_handle, MONITOR_DEFAULTTONEAREST);
-    META_CHECK_ARG_FALSE(FAILED(GetScaleFactorForMonitor(monitor_handle, &device_scale_factor)));
+    META_CHECK_FALSE(FAILED(GetScaleFactorForMonitor(monitor_handle, &device_scale_factor)));
     return GetDeviceScaleRatio(device_scale_factor);
 }
 
@@ -574,8 +574,8 @@ uint32_t AppWin::GetFontResolutionDpi() const
     META_FUNCTION_TASK();
     const HDC window_device_context = GetDC(m_env.window_handle);
     const int dpi_y = GetDeviceCaps(window_device_context, LOGPIXELSY);
-    META_CHECK_ARG_GREATER_OR_EQUAL(dpi_y, 1);
-    META_CHECK_ARG_EQUAL_DESCR(dpi_y, GetDeviceCaps(window_device_context, LOGPIXELSX),
+    META_CHECK_GREATER_OR_EQUAL(dpi_y, 1);
+    META_CHECK_EQUAL_DESCR(dpi_y, GetDeviceCaps(window_device_context, LOGPIXELSX),
                                "we assume that horizontal and vertical font resolutions are equal");
     return dpi_y;
 }

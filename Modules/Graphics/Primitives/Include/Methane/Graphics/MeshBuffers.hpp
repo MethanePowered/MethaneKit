@@ -77,14 +77,14 @@ public:
     const UniformsType& GetFinalPassUniforms(Data::Index instance_index = 0U) const
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_LESS(instance_index, m_final_pass_instance_uniforms.size());
+        META_CHECK_LESS(instance_index, m_final_pass_instance_uniforms.size());
         return m_final_pass_instance_uniforms[instance_index];
     }
 
     void SetFinalPassUniforms(UniformsType&& uniforms, Data::Index instance_index = 0U)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_LESS(instance_index, m_final_pass_instance_uniforms.size());
+        META_CHECK_LESS(instance_index, m_final_pass_instance_uniforms.size());
         m_final_pass_instance_uniforms[instance_index] = std::move(uniforms);
     }
 
@@ -160,7 +160,7 @@ public:
         const Rhi::ResourceBarriers beginning_resource_barriers = MeshBuffers<UniformsType>::CreateBeginningResourceBarriers(constants_buffer_ptr);
         for (const Rhi::Texture& texture : m_subset_textures)
         {
-            META_CHECK_ARG_TRUE(texture.IsInitialized());
+            META_CHECK_TRUE(texture.IsInitialized());
             beginning_resource_barriers.AddStateTransition(texture.GetInterface(), texture.GetState(), Rhi::ResourceState::ShaderResource);
         }
         return beginning_resource_barriers;
@@ -177,7 +177,7 @@ public:
     const Rhi::Texture& GetSubsetTexture(uint32_t subset_index) const
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_LESS(subset_index, MeshBuffers<UniformsType>::GetSubsetsCount());
+        META_CHECK_LESS(subset_index, MeshBuffers<UniformsType>::GetSubsetsCount());
         return m_subset_textures[subset_index];
     }
 
@@ -202,7 +202,7 @@ public:
     void SetSubsetTexture(const Rhi::Texture& texture, uint32_t subset_index)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_LESS(subset_index, MeshBuffers<UniformsType>::GetSubsetsCount());
+        META_CHECK_LESS(subset_index, MeshBuffers<UniformsType>::GetSubsetsCount());
         m_subset_textures[subset_index] = texture;
     }
 };

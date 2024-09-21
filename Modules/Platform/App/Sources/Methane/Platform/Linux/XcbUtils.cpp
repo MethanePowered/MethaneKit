@@ -75,7 +75,7 @@ std::pair<Input::Mouse::Button, int> ConvertXcbMouseButton(xcb_button_t button)
     case XCB_BUTTON_INDEX_5:     return { Input::Mouse::Button::VScroll, -1 };
     case XCB_BUTTON_INDEX_5 + 1: return { Input::Mouse::Button::HScroll, 1 };
     case XCB_BUTTON_INDEX_5 + 2: return { Input::Mouse::Button::HScroll, -1 };
-    default: META_UNEXPECTED_ARG_DESCR(button, "XCB mouse button is not supported");
+    default: META_UNEXPECTED_DESCR(button, "XCB mouse button is not supported");
     }
 }
 
@@ -120,7 +120,7 @@ void XcbMeasureText(xcb_connection_t* connection, xcb_font_t font, std::string_v
 
     const xcb_query_text_extents_cookie_t cookie = xcb_query_text_extents(connection, font, static_cast<uint32_t>(xcb_str.size()), xcb_str.data());
     xcb_query_text_extents_reply_t* reply = xcb_query_text_extents_reply(connection, cookie, nullptr);
-    META_CHECK_ARG_NOT_NULL_DESCR(reply, "failed to query XCB text extents");
+    META_CHECK_NOT_NULL_DESCR(reply, "failed to query XCB text extents");
 
     width  = reply->overall_width;
     height = reply->font_ascent + reply->font_descent;

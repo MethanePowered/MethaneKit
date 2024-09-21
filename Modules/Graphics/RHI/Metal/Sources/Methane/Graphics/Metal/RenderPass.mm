@@ -41,7 +41,7 @@ static MTLStoreAction GetLStoreAction(Rhi::RenderPassAttachment::StoreAction sto
         case Rhi::RenderPassAttachment::StoreAction::DontCare: return MTLStoreActionDontCare;
         case Rhi::RenderPassAttachment::StoreAction::Store:    return MTLStoreActionStore;
         case Rhi::RenderPassAttachment::StoreAction::Resolve:  return MTLStoreActionMultisampleResolve;
-        default: META_UNEXPECTED_ARG_RETURN(store_action, MTLStoreActionUnknown);
+        default: META_UNEXPECTED_RETURN(store_action, MTLStoreActionUnknown);
     }
 }
 
@@ -53,7 +53,7 @@ static MTLLoadAction GetLLoadAction(Rhi::RenderPassAttachment::LoadAction load_a
         case Rhi::RenderPassAttachment::LoadAction::DontCare: return MTLLoadActionDontCare;
         case Rhi::RenderPassAttachment::LoadAction::Load:     return MTLLoadActionLoad;
         case Rhi::RenderPassAttachment::LoadAction::Clear:    return MTLLoadActionClear;
-        default: META_UNEXPECTED_ARG_RETURN(load_action, MTLLoadActionDontCare);
+        default: META_UNEXPECTED_RETURN(load_action, MTLLoadActionDontCare);
     }
 }
 
@@ -69,7 +69,7 @@ static void ConvertRenderPassAttachmentToMetal(const Base::RenderPass& render_pa
         static_cast<Texture&>(texture_location.GetTexture()).UpdateFrameBuffer();
     }
     
-    META_CHECK_ARG_NOT_NULL(mtl_attachment_desc);
+    META_CHECK_NOT_NULL(mtl_attachment_desc);
     mtl_attachment_desc.texture       = static_cast<const Texture&>(texture_location.GetTexture()).GetNativeTexture();
     mtl_attachment_desc.level         = sub_resource_index.GetMipLevel();
     mtl_attachment_desc.loadAction    = GetLLoadAction(attachment.load_action);

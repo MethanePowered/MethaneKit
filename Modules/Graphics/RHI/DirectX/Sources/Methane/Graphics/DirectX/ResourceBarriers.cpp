@@ -50,7 +50,7 @@ static D3D12_RESOURCE_BARRIER_TYPE GetNativeBarrierType(Rhi::ResourceBarrier::Ty
     switch (barrier_type) // NOSONAR
     {
     case Rhi::ResourceBarrier::Type::StateTransition: return D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    default: META_UNEXPECTED_ARG_RETURN(barrier_type, D3D12_RESOURCE_BARRIER_TYPE_TRANSITION);
+    default: META_UNEXPECTED_RETURN(barrier_type, D3D12_RESOURCE_BARRIER_TYPE_TRANSITION);
     }
 }
 
@@ -80,7 +80,7 @@ static std::function<bool(const D3D12_RESOURCE_BARRIER&)> GetNativeResourceBarri
                        native_resource_barrier.Aliasing.pResourceBefore == native_resource_ptr;
             };
     default:
-        META_UNEXPECTED_ARG_RETURN(native_barrier_type, nullptr);
+        META_UNEXPECTED_RETURN(native_barrier_type, nullptr);
     }
 }
 
@@ -97,7 +97,7 @@ D3D12_RESOURCE_BARRIER ResourceBarriers::GetNativeResourceBarrier(const Barrier:
         );
 
     default:
-        META_UNEXPECTED_ARG_RETURN(id.GetType(), D3D12_RESOURCE_BARRIER());
+        META_UNEXPECTED_RETURN(id.GetType(), D3D12_RESOURCE_BARRIER());
     }
 }
 
@@ -125,7 +125,7 @@ Base::ResourceBarriers::AddResult ResourceBarriers::Add(const Barrier::Id& id, c
     case AddResult::Added:    AddNativeResourceBarrier(id, barrier.GetStateChange()); break;
     case AddResult::Updated:  UpdateNativeResourceBarrier(id, barrier.GetStateChange()); break;
     case AddResult::Existing: break;
-    default: META_UNEXPECTED_ARG_RETURN(result, result);
+    default: META_UNEXPECTED_RETURN(result, result);
     }
     return result;
 }
@@ -144,7 +144,7 @@ bool ResourceBarriers::Remove(const Barrier::Id& id)
     const ID3D12Resource* native_resource_ptr = dynamic_cast<const IResource&>(id.GetResource()).GetNativeResource();
     const auto native_resource_barrier_it = std::find_if(m_native_resource_barriers.begin(), m_native_resource_barriers.end(),
                                                          GetNativeResourceBarrierPredicate(native_barrier_type, native_resource_ptr));
-    META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
+    META_CHECK_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
     m_native_resource_barriers.erase(native_resource_barrier_it);
 
     static_cast<Data::IEmitter<IResourceCallback>&>(id.GetResource()).Disconnect(*this);
@@ -171,7 +171,7 @@ void ResourceBarriers::UpdateNativeResourceBarrier(const Barrier::Id& id, const 
     const ID3D12Resource* native_resource_ptr = dynamic_cast<const IResource&>(id.GetResource()).GetNativeResource();
     const auto native_resource_barrier_it = std::find_if(m_native_resource_barriers.begin(), m_native_resource_barriers.end(),
                                                          GetNativeResourceBarrierPredicate(native_barrier_type, native_resource_ptr));
-    META_CHECK_ARG_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
+    META_CHECK_TRUE_DESCR(native_resource_barrier_it != m_native_resource_barriers.end(), "can not find DX resource barrier to update");
 
     switch (native_barrier_type) // NOSONAR - do not replace switch with if
     {
@@ -181,7 +181,7 @@ void ResourceBarriers::UpdateNativeResourceBarrier(const Barrier::Id& id, const 
         break;
 
     default:
-        META_UNEXPECTED_ARG(native_barrier_type);
+        META_UNEXPECTED(native_barrier_type);
     }
 }
 

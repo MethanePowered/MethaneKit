@@ -57,7 +57,7 @@ RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_
 Rhi::IRenderPass& RenderCommandList::GetRenderPass() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);
+    META_CHECK_NOT_NULL(m_render_pass_ptr);
     return *m_render_pass_ptr;
 }
 
@@ -156,7 +156,7 @@ bool RenderCommandList::SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool s
 
     if (m_is_validation_enabled)
     {
-        META_CHECK_ARG_NAME_DESCR("vertex_buffers", vertex_buffers.GetType() == Rhi::BufferType::Vertex,
+        META_CHECK_NAME_DESCR("vertex_buffers", vertex_buffers.GetType() == Rhi::BufferType::Vertex,
                                   "can not set buffers of '{}' type where 'Vertex' buffers are required",
                                   magic_enum::enum_name(vertex_buffers.GetType()));
     }
@@ -186,7 +186,7 @@ bool RenderCommandList::SetIndexBuffer(Rhi::IBuffer& index_buffer, bool set_reso
 
     if (m_is_validation_enabled)
     {
-        META_CHECK_ARG_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == Rhi::BufferType::Index,
+        META_CHECK_NAME_DESCR("index_buffer", index_buffer.GetSettings().type == Rhi::BufferType::Index,
                                   "can not set with index buffer of type '{}' where 'Index' buffer is required",
                                   magic_enum::enum_name(index_buffer.GetSettings().type));
     }
@@ -214,14 +214,14 @@ void RenderCommandList::DrawIndexed(Primitive primitive_type, uint32_t index_cou
     if (m_is_validation_enabled)
     {
         const DrawingState& drawing_state = GetDrawingState();
-        META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.index_buffer_ptr, "index buffer must be set before indexed draw call");
-        META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.vertex_buffer_set_ptr, "vertex buffers must be set before draw call");
+        META_CHECK_NOT_NULL_DESCR(drawing_state.index_buffer_ptr, "index buffer must be set before indexed draw call");
+        META_CHECK_NOT_NULL_DESCR(drawing_state.vertex_buffer_set_ptr, "vertex buffers must be set before draw call");
 
         const uint32_t formatted_items_count = drawing_state.index_buffer_ptr->GetFormattedItemsCount();
-        META_CHECK_ARG_NOT_ZERO_DESCR(formatted_items_count, "can not draw with index buffer which contains no formatted vertices");
-        META_CHECK_ARG_NOT_ZERO_DESCR(index_count, "can not draw zero index/vertex count");
-        META_CHECK_ARG_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
-        META_CHECK_ARG_LESS_DESCR(start_index, formatted_items_count - index_count + 1U, "ending index is out of buffer bounds");
+        META_CHECK_NOT_ZERO_DESCR(formatted_items_count, "can not draw with index buffer which contains no formatted vertices");
+        META_CHECK_NOT_ZERO_DESCR(index_count, "can not draw zero index/vertex count");
+        META_CHECK_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
+        META_CHECK_LESS_DESCR(start_index, formatted_items_count - index_count + 1U, "ending index is out of buffer bounds");
 
         ValidateDrawVertexBuffers(start_vertex);
     }
@@ -243,14 +243,14 @@ void RenderCommandList::Draw(Primitive primitive_type, uint32_t vertex_count, ui
     if (m_is_validation_enabled)
     {
         const DrawingState& drawing_state = GetDrawingState();
-        META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.render_state_ptr, "render state must be set before draw call");
+        META_CHECK_NOT_NULL_DESCR(drawing_state.render_state_ptr, "render state must be set before draw call");
         const size_t input_buffers_count = drawing_state.render_state_ptr->GetSettings().program_ptr->GetSettings().input_buffer_layouts.size();
-        META_CHECK_ARG_TRUE_DESCR(!input_buffers_count || drawing_state.vertex_buffer_set_ptr,
+        META_CHECK_TRUE_DESCR(!input_buffers_count || drawing_state.vertex_buffer_set_ptr,
                                  "vertex buffers must be set when program has non empty input buffer layouts");
-        META_CHECK_ARG_TRUE_DESCR(!drawing_state.vertex_buffer_set_ptr || drawing_state.vertex_buffer_set_ptr->GetCount() == input_buffers_count,
+        META_CHECK_TRUE_DESCR(!drawing_state.vertex_buffer_set_ptr || drawing_state.vertex_buffer_set_ptr->GetCount() == input_buffers_count,
                                   "vertex buffers count must be equal to the program input buffer layouts count");
-        META_CHECK_ARG_NOT_ZERO_DESCR(vertex_count, "can not draw zero vertices");
-        META_CHECK_ARG_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
+        META_CHECK_NOT_ZERO_DESCR(vertex_count, "can not draw zero vertices");
+        META_CHECK_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
 
         ValidateDrawVertexBuffers(start_vertex, vertex_count);
     }
@@ -321,7 +321,7 @@ void RenderCommandList::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, ui
         const Rhi::IBuffer&  vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
         const uint32_t vertex_count  = vertex_buffer.GetFormattedItemsCount();
         META_UNUSED(vertex_count);
-        META_CHECK_ARG_LESS_DESCR(draw_start_vertex, vertex_count - draw_vertex_count + 1U,
+        META_CHECK_LESS_DESCR(draw_start_vertex, vertex_count - draw_vertex_count + 1U,
                                   "can not draw starting from vertex {}{} which is out of bounds for vertex buffer '{}' with vertex count {}",
                                   draw_start_vertex, draw_vertex_count ? fmt::format(" with {} vertex count", draw_vertex_count) : "",
                                   vertex_buffer.GetName(), vertex_count);
@@ -331,7 +331,7 @@ void RenderCommandList::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, ui
 RenderPass& RenderCommandList::GetPass()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);
+    META_CHECK_NOT_NULL(m_render_pass_ptr);
     return *m_render_pass_ptr;
 }
 

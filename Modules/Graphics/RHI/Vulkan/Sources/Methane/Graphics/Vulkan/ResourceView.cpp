@@ -50,28 +50,28 @@ IResource& ResourceView::GetVulkanResource() const
 const ResourceView::BufferViewDescriptor* ResourceView::GetBufferViewDescriptorPtr() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_view_desc_var_ptr);
+    META_CHECK_NOT_NULL(m_view_desc_var_ptr);
     return std::get_if<BufferViewDescriptor>(m_view_desc_var_ptr.get());
 }
 
 const ResourceView::BufferViewDescriptor& ResourceView::GetBufferViewDescriptor() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_view_desc_var_ptr);
+    META_CHECK_NOT_NULL(m_view_desc_var_ptr);
     return std::get<BufferViewDescriptor>(*m_view_desc_var_ptr);
 }
 
 const ResourceView::ImageViewDescriptor* ResourceView::GetImageViewDescriptorPtr() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_view_desc_var_ptr);
+    META_CHECK_NOT_NULL(m_view_desc_var_ptr);
     return std::get_if<ImageViewDescriptor>(m_view_desc_var_ptr.get());
 }
 
 const ResourceView::ImageViewDescriptor& ResourceView::GetImageViewDescriptor() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_view_desc_var_ptr);
+    META_CHECK_NOT_NULL(m_view_desc_var_ptr);
     return std::get<ImageViewDescriptor>(*m_view_desc_var_ptr);
 }
 
@@ -107,7 +107,7 @@ const vk::BufferView& ResourceView::GetNativeBufferView() const
 {
     META_FUNCTION_TASK();
     const BufferViewDescriptor& buffer_view_desc = GetBufferViewDescriptor();
-    META_CHECK_ARG_NOT_NULL(buffer_view_desc.vk_view);
+    META_CHECK_NOT_NULL(buffer_view_desc.vk_view);
     return buffer_view_desc.vk_view.get();
 }
 
@@ -115,7 +115,7 @@ const vk::ImageView& ResourceView::GetNativeImageView() const
 {
     META_FUNCTION_TASK();
     const ImageViewDescriptor& image_view_desc = GetImageViewDescriptor();
-    META_CHECK_ARG_NOT_NULL(image_view_desc.vk_view);
+    META_CHECK_NOT_NULL(image_view_desc.vk_view);
     return image_view_desc.vk_view.get();
 }
 

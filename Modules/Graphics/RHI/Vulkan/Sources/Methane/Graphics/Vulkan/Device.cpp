@@ -66,7 +66,7 @@ std::optional<uint32_t> FindQueueFamily(const std::vector<vk::QueueFamilyPropert
                                         const vk::SurfaceKHR& vk_present_surface = {})
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(reserved_queues_count_per_family.size(), vk_queue_family_properties.size());
+    META_CHECK_EQUAL(reserved_queues_count_per_family.size(), vk_queue_family_properties.size());
     for(size_t family_index = 0; family_index < vk_queue_family_properties.size(); ++family_index)
     {
         const vk::QueueFamilyProperties& vk_family_props = vk_queue_family_properties[family_index];
@@ -134,7 +134,7 @@ static vk::QueueFlags GetQueueFlagsByType(Rhi::CommandListType cmd_list_type)
     case Rhi::CommandListType::Transfer: return vk::QueueFlagBits::eTransfer;
     case Rhi::CommandListType::Render:   return vk::QueueFlagBits::eGraphics;
     case Rhi::CommandListType::Compute:  return vk::QueueFlagBits::eCompute;
-    default: META_UNEXPECTED_ARG_RETURN(cmd_list_type, vk::QueueFlagBits::eGraphics);
+    default: META_UNEXPECTED_RETURN(cmd_list_type, vk::QueueFlagBits::eGraphics);
     }
 }
 
@@ -187,7 +187,7 @@ uint32_t QueueFamilyReservation::ClaimQueueIndex() const
 void QueueFamilyReservation::ReleaseQueueIndex(uint32_t queue_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(queue_index, m_queues_count);
+    META_CHECK_LESS(queue_index, m_queues_count);
     m_free_indices.Add({ queue_index, queue_index + 1});
 }
 
@@ -326,7 +326,7 @@ const QueueFamilyReservation& Device::GetQueueFamilyReservation(Rhi::CommandList
 {
     META_FUNCTION_TASK();
     const QueueFamilyReservation* queue_family_reservation_ptr = GetQueueFamilyReservationPtr(cmd_list_type);
-    META_CHECK_ARG_NOT_NULL_DESCR(queue_family_reservation_ptr,
+    META_CHECK_NOT_NULL_DESCR(queue_family_reservation_ptr,
                                   fmt::format("queue family was not reserved for {} command list type",
                                               magic_enum::enum_name(cmd_list_type)));
     return *queue_family_reservation_ptr;
@@ -358,7 +358,7 @@ Opt<uint32_t> Device::FindMemoryType(uint32_t type_filter, vk::MemoryPropertyFla
 const vk::QueueFamilyProperties& Device::GetNativeQueueFamilyProperties(uint32_t queue_family_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS_DESCR(queue_family_index, m_vk_queue_family_properties.size(), "invalid queue family index");
+    META_CHECK_LESS_DESCR(queue_family_index, m_vk_queue_family_properties.size(), "invalid queue family index");
     return m_vk_queue_family_properties[queue_family_index];
 }
 
@@ -377,8 +377,8 @@ void Device::ReserveQueueFamily(Rhi::CommandListType cmd_list_type, uint32_t que
         throw IncompatibleException(fmt::format("Device does not support the required queue type {} and count {}",
                                                 magic_enum::enum_name(cmd_list_type), queues_count));
 
-    META_CHECK_ARG_LESS(*vk_queue_family_index, m_vk_queue_family_properties.size());
-    META_CHECK_ARG_TRUE(static_cast<bool>(m_vk_queue_family_properties[*vk_queue_family_index].queueFlags & queue_flags));
+    META_CHECK_LESS(*vk_queue_family_index, m_vk_queue_family_properties.size());
+    META_CHECK_TRUE(static_cast<bool>(m_vk_queue_family_properties[*vk_queue_family_index].queueFlags & queue_flags));
     const auto queue_family_reservation_it = std::find_if(m_queue_family_reservation_by_type.begin(), m_queue_family_reservation_by_type.end(),
                                                           [&vk_queue_family_index](const auto& type_and_queue_family_reservation)
                                                           { return type_and_queue_family_reservation.second->GetFamilyIndex() == *vk_queue_family_index; });

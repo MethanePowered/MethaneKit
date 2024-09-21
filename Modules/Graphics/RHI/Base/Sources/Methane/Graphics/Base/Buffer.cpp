@@ -36,7 +36,7 @@ Buffer::Buffer(const Context& context, const Settings& settings,
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_ZERO_DESCR(settings.size, "can not create buffer of zero size");
+    META_CHECK_NOT_ZERO_DESCR(settings.size, "can not create buffer of zero size");
 }
 
 Data::Size Buffer::GetDataSize(Data::MemoryState size_type) const noexcept
@@ -60,12 +60,12 @@ Rhi::ResourceView Buffer::GetBufferView(Data::Size offset, Data::Size size)
 void Buffer::SetData(Rhi::ICommandQueue&, const SubResource& sub_resource)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NAME_DESCR("sub_resource", !sub_resource.IsEmptyOrNull(), "can not set empty subresource data to buffer");
-    META_CHECK_ARG_EQUAL(sub_resource.GetIndex(), SubResource::Index());
+    META_CHECK_NAME_DESCR("sub_resource", !sub_resource.IsEmptyOrNull(), "can not set empty subresource data to buffer");
+    META_CHECK_EQUAL(sub_resource.GetIndex(), SubResource::Index());
 
     const Data::Size reserved_data_size = GetDataSize(Data::MemoryState::Reserved);
     META_UNUSED(reserved_data_size);
-    META_CHECK_ARG_LESS_OR_EQUAL_DESCR(sub_resource.GetDataSize(), reserved_data_size, "can not set more data than allocated buffer size");
+    META_CHECK_LESS_OR_EQUAL_DESCR(sub_resource.GetDataSize(), reserved_data_size, "can not set more data than allocated buffer size");
     SetInitializedDataSize(sub_resource.GetDataSize());
 }
 

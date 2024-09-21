@@ -61,7 +61,7 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(Rhi::RenderPrimitive primi
     case Rhi::RenderPrimitive::LineStrip:      return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
     case Rhi::RenderPrimitive::Triangle:       return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     case Rhi::RenderPrimitive::TriangleStrip:  return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-    default:                              META_UNEXPECTED_ARG_RETURN(primitive, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
+    default:                              META_UNEXPECTED_RETURN(primitive, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
     }
 }
 

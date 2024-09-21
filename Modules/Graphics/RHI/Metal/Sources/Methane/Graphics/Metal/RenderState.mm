@@ -47,7 +47,7 @@ static MTLCullMode ConvertRasterizerCullModeToMetal(Rhi::IRenderState::Rasterize
         case RasterizerCullMode::None:  return MTLCullModeNone;
         case RasterizerCullMode::Back:  return MTLCullModeBack;
         case RasterizerCullMode::Front: return MTLCullModeFront;
-        default: META_UNEXPECTED_ARG_RETURN(cull_mode, MTLCullModeNone);
+        default: META_UNEXPECTED_RETURN(cull_mode, MTLCullModeNone);
     }
 }
 
@@ -60,7 +60,7 @@ static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(Rhi::IRenderState::R
     {
         case RasterizerFillMode::Solid:     return MTLTriangleFillModeFill;
         case RasterizerFillMode::Wireframe: return MTLTriangleFillModeLines;
-        default: META_UNEXPECTED_ARG_RETURN(fill_mode, MTLTriangleFillModeFill);
+        default: META_UNEXPECTED_RETURN(fill_mode, MTLTriangleFillModeFill);
     }
 }
     
@@ -96,7 +96,7 @@ static MTLBlendOperation ConvertBlendingOperationToMetal(Rhi::IRenderState::Blen
     case BlendOp::ReverseSubtract:  return MTLBlendOperationReverseSubtract;
     case BlendOp::Minimum:          return MTLBlendOperationMin;
     case BlendOp::Maximum:          return MTLBlendOperationMax;
-    default: META_UNEXPECTED_ARG_RETURN(blend_operation, MTLBlendOperationAdd);
+    default: META_UNEXPECTED_RETURN(blend_operation, MTLBlendOperationAdd);
     }
 }
 
@@ -126,7 +126,7 @@ static MTLBlendFactor ConvertBlendingFactorToMetal(Rhi::IRenderState::Blending::
     case BlendFactor::OneMinusSource1Color:     return MTLBlendFactorOneMinusSource1Color;
     case BlendFactor::Source1Alpha:             return MTLBlendFactorSource1Alpha;
     case BlendFactor::OneMinusSource1Alpha:     return MTLBlendFactorOneMinusSource1Alpha;
-    default: META_UNEXPECTED_ARG_RETURN(blend_factor, MTLBlendFactorZero);
+    default: META_UNEXPECTED_RETURN(blend_factor, MTLBlendFactorZero);
     }
 }
 
@@ -143,7 +143,7 @@ static MTLStencilOperation ConvertStencilOperationToMetal(Rhi::FaceOperation ope
         case Rhi::FaceOperation::DecrementClamp:  return MTLStencilOperationDecrementClamp;
         case Rhi::FaceOperation::IncrementWrap:   return MTLStencilOperationIncrementWrap;
         case Rhi::FaceOperation::DecrementWrap:   return MTLStencilOperationDecrementWrap;
-        default: META_UNEXPECTED_ARG_RETURN(operation, MTLStencilOperationKeep);
+        default: META_UNEXPECTED_RETURN(operation, MTLStencilOperationKeep);
     }
 }
 
@@ -300,7 +300,7 @@ void RenderState::InitializeNativePipelineState()
     
     NSError* ns_error = nil;
     m_mtl_pipeline_state = [GetMetalRenderContext().GetMetalDevice().GetNativeDevice() newRenderPipelineStateWithDescriptor:m_mtl_pipeline_state_desc error:&ns_error];
-    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_pipeline_state,
+    META_CHECK_NOT_NULL_DESCR(m_mtl_pipeline_state,
                                   "failed to create Metal render pipeline state: {}",
                                   MacOS::ConvertFromNsString([ns_error localizedDescription]));
 }
@@ -311,9 +311,9 @@ void RenderState::InitializeNativeDepthStencilState()
     if (m_mtl_depth_state)
         return;
 
-    META_CHECK_ARG_NOT_NULL(m_mtl_depth_stencil_state_desc);
+    META_CHECK_NOT_NULL(m_mtl_depth_stencil_state_desc);
     m_mtl_depth_state = [GetMetalRenderContext().GetMetalDevice().GetNativeDevice() newDepthStencilStateWithDescriptor:m_mtl_depth_stencil_state_desc];
-    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_depth_state, "failed to create Metal depth-stencil state");
+    META_CHECK_NOT_NULL_DESCR(m_mtl_depth_state, "failed to create Metal depth-stencil state");
 }
 
 id<MTLRenderPipelineState> RenderState::GetNativePipelineState()

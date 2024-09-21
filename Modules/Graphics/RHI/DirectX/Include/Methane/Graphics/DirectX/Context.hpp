@@ -161,7 +161,7 @@ public:
     ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const final
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_LESS(static_cast<size_t>(type), m_query_heaps.size());
+        META_CHECK_LESS(static_cast<size_t>(type), m_query_heaps.size());
         wrl::ComPtr<ID3D12QueryHeap> query_heap_cptr = m_query_heaps[type];
         if (!query_heap_cptr)
         {
@@ -171,7 +171,7 @@ public:
             ThrowIfFailed(GetDirectDevice().GetNativeDevice()->CreateQueryHeap(&query_heap_desc, IID_PPV_ARGS(&query_heap_cptr)),
                           GetDirectDevice().GetNativeDevice().Get());
         }
-        META_CHECK_ARG_NOT_NULL(query_heap_cptr);
+        META_CHECK_NOT_NULL(query_heap_cptr);
         return*query_heap_cptr.Get();
     }
 

@@ -92,7 +92,7 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
         cl_type = Rhi::CommandListType::Transfer;
         break;
 
-    default: META_UNEXPECTED_ARG(wait_for);
+    default: META_UNEXPECTED(wait_for);
     }
 
     GetDirectDefaultCommandQueue(cl_type).CompleteExecution(frame_buffer_index);
@@ -138,7 +138,7 @@ void RenderContext::Initialize(Base::Device& device, bool is_callback_emitted)
     swap_chain_desc.Flags            = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT; // requires Windows 8.1
 
     const wrl::ComPtr<IDXGIFactory5>& dxgi_factory_cptr = System::Get().GetNativeFactory();
-    META_CHECK_ARG_NOT_NULL(dxgi_factory_cptr);
+    META_CHECK_NOT_NULL(dxgi_factory_cptr);
 
     BOOL present_tearing_support = FALSE;
     ID3D12Device* native_device_ptr = GetDirectDevice().GetNativeDevice().Get();
@@ -159,13 +159,13 @@ void RenderContext::Initialize(Base::Device& device, bool is_callback_emitted)
     ThrowIfFailed(dxgi_factory_cptr->CreateSwapChainForHwnd(&dx_command_queue, m_platform_env.window_handle, &swap_chain_desc,
                                                             nullptr, nullptr, &swap_chain_cptr), native_device_ptr);
 
-    META_CHECK_ARG_NOT_NULL(swap_chain_cptr);
+    META_CHECK_NOT_NULL(swap_chain_cptr);
     ThrowIfFailed(swap_chain_cptr.As(&m_swap_chain_cptr), native_device_ptr);
 
     // Create waitable object to reduce frame latency (https://docs.microsoft.com/en-us/windows/uwp/gaming/reduce-latency-with-dxgi-1-3-swap-chains)
     m_swap_chain_cptr->SetMaximumFrameLatency(settings.frame_buffers_count);
     m_frame_latency_waitable_object = m_swap_chain_cptr->GetFrameLatencyWaitableObject();
-    META_CHECK_ARG_NOT_ZERO_DESCR(m_frame_latency_waitable_object, "swap-chain waitable object is null");
+    META_CHECK_NOT_ZERO_DESCR(m_frame_latency_waitable_object, "swap-chain waitable object is null");
 
     if (settings.is_full_screen)
     {
@@ -210,7 +210,7 @@ void RenderContext::Present()
     const uint32_t present_flags  = GetPresentFlags();
     const uint32_t vsync_interval = GetPresentVSyncInterval();
 
-    META_CHECK_ARG_NOT_NULL(m_swap_chain_cptr);
+    META_CHECK_NOT_NULL(m_swap_chain_cptr);
     ThrowIfFailed(m_swap_chain_cptr->Present(vsync_interval, present_flags),
                   GetDirectDevice().GetNativeDevice().Get());
 
@@ -221,21 +221,21 @@ void RenderContext::Present()
 uint32_t RenderContext::GetNextFrameBufferIndex()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_swap_chain_cptr);
+    META_CHECK_NOT_NULL(m_swap_chain_cptr);
     return m_swap_chain_cptr->GetCurrentBackBufferIndex();
 }
 
 void RenderContext::WaitForSwapChainLatency()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_frame_latency_waitable_object);
+    META_CHECK_NOT_NULL(m_frame_latency_waitable_object);
     const DWORD frame_latency_wait_result = WaitForSingleObjectEx(
         m_frame_latency_waitable_object,
         1000, // 1 second timeout (should not ever happen)
         true
     );
-    META_CHECK_ARG_NOT_EQUAL_DESCR(frame_latency_wait_result, WAIT_TIMEOUT, "timeout reached while waiting for swap-chain latency");
-    META_CHECK_ARG_EQUAL_DESCR(frame_latency_wait_result, WAIT_OBJECT_0, "failed to wait for swap-chain latency");
+    META_CHECK_NOT_EQUAL_DESCR(frame_latency_wait_result, WAIT_TIMEOUT, "timeout reached while waiting for swap-chain latency");
+    META_CHECK_EQUAL_DESCR(frame_latency_wait_result, WAIT_OBJECT_0, "failed to wait for swap-chain latency");
 }
 
 } // namespace Methane::Graphics::DirectX

@@ -56,7 +56,7 @@ static vk::QueryType GetQueryTypeVk(Rhi::IQueryPool::Type query_pool_type)
     case Rhi::IQueryPool::Type::Timestamp: return vk::QueryType::eTimestamp;
     // vk::QueryType::eOcclusion
     // vk::QueryType::ePipelineStatistics
-    default: META_UNEXPECTED_ARG_RETURN(query_pool_type, vk::QueryType::eTimestamp);
+    default: META_UNEXPECTED_RETURN(query_pool_type, vk::QueryType::eTimestamp);
     }
 }
 
@@ -96,14 +96,14 @@ void Query::End()
 Rhi::SubResource Query::GetData() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetState(), Rhi::IQuery::State::Resolved, "query data can be retrieved only from resolved query");
-    META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), Base::CommandList::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
+    META_CHECK_EQUAL_DESCR(GetState(), Rhi::IQuery::State::Resolved, "query data can be retrieved only from resolved query");
+    META_CHECK_EQUAL_DESCR(GetCommandList().GetState(), Base::CommandList::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
 
     vk::Result vk_query_result = m_vk_device.getQueryPoolResults(
         GetVulkanQueryPool().GetNativeQueryPool(), GetIndex(), GetQueryPool().GetSlotsCountPerQuery(),
         m_query_results_byte_size, m_query_results.data(), sizeof(QueryResults::value_type),
         vk::QueryResultFlagBits::e64);
-    META_CHECK_ARG_EQUAL_DESCR(vk_query_result, vk::Result::eSuccess, "failed to get query pool results");
+    META_CHECK_EQUAL_DESCR(vk_query_result, vk::Result::eSuccess, "failed to get query pool results");
 
     return Rhi::SubResource(reinterpret_cast<Data::ConstRawPtr>(m_query_results.data()), // NOSONAR
                             static_cast<Data::Size>(m_query_results_byte_size));
@@ -146,7 +146,7 @@ TimestampQueryPool::TimestampQueryPool(CommandQueue& command_queue, uint32_t max
     // Check if Vulkan supports CPU time domains calibration
     const auto calibrateable_time_domains = vk_physical_device.getCalibrateableTimeDomainsEXT();
     bool is_cpu_time_domain_calibrateable = std::find(calibrateable_time_domains.begin(), calibrateable_time_domains.end(), g_vk_cpu_time_domain) != calibrateable_time_domains.end();
-    META_CHECK_ARG_TRUE_DESCR(is_cpu_time_domain_calibrateable, "Vulkan does not support calibration of the CPU time domain {}", magic_enum::enum_name(g_vk_cpu_time_domain));
+    META_CHECK_TRUE_DESCR(is_cpu_time_domain_calibrateable, "Vulkan does not support calibration of the CPU time domain {}", magic_enum::enum_name(g_vk_cpu_time_domain));
 
     // Calculate the desired CPU-GPU timestamps deviation
     const std::array<vk::CalibratedTimestampInfoEXT, 2> timestamp_infos = {{ { vk::TimeDomainEXT::eDevice }, { g_vk_cpu_time_domain }, }};
@@ -155,7 +155,7 @@ TimestampQueryPool::TimestampQueryPool(CommandQueue& command_queue, uint32_t max
     for(uint64_t& deviation : probe_deviations)
     {
         const vk::Result vk_calibrate_result = vk_device.getCalibratedTimestampsEXT(static_cast<uint32_t>(timestamp_infos.size()), timestamp_infos.data(), timestamps.data(), &deviation);
-        META_CHECK_ARG_EQUAL(vk_calibrate_result, vk::Result::eSuccess);
+        META_CHECK_EQUAL(vk_calibrate_result, vk::Result::eSuccess);
     }
     uint64_t min_deviation = std::numeric_limits<uint64_t>::max();
     for(uint64_t deviation : probe_deviations)
@@ -184,7 +184,7 @@ Rhi::ITimestampQueryPool::CalibratedTimestamps TimestampQueryPool::Calibrate()
     do
     {
         const vk::Result vk_calibrate_result = vk_device.getCalibratedTimestampsEXT(static_cast<uint32_t>(timestamp_infos.size()), timestamp_infos.data(), timestamps.data(), &deviation);
-        META_CHECK_ARG_EQUAL(vk_calibrate_result, vk::Result::eSuccess);
+        META_CHECK_EQUAL(vk_calibrate_result, vk::Result::eSuccess);
     }
     while(deviation > m_deviation);
 
@@ -217,8 +217,8 @@ Timestamp TimestampQuery::GetGpuTimestamp() const
 {
     META_FUNCTION_TASK();
     Rhi::IResource::SubResource query_data = GetData();
-    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(query_data.GetDataSize(), sizeof(Timestamp), "query data size is less than expected for timestamp");
-    META_CHECK_ARG_NOT_NULL(query_data.GetDataPtr());
+    META_CHECK_GREATER_OR_EQUAL_DESCR(query_data.GetDataSize(), sizeof(Timestamp), "query data size is less than expected for timestamp");
+    META_CHECK_NOT_NULL(query_data.GetDataPtr());
     return *reinterpret_cast<const Timestamp*>(query_data.GetDataPtr()); // NOSONAR
 }
 

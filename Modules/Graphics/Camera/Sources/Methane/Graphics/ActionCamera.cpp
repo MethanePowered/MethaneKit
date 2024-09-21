@@ -185,7 +185,7 @@ void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const hlslpp:
             duration_sec));
 
     const bool animation_added = m_keyboard_action_animations.try_emplace(rotate_action, m_animations.back()).second;
-    META_CHECK_ARG_TRUE(animation_added);
+    META_CHECK_TRUE(animation_added);
 }
 
 void ActionCamera::StartMoveAction(KeyboardAction move_action, const hlslpp::float3& move_direction_in_view, double duration_sec)
@@ -205,7 +205,7 @@ void ActionCamera::StartMoveAction(KeyboardAction move_action, const hlslpp::flo
     );
 
     const bool animation_added = m_keyboard_action_animations.try_emplace(move_action, m_animations.back()).second;
-    META_CHECK_ARG_TRUE(animation_added);
+    META_CHECK_TRUE(animation_added);
 }
 
 void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor_per_second, double duration_sec)
@@ -224,7 +224,7 @@ void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor
     );
 
     const bool animation_added = m_keyboard_action_animations.try_emplace(zoom_action, m_animations.back()).second;
-    META_CHECK_ARG_TRUE(animation_added);
+    META_CHECK_TRUE(animation_added);
 }
 
 bool ActionCamera::StartKeyboardAction(KeyboardAction keyboard_action, double duration_sec)
@@ -279,7 +279,7 @@ std::string ActionCamera::GetActionName(MouseAction mouse_action)
     case MouseAction::Zoom:     return "zoom";
     case MouseAction::Move:     return "move";
     case MouseAction::None:     return "none";
-    default:                    META_UNEXPECTED_ARG_RETURN(mouse_action, "");
+    default:                    META_UNEXPECTED_RETURN(mouse_action, "");
     }
 }
 
@@ -313,7 +313,7 @@ std::string ActionCamera::GetActionName(KeyboardAction keyboard_action)
     case KeyboardAction::ChangePivot:   return "change pivot";
 
     case KeyboardAction::None:          return "none";
-    default:                            META_UNEXPECTED_ARG_RETURN(keyboard_action, "");
+    default:                            META_UNEXPECTED_RETURN(keyboard_action, "");
     }
 }
 

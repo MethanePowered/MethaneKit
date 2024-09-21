@@ -47,8 +47,8 @@ public:
     {
         if constexpr (std::is_signed_v<V>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(w, 0, "rectangle m_width can not be less than zero");
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(h, 0, "rectangle m_height can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(w, 0, "rectangle m_width can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(h, 0, "rectangle m_height can not be less than zero");
         }
     }
 
@@ -59,8 +59,8 @@ public:
     {
         if constexpr (std::is_signed_v<V>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(point.GetX(), 0, "rectangle m_width can not be less than zero");
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(point.GetY(), 0, "rectangle m_height can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(point.GetX(), 0, "rectangle m_width can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(point.GetY(), 0, "rectangle m_height can not be less than zero");
         }
     }
 
@@ -76,7 +76,7 @@ public:
     {
         if constexpr (std::is_signed_v<D>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(width, 0, "rectangle width can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(width, 0, "rectangle width can not be less than zero");
         }
         m_width = width;
     }
@@ -85,7 +85,7 @@ public:
     {
         if constexpr (std::is_signed_v<D>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(height, 0, "rectangle height can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(height, 0, "rectangle height can not be less than zero");
         }
         m_height = height;
     }
@@ -128,7 +128,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle size multiplier can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle size multiplier can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             return RectSize(RoundCast<D>(static_cast<M>(m_width) * multiplier), RoundCast<D>(static_cast<M>(m_height) * multiplier));
@@ -141,7 +141,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_DESCR(divisor, 0, "rectangle size divisor can not be less or equal to zero");
+            META_CHECK_GREATER_DESCR(divisor, 0, "rectangle size divisor can not be less or equal to zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             return RectSize(RoundCast<D>(static_cast<M>(m_width) / divisor), RoundCast<D>(static_cast<M>(m_height) / divisor));
@@ -154,7 +154,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle size multiplier can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle size multiplier can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
         {
@@ -174,7 +174,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_DESCR(divisor, 0, "rectangle size divisor can not be less or equal to zero");
+            META_CHECK_GREATER_DESCR(divisor, 0, "rectangle size divisor can not be less or equal to zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
         {
@@ -194,8 +194,8 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetX(), 0, "rectangle size multiplier coordinate x can not be less than zero");
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetY(), 0, "rectangle size multiplier coordinate y can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetX(), 0, "rectangle size multiplier coordinate x can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetY(), 0, "rectangle size multiplier coordinate y can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             return RectSize(RoundCast<D>(static_cast<M>(m_width) * multiplier.GetX()), RoundCast<D>(static_cast<M>(m_height) * multiplier.GetY()));
@@ -208,8 +208,8 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetX(), 0, "rectangle size divisor coordinate x can not be less than zero");
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetY(), 0, "rectangle size divisor coordinate y can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetX(), 0, "rectangle size divisor coordinate x can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetY(), 0, "rectangle size divisor coordinate y can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             return RectSize(RoundCast<D>(static_cast<M>(m_width) / divisor.GetX()), RoundCast<D>(static_cast<M>(m_height) / divisor.GetY()));
@@ -222,8 +222,8 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetX(), 0, "rectangle size multiplier coordinate x can not be less than zero");
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetY(), 0, "rectangle size multiplier coordinate y can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetX(), 0, "rectangle size multiplier coordinate x can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetY(), 0, "rectangle size multiplier coordinate y can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
         {
@@ -243,8 +243,8 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetX(), 0, "rectangle size divisor coordinate x can not be less than zero");
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetY(), 0, "rectangle size divisor coordinate y can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetX(), 0, "rectangle size divisor coordinate x can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetY(), 0, "rectangle size divisor coordinate y can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
         {
@@ -264,8 +264,8 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetWidth(), 0, "rectangle size multiplier width can not be less than zero");
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetHeight(), 0, "rectangle size multiplier height can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetWidth(), 0, "rectangle size multiplier width can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetHeight(), 0, "rectangle size multiplier height can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             return RectSize(RoundCast<D>(static_cast<M>(m_width) * multiplier.GetWidth()), RoundCast<D>(static_cast<M>(m_height) * multiplier.GetHeight()));
@@ -278,8 +278,8 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetWidth(), 0, "rectangle size divisor width can not be less than zero");
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetHeight(), 0, "rectangle size divisor height can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetWidth(), 0, "rectangle size divisor width can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetHeight(), 0, "rectangle size divisor height can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             return RectSize(RoundCast<D>(static_cast<M>(m_width) / divisor.GetWidth()), RoundCast<D>(static_cast<M>(m_height) / divisor.GetHeight()));
@@ -292,8 +292,8 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetWidth(), 0, "rectangle size multiplier width can not be less than zero");
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetHeight(), 0, "rectangle size multiplier height can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetWidth(), 0, "rectangle size multiplier width can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetHeight(), 0, "rectangle size multiplier height can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
         {
@@ -313,8 +313,8 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetWidth(), 0, "rectangle size divisor width can not be less than zero");
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetHeight(), 0, "rectangle size divisor height can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetWidth(), 0, "rectangle size divisor width can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetHeight(), 0, "rectangle size divisor height can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
         {
@@ -397,7 +397,7 @@ struct Rect
     std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator*(M multiplier) const noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle multiplier can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle multiplier can not be less than zero");
         return Rect<T, D>(origin * multiplier, size * multiplier);
     }
 
@@ -405,7 +405,7 @@ struct Rect
     std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator/(M divisor) const noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "rectangle divisor can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor, 0, "rectangle divisor can not be less than zero");
         return Rect<T, D>(origin / divisor, size / divisor);
     }
 
@@ -413,7 +413,7 @@ struct Rect
     std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>&> operator*=(M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle multiplier can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle multiplier can not be less than zero");
         origin *= multiplier;
         size   *= multiplier;
         return *this;
@@ -423,7 +423,7 @@ struct Rect
     std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>&> operator/=(M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "rectangle divisor can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor, 0, "rectangle divisor can not be less than zero");
         origin /= divisor;
         size   /= divisor;
         return *this;

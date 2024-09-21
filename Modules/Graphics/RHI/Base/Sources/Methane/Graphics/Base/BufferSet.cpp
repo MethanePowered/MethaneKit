@@ -38,13 +38,13 @@ BufferSet::BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buf
     , m_refs(buffer_refs)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EMPTY_DESCR(buffer_refs, "empty buffers set is not allowed");
+    META_CHECK_NOT_EMPTY_DESCR(buffer_refs, "empty buffers set is not allowed");
 
     m_ptrs.reserve(m_refs.size());
     m_raw_ptrs.reserve(m_refs.size());
     for(const Ref<Rhi::IBuffer>& buffer_ref : m_refs)
     {
-        META_CHECK_ARG_EQUAL_DESCR(buffer_ref.get().GetSettings().type, m_buffers_type,
+        META_CHECK_EQUAL_DESCR(buffer_ref.get().GetSettings().type, m_buffers_type,
                                    "All buffers must be of the same type '{}'", magic_enum::enum_name(m_buffers_type));
         auto& buffer_base = dynamic_cast<Buffer&>(buffer_ref.get());
         m_ptrs.emplace_back(buffer_base.GetPtr<Buffer>());
@@ -70,7 +70,7 @@ std::string BufferSet::GetNames() const noexcept
 Rhi::IBuffer& BufferSet::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(index, m_refs.size());
+    META_CHECK_LESS(index, m_refs.size());
 
     return m_refs[index].get();
 }

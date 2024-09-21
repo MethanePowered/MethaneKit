@@ -38,7 +38,7 @@ void ControllersPool::OnMouseButtonChanged(Mouse::Button button, Input::Mouse::B
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        META_CHECK_ARG_NOT_NULL(controller_ptr);
+        META_CHECK_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
@@ -55,7 +55,7 @@ void ControllersPool::OnMousePositionChanged(const Input::Mouse::Position& mouse
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        META_CHECK_ARG_NOT_NULL(controller_ptr);
+        META_CHECK_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
@@ -72,7 +72,7 @@ void ControllersPool::OnMouseScrollChanged(const Input::Mouse::Scroll& mouse_scr
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        META_CHECK_ARG_NOT_NULL(controller_ptr);
+        META_CHECK_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
@@ -89,7 +89,7 @@ void ControllersPool::OnMouseInWindowChanged(bool is_mouse_in_window, const Inpu
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        META_CHECK_ARG_NOT_NULL(controller_ptr);
+        META_CHECK_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 
@@ -106,7 +106,7 @@ void ControllersPool::OnKeyboardChanged(Keyboard::Key key, Input::Keyboard::KeyS
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        META_CHECK_ARG_NOT_NULL(controller_ptr);
+        META_CHECK_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
@@ -123,7 +123,7 @@ void ControllersPool::OnModifiersChanged(Keyboard::ModifierMask modifiers, const
 
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        META_CHECK_ARG_NOT_NULL(controller_ptr);
+        META_CHECK_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
         
@@ -138,7 +138,7 @@ IHelpProvider::HelpLines ControllersPool::GetHelp() const
     HelpLines all_help_lines;
     for (const Ptr<Controller>& controller_ptr : *this)
     {
-        META_CHECK_ARG_NOT_NULL(controller_ptr);
+        META_CHECK_NOT_NULL(controller_ptr);
         if (!controller_ptr || !controller_ptr->IsEnabled())
             continue;
 

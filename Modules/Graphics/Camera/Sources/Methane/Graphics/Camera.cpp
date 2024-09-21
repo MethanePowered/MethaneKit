@@ -71,7 +71,7 @@ hlslpp::frustum Camera::CreateFrustum() const
         return hlslpp::frustum(m_screen_size.GetWidth(), m_screen_size.GetHeight(), m_parameters.near_depth, m_parameters.far_depth);
 
     default:
-        META_UNEXPECTED_ARG_RETURN(m_projection, hlslpp::frustum(0.F, 0.F, 0.F, 0.F));
+        META_UNEXPECTED_RETURN(m_projection, hlslpp::frustum(0.F, 0.F, 0.F, 0.F));
     }
 }
 
@@ -98,7 +98,7 @@ hlslpp::float4x4 Camera::CreateViewMatrix(const Orientation& orientation) const 
 hlslpp::float4x4 Camera::CreateProjMatrix() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_projection_settings, "can not create projection matrix until parameters, projection and size are initialized");
+    META_CHECK_NOT_NULL_DESCR(m_projection_settings, "can not create projection matrix until parameters, projection and size are initialized");
 
     switch (m_projection)
     {
@@ -109,7 +109,7 @@ hlslpp::float4x4 Camera::CreateProjMatrix() const
         return hlslpp::float4x4::orthographic(*m_projection_settings);
 
     default:
-        META_UNEXPECTED_ARG_RETURN(m_projection, hlslpp::float4x4{});
+        META_UNEXPECTED_RETURN(m_projection, hlslpp::float4x4{});
     }
 }
 

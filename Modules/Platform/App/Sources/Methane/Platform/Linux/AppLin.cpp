@@ -47,13 +47,13 @@ AppLin::AppLin(const AppBase::Settings& settings)
     META_FUNCTION_TASK();
 
     m_env.display = XOpenDisplay(nullptr);
-    META_CHECK_ARG_NOT_NULL_DESCR(m_env.display, "failed to open X11 display");
+    META_CHECK_NOT_NULL_DESCR(m_env.display, "failed to open X11 display");
     XSetEventQueueOwner(m_env.display, XCBOwnsEventQueue);
 
     // Establish connection to X-server
     m_env.connection = XGetXCBConnection(m_env.display);
     const int connection_error = xcb_connection_has_error(m_env.connection);
-    META_CHECK_ARG_EQUAL_DESCR(connection_error, 0, "XCB connection to display has failed");
+    META_CHECK_EQUAL_DESCR(connection_error, 0, "XCB connection to display has failed");
 
     // Find default screen_id setup
     const xcb_setup_t*    setup = xcb_get_setup(m_env.connection);
@@ -334,10 +334,10 @@ static void AddIconData(const Data::Chunk& icon_data, std::vector<uint32_t>& com
                                                     static_cast<int>(icon_data.GetDataSize()),
                                                     &image_width, &image_height, &image_channels_count, 4);
 
-    META_CHECK_ARG_NOT_NULL_DESCR(image_data_ptr, "failed to load image data from memory");
-    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_width, 2, "invalid image width");
-    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_height, 2, "invalid image height");
-    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 3, "invalid image channels count");
+    META_CHECK_NOT_NULL_DESCR(image_data_ptr, "failed to load image data from memory");
+    META_CHECK_GREATER_OR_EQUAL_DESCR(image_width, 2, "invalid image width");
+    META_CHECK_GREATER_OR_EQUAL_DESCR(image_height, 2, "invalid image height");
+    META_CHECK_GREATER_OR_EQUAL_DESCR(image_channels_count, 3, "invalid image channels count");
 
     combined_icons_data.reserve(combined_icons_data.size() + 2 + static_cast<size_t>(image_width) * static_cast<size_t>(image_height));
     combined_icons_data.push_back(static_cast<uint32_t>(image_width));
@@ -362,7 +362,7 @@ static void AddIconData(const Data::Chunk& icon_data, std::vector<uint32_t>& com
 void AppLin::SetWindowIcon(const Data::IProvider& icon_provider)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_env.window);
+    META_CHECK_NOT_NULL(m_env.window);
     const std::vector<std::string> icon_paths = icon_provider.GetFiles("");
     if (icon_paths.empty())
         return;
@@ -379,7 +379,7 @@ void AppLin::SetWindowIcon(const Data::IProvider& icon_provider)
 void AppLin::ResizeWindow(const Data::FrameSize& frame_size, const Data::FrameSize& min_size, const Data::Point2I* position)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_env.window);
+    META_CHECK_NOT_NULL(m_env.window);
 
     Linux::WMSizeHints size_hints{0};
     std::vector<uint32_t> config_values;
@@ -499,7 +499,7 @@ void AppLin::UpdateSyncCounter()
     if (!m_is_sync_supported || (m_sync_value.lo == 0 && m_sync_value.hi == 0U))
         return;
 
-    META_CHECK_ARG_EQUAL(m_sync_state, SyncState::Processed);
+    META_CHECK_EQUAL(m_sync_state, SyncState::Processed);
     xcb_sync_set_counter(m_env.connection, m_sync_counter, m_sync_value);
     xcb_flush(m_env.connection);
 

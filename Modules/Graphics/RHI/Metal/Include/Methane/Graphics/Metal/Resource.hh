@@ -87,7 +87,7 @@ protected:
         else
         {
             Data::RawPtr resource_data_ptr = static_cast<Data::RawPtr>([mtl_upload_subresource_buffer contents]);
-            META_CHECK_ARG_NOT_NULL(resource_data_ptr);
+            META_CHECK_NOT_NULL(resource_data_ptr);
             std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), resource_data_ptr);
         }
         return mtl_upload_subresource_buffer;

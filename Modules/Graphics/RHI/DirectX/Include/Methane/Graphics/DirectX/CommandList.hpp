@@ -64,7 +64,7 @@ public:
     {
         META_FUNCTION_TASK();
         const wrl::ComPtr<ID3D12Device>& device_cptr = GetDirectCommandQueue().GetDirectContext().GetDirectDevice().GetNativeDevice();
-        META_CHECK_ARG_NOT_NULL(device_cptr);
+        META_CHECK_NOT_NULL(device_cptr);
 
         ThrowIfFailed(device_cptr->CreateCommandAllocator(command_list_type, IID_PPV_ARGS(&m_command_allocator_cptr)), device_cptr.Get());
         ThrowIfFailed(device_cptr->CreateCommandList(0, command_list_type, m_command_allocator_cptr.Get(), nullptr, IID_PPV_ARGS(&m_command_list_cptr)), device_cptr.Get());
@@ -116,7 +116,7 @@ public:
 
         META_LOG("{} Command list '{}' SET RESOURCE BARRIERS:\n{}",
                  magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(resource_barriers));
-        META_CHECK_ARG_NOT_NULL(m_command_list_cptr);
+        META_CHECK_NOT_NULL(m_command_list_cptr);
 
         const auto& dx_resource_barriers = static_cast<const IResource::Barriers&>(resource_barriers);
         const std::vector<D3D12_RESOURCE_BARRIER>& d3d12_resource_barriers = dx_resource_barriers.GetNativeResourceBarriers();
@@ -151,10 +151,10 @@ public:
         if (!CommandListBaseT::SetName(name))
             return false;
 
-        META_CHECK_ARG_NOT_NULL(m_command_list_cptr);
+        META_CHECK_NOT_NULL(m_command_list_cptr);
         m_command_list_cptr->SetName(nowide::widen(name).c_str());
 
-        META_CHECK_ARG_NOT_NULL(m_command_allocator_cptr);
+        META_CHECK_NOT_NULL(m_command_allocator_cptr);
         m_command_allocator_cptr->SetName(nowide::widen(fmt::format("{} allocator", name)).c_str());
 
         return true;
@@ -166,7 +166,7 @@ public:
     Rhi::CommandListType       GetCommandListType() const final   { return Base::CommandList::GetType(); }
     ID3D12GraphicsCommandList& GetNativeCommandList() const final
     {
-        META_CHECK_ARG_NOT_NULL(m_command_list_cptr);
+        META_CHECK_NOT_NULL(m_command_list_cptr);
         return *m_command_list_cptr.Get();
     }
     ID3D12GraphicsCommandList4* GetNativeCommandList4() const final { return m_command_list_4_cptr.Get(); }
@@ -183,13 +183,13 @@ protected:
 
     ID3D12CommandAllocator& GetNativeCommandAllocatorRef()
     {
-        META_CHECK_ARG_NOT_NULL(m_command_allocator_cptr);
+        META_CHECK_NOT_NULL(m_command_allocator_cptr);
         return *m_command_allocator_cptr.Get();
     }
 
     ID3D12GraphicsCommandList& GetNativeCommandListRef()
     {
-        META_CHECK_ARG_NOT_NULL(m_command_list_cptr);
+        META_CHECK_NOT_NULL(m_command_list_cptr);
         return *m_command_list_cptr.Get();
     }
 

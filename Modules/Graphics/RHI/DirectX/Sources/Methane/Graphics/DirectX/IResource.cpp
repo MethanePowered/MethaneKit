@@ -58,7 +58,7 @@ DescriptorHeap::Type IResource::GetDescriptorHeapTypeByUsage(const Rhi::IResourc
     }
     else
     {
-        META_UNEXPECTED_ARG_DESCR_RETURN(resource_usage.GetValue(), DescriptorHeap::Type::Undefined,
+        META_UNEXPECTED_RETURN_DESCR(resource_usage.GetValue(), DescriptorHeap::Type::Undefined,
                                          "resource usage {} does not map to descriptor heap", Data::GetEnumMaskName(resource_usage));
     }
 }
@@ -88,7 +88,7 @@ D3D12_RESOURCE_STATES IResource::GetNativeResourceState(State resource_state)
     case State::ResolveSource:    return D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
     case State::GenericRead:      return D3D12_RESOURCE_STATE_GENERIC_READ;
     case State::Present:          return D3D12_RESOURCE_STATE_PRESENT;
-    default: META_UNEXPECTED_ARG_RETURN(resource_state, D3D12_RESOURCE_STATE_COMMON);
+    default: META_UNEXPECTED_RETURN(resource_state, D3D12_RESOURCE_STATE_COMMON);
     }
 }
 

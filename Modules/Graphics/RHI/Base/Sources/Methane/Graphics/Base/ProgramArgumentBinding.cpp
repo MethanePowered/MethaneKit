@@ -51,17 +51,17 @@ void ProgramArgumentBinding::MergeSettings(const ProgramArgumentBinding& other)
 {
     META_FUNCTION_TASK();
     const Settings& settings = other.GetSettings();
-    META_CHECK_ARG_EQUAL(settings.argument.GetName(), m_settings.argument.GetName());
-    META_CHECK_ARG_EQUAL(settings.argument.GetAccessorType(), m_settings.argument.GetAccessorType());
-    META_CHECK_ARG_EQUAL(settings.resource_type, m_settings.resource_type);
-    META_CHECK_ARG_EQUAL(settings.resource_count, m_settings.resource_count);
+    META_CHECK_EQUAL(settings.argument.GetName(), m_settings.argument.GetName());
+    META_CHECK_EQUAL(settings.argument.GetAccessorType(), m_settings.argument.GetAccessorType());
+    META_CHECK_EQUAL(settings.resource_type, m_settings.resource_type);
+    META_CHECK_EQUAL(settings.resource_count, m_settings.resource_count);
     m_settings.argument.MergeShaderTypes(settings.argument.GetShaderType());
 }
 
 bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_FALSE_DESCR(m_settings.argument.IsRootConstant(),
+    META_CHECK_FALSE_DESCR(m_settings.argument.IsRootConstant(),
                               "Can not set resource view for argument which is marked with "
                               "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\".");
 
@@ -71,22 +71,22 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     if (m_settings.argument.IsConstant() && !m_resource_views.empty())
         throw ConstantModificationException(GetSettings().argument);
 
-    META_CHECK_ARG_NOT_EMPTY_DESCR(resource_views, "can not set empty resources for resource binding");
+    META_CHECK_NOT_EMPTY_DESCR(resource_views, "can not set empty resources for resource binding");
 
     [[maybe_unused]] const bool              is_addressable_binding = m_settings.argument.IsAddressable();
     [[maybe_unused]] const Rhi::IResource::Type bound_resource_type = m_settings.resource_type;
 
     for (const Rhi::IResource::View& resource_view : resource_views)
     {
-        META_CHECK_ARG_NAME_DESCR("resource_view", resource_view.GetResource().GetResourceType() == bound_resource_type,
+        META_CHECK_NAME_DESCR("resource_view", resource_view.GetResource().GetResourceType() == bound_resource_type,
                                   "incompatible resource type '{}' is bound to argument '{}' of type '{}'",
                                   magic_enum::enum_name(resource_view.GetResource().GetResourceType()),
                                   m_settings.argument.GetName(), magic_enum::enum_name(bound_resource_type));
 
         const Rhi::ResourceUsageMask resource_usage_mask = resource_view.GetResource().GetUsage();
-        META_CHECK_ARG_EQUAL_DESCR(resource_usage_mask.HasAnyBit(Rhi::ResourceUsage::Addressable), is_addressable_binding,
+        META_CHECK_EQUAL_DESCR(resource_usage_mask.HasAnyBit(Rhi::ResourceUsage::Addressable), is_addressable_binding,
                              "resource usage mask {} does not have addressable flag", Data::GetEnumMaskName(resource_usage_mask));
-        META_CHECK_ARG_NAME_DESCR("resource_view", is_addressable_binding || !resource_view.GetOffset(),
+        META_CHECK_NAME_DESCR("resource_view", is_addressable_binding || !resource_view.GetOffset(),
                                   "can not set resource view_id with non-zero offset to non-addressable resource binding");
     }
 
@@ -113,7 +113,7 @@ bool ProgramArgumentBinding::SetResourceView(const Rhi::ResourceView& resource_v
 Rhi::RootConstant ProgramArgumentBinding::GetRootConstant() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_root_constant_accessor_ptr,
+    META_CHECK_NOT_NULL_DESCR(m_root_constant_accessor_ptr,
                                   "Root constant accessor of argument binding is not initialized!");
     return m_root_constant_accessor_ptr->GetRootConstant();
 }
@@ -121,14 +121,14 @@ Rhi::RootConstant ProgramArgumentBinding::GetRootConstant() const
 bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_constant)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(m_settings.argument.IsRootConstant(),
+    META_CHECK_TRUE_DESCR(m_settings.argument.IsRootConstant(),
                               "Can not set root constant for argument with is not marked with "
                               "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\"");
-    META_CHECK_ARG_NOT_NULL_DESCR(m_root_constant_accessor_ptr,
+    META_CHECK_NOT_NULL_DESCR(m_root_constant_accessor_ptr,
                                   "program argument root constant accessor is not initialized");
-    META_CHECK_ARG_FALSE_DESCR(root_constant.IsEmptyOrNull(),
+    META_CHECK_FALSE_DESCR(root_constant.IsEmptyOrNull(),
                                "Can not set empty or null root constant to shader argument.");
-    META_CHECK_ARG_EQUAL_DESCR(root_constant.GetDataSize(), m_settings.buffer_size,
+    META_CHECK_EQUAL_DESCR(root_constant.GetDataSize(), m_settings.buffer_size,
                                "Size of root constant does not match buffer size ({}) for shader argument '{}'",
                                m_settings.buffer_size, static_cast<std::string>(m_settings.argument).c_str());
 

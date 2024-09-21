@@ -53,7 +53,7 @@ void AppController::OnKeyboardStateAction(AppAction action)
         break;
 
     default:
-        META_UNEXPECTED_ARG(action);
+        META_UNEXPECTED(action);
     }
 }
 
@@ -64,7 +64,7 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     {
     case AppAction::None:             return "none";
     case AppAction::SwitchAnimations: return "switch animations on/off";
-    default:                          META_UNEXPECTED_ARG_RETURN(action, "");
+    default:                          META_UNEXPECTED_RETURN(action, "");
     }
 }
 

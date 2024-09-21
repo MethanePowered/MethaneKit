@@ -89,7 +89,7 @@ Data::Size Program::GetArgumentsBufferRangeSize(Rhi::ProgramArgumentAccessType a
 
 const Program::ArgumentsRange& Program::GetFrameConstantArgumentBufferRange(Data::Index frame_index) const
 {
-    META_CHECK_ARG_LESS(frame_index, m_frame_constant_argument_buffer_ranges.size());
+    META_CHECK_LESS(frame_index, m_frame_constant_argument_buffer_ranges.size());
     return m_frame_constant_argument_buffer_ranges[frame_index];
 }
 
@@ -127,7 +127,7 @@ void Program::ReflectRenderPipelineArguments()
                                               reflection: &mtl_render_pipeline_reflection
                                                    error: &ns_error];
 
-    META_CHECK_ARG_NOT_NULL_DESCR(mtl_render_pipeline_state,
+    META_CHECK_NOT_NULL_DESCR(mtl_render_pipeline_state,
                                   "Failed to create dummy pipeline state for program reflection: {}",
                                   MacOS::ConvertFromNsString([ns_error localizedDescription]));
 
@@ -157,7 +157,7 @@ void Program::ReflectComputePipelineArguments()
                                                reflection: &mtl_compute_pipeline_reflection
                                                     error: &ns_error];
 
-    META_CHECK_ARG_NOT_NULL_DESCR(mtl_compute_pipeline_state,
+    META_CHECK_NOT_NULL_DESCR(mtl_compute_pipeline_state,
                                   "Failed to create compute pipeline state for program reflection: {}",
                                   MacOS::ConvertFromNsString([ns_error localizedDescription]));
 
@@ -189,7 +189,7 @@ void Program::InitArgumentRangeSizesAndConstantRanges()
         Data::Index arg_buffer_index = 0U;
         for(const ArgumentBufferLayout& arg_buffer_layout : metal_shader.GetArgumentBufferLayouts())
         {
-            META_CHECK_ARG_LESS(arg_buffer_index, m_arguments_range_size_by_access_type.size());
+            META_CHECK_LESS(arg_buffer_index, m_arguments_range_size_by_access_type.size());
             if (!arg_buffer_layout.data_size)
             {
                 arg_buffer_index++;

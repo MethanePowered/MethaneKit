@@ -77,7 +77,7 @@ void ProgramArgument::MergeShaderTypes(ShaderType shader_type)
 ProgramArgumentAccessor::Type ProgramArgumentAccessor::GetTypeByRegisterSpace(uint32_t register_space)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS_DESCR(register_space, magic_enum::enum_count<ProgramArgumentAccessor::Type>(),
+    META_CHECK_LESS_DESCR(register_space, magic_enum::enum_count<ProgramArgumentAccessor::Type>(),
                               "shader register space is out of values range for Rhi::ProgramArgumentAccessType enum");
     return static_cast<ProgramArgumentAccessor::Type>(register_space);
 }

@@ -46,7 +46,7 @@ void AppCameraController::OnMouseButtonChanged(pin::Mouse::Button button, pin::M
     {
     case pin::Mouse::ButtonState::Pressed:  m_action_camera.OnMousePressed(state_change.current.GetPosition(), action); break;
     case pin::Mouse::ButtonState::Released: m_action_camera.OnMouseReleased(state_change.current.GetPosition()); break;
-    default: META_UNEXPECTED_ARG(button_state);
+    default: META_UNEXPECTED(button_state);
     }
 }
 
@@ -103,7 +103,7 @@ void AppCameraController::OnKeyboardKeyAction(ActionCamera::KeyboardAction actio
     {
     case pin::Keyboard::KeyState::Pressed:  m_action_camera.OnKeyPressed(action); break;
     case pin::Keyboard::KeyState::Released: m_action_camera.OnKeyReleased(action); break;
-    default: META_UNEXPECTED_ARG(key_state);
+    default: META_UNEXPECTED(key_state);
     }
 }
 

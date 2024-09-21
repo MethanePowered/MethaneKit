@@ -75,7 +75,7 @@ static D3D12_COMMAND_LIST_TYPE GetNativeCommandListType(Rhi::CommandListType com
         return D3D12_COMMAND_LIST_TYPE_COMPUTE;
 
     default:
-        META_UNEXPECTED_ARG_RETURN(command_list_type, D3D12_COMMAND_LIST_TYPE_DIRECT);
+        META_UNEXPECTED_RETURN(command_list_type, D3D12_COMMAND_LIST_TYPE_DIRECT);
     }
 }
 
@@ -83,7 +83,7 @@ static wrl::ComPtr<ID3D12CommandQueue> CreateNativeCommandQueue(const Device& de
 {
     META_FUNCTION_TASK();
     const wrl::ComPtr<ID3D12Device>& device_cptr = device.GetNativeDevice();
-    META_CHECK_ARG_NOT_NULL(device_cptr);
+    META_CHECK_NOT_NULL(device_cptr);
 
     D3D12_COMMAND_QUEUE_DESC queue_desc{};
     queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
@@ -185,7 +185,7 @@ void CommandQueue::CompleteExecution(const Opt<Data::Index>& frame_index)
 ID3D12CommandQueue& CommandQueue::GetNativeCommandQueue()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_command_queue_cptr);
+    META_CHECK_NOT_NULL(m_command_queue_cptr);
     return *m_command_queue_cptr.Get();
 }
 

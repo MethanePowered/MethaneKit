@@ -48,7 +48,7 @@ static Tracy::GpuContext::Type ConvertSystemGraphicsApiToTracyGpuContextType(Rhi
     case Rhi::NativeApi::DirectX:      return Tracy::GpuContext::Type::DirectX12;
     case Rhi::NativeApi::Vulkan:       return Tracy::GpuContext::Type::Vulkan;
     case Rhi::NativeApi::Metal:        return Tracy::GpuContext::Type::Metal;
-    default: META_UNEXPECTED_ARG_RETURN(graphics_api, Tracy::GpuContext::Type::Undefined);
+    default: META_UNEXPECTED_RETURN(graphics_api, Tracy::GpuContext::Type::Undefined);
     }
 };
 
@@ -90,7 +90,7 @@ void CommandQueueTracking::Execute(Rhi::ICommandListSet& command_lists, const Rh
     if (!m_execution_waiting)
     {
         m_execution_waiting_thread.join();
-        META_CHECK_ARG_NOT_NULL_DESCR(m_execution_waiting_exception_ptr, "Command queue '{}' execution waiting thread has unexpectedly finished", GetName());
+        META_CHECK_NOT_NULL_DESCR(m_execution_waiting_exception_ptr, "Command queue '{}' execution waiting thread has unexpectedly finished", GetName());
         if (m_execution_waiting_exception_ptr)
             std::rethrow_exception(m_execution_waiting_exception_ptr);
     }
@@ -192,7 +192,7 @@ const Ptr<CommandListSet>& CommandQueueTracking::GetNextExecutingCommandListSet(
     if (m_executing_command_lists.empty())
         return s_empty_command_list_set_ptr;
 
-    META_CHECK_ARG_NOT_NULL(m_executing_command_lists.front());
+    META_CHECK_NOT_NULL(m_executing_command_lists.front());
     return m_executing_command_lists.front();
 }
 

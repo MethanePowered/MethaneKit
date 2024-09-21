@@ -242,7 +242,7 @@ static ResourceViews CreateResourceViews(const Ptrs<IResourceType>& resource_ptr
     std::transform(resource_ptrs.begin(), resource_ptrs.end(), std::back_inserter(resource_views),
                    [](const Ptr<IResourceType>& resource_ptr)
                    {
-                       META_CHECK_ARG_NOT_NULL(resource_ptr);
+                       META_CHECK_NOT_NULL(resource_ptr);
                        return ResourceView(*resource_ptr);
                    });
     return resource_views;
@@ -252,7 +252,7 @@ template<typename IResourceType>
 static ResourceViews CreateResourceViews(const Ptr<IResourceType>& resource_ptr)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(resource_ptr);
+    META_CHECK_NOT_NULL(resource_ptr);
     return { ResourceView(*resource_ptr) };
 }
 

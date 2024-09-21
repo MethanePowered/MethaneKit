@@ -59,7 +59,7 @@ vk::AccessFlags IResource::GetNativeAccessFlagsByResourceState(Rhi::ResourceStat
                                                       vk::AccessFlagBits::eShaderRead |
                                                       vk::AccessFlagBits::eIndirectCommandRead |
                                                       vk::AccessFlagBits::eTransferRead;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(resource_state, vk::AccessFlagBits::eNoneKHR, "unexpected resource state");
+    default: META_UNEXPECTED_RETURN_DESCR(resource_state, vk::AccessFlagBits::eNoneKHR, "unexpected resource state");
     }
 }
 
@@ -81,7 +81,7 @@ vk::ImageLayout IResource::GetNativeImageLayoutByResourceState(Rhi::ResourceStat
     case Rhi::ResourceState::ResolveDest:     return vk::ImageLayout::eTransferDstOptimal;
     case Rhi::ResourceState::ResolveSource:   return vk::ImageLayout::eTransferSrcOptimal;
     case Rhi::ResourceState::Present:         return vk::ImageLayout::ePresentSrcKHR;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(resource_state, vk::ImageLayout::eUndefined, "unexpected resource state");
+    default: META_UNEXPECTED_RETURN_DESCR(resource_state, vk::ImageLayout::eUndefined, "unexpected resource state");
     }
 }
 
@@ -124,7 +124,7 @@ vk::PipelineStageFlags IResource::GetNativePipelineStageFlagsByResourceState(Rhi
     case Rhi::ResourceState::StreamOut:
         return {};
     default:
-        META_UNEXPECTED_ARG_DESCR_RETURN(resource_state, vk::ImageLayout::eUndefined, "unexpected resource state");
+        META_UNEXPECTED_RETURN_DESCR(resource_state, vk::ImageLayout::eUndefined, "unexpected resource state");
     }
 }
 

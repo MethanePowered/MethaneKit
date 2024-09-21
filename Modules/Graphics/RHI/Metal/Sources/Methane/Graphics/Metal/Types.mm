@@ -41,7 +41,7 @@ MTLIndexType TypeConverter::DataFormatToMetalIndexType(PixelFormat data_format)
     {
         case PixelFormat::R32Uint:       return MTLIndexTypeUInt32;
         case PixelFormat::R16Uint:       return MTLIndexTypeUInt16;
-        default:                         META_UNEXPECTED_ARG_RETURN(data_format, MTLIndexTypeUInt32);
+        default:                         META_UNEXPECTED_RETURN(data_format, MTLIndexTypeUInt32);
     }
 }
 
@@ -120,7 +120,7 @@ MTLPixelFormat TypeConverter::DataFormatToMetalPixelType(PixelFormat data_format
     // MTLPixelFormatDepth32Float_Stencil8;
     // MTLPixelFormatX32_Stencil8;
     // MTLPixelFormatX24_Stencil8;
-    default: META_UNEXPECTED_ARG_RETURN(data_format, MTLPixelFormatInvalid);
+    default: META_UNEXPECTED_RETURN(data_format, MTLPixelFormatInvalid);
     }
 }
 
@@ -170,7 +170,7 @@ MTLVertexFormat TypeConverter::MetalDataTypeToVertexFormat(MTLDataType data_type
         case MTLDataTypeUChar3:     return normalized ? MTLVertexFormatUChar3 : MTLVertexFormatUChar3Normalized;
         case MTLDataTypeUChar4:     return normalized ? MTLVertexFormatUChar4 : MTLVertexFormatUChar4Normalized;
 
-        default:                    META_UNEXPECTED_ARG_RETURN(data_type, MTLVertexFormatInvalid);
+        default:                    META_UNEXPECTED_RETURN(data_type, MTLVertexFormatInvalid);
     }
 }
 
@@ -252,7 +252,7 @@ uint32_t TypeConverter::ByteSizeOfVertexFormat(MTLVertexFormat vertex_format)
             return 4;
 
         default:
-            META_UNEXPECTED_ARG_RETURN(vertex_format, 0);
+            META_UNEXPECTED_RETURN(vertex_format, 0);
     }
 }
 
@@ -399,7 +399,7 @@ uint32_t TypeConverter::ByteSizeOfDataType(MTLDataType data_type)
             return 0U;
 
         default:
-            META_UNEXPECTED_ARG_RETURN(data_type, 0U);
+            META_UNEXPECTED_RETURN(data_type, 0U);
     }
 }
 
@@ -443,7 +443,7 @@ MTLCompareFunction TypeConverter::CompareFunctionToMetal(Compare compare_func)
         case Compare::GreaterEqual: return MTLCompareFunctionGreaterEqual;
         case Compare::Equal:        return MTLCompareFunctionEqual;
         case Compare::NotEqual:     return MTLCompareFunctionNotEqual;
-        default:                    META_UNEXPECTED_ARG_RETURN(compare_func, MTLCompareFunctionNever);
+        default:                    META_UNEXPECTED_RETURN(compare_func, MTLCompareFunctionNever);
     }
 }
 

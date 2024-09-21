@@ -51,7 +51,7 @@ void ComputeContext::WaitForGpu(WaitFor wait_for)
     case WaitFor::ComputeComplete:
         WaitForGpuComputeComplete(); break;
     case WaitFor::ResourcesUploaded: break; // Handled in Context::WaitForGpu
-    default: META_UNEXPECTED_ARG(wait_for);
+    default: META_UNEXPECTED(wait_for);
     }
 }
 

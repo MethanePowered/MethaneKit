@@ -38,7 +38,7 @@ CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs,
     , m_frame_index_opt(frame_index_opt)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EMPTY_DESCR(command_list_refs, "creating of empty command lists set is not allowed.");
+    META_CHECK_NOT_EMPTY_DESCR(command_list_refs, "creating of empty command lists set is not allowed.");
 
     m_base_refs.reserve(m_refs.size());
     m_base_ptrs.reserve(m_refs.size());
@@ -46,7 +46,7 @@ CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs,
     for(const Ref<Rhi::ICommandList>& command_list_ref : m_refs)
     {
         auto& command_list_base = dynamic_cast<CommandList&>(command_list_ref.get());
-        META_CHECK_ARG_NAME_DESCR("command_list_refs",
+        META_CHECK_NAME_DESCR("command_list_refs",
                                   std::addressof(command_list_base.GetCommandQueue()) == std::addressof(m_refs.front().get().GetCommandQueue()),
                                   "all command lists in set must be created in one command queue");
 
@@ -60,7 +60,7 @@ CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs,
 Rhi::ICommandList& CommandListSet::operator[](Data::Index index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(index, m_refs.size());
+    META_CHECK_LESS(index, m_refs.size());
 
     return m_refs[index].get();
 }
@@ -98,7 +98,7 @@ void CommandListSet::Complete() const
 const CommandList& CommandListSet::GetBaseCommandList(Data::Index index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(index, m_base_refs.size());
+    META_CHECK_LESS(index, m_base_refs.size());
     return m_base_refs[index].get();
 }
 

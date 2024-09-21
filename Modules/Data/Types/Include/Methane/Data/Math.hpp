@@ -55,7 +55,7 @@ constexpr bool IsPowerOfTwo(T value) noexcept
 template<typename T>
 constexpr std::enable_if_t<std::is_arithmetic_v<T>, T> AlignUp(T value, T alignment)
 {
-    META_CHECK_ARG_TRUE_DESCR(IsPowerOfTwo(alignment), "alignment {} must be a power of two", alignment);
+    META_CHECK_TRUE_DESCR(IsPowerOfTwo(alignment), "alignment {} must be a power of two", alignment);
     return (value + alignment - 1) & ~(alignment - 1);
 }
 

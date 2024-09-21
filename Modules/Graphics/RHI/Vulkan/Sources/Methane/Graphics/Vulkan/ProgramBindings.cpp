@@ -69,15 +69,15 @@ ProgramBindings::ProgramBindings(Program& program,
         switch (access_type)
         {
         case Rhi::ProgramArgumentAccessType::Constant:
-            META_CHECK_ARG_TRUE(!!vk_constant_descriptor_set);
+            META_CHECK_TRUE(!!vk_constant_descriptor_set);
             return vk_constant_descriptor_set;
 
         case Rhi::ProgramArgumentAccessType::FrameConstant:
-            META_CHECK_ARG_TRUE(!!vk_frame_constant_descriptor_set);
+            META_CHECK_TRUE(!!vk_frame_constant_descriptor_set);
             return vk_frame_constant_descriptor_set;
 
         case Rhi::ProgramArgumentAccessType::Mutable:
-            META_CHECK_ARG_TRUE(m_has_mutable_descriptor_set);
+            META_CHECK_TRUE(m_has_mutable_descriptor_set);
             return m_descriptor_sets.back();
 
         default:
@@ -92,7 +92,7 @@ ProgramBindings::ProgramBindings(Program& program,
         const Rhi::ProgramArgumentAccessType access_type = argument_binding_settings.argument.GetAccessorType();
         const Program::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(access_type);
         const auto layout_argument_it = std::find(layout_info.arguments.begin(), layout_info.arguments.end(), program_argument);
-        META_CHECK_ARG_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", static_cast<std::string>(program_argument));
+        META_CHECK_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", static_cast<std::string>(program_argument));
         const auto layout_binding_index = static_cast<uint32_t>(std::distance(layout_info.arguments.begin(), layout_argument_it));
         const uint32_t binding_value = layout_info.bindings.at(layout_binding_index).binding;
         const vk::DescriptorSet& descriptor_set = descriptor_set_selector(access_type);
@@ -121,7 +121,7 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
         // Allocate new mutable descriptor set
         auto& program = static_cast<Program&>(GetProgram());
         const vk::DescriptorSetLayout& vk_mutable_desc_set_layout = program.GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType::Mutable);
-        META_CHECK_ARG_NOT_NULL(vk_mutable_desc_set_layout);
+        META_CHECK_NOT_NULL(vk_mutable_desc_set_layout);
         vk::DescriptorSet copy_mutable_descriptor_set = program.GetVulkanContext().GetVulkanDescriptorManager().AllocDescriptorSet(vk_mutable_desc_set_layout);
 
         // Copy descriptors from original to new mutable descriptor set
@@ -187,7 +187,7 @@ void ProgramBindings::Apply(ICommandList& command_list_vk, const Rhi::ICommandQu
                             const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EMPTY(m_descriptor_sets);
+    META_CHECK_NOT_EMPTY(m_descriptor_sets);
 
     Rhi::ProgramArgumentAccessMask apply_access;
     apply_access.SetBitOn(Rhi::ProgramArgumentAccessType::Mutable);
@@ -248,7 +248,7 @@ void ProgramBindings::ForEachArgumentBinding(FuncType argument_binding_function)
     META_FUNCTION_TASK();
     for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
-        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        META_CHECK_NOT_NULL(argument_binding_ptr);
         argument_binding_function(program_argument, static_cast<ArgumentBinding&>(*argument_binding_ptr));
     }
 }
@@ -268,8 +268,8 @@ void ProgramBindings::UpdateDynamicDescriptorOffsets()
                 return;
 
             const Program::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(program_argument_accessor.GetAccessorType());
-            META_CHECK_ARG_TRUE(layout_info.index_opt.has_value());
-            META_CHECK_ARG_LESS(*layout_info.index_opt, dynamic_offsets_by_set_index.size());
+            META_CHECK_TRUE(layout_info.index_opt.has_value());
+            META_CHECK_LESS(*layout_info.index_opt, dynamic_offsets_by_set_index.size());
             std::vector<uint32_t>& dynamic_offsets = dynamic_offsets_by_set_index[*layout_info.index_opt];
             dynamic_offsets.clear();
 

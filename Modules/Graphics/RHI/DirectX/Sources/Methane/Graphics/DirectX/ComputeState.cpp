@@ -51,7 +51,7 @@ static const Device& GetDirectDeviceFromContext(const Rhi::IContext& context)
         return dynamic_cast<const ComputeContext&>(context).GetDirectDevice();
 
     default:
-        META_UNEXPECTED_ARG_DESCR(context.GetType(), "Unexpected context type");
+        META_UNEXPECTED_DESCR(context.GetType(), "Unexpected context type");
     }
 }
 

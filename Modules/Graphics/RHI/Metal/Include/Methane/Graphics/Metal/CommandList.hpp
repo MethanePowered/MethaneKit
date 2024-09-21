@@ -56,7 +56,7 @@ public:
 
         CommandListBaseT::PushDebugGroup(debug_group);
 
-        META_CHECK_ARG_NOT_NULL(m_mtl_cmd_encoder);
+        META_CHECK_NOT_NULL(m_mtl_cmd_encoder);
         [m_mtl_cmd_encoder pushDebugGroup:static_cast<CommandListDebugGroup&>(debug_group).GetNSName()];
     }
 
@@ -67,14 +67,14 @@ public:
 
         CommandListBaseT::PopDebugGroup();
 
-        META_CHECK_ARG_NOT_NULL(m_mtl_cmd_encoder);
+        META_CHECK_NOT_NULL(m_mtl_cmd_encoder);
         [m_mtl_cmd_encoder popDebugGroup];
     }
 
     void Commit() override
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_FALSE(CommandListBaseT::IsCommitted());
+        META_CHECK_FALSE(CommandListBaseT::IsCommitted());
 
         CommandListBaseT::Commit();
 
@@ -96,7 +96,7 @@ public:
     {
         META_FUNCTION_TASK();
         META_UNUSED(in_cpu_nanoseconds);
-        META_CHECK_ARG_EQUAL_DESCR(CommandListBaseT::GetState(), Base::CommandList::State::Pending,
+        META_CHECK_EQUAL_DESCR(CommandListBaseT::GetState(), Base::CommandList::State::Pending,
                                    "can not get GPU time range of executing or not committed command list");
 
         if (!m_mtl_cmd_buffer)
@@ -105,7 +105,7 @@ public:
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
         if (@available(macOS 10.15, *))
         {
-            META_CHECK_ARG_EQUAL(m_mtl_cmd_buffer.status, MTLCommandBufferStatusCompleted);
+            META_CHECK_EQUAL(m_mtl_cmd_buffer.status, MTLCommandBufferStatusCompleted);
             return Data::TimeRange(
                 Data::ConvertTimeSecondsToNanoseconds(m_mtl_cmd_buffer.GPUStartTime),
                 Data::ConvertTimeSecondsToNanoseconds(m_mtl_cmd_buffer.GPUEndTime)
@@ -182,13 +182,13 @@ protected:
         if (!m_mtl_cmd_buffer)
         {
             const id <MTLCommandQueue>& mtl_command_queue = GetMetalCommandQueue().GetNativeCommandQueue();
-            META_CHECK_ARG_NOT_NULL(mtl_command_queue);
+            META_CHECK_NOT_NULL(mtl_command_queue);
 
             m_mtl_cmd_buffer = [mtl_command_queue commandBuffer];
             m_mtl_cmd_buffer.label = m_ns_name;
         }
 
-        META_CHECK_ARG_NOT_NULL(m_mtl_cmd_buffer);
+        META_CHECK_NOT_NULL(m_mtl_cmd_buffer);
         m_mtl_cmd_encoder = encoder_initializer(m_mtl_cmd_buffer);
         m_mtl_cmd_encoder.label = m_ns_name;
     }

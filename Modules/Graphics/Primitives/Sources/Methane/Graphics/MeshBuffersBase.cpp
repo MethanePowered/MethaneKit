@@ -102,7 +102,7 @@ void MeshBuffersBase::Draw(const Rhi::RenderCommandList& cmd_list,
                            uint32_t start_instance) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS_DESCR(mesh_subset_index, m_mesh_subsets.size(), "can not draw mesh subset because its index is out of bounds");
+    META_CHECK_LESS_DESCR(mesh_subset_index, m_mesh_subsets.size(), "can not draw mesh subset because its index is out of bounds");
 
     const Mesh::Subset& mesh_subset = m_mesh_subsets[mesh_subset_index];
     cmd_list.SetProgramBindings(program_bindings);
@@ -141,12 +141,12 @@ void MeshBuffersBase::Draw(const Rhi::RenderCommandList& cmd_list,
          ++instance_program_bindings_it)
     {
         const Rhi::ProgramBindings& program_bindings = *instance_program_bindings_it;
-        META_CHECK_ARG_TRUE(program_bindings.IsInitialized());
+        META_CHECK_TRUE(program_bindings.IsInitialized());
 
         const uint32_t instance_index = first_instance_index + static_cast<uint32_t>(std::distance(instance_program_bindings_begin, instance_program_bindings_it));
         const uint32_t subset_index = GetSubsetByInstanceIndex(instance_index);
 
-        META_CHECK_ARG_LESS(subset_index, m_mesh_subsets.size());
+        META_CHECK_LESS(subset_index, m_mesh_subsets.size());
         const Mesh::Subset& mesh_subset = m_mesh_subsets[subset_index];
 
         Rhi::ProgramBindingsApplyBehaviorMask apply_behavior = bindings_apply_behavior;

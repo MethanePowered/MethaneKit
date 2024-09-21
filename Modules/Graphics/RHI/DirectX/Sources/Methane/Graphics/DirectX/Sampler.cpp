@@ -39,86 +39,86 @@ using FilterMip = Rhi::ISampler::Filter::Mip;
 static D3D12_FILTER ConvertFilterMinNearestMagNearestToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
-    META_CHECK_ARG_EQUAL(filter.mag, FilterMinMag::Nearest);
+    META_CHECK_EQUAL(filter.min, FilterMinMag::Nearest);
+    META_CHECK_EQUAL(filter.mag, FilterMinMag::Nearest);
 
     switch (filter.mip)
     {
     case FilterMip::NotMipmapped:
     case FilterMip::Nearest:      return D3D12_FILTER_MIN_MAG_MIP_POINT;
     case FilterMip::Linear:       return D3D12_FILTER_MIN_MAG_POINT_MIP_LINEAR;
-    default:                      META_UNEXPECTED_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    default:                      META_UNEXPECTED_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 }
 
 static D3D12_FILTER ConvertFilterMinNearestMagLinearToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
-    META_CHECK_ARG_EQUAL(filter.mag, FilterMinMag::Linear);
+    META_CHECK_EQUAL(filter.min, FilterMinMag::Nearest);
+    META_CHECK_EQUAL(filter.mag, FilterMinMag::Linear);
 
     switch (filter.mip)
     {
     case FilterMip::NotMipmapped:
     case FilterMip::Nearest:      return D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
     case FilterMip::Linear:       return D3D12_FILTER_MIN_POINT_MAG_MIP_LINEAR;
-    default:                      META_UNEXPECTED_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT);
+    default:                      META_UNEXPECTED_RETURN(filter.mip, D3D12_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT);
     }
 }
 
 static D3D12_FILTER ConvertFilterMinNearestToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Nearest);
+    META_CHECK_EQUAL(filter.min, FilterMinMag::Nearest);
 
     switch(filter.mag)
     {
     case FilterMinMag::Nearest: return ConvertFilterMinNearestMagNearestToDirectX(filter);
     case FilterMinMag::Linear:  return ConvertFilterMinNearestMagLinearToDirectX(filter);
-    default:                    META_UNEXPECTED_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    default:                    META_UNEXPECTED_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 }
 
 static D3D12_FILTER ConvertFilterMinLinearMagNearestToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
-    META_CHECK_ARG_EQUAL(filter.mag, FilterMinMag::Nearest);
+    META_CHECK_EQUAL(filter.min, FilterMinMag::Linear);
+    META_CHECK_EQUAL(filter.mag, FilterMinMag::Nearest);
 
     switch (filter.mip)
     {
     case FilterMip::NotMipmapped:
     case FilterMip::Nearest:      return D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT;
     case FilterMip::Linear:       return D3D12_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
-    default:                      META_UNEXPECTED_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT);
+    default:                      META_UNEXPECTED_RETURN(filter.mip, D3D12_FILTER_MIN_LINEAR_MAG_MIP_POINT);
     }
 }
 
 static D3D12_FILTER ConvertFilterMinLinearMagLinearToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
-    META_CHECK_ARG_EQUAL(filter.mag, FilterMinMag::Linear);
+    META_CHECK_EQUAL(filter.min, FilterMinMag::Linear);
+    META_CHECK_EQUAL(filter.mag, FilterMinMag::Linear);
 
     switch (filter.mip)
     {
     case FilterMip::NotMipmapped:
     case FilterMip::Nearest:      return D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
     case FilterMip::Linear:       return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-    default:                      META_UNEXPECTED_ARG_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT);
+    default:                      META_UNEXPECTED_RETURN(filter.mip, D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT);
     }
 }
 
 static D3D12_FILTER ConvertFilterMinLinearToDirectX(const Rhi::ISampler::Filter& filter)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(filter.min, FilterMinMag::Linear);
+    META_CHECK_EQUAL(filter.min, FilterMinMag::Linear);
 
     switch (filter.mag)
     {
     case FilterMinMag::Nearest: return ConvertFilterMinLinearMagNearestToDirectX(filter);
     case FilterMinMag::Linear:  return ConvertFilterMinLinearMagLinearToDirectX(filter);
-    default:                    META_UNEXPECTED_ARG_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    default:                    META_UNEXPECTED_RETURN(filter.mag, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 }
 
@@ -130,7 +130,7 @@ static D3D12_FILTER ConvertFilterToDirectX(const Rhi::ISampler::Filter& filter)
     {
     case FilterMinMag::Nearest: return ConvertFilterMinNearestToDirectX(filter);
     case FilterMinMag::Linear:  return ConvertFilterMinLinearToDirectX(filter);
-    default:                    META_UNEXPECTED_ARG_RETURN(filter.min, D3D12_FILTER_MIN_MAG_MIP_POINT);
+    default:                    META_UNEXPECTED_RETURN(filter.min, D3D12_FILTER_MIN_MAG_MIP_POINT);
     }
 
     // Other DX texture filtering types, which are currently not supported:
@@ -176,7 +176,7 @@ static D3D12_TEXTURE_ADDRESS_MODE ConvertAddressModeToDirectX(Rhi::ISampler::Add
     case AddressMode::ClampToBorderColor:   return D3D12_TEXTURE_ADDRESS_MODE_BORDER;
     case AddressMode::Repeat:               return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
     case AddressMode::RepeatMirror:         return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
-    default: META_UNEXPECTED_ARG_RETURN(address_mode, D3D12_TEXTURE_ADDRESS_MODE_WRAP);
+    default: META_UNEXPECTED_RETURN(address_mode, D3D12_TEXTURE_ADDRESS_MODE_WRAP);
     }
 }
 
@@ -192,7 +192,7 @@ static void SetColor(const Color4F& in_color, FLOAT* out_color_ptr)
 static void ConvertBorderColorToDXColor(Rhi::ISampler::BorderColor border_color, FLOAT* out_color_ptr)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(out_color_ptr);
+    META_CHECK_NOT_NULL(out_color_ptr);
     using BorderColor = Rhi::ISampler::BorderColor;
     
     switch (border_color)
@@ -200,7 +200,7 @@ static void ConvertBorderColorToDXColor(Rhi::ISampler::BorderColor border_color,
     case BorderColor::TransparentBlack: SetColor({ 0.F, 0.F, 0.F, 0.F }, out_color_ptr); break;
     case BorderColor::OpaqueBlack:      SetColor({ 0.F, 0.F, 0.F, 1.F }, out_color_ptr); break;
     case BorderColor::OpaqueWhite:      SetColor({ 1.F, 1.F, 1.F, 1.F }, out_color_ptr); break;
-    default:                            META_UNEXPECTED_ARG(border_color);
+    default:                            META_UNEXPECTED(border_color);
     }
 }
 

@@ -185,7 +185,7 @@ public:
 
         // Update vertex buffer
         const Data::Size vertices_data_size = text_mesh.GetVerticesDataSize();
-        META_CHECK_ARG_NOT_ZERO(vertices_data_size);
+        META_CHECK_NOT_ZERO(vertices_data_size);
 
         if (!m_vertex_buffer_set.IsInitialized() || m_vertex_buffer_set[0].GetDataSize() < vertices_data_size)
         {
@@ -204,7 +204,7 @@ public:
 
         // Update index buffer
         const Data::Size indices_data_size = text_mesh.GetIndicesDataSize();
-        META_CHECK_ARG_NOT_ZERO(indices_data_size);
+        META_CHECK_NOT_ZERO(indices_data_size);
 
         if (!m_index_buffer.IsInitialized() || m_index_buffer.GetDataSize() < indices_data_size)
         {
@@ -228,7 +228,7 @@ public:
         META_FUNCTION_TASK();
 
         const gfx::FrameSize& content_size = text_mesh.GetContentSize();
-        META_CHECK_ARG_NOT_ZERO_DESCR(content_size, "text uniforms buffer can not be updated when one of content size dimensions is zero");
+        META_CHECK_NOT_ZERO_DESCR(content_size, "text uniforms buffer can not be updated when one of content size dimensions is zero");
 
         hlslpp::TextUniforms uniforms{
             hlslpp::mul(
@@ -262,10 +262,10 @@ public:
         if (m_program_bindings.IsInitialized())
             return;
 
-        META_CHECK_ARG_TRUE(const_buffer.IsInitialized());
-        META_CHECK_ARG_TRUE(atlas_sampler.IsInitialized());
-        META_CHECK_ARG_TRUE(m_atlas_texture.IsInitialized());
-        META_CHECK_ARG_TRUE(m_uniforms_buffer.IsInitialized());
+        META_CHECK_TRUE(const_buffer.IsInitialized());
+        META_CHECK_TRUE(atlas_sampler.IsInitialized());
+        META_CHECK_TRUE(m_atlas_texture.IsInitialized());
+        META_CHECK_TRUE(m_uniforms_buffer.IsInitialized());
 
         m_program_bindings = state.GetProgram().CreateBindings({
             { { rhi::ShaderType::Vertex, "g_uniforms" },  m_uniforms_buffer.GetResourceView() },
@@ -306,7 +306,7 @@ public:
         , m_font(font)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NOT_EMPTY_DESCR(m_settings.state_name, "Text state name can not be empty");
+        META_CHECK_NOT_EMPTY_DESCR(m_settings.state_name, "Text state name can not be empty");
 
         m_font.Connect(*this);
         m_frame_rect = m_ui_context.ConvertTo<Units::Pixels>(m_settings.rect);
@@ -315,7 +315,7 @@ public:
         if (const auto render_state_ptr = std::dynamic_pointer_cast<rhi::IRenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
             render_state_ptr)
         {
-            META_CHECK_ARG_EQUAL_DESCR(render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
+            META_CHECK_EQUAL_DESCR(render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
                                        "Text '{}' render state '{}' from cache has incompatible render pattern settings", m_settings.name,
                                        m_settings.state_name);
             m_render_state = rhi::RenderState(render_state_ptr);
@@ -640,9 +640,9 @@ private:
     void InitializeFrameResources()
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NAME_DESCR("m_frame_resources", m_frame_resources.empty(), "frame resources have been initialized already");
-        META_CHECK_ARG_TRUE_DESCR(m_render_state.IsInitialized(), "text render state is not initialized");
-        META_CHECK_ARG_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh is not initialized");
+        META_CHECK_NAME_DESCR("m_frame_resources", m_frame_resources.empty(), "frame resources have been initialized already");
+        META_CHECK_TRUE_DESCR(m_render_state.IsInitialized(), "text render state is not initialized");
+        META_CHECK_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh is not initialized");
 
         const rhi::RenderContext& render_context = m_ui_context.GetRenderContext();
         const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
@@ -685,7 +685,7 @@ private:
     {
         META_FUNCTION_TASK();
         const uint32_t frame_index = m_ui_context.GetRenderContext().GetFrameBufferIndex();
-        META_CHECK_ARG_LESS_DESCR(frame_index, m_frame_resources.size(), "no resources available for the current frame buffer index");
+        META_CHECK_LESS_DESCR(frame_index, m_frame_resources.size(), "no resources available for the current frame buffer index");
         return m_frame_resources[frame_index];
     }
 
@@ -736,7 +736,7 @@ private:
     void UpdateConstantsBuffer()
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_TRUE(m_const_buffer.IsInitialized());
+        META_CHECK_TRUE(m_const_buffer.IsInitialized());
 
         const hlslpp::TextConstants constants{
             m_settings.color.AsVector()
@@ -780,11 +780,11 @@ private:
     FrameRect GetAlignedViewportRect() const
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh must be initialized");
+        META_CHECK_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh must be initialized");
 
         FrameSize content_size = m_text_mesh_ptr->GetContentSize();
-        META_CHECK_ARG_NOT_ZERO_DESCR(content_size, "all dimension of text content size should be non-zero");
-        META_CHECK_ARG_NOT_ZERO_DESCR(m_frame_rect.size, "all dimension of frame size should be non-zero");
+        META_CHECK_NOT_ZERO_DESCR(content_size, "all dimension of text content size should be non-zero");
+        META_CHECK_NOT_ZERO_DESCR(m_frame_rect.size, "all dimension of frame size should be non-zero");
 
         // Position viewport rect inside frame rect based on text alignment
         FrameRect viewport_rect(m_frame_rect.origin, content_size);
@@ -793,7 +793,7 @@ private:
         {
             // Apply vertical offset to make top of content match the rect top coordinate
             const uint32_t content_top_offset = m_text_mesh_ptr->GetContentTopOffset();
-            META_CHECK_ARG_LESS(content_top_offset, content_size.GetHeight() + 1);
+            META_CHECK_LESS(content_top_offset, content_size.GetHeight() + 1);
 
             content_size.SetHeight(content_size.GetHeight() - content_top_offset);
             viewport_rect.origin.SetY(m_frame_rect.origin.GetY() - content_top_offset);
@@ -807,7 +807,7 @@ private:
             case HorizontalAlignment::Left:   break;
             case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth())); break;
             case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth()) / 2); break;
-            default:                          META_UNEXPECTED_ARG(m_settings.layout.horizontal_alignment);
+            default:                          META_UNEXPECTED(m_settings.layout.horizontal_alignment);
             }
         }
         if (content_size.GetHeight() != m_frame_rect.size.GetHeight())
@@ -817,7 +817,7 @@ private:
             case VerticalAlignment::Top:      break;
             case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight())); break;
             case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight()) / 2); break;
-            default:                          META_UNEXPECTED_ARG(m_settings.layout.vertical_alignment);
+            default:                          META_UNEXPECTED(m_settings.layout.vertical_alignment);
             }
         }
 

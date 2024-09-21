@@ -132,7 +132,7 @@ void System::Initialize()
 #endif
 
     ThrowIfFailed(CreateDXGIFactory2(dxgi_factory_flags, IID_PPV_ARGS(&m_factory_cptr)));
-    META_CHECK_ARG_NOT_NULL(m_factory_cptr);
+    META_CHECK_NOT_NULL(m_factory_cptr);
 
 #ifdef ADAPTERS_CHANGE_HANDLING
     RegisterAdapterChangeEvent();
@@ -154,7 +154,7 @@ void System::RegisterAdapterChangeEvent()
         ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    META_CHECK_ARG_NOT_NULL(factory7_cptr);
+    META_CHECK_NOT_NULL(factory7_cptr);
     ThrowIfFailed(factory7_cptr->RegisterAdaptersChangedEvent(m_adapter_change_event, &m_adapter_change_registration_cookie));
 }
 
@@ -166,7 +166,7 @@ void System::UnregisterAdapterChangeEvent()
         !SUCCEEDED(m_factory_cptr->QueryInterface(IID_PPV_ARGS&factory7_cptr))))
         return;
 
-    META_CHECK_ARG_NOT_NULL(factory7_cptr);
+    META_CHECK_NOT_NULL(factory7_cptr);
     ThrowIfFailed(factory7_cptr->UnregisterAdaptersChangedEvent(m_adapter_change_registration_cookie));
     m_adapter_change_registration_cookie = 0;
 
@@ -199,7 +199,7 @@ void System::CheckForChanges()
 
     for (const Ptr<IDevice>& prev_device_ptr : prev_devices)
     {
-        META_CHECK_ARG_NOT_NULL(prev_device_ptr);
+        META_CHECK_NOT_NULL(prev_device_ptr);
         Device& prev_device = static_cast<Device&>(*prev_device_ptr);
         auto device_it = std::find_if(devices.begin(), devices.end(),
                                       [prev_device](const Ptr<IDevice>& device_ptr)
@@ -225,7 +225,7 @@ const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Platform::AppEnvironmen
 const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_factory_cptr);
+    META_CHECK_NOT_NULL(m_factory_cptr);
 
     const D3D_FEATURE_LEVEL dx_feature_level = D3D_FEATURE_LEVEL_11_0;
     SetDeviceCapabilities(required_device_caps);
@@ -234,7 +234,7 @@ const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Rhi::DeviceCaps& requir
     IDXGIAdapter1* adapter_ptr = nullptr;
     for (UINT adapter_index = 0; DXGI_ERROR_NOT_FOUND != m_factory_cptr->EnumAdapters1(adapter_index, &adapter_ptr); ++adapter_index)
     {
-        META_CHECK_ARG_NOT_NULL(adapter_ptr);
+        META_CHECK_NOT_NULL(adapter_ptr);
         if (IsSoftwareAdapterDxgi(*adapter_ptr))
             continue;
 

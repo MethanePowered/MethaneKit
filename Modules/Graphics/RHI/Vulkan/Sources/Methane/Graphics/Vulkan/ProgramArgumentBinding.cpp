@@ -84,7 +84,7 @@ void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& o
     m_settings_vk.argument = Base::ProgramArgumentBinding::GetSettings().argument;
 
     const Settings& settings_vk = dynamic_cast<const ProgramArgumentBinding&>(other).GetVulkanSettings();
-    META_CHECK_ARG_EQUAL(m_settings_vk.descriptor_type, settings_vk.descriptor_type);
+    META_CHECK_EQUAL(m_settings_vk.descriptor_type, settings_vk.descriptor_type);
     m_settings_vk.byte_code_maps.insert(m_settings_vk.byte_code_maps.end(), settings_vk.byte_code_maps.begin(), settings_vk.byte_code_maps.end());
 }
 
@@ -156,7 +156,7 @@ void ProgramArgumentBinding::OnRootConstantBufferChanged(Base::RootConstantBuffe
 void ProgramArgumentBinding::SetDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(!!m_vk_descriptor_set, "program argument binding descriptor set was not initialized!");
+    META_CHECK_TRUE_DESCR(!!m_vk_descriptor_set, "program argument binding descriptor set was not initialized!");
 
     m_vk_descriptor_images.clear();
     m_vk_descriptor_buffers.clear();

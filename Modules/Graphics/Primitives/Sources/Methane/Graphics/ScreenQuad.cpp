@@ -106,7 +106,7 @@ public:
         META_FUNCTION_TASK();
         if (m_settings.texture_mode != TextureMode::Disabled)
         {
-            META_CHECK_ARG_TRUE_DESCR(m_texture.IsInitialized(), "screen-quad texture can not be empty when quad texturing is enabled");
+            META_CHECK_TRUE_DESCR(m_texture.IsInitialized(), "screen-quad texture can not be empty when quad texturing is enabled");
         }
 
         const Rhi::RenderContext render_context = render_pattern.GetRenderContext();
@@ -294,8 +294,8 @@ public:
     void SetTexture(Rhi::Texture texture)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.texture_mode, TextureMode::Disabled, "can not set texture of screen quad with Disabled texture mode");
-        META_CHECK_ARG_TRUE_DESCR(texture.IsInitialized(), "can not set null texture to screen quad");
+        META_CHECK_NOT_EQUAL_DESCR(m_settings.texture_mode, TextureMode::Disabled, "can not set texture of screen quad with Disabled texture mode");
+        META_CHECK_TRUE_DESCR(texture.IsInitialized(), "can not set null texture to screen quad");
 
         if (m_texture == texture)
             return;
@@ -360,7 +360,7 @@ private:
             break;
 
         default:
-            META_UNEXPECTED_ARG(texture_mode);
+            META_UNEXPECTED(texture_mode);
         }
 
         return macro_definitions;

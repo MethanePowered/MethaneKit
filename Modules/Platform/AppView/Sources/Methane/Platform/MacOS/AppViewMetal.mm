@@ -433,7 +433,7 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
         return;
     
     bool delegate_can_draw_in_view = [self.delegate respondsToSelector:@selector(drawInView:)];
-    META_CHECK_ARG_TRUE_DESCR(delegate_can_draw_in_view, "application delegate can not draw in view");
+    META_CHECK_TRUE_DESCR(delegate_can_draw_in_view, "application delegate can not draw in view");
 
     @autoreleasepool
     {

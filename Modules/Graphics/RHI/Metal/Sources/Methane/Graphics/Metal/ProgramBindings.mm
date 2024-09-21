@@ -136,7 +136,7 @@ void SetMetalResource<CommandType::Render>(Rhi::ShaderType shader_type,
             break;
 
         default:
-            META_UNEXPECTED_ARG(shader_type);
+            META_UNEXPECTED(shader_type);
     }
 }
 
@@ -164,7 +164,7 @@ void SetMetalResources<CommandType::Render>(Rhi::ShaderType shader_type,
             break;
 
         default:
-            META_UNEXPECTED_ARG(shader_type);
+            META_UNEXPECTED(shader_type);
     }
 }
 
@@ -188,7 +188,7 @@ void SetMetalResource<CommandType::Render>(Rhi::ShaderType shader_type,
             break;
 
         default:
-            META_UNEXPECTED_ARG(shader_type);
+            META_UNEXPECTED(shader_type);
     }
 }
 
@@ -214,7 +214,7 @@ void SetMetalResources<CommandType::Render>(Rhi::ShaderType shader_type,
             break;
 
         default:
-            META_UNEXPECTED_ARG(shader_type);
+            META_UNEXPECTED(shader_type);
     }
 }
 
@@ -238,7 +238,7 @@ void SetMetalResource<CommandType::Render>(Rhi::ShaderType shader_type,
             break;
 
         default:
-            META_UNEXPECTED_ARG(shader_type);
+            META_UNEXPECTED(shader_type);
     }
 }
 
@@ -264,7 +264,7 @@ void SetMetalResources<CommandType::Render>(Rhi::ShaderType shader_type,
             break;
 
         default:
-            META_UNEXPECTED_ARG(shader_type);
+            META_UNEXPECTED(shader_type);
     }
 }
 
@@ -389,7 +389,7 @@ void SetMetalResourcesForAll(Rhi::ShaderType shader_type,
 static void WriteNativeBufferAddresses(const NativeBuffers& native_buffers, const NativeOffsets& offsets, uint64_t* argument_ptr)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(native_buffers.size(), offsets.size());
+    META_CHECK_EQUAL(native_buffers.size(), offsets.size());
     for(size_t buffer_index = 0; buffer_index < native_buffers.size(); buffer_index++)
     {
         const auto& native_buffer = native_buffers[buffer_index];
@@ -445,7 +445,7 @@ static void WriteArgumentBindingResourceIds(const ProgramArgumentBinding& arg_bi
             break;
 
         default:
-            META_UNEXPECTED_ARG(resource_type);
+            META_UNEXPECTED(resource_type);
     }
 }
 
@@ -494,7 +494,7 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
             break;
 
         default:
-            META_UNEXPECTED_ARG(command_list_type);
+            META_UNEXPECTED(command_list_type);
     }
 }
 
@@ -527,12 +527,12 @@ bool ProgramBindings::WriteArgumentsBufferRange(DescriptorManager& descriptor_ma
              GetName(), args_range.GetStart(), args_range.GetEnd());
 
     DescriptorManager::ArgumentsBuffer& args_buffer = descriptor_manager.GetArgumentsBuffer(access_type);
-    META_CHECK_ARG_LESS_OR_EQUAL(args_range.GetEnd(), args_buffer.GetDataSize());
+    META_CHECK_LESS_OR_EQUAL(args_range.GetEnd(), args_buffer.GetDataSize());
 
     Data::Byte* arg_data_ptr = args_buffer.GetDataPtr() + args_range.GetStart();
     for (const auto& [program_arg, arg_binding_ptr]: GetArgumentBindings())
     {
-        META_CHECK_ARG_NOT_NULL(arg_binding_ptr);
+        META_CHECK_NOT_NULL(arg_binding_ptr);
         const auto& metal_argument_binding = static_cast<const ArgumentBinding&>(*arg_binding_ptr);
         if (metal_argument_binding.GetSettings().argument.GetAccessorType() != access_type)
             continue;
@@ -543,7 +543,7 @@ bool ProgramBindings::WriteArgumentsBufferRange(DescriptorManager& descriptor_ma
                      magic_enum::enum_name(shader_type),
                      metal_argument_binding.GetSettings().argument.GetName(),
                      arg_offset);
-            META_CHECK_ARG_LESS(arg_offset, args_range.GetLength());
+            META_CHECK_LESS(arg_offset, args_range.GetLength());
             WriteArgumentBindingResourceIds(
                 metal_argument_binding,
                 reinterpret_cast<uint64_t*>(arg_data_ptr + arg_offset) // NOSONAR
@@ -569,7 +569,7 @@ const ProgramBindings::ArgumentsRange& ProgramBindings::GetArgumentsRange(Rhi::P
             return m_mutable_argument_buffer_range;
 
         default:
-            META_UNEXPECTED_ARG(access_type);
+            META_UNEXPECTED(access_type);
     }
 }
 
@@ -639,7 +639,7 @@ void ProgramBindings::SetMetalResources(const CommandEncoderType& mtl_cmd_encode
                     break;
 
                 default:
-                    META_UNEXPECTED_ARG(settings.resource_type);
+                    META_UNEXPECTED(settings.resource_type);
             }
         }
     );
@@ -668,7 +668,7 @@ void ProgramBindings::SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_
 
         const DescriptorManager::ArgumentsBuffer& args_buffer = descriptor_manager.GetArgumentsBuffer(arg_layout.access_type);
         const auto buffer_ptr = static_cast<const Buffer*>(args_buffer.GetBuffer());
-        META_CHECK_ARG_NOT_NULL_DESCR(buffer_ptr, "{} argument buffer is not initialized in Descriptor Manager!",
+        META_CHECK_NOT_NULL_DESCR(buffer_ptr, "{} argument buffer is not initialized in Descriptor Manager!",
                                       magic_enum::enum_name(arg_layout.access_type));
 
         const id<MTLBuffer>& mtl_argument_buffer = buffer_ptr->GetNativeBuffer();
@@ -676,7 +676,7 @@ void ProgramBindings::SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_
         const auto arg_buffer_index = static_cast<NSUInteger>(arg_layout.access_type);
         Data::Size& arg_layout_offset = arg_layout_offset_by_buffer[arg_buffer_index];
         const Data::Index arg_buffer_offset = args_range.GetStart() + arg_layout_offset;
-        META_CHECK_ARG_LESS_DESCR(arg_buffer_offset, args_range.GetEnd(), "invalid offset in argument buffer");
+        META_CHECK_LESS_DESCR(arg_buffer_offset, args_range.GetEnd(), "invalid offset in argument buffer");
         META_LOG("    - {} shader {} argument buffer [{}] at offset {}",
                  magic_enum::enum_name(arg_layout.shader_type),
                  magic_enum::enum_name(arg_layout.access_type),
@@ -700,7 +700,7 @@ void ProgramBindings::SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_
                     break;
 
                 default:
-                    META_UNEXPECTED_ARG(arg_layout.shader_type);
+                    META_UNEXPECTED(arg_layout.shader_type);
             }
         }
         if constexpr (command_type == CommandType::Compute)

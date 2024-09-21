@@ -44,7 +44,7 @@ static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Rhi::BufferType buffer_typ
     case Rhi::BufferType::Index:    vk_usage_flags |= vk::BufferUsageFlagBits::eIndexBuffer;   break;
     case Rhi::BufferType::Vertex:   vk_usage_flags |= vk::BufferUsageFlagBits::eVertexBuffer;  break;
     // Buffer::Type::ReadBack - unsupported
-    default: META_UNEXPECTED_ARG_DESCR(buffer_type, "Unsupported buffer type");
+    default: META_UNEXPECTED_DESCR(buffer_type, "Unsupported buffer type");
     }
 
     if (storage_mode == Rhi::BufferStorageMode::Private)
@@ -63,7 +63,7 @@ static Rhi::ResourceState GetTargetResourceStateByBufferType(Rhi::BufferType buf
     case Rhi::BufferType::Index:       return Rhi::ResourceState::IndexBuffer;
     case Rhi::BufferType::Vertex:      return Rhi::ResourceState::VertexBuffer;
     case Rhi::BufferType::ReadBack:    return Rhi::ResourceState::StreamOut;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(buffer_type, Rhi::ResourceState::Undefined, "Unsupported buffer type");
+    default: META_UNEXPECTED_RETURN_DESCR(buffer_type, Rhi::ResourceState::Undefined, "Unsupported buffer type");
     }
 }
 
@@ -114,8 +114,8 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const Rhi::SubResourc
     const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},
                                                                  reinterpret_cast<void**>(&sub_resource_data_ptr)); // NOSONAR
 
-    META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
-    META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+    META_CHECK_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
+    META_CHECK_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
     std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), sub_resource_data_ptr);
 
     GetNativeDevice().unmapMemory(vk_device_memory);
@@ -138,7 +138,7 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const Rhi::SubResourc
 Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue& target_cmd_queue, const BytesRangeOpt& data_range)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
+    META_CHECK_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
                               "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
     const BytesRange buffer_data_range(data_range ? data_range->GetStart() : 0U,
@@ -149,7 +149,7 @@ Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue& target_cmd_queue, const Byt
     {
     case IBuffer::StorageMode::Managed: data = GetDataFromSharedBuffer(buffer_data_range); break;
     case IBuffer::StorageMode::Private: data = GetDataFromPrivateBuffer(buffer_data_range, target_cmd_queue); break;
-    default: META_UNEXPECTED_ARG_RETURN(GetSettings().storage_mode, SubResource());
+    default: META_UNEXPECTED_RETURN(GetSettings().storage_mode, SubResource());
     }
 
     return Rhi::SubResource(std::move(data), Rhi::SubResourceIndex(), data_range);
@@ -163,8 +163,8 @@ Data::Bytes Buffer::GetDataFromSharedBuffer(const BytesRange& data_range) const
     const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, data_range.GetStart(), data_range.GetLength(),
                                                                  vk::MemoryMapFlags{}, reinterpret_cast<void**>(&data_ptr)); // NOSONAR
 
-    META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
-    META_CHECK_ARG_NOT_NULL_DESCR(data_ptr, "failed to map buffer subresource");
+    META_CHECK_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
+    META_CHECK_NOT_NULL_DESCR(data_ptr, "failed to map buffer subresource");
     Data::Bytes data(data_ptr, data_ptr + data_range.GetLength());
     GetNativeDevice().unmapMemory(vk_device_memory);
 
@@ -189,8 +189,8 @@ Data::Bytes Buffer::GetDataFromPrivateBuffer(const BytesRange& data_range, Rhi::
     Data::RawPtr data_ptr = nullptr;
     const vk::Result vk_map_result = GetNativeDevice().mapMemory(m_vk_unique_staging_memory.get(), 0U, data_range.GetLength(),
                                                                  vk::MemoryMapFlags{}, reinterpret_cast<void**>(&data_ptr)); // NOSONAR
-    META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
-    META_CHECK_ARG_NOT_NULL_DESCR(data_ptr, "failed to map buffer subresource");
+    META_CHECK_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map buffer subresource");
+    META_CHECK_NOT_NULL_DESCR(data_ptr, "failed to map buffer subresource");
     Data::Bytes data(data_ptr, data_ptr + data_range.GetLength());
     GetNativeDevice().unmapMemory(m_vk_unique_staging_memory.get());
 

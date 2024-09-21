@@ -68,7 +68,7 @@ Rhi::IBuffer* DescriptorManager::ArgumentsBuffer::GetBuffer()
 DescriptorManager::ArgumentsRange DescriptorManager::ArgumentsBuffer::ReserveRange(Data::Size range_size)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_ZERO_DESCR(range_size, "unable to reserve empty arguments range");
+    META_CHECK_NOT_ZERO_DESCR(range_size, "unable to reserve empty arguments range");
     std::scoped_lock lock_guard(m_mutex);
 
     if (const ArgumentsRange reserved_range = Data::ReserveRange(m_free_ranges, range_size))

@@ -61,8 +61,8 @@ void Query::Begin()
 {
     META_FUNCTION_TASK();
     const Rhi::IQueryPool::Type query_pool_type = GetQueryPool().GetType();
-    META_CHECK_ARG_NOT_EQUAL_DESCR(query_pool_type, Rhi::IQueryPool::Type::Timestamp, "timestamp query can not be begun, it can be ended only");
-    META_CHECK_ARG_NOT_EQUAL_DESCR(m_state, State::Begun, "can not begin unresolved or not ended query");
+    META_CHECK_NOT_EQUAL_DESCR(query_pool_type, Rhi::IQueryPool::Type::Timestamp, "timestamp query can not be begun, it can be ended only");
+    META_CHECK_NOT_EQUAL_DESCR(m_state, State::Begun, "can not begin unresolved or not ended query");
     m_state = State::Begun;
 }
 
@@ -71,7 +71,7 @@ void Query::End()
     META_FUNCTION_TASK();
     const Rhi::IQueryPool::Type query_pool_type = GetQueryPool().GetType();
     META_UNUSED(query_pool_type);
-    META_CHECK_ARG_DESCR(m_state, query_pool_type == Rhi::IQueryPool::Type::Timestamp || m_state == State::Begun,
+    META_CHECK_DESCR(m_state, query_pool_type == Rhi::IQueryPool::Type::Timestamp || m_state == State::Begun,
                          "can not end {} query that was not begun", magic_enum::enum_name(query_pool_type));
     m_state = State::Ended;
 }
@@ -79,7 +79,7 @@ void Query::End()
 void Query::ResolveData()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Ended, "can not resolve data of not ended query");
+    META_CHECK_EQUAL_DESCR(m_state, State::Ended, "can not resolve data of not ended query");
     m_state = State::Resolved;
 }
 
@@ -125,10 +125,10 @@ QueryPool::CreateQueryArgs QueryPool::GetCreateQueryArguments()
 {
     META_FUNCTION_TASK();
     const Data::Range<Data::Index> index_range = Data::ReserveRange(m_free_indices, m_slots_count_per_query);
-    META_CHECK_ARG_DESCR(index_range, !index_range.IsEmpty(), "maximum queries count is reached");
+    META_CHECK_DESCR(index_range, !index_range.IsEmpty(), "maximum queries count is reached");
 
     const Rhi::IQuery::Range data_range = Data::ReserveRange(m_free_data_ranges, m_query_size);
-    META_CHECK_ARG_DESCR(data_range, !data_range.IsEmpty(), "there is no space available for new query");
+    META_CHECK_DESCR(data_range, !data_range.IsEmpty(), "there is no space available for new query");
 
     return { index_range.GetStart(), data_range };
 }

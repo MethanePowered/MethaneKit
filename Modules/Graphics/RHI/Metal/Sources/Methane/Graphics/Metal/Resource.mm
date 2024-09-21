@@ -44,7 +44,7 @@ MTLResourceUsage ConvertResourceUsageToMetal(Rhi::ResourceUsage resource_usage)
     {
         case Rhi::ResourceUsage::ShaderRead:  return MTLResourceUsageRead;
         case Rhi::ResourceUsage::ShaderWrite: return MTLResourceUsageWrite;
-        default: META_UNEXPECTED_ARG_DESCR(resource_usage, "resource usage can not be converted to Metal");
+        default: META_UNEXPECTED_DESCR(resource_usage, "resource usage can not be converted to Metal");
     }
 }
 

@@ -112,7 +112,7 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& su
         GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
     );
 
-    META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+    META_CHECK_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
     stdext::checked_array_iterator target_data_it(sub_resource_data_ptr, sub_resource.GetDataSize());
     std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
 
@@ -138,7 +138,7 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& su
 Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt& data_range)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
+    META_CHECK_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
                               "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
     const Data::Index data_start  = data_range ? data_range->GetStart()  : 0U;
@@ -153,7 +153,7 @@ Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt& data_
         GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
     );
 
-    META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+    META_CHECK_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
 
     stdext::checked_array_iterator source_data_it(sub_resource_data_ptr, data_end);
     Data::Bytes                    sub_resource_data(data_length, {});
@@ -169,7 +169,7 @@ D3D12_VERTEX_BUFFER_VIEW Buffer::GetNativeVertexBufferView() const
 {
     META_FUNCTION_TASK();
     const Rhi::BufferSettings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::BufferType::Vertex);
+    META_CHECK_EQUAL(settings.type, Rhi::BufferType::Vertex);
 
     D3D12_VERTEX_BUFFER_VIEW buffer_view{};
     buffer_view.BufferLocation = GetNativeGpuAddress();
@@ -182,7 +182,7 @@ D3D12_INDEX_BUFFER_VIEW Buffer::GetNativeIndexBufferView() const
 {
     META_FUNCTION_TASK();
     const Rhi::BufferSettings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::BufferType::Index);
+    META_CHECK_EQUAL(settings.type, Rhi::BufferType::Index);
 
     D3D12_INDEX_BUFFER_VIEW buffer_view{};
     buffer_view.BufferLocation = GetNativeGpuAddress();
@@ -195,7 +195,7 @@ D3D12_CONSTANT_BUFFER_VIEW_DESC Buffer::GetNativeConstantBufferViewDesc() const
 {
     META_FUNCTION_TASK();
     const Rhi::BufferSettings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::BufferType::Constant);
+    META_CHECK_EQUAL(settings.type, Rhi::BufferType::Constant);
 
     D3D12_CONSTANT_BUFFER_VIEW_DESC buffer_view_desc{};
     buffer_view_desc.BufferLocation = GetNativeGpuAddress();

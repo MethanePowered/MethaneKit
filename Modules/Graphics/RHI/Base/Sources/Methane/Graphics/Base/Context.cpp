@@ -202,28 +202,28 @@ Rhi::ICommandKit& Context::GetDefaultCommandKit(Rhi::ICommandQueue& cmd_queue) c
 const Rhi::IDevice& Context::GetDevice() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_device_ptr);
+    META_CHECK_NOT_NULL(m_device_ptr);
     return *m_device_ptr;
 }
 
 Device& Context::GetBaseDevice()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_device_ptr);
+    META_CHECK_NOT_NULL(m_device_ptr);
     return *m_device_ptr;
 }
 
 const Device& Context::GetBaseDevice() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_device_ptr);
+    META_CHECK_NOT_NULL(m_device_ptr);
     return *m_device_ptr;
 }
 
 Rhi::IDescriptorManager& Context::GetDescriptorManager() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_descriptor_manager_ptr);
+    META_CHECK_NOT_NULL(m_descriptor_manager_ptr);
     return *m_descriptor_manager_ptr;
 }
 
@@ -327,7 +327,7 @@ void Context::PerformRequestedAction()
     case DeferredAction::None:                   break;
     case DeferredAction::UploadResources:        UploadResources(); break;
     case DeferredAction::CompleteInitialization: CompleteInitialization(); break;
-    default:                                     META_UNEXPECTED_ARG(m_requested_action);
+    default:                                     META_UNEXPECTED(m_requested_action);
     }
     m_requested_action = DeferredAction::None;
 }

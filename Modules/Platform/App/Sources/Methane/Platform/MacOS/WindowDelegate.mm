@@ -52,7 +52,7 @@ using namespace Methane::Platform;
 - (void) windowDidEnterFullScreen:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
     m_app_ptr->SetFullScreen(true);
@@ -61,7 +61,7 @@ using namespace Methane::Platform;
 - (void) windowDidExitFullScreen:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
     m_app_ptr->SetFullScreen(false);
@@ -70,7 +70,7 @@ using namespace Methane::Platform;
 - (void) windowDidMiniaturize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
     m_app_ptr->Resize(m_app_ptr->GetFrameSize(), true);
@@ -79,7 +79,7 @@ using namespace Methane::Platform;
 - (void) windowDidDeminiaturize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
     m_app_ptr->Resize(m_app_ptr->GetFrameSize(), false);
@@ -88,7 +88,7 @@ using namespace Methane::Platform;
 - (void) windowWillStartLiveResize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
     m_app_ptr->StartResizing();
@@ -97,7 +97,7 @@ using namespace Methane::Platform;
 - (void) windowDidEndLiveResize:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
     m_app_ptr->EndResizing();
@@ -106,7 +106,7 @@ using namespace Methane::Platform;
 - (void) windowDidBecomeKey:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
     m_app_ptr->SetKeyboardFocus(true);
@@ -115,7 +115,7 @@ using namespace Methane::Platform;
 - (void) windowDidResignKey:(NSNotification*) notification
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(notification)
 
     m_app_ptr->SetKeyboardFocus(false);

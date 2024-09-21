@@ -67,7 +67,7 @@ static MTLRenderStages ConvertShaderTypeToMetalRenderStages(Rhi::ShaderType shad
         case Rhi::ShaderType::Vertex: mtl_render_stages |= MTLRenderStageVertex; break;
         case Rhi::ShaderType::Pixel:  mtl_render_stages |= MTLRenderStageFragment; break;
         case Rhi::ShaderType::Compute: /* Compute is not Render stage */ break;
-        default: META_UNEXPECTED_ARG(shader_type);
+        default: META_UNEXPECTED(shader_type);
     }
     return mtl_render_stages;
 }
@@ -92,7 +92,7 @@ void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& o
     m_settings_mt.argument = Base::ProgramArgumentBinding::GetSettings().argument;
 
     const Settings& metal_settings = dynamic_cast<const ProgramArgumentBinding&>(other).GetMetalSettings();
-    META_CHECK_ARG_EQUAL(m_settings_mt.argument_index, metal_settings.argument_index);
+    META_CHECK_EQUAL(m_settings_mt.argument_index, metal_settings.argument_index);
     for(const auto& [shader_type, struct_offset] : metal_settings.argument_buffer_offset_by_shader_type)
     {
         const auto argument_buffer_offset_it = m_settings_mt.argument_buffer_offset_by_shader_type.find(shader_type);
@@ -223,7 +223,7 @@ void ProgramArgumentBinding::SetMetalResourcesForViews(const Rhi::ResourceViews&
         }
         break;
 
-    default: META_UNEXPECTED_ARG(m_settings_mt.resource_type);
+    default: META_UNEXPECTED(m_settings_mt.resource_type);
     }
 
     std::copy(mtl_resource_set.begin(), mtl_resource_set.end(), std::back_inserter(m_mtl_resources));

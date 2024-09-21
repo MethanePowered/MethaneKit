@@ -41,7 +41,7 @@ public:
         : Mesh(type, vertex_layout)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_EQUAL_DESCR(GetVertexSize(), sizeof(VType), "size of vertex structure differs from vertex size calculated by vertex layout");
+        META_CHECK_EQUAL_DESCR(GetVertexSize(), sizeof(VType), "size of vertex structure differs from vertex size calculated by vertex layout");
     }
 
     [[nodiscard]] const Vertices&   GetVertices() const noexcept             { return m_vertices; }
@@ -117,7 +117,7 @@ protected:
     {
         META_FUNCTION_TASK();
         CheckLayoutHasVertexField(VertexField::Normal);
-        META_CHECK_ARG_DESCR(BaseMesh::GetIndexCount(), BaseMesh::GetIndexCount() % 3 == 0,
+        META_CHECK_DESCR(BaseMesh::GetIndexCount(), BaseMesh::GetIndexCount() % 3 == 0,
                              "mesh indices count should be a multiple of three representing triangles list");
 
         for (VType& vertex : m_vertices)
@@ -164,7 +164,7 @@ protected:
         for(size_t index = 0; index < GetIndexCount(); ++index)
         {
             const Index vertex_index = GetIndex(index);
-            META_CHECK_ARG_LESS_DESCR(vertex_index, m_vertices.size(),
+            META_CHECK_LESS_DESCR(vertex_index, m_vertices.size(),
                                       "mesh index buffer value at position {} is greater is out of vertex buffer bounds", index);
         }
     }

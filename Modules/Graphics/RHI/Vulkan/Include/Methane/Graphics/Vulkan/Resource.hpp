@@ -108,7 +108,7 @@ public:
 
         for(const auto& [view_id, view_desc_ptr] : m_view_descriptor_by_view_id)
         {
-            META_CHECK_ARG_NOT_NULL(view_desc_ptr);
+            META_CHECK_NOT_NULL(view_desc_ptr);
             const std::string view_name = fmt::format("{} View for usage {}", name, Data::GetEnumMaskName(view_id.usage));
 
             if (const auto* image_view_desc_ptr = std::get_if<ResourceView::ImageViewDescriptor>(view_desc_ptr.get());

@@ -69,7 +69,7 @@ static Rhi::IResource::Type GetResourceTypeByDimensionType(D3D_SRV_DIMENSION dim
     case D3D_SRV_DIMENSION_TEXTURECUBEARRAY:
         return Rhi::IResource::Type::Texture;
 
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(dimension_type, Rhi::IResource::Type::Buffer, "unable to determine resource type by DX resource dimension type");
+    default: META_UNEXPECTED_RETURN_DESCR(dimension_type, Rhi::IResource::Type::Buffer, "unable to determine resource type by DX resource dimension type");
     }
 }
 
@@ -86,7 +86,7 @@ static Rhi::IResource::Type GetResourceTypeByInputAndDimensionType(D3D_SHADER_IN
     case D3D_SIT_TEXTURE:     return Rhi::IResource::Type::Texture;
     case D3D_SIT_SAMPLER:     return Rhi::IResource::Type::Sampler;
     case D3D_SIT_UAV_RWTYPED: return GetResourceTypeByDimensionType(dimension_type);
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(input_type, Rhi::IResource::Type::Buffer, "unable to determine resource type by DX shader input type");
+    default: META_UNEXPECTED_RETURN_DESCR(input_type, Rhi::IResource::Type::Buffer, "unable to determine resource type by DX shader input type");
     }
 }
 
@@ -111,7 +111,7 @@ static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepTyp
     {
     case StepType::PerVertex:     return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
     case StepType::PerInstance:   return D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
-    default:                      META_UNEXPECTED_ARG_RETURN(step_type, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA);
+    default:                      META_UNEXPECTED_RETURN(step_type, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA);
     }
 }
 
@@ -123,7 +123,7 @@ static D3D12_SHADER_BUFFER_DESC GetConstantBufferDesc(ID3D12ShaderReflection& sh
         return {};
 
     ID3D12ShaderReflectionConstantBuffer* buffer_reflection_ptr = shader_reflection.GetConstantBufferByName(binding_desc.Name);
-    META_CHECK_ARG_NOT_NULL_DESCR(buffer_reflection_ptr,
+    META_CHECK_NOT_NULL_DESCR(buffer_reflection_ptr,
                                   "Failed to get buffer reflection from shader for argument \"{}\"", binding_desc.Name);
 
     D3D12_SHADER_BUFFER_DESC buffer_desc = {};
@@ -174,14 +174,14 @@ Shader::Shader(Type type, const Base::Context& context, const Settings& settings
         m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(fmt::format("{}.dxil", compiled_func_name)));
     }
 
-    META_CHECK_ARG_NOT_NULL(m_byte_code_chunk_ptr);
+    META_CHECK_NOT_NULL(m_byte_code_chunk_ptr);
     ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->GetDataPtr(), m_byte_code_chunk_ptr->GetDataSize(), IID_PPV_ARGS(&m_reflection_cptr)));
 }
 
 Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_reflection_cptr);
+    META_CHECK_NOT_NULL(m_reflection_cptr);
 
     Ptrs<Base::ProgramArgumentBinding> argument_bindings;
 
@@ -270,7 +270,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
 std::vector<D3D12_INPUT_ELEMENT_DESC> Shader::GetNativeProgramInputLayout(const Program& program) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_reflection_cptr);
+    META_CHECK_NOT_NULL(m_reflection_cptr);
 
     D3D12_SHADER_DESC shader_desc{};
     m_reflection_cptr->GetDesc(&shader_desc);
@@ -307,7 +307,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> Shader::GetNativeProgramInputLayout(const 
         const Base::Program::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
         const uint32_t buffer_index = GetProgramInputBufferIndexByArgumentSemantic(program, param_desc.SemanticName);
 
-        META_CHECK_ARG_LESS_DESCR(buffer_index, input_buffer_layouts.size(),
+        META_CHECK_LESS_DESCR(buffer_index, input_buffer_layouts.size(),
                                   "Provided description of program input layout has insufficient buffers count {}, while shader requires buffer at index {}",
                                   input_buffer_layouts.size(), buffer_index);
         const Base::Program::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];

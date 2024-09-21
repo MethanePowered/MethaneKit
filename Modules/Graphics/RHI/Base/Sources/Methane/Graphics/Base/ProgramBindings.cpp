@@ -124,7 +124,7 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, 
 Rhi::IProgram& ProgramBindings::GetProgram() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_program_ptr);
+    META_CHECK_NOT_NULL(m_program_ptr);
     return *m_program_ptr;
 }
 
@@ -182,7 +182,7 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
 
     for (const auto& [program_argument, argument_binding_ptr] : argument_bindings)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
+        META_CHECK_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
         m_arguments.insert(program_argument);
         if (m_binding_by_argument.count(program_argument))
             continue;
@@ -201,7 +201,7 @@ Rhi::IProgramBindings::BindingValueByArgument ProgramBindings::ReplaceBindingVal
     BindingValueByArgument binding_value_by_argument = replace_resource_views;
     for (const auto& [program_argument, argument_binding_ptr] : argument_bindings)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
+        META_CHECK_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
         const ProgramArgumentBinding::Settings& argument_settings = argument_binding_ptr->GetSettings();
 
         // NOTE:
@@ -271,7 +271,7 @@ ProgramBindings::operator std::string() const
 
     for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
     {
-        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        META_CHECK_NOT_NULL(argument_binding_ptr);
         argument_binding_strings.push_back(static_cast<std::string>(*argument_binding_ptr));
     }
 
@@ -301,7 +301,7 @@ void ProgramBindings::Initialize()
     // to prevent back calls during resource views setup
     for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr,
+        META_CHECK_NOT_NULL_DESCR(argument_binding_ptr,
                                       "no resource binding is set for program argument '{}'",
                                       program_argument.GetName());
 
@@ -315,7 +315,7 @@ Rhi::ProgramArguments ProgramBindings::GetUnboundArguments() const
     Rhi::ProgramArguments unbound_arguments;
     for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr,
+        META_CHECK_NOT_NULL_DESCR(argument_binding_ptr,
                                       "no resource binding is set for program argument '{}'",
                                       program_argument.GetName());
 
@@ -404,7 +404,7 @@ bool ProgramBindings::ApplyResourceStates(Rhi::ProgramArgumentAccessMask access,
         const ResourceStates& resource_states = m_transition_resource_states_by_access[magic_enum::enum_index(access_type).value()];
         for(const ResourceAndState& resource_state : resource_states)
         {
-            META_CHECK_ARG_NOT_NULL(resource_state.resource_ptr);
+            META_CHECK_NOT_NULL(resource_state.resource_ptr);
             if (owner_queue_ptr)
                 resource_states_changed |= resource_state.resource_ptr->SetOwnerQueueFamily(owner_queue_ptr->GetFamilyIndex(), m_resource_state_transition_barriers_ptr);
 
@@ -422,7 +422,7 @@ void ProgramBindings::InitResourceRefsByAccess()
 
     for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
-        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        META_CHECK_NOT_NULL(argument_binding_ptr);
         const size_t accessor_index = argument_binding_ptr->GetSettings().argument.GetAccessorIndex();
         std::set<Rhi::IResource*>& unique_resources = unique_resources_by_access[accessor_index];
         for (const Rhi::IResource::View& resource_view : argument_binding_ptr->GetResourceViews())

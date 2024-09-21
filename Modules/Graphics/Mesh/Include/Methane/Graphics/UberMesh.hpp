@@ -52,13 +52,13 @@ public:
         if (adjust_indices)
         {
             const Data::Size vertex_count = BaseMeshT::GetVertexCount();
-            META_CHECK_ARG_LESS(vertex_count, std::numeric_limits<Mesh::Index>::max());
+            META_CHECK_LESS(vertex_count, std::numeric_limits<Mesh::Index>::max());
 
             const auto index_offset = static_cast<Mesh::Index>(vertex_count);
             std::transform(sub_indices.begin(), sub_indices.end(), BaseMeshT::GetIndicesBackInserter(),
                            [index_offset](const Mesh::Index& index)
                            {
-                               META_CHECK_ARG_LESS(index_offset, std::numeric_limits<Mesh::Index>::max() - index);
+                               META_CHECK_LESS(index_offset, std::numeric_limits<Mesh::Index>::max() - index);
                                return static_cast<Mesh::Index>(index_offset + index);
                            });
         }
@@ -75,7 +75,7 @@ public:
     const Mesh::Subset&  GetSubset(size_t subset_index) const
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_LESS(subset_index, m_subsets.size());
+        META_CHECK_LESS(subset_index, m_subsets.size());
         return m_subsets[subset_index];
     }
 

@@ -67,7 +67,7 @@ void RenderPass::ReleaseAttachmentTextures()
 void RenderPass::Begin(RenderCommandList&)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_FALSE_DESCR(m_is_begun, "can not begin pass which was begun already and was not ended");
+    META_CHECK_FALSE_DESCR(m_is_begun, "can not begin pass which was begun already and was not ended");
 
     if (m_update_attachment_states)
     {
@@ -79,7 +79,7 @@ void RenderPass::Begin(RenderCommandList&)
 void RenderPass::End(RenderCommandList&)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(m_is_begun, "can not end render pass, which was not begun");
+    META_CHECK_TRUE_DESCR(m_is_begun, "can not end render pass, which was not begun");
 
     if (m_update_attachment_states && GetPattern().GetSettings().is_final_pass)
     {
@@ -157,7 +157,7 @@ void RenderPass::SetAttachmentStates(const Opt<Rhi::ResourceState>& color_state,
 const Rhi::ITexture::View& RenderPass::GetAttachmentTextureView(const Rhi::RenderPassAttachment& attachment) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_settings.attachments.size(),
+    META_CHECK_LESS_DESCR(attachment.attachment_index, m_settings.attachments.size(),
                               "attachment index is out of bounds of render pass attachments array");
     return m_settings.attachments[attachment.attachment_index];
 }

@@ -103,7 +103,7 @@ void DescriptorManager::AddProgramBindings(Rhi::IProgramBindings& program_bindin
         [&program_bindings](const WeakPtr<Rhi::IProgramBindings>& program_bindings_ptr)
         { return !program_bindings_ptr.expired() && program_bindings_ptr.lock().get() == std::addressof(program_bindings); }
     );
-    META_CHECK_ARG_DESCR("program_bindings", program_bindings_it == m_program_bindings.end(),
+    META_CHECK_DESCR("program_bindings", program_bindings_it == m_program_bindings.end(),
         "program bindings instance was already added to resource manager");
 #endif
 

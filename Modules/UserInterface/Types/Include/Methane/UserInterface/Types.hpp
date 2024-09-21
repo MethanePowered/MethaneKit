@@ -97,15 +97,15 @@ public:
     template<typename T> bool operator==(const T& other) const noexcept     { return BaseType::operator==(static_cast<const BaseType&>(other)) && m_units == other.GetUnits(); }
     template<typename T> bool operator!=(const T& other) const noexcept     { return BaseType::operator!=(static_cast<const BaseType&>(other)) || m_units != other.GetUnits(); }
 
-    template<typename T> bool operator<=(const T& other) const              { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator<=(other); }
-    template<typename T> bool operator<(const T& other) const               { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator<(other);  }
-    template<typename T> bool operator>=(const T& other) const              { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator>=(other); }
-    template<typename T> bool operator>(const T& other) const               { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator>(other);  }
+    template<typename T> bool operator<=(const T& other) const              { META_CHECK_EQUAL(other.GetUnits(), m_units); return BaseType::operator<=(other); }
+    template<typename T> bool operator<(const T& other) const               { META_CHECK_EQUAL(other.GetUnits(), m_units); return BaseType::operator<(other);  }
+    template<typename T> bool operator>=(const T& other) const              { META_CHECK_EQUAL(other.GetUnits(), m_units); return BaseType::operator>=(other); }
+    template<typename T> bool operator>(const T& other) const               { META_CHECK_EQUAL(other.GetUnits(), m_units); return BaseType::operator>(other);  }
 
-    template<typename T> UnitType operator+(const T& other) const           { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return UnitType<BaseType>(m_units, BaseType::operator+(other)); }
-    template<typename T> UnitType operator-(const T& other) const           { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return UnitType<BaseType>(m_units, BaseType::operator-(other)); }
-    template<typename T> UnitType& operator+=(const T& other)               { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); BaseType::operator+=(other); return *this; }
-    template<typename T> UnitType& operator-=(const T& other)               { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); BaseType::operator-=(other); return *this; }
+    template<typename T> UnitType operator+(const T& other) const           { META_CHECK_EQUAL(other.GetUnits(), m_units); return UnitType<BaseType>(m_units, BaseType::operator+(other)); }
+    template<typename T> UnitType operator-(const T& other) const           { META_CHECK_EQUAL(other.GetUnits(), m_units); return UnitType<BaseType>(m_units, BaseType::operator-(other)); }
+    template<typename T> UnitType& operator+=(const T& other)               { META_CHECK_EQUAL(other.GetUnits(), m_units); BaseType::operator+=(other); return *this; }
+    template<typename T> UnitType& operator-=(const T& other)               { META_CHECK_EQUAL(other.GetUnits(), m_units); BaseType::operator-=(other); return *this; }
 
     template<typename T> UnitType  operator*(T&& multiplier) const noexcept { return UnitType<BaseType>(m_units, BaseType::operator*(std::forward<T>(multiplier))); }
     template<typename T> UnitType  operator/(T&& divisor) const noexcept    { return UnitType<BaseType>(m_units, BaseType::operator/(std::forward<T>(divisor))); }

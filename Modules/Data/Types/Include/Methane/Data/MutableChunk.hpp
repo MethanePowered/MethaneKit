@@ -96,7 +96,7 @@ public:
     void PatchData(T offset, V value)
     {
         const T data_size = GetDataSize<T>();
-        META_CHECK_ARG_LESS_DESCR(offset, data_size, "can not patch data with offset outside of bounds");
+        META_CHECK_LESS_DESCR(offset, data_size, "can not patch data with offset outside of bounds");
 
         if constexpr (std::is_same_v<T, V>)
             *(GetDataPtr<T>() + offset) = value;

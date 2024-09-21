@@ -104,7 +104,7 @@ void RenderCommandList::ResetCommandEncoder()
 
     if (IsParallel())
     {
-        META_CHECK_ARG_NOT_NULL(m_parallel_render_command_list_ptr);
+        META_CHECK_NOT_NULL(m_parallel_render_command_list_ptr);
         const id<MTLParallelRenderCommandEncoder> mtl_parallel_render_command_encoder = m_parallel_render_command_list_ptr->GetNativeCommandEncoder();
         InitializeCommandEncoder([mtl_parallel_render_command_encoder](id<MTLCommandBuffer>)
                                  { return [mtl_parallel_render_command_encoder renderCommandEncoder]; });
@@ -114,7 +114,7 @@ void RenderCommandList::ResetCommandEncoder()
         // If command buffer was not created for current frame yet,
         // then render pass descriptor should be reset with new frame drawable
         MTLRenderPassDescriptor* mtl_render_pass = GetMetalRenderPass().GetNativeDescriptor(!IsCommandBufferInitialized());
-        META_CHECK_ARG_NOT_NULL(mtl_render_pass);
+        META_CHECK_NOT_NULL(mtl_render_pass);
         InitializeCommandBufferAndEncoder([&mtl_render_pass](id<MTLCommandBuffer> mtl_cmd_buffer)
                                           { return [mtl_cmd_buffer renderCommandEncoderWithDescriptor: mtl_render_pass]; });
     }
@@ -127,7 +127,7 @@ bool RenderCommandList::SetVertexBuffers(Rhi::IBufferSet& vertex_buffers, bool s
         return false;
 
     const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
-    META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
+    META_CHECK_NOT_NULL(mtl_cmd_encoder);
 
     const BufferSet& metal_vertex_buffers = static_cast<const BufferSet&>(vertex_buffers);
     const std::vector<id<MTLBuffer>>& mtl_buffers = metal_vertex_buffers.GetNativeBuffers();
@@ -158,7 +158,7 @@ void RenderCommandList::DrawIndexed(Primitive primitive, uint32_t index_count, u
     const uint32_t         mtl_index_stride   = mtl_index_type == MTLIndexTypeUInt32 ? 4 : 2;
 
     const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
-    META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
+    META_CHECK_NOT_NULL(mtl_cmd_encoder);
 
     if (m_device_supports_gpu_family_apple_3)
     {
@@ -196,7 +196,7 @@ void RenderCommandList::Draw(Primitive primitive, uint32_t vertex_count, uint32_
     const MTLPrimitiveType mtl_primitive_type = PrimitiveTypeToMetal(primitive);
 
     const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
-    META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
+    META_CHECK_NOT_NULL(mtl_cmd_encoder);
 
     if (m_device_supports_gpu_family_apple_3)
     {
@@ -230,9 +230,9 @@ Data::Index RenderCommandList::GetStartVertexBufferIndex() const
 {
     META_FUNCTION_TASK();
     const DrawingState& drawing_state = GetDrawingState();
-    META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.render_state_ptr, "render state must be initialized in command list reset");
+    META_CHECK_NOT_NULL_DESCR(drawing_state.render_state_ptr, "render state must be initialized in command list reset");
     const Ptr<Rhi::IProgram>& program_ptr = drawing_state.render_state_ptr->GetSettings().program_ptr;
-    META_CHECK_ARG_NOT_NULL_DESCR(program_ptr, "program in render state must be initialized");
+    META_CHECK_NOT_NULL_DESCR(program_ptr, "program in render state must be initialized");
     return static_cast<Program&>(*program_ptr).GetStartVertexBufferIndex();
 }
 

@@ -103,7 +103,7 @@ static CLI::Option& AddRectSizeOption(CLI::App &app, const std::string& name, Da
     };
 
     CLI::Option* option_ptr = app.add_option(name, parse_fn, description, defaulted);
-    META_CHECK_ARG_NOT_NULL(option_ptr);
+    META_CHECK_NOT_NULL(option_ptr);
 
     option_ptr->type_name("[W H]");
     option_ptr->type_size(2);
@@ -209,7 +209,7 @@ void AppBase::ChangeWindowBounds(const Data::FrameRect& window_bounds)
 void AppBase::StartResizing()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_FALSE(m_is_resizing);
+    META_CHECK_FALSE(m_is_resizing);
     m_is_resizing = true;
 
     META_LOG("\n========================== START RESIZING ==========================");
@@ -218,7 +218,7 @@ void AppBase::StartResizing()
 void AppBase::EndResizing()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE(m_is_resizing);
+    META_CHECK_TRUE(m_is_resizing);
     m_is_resizing = false;
 
     META_LOG("\n========================== END RESIZING ==========================");
@@ -305,7 +305,7 @@ std::string AppBase::GetControlsHelp() const
 
     for (const Ptr<Input::Controller>& controller_ptr : GetInputState().GetControllers())
     {
-        META_CHECK_ARG_NOT_NULL(controller_ptr);
+        META_CHECK_NOT_NULL(controller_ptr);
         if (!controller_ptr)
             continue;
 
@@ -357,7 +357,7 @@ void AppBase::ShowCommandLineHelp()
 const AppBase::Message& AppBase::GetDeferredMessage() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_deferred_message_ptr);
+    META_CHECK_NOT_NULL(m_deferred_message_ptr);
     return *m_deferred_message_ptr;
 }
 

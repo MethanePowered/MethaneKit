@@ -43,7 +43,7 @@ public:
         : m_start(start)
         , m_end(end)
     {
-        META_CHECK_ARG_DESCR(m_start, m_start <= m_end, "range start must be less of equal than end");
+        META_CHECK_DESCR(m_start, m_start <= m_end, "range start must be less of equal than end");
     }
 
     Range(std::initializer_list<ScalarT> init) // NOSONAR - initializer list constructor is not explicit intentionally
@@ -71,7 +71,7 @@ public:
     Range operator+(const Range& other) const // merge
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(other, IsMergeable(other), "can not merge ranges which are not overlapping or adjacent");
+        META_CHECK_DESCR(other, IsMergeable(other), "can not merge ranges which are not overlapping or adjacent");
         return Range(std::min(m_start, other.m_start), std::max(m_end, other.m_end));
     }
 
@@ -79,7 +79,7 @@ public:
     Range operator%(const Range& other) const // intersect
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(other, IsMergeable(other), "can not intersect ranges which are not overlapping or adjacent");
+        META_CHECK_DESCR(other, IsMergeable(other), "can not intersect ranges which are not overlapping or adjacent");
         return Range(std::max(m_start, other.m_start), std::min(m_end, other.m_end));
     }
 
@@ -87,8 +87,8 @@ public:
     Range operator-(const Range& other) const // subtract
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(other, IsOverlapping(other), "can not subtract ranges which are not overlapping");
-        META_CHECK_ARG_DESCR(other, !Contains(other) && !other.Contains(*this), "can not subtract ranges containing one another");
+        META_CHECK_DESCR(other, IsOverlapping(other), "can not subtract ranges which are not overlapping");
+        META_CHECK_DESCR(other, !Contains(other) && !other.Contains(*this), "can not subtract ranges containing one another");
         return (m_start <= other.m_start) ? Range(m_start, other.m_start) : Range(other.m_end, m_end);
     }
 

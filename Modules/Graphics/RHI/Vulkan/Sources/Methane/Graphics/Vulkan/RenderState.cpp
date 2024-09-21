@@ -53,7 +53,7 @@ static vk::PolygonMode RasterizerFillModeToVulkan(Rhi::IRenderState::Rasterizer:
     case FillMode::Solid:     return vk::PolygonMode::eFill;
     case FillMode::Wireframe: return vk::PolygonMode::eLine;
     default:
-        META_UNEXPECTED_ARG_RETURN(fill_mode, vk::PolygonMode::eFill);
+        META_UNEXPECTED_RETURN(fill_mode, vk::PolygonMode::eFill);
     }
 }
 
@@ -68,7 +68,7 @@ static vk::CullModeFlags RasterizerCullModeToVulkan(Rhi::IRenderState::Rasterize
     case CullMode::Back:  return vk::CullModeFlagBits::eBack;
     case CullMode::Front: return vk::CullModeFlagBits::eFront;
     default:
-        META_UNEXPECTED_ARG_RETURN(cull_mode, vk::CullModeFlagBits::eNone);
+        META_UNEXPECTED_RETURN(cull_mode, vk::CullModeFlagBits::eNone);
     }
 }
 
@@ -86,7 +86,7 @@ static vk::SampleCountFlagBits RasterizerSampleCountToVulkan(uint32_t sample_cou
     case 32: return vk::SampleCountFlagBits::e32;
     case 61: return vk::SampleCountFlagBits::e64;
     default:
-        META_UNEXPECTED_ARG_DESCR_RETURN(sample_count, vk::SampleCountFlagBits::e1, "Vulkan rasterizer sample count should be a power of 2 from 1 to 64.");
+        META_UNEXPECTED_RETURN_DESCR(sample_count, vk::SampleCountFlagBits::e1, "Vulkan rasterizer sample count should be a power of 2 from 1 to 64.");
     }
 }
 
@@ -105,7 +105,7 @@ static vk::StencilOp StencilOperationToVulkan(Rhi::FaceOperation stencil_operati
     case Rhi::FaceOperation::IncrementWrap:   return vk::StencilOp::eIncrementAndWrap;
     case Rhi::FaceOperation::DecrementWrap:   return vk::StencilOp::eDecrementAndWrap;
     default:
-        META_UNEXPECTED_ARG_RETURN(stencil_operation, vk::StencilOp::eKeep);
+        META_UNEXPECTED_RETURN(stencil_operation, vk::StencilOp::eKeep);
     }
 }
 
@@ -135,7 +135,7 @@ static vk::BlendFactor BlendingFactorToVulkan(Rhi::IRenderState::Blending::Facto
     case BlendFactor::OneMinusSource1Color:     return vk::BlendFactor::eOneMinusSrc1Color;
     case BlendFactor::Source1Alpha:             return vk::BlendFactor::eSrc1Alpha;
     case BlendFactor::OneMinusSource1Alpha:     return vk::BlendFactor::eOneMinusSrc1Alpha;
-    default: META_UNEXPECTED_ARG_RETURN(blend_factor, vk::BlendFactor::eZero);
+    default: META_UNEXPECTED_RETURN(blend_factor, vk::BlendFactor::eZero);
     }
 }
 
@@ -152,7 +152,7 @@ static vk::BlendOp BlendingOperationToVulkan(Rhi::IRenderState::Blending::Operat
     case BlendOperation::Minimum:           return vk::BlendOp::eMin;
     case BlendOperation::Maximum:           return vk::BlendOp::eMax;
     default:
-        META_UNEXPECTED_ARG_RETURN(blend_operation, vk::BlendOp::eAdd);
+        META_UNEXPECTED_RETURN(blend_operation, vk::BlendOp::eAdd);
     }
 }
 
@@ -187,7 +187,7 @@ vk::PrimitiveTopology RenderState::GetVulkanPrimitiveTopology(Rhi::RenderPrimiti
     case Rhi::RenderPrimitive::LineStrip:       return vk::PrimitiveTopology::eLineStrip;
     case Rhi::RenderPrimitive::Triangle:        return vk::PrimitiveTopology::eTriangleList;
     case Rhi::RenderPrimitive::TriangleStrip:   return vk::PrimitiveTopology::eTriangleStrip;
-    default: META_UNEXPECTED_ARG_RETURN(primitive_type, vk::PrimitiveTopology::ePointList);
+    default: META_UNEXPECTED_RETURN(primitive_type, vk::PrimitiveTopology::ePointList);
     }
 }
 
@@ -248,14 +248,14 @@ bool RenderState::SetName(std::string_view name)
 const vk::Pipeline& RenderState::GetNativePipelineDynamic() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(IsNativePipelineDynamic(), "dynamic pipeline is not supported by device");
+    META_CHECK_TRUE_DESCR(IsNativePipelineDynamic(), "dynamic pipeline is not supported by device");
     return m_vk_pipeline_dynamic.get();
 }
 
 const vk::Pipeline& RenderState::GetNativePipelineMonolithic(ViewState& view_state, Rhi::RenderPrimitive render_primitive)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_FALSE_DESCR(IsNativePipelineDynamic(), "dynamic pipeline should be used");
+    META_CHECK_FALSE_DESCR(IsNativePipelineDynamic(), "dynamic pipeline should be used");
     std::lock_guard lock(m_mutex);
 
     const PipelineId pipeline_id(static_cast<Rhi::IViewState*>(&view_state), render_primitive);
@@ -272,8 +272,8 @@ const vk::Pipeline& RenderState::GetNativePipelineMonolithic(ViewState& view_sta
 const vk::Pipeline& RenderState::GetNativePipelineMonolithic(const Base::RenderDrawingState& drawing_state)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(drawing_state.view_state_ptr, "view state is not set in render command list drawing state");
-    META_CHECK_ARG_TRUE_DESCR(drawing_state.primitive_type_opt.has_value(), "primitive type is not set in render command list drawing state");
+    META_CHECK_NOT_NULL_DESCR(drawing_state.view_state_ptr, "view state is not set in render command list drawing state");
+    META_CHECK_TRUE_DESCR(drawing_state.primitive_type_opt.has_value(), "primitive type is not set in render command list drawing state");
     return GetNativePipelineMonolithic(static_cast<ViewState&>(*drawing_state.view_state_ptr), drawing_state.primitive_type_opt.value());
 }
 
@@ -415,7 +415,7 @@ vk::UniquePipeline RenderState::CreateNativePipeline(const ViewState* view_state
     );
 
     auto pipe = m_vk_render_context.GetVulkanDevice().GetNativeDevice().createGraphicsPipelineUnique(nullptr, vk_pipeline_create_info);
-    META_CHECK_ARG_EQUAL_DESCR(pipe.result, vk::Result::eSuccess, "Vulkan pipeline creation has failed");
+    META_CHECK_EQUAL_DESCR(pipe.result, vk::Result::eSuccess, "Vulkan pipeline creation has failed");
 
     SetVulkanObjectName(m_vk_render_context.GetVulkanDevice().GetNativeDevice(), pipe.value.get(), Base::Object::GetName());
     return std::move(pipe.value);

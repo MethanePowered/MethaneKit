@@ -130,7 +130,7 @@ public:
         case 1: return m_vector.y;
         case 2: if constexpr(size > 2) return m_vector.z;
         case 3: if constexpr(size > 3) return m_vector.w;
-        default: META_UNEXPECTED_ARG_RETURN(index, T{});
+        default: META_UNEXPECTED_RETURN(index, T{});
         }
     }
 

@@ -59,7 +59,7 @@ static MTLVertexStepFunction GetVertexStepFunction(StepType step_type)
         case StepType::Undefined:   return MTLVertexStepFunctionConstant;
         case StepType::PerVertex:   return MTLVertexStepFunctionPerVertex;
         case StepType::PerInstance: return MTLVertexStepFunctionPerInstance;
-        default:                    META_UNEXPECTED_ARG_RETURN(step_type, MTLVertexStepFunctionPerVertex);
+        default:                    META_UNEXPECTED_RETURN(step_type, MTLVertexStepFunctionPerVertex);
     }
 }
 
@@ -72,7 +72,7 @@ static Rhi::ResourceType GetResourceTypeByMetalBindingType(MTLBindingType mtl_ar
     case MTLBindingTypeBuffer:  return Rhi::ResourceType::Buffer;
     case MTLBindingTypeTexture: return Rhi::ResourceType::Texture;
     case MTLBindingTypeSampler: return Rhi::ResourceType::Sampler;
-    default:                    META_UNEXPECTED_ARG_RETURN(mtl_arg_type, IResource::Type::Buffer);
+    default:                    META_UNEXPECTED_RETURN(mtl_arg_type, IResource::Type::Buffer);
     }
 }
 
@@ -107,7 +107,7 @@ static Rhi::ResourceType GetResourceTypeByMetalDataType(MTLDataType mtl_data_typ
     case MTLDataTypePointer: return Rhi::ResourceType::Buffer;
     case MTLDataTypeTexture: return Rhi::ResourceType::Texture;
     case MTLDataTypeSampler: return Rhi::ResourceType::Sampler;
-    default:                 META_UNEXPECTED_ARG_RETURN(mtl_data_type, Rhi::ResourceType::Buffer);
+    default:                 META_UNEXPECTED_RETURN(mtl_data_type, Rhi::ResourceType::Buffer);
     }
 }
 
@@ -260,7 +260,7 @@ id<MTLFunction> Shader::GetMetalLibraryFunction(const IContext& context, const R
 #endif
 
     const Ptr<ProgramLibrary>& program_library_ptr = context.GetMetalLibrary(shader_library_name);
-    META_CHECK_ARG_NOT_NULL(program_library_ptr);
+    META_CHECK_NOT_NULL(program_library_ptr);
     id<MTLLibrary> mtl_shader_library = program_library_ptr->GetNativeLibrary();
 
 #ifdef METAL_LIBRARY_SPLIT_BY_SHADER_ENTRY_FUNCTION
@@ -296,7 +296,7 @@ Shader::Shader(Rhi::ShaderType shader_type, const Base::Context& context, const 
     , m_mtl_function(GetMetalLibraryFunction(dynamic_cast<const IContext&>(context), settings))
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_function, "failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName());
+    META_CHECK_NOT_NULL_DESCR(m_mtl_function, "failed to initialize Metal shader function by name '{}'", GetCompiledEntryFunctionName());
 }
 
 Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
@@ -364,7 +364,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         if (mtl_binding.type == MTLBindingTypeBuffer && IsArgumentBufferName(argument_name, arg_access_type))
         {
             // Get arguments from argument buffer layout
-            META_CHECK_ARG_LESS_DESCR(argument_index, m_argument_buffer_layouts.size(),
+            META_CHECK_LESS_DESCR(argument_index, m_argument_buffer_layouts.size(),
                                       "inconsistent argument buffer layouts");
             for(const auto& [name, member] : m_argument_buffer_layouts[argument_index].member_by_name)
             {
@@ -432,7 +432,7 @@ const ArgumentBufferLayout* Shader::GetArgumentBufferLayoutPtr(const Rhi::Progra
 Shader::VertexDescriptorAndStartBufferIndex Shader::GetNativeVertexDescriptor(const Program& program) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(GetType(), Rhi::ShaderType::Vertex);
+    META_CHECK_EQUAL(GetType(), Rhi::ShaderType::Vertex);
 
     MTLVertexDescriptor* mtl_vertex_desc = [[MTLVertexDescriptor alloc] init];
     [mtl_vertex_desc reset];
@@ -465,7 +465,7 @@ Shader::VertexDescriptorAndStartBufferIndex Shader::GetNativeVertexDescriptor(co
         attrib_byte_offset += attrib_size;
     }
 
-    META_CHECK_ARG_EQUAL(input_buffer_byte_offsets.size(), input_buffer_layouts.size());
+    META_CHECK_EQUAL(input_buffer_byte_offsets.size(), input_buffer_layouts.size());
 
     for(uint32_t buffer_index = 0U; buffer_index < input_buffer_layouts.size(); ++buffer_index)
     {

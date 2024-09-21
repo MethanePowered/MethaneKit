@@ -47,7 +47,7 @@ vk::ImageAspectFlags Texture::GetNativeImageAspectFlags(const Rhi::TextureSettin
     case Rhi::TextureType::DepthStencil: return IsDepthFormat(settings.pixel_format)
                                               ? vk::ImageAspectFlagBits::eDepth
                                               : vk::ImageAspectFlagBits::eStencil;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(settings.type, vk::ImageAspectFlagBits::eColor, "Unsupported texture type");
+    default: META_UNEXPECTED_RETURN_DESCR(settings.type, vk::ImageAspectFlagBits::eColor, "Unsupported texture type");
     }
 }
 
@@ -209,7 +209,7 @@ vk::ImageType Texture::DimensionTypeToImageType(Rhi::TextureDimensionType dimens
     case Rhi::TextureDimensionType::Tex3D:
         return vk::ImageType::e3D;
 
-    default: META_UNEXPECTED_ARG_RETURN(dimension_type, vk::ImageType::e1D);
+    default: META_UNEXPECTED_RETURN(dimension_type, vk::ImageType::e1D);
     }
 }
 
@@ -226,7 +226,7 @@ vk::ImageViewType Texture::DimensionTypeToImageViewType(Rhi::TextureDimensionTyp
     case Rhi::TextureDimensionType::Cube:               return vk::ImageViewType::eCube;
     case Rhi::TextureDimensionType::CubeArray:          return vk::ImageViewType::eCubeArray;
     case Rhi::TextureDimensionType::Tex3D:              return vk::ImageViewType::e3D;
-    default: META_UNEXPECTED_ARG_RETURN(dimension_type, vk::ImageViewType::e1D);
+    default: META_UNEXPECTED_RETURN(dimension_type, vk::ImageViewType::e1D);
     }
 }
 
@@ -239,8 +239,8 @@ Texture::Texture(const Base::Context& context, const Settings& settings)
 Texture::Texture(const RenderContext& render_context, const Settings& settings, Data::Index frame_index)
     : Resource(render_context, settings, render_context.GetNativeFrameImage(frame_index))
 {
-    META_CHECK_ARG_TRUE(settings.frame_index_opt.has_value());
-    META_CHECK_ARG_EQUAL(frame_index, settings.frame_index_opt.value());
+    META_CHECK_TRUE(settings.frame_index_opt.has_value());
+    META_CHECK_EQUAL(frame_index, settings.frame_index_opt.value());
 }
 
 Texture::Texture(const Base::Context& context, const Settings& settings, vk::UniqueImage&& vk_unique_image)
@@ -254,7 +254,7 @@ Texture::Texture(const Base::Context& context, const Settings& settings, vk::Uni
     case Rhi::TextureType::RenderTarget: InitializeAsRenderTarget(); break;
     case Rhi::TextureType::DepthStencil: InitializeAsDepthStencil(); break;
     //   Rhi::TextureType::FrameBuffer:  initialized with a separate constructor
-    default:                             META_UNEXPECTED_ARG(settings.type);
+    default:                             META_UNEXPECTED(settings.type);
     }
 
 }
@@ -263,7 +263,7 @@ void Texture::InitializeAsImage()
 {
     META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::TextureType::Image);
+    META_CHECK_EQUAL(settings.type, Rhi::TextureType::Image);
 
     // Allocate resource primary memory
     const vk::Device& vk_device = GetNativeDevice();
@@ -288,7 +288,7 @@ void Texture::InitializeAsRenderTarget()
 {
     META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::TextureType::RenderTarget);
+    META_CHECK_EQUAL(settings.type, Rhi::TextureType::RenderTarget);
 
     // Allocate resource primary memory
     const vk::Device& vk_device = GetNativeDevice();
@@ -300,12 +300,12 @@ void Texture::InitializeAsDepthStencil()
 {
     META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::TextureType::DepthStencil);
+    META_CHECK_EQUAL(settings.type, Rhi::TextureType::DepthStencil);
 
-    META_CHECK_ARG_EQUAL_DESCR(settings.dimension_type, Rhi::TextureDimensionType::Tex2D, "depth-stencil texture is supported only with 2D dimensions");
-    META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 1U, "depth-stencil texture does not support 3D dimensions");
-    META_CHECK_ARG_FALSE_DESCR(settings.mipmapped, "depth-stencil texture does not support mip-map mode");
-    META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1U, "depth-stencil texture does not support arrays");
+    META_CHECK_EQUAL_DESCR(settings.dimension_type, Rhi::TextureDimensionType::Tex2D, "depth-stencil texture is supported only with 2D dimensions");
+    META_CHECK_EQUAL_DESCR(settings.dimensions.GetDepth(), 1U, "depth-stencil texture does not support 3D dimensions");
+    META_CHECK_FALSE_DESCR(settings.mipmapped, "depth-stencil texture does not support mip-map mode");
+    META_CHECK_EQUAL_DESCR(settings.array_length, 1U, "depth-stencil texture does not support arrays");
 
     // Allocate resource primary memory
     const vk::Device& vk_device = GetNativeDevice();
@@ -317,11 +317,11 @@ void Texture::ResetNativeFrameImage()
 {
     META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::TextureType::FrameBuffer);
-    META_CHECK_ARG_TRUE(settings.frame_index_opt.has_value());
+    META_CHECK_EQUAL(settings.type, Rhi::TextureType::FrameBuffer);
+    META_CHECK_TRUE(settings.frame_index_opt.has_value());
 
     const Base::Context& context = GetBaseContext();
-    META_CHECK_ARG_EQUAL(context.GetType(), Rhi::ContextType::Render);
+    META_CHECK_EQUAL(context.GetType(), Rhi::ContextType::Render);
 
     const auto& render_context = static_cast<const RenderContext&>(context);
     ResetNativeResource(render_context.GetNativeFrameImage(settings.frame_index_opt.value()));
@@ -331,7 +331,7 @@ void Texture::ResetNativeFrameImage()
 void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, Rhi::TextureType::Image, "only image textures support data upload from CPU");
+    META_CHECK_EQUAL_DESCR(GetSettings().type, Rhi::TextureType::Image, "only image textures support data upload from CPU");
 
     Base::Texture::SetData(target_cmd_queue, sub_resources);
 
@@ -349,8 +349,8 @@ void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& 
         const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, sub_resource_offset, sub_resource.GetDataSize(), vk::MemoryMapFlags{},
                                                                      reinterpret_cast<void**>(&sub_resource_data_ptr)); // NOSONAR
 
-        META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map staging buffer subresource");
-        META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+        META_CHECK_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map staging buffer subresource");
+        META_CHECK_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
         std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), sub_resource_data_ptr);
 
         GetNativeDevice().unmapMemory(vk_device_memory);
@@ -390,8 +390,8 @@ void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& 
 
 Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range)
 {
-    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, Rhi::TextureType::Image, "only image textures support data read-back from CPU");
-    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
+    META_CHECK_EQUAL_DESCR(GetSettings().type, Rhi::TextureType::Image, "only image textures support data read-back from CPU");
+    META_CHECK_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
                               "getting texture data from GPU is allowed for buffers with CPU Read-back flag only");
 
     const Settings&           settings          = GetSettings();
@@ -429,15 +429,15 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const Su
     Data::RawPtr staging_data_ptr    = nullptr;
     if (data_range)
     {
-        META_CHECK_ARG_LESS_DESCR(data_range->GetEnd(), staging_data_size, "provided texture subresource data range is out of bounds");
+        META_CHECK_LESS_DESCR(data_range->GetEnd(), staging_data_size, "provided texture subresource data range is out of bounds");
         staging_data_offset = data_range->GetStart();
         staging_data_size   = data_range->GetLength();
     }
     const vk::Result vk_map_result = GetNativeDevice().mapMemory(vk_device_memory, staging_data_offset, staging_data_size, vk::MemoryMapFlags{},
                                                                  reinterpret_cast<void**>(&staging_data_ptr)); // NOSONAR
 
-    META_CHECK_ARG_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map staging buffer subresource");
-    META_CHECK_ARG_NOT_NULL_DESCR(staging_data_ptr, "failed to map buffer subresource");
+    META_CHECK_EQUAL_DESCR(vk_map_result, vk::Result::eSuccess, "failed to map staging buffer subresource");
+    META_CHECK_NOT_NULL_DESCR(staging_data_ptr, "failed to map buffer subresource");
     Rhi::SubResource sub_resource(Data::Bytes(staging_data_ptr, staging_data_ptr + staging_data_size), sub_resource_index, data_range);
 
     GetNativeDevice().unmapMemory(vk_device_memory);
@@ -460,13 +460,13 @@ bool Texture::SetName(std::string_view name)
 void Texture::GenerateMipLevels(Rhi::ICommandQueue& target_cmd_queue, State target_resource_state)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(target_cmd_queue.GetCommandListType(), Rhi::CommandListType::Render,
+    META_CHECK_EQUAL_DESCR(target_cmd_queue.GetCommandListType(), Rhi::CommandListType::Render,
                                "texture target command queue is not suitable for mip-maps generation");
 
     const Rhi::TextureSettings& texture_settings = GetSettings();
     const vk::Format image_format = TypeConverter::PixelFormatToVulkan(texture_settings.pixel_format);
     const vk::FormatProperties image_format_properties = GetVulkanContext().GetVulkanDevice().GetNativePhysicalDevice().getFormatProperties(image_format);
-    META_CHECK_ARG_TRUE_DESCR(static_cast<bool>(image_format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear),
+    META_CHECK_TRUE_DESCR(static_cast<bool>(image_format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear),
                               "texture pixel format does not support linear blitting");
 
     constexpr auto post_upload_cmd_list_id = static_cast<Rhi::CommandListId>(Rhi::CommandListPurpose::PostUploadSync);

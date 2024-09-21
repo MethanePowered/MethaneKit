@@ -128,28 +128,28 @@ public:
     template<typename V = T>
     [[nodiscard]] V Get(size_t component_index) const
     {
-        META_CHECK_ARG_LESS(component_index, Size);
+        META_CHECK_LESS(component_index, Size);
         switch(component_index)
         {
         case 0: return GetRed<V>();
         case 1: return GetGreen<V>();
         case 2: return GetBlue<V>();
         case 3: if constexpr (size == 4) return GetAlpha<V>();
-        default: META_UNEXPECTED_ARG_RETURN(component_index, V{});
+        default: META_UNEXPECTED_RETURN(component_index, V{});
         }
     }
 
     template<typename V = T>
     Color& Set(size_t component_index, V value)
     {
-        META_CHECK_ARG_LESS(component_index, Size);
+        META_CHECK_LESS(component_index, Size);
         switch(component_index)
         {
         case 0: SetRed<V>(value); break;
         case 1: SetGreen<V>(value); break;
         case 2: SetBlue<V>(value); break;
         case 3: if constexpr (size == 4) { SetAlpha<V>(value); } break;
-        default: META_UNEXPECTED_ARG(component_index);
+        default: META_UNEXPECTED(component_index);
         }
         return *this;
     }
@@ -236,7 +236,7 @@ private:
     static void CheckComponentRange(V component, std::string_view name)
     {
         static const std::pair<V, V> s_component_range = GetComponentRange<V>();
-        META_CHECK_ARG_RANGE_INC_DESCR(component, s_component_range.first, s_component_range.second, "for {} color component", name);
+        META_CHECK_RANGE_INC_DESCR(component, s_component_range.first, s_component_range.second, "for {} color component", name);
         META_UNUSED(name);
     }
 

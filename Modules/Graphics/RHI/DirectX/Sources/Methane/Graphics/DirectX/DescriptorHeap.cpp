@@ -48,7 +48,7 @@ static D3D12_DESCRIPTOR_HEAP_TYPE GetNativeHeapType(DescriptorHeapType type)
     case DescriptorHeap::Type::Samplers:        return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
     case DescriptorHeap::Type::RenderTargets:   return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
     case DescriptorHeap::Type::DepthStencil:    return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-    default:                                      META_UNEXPECTED_ARG_RETURN(type, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
+    default:                                      META_UNEXPECTED_RETURN(type, D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
     }
 }
 
@@ -100,7 +100,7 @@ Data::Index DescriptorHeap::AddResource(const Base::Resource& resource)
 
     if (!m_settings.deferred_allocation)
     {
-        META_CHECK_ARG_LESS_DESCR(m_resources.size(), m_settings.size + 1,
+        META_CHECK_LESS_DESCR(m_resources.size(), m_settings.size + 1,
                                   "{} descriptor heap is full, no free space to add a resource",
                                   magic_enum::enum_name(m_settings.type));
     }
@@ -123,7 +123,7 @@ Data::Index DescriptorHeap::ReplaceResource(const Base::Resource& resource, Data
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_modification_mutex);
 
-    META_CHECK_ARG_LESS(at_index, m_resources.size());
+    META_CHECK_LESS(at_index, m_resources.size());
     m_resources[at_index] = &resource;
     return at_index;
 }
@@ -133,7 +133,7 @@ void DescriptorHeap::RemoveResource(Data::Index at_index)
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_modification_mutex);
 
-    META_CHECK_ARG_LESS(at_index, m_resources.size());
+    META_CHECK_LESS(at_index, m_resources.size());
     m_resources[at_index] = nullptr;
     m_free_ranges.Add(Range(at_index, at_index + 1));
 }
@@ -141,7 +141,7 @@ void DescriptorHeap::RemoveResource(Data::Index at_index)
 DescriptorHeap::Range DescriptorHeap::ReserveRange(Data::Size length)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_ZERO_DESCR(length, "unable to reserve empty descriptor range");
+    META_CHECK_NOT_ZERO_DESCR(length, "unable to reserve empty descriptor range");
     std::scoped_lock lock_guard(m_modification_mutex);
 
     if (const Range reserved_range = Data::ReserveRange(m_free_ranges, length);
@@ -169,16 +169,16 @@ void DescriptorHeap::SetDeferredAllocation(bool deferred_allocation)
 D3D12_CPU_DESCRIPTOR_HANDLE DescriptorHeap::GetNativeCpuDescriptorHandle(uint32_t descriptor_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_descriptor_heap_cptr);
-    META_CHECK_ARG_LESS(descriptor_index, GetAllocatedSize());
+    META_CHECK_NOT_NULL(m_descriptor_heap_cptr);
+    META_CHECK_LESS(descriptor_index, GetAllocatedSize());
     return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_descriptor_heap_cptr->GetCPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE DescriptorHeap::GetNativeGpuDescriptorHandle(uint32_t descriptor_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_descriptor_heap_cptr);
-    META_CHECK_ARG_LESS(descriptor_index, GetAllocatedSize());
+    META_CHECK_NOT_NULL(m_descriptor_heap_cptr);
+    META_CHECK_LESS(descriptor_index, GetAllocatedSize());
     return CD3DX12_GPU_DESCRIPTOR_HANDLE(m_descriptor_heap_cptr->GetGPUDescriptorHandleForHeapStart(), descriptor_index, m_descriptor_size);
 }
 
@@ -192,7 +192,7 @@ void DescriptorHeap::Allocate()
         return;
 
     const wrl::ComPtr<ID3D12Device> device_cptr = m_dx_context.GetDirectDevice().GetNativeDevice();
-    META_CHECK_ARG_NOT_NULL(device_cptr);
+    META_CHECK_NOT_NULL(device_cptr);
 
     const bool is_shader_visible_heap = GetSettings().shader_visible;
     wrl::ComPtr<ID3D12DescriptorHeap> old_descriptor_heap_cptr = m_descriptor_heap_cptr;

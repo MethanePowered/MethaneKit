@@ -80,7 +80,7 @@ void CommandList::PushDebugGroup(IDebugGroup& debug_group)
 void CommandList::PopDebugGroup()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_EMPTY_DESCR(m_open_debug_groups, "Can not pop debug group, since no debug groups were pushed");
+    META_CHECK_NOT_EMPTY_DESCR(m_open_debug_groups, "Can not pop debug group, since no debug groups were pushed");
 
     META_LOG("{} Command list '{}' POP debug group '{}'", magic_enum::enum_name(m_type), GetName(), GetTopOpenDebugGroup()->GetName());
 #ifdef METHANE_DEBUG_GROUP_FRAMES_ENABLED
@@ -95,7 +95,7 @@ void CommandList::Reset(IDebugGroup* debug_group_ptr)
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_state_mutex);
 
-    META_CHECK_ARG_DESCR(m_state, m_state < State::Committed,
+    META_CHECK_DESCR(m_state, m_state < State::Committed,
                          "can not reset command list in committed or executing state");
     META_LOG("{} Command list '{}' RESET commands encoding{}", magic_enum::enum_name(m_type), GetName(),
              debug_group_ptr ? fmt::format(" with debug group '{}'", debug_group_ptr->GetName()) : "");
@@ -162,7 +162,7 @@ void CommandList::Commit()
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_state_mutex);
 
-    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
+    META_CHECK_EQUAL_DESCR(m_state, State::Encoding,
                                "{} command list '{}' in {} state can not be committed; only command lists in 'Encoding' state can be committed",
                                magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
@@ -202,7 +202,7 @@ void CommandList::Execute(const CompletedCallback& completed_callback)
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_state_mutex);
 
-    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Committed,
+    META_CHECK_EQUAL_DESCR(m_state, State::Committed,
                                "{} command list '{}' in {} state can not be executed; only command lists in 'Committed' state can be executed",
                                magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
@@ -228,7 +228,7 @@ void CommandList::CompleteInternal()
 {
     std::scoped_lock lock_guard(m_state_mutex);
 
-    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Executing,
+    META_CHECK_EQUAL_DESCR(m_state, State::Executing,
                                "{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
                                magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
@@ -284,7 +284,7 @@ void CommandList::SetCommandListStateNoLock(State state)
 
 void CommandList::VerifyEncodingState() const
 {
-    META_CHECK_ARG_EQUAL_DESCR(m_state, State::Encoding,
+    META_CHECK_EQUAL_DESCR(m_state, State::Encoding,
                                "{} command list '{}' encoding is not possible in '{}' state",
                                magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 }
@@ -337,7 +337,7 @@ Data::TimeRange CommandList::GetGpuTimeRange(bool in_cpu_nanoseconds) const
 #ifdef METHANE_GPU_INSTRUMENTATION_ENABLED
     if (m_begin_timestamp_query_ptr && m_end_timestamp_query_ptr)
     {
-        META_CHECK_ARG_EQUAL_DESCR(GetState(), CommandList::State::Pending, "can not get GPU time range of encoding, executing or not committed command list");
+        META_CHECK_EQUAL_DESCR(GetState(), CommandList::State::Pending, "can not get GPU time range of encoding, executing or not committed command list");
         return in_cpu_nanoseconds
              ? GetNormalTimeRange(m_begin_timestamp_query_ptr->GetCpuNanoseconds(), m_end_timestamp_query_ptr->GetCpuNanoseconds())
              : GetNormalTimeRange(m_begin_timestamp_query_ptr->GetGpuTimestamp(),   m_end_timestamp_query_ptr->GetGpuTimestamp());
@@ -351,7 +351,7 @@ Data::TimeRange CommandList::GetGpuTimeRange(bool in_cpu_nanoseconds) const
 Rhi::ICommandQueue& CommandList::GetCommandQueue()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
+    META_CHECK_NOT_NULL(m_command_queue_ptr);
     return *m_command_queue_ptr;
 }
 
@@ -369,14 +369,14 @@ void CommandList::ApplyProgramBindings(ProgramBindings& program_bindings, Rhi::P
 CommandQueue& CommandList::GetBaseCommandQueue()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
+    META_CHECK_NOT_NULL(m_command_queue_ptr);
     return *m_command_queue_ptr;
 }
 
 const CommandQueue& CommandList::GetBaseCommandQueue() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_command_queue_ptr);
+    META_CHECK_NOT_NULL(m_command_queue_ptr);
     return *m_command_queue_ptr;
 }
 

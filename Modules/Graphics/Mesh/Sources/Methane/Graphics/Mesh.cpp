@@ -117,7 +117,7 @@ std::string_view Mesh::VertexLayout::GetSemanticByVertexField(VertexField vertex
     case VertexField::Normal:   return "NORMAL";
     case VertexField::TexCoord: return "TEXCOORD";
     case VertexField::Color:    return "COLOR";
-    default:                    META_UNEXPECTED_ARG_RETURN(vertex_field, "");
+    default:                    META_UNEXPECTED_RETURN(vertex_field, "");
     }
 }
 
@@ -160,7 +160,7 @@ Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_
         current_offset += GetVertexFieldSize(vertex_field_index);
     }
 
-    META_CHECK_ARG_NAME_DESCR("vertex_layout", field_offsets[static_cast<size_t>(VertexField::Position)] >= 0, "position field must be specified in vertex layout");
+    META_CHECK_NAME_DESCR("vertex_layout", field_offsets[static_cast<size_t>(VertexField::Position)] >= 0, "position field must be specified in vertex layout");
     return field_offsets;
 }
 

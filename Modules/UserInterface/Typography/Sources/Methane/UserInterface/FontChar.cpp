@@ -106,25 +106,25 @@ void FontChar::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride)
         return;
 
     // Verify glyph placement
-    META_CHECK_ARG_NOT_NULL_DESCR(m_glyph_ptr, "Font character glyph is not initialized");
-    META_CHECK_ARG_GREATER_OR_EQUAL(m_rect.GetLeft(), 0);
-    META_CHECK_ARG_GREATER_OR_EQUAL(m_rect.GetTop(),  0);
-    META_CHECK_ARG_LESS(m_rect.GetRight(), atlas_row_stride + 1);
-    META_CHECK_ARG_LESS(m_rect.GetBottom(), atlas_bitmap.size() / atlas_row_stride + 1);
+    META_CHECK_NOT_NULL_DESCR(m_glyph_ptr, "Font character glyph is not initialized");
+    META_CHECK_GREATER_OR_EQUAL(m_rect.GetLeft(), 0);
+    META_CHECK_GREATER_OR_EQUAL(m_rect.GetTop(),  0);
+    META_CHECK_LESS(m_rect.GetRight(), atlas_row_stride + 1);
+    META_CHECK_LESS(m_rect.GetBottom(), atlas_bitmap.size() / atlas_row_stride + 1);
 
     // Draw glyph to bitmap
     FT_Glyph ft_glyph = m_glyph_ptr->GetFreeTypeGlyph();
     ThrowFreeTypeError(FT_Glyph_To_Bitmap(&ft_glyph, FT_RENDER_MODE_NORMAL, nullptr, false));
 
     FT_Bitmap& ft_bitmap = reinterpret_cast<FT_BitmapGlyph>(ft_glyph)->bitmap; // NOSONAR
-    META_CHECK_ARG_EQUAL(ft_bitmap.width, m_rect.size.GetWidth());
-    META_CHECK_ARG_EQUAL(ft_bitmap.rows, m_rect.size.GetHeight());
+    META_CHECK_EQUAL(ft_bitmap.width, m_rect.size.GetWidth());
+    META_CHECK_EQUAL(ft_bitmap.rows, m_rect.size.GetHeight());
 
     // Copy glyph pixels to output bitmap row-by-row
     for (uint32_t y = 0; y < ft_bitmap.rows; y++)
     {
         const uint32_t atlas_index = m_rect.origin.GetX() + (m_rect.origin.GetY() + y) * atlas_row_stride;
-        META_CHECK_ARG_LESS_DESCR(atlas_index, atlas_bitmap.size() - ft_bitmap.width + 1, "char glyph does not fit into target atlas bitmap");
+        META_CHECK_LESS_DESCR(atlas_index, atlas_bitmap.size() - ft_bitmap.width + 1, "char glyph does not fit into target atlas bitmap");
         std::copy(reinterpret_cast<Data::RawPtr>(ft_bitmap.buffer + y * ft_bitmap.width), // NOSONAR
                   reinterpret_cast<Data::RawPtr>(ft_bitmap.buffer + (y + 1) * ft_bitmap.width), // NOSONAR
                   atlas_bitmap.begin() + atlas_index);
@@ -134,7 +134,7 @@ void FontChar::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride)
 uint32_t FontChar::GetGlyphIndex() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_glyph_ptr, "no glyph is available for character with code {}", static_cast<uint32_t>(m_code));
+    META_CHECK_NOT_NULL_DESCR(m_glyph_ptr, "no glyph is available for character with code {}", static_cast<uint32_t>(m_code));
     return m_glyph_ptr->GetFaceIndex();
 }
 

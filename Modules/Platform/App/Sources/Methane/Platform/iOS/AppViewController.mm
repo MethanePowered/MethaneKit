@@ -41,7 +41,7 @@ static Mouse::Button GetMouseButtonByTouchesCount(uint32_t touches_cout)
     case 1U: return Mouse::Button::Left;
     case 2U: return Mouse::Button::Right;
     case 3U: return Mouse::Button::Middle;
-    default: META_UNEXPECTED_ARG_DESCR(touches_cout, "Methane iOS application supports from 1 to 3 touches handling only");
+    default: META_UNEXPECTED_DESCR(touches_cout, "Methane iOS application supports from 1 to 3 touches handling only");
     }
 }
 
@@ -88,7 +88,7 @@ namespace pin = Methane::Platform::Input;
 - (void) loadView
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     m_app_ptr->InitContextWithErrorHandling({ self }, data::FrameSize(m_frame_rect.size.width, m_frame_rect.size.height));
 }
 
@@ -104,7 +104,7 @@ namespace pin = Methane::Platform::Input;
 - (void)appView: (nonnull AppViewMetal *) view drawableSizeWillChange: (CGSize)size
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
 
     if (!m_is_initialized)
     {
@@ -117,7 +117,7 @@ namespace pin = Methane::Platform::Input;
 - (void) drawInView: (nonnull AppViewMetal*) view
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(view)
 
     if (!m_is_initialized)
@@ -192,7 +192,7 @@ namespace pin = Methane::Platform::Input;
 - (void)handleTouchPosition:(UITouch *) touch
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
 
     CGPoint pos = [touch locationInView:self.view];
     UIScreen* ns_main_screen = [UIScreen mainScreen];
@@ -205,7 +205,7 @@ namespace pin = Methane::Platform::Input;
 - (void) handeTouches:(NSSet<UITouch *> *)touches withMouseButtonChange:(pin::Mouse::ButtonState) mouse_button_state
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     const pin::Mouse::Button mouse_button = pin::GetMouseButtonByTouchesCount(static_cast<uint32_t>(touches.count));
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged, mouse_button, mouse_button_state);
 }

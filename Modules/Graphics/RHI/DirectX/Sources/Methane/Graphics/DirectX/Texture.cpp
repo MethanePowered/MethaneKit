@@ -67,7 +67,7 @@ static D3D12_SRV_DIMENSION GetSrvDimension(const Dimensions& tex_dimensions) noe
 static D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(tex_dimensions.GetDepth(), 1, "depth-stencil view can not be created for 3D texture");
+    META_CHECK_EQUAL_DESCR(tex_dimensions.GetDepth(), 1, "depth-stencil view can not be created for 3D texture");
     return  tex_dimensions.GetHeight() == 1 ? D3D12_DSV_DIMENSION_TEXTURE1D
                                             : D3D12_DSV_DIMENSION_TEXTURE2D;
 }
@@ -76,9 +76,9 @@ static D3D12_DSV_DIMENSION GetDsvDimension(const Dimensions& tex_dimensions)
 static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Settings& settings, const Rhi::SubResource::Count& sub_resource_count)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetDepth(), 1);
-    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetWidth(), 1);
-    META_CHECK_ARG_GREATER_OR_EQUAL(settings.dimensions.GetHeight(), 1);
+    META_CHECK_GREATER_OR_EQUAL(settings.dimensions.GetDepth(), 1);
+    META_CHECK_GREATER_OR_EQUAL(settings.dimensions.GetWidth(), 1);
+    META_CHECK_GREATER_OR_EQUAL(settings.dimensions.GetHeight(), 1);
 
     D3D12_RESOURCE_FLAGS resource_flags = D3D12_RESOURCE_FLAG_NONE;
     if (settings.usage_mask.HasAnyBit(Rhi::ResourceUsage::ShaderWrite))
@@ -88,11 +88,11 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
     switch (settings.dimension_type)
     {
     case Rhi::TextureDimensionType::Tex1D:
-        META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single 1D texture must have array length equal to 1");
+        META_CHECK_EQUAL_DESCR(settings.array_length, 1, "single 1D texture must have array length equal to 1");
         [[fallthrough]];
 
     case Rhi::TextureDimensionType::Tex1DArray:
-        META_CHECK_ARG_DESCR(settings.dimensions, settings.dimensions.GetHeight() == 1 && settings.dimensions.GetDepth() == 1,
+        META_CHECK_DESCR(settings.dimensions, settings.dimensions.GetHeight() == 1 && settings.dimensions.GetDepth() == 1,
                              "1D textures must have height and depth dimensions equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex1D(
             TypeConverter::PixelFormatToDxgi(settings.pixel_format),
@@ -104,14 +104,14 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
         break;
 
     case Rhi::TextureDimensionType::Tex2DMultisample:
-        META_UNEXPECTED_ARG_DESCR(settings.dimension_type, "2D Multisample textures are not supported yet");
+        META_UNEXPECTED_DESCR(settings.dimension_type, "2D Multisample textures are not supported yet");
 
     case Rhi::TextureDimensionType::Tex2D:
-        META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single 2D texture must have array length equal to 1");
+        META_CHECK_EQUAL_DESCR(settings.array_length, 1, "single 2D texture must have array length equal to 1");
         [[fallthrough]];
 
     case Rhi::TextureDimensionType::Tex2DArray:
-        META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 1, "2D textures must have depth dimension equal to 1");
+        META_CHECK_EQUAL_DESCR(settings.dimensions.GetDepth(), 1, "2D textures must have depth dimension equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
             TypeConverter::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.GetWidth(),
@@ -123,7 +123,7 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
         break;
 
     case Rhi::TextureDimensionType::Tex3D:
-        META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single 3D texture must have array length equal to 1");
+        META_CHECK_EQUAL_DESCR(settings.array_length, 1, "single 3D texture must have array length equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex3D(
             TypeConverter::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.GetWidth(),
@@ -135,11 +135,11 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
         break;
 
     case Rhi::TextureDimensionType::Cube:
-        META_CHECK_ARG_EQUAL_DESCR(settings.array_length, 1, "single Cube texture must have array length equal to 1");
+        META_CHECK_EQUAL_DESCR(settings.array_length, 1, "single Cube texture must have array length equal to 1");
         [[fallthrough]];
 
     case Rhi::TextureDimensionType::CubeArray:
-        META_CHECK_ARG_EQUAL_DESCR(settings.dimensions.GetDepth(), 6, "Cube textures depth dimension must be equal to 6");
+        META_CHECK_EQUAL_DESCR(settings.dimensions.GetDepth(), 6, "Cube textures depth dimension must be equal to 6");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
             TypeConverter::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.GetWidth(),
@@ -151,7 +151,7 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
         break;
 
     default:
-        META_UNEXPECTED_ARG(settings.dimension_type);
+        META_UNEXPECTED(settings.dimension_type);
     }
 
     return tex_desc;
@@ -217,7 +217,7 @@ static D3D12_SHADER_RESOURCE_VIEW_DESC CreateNativeShaderResourceViewDesc(const 
         break;
 
     default:
-        META_UNEXPECTED_ARG(settings.dimension_type);
+        META_UNEXPECTED(settings.dimension_type);
     }
 
     srv_desc.Format                  = TypeConverter::PixelFormatToDxgi(settings.pixel_format);
@@ -269,7 +269,7 @@ static D3D12_UNORDERED_ACCESS_VIEW_DESC CreateNativeUnorderedAccessViewDesc(cons
         break;
 
     default:
-        META_UNEXPECTED_ARG(settings.dimension_type);
+        META_UNEXPECTED(settings.dimension_type);
     }
 
     uav_desc.Format = TypeConverter::PixelFormatToDxgi(settings.pixel_format);
@@ -322,7 +322,7 @@ static D3D12_RENDER_TARGET_VIEW_DESC CreateNativeRenderTargetViewDesc(const Rhi:
         break;
 
     default:
-        META_UNEXPECTED_ARG(settings.dimension_type);
+        META_UNEXPECTED(settings.dimension_type);
     }
 
     rtv_desc.Format = TypeConverter::PixelFormatToDxgi(settings.pixel_format);
@@ -339,7 +339,7 @@ Texture::Texture(const Base::Context& context, const Settings& settings)
     case Rhi::TextureType::RenderTarget: InitializeAsRenderTarget(); break;
     case Rhi::TextureType::FrameBuffer:  InitializeAsFrameBuffer(); break;
     case Rhi::TextureType::DepthStencil: InitializeAsDepthStencil(); break;
-    default:                             META_UNEXPECTED_ARG(settings.type);
+    default:                             META_UNEXPECTED(settings.type);
     }
 }
 
@@ -364,7 +364,7 @@ bool Texture::SetName(std::string_view name)
 void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_upload_resource_cptr, "Only Image textures support data upload from CPU.");
+    META_CHECK_NOT_NULL_DESCR(m_upload_resource_cptr, "Only Image textures support data upload from CPU.");
 
     Base::Texture::SetData(target_cmd_queue, sub_resources);
 
@@ -379,14 +379,14 @@ void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& 
         ValidateSubResource(sub_resource);
 
         const uint32_t sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(sub_resource_count);
-        META_CHECK_ARG_LESS(sub_resource_raw_index, dx_sub_resources.size());
+        META_CHECK_LESS(sub_resource_raw_index, dx_sub_resources.size());
 
         D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[sub_resource_raw_index];
         dx_sub_resource.pData      = sub_resource.GetDataPtr();
         dx_sub_resource.RowPitch   = static_cast<int64_t>(settings.dimensions.GetWidth())  * pixel_size;
         dx_sub_resource.SlicePitch = dx_sub_resource.RowPitch * settings.dimensions.GetHeight();
 
-        META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(sub_resource.GetDataSize(), dx_sub_resource.SlicePitch,
+        META_CHECK_GREATER_OR_EQUAL_DESCR(sub_resource.GetDataSize(), dx_sub_resource.SlicePitch,
                                               "sub-resource data size is less than computed MIP slice size, possibly due to pixel format mismatch");
     }
 
@@ -408,9 +408,9 @@ void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& 
 Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
+    META_CHECK_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
                               "getting texture data from GPU is allowed for buffers with CPU Read-back flag only");
-    META_CHECK_ARG_NOT_NULL(m_read_back_resource_cptr);
+    META_CHECK_NOT_NULL(m_read_back_resource_cptr);
 
     ValidateSubResource(sub_resource_index, data_range);
 
@@ -447,7 +447,7 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const Su
         GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
     );
 
-    META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+    META_CHECK_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
 
     stdext::checked_array_iterator source_data_it(sub_resource_data_ptr, data_end);
     Data::Bytes                    sub_resource_data(data_length, {});
@@ -474,7 +474,7 @@ Opt<Rhi::IResource::Descriptor> Texture::InitializeNativeViewDescriptor(const Vi
             CreateShaderResourceView(descriptor, view_id);
         else
         {
-            META_UNEXPECTED_ARG_DESCR_RETURN(view_id.usage.GetValue(), descriptor,
+            META_UNEXPECTED_RETURN_DESCR(view_id.usage.GetValue(), descriptor,
                                              "unsupported usage {} for Image texture", Data::GetEnumMaskName(view_id.usage));
         }
         break;
@@ -490,7 +490,7 @@ Opt<Rhi::IResource::Descriptor> Texture::InitializeNativeViewDescriptor(const Vi
             CreateRenderTargetView(descriptor, view_id);
         else
         {
-            META_UNEXPECTED_ARG_DESCR_RETURN(view_id.usage.GetValue(), descriptor,
+            META_UNEXPECTED_RETURN_DESCR(view_id.usage.GetValue(), descriptor,
                                              "unsupported usage {} for Render-Target texture", Data::GetEnumMaskName(view_id.usage));
         }
         break;
@@ -502,13 +502,13 @@ Opt<Rhi::IResource::Descriptor> Texture::InitializeNativeViewDescriptor(const Vi
             CreateDepthStencilView(descriptor);
         else
         {
-            META_UNEXPECTED_ARG_DESCR_RETURN(view_id.usage.GetValue(), descriptor,
+            META_UNEXPECTED_RETURN_DESCR(view_id.usage.GetValue(), descriptor,
                                              "unsupported usage {} for Depth-Stencil texture", Data::GetEnumMaskName(view_id.usage));
         }
         break;
 
     default:
-        META_UNEXPECTED_ARG(settings.type);
+        META_UNEXPECTED(settings.type);
     }
 
     return descriptor;
@@ -518,8 +518,8 @@ void Texture::InitializeAsImage()
 {
     META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::TextureType::Image);
-    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Usage::ShaderRead), "image texture supports only 'ShaderRead' usage");
+    META_CHECK_EQUAL(settings.type, Rhi::TextureType::Image);
+    META_CHECK_TRUE_DESCR(GetUsage().HasAnyBit(Usage::ShaderRead), "image texture supports only 'ShaderRead' usage");
 
     const SubResource::Count& sub_resource_count = GetSubresourceCount();
     const CD3DX12_RESOURCE_DESC resource_desc = CreateNativeResourceDesc(settings, sub_resource_count);
@@ -538,7 +538,7 @@ void Texture::InitializeAsRenderTarget()
 {
     META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::TextureType::RenderTarget);
+    META_CHECK_EQUAL(settings.type, Rhi::TextureType::RenderTarget);
     D3D12_RESOURCE_DESC tex_desc = CreateNativeResourceDesc(GetSettings(), GetSubresourceCount());
     tex_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
     InitializeCommittedResource(tex_desc, D3D12_HEAP_TYPE_DEFAULT, Rhi::ResourceState::RenderTarget);
@@ -548,9 +548,9 @@ void Texture::InitializeAsFrameBuffer()
 {
     META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::TextureType::FrameBuffer);
-    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Usage::RenderTarget), "frame-buffer texture supports only 'RenderTarget' usage");
-    META_CHECK_ARG_TRUE_DESCR(GetSettings().frame_index_opt.has_value(), "frame-buffer texture requires frame-index to be set in texture settings");
+    META_CHECK_EQUAL(settings.type, Rhi::TextureType::FrameBuffer);
+    META_CHECK_TRUE_DESCR(GetUsage().HasAnyBit(Usage::RenderTarget), "frame-buffer texture supports only 'RenderTarget' usage");
+    META_CHECK_TRUE_DESCR(GetSettings().frame_index_opt.has_value(), "frame-buffer texture requires frame-index to be set in texture settings");
 
     wrl::ComPtr<ID3D12Resource> resource_cptr;
     ThrowIfFailed(
@@ -564,7 +564,7 @@ void Texture::InitializeAsDepthStencil()
 {
     META_FUNCTION_TASK();
     const Settings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::TextureType::DepthStencil);
+    META_CHECK_EQUAL(settings.type, Rhi::TextureType::DepthStencil);
 
     CD3DX12_RESOURCE_DESC tex_desc = CD3DX12_RESOURCE_DESC::Tex2D(
         TypeConverter::PixelFormatToDxgi(settings.pixel_format, TypeConverter::ResourceFormatType::Resource),
@@ -702,12 +702,12 @@ void Texture::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_reso
             for (uint32_t mip = 1; mip < tex_metadata.mipLevels; ++mip)
             {
                 const ::DirectX::Image* mip_image_ptr = scratch_image.GetImage(mip, item, depth);
-                META_CHECK_ARG_NOT_NULL_DESCR(mip_image_ptr,
+                META_CHECK_NOT_NULL_DESCR(mip_image_ptr,
                                               "failed to generate mipmap level {} for array item {} in depth {} of texture '{}'",
                                               mip, item, depth, GetName());
 
                 const uint32_t dx_sub_resource_index = SubResource::Index(depth, item, mip).GetRawIndex(tex_metadata_subres_count);
-                META_CHECK_ARG_LESS(dx_sub_resource_index, dx_sub_resources.size());
+                META_CHECK_LESS(dx_sub_resource_index, dx_sub_resources.size());
 
                 D3D12_SUBRESOURCE_DATA& dx_sub_resource = dx_sub_resources[dx_sub_resource_index];
                 dx_sub_resource.pData      = mip_image_ptr->pixels;

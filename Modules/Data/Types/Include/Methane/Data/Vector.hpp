@@ -84,14 +84,14 @@ template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic
 T GetHlslVectorComponent(const HlslVector<T, size>& vec, size_t index)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(index, size);
+    META_CHECK_LESS(index, size);
     switch(index)
     {
     case 0: return vec.x;
     case 1: return vec.y;
     case 2: if constexpr (size >= 3) return vec.z; break;
     case 3: if constexpr (size == 4) return vec.w; break;
-    default: META_UNEXPECTED_ARG(index);
+    default: META_UNEXPECTED(index);
     }
 }
 
@@ -258,10 +258,10 @@ public:
         return RoundCast<T>(std::sqrt(square_sum));
     }
 
-    [[nodiscard]] T operator[](size_t index) const { META_CHECK_ARG_LESS(index, size); return m_components[index]; }
-    [[nodiscard]] T& operator[](size_t index)      { META_CHECK_ARG_LESS(index, size); return m_components[index]; }
+    [[nodiscard]] T operator[](size_t index) const { META_CHECK_LESS(index, size); return m_components[index]; }
+    [[nodiscard]] T& operator[](size_t index)      { META_CHECK_LESS(index, size); return m_components[index]; }
 
-    [[nodiscard]] T Get(size_t index) const        { META_CHECK_ARG_LESS(index, size); return m_components[index]; }
+    [[nodiscard]] T Get(size_t index) const        { META_CHECK_LESS(index, size); return m_components[index]; }
 
     [[nodiscard]] T GetX() const noexcept { return m_components[0]; }
     [[nodiscard]] T GetY() const noexcept { return m_components[1]; }
@@ -272,7 +272,7 @@ public:
     template<size_t sz = size, typename = std::enable_if_t<sz >= 4>>
     [[nodiscard]] T GetW() const noexcept { return m_components[3]; }
 
-    RawVectorType& Set(size_t index, T c) { META_CHECK_ARG_LESS(index, size); m_components[index] = c; return *this; }
+    RawVectorType& Set(size_t index, T c) { META_CHECK_LESS(index, size); m_components[index] = c; return *this; }
 
     RawVectorType& SetX(T x) noexcept { m_components[0] = x; return *this; }
     RawVectorType& SetY(T y) noexcept { m_components[1] = y; return *this; }

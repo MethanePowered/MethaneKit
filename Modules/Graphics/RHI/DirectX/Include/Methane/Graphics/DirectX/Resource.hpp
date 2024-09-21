@@ -104,7 +104,7 @@ public:
     void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) final
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_TRUE_DESCR(m_descriptor_by_view_id.empty(), "can not restore on resource with non-empty descriptor by view_id");
+        META_CHECK_TRUE_DESCR(m_descriptor_by_view_id.empty(), "can not restore on resource with non-empty descriptor by view_id");
         m_descriptor_by_view_id = descriptor_by_view_id;
         for (const auto& [view_id, descriptor] : m_descriptor_by_view_id)
         {
@@ -114,7 +114,7 @@ public:
     }
 
     // IResource overrides
-    ID3D12Resource&                    GetNativeResourceRef() const final             { META_CHECK_ARG_NOT_NULL(m_resource_cptr); return *m_resource_cptr.Get(); }
+    ID3D12Resource&                    GetNativeResourceRef() const final             { META_CHECK_NOT_NULL(m_resource_cptr); return *m_resource_cptr.Get(); }
     ID3D12Resource*                    GetNativeResource() const noexcept final       { return m_resource_cptr.Get(); }
     const wrl::ComPtr<ID3D12Resource>& GetNativeResourceComPtr() const noexcept final { return m_resource_cptr; }
     D3D12_GPU_VIRTUAL_ADDRESS          GetNativeGpuAddress() const noexcept final     { return m_resource_cptr ? m_resource_cptr->GetGPUVirtualAddress() : 0; }
@@ -159,7 +159,7 @@ protected:
                                      Rhi::ResourceState resource_state, const D3D12_CLEAR_VALUE* clear_value_ptr = nullptr)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(m_resource_cptr.Get(), !m_resource_cptr, "committed resource is already initialized");
+        META_CHECK_DESCR(m_resource_cptr.Get(), !m_resource_cptr, "committed resource is already initialized");
         const D3D12_RESOURCE_STATES d3d_resource_state = IResource::GetNativeResourceState(resource_state);
         m_resource_cptr = CreateCommittedResource(resource_desc, heap_type, d3d_resource_state, clear_value_ptr);
         SetState(resource_state);

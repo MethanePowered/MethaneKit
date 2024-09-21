@@ -40,7 +40,7 @@ void ParallelRenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
     const auto state_lock = LockStateMutex();
-    META_CHECK_ARG_DESCR(GetState(), GetState() < State::Committed,
+    META_CHECK_DESCR(GetState(), GetState() < State::Committed,
                          "can not reset parallel command list in committed or executing state");
     ResetCommandEncoder();
     Base::ParallelRenderCommandList::Reset(debug_group_ptr);
@@ -50,7 +50,7 @@ void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, 
 {
     META_FUNCTION_TASK();
     const auto state_lock = LockStateMutex();
-    META_CHECK_ARG_DESCR(GetState(), GetState() < State::Committed,
+    META_CHECK_DESCR(GetState(), GetState() < State::Committed,
                          "can not reset parallel command list in committed or executing state");
     if (ResetCommandEncoder())
     {
@@ -73,7 +73,7 @@ bool ParallelRenderCommandList::ResetCommandEncoder()
     // NOTE: If command buffer was not created for current frame yet,
     // then render pass descriptor should be reset with new frame drawable
     MTLRenderPassDescriptor* mtl_render_pass = GetMetalRenderPass().GetNativeDescriptor(!IsCommandBufferInitialized());
-    META_CHECK_ARG_NOT_NULL(mtl_render_pass);
+    META_CHECK_NOT_NULL(mtl_render_pass);
     InitializeCommandBufferAndEncoder([&mtl_render_pass](id<MTLCommandBuffer> mtl_cmd_buffer)
                                       { return [mtl_cmd_buffer parallelRenderCommandEncoderWithDescriptor: mtl_render_pass]; });
     return true;

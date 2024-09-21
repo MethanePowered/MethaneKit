@@ -71,7 +71,7 @@ namespace pin = Methane::Platform::Input;
 - (void) loadView
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     m_app_ptr->InitContextWithErrorHandling({ self }, data::FrameSize(m_frame_rect.size.width, m_frame_rect.size.height));
 }
 
@@ -85,7 +85,7 @@ namespace pin = Methane::Platform::Input;
 - (void)appView: (nonnull AppViewMetal *) view drawableSizeWillChange: (CGSize)size
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
 
     if (!m_is_initialized)
     {
@@ -98,7 +98,7 @@ namespace pin = Methane::Platform::Input;
 - (void) drawInView: (nonnull AppViewMetal*) view
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(view)
 
     if (!m_is_initialized)
@@ -113,7 +113,7 @@ namespace pin = Methane::Platform::Input;
 - (void) keyDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
 
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnKeyboardChanged,
         pin::Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), pin::Keyboard::KeyState::Pressed);
@@ -122,7 +122,7 @@ namespace pin = Methane::Platform::Input;
 - (void) keyUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
 
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnKeyboardChanged,
         pin::Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetKey(), pin::Keyboard::KeyState::Released);
@@ -131,7 +131,7 @@ namespace pin = Methane::Platform::Input;
 - (void) flagsChanged:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
 
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnModifiersChanged, pin::Keyboard::KeyConverter({ [event keyCode], [event modifierFlags] }).GetModifiers());
 }
@@ -141,7 +141,7 @@ namespace pin = Methane::Platform::Input;
 - (void)mouseMoved:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
 
     NSPoint pos = [event locationInWindow];
     pos.x *= self.view.window.backingScaleFactor;
@@ -153,7 +153,7 @@ namespace pin = Methane::Platform::Input;
 - (void)mouseDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
@@ -163,7 +163,7 @@ namespace pin = Methane::Platform::Input;
 - (void)mouseUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
@@ -179,7 +179,7 @@ namespace pin = Methane::Platform::Input;
 - (void)rightMouseDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
@@ -189,7 +189,7 @@ namespace pin = Methane::Platform::Input;
 - (void)rightMouseUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
@@ -205,7 +205,7 @@ namespace pin = Methane::Platform::Input;
 - (void)otherMouseDown:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
 
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
                                            static_cast<pin::Mouse::Button>(static_cast<int>([event buttonNumber])), pin::Mouse::ButtonState::Pressed);
@@ -214,7 +214,7 @@ namespace pin = Methane::Platform::Input;
 - (void)otherMouseUp:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
 
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseButtonChanged,
                                            static_cast<pin::Mouse::Button>(static_cast<int>([event buttonNumber])), pin::Mouse::ButtonState::Released);
@@ -229,7 +229,7 @@ namespace pin = Methane::Platform::Input;
 - (void)mouseEntered:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseInWindowChanged, true);
@@ -238,7 +238,7 @@ namespace pin = Methane::Platform::Input;
 - (void)mouseExited:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
     #pragma unused(event)
 
     m_app_ptr->ProcessInputWithErrorHandling(&pin::IActionController::OnMouseInWindowChanged, false);
@@ -247,7 +247,7 @@ namespace pin = Methane::Platform::Input;
 - (void)scrollWheel:(NSEvent *)event
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_app_ptr);
+    META_CHECK_NOT_NULL(m_app_ptr);
 
     pin::Mouse::Scroll scroll([event scrollingDeltaX], -[event scrollingDeltaY]);
     if ([event hasPreciseScrollingDeltas])

@@ -161,7 +161,7 @@ void CommandListSet::WaitUntilCompleted()
         GetNativeExecutionCompletedFence(),
         true, std::numeric_limits<uint64_t>::max()
     );
-    META_CHECK_ARG_EQUAL_DESCR(execution_completed_fence_wait_result, vk::Result::eSuccess, "failed to wait for command list set execution complete");
+    META_CHECK_EQUAL_DESCR(execution_completed_fence_wait_result, vk::Result::eSuccess, "failed to wait for command list set execution complete");
     Complete();
 }
 
@@ -203,7 +203,7 @@ CommandListSet::SubmitInfo CommandListSet::GetSubmitInfo()
         }
     }
 
-    META_CHECK_ARG_EQUAL_DESCR(vk_wait_semaphores.size(), vk_wait_stages.size(), "number of wait semaphores and stages must be equal");
+    META_CHECK_EQUAL_DESCR(vk_wait_semaphores.size(), vk_wait_stages.size(), "number of wait semaphores and stages must be equal");
     SubmitInfo submit_info{};
     submit_info.first = vk::SubmitInfo(
         vk_wait_semaphores,
@@ -214,7 +214,7 @@ CommandListSet::SubmitInfo CommandListSet::GetSubmitInfo()
 
     if (!vk_wait_values.empty())
     {
-        META_CHECK_ARG_EQUAL_DESCR(vk_wait_semaphores.size(), vk_wait_values.size(), "number of wait timeline semaphores and values must be equal");
+        META_CHECK_EQUAL_DESCR(vk_wait_semaphores.size(), vk_wait_values.size(), "number of wait timeline semaphores and values must be equal");
         submit_info.second = vk::TimelineSemaphoreSubmitInfo(vk_wait_values);
     }
 

@@ -109,7 +109,7 @@ void RootConstantBuffer::SetRootConstant(const Accessor& accessor, const Rhi::Ro
     Data::Bytes&           data       = GetData();
     const Accessor::Range& data_range = accessor.GetBufferRange();
 
-    META_CHECK_ARG_EQUAL_DESCR(data_range.GetLength(), root_constant.GetDataSize(), "wrong root constant size");
+    META_CHECK_EQUAL_DESCR(data_range.GetLength(), root_constant.GetDataSize(), "wrong root constant size");
     std::copy(root_constant.GetDataPtr(), root_constant.GetDataEndPtr(), data.data() + data_range.GetStart());
 
     m_buffer_data_changed = true;
@@ -152,7 +152,7 @@ void RootConstantBuffer::UpdateGpuBuffer(Rhi::ICommandQueue& target_cmd_queue)
     if (!m_buffer_data_changed)
         return;
 
-    META_CHECK_ARG_NOT_EMPTY(m_buffer_data);
+    META_CHECK_NOT_EMPTY(m_buffer_data);
     Rhi::IBuffer& buffer = GetBuffer();
     buffer.SetData(target_cmd_queue, Rhi::SubResource(m_buffer_data));
     m_buffer_data_changed = false;

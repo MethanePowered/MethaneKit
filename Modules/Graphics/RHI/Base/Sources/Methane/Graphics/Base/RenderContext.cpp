@@ -38,7 +38,7 @@ RenderContext::RenderContext(Device& device, UniquePtr<Rhi::IDescriptorManager>&
     , m_settings(settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(m_settings.color_format, !IsSrgbColorSpace(m_settings.color_format),
+    META_CHECK_DESCR(m_settings.color_format, !IsSrgbColorSpace(m_settings.color_format),
                          "render context can not use color formats with sRGB gamma correction due to modern swap-chain flip model limitations");
 }
 
@@ -52,7 +52,7 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
     case WaitFor::RenderComplete: WaitForGpuRenderComplete(); break;
     case WaitFor::FramePresented: WaitForGpuFramePresented(); break;
     case WaitFor::ResourcesUploaded: break; // Handled in Context::WaitForGpu
-    default: META_UNEXPECTED_ARG(wait_for);
+    default: META_UNEXPECTED(wait_for);
     }
 }
 
@@ -188,7 +188,7 @@ void RenderContext::UpdateFrameBufferIndex()
 {
     META_FUNCTION_TASK();
     m_frame_buffer_index = GetNextFrameBufferIndex();
-    META_CHECK_ARG_LESS(m_frame_buffer_index, GetSettings().frame_buffers_count);
+    META_CHECK_LESS(m_frame_buffer_index, GetSettings().frame_buffers_count);
     m_frame_index++;
 }
 
@@ -202,7 +202,7 @@ void RenderContext::InvalidateFrameBuffersCount(uint32_t frame_buffers_count)
 void RenderContext::InvalidateFrameBufferIndex(uint32_t frame_buffer_index)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(frame_buffer_index, m_settings.frame_buffers_count);
+    META_CHECK_LESS(frame_buffer_index, m_settings.frame_buffers_count);
     m_frame_buffer_index = frame_buffer_index;
 }
 

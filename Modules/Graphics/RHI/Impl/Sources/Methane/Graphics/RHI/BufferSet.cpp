@@ -130,7 +130,7 @@ std::string BufferSet::GetNames() const META_PIMPL_NOEXCEPT
 const Buffer& BufferSet::operator[](Data::Index index) const
 {
     const Buffers& buffers = GetRefs();
-    META_CHECK_ARG_LESS(index, buffers.size());
+    META_CHECK_LESS(index, buffers.size());
     return buffers[index];
 }
 

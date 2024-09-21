@@ -116,7 +116,7 @@ SubResourceIndex::SubResourceIndex(Data::Index depth_slice, Data::Index array_in
 SubResourceIndex::SubResourceIndex(Data::Index raw_index, const SubResourceCount& count)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(raw_index, count.GetRawCount());
+    META_CHECK_LESS(raw_index, count.GetRawCount());
 
     const uint32_t array_and_depth_index = raw_index / count.GetMipLevelsCount();
     m_depth_slice = array_and_depth_index % count.GetDepth();
@@ -283,8 +283,8 @@ ResourceView::operator std::string() const
 TextureDimensionType ResourceView::GetTextureDimensionType() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_resource_ptr);
-    META_CHECK_ARG_EQUAL(m_resource_ptr->GetResourceType(), Rhi::IResource::Type::Texture);
+    META_CHECK_NOT_NULL(m_resource_ptr);
+    META_CHECK_EQUAL(m_resource_ptr->GetResourceType(), Rhi::IResource::Type::Texture);
     return m_settings.texture_dimension_type_opt.value_or(dynamic_cast<ITexture&>(*m_resource_ptr).GetSettings().dimension_type);
 }
 

@@ -115,10 +115,10 @@ class Font::Impl // NOSONAR - class destructor is required, class has more than 
             META_FUNCTION_TASK();
 
             uint32_t char_index = GetCharIndex(char_code);
-            META_CHECK_ARG_NOT_ZERO_DESCR(char_index, "unicode character U+{} does not exist in font face", static_cast<uint32_t>(char_code));
+            META_CHECK_NOT_ZERO_DESCR(char_index, "unicode character U+{} does not exist in font face", static_cast<uint32_t>(char_code));
 
             ThrowFreeTypeError(FT_Load_Glyph(m_ft_face, char_index, FT_LOAD_RENDER));
-            META_CHECK_ARG_NOT_NULL_DESCR(m_ft_face_rec.glyph, "glyph should not be null after loading from font face");
+            META_CHECK_NOT_NULL_DESCR(m_ft_face_rec.glyph, "glyph should not be null after loading from font face");
 
             FT_Glyph ft_glyph = nullptr;
             ThrowFreeTypeError(FT_Get_Glyph(m_ft_face_rec.glyph, &ft_glyph));
@@ -144,8 +144,8 @@ class Font::Impl // NOSONAR - class destructor is required, class has more than 
             if (!m_has_kerning)
                 return gfx::FramePoint(0, 0);
 
-            META_CHECK_ARG_NOT_ZERO(left_glyph_index);
-            META_CHECK_ARG_NOT_ZERO(right_glyph_index);
+            META_CHECK_NOT_ZERO(left_glyph_index);
+            META_CHECK_NOT_ZERO(right_glyph_index);
 
             FT_Vector kerning_vec{};
             ThrowFreeTypeError(FT_Get_Kerning(m_ft_face, left_glyph_index, right_glyph_index, FT_KERNING_DEFAULT, &kerning_vec));
@@ -155,14 +155,14 @@ class Font::Impl // NOSONAR - class destructor is required, class has more than 
         uint32_t GetLineHeight() const
         {
             META_FUNCTION_TASK();
-            META_CHECK_ARG_NOT_NULL(m_ft_face_rec.size);
+            META_CHECK_NOT_NULL(m_ft_face_rec.size);
             return static_cast<uint32_t>(m_ft_face_rec.size->metrics.height / s_ft_dots_in_pixel);
         }
 
         const FT_FaceRec& GetFaceRec() const
         {
             META_FUNCTION_TASK();
-            META_CHECK_ARG_NOT_NULL(m_ft_face);
+            META_CHECK_NOT_NULL(m_ft_face);
             return *m_ft_face;
         }
 
@@ -298,7 +298,7 @@ public:
 
         // Load char glyph and add it to the font characters map
         const auto font_char_it = m_char_by_code.try_emplace(char_code, m_face.LoadChar(char_code)).first;
-        META_CHECK_ARG_DESCR(static_cast<uint32_t>(char_code), font_char_it != m_char_by_code.end(), "font character was not added to character map");
+        META_CHECK_DESCR(static_cast<uint32_t>(char_code), font_char_it != m_char_by_code.end(), "font character was not added to character map");
 
         Char& new_font_char = font_char_it->second;
         m_max_glyph_size.SetWidth( std::max(m_max_glyph_size.GetWidth(),  new_font_char.GetRect().size.GetWidth()));
@@ -393,12 +393,12 @@ public:
     const rhi::Texture& GetAtlasTexture(const rhi::RenderContext& context)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_TRUE(context.IsInitialized());
+        META_CHECK_TRUE(context.IsInitialized());
 
         if (const auto atlas_texture_it = m_atlas_textures.find(context);
             atlas_texture_it != m_atlas_textures.end())
         {
-            META_CHECK_ARG_TRUE(atlas_texture_it->second.texture.IsInitialized());
+            META_CHECK_TRUE(atlas_texture_it->second.texture.IsInitialized());
             return atlas_texture_it->second.texture;
         }
 
@@ -513,7 +513,7 @@ private:
     bool UpdateAtlasBitmap(bool deferred_textures_update)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NOT_NULL_DESCR(m_atlas_pack_ptr, "can not update atlas bitmap until atlas is packed");
+        META_CHECK_NOT_NULL_DESCR(m_atlas_pack_ptr, "can not update atlas bitmap until atlas is packed");
 
         const gfx::FrameSize& atlas_size = m_atlas_pack_ptr->GetSize();
         if (m_atlas_bitmap.size() == atlas_size.GetPixelsCount())
@@ -536,7 +536,7 @@ private:
     void UpdateAtlasTextures(bool deferred_textures_update)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NOT_NULL_DESCR(m_atlas_pack_ptr, "can not update atlas textures until atlas is packed and bitmap is up to date");
+        META_CHECK_NOT_NULL_DESCR(m_atlas_pack_ptr, "can not update atlas textures until atlas is packed and bitmap is up to date");
         if (m_atlas_textures.empty())
             return;
 
@@ -551,7 +551,7 @@ private:
             }
             else
             {
-                META_CHECK_ARG_TRUE(context.IsInitialized());
+                META_CHECK_TRUE(context.IsInitialized());
                 UpdateAtlasTexture(context, atlas_texture);
             }
         }
@@ -562,7 +562,7 @@ private:
     void UpdateAtlasTexture(const rhi::RenderContext& render_context, AtlasTexture& atlas_texture)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_TRUE_DESCR(atlas_texture.texture.IsInitialized(), "font atlas texture is not initialized");
+        META_CHECK_TRUE_DESCR(atlas_texture.texture.IsInitialized(), "font atlas texture is not initialized");
 
         const gfx::FrameSize atlas_size = m_atlas_pack_ptr->GetSize();
         if (const gfx::Dimensions& texture_dimensions = atlas_texture.texture.GetSettings().dimensions;
@@ -584,14 +584,14 @@ private:
     void OnContextReleased(rhi::IContext& context) final
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_EQUAL(context.GetType(), rhi::IContext::Type::Render);
+        META_CHECK_EQUAL(context.GetType(), rhi::IContext::Type::Render);
         RemoveAtlasTexture(rhi::RenderContext(dynamic_cast<rhi::IRenderContext&>(context)));
     }
 
     void OnContextCompletingInitialization(rhi::IContext& context) final
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_EQUAL(context.GetType(), rhi::IContext::Type::Render);
+        META_CHECK_EQUAL(context.GetType(), rhi::IContext::Type::Render);
         const rhi::RenderContext render_context(dynamic_cast<rhi::IRenderContext&>(context));
         if (const auto atlas_texture_it = m_atlas_textures.find(render_context);
             atlas_texture_it != m_atlas_textures.end() && atlas_texture_it->second.is_update_required)

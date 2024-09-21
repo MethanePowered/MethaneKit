@@ -37,7 +37,7 @@ TextureView::TextureView(ITexture& texture, const SubResource::Index& subresourc
 
 Rhi::ITexture& TextureView::GetTexture() const
 {
-    META_CHECK_ARG_NOT_NULL_DESCR(m_texture_ptr, "can not get texture from uninitialized resource view");
+    META_CHECK_NOT_NULL_DESCR(m_texture_ptr, "can not get texture from uninitialized resource view");
     return *m_texture_ptr;
 }
 

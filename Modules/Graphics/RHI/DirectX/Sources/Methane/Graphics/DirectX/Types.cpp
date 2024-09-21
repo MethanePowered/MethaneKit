@@ -42,7 +42,7 @@ D3D12_COMPARISON_FUNC TypeConverter::CompareFunctionToD3D(Compare compare_func)
     case Compare::GreaterEqual: return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
     case Compare::Equal:        return D3D12_COMPARISON_FUNC_EQUAL;
     case Compare::NotEqual:     return D3D12_COMPARISON_FUNC_NOT_EQUAL;
-    default:                    META_UNEXPECTED_ARG_RETURN(compare_func, D3D12_COMPARISON_FUNC_NEVER);
+    default:                    META_UNEXPECTED_RETURN(compare_func, D3D12_COMPARISON_FUNC_NEVER);
     }
 }
 
@@ -71,7 +71,7 @@ DXGI_FORMAT TypeConverter::PixelFormatToDxgi(const PixelFormat& pixel_format)
     case PixelFormat::R8Unorm:          return DXGI_FORMAT_R8_UNORM;
     case PixelFormat::R8Snorm:          return DXGI_FORMAT_R8_SNORM;
     case PixelFormat::A8Unorm:          return DXGI_FORMAT_A8_UNORM;
-    default:                            META_UNEXPECTED_ARG_RETURN(pixel_format, DXGI_FORMAT_UNKNOWN);
+    default:                            META_UNEXPECTED_RETURN(pixel_format, DXGI_FORMAT_UNKNOWN);
     }
 }
 
@@ -86,7 +86,7 @@ DXGI_FORMAT TypeConverter::PixelFormatToDxgi(const PixelFormat& pixel_format, Re
         case ResourceFormatType::Resource:  return DXGI_FORMAT_R32_TYPELESS;
         case ResourceFormatType::ViewRead:  return DXGI_FORMAT_R32_FLOAT;
         case ResourceFormatType::ViewWrite: return DXGI_FORMAT_D32_FLOAT;
-        default:                            META_UNEXPECTED_ARG_RETURN(format_type, DXGI_FORMAT_R32_TYPELESS);
+        default:                            META_UNEXPECTED_RETURN(format_type, DXGI_FORMAT_R32_TYPELESS);
         }
     }
 
@@ -96,7 +96,7 @@ DXGI_FORMAT TypeConverter::PixelFormatToDxgi(const PixelFormat& pixel_format, Re
 DXGI_FORMAT TypeConverter::ParameterDescToDxgiFormatAndSize(const D3D12_SIGNATURE_PARAMETER_DESC& param_desc, uint32_t& out_element_byte_size)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_RANGE(param_desc.Mask, 1, 16);
+    META_CHECK_RANGE(param_desc.Mask, 1, 16);
 
     const uint32_t component_32bit_byte_size = 4;
     if (param_desc.Mask == 1)

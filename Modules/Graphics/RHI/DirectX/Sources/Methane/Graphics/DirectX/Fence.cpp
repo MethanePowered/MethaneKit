@@ -46,7 +46,7 @@ Fence::Fence(Base::CommandQueue& command_queue)
     }
 
     const wrl::ComPtr<ID3D12Device> device_cptr = GetDirectCommandQueue().GetDirectContext().GetDirectDevice().GetNativeDevice();
-    META_CHECK_ARG_NOT_NULL(device_cptr);
+    META_CHECK_NOT_NULL(device_cptr);
 
     ThrowIfFailed(device_cptr->CreateFence(GetValue(), D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence_cptr)), device_cptr.Get());
 }
@@ -62,7 +62,7 @@ void Fence::Signal()
     META_FUNCTION_TASK();
     Base::Fence::Signal();
 
-    META_CHECK_ARG_NOT_NULL(m_fence_cptr);
+    META_CHECK_NOT_NULL(m_fence_cptr);
     CommandQueue& command_queue = GetDirectCommandQueue();
     ThrowIfFailed(command_queue.GetNativeCommandQueue().Signal(m_fence_cptr.Get(), GetValue()),
                   command_queue.GetDirectContext().GetDirectDevice().GetNativeDevice().Get());
@@ -80,8 +80,8 @@ void Fence::WaitOnCpu()
 
     META_LOG("Fence '{}' with value {} SLEEP until value {}", GetName(), curr_value, wait_value);
 
-    META_CHECK_ARG_NOT_NULL(m_fence_cptr);
-    META_CHECK_ARG_NOT_NULL(m_event);
+    META_CHECK_NOT_NULL(m_fence_cptr);
+    META_CHECK_NOT_NULL(m_event);
 
     ThrowIfFailed(m_fence_cptr->SetEventOnCompletion(GetValue(), m_event),
                   GetDirectCommandQueue().GetDirectContext().GetDirectDevice().GetNativeDevice().Get());
@@ -95,7 +95,7 @@ void Fence::WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue)
     META_FUNCTION_TASK();
     Base::Fence::WaitOnGpu(wait_on_command_queue);
 
-    META_CHECK_ARG_NOT_NULL(m_fence_cptr);
+    META_CHECK_NOT_NULL(m_fence_cptr);
     auto& dx_wait_on_command_queue = static_cast<CommandQueue&>(wait_on_command_queue);
     ID3D12CommandQueue& native_wait_on_command_queue = dx_wait_on_command_queue.GetNativeCommandQueue();
     ThrowIfFailed(native_wait_on_command_queue.Wait(m_fence_cptr.Get(), GetValue()),
@@ -108,7 +108,7 @@ bool Fence::SetName(std::string_view name)
     if (!Base::Fence::SetName(name))
         return false;
 
-    META_CHECK_ARG_NOT_NULL(m_fence_cptr);
+    META_CHECK_NOT_NULL(m_fence_cptr);
     m_fence_cptr->SetName(nowide::widen(name).c_str());
     return true;
 }

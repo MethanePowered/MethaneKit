@@ -77,7 +77,7 @@ void Fence::WaitOnCpu()
 
     const vk::SemaphoreWaitInfo wait_info(vk::SemaphoreWaitFlagBits{}, 1U, &GetNativeSemaphore(), &wait_value);
     const vk::Result semaphore_wait_result = m_vk_device.waitSemaphoresKHR(wait_info, std::numeric_limits<uint64_t>::max());
-    META_CHECK_ARG_EQUAL(semaphore_wait_result, vk::Result::eSuccess);
+    META_CHECK_EQUAL(semaphore_wait_result, vk::Result::eSuccess);
 
     META_LOG("Fence '{}' AWAKE on value {}", GetName(), wait_value);
 }

@@ -253,7 +253,7 @@ public:
     {
         META_FUNCTION_TASK();
         const size_t cmd_buffer_index = magic_enum::enum_index(cmd_buffer_type).value();
-        META_CHECK_ARG_LESS_DESCR(cmd_buffer_index, command_buffers_count, "Not enough command buffers count for {}",
+        META_CHECK_LESS_DESCR(cmd_buffer_index, command_buffers_count, "Not enough command buffers count for {}",
                                   magic_enum::enum_name(cmd_buffer_type));
         return m_vk_unique_command_buffers[cmd_buffer_index].get();
     }

@@ -86,7 +86,7 @@ void TypographyAppController::OnKeyboardStateAction(TypographyAppAction action)
         break;
 
     default:
-        META_UNEXPECTED_ARG(action);
+        META_UNEXPECTED(action);
     }
 }
 
@@ -102,7 +102,7 @@ std::string TypographyAppController::GetKeyboardActionName(TypographyAppAction a
     case TypographyAppAction::SwitchTypingDirection:         return "switch typing direction";
     case TypographyAppAction::SpeedupTyping:                 return "speedup typing";
     case TypographyAppAction::SlowdownTyping:                return "slowdown typing";
-    default:                                                 META_UNEXPECTED_ARG_RETURN(action, "");
+    default:                                                 META_UNEXPECTED_RETURN(action, "");
     }
 }
 

@@ -40,7 +40,7 @@ const std::vector<std::string_view>& Platform::GetVulkanInstanceRequiredExtensio
 vk::UniqueSurfaceKHR Platform::CreateVulkanSurfaceForWindow(const vk::Instance& instance, const Methane::Platform::AppEnvironment& env)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(env.connection);
+    META_CHECK_NOT_NULL(env.connection);
     return instance.createXcbSurfaceKHRUnique(vk::XcbSurfaceCreateInfoKHR({}, env.connection, env.window));
 }
 

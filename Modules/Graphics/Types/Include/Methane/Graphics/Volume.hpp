@@ -53,7 +53,7 @@ public:
     {
         if constexpr (std::is_signed_v<V>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(d, 0, "volume depth can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(d, 0, "volume depth can not be less than zero");
         }
     }
 
@@ -64,7 +64,7 @@ public:
     {
         if constexpr (std::is_signed_v<V>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(d, 0, "volume depth can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(d, 0, "volume depth can not be less than zero");
         }
     }
 
@@ -75,7 +75,7 @@ public:
     {
         if constexpr (std::is_signed_v<V>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(point.GetZ(), 0, "volume depth can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(point.GetZ(), 0, "volume depth can not be less than zero");
         }
     }
 
@@ -91,7 +91,7 @@ public:
     {
         if constexpr (std::is_signed_v<D>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(depth, 0, "volume depth can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(depth, 0, "volume depth can not be less than zero");
         }
         m_depth = depth;
     }
@@ -175,7 +175,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetZ(), 0, "volume size multiplier coordinate z can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetZ(), 0, "volume size multiplier coordinate z can not be less than zero");
         }
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
@@ -190,7 +190,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetZ(), 0, "volume size multiplier coordinate z can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetZ(), 0, "volume size multiplier coordinate z can not be less than zero");
         }
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
@@ -205,7 +205,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetZ(), 0, "volume size multiplier coordinate z can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetZ(), 0, "volume size multiplier coordinate z can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             m_depth = Data::RoundCast<D>(static_cast<M>(m_depth) * multiplier.GetZ());
@@ -220,7 +220,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetZ(), 0, "volume size multiplier coordinate z can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetZ(), 0, "volume size multiplier coordinate z can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             m_depth = Data::RoundCast<D>(static_cast<M>(m_depth) / divisor.GetZ());
@@ -235,7 +235,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetDepth(), 0, "volume size multiplier coordinate z can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetDepth(), 0, "volume size multiplier coordinate z can not be less than zero");
         }
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
@@ -250,7 +250,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetDepth(), 0, "volume size multiplier coordinate z can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetDepth(), 0, "volume size multiplier coordinate z can not be less than zero");
         }
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
@@ -265,7 +265,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier.GetDepth(), 0, "volume size multiplier coordinate z can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetDepth(), 0, "volume size multiplier coordinate z can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             m_depth = Data::RoundCast<D>(static_cast<M>(m_depth) * multiplier.GetDepth());
@@ -280,7 +280,7 @@ public:
     {
         if constexpr (std::is_signed_v<M>)
         {
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor.GetDepth(), 0, "volume size multiplier coordinate z can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetDepth(), 0, "volume size multiplier coordinate z can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             m_depth = Data::RoundCast<D>(static_cast<M>(m_depth) / divisor.GetDepth());
@@ -354,7 +354,7 @@ struct Volume // NOSONAR - class has more than 35 methods
     std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator*(M multiplier) const noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "volume multiplier can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "volume multiplier can not be less than zero");
         return Volume<T, D>{ origin * multiplier, size * multiplier };
     }
 
@@ -362,7 +362,7 @@ struct Volume // NOSONAR - class has more than 35 methods
     std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator/(M divisor) const noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "volume divisor can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor, 0, "volume divisor can not be less than zero");
         return Volume<T, D>{ origin / divisor, size / divisor };
     }
 
@@ -370,7 +370,7 @@ struct Volume // NOSONAR - class has more than 35 methods
     std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>&> operator*=(M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(multiplier, 0, "volume multiplier can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "volume multiplier can not be less than zero");
         origin *= multiplier;
         size   *= multiplier;
         return *this;
@@ -380,7 +380,7 @@ struct Volume // NOSONAR - class has more than 35 methods
     std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>&> operator/=(M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
-            META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(divisor, 0, "volume divisor can not be less than zero");
+            META_CHECK_GREATER_OR_EQUAL_DESCR(divisor, 0, "volume divisor can not be less than zero");
         origin /= divisor;
         size   /= divisor;
         return *this;

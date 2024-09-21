@@ -118,7 +118,7 @@ const Program::DescriptorSetLayoutInfo& Program::GetDescriptorSetLayoutInfo(Rhi:
 const vk::PipelineLayout& Program::GetNativePipelineLayout() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_vk_unique_pipeline_layout);
+    META_CHECK_NOT_NULL(m_vk_unique_pipeline_layout);
     return m_vk_unique_pipeline_layout.get();
 }
 
@@ -163,7 +163,7 @@ const vk::DescriptorSet& Program::AcquireFrameConstantDescriptorSet(Data::Index 
 
     if (!m_vk_frame_constant_descriptor_sets.empty())
     {
-        META_CHECK_ARG_LESS(frame_index, m_vk_frame_constant_descriptor_sets.size());
+        META_CHECK_LESS(frame_index, m_vk_frame_constant_descriptor_sets.size());
         return m_vk_frame_constant_descriptor_sets[frame_index];
     }
 
@@ -171,7 +171,7 @@ const vk::DescriptorSet& Program::AcquireFrameConstantDescriptorSet(Data::Index 
                                   ? dynamic_cast<const Base::RenderContext&>(GetContext()).GetSettings().frame_buffers_count
                                   : 1U;
     m_vk_frame_constant_descriptor_sets.resize(frames_count);
-    META_CHECK_ARG_LESS(frame_index, frames_count);
+    META_CHECK_LESS(frame_index, frames_count);
 
     const vk::DescriptorSetLayout& layout = GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType::FrameConstant);
     if (!layout)
@@ -192,7 +192,7 @@ void Program::InitializeDescriptorSetLayouts()
     META_FUNCTION_TASK();
     for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
-        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        META_CHECK_NOT_NULL(argument_binding_ptr);
         const auto& vulkan_argument_binding = dynamic_cast<const ProgramBindings::ArgumentBinding&>(*argument_binding_ptr);
         const ProgramBindings::ArgumentBinding::Settings& vulkan_binding_settings = vulkan_argument_binding.GetVulkanSettings();
         const size_t accessor_type_index = magic_enum::enum_index(vulkan_binding_settings.argument.GetAccessorType()).value();

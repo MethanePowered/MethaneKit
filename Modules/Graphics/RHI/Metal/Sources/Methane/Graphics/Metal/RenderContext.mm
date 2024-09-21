@@ -213,7 +213,7 @@ void RenderContext::BeginFrameCaptureScope()
 void RenderContext::EndFrameCaptureScope()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(m_frame_capture_scope_begun, "Metal frame capture scope was not begun");
+    META_CHECK_TRUE_DESCR(m_frame_capture_scope_begun, "Metal frame capture scope was not begun");
 
     [m_frame_capture_scope endScope];
     m_frame_capture_scope_begun = false;
@@ -222,7 +222,7 @@ void RenderContext::EndFrameCaptureScope()
 void RenderContext::Capture(const id<MTLCaptureScope>& mtl_capture_scope)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(mtl_capture_scope);
+    META_CHECK_NOT_NULL(mtl_capture_scope);
     
     MTLCaptureManager*    mtl_capture_manager = [MTLCaptureManager sharedCaptureManager];
     MTLCaptureDescriptor* mtl_capture_desc    = [[MTLCaptureDescriptor alloc] init];
@@ -230,7 +230,7 @@ void RenderContext::Capture(const id<MTLCaptureScope>& mtl_capture_scope)
 
     NSError* ns_error = nil;
     const bool capture_success = [mtl_capture_manager startCaptureWithDescriptor:mtl_capture_desc error:&ns_error];
-    META_CHECK_ARG_TRUE_DESCR(capture_success, "failed to capture Metal scope '{}', error: {}",
+    META_CHECK_TRUE_DESCR(capture_success, "failed to capture Metal scope '{}', error: {}",
                               MacOS::ConvertFromNsString(mtl_capture_scope.label),
                               MacOS::ConvertFromNsString([ns_error localizedDescription]));
 }

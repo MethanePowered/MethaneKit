@@ -50,8 +50,8 @@ ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, con
     , m_native_device_cptr(dynamic_cast<const IContext&>(context).GetDirectDevice().GetNativeDevice())
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_native_device_cptr);
-    META_CHECK_ARG_NAME("m_descriptor_heap_reservation_ptr", !m_descriptor_heap_reservation_ptr);
+    META_CHECK_NOT_NULL(m_native_device_cptr);
+    META_CHECK_NAME("m_descriptor_heap_reservation_ptr", !m_descriptor_heap_reservation_ptr);
 }
 
 ProgramArgumentBinding::ProgramArgumentBinding(const ProgramArgumentBinding& other)
@@ -65,11 +65,11 @@ ProgramArgumentBinding::ProgramArgumentBinding(const ProgramArgumentBinding& oth
     , m_native_device_cptr(other.m_native_device_cptr)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_native_device_cptr);
+    META_CHECK_NOT_NULL(m_native_device_cptr);
     if (m_descriptor_heap_reservation_ptr)
     {
-        META_CHECK_ARG_TRUE( m_descriptor_heap_reservation_ptr->heap.get().IsShaderVisible());
-        META_CHECK_ARG_EQUAL(m_descriptor_heap_reservation_ptr->heap.get().GetSettings().type, m_descriptor_range.heap_type);
+        META_CHECK_TRUE( m_descriptor_heap_reservation_ptr->heap.get().IsShaderVisible());
+        META_CHECK_EQUAL(m_descriptor_heap_reservation_ptr->heap.get().GetSettings().type, m_descriptor_range.heap_type);
     }
 }
 
@@ -95,7 +95,7 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
 
     if (m_settings_dx.type == Type::DescriptorTable)
     {
-        META_CHECK_ARG_LESS_DESCR(resource_views.size(), m_descriptor_range.count + 1, "the number of bound resources exceeds reserved descriptors count");
+        META_CHECK_LESS_DESCR(resource_views.size(), m_descriptor_range.count + 1, "the number of bound resources exceeds reserved descriptors count");
     }
 
     const uint32_t             descriptor_range_start = m_descriptor_heap_reservation_ptr
@@ -122,7 +122,7 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
             continue;
 
         const ResourceView& dx_resource_view = m_resource_views_dx.back();
-        META_CHECK_ARG_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
+        META_CHECK_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
                                    "incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
                                    magic_enum::enum_name(descriptor_heap_type), m_settings_dx.argument.GetName(),
                                    magic_enum::enum_name(m_settings_dx.argument.GetShaderType()));
@@ -155,11 +155,11 @@ void ProgramArgumentBinding::SetDescriptorRange(const DescriptorRange& descripto
 {
     META_FUNCTION_TASK();
     const DescriptorHeap::Type expected_heap_type = GetDescriptorHeapType();
-    META_CHECK_ARG_EQUAL_DESCR(descriptor_range.heap_type, expected_heap_type,
+    META_CHECK_EQUAL_DESCR(descriptor_range.heap_type, expected_heap_type,
                                "descriptor heap type '{}' is incompatible with the resource binding, expected heap type is '{}'",
                                magic_enum::enum_name(descriptor_range.heap_type),
                                magic_enum::enum_name(expected_heap_type));
-    META_CHECK_ARG_LESS_DESCR(descriptor_range.count, m_settings_dx.resource_count + 1,
+    META_CHECK_LESS_DESCR(descriptor_range.count, m_settings_dx.resource_count + 1,
                               "descriptor range size {} will not fit bound shader resources count {}",
                               descriptor_range.count, m_settings_dx.resource_count);
 
@@ -169,7 +169,7 @@ void ProgramArgumentBinding::SetDescriptorRange(const DescriptorRange& descripto
 void ProgramArgumentBinding::SetDescriptorHeapReservation(const DescriptorHeapReservation* reservation_ptr)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NAME_DESCR("p_reservation",
+    META_CHECK_NAME_DESCR("p_reservation",
                               !reservation_ptr ||
                               (reservation_ptr->heap.get().IsShaderVisible() &&
                                reservation_ptr->heap.get().GetSettings().type == m_descriptor_range.heap_type),

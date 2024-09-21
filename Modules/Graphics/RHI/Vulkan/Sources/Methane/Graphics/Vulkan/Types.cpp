@@ -54,7 +54,7 @@ vk::Format TypeConverter::PixelFormatToVulkan(PixelFormat pixel_format)
     case PixelFormat::R8Unorm:          return vk::Format::eR8Unorm;
     case PixelFormat::R8Snorm:          return vk::Format::eR8Snorm;
     case PixelFormat::A8Unorm:          return vk::Format::eR8Unorm; // TODO: Channels swizzle?
-    default:                            META_UNEXPECTED_ARG_RETURN(pixel_format, vk::Format::eUndefined);
+    default:                            META_UNEXPECTED_RETURN(pixel_format, vk::Format::eUndefined);
     }
 }
 
@@ -71,7 +71,7 @@ vk::CompareOp TypeConverter::CompareFunctionToVulkan(Compare compare_func)
     case Compare::GreaterEqual: return vk::CompareOp::eGreaterOrEqual;
     case Compare::Equal:        return vk::CompareOp::eEqual;
     case Compare::NotEqual:     return vk::CompareOp::eNotEqual;
-    default:                    META_UNEXPECTED_ARG_RETURN(compare_func, vk::CompareOp::eNever);
+    default:                    META_UNEXPECTED_RETURN(compare_func, vk::CompareOp::eNever);
     }
 }
 

@@ -95,7 +95,7 @@ private:
         , m_mesh_buffers(render_cmd_queue, mesh, "Sky-Box")
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_EQUAL(cube_map_texture.GetSettings().dimension_type, Rhi::TextureDimensionType::Cube);
+        META_CHECK_EQUAL(cube_map_texture.GetSettings().dimension_type, Rhi::TextureDimensionType::Cube);
         m_mesh_buffers.SetTexture(cube_map_texture);
 
         m_program = m_context.CreateProgram(
@@ -147,7 +147,7 @@ public:
     Rhi::ProgramBindings CreateProgramBindings(const Rhi::Buffer& uniforms_buffer, Data::Index frame_index) const
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_TRUE(uniforms_buffer.IsInitialized());
+        META_CHECK_TRUE(uniforms_buffer.IsInitialized());
         return Rhi::ProgramBindings(m_program, {
             { { Rhi::ShaderType::Vertex, "g_skybox_uniforms" }, uniforms_buffer.GetResourceView() },
             { { Rhi::ShaderType::Pixel,  "g_skybox_texture"  }, m_mesh_buffers.GetTexture().GetResourceView() },
@@ -171,9 +171,9 @@ public:
     void Draw(const Rhi::RenderCommandList& render_cmd_list, const MeshBufferBindings& buffer_bindings, const Rhi::ViewState& view_state) const
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_TRUE(buffer_bindings.program_bindings.IsInitialized());
-        META_CHECK_ARG_TRUE(buffer_bindings.uniforms_buffer.IsInitialized());
-        META_CHECK_ARG_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), sizeof(Uniforms));
+        META_CHECK_TRUE(buffer_bindings.program_bindings.IsInitialized());
+        META_CHECK_TRUE(buffer_bindings.uniforms_buffer.IsInitialized());
+        META_CHECK_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), sizeof(Uniforms));
 
         buffer_bindings.uniforms_buffer.SetData(m_render_cmd_queue, m_mesh_buffers.GetFinalPassUniformsSubresource());
 

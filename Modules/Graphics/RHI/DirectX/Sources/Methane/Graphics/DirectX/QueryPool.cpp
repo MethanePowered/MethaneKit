@@ -50,7 +50,7 @@ static D3D12_QUERY_TYPE GetQueryTypeDx(Rhi::IQueryPool::Type query_pool_type)
     //D3D12_QUERY_TYPE_OCCLUSION
     //D3D12_QUERY_TYPE_BINARY_OCCLUSION
     //D3D12_QUERY_TYPE_PIPELINE_STATISTICS
-    default: META_UNEXPECTED_ARG_RETURN(query_pool_type, D3D12_QUERY_TYPE_TIMESTAMP);
+    default: META_UNEXPECTED_RETURN(query_pool_type, D3D12_QUERY_TYPE_TIMESTAMP);
     }
 }
 
@@ -66,7 +66,7 @@ static D3D12_QUERY_HEAP_TYPE GetQueryHeapTypeDx(Rhi::IQueryPool::Type query_pool
     //D3D12_QUERY_HEAP_TYPE_OCCLUSION
     //D3D12_QUERY_HEAP_TYPE_PIPELINE_STATISTICS
     default:
-        META_UNEXPECTED_ARG_RETURN(query_pool_type, D3D12_QUERY_HEAP_TYPE_TIMESTAMP);
+        META_UNEXPECTED_RETURN(query_pool_type, D3D12_QUERY_HEAP_TYPE_TIMESTAMP);
     }
 }
 
@@ -124,8 +124,8 @@ void Query::ResolveData()
 Rhi::IResource::SubResource Query::GetData() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetCommandList().GetState(), Base::CommandList::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
-    META_CHECK_ARG_EQUAL_DESCR(GetState(), Rhi::IQuery::State::Resolved, "query data can not be retrieved for unresolved query");
+    META_CHECK_EQUAL_DESCR(GetCommandList().GetState(), Base::CommandList::State::Pending, "query data can be retrieved only when command list is in Pending/Completed state");
+    META_CHECK_EQUAL_DESCR(GetState(), Rhi::IQuery::State::Resolved, "query data can not be retrieved for unresolved query");
     return GetDirectQueryPool().GetResultBuffer().GetData(GetCommandList().GetCommandQueue(), GetDataRange());
 }
 
@@ -199,8 +199,8 @@ Timestamp TimestampQuery::GetGpuTimestamp() const
 {
     META_FUNCTION_TASK();
     Rhi::IResource::SubResource query_data = GetData();
-    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(query_data.GetDataSize(), sizeof(Timestamp), "query data size is less than expected for timestamp");
-    META_CHECK_ARG_NOT_NULL(query_data.GetDataPtr());
+    META_CHECK_GREATER_OR_EQUAL_DESCR(query_data.GetDataSize(), sizeof(Timestamp), "query data size is less than expected for timestamp");
+    META_CHECK_NOT_NULL(query_data.GetDataPtr());
     return *reinterpret_cast<const Timestamp*>(query_data.GetDataPtr()); // NOSONAR
 }
 

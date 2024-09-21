@@ -37,7 +37,7 @@ template<typename ImplType>
 ImplType& GetImpl(const Ptr<ImplType>& impl_ptr) META_PIMPL_NOEXCEPT
 {
 #ifdef META_PIMPL_NULL_CHECK_ENABLED
-    META_CHECK_ARG_NOT_NULL_DESCR(impl_ptr, "{} PIMPL is not initialized", typeid(ImplType).name());
+    META_CHECK_NOT_NULL_DESCR(impl_ptr, "{} PIMPL is not initialized", typeid(ImplType).name());
 #endif
     return *impl_ptr;
 }

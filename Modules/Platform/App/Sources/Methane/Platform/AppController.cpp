@@ -51,7 +51,7 @@ void AppController::OnKeyboardStateAction(AppAction action)
     case AppAction::ShowParameters:      m_application.ShowParameters(); break;
     case AppAction::SwitchFullScreen:    m_application.SetFullScreen(!m_application.GetPlatformAppSettings().is_full_screen); break;
     case AppAction::CloseApp:            m_application.Close(); break;
-    default:                             META_UNEXPECTED_ARG(action);
+    default:                             META_UNEXPECTED(action);
     }
 }
 
@@ -66,7 +66,7 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     case AppAction::ShowParameters:      return "show application parameters";
     case AppAction::SwitchFullScreen:    return "switch full-screen mode";
     case AppAction::CloseApp:            return "close the application";
-    default:                             META_UNEXPECTED_ARG_RETURN(action, "");
+    default:                             META_UNEXPECTED_RETURN(action, "");
     }
 }
 

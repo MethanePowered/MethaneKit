@@ -46,7 +46,7 @@ inline std::wstring GetExecutableFilePath()
 {
     std::array<wchar_t, 512> path_chars{ };
     const DWORD path_size = GetModuleFileNameW(nullptr, path_chars.data(), static_cast<DWORD>(path_chars.size()));
-    META_CHECK_ARG_RANGE_DESCR(path_size, 1, path_chars.size(), "failed to get module file path");
+    META_CHECK_RANGE_DESCR(path_size, 1, path_chars.size(), "failed to get module file path");
     return std::wstring(path_chars.data(), path_size);
 }
 
@@ -56,7 +56,7 @@ std::string GetExecutableDir()
     std::wstring path = GetExecutableFilePath();
 
     const size_t last_slash_pos = path.rfind(L'\\');
-    META_CHECK_ARG_NOT_EQUAL_DESCR(last_slash_pos, std::wstring::npos, "module file path does not contain directory separator");
+    META_CHECK_NOT_EQUAL_DESCR(last_slash_pos, std::wstring::npos, "module file path does not contain directory separator");
 
     return nowide::narrow(path.substr(0, last_slash_pos));
 }
@@ -67,7 +67,7 @@ std::string GetExecutableFileName()
     std::wstring path = GetExecutableFilePath();
 
     const size_t last_slash_pos = path.rfind(L'\\');
-    META_CHECK_ARG_NOT_EQUAL_DESCR(last_slash_pos, std::wstring::npos, "module file path does not contain directory separator");
+    META_CHECK_NOT_EQUAL_DESCR(last_slash_pos, std::wstring::npos, "module file path does not contain directory separator");
 
     return nowide::narrow(path.substr(last_slash_pos + 1));
 }

@@ -65,7 +65,7 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
         ResetContextWithNextDevice();
         break;
 
-    default: META_UNEXPECTED_ARG(action);
+    default: META_UNEXPECTED(action);
     }
 }
 
@@ -79,7 +79,7 @@ std::string AppContextController::GetKeyboardActionName(AppContextAction action)
         case AppContextAction::SwitchDevice:                    return "switch device used for rendering";
         case AppContextAction::AddFrameBufferToSwapChain:       return "add frame buffer to swap-chain";
         case AppContextAction::RemoveFrameBufferFromSwapChain:  return "remove frame buffer from swap-chain";
-        default:                                                META_UNEXPECTED_ARG_RETURN(action, "");
+        default:                                                META_UNEXPECTED_RETURN(action, "");
     }
 }
 

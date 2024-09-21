@@ -156,7 +156,7 @@ void ProgramBindings::ForEachArgumentBinding(FuncType argument_binding_function)
     META_FUNCTION_TASK();
     for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
-        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        META_CHECK_NOT_NULL(argument_binding_ptr);
         auto& argument_binding = static_cast<ArgumentBinding&>(*argument_binding_ptr);
         const ArgumentBinding::DescriptorRange& descriptor_range = argument_binding.GetDescriptorRange();
 
@@ -189,7 +189,7 @@ void ProgramBindings::ReserveDescriptorHeapRanges()
     std::map<DescriptorHeap::Type, DescriptorsCountByAccess> descriptors_count_by_heap_type;
     for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
+        META_CHECK_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
 
         // NOTE: addressable resource bindings do not require descriptors to be created, instead they use direct GPU memory offset from resource
         const auto& binding_settings = argument_binding_ptr->GetSettings();
@@ -221,8 +221,8 @@ void ProgramBindings::ReserveDescriptorHeapRanges()
         }
 
         DescriptorHeap::Reservation& heap_reservation = *descriptor_heap_reservation_opt;
-        META_CHECK_ARG_EQUAL(heap_reservation.heap.get().GetSettings().type, heap_type);
-        META_CHECK_ARG_TRUE(heap_reservation.heap.get().GetSettings().shader_visible);
+        META_CHECK_EQUAL(heap_reservation.heap.get().GetSettings().type, heap_type);
+        META_CHECK_TRUE(heap_reservation.heap.get().GetSettings().shader_visible);
 
         for (Rhi::ProgramArgumentAccessType access_type : magic_enum::enum_values<Rhi::ProgramArgumentAccessType>())
         {
@@ -274,7 +274,7 @@ void ProgramBindings::AddRootParameterBindingsForArgument(ArgumentBinding& argum
     if (const ArgumentBinding::Settings& binding_settings = argument_binding.GetDirectSettings();
         binding_settings.type == DXBindingType::DescriptorTable)
     {
-        META_CHECK_ARG_NOT_NULL_DESCR(heap_reservation_ptr, "descriptor heap reservation is not available for \"Descriptor Table\" resource binding");
+        META_CHECK_NOT_NULL_DESCR(heap_reservation_ptr, "descriptor heap reservation is not available for \"Descriptor Table\" resource binding");
         const auto&              dx_descriptor_heap = static_cast<const DescriptorHeap&>(heap_reservation_ptr->heap.get());
         const DXDescriptorRange& descriptor_range   = argument_binding.GetDescriptorRange();
         const uint32_t           descriptor_index   = heap_reservation_ptr->GetRange(binding_settings.argument.GetAccessorIndex()).GetStart() + descriptor_range.offset;
@@ -317,7 +317,7 @@ void ProgramBindings::ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask 
         break;
 
     default:
-        META_UNEXPECTED_ARG(command_list_type);
+        META_UNEXPECTED(command_list_type);
     }
 }
 
@@ -385,7 +385,7 @@ void ProgramBindings::RootParameterBinding::Apply(ID3D12GraphicsCommandList& d3d
         break;
 
     default:
-        META_UNEXPECTED_ARG(binding_type);
+        META_UNEXPECTED(binding_type);
     }
 }
 
@@ -418,8 +418,8 @@ void ProgramBindings::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12De
     const D3D12_DESCRIPTOR_HEAP_TYPE        native_heap_type   = dx_descriptor_heap.GetNativeDescriptorHeapType();
 
     argument_binding.SetDescriptorHeapReservation(heap_reservation_ptr);
-    META_CHECK_ARG_NOT_NULL(d3d12_device);
-    META_CHECK_ARG_LESS_DESCR(descriptor_range.offset, heap_range.GetLength(),
+    META_CHECK_NOT_NULL(d3d12_device);
+    META_CHECK_LESS_DESCR(descriptor_range.offset, heap_range.GetLength(),
                               "descriptor range offset is out of reserved descriptor range bounds");
 
     uint32_t resource_index = 0;
@@ -428,7 +428,7 @@ void ProgramBindings::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12De
         if (!resource_view_dx.HasDescriptor())
             continue;
 
-        META_CHECK_ARG_EQUAL_DESCR(heap_type, resource_view_dx.GetDescriptor()->heap.GetSettings().type,
+        META_CHECK_EQUAL_DESCR(heap_type, resource_view_dx.GetDescriptor()->heap.GetSettings().type,
                                    "can not create binding for resource on descriptor heap of incompatible type");
 
         const uint32_t descriptor_index = heap_range.GetStart() + descriptor_range.offset + resource_index;
