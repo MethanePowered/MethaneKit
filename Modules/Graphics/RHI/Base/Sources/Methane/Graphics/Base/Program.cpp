@@ -32,6 +32,11 @@ Base implementation of the program interface.
 namespace Methane::Graphics::Base
 {
 
+static std::string GetRootFrameConstantBufferName(std::string_view name, Data::Index frame_index)
+{
+    return fmt::format("{} Root Frame {} Constant Buffer", name, frame_index);
+}
+
 Program::ShadersByType Program::CreateShadersByType(const Ptrs<Rhi::IShader>& shaders)
 {
     META_FUNCTION_TASK();
@@ -61,7 +66,9 @@ Program::Program(const Context& context, const Settings& settings)
     , m_settings(settings)
     , m_shaders_by_type(CreateShadersByType(settings.shaders))
     , m_shader_types(CreateShaderTypes(settings.shaders))
-    , m_root_constant_buffer(const_cast<Context&>(context)) // FIXME: get rid of const-cast required to Connect ot signal
+    // FIXME: get rid of const-cast required to Connect to signal
+    , m_root_constant_buffer(const_cast<Context&>(context), "Program Root Constant Buffer")
+    , m_root_mutable_buffer(const_cast<Context&>(context),  "Program Root Mutable Buffer")
 { }
 
 const Ptr<Rhi::IShader>& Program::GetShader(Rhi::ShaderType shader_type) const
@@ -161,6 +168,46 @@ void Program::InitArgumentBindings()
             per_frame_argument_bindings[frame_index] = argument_binding_ptr->CreateCopy();
         }
         m_frame_bindings_by_argument.try_emplace(program_argument, std::move(per_frame_argument_bindings));
+    }
+}
+
+bool Program::SetName(std::string_view name)
+{
+    META_FUNCTION_TASK();
+    if (!Object::SetName(name))
+        return false;
+
+    m_root_constant_buffer.SetBufferName(fmt::format("{} Root Constant Buffer", name));
+    m_root_mutable_buffer.SetBufferName(fmt::format("{} Root Mutable Buffer", name));
+    for(Data::Index frame_index = 0U; frame_index < m_root_frame_constant_buffers.size(); ++frame_index)
+    {
+        m_root_frame_constant_buffers[frame_index]->SetBufferName(GetRootFrameConstantBufferName(name, frame_index));
+    }
+    return true;
+}
+
+RootConstantBuffer& Program::GetRootFrameConstantBuffer(Data::Index frame_index)
+{
+    META_FUNCTION_TASK();
+    while (frame_index >= m_root_frame_constant_buffers.size())
+    {
+        m_root_frame_constant_buffers.emplace_back(
+            std::make_unique<RootConstantBuffer>(const_cast<Context&>(m_context), // FIXME: remove const cast
+                                                 GetRootFrameConstantBufferName(GetName(), frame_index))
+        );
+    }
+    return *m_root_frame_constant_buffers[frame_index];
+}
+
+RootConstantBuffer& Program::GetRootConstantBuffer(Rhi::ProgramArgumentAccessType access_type, uint32_t frame_index)
+{
+    META_FUNCTION_TASK();
+    switch(access_type)
+    {
+    case Rhi::ProgramArgumentAccessType::Mutable:       return GetRootMutableBuffer();
+    case Rhi::ProgramArgumentAccessType::Constant:      return GetRootConstantBuffer();
+    case Rhi::ProgramArgumentAccessType::FrameConstant: return GetRootFrameConstantBuffer(frame_index);
+    default: META_UNEXPECTED(access_type);
     }
 }
 

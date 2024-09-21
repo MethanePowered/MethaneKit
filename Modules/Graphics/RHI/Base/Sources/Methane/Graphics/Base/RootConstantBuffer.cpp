@@ -67,8 +67,9 @@ const Rhi::ResourceView RootConstantAccessor::GetResourceView() const
     return Rhi::ResourceView(m_buffer.get().GetBuffer(), m_buffer_range.GetStart(), m_buffer_range.GetLength());
 }
 
-RootConstantBuffer::RootConstantBuffer(Context& context)
+RootConstantBuffer::RootConstantBuffer(Context& context, std::string_view buffer_name)
     : m_context(context)
+    , m_buffer_name(buffer_name)
 {
     META_FUNCTION_TASK();
     dynamic_cast<Data::IEmitter<IContextCallback>&>(context).Connect(*this);
@@ -78,7 +79,7 @@ RootConstantBuffer::~RootConstantBuffer()
 {
     META_FUNCTION_TASK();
     assert((!m_deferred_size && m_free_ranges.IsEmpty()) ||
-        m_free_ranges == RangeSet({ { 0, m_deferred_size } }));
+           m_free_ranges == RangeSet({ { 0, m_deferred_size } }));
 }
 
 UniquePtr<RootConstantAccessor> RootConstantBuffer::ReserveRootConstant(Data::Size root_constant_size)
@@ -134,8 +135,8 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
 
     const bool buffer_changed = !!m_buffer_ptr;
     const auto buffer_settings = Rhi::BufferSettings::ForConstantBuffer(m_deferred_size, true, false);
-    m_buffer_ptr               = m_context.CreateBuffer(buffer_settings);
-    m_buffer_ptr->SetName("Global Root Constants Buffer");
+    m_buffer_ptr = m_context.CreateBuffer(buffer_settings);
+    m_buffer_ptr->SetName(m_buffer_name);
 
     // After recreating the buffer it has to be filled with previous arguments data in UpdateGpuBuffer
     m_buffer_data_changed = true;
@@ -145,6 +146,18 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
 
     return *m_buffer_ptr;
 }
+
+void RootConstantBuffer::SetBufferName(std::string_view buffer_name)
+{
+    META_FUNCTION_TASK();
+    m_buffer_name = buffer_name;
+
+    if (m_buffer_ptr)
+    {
+        m_buffer_ptr->SetName(m_buffer_name);
+    }
+}
+
 
 void RootConstantBuffer::UpdateGpuBuffer(Rhi::ICommandQueue& target_cmd_queue)
 {

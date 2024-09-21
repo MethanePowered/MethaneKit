@@ -163,13 +163,13 @@ ProgramArgumentBinding::operator std::string() const
     return fmt::format("{} is bound to {}", m_settings.argument, fmt::join(m_resource_views, ", "));
 }
 
-void ProgramArgumentBinding::Initialize(Program& program)
+void ProgramArgumentBinding::Initialize(Program& program, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
     if (m_settings.argument.IsRootConstant() &&
         !m_root_constant_accessor_ptr)
     {
-        RootConstantBuffer& root_constant_buffer = program.GetRootConstantBuffer();
+        RootConstantBuffer& root_constant_buffer = program.GetRootConstantBuffer(m_settings.argument.GetAccessorType(), frame_index);
         m_root_constant_accessor_ptr = root_constant_buffer.ReserveRootConstant(m_settings.buffer_size);
         root_constant_buffer.Connect(*this);
     }

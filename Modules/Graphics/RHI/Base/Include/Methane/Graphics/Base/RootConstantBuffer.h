@@ -81,7 +81,7 @@ public:
     using ICallback = IRootConstantBufferCallback;
     using Accessor = RootConstantAccessor;
 
-    explicit RootConstantBuffer(Context& context);
+    explicit RootConstantBuffer(Context& context, std::string_view buffer_name);
     ~RootConstantBuffer() override;
 
     [[nodiscard]] UniquePtr<Accessor> ReserveRootConstant(Data::Size root_constant_size);
@@ -90,6 +90,9 @@ public:
 
     Data::Bytes&  GetData();
     Rhi::IBuffer& GetBuffer();
+
+    void SetBufferName(std::string_view buffer_name);
+    std::string_view GetBufferName() { return m_buffer_name; }
 
 private:
     using RangeSet = Data::RangeSet<Data::Index>;
@@ -102,6 +105,7 @@ private:
     void OnContextInitialized(Rhi::IContext&) final;
 
     Context&          m_context;
+    std::string       m_buffer_name;
     Data::Size        m_deferred_size = 0U;
     Data::Bytes       m_buffer_data;
     bool              m_buffer_data_changed = false;

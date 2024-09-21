@@ -65,7 +65,7 @@ public:
 
     Ptr<ProgramArgumentBinding> GetPtr() { return shared_from_this(); }
 
-    void Initialize(Program& program);
+    void Initialize(Program& program, Data::Index frame_index);
     bool IsAlreadyApplied(const Rhi::IProgram& program,
                           const ProgramBindings& applied_program_bindings,
                           bool check_binding_value_changes = true) const;

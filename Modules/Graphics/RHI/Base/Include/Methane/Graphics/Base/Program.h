@@ -58,9 +58,14 @@ public:
     bool                     HasShader(Rhi::ShaderType shader_type) const       { return !!GetShader(shader_type); }
     Data::Size               GetBindingsCount() const noexcept final            { return m_bindings_count; }
 
+    // IObject overrides
+    bool SetName(std::string_view name) override;
+
     const Context&            GetContext() const            { return m_context; }
     RootConstantBuffer&       GetRootConstantBuffer()       { return m_root_constant_buffer; }
-    const RootConstantBuffer& GetRootConstantBuffer() const { return m_root_constant_buffer; }
+    RootConstantBuffer&       GetRootMutableBuffer()        { return m_root_mutable_buffer; }
+    RootConstantBuffer&       GetRootFrameConstantBuffer(Data::Index frame_index);
+    RootConstantBuffer&       GetRootConstantBuffer(Rhi::ProgramArgumentAccessType access_type, uint32_t frame_index = 0U);
 
 protected:
     using ArgumentBinding       = ProgramBindings::ArgumentBinding;
@@ -91,14 +96,18 @@ protected:
     }
 
 private:
-    const Context&         m_context;
-    Settings               m_settings;
-    const ShadersByType    m_shaders_by_type;
-    const Rhi::ShaderTypes m_shader_types;
-    RootConstantBuffer     m_root_constant_buffer;
-    ArgumentBindings       m_binding_by_argument;
-    FrameArgumentBindings  m_frame_bindings_by_argument;
-    Data::Size             m_bindings_count = 0u;
+    using RootFrameConstantBuffers = std::vector<UniquePtr<RootConstantBuffer>>;
+
+    const Context&           m_context;
+    Settings                 m_settings;
+    const ShadersByType      m_shaders_by_type;
+    const Rhi::ShaderTypes   m_shader_types;
+    RootFrameConstantBuffers m_root_frame_constant_buffers;
+    RootConstantBuffer       m_root_constant_buffer;
+    RootConstantBuffer       m_root_mutable_buffer;
+    ArgumentBindings         m_binding_by_argument;
+    FrameArgumentBindings    m_frame_bindings_by_argument;
+    Data::Size               m_bindings_count = 0u;
 };
 
 } // namespace Methane::Graphics::Base

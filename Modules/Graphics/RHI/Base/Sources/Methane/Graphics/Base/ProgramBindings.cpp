@@ -165,9 +165,9 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
     }
 }
 
-void ProgramBindings::OnProgramArgumentBindingRootConstantChanged([[maybe_unused]] const IArgumentBinding&,
-                                                                  [[maybe_unused]] const Rhi::RootConstant&,
-                                                                  [[maybe_unused]] const Rhi::RootConstant&)
+void ProgramBindings::OnProgramArgumentBindingRootConstantChanged(const IArgumentBinding&,
+                                                                  const Rhi::RootConstant&,
+                                                                  const Rhi::RootConstant&)
 {
     META_FUNCTION_TASK();
 }
@@ -188,7 +188,7 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
             continue;
 
         Ptr<ArgumentBinding> new_argument_binding_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
-        new_argument_binding_ptr->Initialize(program);
+        new_argument_binding_ptr->Initialize(program, m_frame_index);
 
         m_binding_by_argument.try_emplace(program_argument, std::move(new_argument_binding_ptr));
     }
