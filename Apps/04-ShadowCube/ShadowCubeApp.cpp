@@ -52,6 +52,10 @@ static const hlslpp::Constants g_scene_constants{
     30.F                      // - light_specular_factor
 };
 
+static_assert(sizeof(hlslpp::Constants) % 16 == 0,     "Size of Constants struct should have 16 byte alignment!");
+static_assert(sizeof(hlslpp::SceneUniforms) % 16 == 0, "Size of SceneUniforms struct should have 16 byte alignment!");
+static_assert(sizeof(hlslpp::MeshUniforms) % 16 == 0,  "Size of MeshUniforms struct should have 16 byte alignment!");
+
 ShadowCubeApp::ShadowCubeApp()
     : UserInterfaceApp(
         GetGraphicsTutorialAppSettings("Methane Shadow Cube", AppOptions::GetDefaultWithColorDepthAndAnim()),

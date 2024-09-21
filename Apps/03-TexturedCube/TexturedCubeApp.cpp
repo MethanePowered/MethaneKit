@@ -44,6 +44,17 @@ struct CubeVertex
     };
 };
 
+constexpr float         g_cube_scale = 15.F;
+const hlslpp::Constants g_shader_constants{
+    { 1.F, 1.F, 0.74F, 1.F },  // - light_color
+    700.F,                     // - light_power
+    0.04F,                     // - light_ambient_factor
+    30.F                       // - light_specular_factor
+};
+
+static_assert(sizeof(hlslpp::Constants) % 16 == 0, "Size of Constants struct should have 16 byte alignment!");
+static_assert(sizeof(hlslpp::Uniforms) % 16 == 0,  "Size of Uniforms struct should have 16 byte alignment!");
+
 TexturedCubeApp::TexturedCubeApp()
     : UserInterfaceApp(
         GetGraphicsTutorialAppSettings("Methane Textured Cube", AppOptions::GetDefaultWithColorOnlyAndAnim()),
@@ -53,7 +64,7 @@ TexturedCubeApp::TexturedCubeApp()
     m_shader_uniforms.light_position = hlslpp::float3(0.F, 20.F, -25.F);
     m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
-    m_shader_uniforms.model_matrix = hlslpp::float4x4::scale(m_cube_scale);
+    m_shader_uniforms.model_matrix = hlslpp::float4x4::scale(g_cube_scale);
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -153,7 +164,7 @@ void TexturedCubeApp::Init()
     {
         // Configure program resource bindings
         frame.program_bindings = m_render_state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::Pixel, "g_constants" }, rhi::RootConstant(m_shader_constants) },
+            { { rhi::ShaderType::Pixel, "g_constants" }, rhi::RootConstant(g_shader_constants) },
             { { rhi::ShaderType::Pixel, "g_texture"   }, m_cube_texture.GetResourceView() },
             { { rhi::ShaderType::Pixel, "g_sampler"   }, m_texture_sampler.GetResourceView() }
         }, frame.index);
@@ -171,7 +182,7 @@ void TexturedCubeApp::Init()
 bool TexturedCubeApp::Animate(double, double delta_seconds)
 {
     const float rotation_angle_rad = static_cast<float>(delta_seconds * 360.F / 4.F) * gfx::ConstFloat::RadPerDeg;
-    hlslpp::float3x3 light_rotate_matrix = hlslpp::float3x3::rotation_axis(m_camera.GetOrientation().up, rotation_angle_rad);
+    const hlslpp::float3x3 light_rotate_matrix = hlslpp::float3x3::rotation_axis(m_camera.GetOrientation().up, rotation_angle_rad);
     m_shader_uniforms.light_position = hlslpp::mul(m_shader_uniforms.light_position, light_rotate_matrix);
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
     return true;

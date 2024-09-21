@@ -33,8 +33,6 @@ namespace hlslpp // NOSONAR
 #pragma pack(pop)
 }
 
-static_assert(sizeof(hlslpp::Constants) % 16 == 0, "Size of Constants struct should have 16 byte alignment!");
-
 namespace Methane::Tutorials
 {
 
@@ -72,13 +70,6 @@ protected:
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);
 
-    const float             m_cube_scale = 15.F;
-    const hlslpp::Constants m_shader_constants{
-        { 1.F, 1.F, 0.74F, 1.F },  // - light_color
-        700.F,                     // - light_power
-        0.04F,                     // - light_ambient_factor
-        30.F                       // - light_specular_factor
-    };
     hlslpp::Uniforms m_shader_uniforms { };
     gfx::Camera      m_camera;
     rhi::RenderState m_render_state;
