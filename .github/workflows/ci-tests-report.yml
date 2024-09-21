@@ -40,7 +40,7 @@ jobs:
           path: EventFile
 
       - name: Download Test Results
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           run_id: ${{ github.event.workflow_run.id }}
           name: ^MethaneKit_${{ matrix.name }}_TestResults_.*$

@@ -142,7 +142,7 @@ jobs:
 
       # .NET Core is required by ReportGenerator
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.400
 
@@ -151,7 +151,7 @@ jobs:
 
       # Ninja build is required to generate compile commands file used by Sonar-Scanner
       - name: Install Ninja
-        uses: MethanePowered/gha-setup-ninja@master
+        uses: seanmiddleditch/gha-setup-ninja@v5
         with:
           version: 1.11.1
 
@@ -215,7 +215,7 @@ jobs:
 
       - name: Generate Code Coverage Reports
         if: ${{ success() || failure() }}
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.13
+        uses: danielpalme/ReportGenerator-GitHub-Action@5
         with:
           reports: ${{ matrix.tests_coverage_reports }}
           targetdir: 'Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report'
