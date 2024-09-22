@@ -200,11 +200,12 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
         ThrowIfFailed(m_reflection_cptr->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const Rhi::ProgramArgumentAccessType arg_access_type = Rhi::ProgramArgumentAccessor::GetTypeByRegisterSpace(binding_desc.Space);
+        const Rhi::ProgramArgumentAccessor::Types arg_types = Rhi::ProgramArgumentAccessor::GetTypeByRegisterSpace(binding_desc.Space);
         const Rhi::ProgramArgument shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
         const Rhi::ProgramArgumentAccessor* argument_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const Rhi::ProgramArgumentAccessor argument_acc = argument_ptr ? *argument_ptr
-                                                        : Rhi::ProgramArgumentAccessor(shader_argument, arg_access_type);
+        const Rhi::ProgramArgumentAccessor argument_acc = argument_ptr
+                                                        ? *argument_ptr
+                                                        : Rhi::ProgramArgumentAccessor(shader_argument, arg_types.first, arg_types.second);
         const D3D12_SHADER_BUFFER_DESC buffer_desc = GetConstantBufferDesc(*m_reflection_cptr.Get(), binding_desc);
 
         ProgramArgumentBindingType dx_binding_type = ProgramArgumentBindingType::DescriptorTable;

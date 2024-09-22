@@ -124,19 +124,7 @@ void TexturedCubeApp::Init()
                             rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                         }
                     },
-                    rhi::ProgramArgumentAccessors
-                    {   // Define arguments as root constants
-                        {
-                            { rhi::ShaderType::Pixel, "g_constants" },
-                            rhi::ProgramArgumentAccessType::Constant,
-                            rhi::ProgramArgumentValueType::RootConstant
-                        },
-                        {
-                            { rhi::ShaderType::All, "g_uniforms" },
-                            rhi::ProgramArgumentAccessType::FrameConstant,
-                            rhi::ProgramArgumentValueType::RootConstant
-                        }
-                    },
+                    rhi::ProgramArgumentAccessors{ },
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }
             ),

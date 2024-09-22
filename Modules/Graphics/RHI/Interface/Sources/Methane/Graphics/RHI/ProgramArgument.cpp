@@ -74,12 +74,16 @@ void ProgramArgument::MergeShaderTypes(ShaderType shader_type)
     m_hash = GetProgramArgumentHash(m_shader_type, m_name);
 }
 
-ProgramArgumentAccessor::Type ProgramArgumentAccessor::GetTypeByRegisterSpace(uint32_t register_space)
+ProgramArgumentAccessor::Types ProgramArgumentAccessor::GetTypeByRegisterSpace(uint32_t register_space)
 {
     META_FUNCTION_TASK();
-    META_CHECK_LESS_DESCR(register_space, magic_enum::enum_count<ProgramArgumentAccessor::Type>(),
-                              "shader register space is out of values range for Rhi::ProgramArgumentAccessType enum");
-    return static_cast<ProgramArgumentAccessor::Type>(register_space);
+    META_CHECK_LESS_DESCR(register_space, magic_enum::enum_count<Type>() * 2U,
+                          "shader register space is out of values range for Rhi::ProgramArgumentAccessType enum");
+    const auto arg_type = static_cast<Type>(register_space / 2);
+    const auto val_type = register_space % 2
+                        ? ValueType::RootConstant
+                        : ValueType::ResourceView;
+    return std::make_pair(arg_type, val_type);
 }
 
 ProgramArgumentAccessor::ProgramArgumentAccessor(ShaderType shader_type, std::string_view arg_name,

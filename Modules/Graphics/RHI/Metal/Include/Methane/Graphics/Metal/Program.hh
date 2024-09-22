@@ -76,7 +76,7 @@ private:
     // Base::Program overrides
     void InitArgumentBindings() override;
 
-    using ArgumentBufferSizeByAccessType = std::array<Data::Size, magic_enum::enum_count<Rhi::ProgramArgumentAccessType>()>;
+    using ArgumentBufferSizeByAccessType = std::array<Data::Size, magic_enum::enum_count<Rhi::ProgramArgumentAccessType>() * 2>;
 
     MTLVertexDescriptor*           m_mtl_vertex_desc = nil;
     Data::Index                    m_start_vertex_buffer_index = 0U;
