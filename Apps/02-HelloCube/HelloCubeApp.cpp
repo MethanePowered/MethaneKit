@@ -152,7 +152,16 @@ public:
                                 Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION" , "COLOR" }
                             }
                         },
-                        Rhi::ProgramArgumentAccessors{ },
+                        Rhi::ProgramArgumentAccessors
+                        {
+#ifdef UNIFORMS_ENABLED
+                            {   // Uniforms argument is declared as root constant
+                                { Rhi::ShaderType::Vertex, "g_uniforms" },
+                                Rhi::ProgramArgumentAccessType::FrameConstant,
+                                Rhi::ProgramArgumentValueType::RootConstant
+                            }
+#endif
+                        },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),

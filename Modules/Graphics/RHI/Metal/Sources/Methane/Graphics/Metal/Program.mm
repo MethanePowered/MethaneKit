@@ -189,21 +189,21 @@ void Program::InitArgumentRangeSizesAndConstantRanges()
         Data::Index arg_buffer_index = 0U;
         for(const ArgumentBufferLayout& arg_buffer_layout : metal_shader.GetArgumentBufferLayouts())
         {
-            // NOTE: see comment for ProgramArgumentAccessType why index is divided by two to get access index:
-            const Data::Index arg_acess_index = arg_buffer_index / 2;
-            META_CHECK_LESS(arg_acess_index, m_arguments_range_size_by_access_type.size());
-            arg_buffer_index++;
-
+            META_CHECK_LESS(arg_buffer_index, m_arguments_range_size_by_access_type.size());
             if (!arg_buffer_layout.data_size)
+            {
+                arg_buffer_index++;
                 continue;
+            }
 
             m_shader_argument_buffer_layouts.push_back({
                 shader.GetType(),
                 arg_buffer_layout.data_size,
-                static_cast<Rhi::ProgramArgumentAccessType>(arg_acess_index)
+                static_cast<Rhi::ProgramArgumentAccessType>(arg_buffer_index)
             });
 
-            m_arguments_range_size_by_access_type[arg_acess_index] += arg_buffer_layout.data_size;
+            m_arguments_range_size_by_access_type[arg_buffer_index] += arg_buffer_layout.data_size;
+            arg_buffer_index++;
         }
     });
 

@@ -90,14 +90,12 @@ private:
 };
 
 // NOTE: Access Type enum values should strictly match with
-// register space value divided by two of 'META_ARG_*' shader definitions from MethaneShaders.cmake.
-// EVEN space values are related to resource views, while ODD space values relate to root constants
+// register space values of 'META_ARG_*' shader definitions from MethaneShaders.cmake:
 enum class ProgramArgumentAccessType : uint32_t
 {
-    //                EVEN: Resource View         ODD: Root Constant
-    Constant,      // META_ARG_CONSTANT(0),       META_ARG_ROOT_CONSTANT(1)
-    FrameConstant, // META_ARG_FRAME_CONSTANT(2), META_ARG_ROOT_FRAME_CONSTANT(3)
-    Mutable        // META_ARG_MUTABLE(4),        META_ARG_ROOT_MUTABLE(5)
+    Constant,      // META_ARG_CONSTANT(0)
+    FrameConstant, // META_ARG_FRAME_CONSTANT(1)
+    Mutable        // META_ARG_MUTABLE(2)
 };
 
 using ProgramArgumentAccessMask = Data::EnumMask<ProgramArgumentAccessType>;
@@ -114,12 +112,11 @@ using ProgramArguments = std::unordered_set<ProgramArgument, ProgramArgument::Ha
 class ProgramArgumentAccessor : public ProgramArgument
 {
 public:
-    using Mask      = ProgramArgumentAccessMask;
     using Type      = ProgramArgumentAccessType;
+    using Mask      = ProgramArgumentAccessMask;
     using ValueType = ProgramArgumentValueType;
-    using Types     = std::pair<Type, ValueType>;
 
-    static Types GetTypeByRegisterSpace(uint32_t register_space);
+    static Type GetTypeByRegisterSpace(uint32_t register_space);
 
     ProgramArgumentAccessor(ShaderType shader_type,
                             std::string_view arg_name,

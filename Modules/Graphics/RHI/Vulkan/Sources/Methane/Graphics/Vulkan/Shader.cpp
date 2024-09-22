@@ -174,13 +174,13 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
         META_CHECK_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationBinding, byte_code_map.binding_offset));
 
         const uint32_t descriptor_set_id = spirv_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-        const Rhi::ProgramArgumentAccessor::Types arg_types = Rhi::ProgramArgumentAccessor::GetTypeByRegisterSpace(descriptor_set_id);
+        const Rhi::ProgramArgumentAccessType arg_access_type = Rhi::ProgramArgumentAccessor::GetTypeByRegisterSpace(descriptor_set_id);
 
         const Rhi::ProgramArgument shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
         const Rhi::ProgramArgumentAccessor* argument_accessor_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
         const Rhi::ProgramArgumentAccessor argument_acc = argument_accessor_ptr
-                                                        ? *argument_accessor_ptr
-                                                        : Rhi::ProgramArgumentAccessor(shader_argument, arg_types.first, arg_types.second);
+                                                          ? *argument_accessor_ptr
+                                                          : Rhi::ProgramArgumentAccessor(shader_argument, arg_access_type);
 
         argument_bindings.push_back(std::make_shared<ProgramBindings::ArgumentBinding>(
             shader.GetContext(),

@@ -145,7 +145,24 @@ void ShadowCubeApp::Init()
                         rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                rhi::ProgramArgumentAccessors{ },
+                rhi::ProgramArgumentAccessors
+                {
+                    {
+                        { rhi::ShaderType::Pixel, "g_constants" },
+                        rhi::ProgramArgumentAccessType::Constant,
+                        rhi::ProgramArgumentValueType::RootConstant
+                    },
+                    {
+                        { rhi::ShaderType::Pixel, "g_scene_uniforms" },
+                        rhi::ProgramArgumentAccessType::FrameConstant,
+                        rhi::ProgramArgumentValueType::RootConstant
+                    },
+                    {
+                        { rhi::ShaderType::Vertex, "g_mesh_uniforms" },
+                        rhi::ProgramArgumentAccessType::Mutable,
+                        rhi::ProgramArgumentValueType::RootConstant
+                    }
+                },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }
         ),
