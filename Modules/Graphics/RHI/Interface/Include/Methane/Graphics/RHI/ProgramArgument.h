@@ -147,3 +147,44 @@ using ProgramArgumentBindingValue   = std::variant<ResourceView, ResourceViews, 
 using ProgramBindingValueByArgument = std::unordered_map<ProgramArgument, ProgramArgumentBindingValue, ProgramArgument::Hash>;
 
 } // namespace Methane::Graphics::Rhi
+
+// Helper macroses for program argument accessors initialization in program descriptor:
+
+#define META_PROGRAM_ARG(shader_type, arg_name, access_type, value_type) \
+    Methane::Graphics::Rhi::ProgramArgumentAccessor{ { shader_type, arg_name }, access_type, value_type }
+
+#define META_PROGRAM_ARG_ROOT(shader_type, arg_name, access_type) \
+    META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::RootConstant)
+
+#define META_PROGRAM_ARG_ROOT_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_ROOT(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Constant)
+
+#define META_PROGRAM_ARG_ROOT_FRAME_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_ROOT(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::FrameConstant)
+
+#define META_PROGRAM_ARG_ROOT_MUTABLE(shader_type, arg_name) \
+    META_PROGRAM_ARG_ROOT(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Mutable)
+
+#define META_PROGRAM_ARG_RESOURCE(shader_type, arg_name, access_type) \
+    META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::ResourceView)
+
+#define META_PROGRAM_ARG_RESOURCE_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_RESOURCE(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Constant)
+
+#define META_PROGRAM_ARG_RESOURCE_FRAME_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_RESOURCE(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::FrameConstant)
+
+#define META_PROGRAM_ARG_RESOURCE_MUTABLE(shader_type, arg_name) \
+    META_PROGRAM_ARG_RESOURCE(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Mutable)
+
+#define META_PROGRAM_ARG_RESOURCES(shader_type, arg_name, access_type) \
+    META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::ResourceViews)
+
+#define META_PROGRAM_ARG_RESOURCES_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_RESOURCES(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Constant)
+
+#define META_PROGRAM_ARG_RESOURCES_FRAME_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_RESOURCES(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::FrameConstant)
+
+#define META_PROGRAM_ARG_RESOURCES_MUTABLE(shader_type, arg_name) \
+    META_PROGRAM_ARG_RESOURCES(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Mutable)

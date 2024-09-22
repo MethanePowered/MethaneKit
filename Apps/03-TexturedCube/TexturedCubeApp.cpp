@@ -125,17 +125,9 @@ void TexturedCubeApp::Init()
                         }
                     },
                     rhi::ProgramArgumentAccessors
-                    {   // Define arguments as root constants
-                        {
-                            { rhi::ShaderType::Pixel, "g_constants" },
-                            rhi::ProgramArgumentAccessType::Constant,
-                            rhi::ProgramArgumentValueType::RootConstant
-                        },
-                        {
-                            { rhi::ShaderType::All, "g_uniforms" },
-                            rhi::ProgramArgumentAccessType::FrameConstant,
-                            rhi::ProgramArgumentValueType::RootConstant
-                        }
+                    {
+                        META_PROGRAM_ARG_ROOT_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
+                        META_PROGRAM_ARG_ROOT_FRAME_CONSTANT(rhi::ShaderType::All, "g_uniforms")
                     },
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }

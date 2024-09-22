@@ -147,21 +147,9 @@ void ShadowCubeApp::Init()
                 },
                 rhi::ProgramArgumentAccessors
                 {
-                    {
-                        { rhi::ShaderType::Pixel, "g_constants" },
-                        rhi::ProgramArgumentAccessType::Constant,
-                        rhi::ProgramArgumentValueType::RootConstant
-                    },
-                    {
-                        { rhi::ShaderType::Pixel, "g_scene_uniforms" },
-                        rhi::ProgramArgumentAccessType::FrameConstant,
-                        rhi::ProgramArgumentValueType::RootConstant
-                    },
-                    {
-                        { rhi::ShaderType::Vertex, "g_mesh_uniforms" },
-                        rhi::ProgramArgumentAccessType::Mutable,
-                        rhi::ProgramArgumentValueType::RootConstant
-                    }
+                    META_PROGRAM_ARG_ROOT_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
+                    META_PROGRAM_ARG_ROOT_FRAME_CONSTANT(rhi::ShaderType::Pixel, "g_scene_uniforms"),
+                    META_PROGRAM_ARG_ROOT_MUTABLE(rhi::ShaderType::Vertex, "g_mesh_uniforms")
                 },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }
