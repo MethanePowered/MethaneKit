@@ -63,7 +63,6 @@ public:
 
     // IArgumentBinding interface
     bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
-    bool SetRootConstant(const Rhi::RootConstant& root_constant) override;
 
     void UpdateArgumentBufferOffsets(const Program& program);
 
@@ -78,8 +77,8 @@ public:
     const NativeOffsets&       GetBufferOffsets() const noexcept       { return m_mtl_buffer_offsets; }
 
 protected:
-    // IRootConstantBufferCallback overrides...
-    void OnRootConstantBufferChanged(Base::RootConstantBuffer& root_constant_buffer) override;
+    // Base::ProgramArgumentBinding overrides...
+    bool UpdateRootConstantResourceViews() override;
 
 private:
     void SetMetalResourcesForViews(const Rhi::ResourceViews& resource_views);

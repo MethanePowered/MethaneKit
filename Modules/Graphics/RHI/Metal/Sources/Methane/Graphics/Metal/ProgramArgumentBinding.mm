@@ -121,23 +121,6 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     return true;
 }
 
-bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_constant)
-{
-    META_FUNCTION_TASK();
-    CallbackBlocker callback_blocker(*this);
-
-    if (!Base::ProgramArgumentBinding::SetRootConstant(root_constant))
-        return false;
-
-    SetMetalResourcesForViews(Base::ProgramArgumentBinding::GetResourceViews());
-
-    Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
-        &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
-        std::cref(*this), std::cref(root_constant)
-    );
-    return true;
-}
-
 void ProgramArgumentBinding::UpdateArgumentBufferOffsets(const Program& program)
 {
     META_FUNCTION_TASK();
@@ -162,18 +145,19 @@ void ProgramArgumentBinding::UpdateArgumentBufferOffsets(const Program& program)
     }
 }
 
-void ProgramArgumentBinding::OnRootConstantBufferChanged(Base::RootConstantBuffer& root_constant_buffer)
+bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
 {
-    META_FUNCTION_TASK();
-    Base::ProgramArgumentBinding::OnRootConstantBufferChanged(root_constant_buffer);
+    if (!Base::ProgramArgumentBinding::UpdateRootConstantResourceViews())
+        return false;
 
     SetMetalResourcesForViews(Base::ProgramArgumentBinding::GetResourceViews());
 
     const Rhi::RootConstant root_constants = GetRootConstant();
     Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
-        &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
+        &Rhi::IProgramArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
         std::cref(*this), std::cref(root_constants)
     );
+    return true;
 }
 
 void ProgramArgumentBinding::SetMetalResourcesForViews(const Rhi::ResourceViews& resource_views)
