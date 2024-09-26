@@ -500,7 +500,7 @@ private:
         atlas_texture.SetName(fmt::format("{} Font Atlas", m_settings.description.name));
         if (deferred_data_init)
         {
-            render_context.RequestDeferredAction(rhi::IContext::DeferredAction::CompleteInitialization);
+            render_context.RequestDeferredAction(rhi::IContext::DeferredAction::UploadResources);
         }
         else
         {
@@ -547,7 +547,7 @@ private:
                 // Texture will be updated on GPU context completing initialization,
                 // when next GPU Frame rendering is started and just before uploading data on GPU with upload command queue
                 atlas_texture.is_update_required = true;
-                context.RequestDeferredAction(rhi::IContext::DeferredAction::CompleteInitialization);
+                context.RequestDeferredAction(rhi::IContext::DeferredAction::UploadResources);
             }
             else
             {
@@ -588,7 +588,7 @@ private:
         RemoveAtlasTexture(rhi::RenderContext(dynamic_cast<rhi::IRenderContext&>(context)));
     }
 
-    void OnContextCompletingInitialization(rhi::IContext& context) final
+    void OnContextUploadingResources(rhi::IContext& context) final
     {
         META_FUNCTION_TASK();
         META_CHECK_EQUAL(context.GetType(), rhi::IContext::Type::Render);

@@ -132,28 +132,39 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
                                "Size of root constant does not match buffer size ({}) for shader argument '{}'",
                                m_settings.buffer_size, static_cast<std::string>(m_settings.argument).c_str());
 
-    Rhi::RootConstant prev_root_constant;
-    if (m_emit_callback_enabled)
-        prev_root_constant = Rhi::RootConstant::StoreFrom(m_root_constant_accessor_ptr->GetRootConstant());
-
     if (!m_root_constant_accessor_ptr->SetRootConstant(root_constant))
         return false;
 
     if (m_settings.argument.IsConstant() && !m_resource_views.empty())
         throw ConstantModificationException(GetSettings().argument);
 
-    // FIXME: Backend buffer changes inside GetResourceView call,
-    //        which executes callback OnRootConstantBufferChanged, which also updates resource views:
-    const Rhi::ResourceView root_constant_resource_view = m_root_constant_accessor_ptr->GetResourceView();
-    m_resource_views.clear();
-    m_resource_views.emplace_back(root_constant_resource_view);
+    UpdateRootConstantResourceViews();
 
     if (m_emit_callback_enabled)
         Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
             &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
-            std::cref(*this), std::cref(prev_root_constant), std::cref(root_constant)
+            std::cref(*this), std::cref(root_constant)
         );
 
+    return true;
+}
+
+bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
+{
+    META_FUNCTION_TASK();
+    if (!m_root_constant_accessor_ptr)
+        return false;
+
+    // FIXME: Backend buffer changes inside GetResourceView call,
+    //        which executes callback OnRootConstantBufferChanged, which also updates resource views:
+    const Rhi::ResourceView root_constant_resource_view = m_root_constant_accessor_ptr->GetResourceView();
+
+    if (m_resource_views.size() == 1 &&
+        m_resource_views.back() == root_constant_resource_view)
+        return false;
+
+    m_resource_views.clear();
+    m_resource_views.emplace_back(root_constant_resource_view);
     return true;
 }
 
@@ -202,11 +213,7 @@ bool ProgramArgumentBinding::IsAlreadyApplied(const Rhi::IProgram& program,
 void ProgramArgumentBinding::OnRootConstantBufferChanged(RootConstantBuffer&)
 {
     META_FUNCTION_TASK();
-    if (!m_root_constant_accessor_ptr)
-        return;
-
-    m_resource_views.clear();
-    m_resource_views.emplace_back(m_root_constant_accessor_ptr->GetResourceView());
+    UpdateRootConstantResourceViews();
 }
 
 } // namespace Methane::Graphics::Base

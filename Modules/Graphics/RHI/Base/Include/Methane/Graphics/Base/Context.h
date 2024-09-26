@@ -112,6 +112,8 @@ private:
     template<Rhi::CommandListPurpose cmd_list_purpose>
     void ExecuteSyncCommandLists(const Rhi::ICommandKit& upload_cmd_kit) const;
 
+    bool UploadResourcesAndNotify();
+
     const Type                         m_type;
     Ptr<Device>                        m_device_ptr;
     UniquePtr<Rhi::IDescriptorManager> m_descriptor_manager_ptr;

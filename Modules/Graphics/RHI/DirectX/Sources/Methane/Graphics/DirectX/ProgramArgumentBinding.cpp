@@ -141,16 +141,6 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     return true;
 }
 
-bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_constant)
-{
-    META_FUNCTION_TASK();
-    if (!Base::ProgramArgumentBinding::SetRootConstant(root_constant))
-        return false;
-
-    UpdateDirectResourceViews(Base::ProgramArgumentBinding::GetResourceViews());
-    return true;
-}
-
 void ProgramArgumentBinding::SetDescriptorRange(const DescriptorRange& descriptor_range)
 {
     META_FUNCTION_TASK();
@@ -178,24 +168,21 @@ void ProgramArgumentBinding::SetDescriptorHeapReservation(const DescriptorHeapRe
     m_descriptor_heap_reservation_ptr = reservation_ptr;
 }
 
-void ProgramArgumentBinding::OnRootConstantBufferChanged(Base::RootConstantBuffer& root_constant_buffer)
+bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
 {
-    META_FUNCTION_TASK();
-    Base::ProgramArgumentBinding::OnRootConstantBufferChanged(root_constant_buffer);
-    UpdateDirectResourceViews(Base::ProgramArgumentBinding::GetResourceViews());
-}
+    if (!Base::ProgramArgumentBinding::UpdateRootConstantResourceViews())
+        return false;
 
-void ProgramArgumentBinding::UpdateDirectResourceViews(const Rhi::ResourceViews& resource_views)
-{
-    META_FUNCTION_TASK();
+    const Rhi::ResourceViews& resource_views = (Base::ProgramArgumentBinding::GetResourceViews());
     m_resource_views_dx.clear();
 
     std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_resource_views_dx),
         [this](const Rhi::ResourceView& resource_view)
         { return ResourceView(resource_view, m_shader_usage); });
 
-    // Request complete initialization to update root constant buffer views
+    // Request complete initialization to update root constant buffer views in program binding descriptors
     GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
+    return true;
 }
 
 } // namespace Methane::Graphics::DirectX

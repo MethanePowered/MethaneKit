@@ -87,13 +87,13 @@ public:
     const ArgumentsBuffer& GetArgumentsBuffer(Rhi::ProgramArgumentAccessType access_type) const noexcept;
 
     // Rhi::IDescriptorManager overrides
-    void CompleteInitialization() override { } // Replaced with initialization in OnContextCompletingInitialization()
+    void CompleteInitialization() override { /* Replaced with initialization in OnContextUploadingResources() */ }
     void AddProgramBindings(Rhi::IProgramBindings& program_bindings) override;
     void RemoveProgramBindings(Rhi::IProgramBindings& program_bindings) override;
     void Release() override;
 
     // Rhi::IContextCallback overrides
-    void OnContextCompletingInitialization(Rhi::IContext& context) override;
+    void OnContextUploadingResources(Rhi::IContext&) override;
     void OnContextInitialized(Rhi::IContext&) override {}
     void OnContextReleased(Rhi::IContext&) override {}
 

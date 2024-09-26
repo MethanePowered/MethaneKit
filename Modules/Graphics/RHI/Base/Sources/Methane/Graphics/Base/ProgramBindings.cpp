@@ -165,9 +165,7 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
     }
 }
 
-void ProgramBindings::OnProgramArgumentBindingRootConstantChanged(const IArgumentBinding&,
-                                                                  const Rhi::RootConstant&,
-                                                                  const Rhi::RootConstant&)
+void ProgramBindings::OnProgramArgumentBindingRootConstantChanged(const IArgumentBinding&, const Rhi::RootConstant&)
 {
     META_FUNCTION_TASK();
 }

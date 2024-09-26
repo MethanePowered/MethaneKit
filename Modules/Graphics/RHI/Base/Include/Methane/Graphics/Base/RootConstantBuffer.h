@@ -100,9 +100,9 @@ private:
     void UpdateGpuBuffer(Rhi::ICommandQueue& target_cmd_queue);
 
     // Rhi::IContextCallback overrides
-    void OnContextCompletingInitialization(Rhi::IContext& context) final;
-    void OnContextReleased(Rhi::IContext&) final;
-    void OnContextInitialized(Rhi::IContext&) final;
+    void OnContextUploadingResources(Rhi::IContext& context) final;
+    void OnContextReleased(Rhi::IContext&) final    { /* event not handled */ }
+    void OnContextInitialized(Rhi::IContext&) final { /* event not handled */ }
 
     Context&          m_context;
     std::string       m_buffer_name;

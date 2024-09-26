@@ -105,7 +105,7 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
         ContextCallbackTester context_callback_tester(compute_context);
         REQUIRE_NOTHROW(compute_context.Reset());
         CHECK(context_callback_tester.IsContextReleased());
-        CHECK_FALSE(context_callback_tester.IsContextCompletingInitialization());
+        CHECK_FALSE(context_callback_tester.IsContextUploadingResources());
         CHECK(context_callback_tester.IsContextInitialized());
     }
 
@@ -115,7 +115,7 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
         const Rhi::Device new_device = Rhi::System::Get().UpdateGpuDevices().at(0);
         REQUIRE_NOTHROW(compute_context.Reset(new_device));
         CHECK(context_callback_tester.IsContextReleased());
-        CHECK_FALSE(context_callback_tester.IsContextCompletingInitialization());
+        CHECK_FALSE(context_callback_tester.IsContextUploadingResources());
         CHECK(context_callback_tester.IsContextInitialized());
         CHECK(compute_context.GetDevice() == new_device);
     }
@@ -165,10 +165,12 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
 
     SECTION("Context Upload Resources Deferred")
     {
+        ContextCallbackTester context_callback_tester(compute_context);
         Rhi::TransferCommandList transfer_cmd_list = compute_context.GetUploadCommandKit().GetTransferListForEncoding();
         CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Encoding);
         CHECK_NOTHROW(compute_context.RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources));
         CHECK_NOTHROW(compute_context.WaitForGpu(Rhi::ContextWaitFor::ComputeComplete));
+        CHECK(context_callback_tester.IsContextUploadingResources());
         //FIXME: CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Executing);
     }
 
@@ -176,7 +178,7 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
     {
         ContextCallbackTester context_callback_tester(compute_context);
         REQUIRE_NOTHROW(compute_context.CompleteInitialization());
-        CHECK(context_callback_tester.IsContextCompletingInitialization());
+        CHECK(context_callback_tester.IsContextUploadingResources());
         CHECK_FALSE(compute_context.IsCompletingInitialization());
     }
 

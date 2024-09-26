@@ -84,8 +84,7 @@ void Context::CompleteInitialization()
     m_is_completing_initialization = true;
     META_LOG("Complete initialization of context '{}'", GetName());
 
-    Data::Emitter<Rhi::IContextCallback>::Emit(&Rhi::IContextCallback::OnContextCompletingInitialization, *this);
-    UploadResources();
+    UploadResourcesAndNotify();
     GetDescriptorManager().CompleteInitialization();
 
     m_requested_action             = DeferredAction::None;
@@ -319,15 +318,31 @@ bool Context::UploadResources() const
     return true;
 }
 
+bool Context::UploadResourcesAndNotify()
+{
+    META_FUNCTION_TASK();
+    Data::Emitter<Rhi::IContextCallback>::Emit(&Rhi::IContextCallback::OnContextUploadingResources, *this);
+    return UploadResources();
+}
+
 void Context::PerformRequestedAction()
 {
     META_FUNCTION_TASK();
     switch(m_requested_action)
     {
-    case DeferredAction::None:                   break;
-    case DeferredAction::UploadResources:        UploadResources(); break;
-    case DeferredAction::CompleteInitialization: CompleteInitialization(); break;
-    default:                                     META_UNEXPECTED(m_requested_action);
+    case DeferredAction::None:
+        break;
+
+    case DeferredAction::UploadResources:
+        UploadResourcesAndNotify();
+        break;
+
+    case DeferredAction::CompleteInitialization:
+        CompleteInitialization();
+        break;
+
+    default:
+        META_UNEXPECTED(m_requested_action);
     }
     m_requested_action = DeferredAction::None;
 }

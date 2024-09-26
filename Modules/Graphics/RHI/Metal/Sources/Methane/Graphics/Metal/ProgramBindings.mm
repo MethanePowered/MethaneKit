@@ -842,7 +842,6 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
 }
 
 void ProgramBindings::OnProgramArgumentBindingRootConstantChanged(const IArgumentBinding& arg_binding,
-                                                                  const Rhi::RootConstant&,
                                                                   const Rhi::RootConstant&)
 {
     META_FUNCTION_TASK();

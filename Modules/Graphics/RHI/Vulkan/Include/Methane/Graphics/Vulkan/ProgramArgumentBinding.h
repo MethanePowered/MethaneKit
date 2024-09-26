@@ -70,13 +70,12 @@ public:
     // IArgumentBinding interface
     const Settings& GetSettings() const noexcept override { return m_settings_vk; }
     bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
-    bool SetRootConstant(const Rhi::RootConstant& root_constant) override;
 
     void UpdateDescriptorSetsOnGpu();
 
 protected:
-    // IRootConstantBufferCallback overrides...
-    void OnRootConstantBufferChanged(Base::RootConstantBuffer& root_constant_buffer) override;
+    // Base::ProgramArgumentBinding overrides...
+    bool UpdateRootConstantResourceViews() override;
 
 private:
     void SetDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views);

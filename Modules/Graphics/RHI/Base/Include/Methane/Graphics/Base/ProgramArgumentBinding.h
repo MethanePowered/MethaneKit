@@ -76,6 +76,8 @@ protected:
     // IRootConstantBufferCallback overrides...
     void OnRootConstantBufferChanged(RootConstantBuffer& root_constant_buffer) override;
 
+    virtual bool UpdateRootConstantResourceViews();
+
 private:
     const Context&                  m_context;
     Settings                        m_settings;

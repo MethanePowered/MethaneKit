@@ -114,7 +114,9 @@ void RootConstantBuffer::SetRootConstant(const Accessor& accessor, const Rhi::Ro
     std::copy(root_constant.GetDataPtr(), root_constant.GetDataEndPtr(), data.data() + data_range.GetStart());
 
     m_buffer_data_changed = true;
-    m_context.RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
+
+    // Buffer resource data is updated in OnContextUploadingResources just before upload to GPU
+    m_context.RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources);
 }
 
 Data::Bytes& RootConstantBuffer::GetData()
@@ -134,13 +136,15 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
         return *m_buffer_ptr;
 
     const bool buffer_changed = !!m_buffer_ptr;
-    const auto buffer_settings = Rhi::BufferSettings::ForConstantBuffer(m_deferred_size, true, false);
+    const auto buffer_settings = Rhi::BufferSettings::ForConstantBuffer(m_deferred_size, true, true);
     m_buffer_ptr = m_context.CreateBuffer(buffer_settings);
     m_buffer_ptr->SetName(m_buffer_name);
 
     // After recreating the buffer it has to be filled with previous arguments data in UpdateGpuBuffer
     m_buffer_data_changed = true;
 
+    // NOTE: request deferred initialization complete to update program binding descriptors on GPU with updated buffer views
+    m_context.RequestDeferredAction(Rhi::IContext::DeferredAction::CompleteInitialization);
     if (buffer_changed)
         Emit(&ICallback::OnRootConstantBufferChanged, *this);
 
@@ -158,7 +162,6 @@ void RootConstantBuffer::SetBufferName(std::string_view buffer_name)
     }
 }
 
-
 void RootConstantBuffer::UpdateGpuBuffer(Rhi::ICommandQueue& target_cmd_queue)
 {
     META_FUNCTION_TASK();
@@ -171,20 +174,10 @@ void RootConstantBuffer::UpdateGpuBuffer(Rhi::ICommandQueue& target_cmd_queue)
     m_buffer_data_changed = false;
 }
 
-void RootConstantBuffer::OnContextCompletingInitialization(Rhi::IContext& context)
+void RootConstantBuffer::OnContextUploadingResources(Rhi::IContext& context)
 {
     META_FUNCTION_TASK();
     UpdateGpuBuffer(context.GetDefaultCommandKit(Rhi::CommandListType::Transfer).GetQueue());
-}
-
-void RootConstantBuffer::OnContextReleased(Rhi::IContext&)
-{
-    // intentionally unimplemented
-}
-
-void RootConstantBuffer::OnContextInitialized(Rhi::IContext&)
-{
-    // intentionally unimplemented
 }
 
 } // namespace Methane::Graphics::Base

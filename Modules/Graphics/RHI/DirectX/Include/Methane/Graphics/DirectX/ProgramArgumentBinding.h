@@ -85,7 +85,6 @@ public:
 
     // IArgumentBinding interface
     bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
-    bool SetRootConstant(const Rhi::RootConstant& root_constant) override;
 
     const Settings&        GetDirectSettings() const noexcept      { return m_settings_dx; }
     uint32_t               GetRootParameterIndex() const noexcept  { return m_root_parameter_index; }
@@ -98,12 +97,10 @@ public:
     void SetDescriptorHeapReservation(const DescriptorHeapReservation* reservation_ptr);
 
 protected:
-    // IRootConstantBufferCallback overrides...
-    void OnRootConstantBufferChanged(Base::RootConstantBuffer& root_constant_buffer) override;
+    // Base::ProgramArgumentBinding overrides...
+    bool UpdateRootConstantResourceViews() override;
 
 private:
-    void UpdateDirectResourceViews(const Rhi::ResourceViews& resource_views);
-
     const Settings                   m_settings_dx;
     const Rhi::ResourceUsageMask     m_shader_usage;
     uint32_t                         m_root_parameter_index = std::numeric_limits<uint32_t>::max();;

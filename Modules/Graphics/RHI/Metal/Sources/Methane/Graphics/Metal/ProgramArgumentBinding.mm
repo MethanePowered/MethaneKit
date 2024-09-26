@@ -126,7 +126,6 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
     META_FUNCTION_TASK();
     CallbackBlocker callback_blocker(*this);
 
-    const auto prev_root_constant = Rhi::RootConstant::StoreFrom(GetRootConstant());
     if (!Base::ProgramArgumentBinding::SetRootConstant(root_constant))
         return false;
 
@@ -134,7 +133,7 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
 
     Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
         &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
-        std::cref(*this), std::cref(prev_root_constant), std::cref(root_constant)
+        std::cref(*this), std::cref(root_constant)
     );
     return true;
 }
@@ -173,7 +172,7 @@ void ProgramArgumentBinding::OnRootConstantBufferChanged(Base::RootConstantBuffe
     const Rhi::RootConstant root_constants = GetRootConstant();
     Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
         &Rhi::IProgramBindings::IArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
-        std::cref(*this), std::cref(root_constants), std::cref(root_constants)
+        std::cref(*this), std::cref(root_constants)
     );
 }
 

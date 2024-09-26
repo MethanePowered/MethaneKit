@@ -112,16 +112,6 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     return true;
 }
 
-bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_constant)
-{
-    META_FUNCTION_TASK();
-    if (!Base::ProgramArgumentBinding::SetRootConstant(root_constant))
-        return false;
-
-    SetDescriptorsForResourceViews(GetResourceViews());
-    return true;
-}
-
 void ProgramArgumentBinding::UpdateDescriptorSetsOnGpu()
 {
     META_FUNCTION_TASK();
@@ -136,10 +126,10 @@ void ProgramArgumentBinding::UpdateDescriptorSetsOnGpu()
     m_vk_buffer_views.clear();
 }
 
-void ProgramArgumentBinding::OnRootConstantBufferChanged(Base::RootConstantBuffer& root_constant_buffer)
+bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
 {
-    META_FUNCTION_TASK();
-    Base::ProgramArgumentBinding::OnRootConstantBufferChanged(root_constant_buffer);
+    if (!Base::ProgramArgumentBinding::UpdateRootConstantResourceViews())
+        return false;
 
     if (m_vk_descriptor_set)
     {
@@ -149,8 +139,9 @@ void ProgramArgumentBinding::OnRootConstantBufferChanged(Base::RootConstantBuffe
     const Rhi::RootConstant root_constants = GetRootConstant();
     Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
         &Rhi::IProgramArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
-        std::cref(*this), std::cref(root_constants), std::cref(root_constants)
+        std::cref(*this), std::cref(root_constants)
     );
+    return true;
 }
 
 void ProgramArgumentBinding::SetDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views)

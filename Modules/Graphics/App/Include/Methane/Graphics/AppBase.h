@@ -99,7 +99,7 @@ protected:
 
     // IContextCallback implementation
     void OnContextReleased(Rhi::IContext&) override;
-    void OnContextCompletingInitialization(Rhi::IContext&) override { /* no event handling logic is needed here */ }
+    void OnContextUploadingResources(Rhi::IContext&) override { /* no event handling logic is needed here */ }
     void OnContextInitialized(Rhi::IContext&) override;
 
     const Rhi::RenderContextSettings& GetInitialContextSettings() const noexcept  { return m_initial_context_settings; }

@@ -83,7 +83,7 @@ struct IContext;
 struct IContextCallback
 {
     virtual void OnContextReleased(IContext& context) = 0;
-    virtual void OnContextCompletingInitialization(IContext& context) = 0;
+    virtual void OnContextUploadingResources(IContext& context) = 0;
     virtual void OnContextInitialized(IContext& context) = 0;
 
     virtual ~IContextCallback() = default;

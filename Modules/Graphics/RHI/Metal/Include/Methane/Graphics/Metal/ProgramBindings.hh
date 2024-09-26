@@ -125,7 +125,7 @@ private:
 
     // IProgramArgumentBindingCallback
     void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::ResourceViews&, const Rhi::ResourceViews&) override;
-    void OnProgramArgumentBindingRootConstantChanged(const IArgumentBinding&, const Rhi::RootConstant&, const Rhi::RootConstant&) override;
+    void OnProgramArgumentBindingRootConstantChanged(const IArgumentBinding&, const Rhi::RootConstant&) override;
 
     using AccessTypeMask = Data::EnumMask<Rhi::ProgramArgumentAccessType>;
 

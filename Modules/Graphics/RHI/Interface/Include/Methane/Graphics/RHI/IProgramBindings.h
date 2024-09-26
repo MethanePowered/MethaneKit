@@ -42,7 +42,7 @@ struct IProgramArgumentBinding;
 struct IProgramArgumentBindingCallback
 {
     virtual void OnProgramArgumentBindingResourceViewsChanged(const IProgramArgumentBinding& argument_binding, const ResourceViews& old_resource_views, const ResourceViews& new_resource_views) = 0;
-    virtual void OnProgramArgumentBindingRootConstantChanged(const IProgramArgumentBinding& argument_binding, const RootConstant& old_root_constant, const RootConstant& new_root_constant) = 0;
+    virtual void OnProgramArgumentBindingRootConstantChanged(const IProgramArgumentBinding& argument_binding, const RootConstant& root_constant) = 0;
 
     virtual ~IProgramArgumentBindingCallback() = default;
 };

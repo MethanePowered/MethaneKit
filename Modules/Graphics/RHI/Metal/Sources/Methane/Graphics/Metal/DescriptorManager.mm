@@ -166,7 +166,7 @@ void DescriptorManager::RemoveProgramBindings(Rhi::IProgramBindings& program_bin
     }
 }
 
-void DescriptorManager::OnContextCompletingInitialization(Rhi::IContext&)
+void DescriptorManager::OnContextUploadingResources(Rhi::IContext&)
 {
     META_FUNCTION_TASK();
     META_LOG("Metal Descriptor Manager is completing initialization of the global argument buffer...");

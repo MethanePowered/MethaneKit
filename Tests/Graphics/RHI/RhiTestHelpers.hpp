@@ -105,26 +105,36 @@ class ContextCallbackTester final
 public:
     ContextCallbackTester(rhi::IContext& context)
         : m_context(context)
-    { dynamic_cast<Data::IEmitter<rhi::IContextCallback>&>(context).Connect(*this); }
+    {
+        dynamic_cast<Data::IEmitter<rhi::IContextCallback>&>(context).Connect(*this);
+    }
 
     template<typename ContextType>
     ContextCallbackTester(ContextType& context)
         : m_context(context.GetInterface())
-    { context.Connect(*this); }
+    {
+        context.Connect(*this);
+    }
 
     bool IsContextReleased() const noexcept
-    { return m_is_context_released; }
+    {
+        return m_is_context_released;
+    }
 
-    bool IsContextCompletingInitialization() const noexcept
-    { return m_is_context_completing_initialization; }
+    bool IsContextUploadingResources() const noexcept
+    {
+        return m_is_context_uploading_resources;
+    }
 
     bool IsContextInitialized() const noexcept
-    { return m_is_context_initialized; }
+    {
+        return m_is_context_initialized;
+    }
 
     void Reset()
     {
         m_is_context_released = false;
-        m_is_context_completing_initialization = false;
+        m_is_context_uploading_resources = false;
         m_is_context_initialized = false;
     }
 
@@ -135,11 +145,10 @@ private:
         m_is_context_released = true;
     }
 
-    void OnContextCompletingInitialization(rhi::IContext& context) override
+    void OnContextUploadingResources(rhi::IContext& context) override
     {
         CHECK(std::addressof(m_context) == std::addressof(context));
-        CHECK(context.IsCompletingInitialization());
-        m_is_context_completing_initialization = true;
+        m_is_context_uploading_resources = true;
     }
 
     void OnContextInitialized(rhi::IContext& context) override
@@ -150,7 +159,7 @@ private:
 
     rhi::IContext& m_context;
     bool m_is_context_released = false;
-    bool m_is_context_completing_initialization = false;
+    bool m_is_context_uploading_resources = false;
     bool m_is_context_initialized = false;
 };
 
