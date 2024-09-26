@@ -161,6 +161,7 @@ void TexturedCubeApp::Init()
             { { rhi::ShaderType::Pixel, "g_sampler"   }, m_texture_sampler.GetResourceView() }
         }, frame.index);
         frame.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
+        frame.uniforms_binding_ptr = &frame.program_bindings.Get({ rhi::ShaderType::All, "g_uniforms" });
 
         // Create command list for rendering
         frame.render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
@@ -199,10 +200,7 @@ bool TexturedCubeApp::Update()
     m_shader_uniforms.mvp_matrix   = hlslpp::transpose(hlslpp::mul(m_shader_uniforms.model_matrix, m_camera.GetViewProjMatrix()));
     m_shader_uniforms.eye_position = m_camera.GetOrientation().eye;
 
-    const TexturedCubeFrame& frame = GetCurrentFrame();
-    frame.program_bindings.Get({ rhi::ShaderType::All, "g_uniforms" })
-                          .SetRootConstant(rhi::RootConstant(m_shader_uniforms));
-    
+    GetCurrentFrame().uniforms_binding_ptr->SetRootConstant(rhi::RootConstant(m_shader_uniforms));
     return true;
 }
 
@@ -211,10 +209,9 @@ bool TexturedCubeApp::Render()
     if (!UserInterfaceApp::Render())
         return false;
 
-    const TexturedCubeFrame& frame = GetCurrentFrame();
-
     // Issue commands for cube rendering
     META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
+    const TexturedCubeFrame& frame = GetCurrentFrame();
     frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
     frame.render_cmd_list.SetViewState(GetViewState());
     frame.render_cmd_list.SetProgramBindings(frame.program_bindings);

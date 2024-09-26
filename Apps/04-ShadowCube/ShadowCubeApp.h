@@ -45,11 +45,18 @@ struct ShadowCubeFrame final
 {
     struct PassResources
     {
-        rhi::ProgramBindings   cube_program_bindings;
-        rhi::ProgramBindings   floor_program_bindings;
+        struct ProgramBindings
+        {
+            rhi::ProgramBindings          program_bindings;
+            rhi::IProgramArgumentBinding* scene_uniforms_binding_ptr = nullptr;
+            rhi::IProgramArgumentBinding* mesh_uniforms_binding_ptr  = nullptr;
+        };
+
         rhi::Texture           rt_texture;
         rhi::RenderPass        render_pass;
         rhi::RenderCommandList cmd_list;
+        ProgramBindings        cube_bindings;
+        ProgramBindings        floor_bindings;
     };
 
     PassResources       shadow_pass;

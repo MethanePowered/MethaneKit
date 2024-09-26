@@ -41,9 +41,10 @@ namespace rhi = Methane::Graphics::Rhi;
 
 struct TexturedCubeFrame final : Graphics::AppFrame
 {
-    rhi::ProgramBindings   program_bindings;
-    rhi::RenderCommandList render_cmd_list;
-    rhi::CommandListSet    execute_cmd_list_set;
+    rhi::ProgramBindings          program_bindings;
+    rhi::IProgramArgumentBinding* uniforms_binding_ptr = nullptr;
+    rhi::RenderCommandList        render_cmd_list;
+    rhi::CommandListSet           execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };

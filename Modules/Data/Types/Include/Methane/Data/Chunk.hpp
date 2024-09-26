@@ -44,6 +44,12 @@ public:
     { }
 
     template<typename T>
+    explicit Chunk(T& value)
+        : m_data_ptr(GetByteAddress(value))
+        , m_data_size(static_cast<Size>(sizeof(T)))
+    { }
+
+    template<typename T>
     explicit Chunk(T&& value)
         : m_data_storage(GetByteAddress(value), GetByteAddress(value) + sizeof(T))
         , m_data_ptr(m_data_storage.data())

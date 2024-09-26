@@ -47,7 +47,8 @@ using namespace Methane::Graphics;
 struct HelloCubeFrame final : AppFrame
 {
 #ifdef UNIFORMS_ENABLED
-    Rhi::ProgramBindings   program_bindings;
+    Rhi::ProgramBindings          program_bindings;
+    rhi::IProgramArgumentBinding* uniforms_binding_ptr = nullptr;
 #else
     Rhi::BufferSet         vertex_buffer_set;
 #endif
@@ -195,6 +196,7 @@ public:
             // Configure program resource bindings
             frame.program_bindings = m_render_state.GetProgram().CreateBindings({ }, frame.index);
             frame.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
+            frame.uniforms_binding_ptr = &frame.program_bindings.Get({ Rhi::ShaderType::Vertex, "g_uniforms" });
 #else
             // Create vertex buffers for each frame
             Rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true));
@@ -232,11 +234,10 @@ public:
 #ifdef UNIFORMS_ENABLED
         // Save transposed camera Model-View-Projection matrix in shader uniforms
         // Before frame rendering set uniforms to root constant buffer to be uploaded to GPU
-        hlslpp::Uniforms shader_uniforms{ hlslpp::transpose(mvp_matrix) };
+        const hlslpp::Uniforms shader_uniforms{ hlslpp::transpose(mvp_matrix) };
 
         // Update root constant in program bindings to apply model-view-projection transformation in vertex shader on GPU
-        frame.program_bindings.Get({ Rhi::ShaderType::Vertex, "g_uniforms" })
-                              .SetRootConstant(Rhi::RootConstant(shader_uniforms));
+        frame.uniforms_binding_ptr->SetRootConstant(Rhi::RootConstant(shader_uniforms));
 #else
         // Update vertex buffer with camera Model-View-Projection matrix applied on CPU
         for(size_t vertex_index = 0; vertex_index < m_proj_vertices.size(); ++vertex_index)
