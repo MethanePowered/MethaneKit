@@ -1,9 +1,14 @@
 @REM Run 'Build.bat' with optional arguments:
-@REM   --vs2019   - build with Visual Studio 2019 instead of Visual Studio 2019 by default
-@REM   --win32    - 32-bit build instead of 64-bit by default
-@REM   --debug    - Debug build instead of Release build by default
-@REM   --vulkan   - use Vulkan graphics API instead of DirectX 12 by default
-@REM   --graphviz - enable GraphViz cmake module diagrams generation in Dot and Png formats
+@REM   --vs2019      - build with Visual Studio 2019 instead of Visual Studio 2019 by default
+@REM   --win32       - 32-bit build instead of 64-bit by default
+@REM   --debug       - Debug build instead of Release build by default
+@REM   --vulkan      - use Vulkan graphics API instead of DirectX 12 by default
+@REM   --graphviz    - enable GraphViz cmake module diagrams generation in Dot and Png formats
+@REM   --tracy       - enable Tracy Profiler instrumentation
+@REM   --itt         - enable ITT instrumentation for Intel GPA and VTune trace analysis
+@REM   --cpu_profile - enable advanced CPU profiling capabilities, like scope timers
+@REM   --gpu_profile - enable advanced GPU profiling capabilities, like timestamp queries in command lists
+@REM   --logs        - enable logging to VS Debug Output and to Tracy Messages
 @REM   --analyze SONAR_TOKEN - run local build with Sonar Scanner static analysis and submit results to the server using token login
 @ECHO OFF
 SETLOCAL ENABLEDELAYEDEXPANSION
@@ -34,6 +39,21 @@ IF NOT "%1"=="" (
     )
     IF "%1"=="--graphviz" (
         SET GRAPHVIZ_ENABLED=1
+    )
+    IF "%1"=="--tracy" (
+        SET TRACY_ENABLED=ON
+    )
+    IF "%1"=="--itt" (
+        SET ITT_ENABLED=ON
+    )
+    IF "%1"=="--cpu_profile" (
+        SET CPU_PROFILE_ENABLED=ON
+    )
+    IF "%1"=="--gpu_profile" (
+        SET GPU_PROFILE_ENABLED=ON
+    )
+    IF "%1"=="--logs" (
+        SET LOGS_ENABLED=ON
     )
     IF "%1"=="--analyze" (
         SET ANALYZE_BUILD=1
@@ -71,6 +91,22 @@ IF DEFINED USE_VS2019 (
     SET CMAKE_GENERATOR=Visual Studio 17 2022
 )
 
+IF NOT DEFINED TRACY_ENABLED (
+    SET TRACY_ENABLED=OFF
+)
+IF NOT DEFINED ITT_ENABLED (
+    SET ITT_ENABLED=OFF
+)
+IF NOT DEFINED CPU_PROFILE_ENABLED (
+    SET CPU_PROFILE_ENABLED=OFF
+)
+IF NOT DEFINED GPU_PROFILE_ENABLED (
+    SET GPU_PROFILE_ENABLED=OFF
+)
+IF NOT DEFINED LOGS_ENABLED (
+    SET LOGS_ENABLED=OFF
+)
+
 SET CONFIG_DIR=%OUTPUT_DIR%\VisualStudio\%ARCH_TYPE%-MSVC-%GFX_API%-%BUILD_TYPE%-SLN
 SET INSTALL_DIR=%CONFIG_DIR%\Install
 
@@ -89,15 +125,15 @@ SET CMAKE_FLAGS= ^
     -DMETHANE_PRECOMPILED_HEADERS_ENABLED:BOOL=ON ^
     -DMETHANE_RUN_TESTS_DURING_BUILD:BOOL=OFF ^
     -DMETHANE_CODE_COVERAGE_ENABLED:BOOL=OFF ^
-    -DMETHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=ON ^
-    -DMETHANE_LOGGING_ENABLED:BOOL=OFF ^
+    -DMETHANE_COMMAND_DEBUG_GROUPS_ENABLED:BOOL=%GPU_PROFILE_ENABLED% ^
+    -DMETHANE_LOGGING_ENABLED:BOOL=%LOGS_ENABLED% ^
     -DMETHANE_OPEN_IMAGE_IO_ENABLED:BOOL=OFF ^
-    -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=OFF ^
-    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=OFF ^
-    -DMETHANE_ITT_METADATA_ENABLED:BOOL=OFF ^
-    -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=OFF ^
-    -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=OFF ^
-    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF ^
+    -DMETHANE_SCOPE_TIMERS_ENABLED:BOOL=%CPU_PROFILE_ENABLED% ^
+    -DMETHANE_ITT_INSTRUMENTATION_ENABLED:BOOL=%ITT_ENABLED% ^
+    -DMETHANE_ITT_METADATA_ENABLED:BOOL=%ITT_ENABLED% ^
+    -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=%GPU_PROFILE_ENABLED% ^
+    -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=%TRACY_ENABLED% ^
+    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=%TRACY_ENABLED% ^
     -DMETHANE_MEMORY_SANITIZER_ENABLED:BOOL=OFF
 
 IF DEFINED GRAPHVIZ_ENABLED (
