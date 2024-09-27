@@ -40,6 +40,7 @@ namespace Methane::Graphics::DirectX
 
 static Rhi::BufferSettings UpdateBufferSettings(const Rhi::BufferSettings& settings)
 {
+    META_FUNCTION_TASK();
     Rhi::BufferSettings new_settings = settings;
     if (new_settings.type == Rhi::BufferType::Constant ||
         new_settings.type == Rhi::BufferType::Storage)
@@ -47,6 +48,18 @@ static Rhi::BufferSettings UpdateBufferSettings(const Rhi::BufferSettings& setti
         new_settings.size = Data::AlignUp(settings.size, Data::Size(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT));
     }
     return new_settings;
+}
+
+static Rhi::ResourceState GetInitialBufferState(bool is_private_storage, bool is_read_back_buffer)
+{
+    META_FUNCTION_TASK();
+    
+    if (is_read_back_buffer)
+        return Rhi::ResourceState::CopyDest;
+
+    return is_private_storage
+         ? Rhi::ResourceState::Common
+         : Rhi::ResourceState::GenericRead;
 }
 
 Buffer::Buffer(const Base::Context& context, const Settings& orig_settings)
@@ -58,9 +71,7 @@ Buffer::Buffer(const Base::Context& context, const Settings& orig_settings)
     const bool          is_read_back_buffer = settings.usage_mask.HasAnyBit(Usage::ReadBack);
     const D3D12_HEAP_TYPE  normal_heap_type = is_private_storage ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
     const D3D12_HEAP_TYPE  heap_type        = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
-    const Rhi::ResourceState resource_state = is_read_back_buffer || is_private_storage
-                                              ? Rhi::ResourceState::Common
-                                              : Rhi::ResourceState::GenericRead;
+    const Rhi::ResourceState resource_state = GetInitialBufferState(is_private_storage, is_read_back_buffer);
 
     D3D12_RESOURCE_FLAGS resource_flags = D3D12_RESOURCE_FLAG_NONE;
     if (settings.usage_mask.HasAnyBit(Usage::ShaderWrite))
