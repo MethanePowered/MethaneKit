@@ -50,19 +50,21 @@ class RootConstantAccessor
 public:
     using Range = Data::Range<Data::Index>;
 
-    RootConstantAccessor(RootConstantBuffer& buffer, const Range& buffer_range);
+    RootConstantAccessor(RootConstantBuffer& buffer, const Range& buffer_range, Data::Size data_size);
     ~RootConstantAccessor();
 
     [[nodiscard]] Rhi::RootConstant GetRootConstant() const;
     bool SetRootConstant(const Rhi::RootConstant& root_constant) const;
 
-    const Range& GetBufferRange() const noexcept { return m_buffer_range; }
+    const Range&            GetBufferRange() const noexcept { return m_buffer_range; }
+    Data::Size              GetDataSize() const noexcept    { return m_data_size; }
     const Rhi::ResourceView GetResourceView() const;
-    RootConstantBuffer& GetRootConstantBuffer() const { return m_buffer.get(); }
+    RootConstantBuffer&     GetRootConstantBuffer() const   { return m_buffer.get(); }
 
 private:
-    Ref<RootConstantBuffer> m_buffer;
-    Range                   m_buffer_range;
+    Ref<RootConstantBuffer> m_buffer;       // storage buffer
+    Range                   m_buffer_range; // aligned memory range
+    Data::Size              m_data_size;    // unaligned original size
 };
 
 class Context;

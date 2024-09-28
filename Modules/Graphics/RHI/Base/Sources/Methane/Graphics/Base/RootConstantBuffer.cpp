@@ -27,16 +27,23 @@ bound to Program using ProgramArgumentBinging as RootConstant.
 #include <Methane/Graphics/Base/Buffer.h>
 #include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Data/RangeUtils.hpp>
+#include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 namespace Methane::Graphics::Base
 {
 
-RootConstantAccessor::RootConstantAccessor(RootConstantBuffer& buffer, const Range& buffer_range)
+// Root constants memory alignment should match D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT
+static constexpr Data::Size g_root_constant_alignment = 256;
+
+RootConstantAccessor::RootConstantAccessor(RootConstantBuffer& buffer, const Range& buffer_range, Data::Size data_size)
     : m_buffer(buffer)
     , m_buffer_range(buffer_range)
+    , m_data_size(data_size)
 {
+    META_CHECK_LESS_OR_EQUAL_DESCR(data_size, buffer_range.GetLength(),
+                                   "root constant data size is less than reserved buffer range size");
 }
 
 RootConstantAccessor::~RootConstantAccessor()
@@ -48,7 +55,7 @@ RootConstantAccessor::~RootConstantAccessor()
 Rhi::RootConstant RootConstantAccessor::GetRootConstant() const
 {
     META_FUNCTION_TASK();
-    return Rhi::RootConstant(m_buffer.get().GetData().data() + m_buffer_range.GetStart(), m_buffer_range.GetLength());
+    return Rhi::RootConstant(m_buffer.get().GetData().data() + m_buffer_range.GetStart(), m_data_size);
 }
 
 bool RootConstantAccessor::SetRootConstant(const Rhi::RootConstant& root_constant) const
@@ -64,7 +71,7 @@ bool RootConstantAccessor::SetRootConstant(const Rhi::RootConstant& root_constan
 const Rhi::ResourceView RootConstantAccessor::GetResourceView() const
 {
     META_FUNCTION_TASK();
-    return Rhi::ResourceView(m_buffer.get().GetBuffer(), m_buffer_range.GetStart(), m_buffer_range.GetLength());
+    return Rhi::ResourceView(m_buffer.get().GetBuffer(), m_buffer_range.GetStart(), m_data_size);
 }
 
 RootConstantBuffer::RootConstantBuffer(Context& context, std::string_view buffer_name)
@@ -85,17 +92,19 @@ RootConstantBuffer::~RootConstantBuffer()
 UniquePtr<RootConstantAccessor> RootConstantBuffer::ReserveRootConstant(Data::Size root_constant_size)
 {
     META_FUNCTION_TASK();
+    const Data::Size aligned_constant_size = Data::AlignUp(root_constant_size, g_root_constant_alignment);
+
     Accessor::Range buffer_range;
     if (m_free_ranges.IsEmpty())
     {
-        m_deferred_size += root_constant_size;
-        buffer_range = Accessor::Range(m_deferred_size - root_constant_size, m_deferred_size);
+        m_deferred_size += aligned_constant_size;
+        buffer_range = Accessor::Range(m_deferred_size - aligned_constant_size, m_deferred_size);
     }
     else
     {
-        buffer_range = ReserveRange(m_free_ranges, root_constant_size);
+        buffer_range = ReserveRange(m_free_ranges, aligned_constant_size);
     }
-    return std::make_unique<Accessor>(*this, buffer_range);
+    return std::make_unique<Accessor>(*this, buffer_range, root_constant_size);
 }
 
 void RootConstantBuffer::ReleaseRootConstant(const Accessor& reservation)
@@ -110,7 +119,8 @@ void RootConstantBuffer::SetRootConstant(const Accessor& accessor, const Rhi::Ro
     Data::Bytes&           data       = GetData();
     const Accessor::Range& data_range = accessor.GetBufferRange();
 
-    META_CHECK_EQUAL_DESCR(data_range.GetLength(), root_constant.GetDataSize(), "wrong root constant size");
+    META_CHECK_LESS_OR_EQUAL_DESCR(root_constant.GetDataSize(), data_range.GetLength(),
+                                   "root constant size should be less or equal to reserved memory range size");
     std::copy(root_constant.GetDataPtr(), root_constant.GetDataEndPtr(), data.data() + data_range.GetStart());
 
     m_buffer_data_changed = true;

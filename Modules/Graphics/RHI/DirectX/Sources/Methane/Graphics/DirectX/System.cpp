@@ -33,7 +33,7 @@ DirectX 12 implementation of the device interface.
 #include <dxgidebug.h>
 
 // Uncomment to enable debugger breakpoint on DirectX debug warning or error
-// #define BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
+#define BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
 #endif
 
 #include <nowide/convert.hpp>
@@ -79,9 +79,9 @@ static bool EnableDebugLayer()
     }
 
 #ifdef BREAK_ON_DIRECTX_DEBUG_LAYER_MESSAGE_ENABLED
-    dxgi_info_queue_cptr->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_WARNING, true);
-    dxgi_info_queue_cptr->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true);
-    dxgi_info_queue_cptr->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true);
+    ThrowIfFailed(dxgi_info_queue_cptr->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_WARNING, true));
+    ThrowIfFailed(dxgi_info_queue_cptr->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_ERROR, true));
+    ThrowIfFailed(dxgi_info_queue_cptr->SetBreakOnSeverity(DXGI_DEBUG_ALL, DXGI_INFO_QUEUE_MESSAGE_SEVERITY_CORRUPTION, true));
 #endif
 
     std::array<DXGI_INFO_QUEUE_MESSAGE_ID, 0> skip_message_ids = {{ }};
@@ -94,7 +94,7 @@ static bool EnableDebugLayer()
     filter.DenyList.pSeverityList = skip_message_severities.data();
     filter.DenyList.NumIDs        = static_cast<UINT>(skip_message_ids.size());
     filter.DenyList.pIDList       = skip_message_ids.data();
-    dxgi_info_queue_cptr->AddStorageFilterEntries(DXGI_DEBUG_ALL, &filter);
+    ThrowIfFailed(dxgi_info_queue_cptr->AddStorageFilterEntries(DXGI_DEBUG_ALL, &filter));
 
     return true;
 }

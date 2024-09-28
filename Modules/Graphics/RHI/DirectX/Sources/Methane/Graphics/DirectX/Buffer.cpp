@@ -41,9 +41,18 @@ namespace Methane::Graphics::DirectX
 static Rhi::BufferSettings UpdateBufferSettings(const Rhi::BufferSettings& settings)
 {
     META_FUNCTION_TASK();
+    if (settings.type != Rhi::BufferType::Constant &&
+        settings.type != Rhi::BufferType::Storage)
+        return settings;
+
     Rhi::BufferSettings new_settings = settings;
-    if (new_settings.type == Rhi::BufferType::Constant ||
-        new_settings.type == Rhi::BufferType::Storage)
+    if (settings.item_stride_size)
+    {
+        const Data::Size items_count = settings.size / settings.item_stride_size;
+        new_settings.item_stride_size = Data::AlignUp(settings.item_stride_size, Data::Size(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT));
+        new_settings.size = items_count * new_settings.item_stride_size;
+    }
+    else
     {
         new_settings.size = Data::AlignUp(settings.size, Data::Size(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT));
     }
