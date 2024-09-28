@@ -14,7 +14,7 @@ if [ -d "$sdk_ver_dir" ]; then
   echo "Vulkan SDK version directory already exists: $sdk_ver_dir"
 else
   test -d $sdk_dir || mkdir -pv $sdk_dir
-  vulkan_sdk_url=https://github.com/MethanePowered/VulkanHeaders/releases/download/sdk-$sdk_ver/vulkan_sdk_$sdk_os.7z
+  vulkan_sdk_url=https://github.com/MethanePowered/VulkanHeaders/releases/download/vulkan-sdk-$sdk_ver/vulkan_sdk_$sdk_os.7z
   echo "Downloading Vulkan SDK archive $vulkan_sdk_url ..."
   curl -sSLo vulkan_sdk.7z $vulkan_sdk_url
   echo "Unpacking Vulkan SDK archive to $sdk_dir ..."
