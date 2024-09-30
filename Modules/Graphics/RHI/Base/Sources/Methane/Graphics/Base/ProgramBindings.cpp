@@ -445,4 +445,14 @@ const Refs<Rhi::IResource>& ProgramBindings::GetResourceRefsByAccess(Rhi::Progra
     return m_resource_refs_by_access[magic_enum::enum_index(access_type).value()];
 }
 
+void ProgramBindings::RetainRootConstantBuffers() const
+{
+    META_FUNCTION_TASK();
+    // NOTE: We have to retain root constant buffers applied to command list and used during execution,
+    // because these buffers could be recreated in order to be resized;
+    // and will be automatically updated in all retained program binding objects.
+    auto& program = static_cast<Program&>(GetProgram());
+    m_applied_root_constant_buffer_ptr = program.GetRootConstantBufferPtrs(m_frame_index);
+}
+
 } // namespace Methane::Graphics::Base

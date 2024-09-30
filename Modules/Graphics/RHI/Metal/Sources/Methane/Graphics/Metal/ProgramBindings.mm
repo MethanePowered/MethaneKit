@@ -482,8 +482,9 @@ Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgum
 void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
-    const Rhi::CommandListType command_list_type = command_list.GetType();
-    switch (command_list_type)
+    RetainRootConstantBuffers();
+    switch (const Rhi::CommandListType command_list_type = command_list.GetType();
+            command_list_type)
     {
         case Rhi::CommandListType::Render:
             Apply<CommandType::Render>(static_cast<RenderCommandList&>(command_list), apply_behavior);

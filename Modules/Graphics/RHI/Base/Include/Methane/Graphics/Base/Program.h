@@ -85,6 +85,7 @@ protected:
     using ShadersByType = std::array<Ptr<Rhi::IShader>, magic_enum::enum_count<Rhi::ShaderType>() - 1>;
     static ShadersByType CreateShadersByType(const Ptrs<Rhi::IShader>& shaders);
 
+    Ptrs<Rhi::IBuffer> GetRootConstantBufferPtrs(Data::Index frame_index) const;
     Data::Size GetBindingsCountAndIncrement() noexcept { return m_bindings_count++; }
 
     template<typename ShaderFuncType>

@@ -49,6 +49,29 @@ Program::ShadersByType Program::CreateShadersByType(const Ptrs<Rhi::IShader>& sh
     return shaders_by_type;
 }
 
+Ptrs<Rhi::IBuffer> Program::GetRootConstantBufferPtrs(Data::Index frame_index) const
+{
+    META_FUNCTION_TASK();
+    Ptrs<Rhi::IBuffer> root_constant_buffer_ptrs;
+    root_constant_buffer_ptrs.reserve(3);
+
+    if (const Ptr<Rhi::IBuffer>& buffer_ptr = m_root_constant_buffer.GetBufferPtr())
+    {
+        root_constant_buffer_ptrs.push_back(buffer_ptr);
+    }
+    if (frame_index < m_root_frame_constant_buffers.size())
+    {
+        if (const Ptr<Rhi::IBuffer>& buffer_ptr = m_root_frame_constant_buffers.at(frame_index)->GetBufferPtr())
+            root_constant_buffer_ptrs.push_back(buffer_ptr);
+    }
+    if (const Ptr<Rhi::IBuffer>& buffer_ptr = m_root_mutable_buffer.GetBufferPtr())
+    {
+        root_constant_buffer_ptrs.push_back(buffer_ptr);
+    }
+
+    return root_constant_buffer_ptrs;
+}
+
 static Rhi::ShaderTypes CreateShaderTypes(const Ptrs<Rhi::IShader>& shaders)
 {
     META_FUNCTION_TASK();

@@ -92,6 +92,7 @@ public:
 
     Data::Bytes&  GetData();
     Rhi::IBuffer& GetBuffer();
+    const Ptr<Rhi::IBuffer>& GetBufferPtr() const { return m_buffer_ptr; }
 
     void SetBufferName(std::string_view buffer_name);
     std::string_view GetBufferName() { return m_buffer_name; }

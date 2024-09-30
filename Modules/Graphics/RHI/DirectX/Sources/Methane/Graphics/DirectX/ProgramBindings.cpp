@@ -124,12 +124,15 @@ Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgum
 
 void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const
 {
+    META_FUNCTION_TASK();
     Apply(dynamic_cast<ICommandList&>(command_list), command_list.GetProgramBindingsPtr(), apply_behavior);
 }
 
 void ProgramBindings::Apply(ICommandList& command_list, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
+    RetainRootConstantBuffers();
+
     Rhi::ProgramArgumentAccessMask apply_access_mask;
     apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccessType::Mutable);
 

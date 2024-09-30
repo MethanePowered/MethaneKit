@@ -99,6 +99,7 @@ protected:
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
     const Refs<Rhi::IResource>& GetResourceRefsByAccess(Rhi::ProgramArgumentAccessType access_type) const;
+    void RetainRootConstantBuffers() const;
 
     void ClearTransitionResourceStates();
     void RemoveTransitionResourceStates(const Rhi::IProgramArgumentBinding& argument_binding, const Rhi::IResource& resource);
@@ -128,6 +129,7 @@ private:
     ResourceStatesByAccess               m_transition_resource_states_by_access;
     ResourceRefsByAccess                 m_resource_refs_by_access;
     mutable Ptr<Rhi::IResourceBarriers>  m_resource_state_transition_barriers_ptr;
+    mutable Ptrs<Rhi::IBuffer>           m_applied_root_constant_buffer_ptr;
     Data::Index                          m_bindings_index = 0u; // index of this program bindings object between all program bindings of the program
 };
 
