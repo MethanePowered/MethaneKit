@@ -210,7 +210,7 @@ bool ProgramArgumentBinding::IsAlreadyApplied(const Rhi::IProgram& program,
     return false;
 }
 
-void ProgramArgumentBinding::OnRootConstantBufferChanged(RootConstantBuffer&)
+void ProgramArgumentBinding::OnRootConstantBufferChanged(RootConstantBuffer&, const Ptr<Rhi::IBuffer>&)
 {
     META_FUNCTION_TASK();
     UpdateRootConstantResourceViews();

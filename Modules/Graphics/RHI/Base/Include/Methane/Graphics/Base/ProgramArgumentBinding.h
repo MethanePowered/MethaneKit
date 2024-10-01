@@ -74,7 +74,7 @@ protected:
     const Context& GetContext() const noexcept { return m_context; }
 
     // IRootConstantBufferCallback overrides...
-    void OnRootConstantBufferChanged(RootConstantBuffer& root_constant_buffer) override;
+    void OnRootConstantBufferChanged(RootConstantBuffer&, const Ptr<Rhi::IBuffer>&) override;
 
     virtual bool UpdateRootConstantResourceViews();
 

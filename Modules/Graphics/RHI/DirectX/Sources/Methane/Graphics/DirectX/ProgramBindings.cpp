@@ -131,7 +131,7 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
 void ProgramBindings::Apply(ICommandList& command_list, const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
-    RetainRootConstantBuffers();
+    ReleaseRetainedRootConstantBuffers();
 
     Rhi::ProgramArgumentAccessMask apply_access_mask;
     apply_access_mask.SetBitOn(Rhi::ProgramArgumentAccessType::Mutable);

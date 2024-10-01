@@ -482,7 +482,7 @@ Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgum
 void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
-    RetainRootConstantBuffers();
+    ReleaseRetainedRootConstantBuffers();
     switch (const Rhi::CommandListType command_list_type = command_list.GetType();
             command_list_type)
     {

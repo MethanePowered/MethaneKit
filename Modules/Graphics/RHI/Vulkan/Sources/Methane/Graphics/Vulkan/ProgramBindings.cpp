@@ -188,7 +188,7 @@ void ProgramBindings::Apply(ICommandList& command_list_vk, const Rhi::ICommandQu
 {
     META_FUNCTION_TASK();
     META_CHECK_NOT_EMPTY(m_descriptor_sets);
-    RetainRootConstantBuffers();
+    ReleaseRetainedRootConstantBuffers();
 
     Rhi::ProgramArgumentAccessMask apply_access;
     apply_access.SetBitOn(Rhi::ProgramArgumentAccessType::Mutable);

@@ -43,6 +43,7 @@ class ProgramBindings
     : public Rhi::IProgramBindings
     , public Object
     , public Data::Receiver<Rhi::IProgramBindings::IArgumentBindingCallback>
+    , protected Data::Receiver<IRootConstantBufferCallback>
 {
 public:
     using ArgumentBinding  = ProgramArgumentBinding;
@@ -85,12 +86,16 @@ public:
     }
 
 protected:
-    // IProgramBindings::IProgramArgumentBindingCallback
+    // IProgramBindings::IProgramArgumentBindingCallback overrides...
     void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&   argument_binding,
                                                       const Rhi::ResourceViews& old_resource_views,
                                                       const Rhi::ResourceViews& new_resource_views) override;
     void OnProgramArgumentBindingRootConstantChanged(const IArgumentBinding&, const Rhi::RootConstant&) override;
 
+    // IRootConstantBufferCallback overrides...
+    void OnRootConstantBufferChanged(RootConstantBuffer&, const Ptr<Rhi::IBuffer>& old_buffer_ptr) override;
+
+    void ReleaseRetainedRootConstantBuffers() const;
     void RemoveFromDescriptorManager();
     void SetResourcesForArguments(const BindingValueByArgument& binding_value_by_argument);
     void InitializeArgumentBindings(const ProgramBindings* other_program_bindings_ptr = nullptr);
@@ -99,7 +104,6 @@ protected:
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
     const Refs<Rhi::IResource>& GetResourceRefsByAccess(Rhi::ProgramArgumentAccessType access_type) const;
-    void RetainRootConstantBuffers() const;
 
     void ClearTransitionResourceStates();
     void RemoveTransitionResourceStates(const Rhi::IProgramArgumentBinding& argument_binding, const Rhi::IResource& resource);
@@ -129,7 +133,7 @@ private:
     ResourceStatesByAccess               m_transition_resource_states_by_access;
     ResourceRefsByAccess                 m_resource_refs_by_access;
     mutable Ptr<Rhi::IResourceBarriers>  m_resource_state_transition_barriers_ptr;
-    mutable Ptrs<Rhi::IBuffer>           m_applied_root_constant_buffer_ptr;
+    mutable Ptrs<Rhi::IBuffer>           m_retained_root_constant_buffer_ptrs;
     Data::Index                          m_bindings_index = 0u; // index of this program bindings object between all program bindings of the program
 };
 

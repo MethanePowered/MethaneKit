@@ -170,6 +170,20 @@ void ProgramBindings::OnProgramArgumentBindingRootConstantChanged(const IArgumen
     META_FUNCTION_TASK();
 }
 
+void ProgramBindings::OnRootConstantBufferChanged(RootConstantBuffer&, const Ptr<Rhi::IBuffer>& old_buffer_ptr)
+{
+    META_FUNCTION_TASK();
+    // NOTE: We have to retain old root-constant buffers from destroying during applied program bindings is used on GPU,
+    //       retain pointers will be released after applying program bindings on next frame
+    m_retained_root_constant_buffer_ptrs.push_back(old_buffer_ptr);
+}
+
+void ProgramBindings::ReleaseRetainedRootConstantBuffers() const
+{
+    META_FUNCTION_TASK();
+    m_retained_root_constant_buffer_ptrs.clear();
+}
+
 void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_program_bindings_ptr)
 {
     META_FUNCTION_TASK();
@@ -377,8 +391,8 @@ void ProgramBindings::AddTransitionResourceStates(const Rhi::IProgramArgumentBin
 {
     META_FUNCTION_TASK();
     const Rhi::IProgramArgumentBinding::Settings& argument_binding_settings  = argument_binding.GetSettings();
-    ResourceStates                                    & transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
 
+    ResourceStates& transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
     for(const Rhi::ResourceView& resource_view : argument_binding.GetResourceViews())
     {
         if (!resource_view.GetResourcePtr())
@@ -443,16 +457,6 @@ const Refs<Rhi::IResource>& ProgramBindings::GetResourceRefsByAccess(Rhi::Progra
 {
     META_FUNCTION_TASK();
     return m_resource_refs_by_access[magic_enum::enum_index(access_type).value()];
-}
-
-void ProgramBindings::RetainRootConstantBuffers() const
-{
-    META_FUNCTION_TASK();
-    // NOTE: We have to retain root constant buffers applied to command list and used during execution,
-    // because these buffers could be recreated in order to be resized;
-    // and will be automatically updated in all retained program binding objects.
-    auto& program = static_cast<Program&>(GetProgram());
-    m_applied_root_constant_buffer_ptr = program.GetRootConstantBufferPtrs(m_frame_index);
 }
 
 } // namespace Methane::Graphics::Base

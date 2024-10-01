@@ -147,6 +147,7 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
 
     const bool buffer_changed = !!m_buffer_ptr;
     const auto buffer_settings = Rhi::BufferSettings::ForConstantBuffer(m_deferred_size, true, true);
+    Ptr<Rhi::IBuffer> prev_buffer_ptr = m_buffer_ptr;
     m_buffer_ptr = m_context.CreateBuffer(buffer_settings);
     m_buffer_ptr->SetName(m_buffer_name);
 
@@ -156,7 +157,7 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
     // NOTE: request deferred initialization complete to update program binding descriptors on GPU with updated buffer views
     m_context.RequestDeferredAction(Rhi::IContext::DeferredAction::CompleteInitialization);
     if (buffer_changed)
-        Emit(&ICallback::OnRootConstantBufferChanged, *this);
+        Emit(&ICallback::OnRootConstantBufferChanged, *this, std::cref(prev_buffer_ptr));
 
     return *m_buffer_ptr;
 }

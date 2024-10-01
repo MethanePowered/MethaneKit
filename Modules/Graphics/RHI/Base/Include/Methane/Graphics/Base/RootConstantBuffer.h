@@ -71,7 +71,9 @@ class Context;
 
 struct IRootConstantBufferCallback
 {
-    virtual void OnRootConstantBufferChanged(RootConstantBuffer& root_constant_buffer) = 0;
+    virtual void OnRootConstantBufferChanged(RootConstantBuffer& root_constant_buffer,
+                                             const Ptr<Rhi::IBuffer>& old_buffer_ptr) = 0;
+    
     virtual ~IRootConstantBufferCallback() = default;
 };
 

@@ -147,7 +147,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
         callback_data_ptr->messageIdNumber == 767975156   || // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
         callback_data_ptr->messageIdNumber == -400166253  || // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
         callback_data_ptr->messageIdNumber == -2117225404 || // VUID-vkCmdPipelineBarrier-dstStageMask-04996 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
-        callback_data_ptr->messageIdNumber == 1630022081)    // VUID-vkCmdPipelineBarrier-dstStageMask-03937 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
+        callback_data_ptr->messageIdNumber == 1630022081  || // VUID-vkCmdPipelineBarrier-dstStageMask-03937 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
+        callback_data_ptr->messageIdNumber == 1901485743)    // VUID-vkQueueSubmit-pCommandBuffers-00065     (VkSemaphore is being signaled by VkQueue 'Render Queue', but it was previously signaled by VkQueue 'Render Queue' and has not since been waited on)
         return VK_FALSE;
 
 #ifdef __APPLE__
