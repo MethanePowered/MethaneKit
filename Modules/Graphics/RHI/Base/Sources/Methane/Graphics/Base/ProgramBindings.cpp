@@ -192,6 +192,7 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
                                               ? other_program_bindings_ptr->GetArgumentBindings()
                                               : program.GetArgumentBindings();
 
+    Data::EnumMask<Rhi::ProgramArgumentAccessType> root_constant_access_types_mask;
     for (const auto& [program_argument, argument_binding_ptr] : argument_bindings)
     {
         META_CHECK_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
@@ -201,9 +202,19 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
 
         Ptr<ArgumentBinding> new_argument_binding_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
         new_argument_binding_ptr->Initialize(program, m_frame_index);
+        const Rhi::ProgramArgumentAccessor& arg_accessor = new_argument_binding_ptr->GetSettings().argument;
+        if (arg_accessor.IsRootConstant())
+            root_constant_access_types_mask.SetBitOn(arg_accessor.GetAccessorType());
 
         m_binding_by_argument.try_emplace(program_argument, std::move(new_argument_binding_ptr));
     }
+
+    // Connect to the used root constant buffer change events
+    Data::ForEachBitInEnumMask(root_constant_access_types_mask,
+        [this, &program](Rhi::ProgramArgumentAccessType access_type)
+        {
+            program.GetRootConstantBuffer(access_type, m_frame_index).Connect(*this);
+        });
 }
 
 Rhi::IProgramBindings::BindingValueByArgument ProgramBindings::ReplaceBindingValues(const ArgumentBindings& argument_bindings,
