@@ -107,10 +107,17 @@ UniquePtr<RootConstantAccessor> RootConstantBuffer::ReserveRootConstant(Data::Si
     return std::make_unique<Accessor>(*this, buffer_range, root_constant_size);
 }
 
-void RootConstantBuffer::ReleaseRootConstant(const Accessor& reservation)
+void RootConstantBuffer::ReleaseRootConstant(const Accessor& accessor)
 {
     META_FUNCTION_TASK();
-    m_free_ranges.Add(reservation.GetBufferRange());
+    Data::Bytes&           data       = GetData();
+    const Accessor::Range& data_range = accessor.GetBufferRange();
+
+    // Clear data range, so that root constant is updated when set again for the same range
+    std::fill(data.data() + data_range.GetStart(), data.data() + data_range.GetEnd(),
+              std::numeric_limits<Data::Byte>::max());
+
+    m_free_ranges.Add(accessor.GetBufferRange());
 }
 
 void RootConstantBuffer::SetRootConstant(const Accessor& accessor, const Rhi::RootConstant& root_constant)
@@ -134,7 +141,7 @@ Data::Bytes& RootConstantBuffer::GetData()
     META_FUNCTION_TASK();
     if (static_cast<Data::Size>(m_buffer_data.size()) != m_deferred_size)
     {
-        m_buffer_data.resize(m_deferred_size);
+        m_buffer_data.resize(m_deferred_size, std::numeric_limits<Data::Byte>::max());
     }
     return m_buffer_data;
 }
