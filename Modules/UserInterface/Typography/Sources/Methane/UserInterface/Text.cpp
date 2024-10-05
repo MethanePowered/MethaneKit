@@ -105,6 +105,12 @@ public:
         , m_atlas_texture(common_resources.atlas_texture)
     { }
 
+    void SetDirty(DirtyResource dirty_bit) noexcept
+    {
+        META_FUNCTION_TASK();
+        m_dirty_mask.SetBitOn(dirty_bit);
+    }
+
     void SetDirty(DirtyResourceMask dirty_mask) noexcept
     {
         META_FUNCTION_TASK();
@@ -121,10 +127,11 @@ public:
     {
         META_FUNCTION_TASK();
         return m_dirty_mask.HasAnyBits({
-                                           DirtyResource::Mesh,
-                                           DirtyResource::Uniforms,
-                                           DirtyResource::Atlas
-                                       });
+            DirtyResource::Mesh,
+            DirtyResource::Uniforms,
+            DirtyResource::Constants,
+            DirtyResource::Atlas
+        });
     }
 
     [[nodiscard]] bool IsInitialized() const noexcept
@@ -493,7 +500,7 @@ public:
             return;
 
         m_settings.color = color;
-        MakeFrameResourcesDirty(FrameResources::DirtyResourceMask(FrameResources::DirtyResource::Constants));
+        MakeFrameResourcesDirty(FrameResources::DirtyResource::Constants);
     }
 
     void SetLayout(const Layout& layout)
@@ -619,7 +626,7 @@ public:
             (new_atlas_texture_ptr && m_ui_context.GetRenderContext().GetInterfacePtr().get() != std::addressof(new_atlas_texture_ptr->GetContext())))
             return;
 
-        MakeFrameResourcesDirty(FrameResources::DirtyResourceMask(FrameResources::DirtyResource::Atlas));
+        MakeFrameResourcesDirty(FrameResources::DirtyResource::Atlas);
 
         if (m_text_mesh_ptr)
         {
@@ -670,12 +677,21 @@ private:
         }
     }
 
-    void MakeFrameResourcesDirty(FrameResources::DirtyResourceMask resource)
+    void MakeFrameResourcesDirty(FrameResources::DirtyResource dirty_resource)
     {
         META_FUNCTION_TASK();
         for(FrameResources& frame_resources : m_frame_resources)
         {
-            frame_resources.SetDirty(resource);
+            frame_resources.SetDirty(dirty_resource);
+        }
+    }
+
+    void MakeFrameResourcesDirty(FrameResources::DirtyResourceMask dirty_mask)
+    {
+        META_FUNCTION_TASK();
+        for(FrameResources& frame_resources : m_frame_resources)
+        {
+            frame_resources.SetDirty(dirty_mask);
         }
     }
 
