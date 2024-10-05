@@ -103,6 +103,7 @@ UniquePtr<RootConstantAccessor> RootConstantBuffer::ReserveRootConstant(Data::Si
     else
     {
         buffer_range = ReserveRange(m_free_ranges, aligned_constant_size);
+        META_CHECK_FALSE_DESCR(buffer_range.IsEmpty(), "failed to reserve root-constant buffer range!");
     }
     return std::make_unique<Accessor>(*this, buffer_range, root_constant_size);
 }
