@@ -52,20 +52,20 @@ public:
     Program(const Context& context, const Settings& settings);
 
     // IProgram interface
-    const Settings&          GetSettings() const noexcept final                 { return m_settings; }
-    const Rhi::ShaderTypes&  GetShaderTypes() const noexcept final              { return m_shader_types; }
+    const Settings&          GetSettings() const noexcept final           { return m_settings; }
+    const Rhi::ShaderTypes&  GetShaderTypes() const noexcept final        { return m_shader_types; }
     const Ptr<Rhi::IShader>& GetShader(Rhi::ShaderType shader_type) const final;
-    bool                     HasShader(Rhi::ShaderType shader_type) const       { return !!GetShader(shader_type); }
-    Data::Size               GetBindingsCount() const noexcept final            { return m_bindings_count; }
+    bool                     HasShader(Rhi::ShaderType shader_type) const { return !!GetShader(shader_type); }
+    Data::Size               GetBindingsCount() const noexcept final      { return m_bindings_count; }
 
     // IObject overrides
     bool SetName(std::string_view name) override;
 
-    const Context&            GetContext() const            { return m_context; }
-    RootConstantBuffer&       GetRootConstantBuffer()       { return m_root_constant_buffer; }
-    RootConstantBuffer&       GetRootMutableBuffer()        { return m_root_mutable_buffer; }
-    RootConstantBuffer&       GetRootFrameConstantBuffer(Data::Index frame_index);
-    RootConstantBuffer&       GetRootConstantBuffer(Rhi::ProgramArgumentAccessType access_type, uint32_t frame_index = 0U);
+    const Context&      GetContext() const      { return m_context; }
+    RootConstantBuffer& GetRootConstantBuffer() { return m_root_constant_buffer; }
+    RootConstantBuffer& GetRootMutableBuffer()  { return m_root_mutable_buffer; }
+    RootConstantBuffer& GetRootFrameConstantBuffer(Data::Index frame_index);
+    RootConstantBuffer& GetRootConstantBuffer(Rhi::ProgramArgumentAccessType access_type, uint32_t frame_index = 0U);
 
 protected:
     using ArgumentBinding       = ProgramBindings::ArgumentBinding;

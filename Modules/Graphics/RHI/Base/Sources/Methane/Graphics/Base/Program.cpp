@@ -148,7 +148,15 @@ void Program::InitArgumentBindings()
     }
 
     if (m_context.GetType() != Rhi::IContext::Type::Render)
+    {
+        const auto frame_constant_binding_by_arg_it =
+            std::find_if(m_binding_by_argument.begin(), m_binding_by_argument.end(),
+                         [](const std::pair<Rhi::ProgramArgument, Ptr<ArgumentBinding>>& arg_binding)
+                         { return arg_binding.second->GetSettings().argument.IsFrameConstant(); });
+        META_CHECK_TRUE_DESCR(frame_constant_binding_by_arg_it == m_binding_by_argument.end(),
+                              "frame-constant argument binding was found for program created with non-render context");
         return;
+    }
 
     // Create frame-constant argument bindings only when program is created in render context
     m_frame_bindings_by_argument.clear();

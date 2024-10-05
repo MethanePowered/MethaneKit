@@ -33,14 +33,11 @@ namespace Methane::Graphics::Null
 
 Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors&) const
 {
-    return m_argument_bindings;
-}
+    // Argument binding pointers are not stored by shader, so that program is the only owner of them:
+    Ptrs<Base::ProgramArgumentBinding> argument_bindings;
+    argument_bindings.reserve(m_argument_descriptions.size());
 
-void Shader::InitArgumentBindings(const ResourceArgumentDescs& argument_descriptions)
-{
-    m_argument_bindings.clear();
-    m_argument_bindings.reserve(argument_descriptions.size());
-    for(const auto& [argument_accessor, argument_desc] : argument_descriptions)
+    for(const auto& [argument_accessor, argument_desc] : m_argument_descriptions)
     {
         if (argument_accessor.GetShaderType() != GetType())
             continue;
@@ -50,11 +47,19 @@ void Shader::InitArgumentBindings(const ResourceArgumentDescs& argument_descript
             {
                 argument_accessor,
                 argument_desc.resource_type,
-                argument_desc.resource_count
+                argument_desc.resource_count,
+                argument_desc.buffer_size
             });
 
-        m_argument_bindings.push_back(std::static_pointer_cast<Base::ProgramArgumentBinding>(argument_binding_ptr));
+        argument_bindings.push_back(std::static_pointer_cast<Base::ProgramArgumentBinding>(argument_binding_ptr));
     }
+
+    return argument_bindings;
+}
+
+void Shader::InitArgumentBindings(const ResourceArgumentDescs& argument_descriptions)
+{
+    m_argument_descriptions = argument_descriptions;
 }
 
 } // namespace Methane::Graphics::Null

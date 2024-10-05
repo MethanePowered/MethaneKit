@@ -63,7 +63,7 @@ public:
     using Arguments              = ProgramArguments;
     using ArgumentAccessor       = ProgramArgumentAccessor;
     using ArgumentAccessors      = ProgramArgumentAccessors;
-    using BindingValueByArgument = IProgram::BindingValueByArgument;
+    using BindingValueByArgument = ProgramBindingValueByArgument;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Program);
     META_PIMPL_METHODS_COMPARE_DECLARE(Program);
