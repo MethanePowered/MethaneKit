@@ -100,6 +100,8 @@ UniquePtr<RootConstantAccessor> RootConstantBuffer::ReserveRootConstant(Data::Si
     if (m_free_ranges.IsEmpty())
     {
         m_deferred_size += aligned_constant_size;
+        m_buffer_data_resize_required = true;
+        m_buffer_resize_required = true;
         buffer_range = Accessor::Range(m_deferred_size - aligned_constant_size, m_deferred_size);
     }
     else
@@ -142,28 +144,27 @@ void RootConstantBuffer::SetRootConstant(const Accessor& accessor, const Rhi::Ro
 Data::Bytes& RootConstantBuffer::GetData()
 {
     META_FUNCTION_TASK();
+    if (!m_buffer_data_resize_required)
+        return m_buffer_data;
+
     std::lock_guard lock(m_mutex);
 
-    if (static_cast<Data::Size>(m_buffer_data.size()) != m_deferred_size)
-    {
-        m_buffer_data.resize(m_deferred_size, std::numeric_limits<Data::Byte>::max());
-    }
+    // NOTE: Buffer is initialized with byte max values,
+    // so that its uninitialized state differs from the first initialized state
+    // and buffer views will be written in descriptor views.
+    m_buffer_data.resize(m_deferred_size, std::numeric_limits<Data::Byte>::max());
+    m_buffer_data_resize_required = false;
+
     return m_buffer_data;
 }
 
 Rhi::IBuffer& RootConstantBuffer::GetBuffer()
 {
     META_FUNCTION_TASK();
-    if (IsEmitting())
-    {
-        // Buffer can be requested again from the ICallback::OnRootConstantBufferChanged, so we just return it:
+    if (!m_buffer_resize_required && m_buffer_ptr)
         return *m_buffer_ptr;
-    }
 
     std::lock_guard lock(m_mutex);
-
-    if (m_buffer_ptr && m_buffer_ptr->GetSettings().size >= m_deferred_size)
-        return *m_buffer_ptr;
 
     const bool buffer_changed = !!m_buffer_ptr;
     const auto buffer_settings = Rhi::BufferSettings::ForConstantBuffer(m_deferred_size, true, true);
@@ -172,6 +173,7 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
     m_buffer_ptr->SetName(m_buffer_name);
 
     // After recreating the buffer it has to be filled with previous arguments data in UpdateGpuBuffer
+    m_buffer_resize_required = false;
     m_buffer_data_changed = true;
 
     // NOTE: request deferred initialization complete to update program binding descriptors on GPU with updated buffer views
