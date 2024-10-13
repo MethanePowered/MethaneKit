@@ -204,7 +204,7 @@ void ParallelRenderingApp::Init()
         frame.cubes_program_bindings[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 
         program_bindings_task_flow.for_each_index(1U, cubes_count, 1U,
-            [this, &frame](const uint32_t cube_index)
+            [&frame](const uint32_t cube_index)
             {
                 rhi::ProgramBindings& cube_program_bindings = frame.cubes_program_bindings[cube_index];
                 cube_program_bindings = rhi::ProgramBindings(frame.cubes_program_bindings[0], {}, frame.index);
