@@ -32,6 +32,9 @@ bound to Program using ProgramArgumentBinging as RootConstant.
 #include <Methane/Data/Types.h>
 #include <Methane/Data/RangeSet.hpp>
 #include <Methane/Data/Emitter.hpp>
+#include <Methane/Instrumentation.h>
+
+#include <mutex>
 
 namespace Methane::Graphics::Rhi
 {
@@ -116,6 +119,8 @@ private:
     bool              m_buffer_data_changed = false;
     Ptr<Rhi::IBuffer> m_buffer_ptr;
     RangeSet          m_free_ranges;
+
+    TracyLockable(std::mutex, m_mutex);
 };
 
 } // namespace Methane::Graphics::Base

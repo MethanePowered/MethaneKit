@@ -115,7 +115,7 @@ void MeshBuffersBase::Draw(const Rhi::RenderCommandList& cmd_list,
 }
 
 void MeshBuffersBase::Draw(const Rhi::RenderCommandList& cmd_list,
-                           const std::vector<Rhi::ProgramBindings>& instance_program_bindings,
+                           const InstancedProgramBindings& instance_program_bindings,
                            Rhi::ProgramBindingsApplyBehaviorMask bindings_apply_behavior,
                            uint32_t first_instance_index,
                            bool retain_bindings_once,

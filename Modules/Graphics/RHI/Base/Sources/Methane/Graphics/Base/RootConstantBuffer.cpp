@@ -92,9 +92,11 @@ RootConstantBuffer::~RootConstantBuffer()
 UniquePtr<RootConstantAccessor> RootConstantBuffer::ReserveRootConstant(Data::Size root_constant_size)
 {
     META_FUNCTION_TASK();
-    const Data::Size aligned_constant_size = Data::AlignUp(root_constant_size, g_root_constant_alignment);
+    std::lock_guard lock(m_mutex);
 
+    const Data::Size aligned_constant_size = Data::AlignUp(root_constant_size, g_root_constant_alignment);
     Accessor::Range buffer_range;
+
     if (m_free_ranges.IsEmpty())
     {
         m_deferred_size += aligned_constant_size;
@@ -140,6 +142,8 @@ void RootConstantBuffer::SetRootConstant(const Accessor& accessor, const Rhi::Ro
 Data::Bytes& RootConstantBuffer::GetData()
 {
     META_FUNCTION_TASK();
+    std::lock_guard lock(m_mutex);
+
     if (static_cast<Data::Size>(m_buffer_data.size()) != m_deferred_size)
     {
         m_buffer_data.resize(m_deferred_size, std::numeric_limits<Data::Byte>::max());
@@ -150,6 +154,14 @@ Data::Bytes& RootConstantBuffer::GetData()
 Rhi::IBuffer& RootConstantBuffer::GetBuffer()
 {
     META_FUNCTION_TASK();
+    if (IsEmitting())
+    {
+        // Buffer can be requested again from the ICallback::OnRootConstantBufferChanged, so we just return it:
+        return *m_buffer_ptr;
+    }
+
+    std::lock_guard lock(m_mutex);
+
     if (m_buffer_ptr && m_buffer_ptr->GetSettings().size >= m_deferred_size)
         return *m_buffer_ptr;
 
@@ -165,8 +177,9 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
     // NOTE: request deferred initialization complete to update program binding descriptors on GPU with updated buffer views
     m_context.RequestDeferredAction(Rhi::IContext::DeferredAction::CompleteInitialization);
     if (buffer_changed)
+    {
         Emit(&ICallback::OnRootConstantBufferChanged, *this, std::cref(prev_buffer_ptr));
-
+    }
     return *m_buffer_ptr;
 }
 

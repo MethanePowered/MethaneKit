@@ -43,22 +43,11 @@ class RenderCommandList;
 class ParallelRenderCommandList;
 }
 
-struct MeshBufferBindings
-{
-    Rhi::Buffer          uniforms_buffer;
-    Rhi::ProgramBindings program_bindings;
-};
-
-struct InstancedMeshBufferBindings
-{
-    Rhi::Buffer                       uniforms_buffer;
-    std::vector<Rhi::ProgramBindings> program_bindings_per_instance;
-};
-
 class MeshBuffersBase
 {
 public:
-    using ProgramBindingsIteratorType = std::vector<Rhi::ProgramBindings>::const_iterator;
+    using InstancedProgramBindings = std::vector<Rhi::ProgramBindings>;
+    using ProgramBindingsIteratorType = InstancedProgramBindings::const_iterator;
 
     MeshBuffersBase(const Rhi::CommandQueue& render_cmd_queue, const Mesh& mesh_data,
                     std::string_view mesh_name, const Mesh::Subsets& mesh_subsets);
@@ -73,10 +62,14 @@ public:
 
     Rhi::ResourceBarriers CreateBeginningResourceBarriers(const Rhi::Buffer* constants_buffer_ptr = nullptr) const;
 
-    void Draw(const Rhi::RenderCommandList& cmd_list, const Rhi::ProgramBindings& program_bindings,
-              uint32_t mesh_subset_index = 0U, uint32_t instance_count = 1U, uint32_t start_instance = 0U) const;
+    void Draw(const Rhi::RenderCommandList& cmd_list,
+              const Rhi::ProgramBindings& program_bindings,
+              uint32_t mesh_subset_index = 0U,
+              uint32_t instance_count = 1U,
+              uint32_t start_instance = 0U) const;
 
-    void Draw(const Rhi::RenderCommandList& cmd_list, const std::vector<Rhi::ProgramBindings>& instance_program_bindings,
+    void Draw(const Rhi::RenderCommandList& cmd_list,
+              const InstancedProgramBindings& instance_program_bindings,
               Rhi::ProgramBindingsApplyBehaviorMask bindings_apply_behavior = Rhi::ProgramBindingsApplyBehaviorMask(~0U),
               uint32_t first_instance_index = 0U, bool retain_bindings_once = false, bool set_resource_barriers = true) const;
 
@@ -87,7 +80,7 @@ public:
               uint32_t first_instance_index = 0U, bool retain_bindings_once = false, bool set_resource_barriers = true) const;
 
     void DrawParallel(const Rhi::ParallelRenderCommandList& parallel_cmd_list,
-                      const std::vector<Rhi::ProgramBindings>& instance_program_bindings,
+                      const InstancedProgramBindings& instance_program_bindings,
                       Rhi::ProgramBindingsApplyBehaviorMask bindings_apply_behavior = Rhi::ProgramBindingsApplyBehaviorMask(~0U),
                       bool retain_bindings_once = false, bool set_resource_barriers = true) const;
 

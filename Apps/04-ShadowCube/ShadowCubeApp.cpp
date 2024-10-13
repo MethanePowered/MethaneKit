@@ -270,7 +270,7 @@ void ShadowCubeApp::Init()
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         ShadowCubeFrame::PassResources::ProgramBindings& final_floor_binds = frame.final_pass.floor_bindings;
         final_floor_binds.program_bindings = rhi::ProgramBindings(frame.final_pass.cube_bindings.program_bindings, {
-            { { rhi::ShaderType::Pixel,  "g_texture"        }, m_floor_buffers_ptr->GetTexture().GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_texture" }, m_floor_buffers_ptr->GetTexture().GetResourceView() },
         }, frame.index);
         final_floor_binds.program_bindings.SetName(fmt::format("Floor Final-Pass Bindings {}", frame.index));
         final_floor_binds.scene_uniforms_binding_ptr = &final_floor_binds.program_bindings.Get({ rhi::ShaderType::Pixel,  "g_scene_uniforms" });

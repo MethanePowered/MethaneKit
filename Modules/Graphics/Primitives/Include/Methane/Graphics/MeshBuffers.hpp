@@ -45,8 +45,7 @@ private:
     using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, g_uniform_alignment>>;
 
     // Uniform buffers are created separately in Frame dependent resources
-    InstanceUniforms  m_final_pass_instance_uniforms;
-    Rhi::SubResource m_final_pass_instance_uniforms_subresource;
+    InstanceUniforms m_final_pass_instance_uniforms;
 
 public:
     template<typename VertexType>
@@ -66,11 +65,6 @@ public:
     [[nodiscard]] Data::Size GetInstanceCount() const noexcept
     {
         return static_cast<Data::Size>(m_final_pass_instance_uniforms.size());
-    }
-
-    [[nodiscard]] const Rhi::SubResource& GetFinalPassUniformsSubresource() const
-    {
-        return m_final_pass_instance_uniforms_subresource;
     }
 
     [[nodiscard]]
@@ -120,10 +114,6 @@ protected:
     {
         META_FUNCTION_TASK();
         m_final_pass_instance_uniforms.resize(instance_count);
-        m_final_pass_instance_uniforms_subresource = Rhi::SubResource(
-            reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), // NOSONAR
-            GetUniformsBufferSize()
-        );
     }
 };
 

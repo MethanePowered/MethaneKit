@@ -55,11 +55,6 @@ namespace hlslpp // NOSONAR
 namespace Methane::Graphics
 {
 
-struct META_UNIFORM_ALIGN SkyBoxUniforms
-{
-    hlslpp::float4x4 mvp_matrix;
-};
-
 struct SkyBoxVertex
 {
     Mesh::Position position;
@@ -72,7 +67,7 @@ struct SkyBoxVertex
 class SkyBox::Impl
 {
 private:
-    using Uniforms       = SkyBoxUniforms;
+    using Uniforms       = hlslpp::SkyBoxUniforms;
     using Vertex         = SkyBoxVertex;
     using TexMeshBuffers = TexturedMeshBuffers<hlslpp::SkyBoxUniforms>;
 
@@ -113,7 +108,14 @@ private:
                         Rhi::Program::InputBufferLayout::ArgumentSemantics { mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                Rhi::ProgramArgumentAccessors{ },
+                Rhi::ProgramArgumentAccessors
+                {
+                    {
+                        { Rhi::ShaderType::Vertex, "g_skybox_uniforms" },
+                        Rhi::ProgramArgumentAccessType::FrameConstant,
+                        Rhi::ProgramArgumentValueType::RootConstant
+                    }
+                },
                 render_pattern.GetAttachmentFormats()
             });
         m_program.SetName("Sky-box shading");
@@ -144,49 +146,49 @@ public:
     {
     }
 
-    Rhi::ProgramBindings CreateProgramBindings(const Rhi::Buffer& uniforms_buffer, Data::Index frame_index) const
+    SkyBox::ProgramBindingsAndUniformArgumentBinding CreateProgramBindings(Data::Index frame_index) const
     {
         META_FUNCTION_TASK();
-        META_CHECK_TRUE(uniforms_buffer.IsInitialized());
-        return Rhi::ProgramBindings(m_program, {
-            { { Rhi::ShaderType::Vertex, "g_skybox_uniforms" }, uniforms_buffer.GetResourceView() },
+        Rhi::ProgramBindings program_bindings(m_program, {
             { { Rhi::ShaderType::Pixel,  "g_skybox_texture"  }, m_mesh_buffers.GetTexture().GetResourceView() },
             { { Rhi::ShaderType::Pixel,  "g_texture_sampler" }, m_texture_sampler.GetResourceView() },
         }, frame_index);
+        Rhi::IProgramArgumentBinding& uniforms_arg_binding = program_bindings.Get({ Rhi::ShaderType::Vertex, "g_skybox_uniforms" });
+        return ProgramBindingsAndUniformArgumentBinding(std::move(program_bindings), &uniforms_arg_binding);
     }
 
-    void Update()
+    void Update(Rhi::IProgramArgumentBinding& uniforms_argument_binding)
     {
         META_FUNCTION_TASK();
-        m_mesh_buffers.SetFinalPassUniforms({
-            hlslpp::transpose(hlslpp::mul(
-                hlslpp::mul(
-                    hlslpp::float4x4::scale(m_settings.scale),
-                    hlslpp::float4x4::translation(m_settings.view_camera.GetOrientation().eye)),
-                m_settings.view_camera.GetViewProjMatrix()
-            ))
-        });
+        uniforms_argument_binding.SetRootConstant(
+            Rhi::RootConstant(
+                hlslpp::transpose(hlslpp::mul(
+                    hlslpp::mul(
+                        hlslpp::float4x4::scale(m_settings.scale),
+                        hlslpp::float4x4::translation(m_settings.view_camera.GetOrientation().eye)
+                    ),
+                    m_settings.view_camera.GetViewProjMatrix()
+                ))
+            ));
     }
 
-    void Draw(const Rhi::RenderCommandList& render_cmd_list, const MeshBufferBindings& buffer_bindings, const Rhi::ViewState& view_state) const
+    void Draw(const Rhi::RenderCommandList& render_cmd_list,
+              const Rhi::ProgramBindings& program_bindings,
+              const Rhi::ViewState& view_state) const
     {
         META_FUNCTION_TASK();
-        META_CHECK_TRUE(buffer_bindings.program_bindings.IsInitialized());
-        META_CHECK_TRUE(buffer_bindings.uniforms_buffer.IsInitialized());
-        META_CHECK_GREATER_OR_EQUAL(buffer_bindings.uniforms_buffer.GetDataSize(), sizeof(Uniforms));
-
-        buffer_bindings.uniforms_buffer.SetData(m_render_cmd_queue, m_mesh_buffers.GetFinalPassUniformsSubresource());
+        META_CHECK_TRUE(program_bindings.IsInitialized());
 
         META_DEBUG_GROUP_VAR(s_debug_group, "Sky-box rendering");
         render_cmd_list.ResetWithStateOnce(m_render_state, &s_debug_group);
         render_cmd_list.SetViewState(view_state);
-        m_mesh_buffers.Draw(render_cmd_list, buffer_bindings.program_bindings);
+        m_mesh_buffers.Draw(render_cmd_list, program_bindings);
     }
 };
 
 Data::Size SkyBox::GetUniformsSize()
 {
-    return static_cast<Data::Size>(sizeof(SkyBoxUniforms));
+    return static_cast<Data::Size>(sizeof(hlslpp::SkyBoxUniforms));
 }
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(SkyBox);
@@ -199,17 +201,19 @@ SkyBox::SkyBox(const Rhi::CommandQueue& render_cmd_queue,
 {
 }
 
-Rhi::ProgramBindings SkyBox::CreateProgramBindings(const Rhi::Buffer& uniforms_buffer, Data::Index frame_index) const
+SkyBox::ProgramBindingsAndUniformArgumentBinding SkyBox::CreateProgramBindings(Data::Index frame_index) const
 {
-    return GetImpl(m_impl_ptr).CreateProgramBindings(uniforms_buffer, frame_index);
+    return GetImpl(m_impl_ptr).CreateProgramBindings(frame_index);
 }
 
-void SkyBox::Update() const
+void SkyBox::Update(Rhi::IProgramArgumentBinding& uniforms_argument_binding) const
 {
-    GetImpl(m_impl_ptr).Update();
+    GetImpl(m_impl_ptr).Update(uniforms_argument_binding);
 }
 
-void SkyBox::Draw(const Rhi::RenderCommandList& render_cmd_list, const MeshBufferBindings& buffer_bindings, const Rhi::ViewState& view_state) const
+void SkyBox::Draw(const Rhi::RenderCommandList& render_cmd_list,
+                  const Rhi::ProgramBindings& buffer_bindings,
+                  const Rhi::ViewState& view_state) const
 {
     GetImpl(m_impl_ptr).Draw(render_cmd_list, buffer_bindings, view_state);
 }

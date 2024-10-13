@@ -33,7 +33,7 @@ struct VSInput
 struct PSInput
 {
     float4 position : SV_POSITION;
-    float4 uvwi      : UVFACE;
+    float4 uvwi     : UVFACE;
 };
 
 ConstantBuffer<Uniforms>  g_uniforms      : register(b0, META_ARG_FRAME_CONSTANT);

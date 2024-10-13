@@ -105,7 +105,14 @@ void CubeMapArrayApp::Init()
                         rhi::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                rhi::ProgramArgumentAccessors{ },
+                rhi::ProgramArgumentAccessors
+                {
+                    {
+                        { rhi::ShaderType::Vertex, "g_uniforms" },
+                        rhi::ProgramArgumentAccessType::FrameConstant,
+                        rhi::ProgramArgumentValueType::RootConstant
+                    }
+                },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }),
         GetScreenRenderPattern()
@@ -161,27 +168,18 @@ void CubeMapArrayApp::Init()
         });
 
     // Create frame buffer resources
-    const auto uniforms_data_size = m_cube_buffers_ptr->GetUniformsBufferSize();
     for(CubeMapArrayFrame& frame : GetFrames())
     {
-        // Create uniforms buffer with volatile parameters for frame rendering
-        frame.cube.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
-        frame.cube.uniforms_buffer.SetName(fmt::format("Uniforms Buffer {}", frame.index));
-
         // Configure program resource bindings
         frame.cube.program_bindings = m_render_state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_uniforms"      }, frame.cube.uniforms_buffer.GetResourceView()       },
             { { rhi::ShaderType::Pixel,  "g_texture_array" }, m_cube_buffers_ptr->GetTexture().GetResourceView() },
             { { rhi::ShaderType::Pixel,  "g_sampler"       }, m_texture_sampler.GetResourceView()                },
         }, frame.index);
+        frame.cube.uniforms_argument_binding_ptr = &frame.cube.program_bindings.Get({ rhi::ShaderType::Vertex, "g_uniforms" });
         frame.cube.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
 
-        // Create uniforms buffer for Sky-Box rendering
-        frame.sky_box.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(gfx::SkyBox::GetUniformsSize(), false, true));
-        frame.sky_box.uniforms_buffer.SetName(fmt::format("Sky-box Uniforms Buffer {}", frame.index));
-
         // Resource bindings for Sky-Box rendering
-        frame.sky_box.program_bindings = m_sky_box.CreateProgramBindings(frame.sky_box.uniforms_buffer, frame.index);
+        std::tie(frame.sky_box.program_bindings, frame.sky_box.uniforms_argument_binding_ptr) = m_sky_box.CreateProgramBindings(frame.index);
         frame.sky_box.program_bindings.SetName(fmt::format("Space Sky-Box Bindings {}", frame.index));
         
         // Create command list for rendering
@@ -243,8 +241,9 @@ bool CubeMapArrayApp::Update()
         uniforms.mvp_matrix_per_instance[i] = hlslpp::transpose(hlslpp::mul(hlslpp::mul(m_model_matrix, translation_matrix), m_camera.GetViewProjMatrix()));
     }
 
-    m_cube_buffers_ptr->SetFinalPassUniforms(std::move(uniforms));
-    m_sky_box.Update();
+    const CubeMapArrayFrame& frame = GetCurrentFrame();
+    frame.cube.uniforms_argument_binding_ptr->SetRootConstant(rhi::RootConstant(uniforms));
+    m_sky_box.Update(*frame.sky_box.uniforms_argument_binding_ptr);
 
     return true;
 }
@@ -257,7 +256,6 @@ bool CubeMapArrayApp::Render()
     // Update uniforms buffer related to current frame
     const CubeMapArrayFrame& frame = GetCurrentFrame();
     const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.cube.uniforms_buffer.SetData(render_cmd_queue, m_cube_buffers_ptr->GetFinalPassUniformsSubresource());
 
     // 1) Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     META_DEBUG_GROUP_VAR(s_debug_group, "Cube Instances Rendering");
@@ -266,7 +264,7 @@ bool CubeMapArrayApp::Render()
     m_cube_buffers_ptr->Draw(frame.render_cmd_list, frame.cube.program_bindings, 0U, CUBE_MAP_ARRAY_SIZE);
 
     // 2) Render sky-box after cubes to minimize overdraw
-    m_sky_box.Draw(frame.render_cmd_list, frame.sky_box, GetViewState());
+    m_sky_box.Draw(frame.render_cmd_list, frame.sky_box.program_bindings, GetViewState());
 
     RenderOverlay(frame.render_cmd_list);
 

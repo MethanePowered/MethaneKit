@@ -16,11 +16,7 @@ Shader uniform structures shared between HLSL and C++ code via HLSL++
 using uint = uint32_t;
 #endif
 
-#ifndef META_UNIFORM_ALIGN
-#define META_UNIFORM_ALIGN
-#endif
-
-struct META_UNIFORM_ALIGN Uniforms
+struct Uniforms
 {
     float4x4 mvp_matrix;
     int      texture_index;

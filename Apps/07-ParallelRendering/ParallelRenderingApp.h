@@ -44,12 +44,15 @@ namespace rhi = Methane::Graphics::Rhi;
 struct ParallelRenderingFrame final
     : Graphics::AppFrame
 {
-    gfx::InstancedMeshBufferBindings cubes_array;
+    using InstancedProgramBindings = gfx::MeshBuffersBase::InstancedProgramBindings;
+    using InstancedUniformArgumentBindings = std::vector<rhi::IProgramArgumentBinding*>;
+    using gfx::AppFrame::AppFrame;
+
+    InstancedProgramBindings         cubes_program_bindings;
+    InstancedUniformArgumentBindings cubes_uniform_argument_binding_ptrs;
     rhi::ParallelRenderCommandList   parallel_render_cmd_list;
     rhi::RenderCommandList           serial_render_cmd_list;
     rhi::CommandListSet              execute_cmd_list_set;
-
-    using gfx::AppFrame::AppFrame;
 };
 
 using UserInterfaceApp = UserInterface::App<ParallelRenderingFrame>;
