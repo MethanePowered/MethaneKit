@@ -42,10 +42,14 @@ class MeshBuffers
     : public MeshBuffersBase
 {
 private:
-    using InstanceUniforms = std::vector<UniformsType, Data::AlignedAllocator<UniformsType, g_uniform_alignment>>;
+    struct META_UNIFORM_ALIGN AlignedUniformsTypes : UniformsType { };
+
+    using InstanceUniforms = std::vector<AlignedUniformsTypes,
+                                         Data::AlignedAllocator<AlignedUniformsTypes, g_uniform_alignment>>;
 
     // Uniform buffers are created separately in Frame dependent resources
     InstanceUniforms m_final_pass_instance_uniforms;
+    Rhi::SubResource m_final_pass_instance_uniforms_subresource;
 
 public:
     template<typename VertexType>
@@ -67,19 +71,24 @@ public:
         return static_cast<Data::Size>(m_final_pass_instance_uniforms.size());
     }
 
+    [[nodiscard]] const Rhi::SubResource& GetFinalPassUniformsSubresource() const
+    {
+        return m_final_pass_instance_uniforms_subresource;
+    }
+
     [[nodiscard]]
     const UniformsType& GetFinalPassUniforms(Data::Index instance_index = 0U) const
     {
         META_FUNCTION_TASK();
         META_CHECK_LESS(instance_index, m_final_pass_instance_uniforms.size());
-        return m_final_pass_instance_uniforms[instance_index];
+        return static_cast<UniformsType&>(m_final_pass_instance_uniforms[instance_index]);
     }
 
     void SetFinalPassUniforms(UniformsType&& uniforms, Data::Index instance_index = 0U)
     {
         META_FUNCTION_TASK();
         META_CHECK_LESS(instance_index, m_final_pass_instance_uniforms.size());
-        m_final_pass_instance_uniforms[instance_index] = std::move(uniforms);
+        static_cast<UniformsType&>(m_final_pass_instance_uniforms[instance_index]) = std::move(uniforms);
     }
 
     [[nodiscard]]
@@ -114,6 +123,10 @@ protected:
     {
         META_FUNCTION_TASK();
         m_final_pass_instance_uniforms.resize(instance_count);
+        m_final_pass_instance_uniforms_subresource = Rhi::SubResource(
+            reinterpret_cast<Data::ConstRawPtr>(m_final_pass_instance_uniforms.data()), // NOSONAR
+            GetUniformsBufferSize()
+        );
     }
 };
 

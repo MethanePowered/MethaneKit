@@ -43,6 +43,18 @@ class RenderCommandList;
 class ParallelRenderCommandList;
 }
 
+struct MeshBufferBindings
+{
+    Rhi::Buffer          uniforms_buffer;
+    Rhi::ProgramBindings program_bindings;
+};
+
+struct InstancedMeshBufferBindings
+{
+    Rhi::Buffer                       uniforms_buffer;
+    std::vector<Rhi::ProgramBindings> program_bindings_per_instance;
+};
+
 class MeshBuffersBase
 {
 public:

@@ -1,39 +1,52 @@
-set(TARGET MethaneParallelRendering)
-
 include(MethaneApplications)
 include(MethaneShaders)
 include(MethaneResources)
 
-add_methane_application(
-    TARGET ${TARGET}
-    NAME "Methane Parallel Rendering"
-    DESCRIPTION "Tutorial demonstrating parallel-rendering with Methane Kit."
-    INSTALL_DIR "Apps"
-    SOURCES
-        ParallelRenderingApp.h
-        ParallelRenderingApp.cpp
-        ParallelRenderingAppController.h
-        ParallelRenderingAppController.cpp
-        Shaders/ParallelRenderingUniforms.h
-)
+set(BUFFER_VIEWS_VARIANT BufferViews)
+set(ROOT_CONSTANTS_VARIANT RootConstants)
 
-add_methane_shaders_source(
-    TARGET ${TARGET}
-    SOURCE Shaders/ParallelRendering.hlsl
-    VERSION 6_0
-    TYPES
-        frag=CubePS
-        vert=CubeVS
-)
+foreach(VARIANT ${BUFFER_VIEWS_VARIANT} ${ROOT_CONSTANTS_VARIANT})
 
-add_methane_shaders_library(${TARGET})
+    set(TARGET "MethaneParallelRendering${VARIANT}")
 
-target_link_libraries(${TARGET}
-    PRIVATE
-        MethaneAppsCommon
-)
+    add_methane_application(
+        TARGET ${TARGET}
+        NAME "Methane Parallel Rendering"
+        DESCRIPTION "Tutorial demonstrating parallel-rendering with Methane Kit."
+        INSTALL_DIR "Apps"
+        SOURCES
+            ParallelRenderingApp.h
+            ParallelRenderingApp.cpp
+            ParallelRenderingAppController.h
+            ParallelRenderingAppController.cpp
+            Shaders/ParallelRenderingUniforms.h
+    )
 
-set_target_properties(${TARGET}
-    PROPERTIES
-    FOLDER Apps
-)
+    if(VARIANT STREQUAL "${ROOT_CONSTANTS_VARIANT}")
+        target_compile_definitions(${TARGET}
+            PRIVATE ROOT_CONSTANTS_ENABLED
+        )
+    endif()
+
+    add_methane_shaders_source(
+        TARGET ${TARGET}
+        SOURCE Shaders/ParallelRendering.hlsl
+        VERSION 6_0
+        TYPES
+            frag=CubePS
+            vert=CubeVS
+    )
+
+    add_methane_shaders_library(${TARGET})
+
+    target_link_libraries(${TARGET}
+        PRIVATE
+            MethaneAppsCommon
+    )
+
+    set_target_properties(${TARGET}
+        PROPERTIES
+        FOLDER Apps
+    )
+
+endforeach()

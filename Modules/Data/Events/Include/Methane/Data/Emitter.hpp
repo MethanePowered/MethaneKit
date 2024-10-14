@@ -174,12 +174,6 @@ protected:
         }
     }
 
-    bool IsEmitting() const noexcept
-    {
-        return m_is_emitting;
-    }
-
-
     size_t GetConnectedReceiversCount() const noexcept
     {
         return m_connected_receivers.size() + m_additional_connected_receivers.size();

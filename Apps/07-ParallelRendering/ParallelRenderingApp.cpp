@@ -152,7 +152,11 @@ void ParallelRenderingApp::Init()
                     {
                         { rhi::ShaderType::All, "g_uniforms" },
                         rhi::ProgramArgumentAccessor::Type::Mutable,
+#ifdef ROOT_CONSTANTS_ENABLED
                         rhi::ProgramArgumentAccessor::ValueType::RootConstant
+#else
+                        rhi::ProgramArgumentAccessor::ValueType::ResourceAddress
+#endif
                     },
                     // Other arguments are defined in shader register spaces
                 },
@@ -190,10 +194,19 @@ void ParallelRenderingApp::Init()
     );
 
     // Create frame buffer resources
+    const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
     tf::Taskflow program_bindings_task_flow;
     for(ParallelRenderingFrame& frame : GetFrames())
     {
+#ifndef ROOT_CONSTANTS_ENABLED
+        // Create buffer for uniforms array related to all cube instances
+        frame.cubes_array.uniforms_buffer = GetRenderContext().CreateBuffer(
+            rhi::BufferSettings::ForConstantBuffer(m_cube_array_buffers_ptr->GetUniformsBufferSize(), true, true));
+        frame.cubes_array.uniforms_buffer.SetName(fmt::format("Uniforms Buffer {}", frame.index));
+#endif
+
         // Configure program resource bindings
+#ifdef ROOT_CONSTANTS_ENABLED
         frame.cubes_program_bindings.resize(cubes_count);
         frame.cubes_uniform_argument_binding_ptrs.resize(cubes_count);
         frame.cubes_program_bindings[0] = render_state_settings.program.CreateBindings({
@@ -202,14 +215,44 @@ void ParallelRenderingApp::Init()
         }, frame.index);
         frame.cubes_uniform_argument_binding_ptrs[0] = &frame.cubes_program_bindings[0].Get({ rhi::ShaderType::All, "g_uniforms" });
         frame.cubes_program_bindings[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
-
-        program_bindings_task_flow.for_each_index(1U, cubes_count, 1U,
-            [&frame](const uint32_t cube_index)
+#else
+        frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
+        frame.cubes_array.program_bindings_per_instance[0] = render_state_settings.program.CreateBindings({
             {
+                { rhi::ShaderType::All,   "g_uniforms"      },
+                frame.cubes_array.uniforms_buffer.GetBufferView(
+                    m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size)
+            },
+            { { rhi::ShaderType::Pixel, "g_texture_array" }, m_texture_array.GetResourceView()   },
+            { { rhi::ShaderType::Pixel, "g_sampler"       }, m_texture_sampler.GetResourceView() },
+        }, frame.index);
+        frame.cubes_array.program_bindings_per_instance[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
+#endif
+
+        MeshBuffers& cube_array_buffers = *m_cube_array_buffers_ptr;
+        program_bindings_task_flow.for_each_index(1U, cubes_count, 1U,
+            [&frame, &cube_array_buffers, uniform_data_size](const uint32_t cube_index)
+            {
+                // NOTE: workaround for Clang error unused-lambda-capture uniform_data_size (false positive)
+                META_UNUSED(uniform_data_size);
+
+#ifdef ROOT_CONSTANTS_ENABLED
+                META_UNUSED(cube_array_buffers);
                 rhi::ProgramBindings& cube_program_bindings = frame.cubes_program_bindings[cube_index];
                 cube_program_bindings = rhi::ProgramBindings(frame.cubes_program_bindings[0], {}, frame.index);
-                cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
                 frame.cubes_uniform_argument_binding_ptrs[cube_index] = &cube_program_bindings.Get({ rhi::ShaderType::All, "g_uniforms" });
+#else
+                rhi::ProgramBindings& cube_program_bindings = frame.cubes_array.program_bindings_per_instance[cube_index];
+                cube_program_bindings = rhi::ProgramBindings(frame.cubes_array.program_bindings_per_instance[0], {
+                    {
+                        { rhi::ShaderType::All, "g_uniforms" },
+                        frame.cubes_array.uniforms_buffer.GetBufferView(
+                            cube_array_buffers.GetUniformsBufferOffset(cube_index),
+                            uniform_data_size)
+                    }
+                }, frame.index);
+#endif
+                cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
             });
 
         if (m_settings.parallel_rendering_enabled)
@@ -370,8 +413,12 @@ bool ParallelRenderingApp::Update()
             uniforms.mvp_matrix = hlslpp::transpose(hlslpp::mul(cube_params.model_matrix, m_camera.GetViewProjMatrix()));
             uniforms.texture_index = cube_params.thread_index;
 
-            rhi::IProgramArgumentBinding& uniforms_argument_binding = *frame.cubes_uniform_argument_binding_ptrs[cube_index];
-            uniforms_argument_binding.SetRootConstant(rhi::RootConstant(uniforms));
+#ifdef ROOT_CONSTANTS_ENABLED
+            frame.cubes_uniform_argument_binding_ptrs[cube_index]->SetRootConstant(rhi::RootConstant(uniforms));
+#else
+            META_UNUSED(frame);
+            m_cube_array_buffers_ptr->SetFinalPassUniforms(std::move(uniforms), cube_index);
+#endif
         });
 
     GetRenderContext().GetParallelExecutor().run(task_flow).get();
@@ -384,9 +431,16 @@ bool ParallelRenderingApp::Render()
     if (!UserInterfaceApp::Render())
         return false;
 
-    // Update uniforms buffer related to current frame
     const ParallelRenderingFrame& frame  = GetCurrentFrame();
     const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
+
+#ifdef ROOT_CONSTANTS_ENABLED
+    const auto& cubes_program_bindings = frame.cubes_program_bindings;
+#else
+    // Update uniforms buffer related to current frame
+    frame.cubes_array.uniforms_buffer.SetData(render_cmd_queue, m_cube_array_buffers_ptr->GetFinalPassUniformsSubresource());
+    const auto& cubes_program_bindings = frame.cubes_array.program_bindings_per_instance;
+#endif
 
     // Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     if (m_settings.parallel_rendering_enabled)
@@ -402,19 +456,19 @@ bool ParallelRenderingApp::Render()
         // Generate thread tasks for each of parallel render command lists to encode cubes rendering commands
         tf::Taskflow render_task_flow;
         render_task_flow.for_each_index(0U, static_cast<uint32_t>(render_cmd_lists.size()), 1U,
-            [this, &frame, &render_cmd_lists, instance_count_per_command_list](const uint32_t cmd_list_index)
+            [this, &cubes_program_bindings, &render_cmd_lists, instance_count_per_command_list](const uint32_t cmd_list_index)
             {
                 const uint32_t begin_instance_index = cmd_list_index * instance_count_per_command_list;
                 const uint32_t end_instance_index = std::min(begin_instance_index + instance_count_per_command_list, m_cube_array_buffers_ptr->GetInstanceCount());
-                RenderCubesRange(render_cmd_lists[cmd_list_index], frame.cubes_program_bindings, begin_instance_index, end_instance_index);
+                RenderCubesRange(render_cmd_lists[cmd_list_index], cubes_program_bindings, begin_instance_index, end_instance_index);
             }
         );
 
         // Execute rendering in multiple threads
         GetRenderContext().GetParallelExecutor().run(render_task_flow).get();
 #else
-        // The same parallel rendering is done inside of MeshBuffers::DrawParallel helper function
-        m_cube_array_buffers_ptr->DrawParallel(*frame.parallel_render_cmd_list_ptr, frame.cubes_array.program_bindings_per_instance);
+        // The same parallel rendering is done inside MeshBuffers::DrawParallel helper function
+        m_cube_array_buffers_ptr->DrawParallel(frame.parallel_render_cmd_list, cubes_program_bindings);
 #endif
 
         RenderOverlay(frame.parallel_render_cmd_list.GetParallelCommandLists().back());
@@ -427,9 +481,9 @@ bool ParallelRenderingApp::Render()
         frame.serial_render_cmd_list.SetViewState(GetViewState());
 
 #ifdef EXPLICIT_PARALLEL_RENDERING_ENABLED
-        RenderCubesRange(frame.serial_render_cmd_list, frame.cubes_program_bindings, 0U, m_cube_array_buffers_ptr->GetInstanceCount());
+        RenderCubesRange(frame.serial_render_cmd_list, cubes_program_bindings, 0U, m_cube_array_buffers_ptr->GetInstanceCount());
 #else
-        m_cube_array_buffers_ptr->Draw(frame.serial_render_cmd_list, frame.cubes_array.program_bindings_per_instance);
+        m_cube_array_buffers_ptr->Draw(frame.serial_render_cmd_list, cubes_program_bindings);
 #endif
 
         RenderOverlay(frame.serial_render_cmd_list);

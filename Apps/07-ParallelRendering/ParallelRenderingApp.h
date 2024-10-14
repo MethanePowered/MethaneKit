@@ -48,8 +48,12 @@ struct ParallelRenderingFrame final
     using InstancedUniformArgumentBindings = std::vector<rhi::IProgramArgumentBinding*>;
     using gfx::AppFrame::AppFrame;
 
+#ifdef ROOT_CONSTANTS_ENABLED
     InstancedProgramBindings         cubes_program_bindings;
     InstancedUniformArgumentBindings cubes_uniform_argument_binding_ptrs;
+#else
+    gfx::InstancedMeshBufferBindings cubes_array;
+#endif
     rhi::ParallelRenderCommandList   parallel_render_cmd_list;
     rhi::RenderCommandList           serial_render_cmd_list;
     rhi::CommandListSet              execute_cmd_list_set;
