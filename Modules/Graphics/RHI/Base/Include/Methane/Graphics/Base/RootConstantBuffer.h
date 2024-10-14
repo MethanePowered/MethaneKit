@@ -35,6 +35,7 @@ bound to Program using ProgramArgumentBinging as RootConstant.
 #include <Methane/Instrumentation.h>
 
 #include <mutex>
+#include <atomic>
 
 namespace Methane::Graphics::Rhi
 {
@@ -116,9 +117,9 @@ private:
     std::string       m_buffer_name;
     Data::Size        m_deferred_size = 0U;
     Data::Bytes       m_buffer_data;
-    std::atomic_bool  m_buffer_data_resize_required{ false };
-    std::atomic_bool  m_buffer_resize_required{ false };
-    std::atomic_bool  m_buffer_data_changed{ false };
+    std::atomic<bool> m_buffer_data_resize_required{ false };
+    std::atomic<bool> m_buffer_resize_required{ false };
+    std::atomic<bool> m_buffer_data_changed{ false };
     Ptr<Rhi::IBuffer> m_buffer_ptr;
     RangeSet          m_free_ranges;
 
