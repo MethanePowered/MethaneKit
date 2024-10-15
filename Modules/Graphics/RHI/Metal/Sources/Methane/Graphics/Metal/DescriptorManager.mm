@@ -30,6 +30,13 @@ Metal descriptor manager of the argument buffer
 namespace Methane::Graphics::Metal
 {
 
+DescriptorManager::ArgumentsBuffer::DataLock::DataLock(ArgumentsBuffer& arg_buffer)
+    : m_lock(arg_buffer.m_mutex)
+    , m_data_ptr(arg_buffer.GetDataPtr())
+{
+    META_FUNCTION_TASK();
+}
+
 DescriptorManager::ArgumentsBuffer::ArgumentsBuffer(const Base::Context& context, Rhi::ProgramArgumentAccessType access_type)
     : m_context(context)
     , m_access_type(access_type)

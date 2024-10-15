@@ -33,6 +33,7 @@ Metal implementation of the program bindings interface.
 
 #include <map>
 #include <set>
+#include <mutex>
 
 namespace Methane::Graphics::Metal
 {
@@ -132,6 +133,7 @@ private:
     AccessTypeMask    m_argument_buffer_initialized_access_types;
     ArgumentsRange    m_mutable_argument_buffer_range;
     NativeResourceSet m_mtl_used_resources;
+    std::mutex        m_used_resources_mutex;
 };
 
 } // namespace Methane::Graphics::Metal

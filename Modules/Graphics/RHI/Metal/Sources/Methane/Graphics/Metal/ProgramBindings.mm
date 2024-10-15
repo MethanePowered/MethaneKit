@@ -530,7 +530,8 @@ bool ProgramBindings::WriteArgumentsBufferRange(DescriptorManager& descriptor_ma
     DescriptorManager::ArgumentsBuffer& args_buffer = descriptor_manager.GetArgumentsBuffer(access_type);
     META_CHECK_LESS_OR_EQUAL(args_range.GetEnd(), args_buffer.GetDataSize());
 
-    Data::Byte* arg_data_ptr = args_buffer.GetDataPtr() + args_range.GetStart();
+    DescriptorManager::ArgumentsBuffer::DataLock data_lock = args_buffer.GetDataLock();
+    Data::Byte* arg_data_ptr = data_lock.GetDataPtr() + args_range.GetStart();
     for (const auto& [program_arg, arg_binding_ptr]: GetArgumentBindings())
     {
         META_CHECK_NOT_NULL(arg_binding_ptr);
@@ -756,6 +757,7 @@ void ProgramBindings::UseMetalResources(const CommandEncoderType& mtl_cmd_encode
 void ProgramBindings::UpdateUsedResources()
 {
     META_FUNCTION_TASK();
+    std::lock_guard lock(m_used_resources_mutex);
     m_mtl_used_resources.clear();
     for(const auto& [argument, argument_binding_ptr] : GetArgumentBindings())
     {

@@ -60,6 +60,7 @@ public:
     [[nodiscard]] Rhi::RootConstant GetRootConstant() const;
     bool SetRootConstant(const Rhi::RootConstant& root_constant) const;
 
+    bool                    IsInitialized() const noexcept  { return m_is_initialized; }
     const Range&            GetBufferRange() const noexcept { return m_buffer_range; }
     Data::Size              GetDataSize() const noexcept    { return m_data_size; }
     const Rhi::ResourceView GetResourceView() const;
@@ -69,6 +70,7 @@ private:
     Ref<RootConstantBuffer> m_buffer;       // storage buffer
     Range                   m_buffer_range; // aligned memory range
     Data::Size              m_data_size;    // unaligned original size
+    mutable bool            m_is_initialized = false;
 };
 
 class Context;

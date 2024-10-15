@@ -55,7 +55,9 @@ RootConstantAccessor::~RootConstantAccessor()
 Rhi::RootConstant RootConstantAccessor::GetRootConstant() const
 {
     META_FUNCTION_TASK();
-    return Rhi::RootConstant(m_buffer.get().GetData().data() + m_buffer_range.GetStart(), m_data_size);
+    return m_is_initialized
+         ? Rhi::RootConstant(m_buffer.get().GetData().data() + m_buffer_range.GetStart(), m_data_size)
+         : Rhi::RootConstant();
 }
 
 bool RootConstantAccessor::SetRootConstant(const Rhi::RootConstant& root_constant) const
@@ -65,6 +67,7 @@ bool RootConstantAccessor::SetRootConstant(const Rhi::RootConstant& root_constan
         return false;
 
     m_buffer.get().SetRootConstant(*this, root_constant);
+    m_is_initialized = true;
     return true;
 }
 
@@ -85,6 +88,7 @@ RootConstantBuffer::RootConstantBuffer(Context& context, std::string_view buffer
 RootConstantBuffer::~RootConstantBuffer()
 {
     META_FUNCTION_TASK();
+    std::lock_guard lock(m_mutex);
     assert((!m_deferred_size && m_free_ranges.IsEmpty()) ||
            m_free_ranges == RangeSet({ { 0, m_deferred_size } }));
 }
@@ -115,19 +119,26 @@ UniquePtr<RootConstantAccessor> RootConstantBuffer::ReserveRootConstant(Data::Si
 void RootConstantBuffer::ReleaseRootConstant(const Accessor& accessor)
 {
     META_FUNCTION_TASK();
-    Data::Bytes&           data       = GetData();
+    std::lock_guard lock(m_mutex);
+
     const Accessor::Range& data_range = accessor.GetBufferRange();
+    m_free_ranges.Add(data_range);
 
-    // Clear data range, so that root constant is updated when set again for the same range
-    std::fill(data.data() + data_range.GetStart(), data.data() + data_range.GetEnd(),
-              std::numeric_limits<Data::Byte>::max());
-
-    m_free_ranges.Add(accessor.GetBufferRange());
+    if (accessor.IsInitialized() &&
+        data_range.GetEnd() <= m_buffer_data.size())
+    {
+        // Clear data range, so that root constant is updated when set again for the same range
+        std::fill(m_buffer_data.data() + data_range.GetStart(),
+                  m_buffer_data.data() + data_range.GetEnd(),
+                  std::numeric_limits<Data::Byte>::max());
+    }
 }
 
 void RootConstantBuffer::SetRootConstant(const Accessor& accessor, const Rhi::RootConstant& root_constant)
 {
     META_FUNCTION_TASK();
+    META_CHECK_FALSE_DESCR(root_constant.IsEmptyOrNull(), "can not set empty or null root constant");
+
     Data::Bytes&           data       = GetData();
     const Accessor::Range& data_range = accessor.GetBufferRange();
 

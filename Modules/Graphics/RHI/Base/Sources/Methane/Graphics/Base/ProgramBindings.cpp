@@ -262,7 +262,10 @@ void ProgramBindings::SetResourcesForArguments(const BindingValueByArgument& bin
             {
                 using T = std::decay_t<decltype(value)>;
                 if constexpr (std::is_same_v<T, Rhi::RootConstant>)
-                    argument_binding.SetRootConstant(value);
+                {
+                    if (!value.IsEmptyOrNull())
+                        argument_binding.SetRootConstant(value);
+                }
                 else if constexpr (std::is_same_v<T, Rhi::ResourceView>)
                     argument_binding.SetResourceViews({ value });
                 else if constexpr (std::is_same_v<T, Rhi::ResourceViews>)

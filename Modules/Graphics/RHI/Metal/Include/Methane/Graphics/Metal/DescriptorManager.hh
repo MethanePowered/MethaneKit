@@ -54,6 +54,22 @@ public:
         friend class DescriptorManager;
 
     public:
+        class DataLock
+        {
+        public:
+            DataLock(ArgumentsBuffer& arg_buffer);
+
+            DataLock(const DataLock& other) = delete;
+            DataLock& operator=(const DataLock& other) = delete;
+
+            Data::Byte& GetData() const noexcept { return *m_data_ptr; }
+            Data::Byte* GetDataPtr() const noexcept { return m_data_ptr; }
+
+        private:
+            std::lock_guard<std::mutex> m_lock;
+            Data::Byte*                 m_data_ptr;
+        };
+
         ArgumentsBuffer(const Base::Context& context, Rhi::ProgramArgumentAccessType access_type);
 
         Rhi::ProgramArgumentAccessType GetAccessType() const noexcept { return m_access_type; }
@@ -62,6 +78,7 @@ public:
         Data::Size          GetDataSize() const noexcept   { return static_cast<Data::Size>(m_data.size()); }
         const Data::Bytes&  GetData() const noexcept       { return m_data; }
         Data::Byte*         GetDataPtr() noexcept          { return m_data.data(); }
+        DataLock            GetDataLock() noexcept         { return DataLock(*this); }
         const Rhi::IBuffer* GetBuffer() const;
         Rhi::IBuffer*       GetBuffer();
 
