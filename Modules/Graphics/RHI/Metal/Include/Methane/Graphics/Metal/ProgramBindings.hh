@@ -28,6 +28,7 @@ Metal implementation of the program bindings interface.
 #include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Graphics/Base/ProgramBindings.h>
 #include <Methane/Data/Range.hpp>
+#include <Methane/Instrumentation.h>
 
 #import <Metal/Metal.h>
 
@@ -130,10 +131,10 @@ private:
 
     using AccessTypeMask = Data::EnumMask<Rhi::ProgramArgumentAccessType>;
 
-    AccessTypeMask    m_argument_buffer_initialized_access_types;
-    ArgumentsRange    m_mutable_argument_buffer_range;
-    NativeResourceSet m_mtl_used_resources;
-    std::mutex        m_used_resources_mutex;
+    AccessTypeMask            m_argument_buffer_initialized_access_types;
+    ArgumentsRange            m_mutable_argument_buffer_range;
+    NativeResourceSet         m_mtl_used_resources;
+    TracyLockable(std::mutex, m_used_resources_mutex);
 };
 
 } // namespace Methane::Graphics::Metal

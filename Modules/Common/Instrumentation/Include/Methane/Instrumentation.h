@@ -67,6 +67,7 @@ ITT_DOMAIN_EXTERN();
 
 #ifdef TRACY_ENABLE
 
+#define TRACY_MUTEX(mutex_type) tracy::Lockable<mutex_type>
 #define TRACY_SET_THREAD_NAME(name) tracy::SetThreadName(name)
 
 #if defined(TRACY_ZONE_CALL_STACK_DEPTH) && TRACY_ZONE_CALL_STACK_DEPTH > 0
@@ -83,6 +84,7 @@ ITT_DOMAIN_EXTERN();
 
 #else // ifdef TRACY_ENABLE
 
+#define TRACY_MUTEX(mutex_type) mutex_type
 #define TRACY_SET_THREAD_NAME(name)
 #define TRACY_ZONE_SCOPED()
 #define TRACY_ZONE_SCOPED_NAME(name)

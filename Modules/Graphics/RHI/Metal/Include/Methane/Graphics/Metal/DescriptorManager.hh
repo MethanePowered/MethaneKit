@@ -57,7 +57,7 @@ public:
         class DataLock
         {
         public:
-            DataLock(ArgumentsBuffer& arg_buffer);
+            explicit DataLock(ArgumentsBuffer& arg_buffer);
 
             DataLock(const DataLock& other) = delete;
             DataLock& operator=(const DataLock& other) = delete;
@@ -66,8 +66,8 @@ public:
             Data::Byte* GetDataPtr() const noexcept { return m_data_ptr; }
 
         private:
-            std::lock_guard<std::mutex> m_lock;
-            Data::Byte*                 m_data_ptr;
+            std::lock_guard<TRACY_MUTEX(std::mutex)> m_lock;
+            Data::Byte* m_data_ptr;
         };
 
         ArgumentsBuffer(const Base::Context& context, Rhi::ProgramArgumentAccessType access_type);
