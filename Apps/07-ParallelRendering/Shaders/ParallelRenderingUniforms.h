@@ -19,7 +19,10 @@ using uint = uint32_t;
 struct Uniforms
 {
     float4x4 mvp_matrix;
-    int      texture_index;
+    uint     texture_index;
+    uint    _padding1;
+    uint    _padding2;
+    uint    _padding3;
 };
 
 #endif // PARALLEL_RENDERING_UNIFORMS_H
