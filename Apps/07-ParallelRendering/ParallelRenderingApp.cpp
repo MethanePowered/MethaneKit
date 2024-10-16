@@ -66,6 +66,12 @@ static const std::map<pin::Keyboard::State, ParallelRenderingAppAction> g_parall
     { { pin::Keyboard::Key::LeftBracket  }, ParallelRenderingAppAction::DecreaseRenderThreadsCount },
 };
 
+#ifdef ROOT_CONSTANTS_ENABLED
+#define APP_VARIANT_NAME "Root Constants"
+#else
+#define APP_VARIANT_NAME "Buffer Views"
+#endif
+
 bool ParallelRenderingApp::Settings::operator==(const Settings& other) const noexcept
 {
     META_FUNCTION_TASK();
@@ -87,7 +93,7 @@ uint32_t ParallelRenderingApp::Settings::GetActiveRenderThreadCount() const noex
 
 ParallelRenderingApp::ParallelRenderingApp()
     : UserInterfaceApp(
-        GetGraphicsTutorialAppSettings("Methane Parallel Rendering", AppOptions::GetDefaultWithColorDepthAndAnim()),
+        GetGraphicsTutorialAppSettings("Methane Parallel Rendering (" APP_VARIANT_NAME ")", AppOptions::GetDefaultWithColorDepthAndAnim()),
         GetUserInterfaceTutorialAppSettings(AppOptions::GetDefaultWithColorDepthAndAnim()),
         "Methane tutorial of parallel rendering")
 {

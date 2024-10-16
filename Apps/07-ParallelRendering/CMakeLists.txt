@@ -11,7 +11,7 @@ foreach(VARIANT ${BUFFER_VIEWS_VARIANT} ${ROOT_CONSTANTS_VARIANT})
 
     add_methane_application(
         TARGET ${TARGET}
-        NAME "Methane Parallel Rendering"
+        NAME "Methane Parallel Rendering (${VARIANT})"
         DESCRIPTION "Tutorial demonstrating parallel-rendering with Methane Kit."
         INSTALL_DIR "Apps"
         SOURCES
