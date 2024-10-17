@@ -86,7 +86,6 @@ private:
     Rhi::ViewState           m_view_state;
     Rhi::BufferSet           m_vertex_buffer_set;
     Rhi::Buffer              m_index_buffer;
-    Rhi::Buffer              m_const_buffer;
     Rhi::Texture             m_texture;
     Rhi::Sampler             m_texture_sampler;
     Rhi::ProgramBindings     m_const_program_bindings;
@@ -140,7 +139,14 @@ public:
                                 Rhi::IProgram::InputBufferLayout::ArgumentSemantics { s_quad_mesh.GetVertexLayout().GetSemantics() }
                             }
                         },
-                        Rhi::ProgramArgumentAccessors{ },
+                        Rhi::ProgramArgumentAccessors
+                        {
+                            {
+                                { Rhi::ShaderType::Pixel, "g_constants" },
+                                Rhi::ProgramArgumentAccessType::Mutable,
+                                Rhi::ProgramArgumentValueType::RootConstant
+                            }
+                        },
                         render_pattern.GetAttachmentFormats(),
                     }),
                 render_pattern
@@ -176,10 +182,10 @@ public:
             }
             else
             {
-                m_texture_sampler = render_context.CreateSampler( {
-                                                                      Rhi::ISampler::Filter(Rhi::ISampler::Filter::MinMag::Linear),
-                                                                      Rhi::ISampler::Address(Rhi::ISampler::Address::Mode::ClampToZero),
-                                                                  });
+                m_texture_sampler = render_context.CreateSampler({
+                    Rhi::ISampler::Filter(Rhi::ISampler::Filter::MinMag::Linear),
+                    Rhi::ISampler::Address(Rhi::ISampler::Address::Mode::ClampToZero),
+                });
                 m_texture_sampler.SetName(s_sampler_name);
                 render_context.GetObjectRegistry().AddGraphicsObject(m_texture_sampler.GetInterface());
             }
@@ -230,30 +236,19 @@ public:
             render_context.GetObjectRegistry().AddGraphicsObject(m_index_buffer.GetInterface());
         }
 
-        m_const_buffer = render_context.CreateBuffer(
-            Rhi::BufferSettings::ForConstantBuffer(static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants))));
-        m_const_buffer.SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
-
-        Rhi::ProgramBindings::BindingValueByArgument program_binding_resource_views = {
-            { { Rhi::ShaderType::Pixel, "g_constants" }, m_const_buffer.GetResourceView() }
-        };
-
+        Rhi::ProgramBindings::BindingValueByArgument program_binding_resource_views;
         if (m_settings.texture_mode != TextureMode::Disabled)
         {
-            program_binding_resource_views.try_emplace(
-                Rhi::ProgramArgument(Rhi::ShaderType::Pixel, "g_texture"),
-                m_texture.GetResourceView()
-            );
-            program_binding_resource_views.try_emplace(
-                Rhi::ProgramArgument(Rhi::ShaderType::Pixel, "g_sampler"),
-                m_texture_sampler.GetResourceView()
-            );
+            program_binding_resource_views = {
+                { { Rhi::ShaderType::Pixel, "g_texture" }, m_texture.GetResourceView() },
+                { { Rhi::ShaderType::Pixel, "g_sampler" }, m_texture_sampler.GetResourceView() }
+            };
         }
 
         m_const_program_bindings = m_render_state.GetProgram().CreateBindings(program_binding_resource_views);
         m_const_program_bindings.SetName(fmt::format("{} Screen-Quad Constant Bindings", m_settings.name));
 
-        UpdateConstantsBuffer();
+        UpdateConstants();
     }
 
     void SetBlendColor(const Color4F& blend_color)
@@ -263,7 +258,7 @@ public:
             return;
 
         m_settings.blend_color  = blend_color;
-        UpdateConstantsBuffer();
+        UpdateConstants();
     }
 
     void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size)
@@ -301,7 +296,8 @@ public:
             return;
 
         m_texture = texture;
-        m_const_program_bindings.Get({ Rhi::ShaderType::Pixel, "g_texture" }).SetResourceView(m_texture.GetResourceView());
+        m_const_program_bindings.Get({ Rhi::ShaderType::Pixel, "g_texture" })
+                                .SetResourceView(m_texture.GetResourceView());
     }
 
     [[nodiscard]] const Settings& GetQuadSettings() const noexcept
@@ -326,17 +322,15 @@ public:
     }
 
 private:
-    void UpdateConstantsBuffer() const
+    void UpdateConstants() const
     {
         META_FUNCTION_TASK();
         const hlslpp::ScreenQuadConstants constants {
             m_settings.blend_color.AsVector()
         };
 
-        m_const_buffer.SetData(m_render_cmd_queue, {
-            reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
-            static_cast<Data::Size>(sizeof(constants))
-        });
+        m_const_program_bindings.Get({ Rhi::ShaderType::Pixel, "g_constants" })
+                                .SetRootConstant(Rhi::RootConstant(constants));
     }
 
     [[nodiscard]] static Rhi::IShader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode)
