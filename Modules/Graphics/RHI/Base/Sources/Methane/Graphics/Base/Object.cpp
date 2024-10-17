@@ -81,11 +81,11 @@ void ObjectRegistry::OnObjectNameChanged(Rhi::IObject& object, const std::string
     META_FUNCTION_TASK();
     const auto object_by_name_it = m_object_by_name.find(old_name);
     META_CHECK_TRUE_DESCR(object_by_name_it != m_object_by_name.end(),
-                              "renamed object was not found in the objects registry by its old name '{}'", old_name);
+                          "renamed object was not found in the objects registry by its old name '{}'", old_name);
     META_CHECK_TRUE_DESCR(object_by_name_it->second.expired(),
-                              "object pointer stored in registry by old name '{}' has expired", old_name);
+                          "object pointer stored in registry by old name '{}' has expired", old_name);
     META_CHECK_TRUE_DESCR(std::addressof(*object_by_name_it->second.lock()) == std::addressof(object),
-                              "object stored in the registry by old name '{}' differs from the renamed object", old_name);
+                          "object stored in the registry by old name '{}' differs from the renamed object", old_name);
 
     const std::string_view new_name = object.GetName();
     if (new_name.empty())

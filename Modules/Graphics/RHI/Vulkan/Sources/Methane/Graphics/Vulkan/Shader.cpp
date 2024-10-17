@@ -143,7 +143,7 @@ static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_desc
     case vk::DescriptorType::eUniformBuffer: return vk::DescriptorType::eUniformBufferDynamic;
     case vk::DescriptorType::eStorageBuffer: return vk::DescriptorType::eStorageBufferDynamic;
     default: META_UNEXPECTED_RETURN_DESCR(vk_shader_descriptor_type, vk_shader_descriptor_type,
-                                              "addressable arguments support only Uniform or Storage buffers");
+                                          "addressable arguments support only Uniform or Storage buffers");
     }
 }
 

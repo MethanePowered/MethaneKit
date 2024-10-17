@@ -461,13 +461,13 @@ void Texture::GenerateMipLevels(Rhi::ICommandQueue& target_cmd_queue, State targ
 {
     META_FUNCTION_TASK();
     META_CHECK_EQUAL_DESCR(target_cmd_queue.GetCommandListType(), Rhi::CommandListType::Render,
-                               "texture target command queue is not suitable for mip-maps generation");
+                           "texture target command queue is not suitable for mip-maps generation");
 
     const Rhi::TextureSettings& texture_settings = GetSettings();
     const vk::Format image_format = TypeConverter::PixelFormatToVulkan(texture_settings.pixel_format);
     const vk::FormatProperties image_format_properties = GetVulkanContext().GetVulkanDevice().GetNativePhysicalDevice().getFormatProperties(image_format);
     META_CHECK_TRUE_DESCR(static_cast<bool>(image_format_properties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImageFilterLinear),
-                              "texture pixel format does not support linear blitting");
+                          "texture pixel format does not support linear blitting");
 
     constexpr auto post_upload_cmd_list_id = static_cast<Rhi::CommandListId>(Rhi::CommandListPurpose::PostUploadSync);
     const Rhi::ICommandList     & target_cmd_list = GetContext().GetDefaultCommandKit(target_cmd_queue).GetListForEncoding(post_upload_cmd_list_id);

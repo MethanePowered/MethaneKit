@@ -41,7 +41,7 @@ void ParallelRenderCommandList::Reset(IDebugGroup* debug_group_ptr)
     META_FUNCTION_TASK();
     const auto state_lock = LockStateMutex();
     META_CHECK_DESCR(GetState(), GetState() < State::Committed,
-                         "can not reset parallel command list in committed or executing state");
+                     "can not reset parallel command list in committed or executing state");
     ResetCommandEncoder();
     Base::ParallelRenderCommandList::Reset(debug_group_ptr);
 }
@@ -51,7 +51,7 @@ void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, 
     META_FUNCTION_TASK();
     const auto state_lock = LockStateMutex();
     META_CHECK_DESCR(GetState(), GetState() < State::Committed,
-                         "can not reset parallel command list in committed or executing state");
+                     "can not reset parallel command list in committed or executing state");
     if (ResetCommandEncoder())
     {
         static_cast<RenderState&>(render_state).InitializeNativeStates();

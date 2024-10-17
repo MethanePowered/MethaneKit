@@ -324,8 +324,8 @@ public:
             render_state_ptr)
         {
             META_CHECK_EQUAL_DESCR(render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
-                                       "Text '{}' render state '{}' from cache has incompatible render pattern settings", m_settings.name,
-                                       m_settings.state_name);
+                                   "Text '{}' render state '{}' from cache has incompatible render pattern settings", m_settings.name,
+                                   m_settings.state_name);
             m_render_state = rhi::RenderState(render_state_ptr);
         }
         else

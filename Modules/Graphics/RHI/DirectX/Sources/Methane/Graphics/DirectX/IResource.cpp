@@ -59,7 +59,7 @@ DescriptorHeap::Type IResource::GetDescriptorHeapTypeByUsage(const Rhi::IResourc
     else
     {
         META_UNEXPECTED_RETURN_DESCR(resource_usage.GetValue(), DescriptorHeap::Type::Undefined,
-                                         "resource usage {} does not map to descriptor heap", Data::GetEnumMaskName(resource_usage));
+                                     "resource usage {} does not map to descriptor heap", Data::GetEnumMaskName(resource_usage));
     }
 }
 

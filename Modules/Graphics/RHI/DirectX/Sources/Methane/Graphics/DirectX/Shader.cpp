@@ -124,7 +124,7 @@ static D3D12_SHADER_BUFFER_DESC GetConstantBufferDesc(ID3D12ShaderReflection& sh
 
     ID3D12ShaderReflectionConstantBuffer* buffer_reflection_ptr = shader_reflection.GetConstantBufferByName(binding_desc.Name);
     META_CHECK_NOT_NULL_DESCR(buffer_reflection_ptr,
-                                  "Failed to get buffer reflection from shader for argument \"{}\"", binding_desc.Name);
+                              "Failed to get buffer reflection from shader for argument \"{}\"", binding_desc.Name);
 
     D3D12_SHADER_BUFFER_DESC buffer_desc = {};
     ThrowIfFailed(buffer_reflection_ptr->GetDesc(&buffer_desc));
@@ -308,8 +308,8 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> Shader::GetNativeProgramInputLayout(const 
         const uint32_t buffer_index = GetProgramInputBufferIndexByArgumentSemantic(program, param_desc.SemanticName);
 
         META_CHECK_LESS_DESCR(buffer_index, input_buffer_layouts.size(),
-                                  "Provided description of program input layout has insufficient buffers count {}, while shader requires buffer at index {}",
-                                  input_buffer_layouts.size(), buffer_index);
+                              "Provided description of program input layout has insufficient buffers count {}, while shader requires buffer at index {}",
+                              input_buffer_layouts.size(), buffer_index);
         const Base::Program::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];
 
         if (buffer_index <= input_buffer_byte_offsets.size())
@@ -319,13 +319,13 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> Shader::GetNativeProgramInputLayout(const 
 
         uint32_t element_byte_size = 0;
         D3D12_INPUT_ELEMENT_DESC element_desc{};
-        element_desc.SemanticName             = param_desc.SemanticName;
-        element_desc.SemanticIndex            = param_desc.SemanticIndex;
-        element_desc.InputSlot                = buffer_index;
-        element_desc.InputSlotClass           = GetInputClassificationByLayoutStepType(input_buffer_layout.step_type);
-        element_desc.InstanceDataStepRate     = input_buffer_layout.step_type == StepType::PerVertex ? 0 : input_buffer_layout.step_rate;
-        element_desc.Format                   = TypeConverter::ParameterDescToDxgiFormatAndSize(param_desc, element_byte_size);
-        element_desc.AlignedByteOffset        = buffer_byte_offset;
+        element_desc.SemanticName         = param_desc.SemanticName;
+        element_desc.SemanticIndex        = param_desc.SemanticIndex;
+        element_desc.InputSlot            = buffer_index;
+        element_desc.InputSlotClass       = GetInputClassificationByLayoutStepType(input_buffer_layout.step_type);
+        element_desc.InstanceDataStepRate = input_buffer_layout.step_type == StepType::PerVertex ? 0 : input_buffer_layout.step_rate;
+        element_desc.Format               = TypeConverter::ParameterDescToDxgiFormatAndSize(param_desc, element_byte_size);
+        element_desc.AlignedByteOffset    = buffer_byte_offset;
 
         dx_input_layout.push_back(element_desc);
         buffer_byte_offset += element_byte_size;

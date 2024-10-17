@@ -120,7 +120,7 @@ uint32_t DescriptorManager::CreateDescriptorHeap(const DescriptorHeap::Settings&
 {
     META_FUNCTION_TASK();
     META_CHECK_DESCR(settings.type, settings.type != DescriptorHeap::Type::Undefined,
-                         "can not create 'Undefined' descriptor heap");
+                     "can not create 'Undefined' descriptor heap");
 
     UniquePtrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[magic_enum::enum_integer(settings.type)];
     desc_heaps.push_back(std::make_unique<DescriptorHeap>(GetContext(), settings));
@@ -131,13 +131,15 @@ DescriptorHeap& DescriptorManager::GetDescriptorHeap(DescriptorHeap::Type type, 
 {
     META_FUNCTION_TASK();
     META_CHECK_DESCR(type, type != DescriptorHeap::Type::Undefined,
-                         "can not get reference to 'Undefined' descriptor heap");
+                     "can not get reference to 'Undefined' descriptor heap");
 
     const UniquePtrs<DescriptorHeap>& desc_heaps = m_descriptor_heap_types[magic_enum::enum_integer(type)];
-    META_CHECK_LESS_DESCR(heap_index, desc_heaps.size(), "descriptor heap of type '{}' index is not valid", magic_enum::enum_name(type));
+    META_CHECK_LESS_DESCR(heap_index, desc_heaps.size(),
+                          "descriptor heap of type '{}' index is not valid", magic_enum::enum_name(type));
 
     const UniquePtr<DescriptorHeap>& resource_heap_ptr = desc_heaps[heap_index];
-    META_CHECK_NOT_NULL_DESCR(resource_heap_ptr, "descriptor heap of type '{}' at index {} does not exist", magic_enum::enum_name(type), heap_index);
+    META_CHECK_NOT_NULL_DESCR(resource_heap_ptr,
+                              "descriptor heap of type '{}' at index {} does not exist", magic_enum::enum_name(type), heap_index);
 
     return *resource_heap_ptr;
 }
@@ -146,7 +148,7 @@ DescriptorHeap& DescriptorManager::GetDefaultShaderVisibleDescriptorHeap(Descrip
 {
     META_FUNCTION_TASK();
     META_CHECK_DESCR(type, type != DescriptorHeap::Type::Undefined,
-                         "can not get reference to 'Undefined' descriptor heap");
+                     "can not get reference to 'Undefined' descriptor heap");
 
     const UniquePtrs<DescriptorHeap>& descriptor_heaps = m_descriptor_heap_types[magic_enum::enum_integer(type)];
     auto descriptor_heaps_it = std::find_if(descriptor_heaps.begin(), descriptor_heaps.end(),
@@ -156,11 +158,11 @@ DescriptorHeap& DescriptorManager::GetDefaultShaderVisibleDescriptorHeap(Descrip
                                                 return descriptor_heap_ptr && descriptor_heap_ptr->GetSettings().shader_visible;
                                             });
     META_CHECK_FALSE_DESCR(descriptor_heaps_it == descriptor_heaps.end(),
-                               "Can not find shader visible {} descriptor heap", magic_enum::enum_name(type));
+                           "Can not find shader visible {} descriptor heap", magic_enum::enum_name(type));
 
     const UniquePtr<DescriptorHeap>& descriptor_heap_ptr = *descriptor_heaps_it;
-    META_CHECK_NOT_NULL_DESCR(descriptor_heap_ptr, "There is no shader visible descriptor heap of type '{}'",
-                                  magic_enum::enum_name(type));
+    META_CHECK_NOT_NULL_DESCR(descriptor_heap_ptr,
+                              "There is no shader visible descriptor heap of type '{}'", magic_enum::enum_name(type));
 
     return *descriptor_heap_ptr;
 }
@@ -199,9 +201,9 @@ void DescriptorManager::ForEachDescriptorHeap(FuncType process_heap) const
             META_CHECK_NOT_NULL(desc_heap_ptr);
             const DescriptorHeap::Type heap_type = desc_heap_ptr->GetSettings().type;
             META_CHECK_EQUAL_DESCR(heap_type, desc_heaps_type,
-                                       "wrong type of {} descriptor heap was found in container assuming heaps of {} type",
-                                       magic_enum::enum_name(heap_type),
-                                       magic_enum::enum_name(desc_heaps_type));
+                                   "wrong type of {} descriptor heap was found in container assuming heaps of {} type",
+                                   magic_enum::enum_name(heap_type),
+                                   magic_enum::enum_name(desc_heaps_type));
             process_heap(*desc_heap_ptr);
         }
         META_UNUSED(desc_heaps_type);

@@ -47,8 +47,8 @@ CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs,
     {
         auto& command_list_base = dynamic_cast<CommandList&>(command_list_ref.get());
         META_CHECK_NAME_DESCR("command_list_refs",
-                                  std::addressof(command_list_base.GetCommandQueue()) == std::addressof(m_refs.front().get().GetCommandQueue()),
-                                  "all command lists in set must be created in one command queue");
+                              std::addressof(command_list_base.GetCommandQueue()) == std::addressof(m_refs.front().get().GetCommandQueue()),
+                              "all command lists in set must be created in one command queue");
 
         static_cast<Data::IEmitter<IObjectCallback>&>(command_list_base).Connect(*this);
 

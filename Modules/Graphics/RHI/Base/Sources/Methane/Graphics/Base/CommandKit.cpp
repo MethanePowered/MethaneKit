@@ -66,10 +66,10 @@ CommandKit::CommandKit(const Rhi::IContext& context, Rhi::CommandListType cmd_li
     if (context.GetType() == Rhi::ContextType::Compute)
     {
         META_CHECK_NOT_EQUAL_DESCR(cmd_list_type, Rhi::CommandListType::Render,
-                                       "compute context can not be used to create render command queues");
+                                   "compute context can not be used to create render command queues");
     }
     META_CHECK_NOT_EQUAL_DESCR(cmd_list_type, Rhi::CommandListType::ParallelRender,
-                                   "command queue should be created with Render type to support ParallelRender command lists");
+                               "command queue should be created with Render type to support ParallelRender command lists");
 }
 
 CommandKit::CommandKit(Rhi::ICommandQueue& cmd_queue)

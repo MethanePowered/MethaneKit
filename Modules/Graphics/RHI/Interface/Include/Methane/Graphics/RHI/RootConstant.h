@@ -51,7 +51,7 @@ public:
     const T& GetValue() const
     {
         META_CHECK_EQUAL_DESCR(sizeof(T), Data::Chunk::GetDataSize(),
-                                   "size of value type does not match with root constant data size");
+                               "size of value type does not match with root constant data size");
         return reinterpret_cast<const T&>(*Data::Chunk::GetDataPtr()); // NOSONAR
     }
 

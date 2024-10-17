@@ -128,8 +128,8 @@ void Program::ReflectRenderPipelineArguments()
                                                    error: &ns_error];
 
     META_CHECK_NOT_NULL_DESCR(mtl_render_pipeline_state,
-                                  "Failed to create dummy pipeline state for program reflection: {}",
-                                  MacOS::ConvertFromNsString([ns_error localizedDescription]));
+                              "Failed to create dummy pipeline state for program reflection: {}",
+                              MacOS::ConvertFromNsString([ns_error localizedDescription]));
 
     if (!mtl_render_pipeline_reflection)
         return;
@@ -158,8 +158,8 @@ void Program::ReflectComputePipelineArguments()
                                                     error: &ns_error];
 
     META_CHECK_NOT_NULL_DESCR(mtl_compute_pipeline_state,
-                                  "Failed to create compute pipeline state for program reflection: {}",
-                                  MacOS::ConvertFromNsString([ns_error localizedDescription]));
+                              "Failed to create compute pipeline state for program reflection: {}",
+                              MacOS::ConvertFromNsString([ns_error localizedDescription]));
 
     if (!mtl_compute_pipeline_reflection)
         return;

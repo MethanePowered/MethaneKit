@@ -159,7 +159,7 @@ Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt& data_
 {
     META_FUNCTION_TASK();
     META_CHECK_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
-                              "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
+                          "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
     const Data::Index data_start  = data_range ? data_range->GetStart()  : 0U;
     const Data::Index data_length = data_range ? data_range->GetLength() : GetDataSize();

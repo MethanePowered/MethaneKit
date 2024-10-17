@@ -132,7 +132,7 @@ public:
     {
         META_FUNCTION_TASK();
         META_CHECK_DESCR(Mesh::GetIndexCount(), Mesh::GetIndexCount() % 3 == 0,
-                             "icosahedron indices count should be a multiple of three representing triangles list");
+                         "icosahedron indices count should be a multiple of three representing triangles list");
 
         Mesh::Indices new_indices;
         new_indices.reserve(Mesh::GetIndexCount() * 4);

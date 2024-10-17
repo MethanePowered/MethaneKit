@@ -128,7 +128,7 @@ void Program::InitArgumentBindings()
                 const Argument argument{ shader_type, argument_name };
                 auto binding_by_argument_it = m_binding_by_argument.find(argument);
                 META_CHECK_DESCR(argument, binding_by_argument_it != m_binding_by_argument.end(),
-                                     "Resource binding was not initialized for for argument");
+                                 "Resource binding was not initialized for for argument");
                 if (argument_binding_ptr)
                 {
                     argument_binding_ptr->MergeSettings(*binding_by_argument_it->second);

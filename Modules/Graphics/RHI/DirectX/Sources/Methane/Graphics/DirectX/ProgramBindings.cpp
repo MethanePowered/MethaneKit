@@ -423,7 +423,7 @@ void ProgramBindings::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12De
     argument_binding.SetDescriptorHeapReservation(heap_reservation_ptr);
     META_CHECK_NOT_NULL(d3d12_device);
     META_CHECK_LESS_DESCR(descriptor_range.offset, heap_range.GetLength(),
-                              "descriptor range offset is out of reserved descriptor range bounds");
+                          "descriptor range offset is out of reserved descriptor range bounds");
 
     uint32_t resource_index = 0;
     for (const ResourceView& resource_view_dx : argument_binding.GetDirectResourceViews())
@@ -432,7 +432,7 @@ void ProgramBindings::CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12De
             continue;
 
         META_CHECK_EQUAL_DESCR(heap_type, resource_view_dx.GetDescriptor()->heap.GetSettings().type,
-                                   "can not create binding for resource on descriptor heap of incompatible type");
+                               "can not create binding for resource on descriptor heap of incompatible type");
 
         const uint32_t descriptor_index = heap_range.GetStart() + descriptor_range.offset + resource_index;
         META_LOG("  - Resource '{}' binding with {} access has descriptor heap range [{}, {}), CPU descriptor index {}",

@@ -250,7 +250,7 @@ const ResourceView& RenderPass::GetDirectAttachmentTextureView(const Attachment&
 {
     META_FUNCTION_TASK();
     META_CHECK_LESS_DESCR(attachment.attachment_index, m_dx_attachments.size(),
-                              "attachment index is out of bounds of render pass DX attachments array");
+                          "attachment index is out of bounds of render pass DX attachments array");
     return m_dx_attachments[attachment.attachment_index];
 }
 

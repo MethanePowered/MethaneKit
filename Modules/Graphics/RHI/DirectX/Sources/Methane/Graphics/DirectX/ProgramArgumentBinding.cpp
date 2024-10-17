@@ -123,9 +123,9 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
 
         const ResourceView& dx_resource_view = m_resource_views_dx.back();
         META_CHECK_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
-                                   "incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
-                                   magic_enum::enum_name(descriptor_heap_type), m_settings_dx.argument.GetName(),
-                                   magic_enum::enum_name(m_settings_dx.argument.GetShaderType()));
+                               "incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
+                               magic_enum::enum_name(descriptor_heap_type), m_settings_dx.argument.GetName(),
+                               magic_enum::enum_name(m_settings_dx.argument.GetShaderType()));
 
         const uint32_t descriptor_index = descriptor_range_start + m_descriptor_range.offset + resource_index;
         m_native_device_cptr->CopyDescriptorsSimple(1,
@@ -146,12 +146,12 @@ void ProgramArgumentBinding::SetDescriptorRange(const DescriptorRange& descripto
     META_FUNCTION_TASK();
     const DescriptorHeap::Type expected_heap_type = GetDescriptorHeapType();
     META_CHECK_EQUAL_DESCR(descriptor_range.heap_type, expected_heap_type,
-                               "descriptor heap type '{}' is incompatible with the resource binding, expected heap type is '{}'",
-                               magic_enum::enum_name(descriptor_range.heap_type),
-                               magic_enum::enum_name(expected_heap_type));
+                           "descriptor heap type '{}' is incompatible with the resource binding, expected heap type is '{}'",
+                           magic_enum::enum_name(descriptor_range.heap_type),
+                           magic_enum::enum_name(expected_heap_type));
     META_CHECK_LESS_DESCR(descriptor_range.count, m_settings_dx.resource_count + 1,
-                              "descriptor range size {} will not fit bound shader resources count {}",
-                              descriptor_range.count, m_settings_dx.resource_count);
+                          "descriptor range size {} will not fit bound shader resources count {}",
+                          descriptor_range.count, m_settings_dx.resource_count);
 
     m_descriptor_range = descriptor_range;
 }
@@ -160,11 +160,11 @@ void ProgramArgumentBinding::SetDescriptorHeapReservation(const DescriptorHeapRe
 {
     META_FUNCTION_TASK();
     META_CHECK_NAME_DESCR("p_reservation",
-                              !reservation_ptr ||
-                              (reservation_ptr->heap.get().IsShaderVisible() &&
-                               reservation_ptr->heap.get().GetSettings().type == m_descriptor_range.heap_type),
-                              "argument binding reservation must be made in shader visible descriptor heap of type '{}'",
-                              magic_enum::enum_name(m_descriptor_range.heap_type));
+                          !reservation_ptr ||
+                          (reservation_ptr->heap.get().IsShaderVisible() &&
+                           reservation_ptr->heap.get().GetSettings().type == m_descriptor_range.heap_type),
+                          "argument binding reservation must be made in shader visible descriptor heap of type '{}'",
+                          magic_enum::enum_name(m_descriptor_range.heap_type));
     m_descriptor_heap_reservation_ptr = reservation_ptr;
 }
 

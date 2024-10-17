@@ -158,7 +158,7 @@ const Rhi::ITexture::View& RenderPass::GetAttachmentTextureView(const Rhi::Rende
 {
     META_FUNCTION_TASK();
     META_CHECK_LESS_DESCR(attachment.attachment_index, m_settings.attachments.size(),
-                              "attachment index is out of bounds of render pass attachments array");
+                          "attachment index is out of bounds of render pass attachments array");
     return m_settings.attachments[attachment.attachment_index];
 }
 

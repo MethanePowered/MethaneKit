@@ -97,7 +97,7 @@ public:
         META_FUNCTION_TASK();
         META_UNUSED(in_cpu_nanoseconds);
         META_CHECK_EQUAL_DESCR(CommandListBaseT::GetState(), Base::CommandList::State::Pending,
-                                   "can not get GPU time range of executing or not committed command list");
+                               "can not get GPU time range of executing or not committed command list");
 
         if (!m_mtl_cmd_buffer)
             return Data::TimeRange();

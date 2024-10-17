@@ -93,7 +93,7 @@ static CD3DX12_RESOURCE_DESC CreateNativeResourceDesc(const Rhi::ITexture::Setti
 
     case Rhi::TextureDimensionType::Tex1DArray:
         META_CHECK_DESCR(settings.dimensions, settings.dimensions.GetHeight() == 1 && settings.dimensions.GetDepth() == 1,
-                             "1D textures must have height and depth dimensions equal to 1");
+                         "1D textures must have height and depth dimensions equal to 1");
         tex_desc = CD3DX12_RESOURCE_DESC::Tex1D(
             TypeConverter::PixelFormatToDxgi(settings.pixel_format),
             settings.dimensions.GetWidth(),
@@ -387,7 +387,7 @@ void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& 
         dx_sub_resource.SlicePitch = dx_sub_resource.RowPitch * settings.dimensions.GetHeight();
 
         META_CHECK_GREATER_OR_EQUAL_DESCR(sub_resource.GetDataSize(), dx_sub_resource.SlicePitch,
-                                              "sub-resource data size is less than computed MIP slice size, possibly due to pixel format mismatch");
+                                          "sub-resource data size is less than computed MIP slice size, possibly due to pixel format mismatch");
     }
 
     // NOTE: scratch_image is the owner of generated mip-levels memory, which should be hold until UpdateSubresources call completes
@@ -409,7 +409,7 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const Su
 {
     META_FUNCTION_TASK();
     META_CHECK_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
-                              "getting texture data from GPU is allowed for buffers with CPU Read-back flag only");
+                          "getting texture data from GPU is allowed for buffers with CPU Read-back flag only");
     META_CHECK_NOT_NULL(m_read_back_resource_cptr);
 
     ValidateSubResource(sub_resource_index, data_range);
@@ -475,7 +475,7 @@ Opt<Rhi::IResource::Descriptor> Texture::InitializeNativeViewDescriptor(const Vi
         else
         {
             META_UNEXPECTED_RETURN_DESCR(view_id.usage.GetValue(), descriptor,
-                                             "unsupported usage {} for Image texture", Data::GetEnumMaskName(view_id.usage));
+                                         "unsupported usage {} for Image texture", Data::GetEnumMaskName(view_id.usage));
         }
         break;
 
@@ -491,7 +491,7 @@ Opt<Rhi::IResource::Descriptor> Texture::InitializeNativeViewDescriptor(const Vi
         else
         {
             META_UNEXPECTED_RETURN_DESCR(view_id.usage.GetValue(), descriptor,
-                                             "unsupported usage {} for Render-Target texture", Data::GetEnumMaskName(view_id.usage));
+                                         "unsupported usage {} for Render-Target texture", Data::GetEnumMaskName(view_id.usage));
         }
         break;
 
@@ -503,7 +503,7 @@ Opt<Rhi::IResource::Descriptor> Texture::InitializeNativeViewDescriptor(const Vi
         else
         {
             META_UNEXPECTED_RETURN_DESCR(view_id.usage.GetValue(), descriptor,
-                                             "unsupported usage {} for Depth-Stencil texture", Data::GetEnumMaskName(view_id.usage));
+                                         "unsupported usage {} for Depth-Stencil texture", Data::GetEnumMaskName(view_id.usage));
         }
         break;
 
@@ -703,8 +703,8 @@ void Texture::GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_reso
             {
                 const ::DirectX::Image* mip_image_ptr = scratch_image.GetImage(mip, item, depth);
                 META_CHECK_NOT_NULL_DESCR(mip_image_ptr,
-                                              "failed to generate mipmap level {} for array item {} in depth {} of texture '{}'",
-                                              mip, item, depth, GetName());
+                                          "failed to generate mipmap level {} for array item {} in depth {} of texture '{}'",
+                                          mip, item, depth, GetName());
 
                 const uint32_t dx_sub_resource_index = SubResource::Index(depth, item, mip).GetRawIndex(tex_metadata_subres_count);
                 META_CHECK_LESS(dx_sub_resource_index, dx_sub_resources.size());

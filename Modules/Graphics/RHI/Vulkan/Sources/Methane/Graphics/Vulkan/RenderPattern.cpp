@@ -89,7 +89,7 @@ static vk::ImageLayout GetFinalImageLayoutOfAttachment(const Rhi::IRenderPattern
     case Rhi::IRenderPattern::Attachment::Type::Stencil: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
     default:
         META_UNEXPECTED_RETURN_DESCR(attachment_type, vk::ImageLayout::eUndefined,
-                                         "attachment type is not supported by render pass");
+                                     "attachment type is not supported by render pass");
     }
 }
 

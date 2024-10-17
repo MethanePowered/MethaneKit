@@ -262,9 +262,9 @@ DescriptorHeap::Range Program::ReserveDescriptorRange(DescriptorHeap& heap, Argu
     {
         const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_it->second;
         META_CHECK_NAME_DESCR("heap", std::addressof(heap) == std::addressof(heap_reservation.heap.get()),
-                                  "constant descriptor range was previously reserved for the program on a different descriptor heap of the same type");
+                              "constant descriptor range was previously reserved for the program on a different descriptor heap of the same type");
         META_CHECK_EQUAL_DESCR(range_length, heap_reservation.range.GetLength(),
-                                   "constant descriptor range previously reserved for the program differs in length from requested reservation");
+                               "constant descriptor range previously reserved for the program differs in length from requested reservation");
         return heap_reservation.range;
     }
 

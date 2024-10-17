@@ -163,7 +163,7 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
 {
     META_FUNCTION_TASK();
     META_CHECK_DESCR(frame_size.GetUnits(), frame_size.GetUnits() == badge_size.GetUnits() && badge_size.GetUnits() == badge_margins.GetUnits(),
-                         "frame size, badge size and margin units must be equal");
+                     "frame size, badge size and margin units must be equal");
 
     switch(frame_corner)
     {

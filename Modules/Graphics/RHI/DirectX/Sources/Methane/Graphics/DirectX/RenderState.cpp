@@ -263,7 +263,7 @@ void RenderState::Reset(const Settings& settings)
     // Set RTV, DSV formats for pipeline state
     const AttachmentFormats attachment_formats = settings.render_pattern_ptr->GetAttachmentFormats();
     META_CHECK_LESS_DESCR(attachment_formats.colors.size(), g_max_rtv_count + 1,
-                              "number of color attachments exceeds maximum RTV count in DirectX");
+                          "number of color attachments exceeds maximum RTV count in DirectX");
     std::fill_n(m_pipeline_state_desc.RTVFormats, g_max_rtv_count, DXGI_FORMAT_UNKNOWN);
     uint32_t attachment_index = 0;
     for (PixelFormat color_format : attachment_formats.colors)

@@ -365,7 +365,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         {
             // Get arguments from argument buffer layout
             META_CHECK_LESS_DESCR(argument_index, m_argument_buffer_layouts.size(),
-                                      "inconsistent argument buffer layouts");
+                                  "inconsistent argument buffer layouts");
             for(const auto& [name, member] : m_argument_buffer_layouts[argument_index].member_by_name)
             {
                 add_argument_binding(

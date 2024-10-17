@@ -328,8 +328,8 @@ void ProgramBindings::Initialize()
     for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
     {
         META_CHECK_NOT_NULL_DESCR(argument_binding_ptr,
-                                      "no resource binding is set for program argument '{}'",
-                                      program_argument.GetName());
+                                  "no resource binding is set for program argument '{}'",
+                                  program_argument.GetName());
 
         argument_binding_ptr->Connect(*this);
     }
@@ -342,8 +342,8 @@ Rhi::ProgramArguments ProgramBindings::GetUnboundArguments() const
     for (const auto& [program_argument, argument_binding_ptr] : m_binding_by_argument)
     {
         META_CHECK_NOT_NULL_DESCR(argument_binding_ptr,
-                                      "no resource binding is set for program argument '{}'",
-                                      program_argument.GetName());
+                                  "no resource binding is set for program argument '{}'",
+                                  program_argument.GetName());
 
         if (!argument_binding_ptr->GetSettings().argument.IsRootConstant() &&
             argument_binding_ptr->GetResourceViews().empty())

@@ -118,7 +118,7 @@ protected:
         META_FUNCTION_TASK();
         CheckLayoutHasVertexField(VertexField::Normal);
         META_CHECK_DESCR(BaseMesh::GetIndexCount(), BaseMesh::GetIndexCount() % 3 == 0,
-                             "mesh indices count should be a multiple of three representing triangles list");
+                         "mesh indices count should be a multiple of three representing triangles list");
 
         for (VType& vertex : m_vertices)
         {
@@ -165,7 +165,7 @@ protected:
         {
             const Index vertex_index = GetIndex(index);
             META_CHECK_LESS_DESCR(vertex_index, m_vertices.size(),
-                                      "mesh index buffer value at position {} is greater is out of vertex buffer bounds", index);
+                                  "mesh index buffer value at position {} is greater is out of vertex buffer bounds", index);
         }
     }
 

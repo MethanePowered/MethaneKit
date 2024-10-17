@@ -217,18 +217,18 @@ void ResourceBarrier::ApplyTransition() const
     {
     case Type::StateTransition:
         META_CHECK_EQUAL_DESCR(m_id.GetResource().GetState(), m_change.state.GetStateBefore(),
-                                   "state of resource '{}' does not match with transition barrier 'before' state",
-                                   m_id.GetResource().GetName());
+                               "state of resource '{}' does not match with transition barrier 'before' state",
+                               m_id.GetResource().GetName());
         m_id.GetResource().SetState(m_change.state.GetStateAfter());
         break;
 
     case Type::OwnerTransition:
         META_CHECK_TRUE_DESCR(m_id.GetResource().GetOwnerQueueFamily().has_value(),
-                                  "can not transition resource '{}' ownership which has no existing owner queue family",
-                                  m_id.GetResource().GetName());
+                              "can not transition resource '{}' ownership which has no existing owner queue family",
+                              m_id.GetResource().GetName());
         META_CHECK_EQUAL_DESCR(m_id.GetResource().GetOwnerQueueFamily().value(), m_change.owner.GetQueueFamilyBefore(),
-                                   "owner of resource '{}' does not match with transition barrier 'before' state",
-                                   m_id.GetResource().GetName());
+                               "owner of resource '{}' does not match with transition barrier 'before' state",
+                               m_id.GetResource().GetName());
         m_id.GetResource().SetOwnerQueueFamily(m_change.owner.GetQueueFamilyAfter());
         break;
     }

@@ -353,7 +353,7 @@ public:
 
         META_CHECK_EQUAL_DESCR(m_state, State::Ended, "GPU scope can be completed only from ended state");
         META_CHECK_RANGE_INC_DESCR(gpu_begin_timestamp, Timestamp(0), gpu_end_timestamp,
-                                       "GPU begin timestamp should be less or equal to end timestamp and both should be positive");
+                                   "GPU begin timestamp should be less or equal to end timestamp and both should be positive");
         m_state = State::Completed;
 
         auto begin_item = tracy::Profiler::QueueSerial();

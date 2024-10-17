@@ -96,7 +96,7 @@ void CommandList::Reset(IDebugGroup* debug_group_ptr)
     std::scoped_lock lock_guard(m_state_mutex);
 
     META_CHECK_DESCR(m_state, m_state < State::Committed,
-                         "can not reset command list in committed or executing state");
+                     "can not reset command list in committed or executing state");
     META_LOG("{} Command list '{}' RESET commands encoding{}", magic_enum::enum_name(m_type), GetName(),
              debug_group_ptr ? fmt::format(" with debug group '{}'", debug_group_ptr->GetName()) : "");
 
@@ -163,14 +163,14 @@ void CommandList::Commit()
     std::scoped_lock lock_guard(m_state_mutex);
 
     META_CHECK_EQUAL_DESCR(m_state, State::Encoding,
-                               "{} command list '{}' in {} state can not be committed; only command lists in 'Encoding' state can be committed",
-                               magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
+                           "{} command list '{}' in {} state can not be committed; only command lists in 'Encoding' state can be committed",
+                           magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
     TRACY_GPU_SCOPE_END(m_tracy_gpu_scope);
     META_LOG("{} Command list '{}' COMMIT", magic_enum::enum_name(m_type), GetName());
 
     SetCommandListStateNoLock(State::Committed);
-    
+
     while (!m_open_debug_groups.empty())
     {
         PopDebugGroup();
@@ -203,8 +203,8 @@ void CommandList::Execute(const CompletedCallback& completed_callback)
     std::scoped_lock lock_guard(m_state_mutex);
 
     META_CHECK_EQUAL_DESCR(m_state, State::Committed,
-                               "{} command list '{}' in {} state can not be executed; only command lists in 'Committed' state can be executed",
-                               magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
+                           "{} command list '{}' in {} state can not be executed; only command lists in 'Committed' state can be executed",
+                           magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
     META_LOG("{} Command list '{}' EXECUTE", magic_enum::enum_name(m_type), GetName());
 
@@ -220,7 +220,7 @@ void CommandList::Complete()
 
     if (m_completed_callback)
         m_completed_callback(*this);
-    
+
     Data::Emitter<Rhi::ICommandListCallback>::Emit(&Rhi::ICommandListCallback::OnCommandListExecutionCompleted, *this);
 }
 
@@ -229,8 +229,8 @@ void CommandList::CompleteInternal()
     std::scoped_lock lock_guard(m_state_mutex);
 
     META_CHECK_EQUAL_DESCR(m_state, State::Executing,
-                               "{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
-                               magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
+                           "{} command list '{}' in {} state can not be completed; only command lists in 'Executing' state can be completed",
+                           magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 
     ReleaseRetainedResources();
     SetCommandListStateNoLock(State::Pending);
@@ -278,15 +278,15 @@ void CommandList::SetCommandListStateNoLock(State state)
 
     m_state = state;
     m_state_change_condition_var.notify_one();
-    
+
     Data::Emitter<Rhi::ICommandListCallback>::Emit(&Rhi::ICommandListCallback::OnCommandListStateChanged, *this);
 }
 
 void CommandList::VerifyEncodingState() const
 {
     META_CHECK_EQUAL_DESCR(m_state, State::Encoding,
-                               "{} command list '{}' encoding is not possible in '{}' state",
-                               magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
+                           "{} command list '{}' encoding is not possible in '{}' state",
+                           magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state));
 }
 
 void CommandList::InitializeTimestampQueries() // NOSONAR - function is not const when instrumentation enabled

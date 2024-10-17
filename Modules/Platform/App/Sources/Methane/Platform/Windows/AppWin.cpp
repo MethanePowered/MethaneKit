@@ -576,7 +576,7 @@ uint32_t AppWin::GetFontResolutionDpi() const
     const int dpi_y = GetDeviceCaps(window_device_context, LOGPIXELSY);
     META_CHECK_GREATER_OR_EQUAL(dpi_y, 1);
     META_CHECK_EQUAL_DESCR(dpi_y, GetDeviceCaps(window_device_context, LOGPIXELSX),
-                               "we assume that horizontal and vertical font resolutions are equal");
+                           "we assume that horizontal and vertical font resolutions are equal");
     return dpi_y;
 }
 

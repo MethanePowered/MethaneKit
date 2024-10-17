@@ -129,7 +129,7 @@ const ResourceView& RenderPass::GetVulkanAttachmentTextureView(const Attachment&
 {
     META_FUNCTION_TASK();
     META_CHECK_LESS_DESCR(attachment.attachment_index, m_attachment_views.size(),
-                              "attachment index is out of bounds of render pass VK attachments array");
+                          "attachment index is out of bounds of render pass VK attachments array");
     return m_attachment_views[attachment.attachment_index];
 }
 

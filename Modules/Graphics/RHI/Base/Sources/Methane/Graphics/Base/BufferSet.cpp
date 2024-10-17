@@ -45,7 +45,7 @@ BufferSet::BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buf
     for(const Ref<Rhi::IBuffer>& buffer_ref : m_refs)
     {
         META_CHECK_EQUAL_DESCR(buffer_ref.get().GetSettings().type, m_buffers_type,
-                                   "All buffers must be of the same type '{}'", magic_enum::enum_name(m_buffers_type));
+                               "All buffers must be of the same type '{}'", magic_enum::enum_name(m_buffers_type));
         auto& buffer_base = dynamic_cast<Buffer&>(buffer_ref.get());
         m_ptrs.emplace_back(buffer_base.GetPtr<Buffer>());
         m_raw_ptrs.emplace_back(std::addressof(buffer_base));

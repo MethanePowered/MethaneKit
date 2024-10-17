@@ -62,8 +62,8 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
 {
     META_FUNCTION_TASK();
     META_CHECK_FALSE_DESCR(m_settings.argument.IsRootConstant(),
-                              "Can not set resource view for argument which is marked with "
-                              "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\".");
+                           "Can not set resource view for argument which is marked with "
+                           "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\".");
 
     if (m_resource_views == resource_views)
         return false;
@@ -114,7 +114,7 @@ Rhi::RootConstant ProgramArgumentBinding::GetRootConstant() const
 {
     META_FUNCTION_TASK();
     META_CHECK_NOT_NULL_DESCR(m_root_constant_accessor_ptr,
-                                  "Root constant accessor of argument binding is not initialized!");
+                              "Root constant accessor of argument binding is not initialized!");
     return m_root_constant_accessor_ptr->GetRootConstant();
 }
 
@@ -122,15 +122,15 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
 {
     META_FUNCTION_TASK();
     META_CHECK_TRUE_DESCR(m_settings.argument.IsRootConstant(),
-                              "Can not set root constant for argument with is not marked with "
-                              "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\"");
+                          "Can not set root constant for argument with is not marked with "
+                          "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\"");
     META_CHECK_NOT_NULL_DESCR(m_root_constant_accessor_ptr,
-                                  "program argument root constant accessor is not initialized");
+                              "program argument root constant accessor is not initialized");
     META_CHECK_FALSE_DESCR(root_constant.IsEmptyOrNull(),
-                               "Can not set empty or null root constant to shader argument.");
+                           "Can not set empty or null root constant to shader argument.");
     META_CHECK_EQUAL_DESCR(root_constant.GetDataSize(), m_settings.buffer_size,
-                               "Size of root constant does not match buffer size ({}) for shader argument '{}'",
-                               m_settings.buffer_size, static_cast<std::string>(m_settings.argument).c_str());
+                           "Size of root constant does not match buffer size ({}) for shader argument '{}'",
+                           m_settings.buffer_size, static_cast<std::string>(m_settings.argument).c_str());
 
     if (!m_root_constant_accessor_ptr->SetRootConstant(root_constant))
         return false;

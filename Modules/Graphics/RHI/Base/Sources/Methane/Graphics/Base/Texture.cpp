@@ -169,10 +169,10 @@ void Texture::ValidateSubResource(const Rhi::SubResource& sub_resource) const
     if (sub_resource.HasDataRange())
     {
         META_CHECK_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource.GetDataRange().GetLength(),
-                                   "sub-resource {} data size should be equal to the length of data range", sub_resource.GetIndex());
+                               "sub-resource {} data size should be equal to the length of data range", sub_resource.GetIndex());
     }
     META_CHECK_LESS_OR_EQUAL_DESCR(sub_resource.GetDataSize(), sub_resource_data_size,
-                                       "sub-resource {} data size should be less or equal than full resource size", sub_resource.GetIndex());
+                                   "sub-resource {} data size should be less or equal than full resource size", sub_resource.GetIndex());
 }
 
 void Texture::ValidateSubResource(const SubResource::Index& sub_resource_index, const std::optional<BytesRange>& sub_resource_data_range) const
@@ -182,13 +182,15 @@ void Texture::ValidateSubResource(const SubResource::Index& sub_resource_index, 
     if (!sub_resource_data_range)
         return;
 
-    META_CHECK_NAME_DESCR("sub_resource_data_range", !sub_resource_data_range->IsEmpty(), "sub-resource {} data range can not be empty", sub_resource_index);
+    META_CHECK_NAME_DESCR("sub_resource_data_range", !sub_resource_data_range->IsEmpty(),
+                          "sub-resource {} data range can not be empty", sub_resource_index);
     const Data::Index sub_resource_raw_index = sub_resource_index.GetRawIndex(m_sub_resource_count);
     META_CHECK_LESS(sub_resource_raw_index, m_sub_resource_sizes.size());
 
     const Data::Size sub_resource_data_size = m_sub_resource_sizes[sub_resource_raw_index];
     META_UNUSED(sub_resource_data_size);
-    META_CHECK_LESS_DESCR(sub_resource_data_range->GetEnd(), sub_resource_data_size + 1, "sub-resource index {}", sub_resource_index);
+    META_CHECK_LESS_DESCR(sub_resource_data_range->GetEnd(), sub_resource_data_size + 1,
+                          "sub-resource index {}", sub_resource_index);
 }
 
 } // namespace Methane::Graphics::Base
