@@ -39,6 +39,7 @@ Vulkan implementation of the resource interface.
 #include <fmt/format.h>
 
 #include <type_traits>
+#include <mutex>
 #include <cassert>
 
 namespace Methane::Graphics::Vulkan
@@ -160,6 +161,8 @@ public:
     const Ptr<ResourceView::ViewDescriptorVariant>& InitializeNativeViewDescriptor(const View::Id& view_id) final
     {
         META_FUNCTION_TASK();
+        std::lock_guard lock(m_view_descriptors_mutex);
+
         if (const auto it = m_view_descriptor_by_view_id.find(view_id);
             it != m_view_descriptor_by_view_id.end())
             return it->second;
@@ -264,6 +267,7 @@ private:
     vk::UniqueDeviceMemory       m_vk_unique_device_memory;
     ResourceStorageType          m_vk_resource;
     ViewDescriptorByViewId       m_view_descriptor_by_view_id;
+    TracyLockable(std::mutex,    m_view_descriptors_mutex);
     Opt<uint32_t>                m_owner_queue_family_index_opt;
     Ptr<Rhi::IResourceBarriers>  m_upload_begin_transition_barriers_ptr;
     Ptr<Rhi::IResourceBarriers>  m_upload_end_transition_barriers_ptr;
