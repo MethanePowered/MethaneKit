@@ -156,7 +156,7 @@ public:
                         Rhi::ProgramArgumentAccessors
                         {
 #ifdef UNIFORMS_ENABLED
-                            META_PROGRAM_ARG_ROOT_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_uniforms")
+                            META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_uniforms")
 #endif
                         },
                         GetScreenRenderPattern().GetAttachmentFormats()

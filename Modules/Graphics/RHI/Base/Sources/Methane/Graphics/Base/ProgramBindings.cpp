@@ -203,7 +203,7 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
         Ptr<ArgumentBinding> new_argument_binding_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
         new_argument_binding_ptr->Initialize(program, m_frame_index);
         const Rhi::ProgramArgumentAccessor& arg_accessor = new_argument_binding_ptr->GetSettings().argument;
-        if (arg_accessor.IsRootConstant())
+        if (arg_accessor.IsRootConstantBuffer())
             root_constant_access_types_mask.SetBitOn(arg_accessor.GetAccessorType());
 
         m_binding_by_argument.try_emplace(program_argument, std::move(new_argument_binding_ptr));
@@ -234,7 +234,7 @@ Rhi::IProgramBindings::BindingValueByArgument ProgramBindings::ReplaceBindingVal
             binding_value_by_argument.count(program_argument))
             continue;
 
-        if (argument_settings.argument.IsRootConstant())
+        if (argument_settings.argument.IsRootConstantBuffer())
             binding_value_by_argument.try_emplace(program_argument, argument_binding_ptr->GetRootConstant());
         else
             binding_value_by_argument.try_emplace(program_argument, argument_binding_ptr->GetResourceViews());
@@ -345,7 +345,7 @@ Rhi::ProgramArguments ProgramBindings::GetUnboundArguments() const
                                   "no resource binding is set for program argument '{}'",
                                   program_argument.GetName());
 
-        if (!argument_binding_ptr->GetSettings().argument.IsRootConstant() &&
+        if (!argument_binding_ptr->GetSettings().argument.IsRootConstantBuffer() &&
             argument_binding_ptr->GetResourceViews().empty())
         {
             unbound_arguments.insert(program_argument);

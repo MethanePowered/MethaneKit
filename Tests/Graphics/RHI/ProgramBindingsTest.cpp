@@ -49,7 +49,7 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         const Rhi::ProgramArgumentAccessor in_buffer_accessor {
             Rhi::ShaderType::Compute, "InBuffer",
             Rhi::ProgramArgumentAccessType::Constant,
-            Rhi::ProgramArgumentValueType::RootConstant // !!!
+            Rhi::ProgramArgumentValueType::RootConstBuffer // !!!
         };
         const Rhi::ProgramArgumentAccessor in_texture_accessor{
             Rhi::ShaderType::Compute, "InTexture",

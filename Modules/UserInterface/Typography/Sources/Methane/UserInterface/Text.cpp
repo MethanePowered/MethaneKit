@@ -349,8 +349,8 @@ public:
                             }
                         },
                         rhi::ProgramArgumentAccessors{
-                            META_PROGRAM_ARG_ROOT_MUTABLE(rhi::ShaderType::Pixel, "g_constants"),
-                            META_PROGRAM_ARG_ROOT_MUTABLE(rhi::ShaderType::Vertex, "g_uniforms")
+                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Pixel, "g_constants"),
+                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Vertex, "g_uniforms")
                         },
                         render_pattern.GetAttachmentFormats()
                     }),

@@ -147,9 +147,9 @@ void ShadowCubeApp::Init()
                 },
                 rhi::ProgramArgumentAccessors
                 {
-                    META_PROGRAM_ARG_ROOT_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
-                    META_PROGRAM_ARG_ROOT_FRAME_CONSTANT(rhi::ShaderType::Pixel, "g_scene_uniforms"),
-                    META_PROGRAM_ARG_ROOT_MUTABLE(rhi::ShaderType::Vertex, "g_mesh_uniforms")
+                    META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
+                    META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::Pixel, "g_scene_uniforms"),
+                    META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Vertex, "g_mesh_uniforms")
                 },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }
@@ -193,7 +193,7 @@ void ShadowCubeApp::Init()
                 final_state_settings.program.GetSettings().input_buffer_layouts,
                 rhi::ProgramArgumentAccessors
                 {
-                    META_PROGRAM_ARG_ROOT_MUTABLE(rhi::ShaderType::Vertex, "g_mesh_uniforms")
+                    META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Vertex, "g_mesh_uniforms")
                 },
                 m_shadow_pass_pattern.GetAttachmentFormats()
             }

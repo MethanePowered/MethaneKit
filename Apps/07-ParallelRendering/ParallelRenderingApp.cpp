@@ -156,9 +156,9 @@ void ParallelRenderingApp::Init()
                 {
                     // Addressable argument is manually defined
 #ifdef ROOT_CONSTANTS_ENABLED
-                    META_PROGRAM_ARG_ROOT_MUTABLE(rhi::ShaderType::All, "g_uniforms")
+                    META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::All, "g_uniforms")
 #else
-                    META_PROGRAM_ARG_RESOURCE_ADDRESS_MUTABLE(rhi::ShaderType::All, "g_uniforms")
+                    META_PROGRAM_ARG_BUFFER_ADDRESS_MUTABLE(rhi::ShaderType::All, "g_uniforms")
 #endif
                     // Other arguments are defined in shader register spaces
                 },

@@ -131,6 +131,33 @@ static D3D12_SHADER_BUFFER_DESC GetConstantBufferDesc(ID3D12ShaderReflection& sh
     return buffer_desc;
 }
 
+[[nodiscard]]
+static ProgramArgumentBindingType GetProgramArgumentBindingType(Rhi::ProgramArgumentValueType arg_value_type,
+                                                                D3D_SHADER_INPUT_TYPE input_type)
+{
+    META_FUNCTION_TASK();
+    switch(arg_value_type)
+    {
+    case Rhi::ProgramArgumentValueType::RootConstBuffer: return ProgramArgumentBindingType::ConstantBufferView;
+    case Rhi::ProgramArgumentValueType::RootConstValue:  return ProgramArgumentBindingType::Constant32Bit;
+    case Rhi::ProgramArgumentValueType::ResourceView:    return ProgramArgumentBindingType::DescriptorTable;
+    case Rhi::ProgramArgumentValueType::BufferAddress:
+        {
+            if (IsUnorderedAccessInputType(input_type))
+            {
+                // SRV or UAV root descriptors can only be Raw or Structured buffers, textures must be bound through DescriptorTable
+                return input_type == D3D_SIT_UAV_RWTYPED
+                     ? ProgramBindings::ArgumentBinding::Type::DescriptorTable
+                     : ProgramBindings::ArgumentBinding::Type::UnorderedAccessView;
+            }
+            return input_type == D3D_SIT_CBUFFER
+                 ? ProgramBindings::ArgumentBinding::Type::ConstantBufferView
+                 : ProgramBindings::ArgumentBinding::Type::ShaderResourceView;
+        }
+    default: META_UNEXPECTED(arg_value_type);
+    }
+}
+
 Shader::Shader(Type type, const Base::Context& context, const Settings& settings)
     : Base::Shader(type, context, settings)
 {
@@ -206,26 +233,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
         const Rhi::ProgramArgumentAccessor argument_acc = argument_ptr ? *argument_ptr
                                                         : Rhi::ProgramArgumentAccessor(shader_argument, arg_access_type);
         const D3D12_SHADER_BUFFER_DESC buffer_desc = GetConstantBufferDesc(*m_reflection_cptr.Get(), binding_desc);
-
-        ProgramArgumentBindingType dx_binding_type = ProgramArgumentBindingType::DescriptorTable;
-        if (argument_acc.IsRootConstant())
-        {
-            dx_binding_type = buffer_desc.Size <= 4
-                            ? ProgramArgumentBindingType::Constant32Bit
-                            : ProgramArgumentBindingType::ConstantBufferView;
-        }
-        else if (argument_acc.IsAddressable())
-        {
-            if (IsUnorderedAccessInputType(binding_desc.Type))
-                // SRV or UAV root descriptors can only be Raw or Structured buffers, textures must be bound through DescriptorTable
-                dx_binding_type = binding_desc.Type == D3D_SIT_UAV_RWTYPED
-                                ? ProgramBindings::ArgumentBinding::Type::DescriptorTable
-                                : ProgramBindings::ArgumentBinding::Type::UnorderedAccessView;
-            else
-                dx_binding_type = binding_desc.Type == D3D_SIT_CBUFFER
-                                ? ProgramBindings::ArgumentBinding::Type::ConstantBufferView
-                                : ProgramBindings::ArgumentBinding::Type::ShaderResourceView;
-        }
+        const ProgramArgumentBindingType dx_binding_type = GetProgramArgumentBindingType(argument_acc.GetValueType(), binding_desc.Type);
 
         argument_bindings.push_back(std::make_shared<ProgramBindings::ArgumentBinding>(
             GetContext(),

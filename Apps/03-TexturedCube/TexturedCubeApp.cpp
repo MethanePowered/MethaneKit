@@ -126,8 +126,8 @@ void TexturedCubeApp::Init()
                     },
                     rhi::ProgramArgumentAccessors
                     {
-                        META_PROGRAM_ARG_ROOT_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
-                        META_PROGRAM_ARG_ROOT_FRAME_CONSTANT(rhi::ShaderType::All, "g_uniforms")
+                        META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
+                        META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::All, "g_uniforms")
                     },
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }

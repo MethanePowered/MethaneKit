@@ -156,7 +156,7 @@ void ConsoleComputeApp::Init()
                 rhi::ProgramInputBufferLayouts{ /* not applicable for compute pipeline */},
                 rhi::ProgramArgumentAccessors
                 {
-                    META_PROGRAM_ARG_ROOT_CONSTANT(rhi::ShaderType::Compute, "g_constants")
+                    META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(rhi::ShaderType::Compute, "g_constants")
                 },
         }),
         rhi::ThreadGroupSize(16U, 16U, 1U)

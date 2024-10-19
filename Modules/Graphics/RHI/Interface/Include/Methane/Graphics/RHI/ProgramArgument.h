@@ -103,8 +103,9 @@ using ProgramArgumentAccessMask = Data::EnumMask<ProgramArgumentAccessType>;
 enum class ProgramArgumentValueType
 {
     ResourceView,    // Default argument access by descriptor from resource view
-    ResourceAddress, // Addressable argument access to resource view with offset and size
-    RootConstant     // 32-bit constant(s) stored in the root signature
+    BufferAddress,   // GPU addressable buffer view with offset and size
+    RootConstBuffer, // Root constant stored in the program-managed buffer and referenced by GPU address
+    RootConstValue   // Root constant value stored in the root signature as 32-bit values
 };
 
 using ProgramArguments = std::unordered_set<ProgramArgument, ProgramArgument::Hash>;
@@ -123,18 +124,20 @@ public:
                             Type access_type = Type::Mutable,
                             ValueType value_type = ValueType::ResourceView) noexcept;
 
-    ProgramArgumentAccessor(const ProgramArgument& argument,
-                            Type access_type = Type::Mutable,
-                            ValueType value_type = ValueType::ResourceView) noexcept;
+    explicit ProgramArgumentAccessor(const ProgramArgument& argument,
+                                     Type access_type = Type::Mutable,
+                                     ValueType value_type = ValueType::ResourceView) noexcept;
 
     [[nodiscard]] size_t    GetAccessorIndex() const noexcept;
-    [[nodiscard]] Type      GetAccessorType() const noexcept   { return m_access_type; }
-    [[nodiscard]] ValueType GetValueType() const noexcept      { return m_value_type; }
-    [[nodiscard]] bool      IsAddressable() const noexcept     { return m_value_type == ValueType::ResourceAddress; }
-    [[nodiscard]] bool      IsRootConstant() const noexcept    { return m_value_type == ValueType::RootConstant; }
-    [[nodiscard]] bool      IsMutable() const noexcept         { return m_access_type == Type::Mutable; }
-    [[nodiscard]] bool      IsConstant() const noexcept        { return m_access_type == Type::Constant; }
-    [[nodiscard]] bool      IsFrameConstant() const noexcept   { return m_access_type == Type::FrameConstant; }
+    [[nodiscard]] Type      GetAccessorType() const noexcept      { return m_access_type; }
+    [[nodiscard]] ValueType GetValueType() const noexcept         { return m_value_type; }
+    [[nodiscard]] bool      IsResourceView() const noexcept       { return m_value_type == ValueType::ResourceView; }
+    [[nodiscard]] bool      IsAddressable() const noexcept        { return m_value_type == ValueType::BufferAddress; }
+    [[nodiscard]] bool      IsRootConstantBuffer() const noexcept { return m_value_type == ValueType::RootConstBuffer; }
+    [[nodiscard]] bool      IsRootConstantValue() const noexcept  { return m_value_type == ValueType::RootConstValue; }
+    [[nodiscard]] bool      IsMutable() const noexcept            { return m_access_type == Type::Mutable; }
+    [[nodiscard]] bool      IsConstant() const noexcept           { return m_access_type == Type::Constant; }
+    [[nodiscard]] bool      IsFrameConstant() const noexcept      { return m_access_type == Type::FrameConstant; }
     [[nodiscard]] explicit operator std::string() const noexcept final;
 
 private:
@@ -153,19 +156,33 @@ using ProgramBindingValueByArgument = std::unordered_map<ProgramArgument, Progra
 #define META_PROGRAM_ARG(shader_type, arg_name, access_type, value_type) \
     Methane::Graphics::Rhi::ProgramArgumentAccessor{ { shader_type, arg_name }, access_type, value_type }
 
-// Root-Constant argument accessors
+// Root-Constant-View argument accessors
 
-#define META_PROGRAM_ARG_ROOT(shader_type, arg_name, access_type) \
-    META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::RootConstant)
+#define META_PROGRAM_ARG_ROOT_BUFFER(shader_type, arg_name, access_type) \
+    META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::RootConstBuffer)
 
-#define META_PROGRAM_ARG_ROOT_CONSTANT(shader_type, arg_name) \
-    META_PROGRAM_ARG_ROOT(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Constant)
+#define META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_ROOT_BUFFER(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Constant)
 
-#define META_PROGRAM_ARG_ROOT_FRAME_CONSTANT(shader_type, arg_name) \
-    META_PROGRAM_ARG_ROOT(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::FrameConstant)
+#define META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_ROOT_BUFFER(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::FrameConstant)
 
-#define META_PROGRAM_ARG_ROOT_MUTABLE(shader_type, arg_name) \
-    META_PROGRAM_ARG_ROOT(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Mutable)
+#define META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(shader_type, arg_name) \
+    META_PROGRAM_ARG_ROOT_BUFFER(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Mutable)
+
+// Root-Constant-Value argument accessors
+
+#define META_PROGRAM_ARG_ROOT_VALUE(shader_type, arg_name, access_type) \
+META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::RootConstValue)
+
+#define META_PROGRAM_ARG_ROOT_VALUE_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_ROOT_VALUE(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Constant)
+
+#define META_PROGRAM_ARG_ROOT_VALUE_FRAME_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_ROOT_VALUE(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::FrameConstant)
+
+#define META_PROGRAM_ARG_ROOT_VALUE_MUTABLE(shader_type, arg_name) \
+    META_PROGRAM_ARG_ROOT_VALUE(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Mutable)
 
 // Resource-View argument accessors
 
@@ -181,30 +198,16 @@ using ProgramBindingValueByArgument = std::unordered_map<ProgramArgument, Progra
 #define META_PROGRAM_ARG_RESOURCE_VIEW_MUTABLE(shader_type, arg_name) \
     META_PROGRAM_ARG_RESOURCE_VIEW(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Mutable)
 
-// Resource-Views argument accessors
+// Buffer-Address argument accessors
 
-#define META_PROGRAM_ARG_RESOURCE_VIEWS(shader_type, arg_name, access_type) \
-    META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::ResourceViews)
+#define META_PROGRAM_ARG_BUFFER_ADDRESS(shader_type, arg_name, access_type) \
+    META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::BufferAddress)
 
-#define META_PROGRAM_ARG_RESOURCE_VIEWS_CONSTANT(shader_type, arg_name) \
-    META_PROGRAM_ARG_RESOURCE_VIEWS(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Constant)
+#define META_PROGRAM_ARG_BUFFER_ADDRESS_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_BUFFER_ADDRESS(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Constant)
 
-#define META_PROGRAM_ARG_RESOURCE_VIEWS_FRAME_CONSTANT(shader_type, arg_name) \
-    META_PROGRAM_ARG_RESOURCE_VIEWS(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::FrameConstant)
+#define META_PROGRAM_ARG_BUFFER_ADDRESS_FRAME_CONSTANT(shader_type, arg_name) \
+    META_PROGRAM_ARG_BUFFER_ADDRESS(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::FrameConstant)
 
-#define META_PROGRAM_ARG_RESOURCE_VIEWS_MUTABLE(shader_type, arg_name) \
-    META_PROGRAM_ARG_RESOURCE_VIEWS(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Mutable)
-
-// Resource-Address argument accessors
-
-#define META_PROGRAM_ARG_RESOURCE_ADDRESS(shader_type, arg_name, access_type) \
-    META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::ResourceAddress)
-
-#define META_PROGRAM_ARG_RESOURCE_ADDRESS_CONSTANT(shader_type, arg_name) \
-    META_PROGRAM_ARG_RESOURCE_ADDRESS(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Constant)
-
-#define META_PROGRAM_ARG_RESOURCE_ADDRESS_FRAME_CONSTANT(shader_type, arg_name) \
-    META_PROGRAM_ARG_RESOURCE_ADDRESS(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::FrameConstant)
-
-#define META_PROGRAM_ARG_RESOURCE_ADDRESS_MUTABLE(shader_type, arg_name) \
-    META_PROGRAM_ARG_RESOURCE_ADDRESS(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Mutable)
+#define META_PROGRAM_ARG_BUFFER_ADDRESS_MUTABLE(shader_type, arg_name) \
+    META_PROGRAM_ARG_BUFFER_ADDRESS(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Mutable)

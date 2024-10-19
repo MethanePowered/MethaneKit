@@ -33,12 +33,12 @@ namespace Methane::Graphics::Rhi
 const ProgramArgumentAccessor* IProgram::FindArgumentAccessor(const ArgumentAccessors& argument_accessors, const ProgramArgument& argument)
 {
     META_FUNCTION_TASK();
-    if (const auto arg_access_it = argument_accessors.find(argument);
+    if (const auto arg_access_it = argument_accessors.find(ArgumentAccessor(argument));
         arg_access_it != argument_accessors.end())
         return &*arg_access_it;
 
     const Argument all_shaders_argument(ShaderType::All, argument.GetName());
-    const auto arg_access_it = argument_accessors.find(all_shaders_argument);
+    const auto arg_access_it = argument_accessors.find(ArgumentAccessor(all_shaders_argument));
     return arg_access_it == argument_accessors.end() ? nullptr : &*arg_access_it;
 }
 

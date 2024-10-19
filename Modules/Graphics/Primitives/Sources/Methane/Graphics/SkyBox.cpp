@@ -110,7 +110,7 @@ private:
                 },
                 Rhi::ProgramArgumentAccessors
                 {
-                    META_PROGRAM_ARG_ROOT_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_skybox_uniforms")
+                    META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_skybox_uniforms")
                 },
                 render_pattern.GetAttachmentFormats()
             });

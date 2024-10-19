@@ -217,7 +217,7 @@ void Program::InitRootSignature()
         {
             auto& argument_binding_dx = static_cast<ProgramBindings::ArgumentBinding&>(*frame_argument_bindings[frame_index]);
             argument_binding_dx.SetRootParameterIndex(initial_frame_binding.GetRootParameterIndex());
-            if (!argument_binding_dx.GetSettings().argument.IsRootConstant())
+            if (!argument_binding_dx.GetSettings().argument.IsRootConstantBuffer())
             {
                 argument_binding_dx.SetDescriptorRange(descriptor_range);
             }
