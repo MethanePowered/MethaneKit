@@ -135,9 +135,6 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
     if (!m_root_constant_accessor_ptr->SetRootConstant(root_constant))
         return false;
 
-    if (m_settings.argument.IsConstant() && !m_resource_views.empty())
-        throw ConstantModificationException(GetSettings().argument);
-
     UpdateRootConstantResourceViews();
 
     if (m_emit_callback_enabled)
