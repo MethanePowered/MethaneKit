@@ -141,11 +141,7 @@ public:
                         },
                         Rhi::ProgramArgumentAccessors
                         {
-                            {
-                                { Rhi::ShaderType::Pixel, "g_constants" },
-                                Rhi::ProgramArgumentAccessType::Mutable,
-                                Rhi::ProgramArgumentValueType::RootConstant
-                            }
+                            META_PROGRAM_ARG_ROOT_MUTABLE(Rhi::ShaderType::Pixel, "g_constants")
                         },
                         render_pattern.GetAttachmentFormats(),
                     }),

@@ -107,11 +107,7 @@ void CubeMapArrayApp::Init()
                 },
                 rhi::ProgramArgumentAccessors
                 {
-                    {
-                        { rhi::ShaderType::Vertex, "g_uniforms" },
-                        rhi::ProgramArgumentAccessType::FrameConstant,
-                        rhi::ProgramArgumentValueType::RootConstant
-                    }
+                    META_PROGRAM_ARG_ROOT_FRAME_CONSTANT(rhi::ShaderType::Vertex, "g_uniforms")
                 },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }),

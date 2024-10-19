@@ -155,15 +155,11 @@ void ParallelRenderingApp::Init()
                 rhi::ProgramArgumentAccessors
                 {
                     // Addressable argument is manually defined
-                    {
-                        { rhi::ShaderType::All, "g_uniforms" },
-                        rhi::ProgramArgumentAccessor::Type::Mutable,
 #ifdef ROOT_CONSTANTS_ENABLED
-                        rhi::ProgramArgumentAccessor::ValueType::RootConstant
+                    META_PROGRAM_ARG_ROOT_MUTABLE(rhi::ShaderType::All, "g_uniforms")
 #else
-                        rhi::ProgramArgumentAccessor::ValueType::ResourceAddress
+                    META_PROGRAM_ARG_RESOURCE_ADDRESS_MUTABLE(rhi::ShaderType::All, "g_uniforms")
 #endif
-                    },
                     // Other arguments are defined in shader register spaces
                 },
                 GetScreenRenderPattern().GetAttachmentFormats()

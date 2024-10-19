@@ -193,11 +193,7 @@ void ShadowCubeApp::Init()
                 final_state_settings.program.GetSettings().input_buffer_layouts,
                 rhi::ProgramArgumentAccessors
                 {
-                    {
-                        { rhi::ShaderType::Vertex, "g_mesh_uniforms" },
-                        rhi::ProgramArgumentAccessType::Mutable,
-                        rhi::ProgramArgumentValueType::RootConstant
-                    }
+                    META_PROGRAM_ARG_ROOT_MUTABLE(rhi::ShaderType::Vertex, "g_mesh_uniforms")
                 },
                 m_shadow_pass_pattern.GetAttachmentFormats()
             }
