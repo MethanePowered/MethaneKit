@@ -150,7 +150,18 @@ void ConsoleComputeApp::Init()
 
     m_compute_state = m_compute_context.CreateComputeState({
             m_compute_context.CreateProgram({
-            rhi::Program::ShaderSet { { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } } }
+                rhi::Program::ShaderSet {
+                    { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } }
+                },
+                rhi::ProgramInputBufferLayouts{ /* not applicable for compute pipeline */},
+                rhi::ProgramArgumentAccessors
+                {
+                    {
+                        { rhi::ShaderType::Compute, "g_constants" },
+                        rhi::ProgramArgumentAccessType::Constant,
+                        rhi::ProgramArgumentValueType::RootConstant
+                    }
+                },
         }),
         rhi::ThreadGroupSize(16U, 16U, 1U)
     });
@@ -160,10 +171,6 @@ void ConsoleComputeApp::Init()
     m_compute_cmd_list = m_compute_context.GetComputeCommandKit().GetQueue().CreateComputeCommandList();
     m_compute_cmd_list.SetName("Game of Life Compute");
     m_compute_cmd_list_set = rhi::CommandListSet({ m_compute_cmd_list.GetInterface() });
-
-    m_constant_buffer = m_compute_context.CreateBuffer(
-        rhi::BufferSettings::ForConstantBuffer(sizeof(Constants), false, true));
-    m_constant_buffer.SetName("Constant Buffer");
 
     rhi::TextureSettings frame_texture_settings = rhi::TextureSettings::ForImage(
         gfx::Dimensions(GetFieldSize()),
@@ -177,9 +184,10 @@ void ConsoleComputeApp::Init()
     m_frame_texture = m_compute_context.CreateTexture(frame_texture_settings);
     m_frame_texture.SetName("Game of Life Frame Texture");
 
+    const Constants game_constants{ static_cast<uint>(GetGameRuleIndex()) };
     m_compute_bindings = m_compute_state.GetProgram().CreateBindings({
-        { { rhi::ShaderType::Compute, "g_constants"     }, m_constant_buffer.GetResourceView() },
-        { { rhi::ShaderType::Compute, "g_frame_texture" }, m_frame_texture.GetResourceView() },
+        { { rhi::ShaderType::Compute, "g_constants"     }, rhi::RootConstant(game_constants) },
+        { { rhi::ShaderType::Compute, "g_frame_texture" }, m_frame_texture.GetResourceView() }
     });
     m_compute_bindings.SetName("Game of Life Compute Bindings");
 
@@ -260,11 +268,9 @@ void ConsoleComputeApp::Restart()
 
 void ConsoleComputeApp::ResetRules()
 {
-    Constants game_constants{ static_cast<uint>(GetGameRuleIndex()) };
-    m_constant_buffer.SetData(m_compute_context.GetComputeCommandKit().GetQueue(),
-                              rhi::SubResource(reinterpret_cast<Data::ConstRawPtr>(&game_constants),
-                                               sizeof(Constants)));
-    m_compute_context.UploadResources();
+    const Constants game_constants{ static_cast<uint>(GetGameRuleIndex()) };
+    m_compute_bindings.Get({ rhi::ShaderType::Compute, "g_constants" })
+                      .SetRootConstant(rhi::RootConstant(game_constants));
 }
 
 void ConsoleComputeApp::RandomizeFrameData()
