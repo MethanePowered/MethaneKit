@@ -38,10 +38,6 @@ public:
         : Data::Chunk(chunk)
     { }
 
-    explicit RootConstant(Data::Size size)
-        : Data::Chunk(size)
-    { }
-
     RootConstant(Data::ConstRawPtr data_ptr, Data::Size size) noexcept
         : Data::Chunk(data_ptr, size)
     { }

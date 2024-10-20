@@ -170,7 +170,13 @@ bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
 ProgramArgumentBinding::operator std::string() const
 {
     META_FUNCTION_TASK();
-    return fmt::format("{} is bound to {}", m_settings.argument, fmt::join(m_resource_views, ", "));
+    if (m_settings.argument.IsRootConstantValue())
+        return fmt::format("{} is bound to value of {} bytes", m_settings.argument, m_root_constant_accessor_ptr->GetDataSize());
+
+    return m_resource_views.empty()
+         ? fmt::format("{} is unbound")
+         : fmt::format("{} is bound to {}", m_settings.argument, fmt::join(m_resource_views, ", "));
+
 }
 
 void ProgramArgumentBinding::Initialize(Program& program, Data::Index frame_index)

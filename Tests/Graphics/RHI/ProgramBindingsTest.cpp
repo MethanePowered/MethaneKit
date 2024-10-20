@@ -49,7 +49,12 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         const Rhi::ProgramArgumentAccessor in_buffer_accessor {
             Rhi::ShaderType::Compute, "InBuffer",
             Rhi::ProgramArgumentAccessType::Constant,
-            Rhi::ProgramArgumentValueType::RootConstantBuffer // !!!
+            Rhi::ProgramArgumentValueType::RootConstantBuffer
+        };
+        const Rhi::ProgramArgumentAccessor in_value_accessor {
+            Rhi::ShaderType::Compute, "InValue",
+            Rhi::ProgramArgumentAccessType::Mutable,
+            Rhi::ProgramArgumentValueType::RootConstantValue
         };
         const Rhi::ProgramArgumentAccessor in_texture_accessor{
             Rhi::ShaderType::Compute, "InTexture",
@@ -78,6 +83,7 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
                 Rhi::ProgramArgumentAccessors
                 {
                     in_buffer_accessor,
+                    in_value_accessor,
                     in_texture_accessor,
                     in_sampler_accessor,
                     out_buffer_accessor
@@ -85,6 +91,7 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
             });
         dynamic_cast<Null::Program&>(compute_program.GetInterface()).SetArgumentBindings({
             { in_buffer_accessor,  { Rhi::ResourceType::Buffer,  1U, 4U } },
+            { in_value_accessor,   { Rhi::ResourceType::Buffer,  1U, 4U } },
             { in_texture_accessor, { Rhi::ResourceType::Texture, 1U, 0U } },
             { in_sampler_accessor, { Rhi::ResourceType::Sampler, 1U, 0U } },
             { out_buffer_accessor, { Rhi::ResourceType::Buffer,  1U, 0U } },
@@ -142,7 +149,7 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         REQUIRE_NOTHROW(program_bindings = compute_program.CreateBindings(compute_resource_views, 2U));
         REQUIRE(program_bindings.IsInitialized());
         CHECK(program_bindings.GetInterfacePtr());
-        CHECK(program_bindings.GetArguments().size() == 4U);
+        CHECK(program_bindings.GetArguments().size() == 5U);
         CHECK(program_bindings.GetFrameIndex() == 2U);
         for(const auto& [program_argument, argument_binding_values] : compute_resource_views)
         {
@@ -181,7 +188,7 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         {
             REQUIRE_NOTHROW(program_bindings.push_back(compute_program.CreateBindings(compute_resource_views)));
             REQUIRE(program_bindings.back().IsInitialized());
-            CHECK(program_bindings.back().GetArguments().size() == 4U);
+            CHECK(program_bindings.back().GetArguments().size() == 5U);
             CHECK(program_bindings.back().GetBindingsIndex() == i);
         }
         CHECK(compute_program.GetBindingsCount() == 10);
@@ -198,7 +205,7 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         }, 3U));
         REQUIRE(copy_program_bindings.IsInitialized());
         CHECK(copy_program_bindings.GetInterfacePtr());
-        CHECK(copy_program_bindings.GetArguments().size() == 4U);
+        CHECK(copy_program_bindings.GetArguments().size() == 5U);
         CHECK(copy_program_bindings.GetFrameIndex() == 3U);
         CHECK(copy_program_bindings.Get({ Rhi::ShaderType::Compute, "InTexture" }).GetResourceViews().at(0).GetResourcePtr().get() == texture1.GetInterfacePtr().get());
         CHECK(copy_program_bindings.Get({ Rhi::ShaderType::Compute, "InSampler" }).GetResourceViews().at(0).GetResourcePtr().get() == sampler.GetInterfacePtr().get());
@@ -244,10 +251,11 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
     SECTION("Can Get Program Binding Arguments")
     {
         const Rhi::ProgramBindings program_bindings = compute_program.CreateBindings(compute_resource_views);
-        REQUIRE(program_bindings.GetArguments().size() == 4U);
+        REQUIRE(program_bindings.GetArguments().size() == 5U);
         Rhi::ProgramArguments program_arguments;
         REQUIRE_NOTHROW(program_arguments = program_bindings.GetArguments());
         CHECK(program_arguments.count({ Rhi::ShaderType::Compute, "InBuffer" }) == 1);
+        CHECK(program_arguments.count({ Rhi::ShaderType::Compute, "InValue" }) == 1);
         CHECK(program_arguments.count({ Rhi::ShaderType::Compute, "InTexture" }) == 1);
         CHECK(program_arguments.count({ Rhi::ShaderType::Compute, "InSampler" }) == 1);
         CHECK(program_arguments.count({ Rhi::ShaderType::Compute, "OutBuffer" }) == 1);
@@ -307,21 +315,34 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         CHECK(texture_binding.GetResourceViews().at(0) == texture2.GetResourceView());
     }
 
-    SECTION("Can Set Root-Constant Value")
+    SECTION("Can Set Root-Constant Buffer")
     {
         Rhi::IProgramArgumentBinding& root_constant_binding = program_bindings.Get({ Rhi::ShaderType::Compute, "InBuffer" });
-        const Rhi::RootConstant root_constant(42U);
-        REQUIRE_NOTHROW(root_constant_binding.SetRootConstant(root_constant));
-        CHECK(root_constant_binding.GetRootConstant() == root_constant);
+        const Rhi::RootConstant test_root_constant(42U);
+        REQUIRE_NOTHROW(root_constant_binding.SetRootConstant(test_root_constant));
+        CHECK(root_constant_binding.GetResourceViews().size() == 1U);
+        CHECK(root_constant_binding.GetRootConstant() == test_root_constant);
         CHECK(root_constant_binding.GetRootConstant().GetValue<uint32_t>() == 42U);
+    }
+
+    SECTION("Can Set Root-Constant Value")
+    {
+        Rhi::IProgramArgumentBinding& root_constant_binding = program_bindings.Get({ Rhi::ShaderType::Compute, "InValue" });
+        const Rhi::RootConstant test_root_constant(36U);
+        REQUIRE_NOTHROW(root_constant_binding.SetRootConstant(test_root_constant));
+        CHECK(root_constant_binding.GetResourceViews().empty());
+        CHECK(root_constant_binding.GetRootConstant() == test_root_constant);
+        CHECK(root_constant_binding.GetRootConstant().GetValue<uint32_t>() == 36U);
     }
 
     SECTION("Convert to String")
     {
+        program_bindings.Get({ Rhi::ShaderType::Compute, "InBuffer" }).SetRootConstant(Rhi::RootConstant(42U));
         CHECK(static_cast<std::string>(program_bindings) ==
-              "  - Compute shaders argument 'InBuffer' (Constant, RootConstBuffer) is bound to ;\n" \
+              "  - Compute shaders argument 'InBuffer' (Constant, RootConstantBuffer) is bound to Buffer 'Program Root Constant Buffer' subresources from index(d:0, a:0, m:0) for count(d:1, a:1, m:1) with offset 0;\n" \
               "  - Compute shaders argument 'InSampler' (Constant, ResourceView) is bound to Sampler 'S' subresources from index(d:0, a:0, m:0) for count(d:0, a:0, m:0) with offset 0;\n" \
               "  - Compute shaders argument 'InTexture' (Mutable, ResourceView) is bound to Texture 'T1' subresources from index(d:0, a:0, m:0) for count(d:1, a:1, m:1) with offset 0;\n" \
+              "  - Compute shaders argument 'InValue' (Mutable, RootConstantValue) is bound to value of 4 bytes;\n" \
               "  - Compute shaders argument 'OutBuffer' (Mutable, ResourceView) is bound to Buffer 'B1' subresources from index(d:0, a:0, m:0) for count(d:1, a:1, m:1) with offset 0.");
     }
 }
