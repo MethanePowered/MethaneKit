@@ -319,7 +319,7 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
     SECTION("Convert to String")
     {
         CHECK(static_cast<std::string>(program_bindings) ==
-              "  - Compute shaders argument 'InBuffer' (Constant, RootConstant) is bound to ;\n" \
+              "  - Compute shaders argument 'InBuffer' (Constant, RootConstBuffer) is bound to ;\n" \
               "  - Compute shaders argument 'InSampler' (Constant, ResourceView) is bound to Sampler 'S' subresources from index(d:0, a:0, m:0) for count(d:0, a:0, m:0) with offset 0;\n" \
               "  - Compute shaders argument 'InTexture' (Mutable, ResourceView) is bound to Texture 'T1' subresources from index(d:0, a:0, m:0) for count(d:1, a:1, m:1) with offset 0;\n" \
               "  - Compute shaders argument 'OutBuffer' (Mutable, ResourceView) is bound to Buffer 'B1' subresources from index(d:0, a:0, m:0) for count(d:1, a:1, m:1) with offset 0.");
