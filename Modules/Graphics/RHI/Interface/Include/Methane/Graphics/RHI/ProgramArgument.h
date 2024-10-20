@@ -102,10 +102,10 @@ using ProgramArgumentAccessMask = Data::EnumMask<ProgramArgumentAccessType>;
 
 enum class ProgramArgumentValueType
 {
-    ResourceView,    // Default argument access by descriptor from resource view
-    BufferAddress,   // GPU addressable buffer view with offset and size
-    RootConstBuffer, // Root constant stored in the program-managed buffer and referenced by GPU address
-    RootConstValue   // Root constant value stored in the root signature as 32-bit values
+    ResourceView,       // Default argument access by descriptor from resource view
+    BufferAddress,      // GPU addressable buffer view with offset and size
+    RootConstantBuffer, // Root constant stored in the program-managed buffer and referenced by GPU address
+    RootConstantValue   // Root constant value stored in the root signature as 32-bit values
 };
 
 using ProgramArguments = std::unordered_set<ProgramArgument, ProgramArgument::Hash>;
@@ -133,8 +133,8 @@ public:
     [[nodiscard]] ValueType GetValueType() const noexcept         { return m_value_type; }
     [[nodiscard]] bool      IsResourceView() const noexcept       { return m_value_type == ValueType::ResourceView; }
     [[nodiscard]] bool      IsAddressable() const noexcept        { return m_value_type == ValueType::BufferAddress; }
-    [[nodiscard]] bool      IsRootConstantBuffer() const noexcept { return m_value_type == ValueType::RootConstBuffer; }
-    [[nodiscard]] bool      IsRootConstantValue() const noexcept  { return m_value_type == ValueType::RootConstValue; }
+    [[nodiscard]] bool      IsRootConstantBuffer() const noexcept { return m_value_type == ValueType::RootConstantBuffer; }
+    [[nodiscard]] bool      IsRootConstantValue() const noexcept  { return m_value_type == ValueType::RootConstantValue; }
     [[nodiscard]] bool      IsMutable() const noexcept            { return m_access_type == Type::Mutable; }
     [[nodiscard]] bool      IsConstant() const noexcept           { return m_access_type == Type::Constant; }
     [[nodiscard]] bool      IsFrameConstant() const noexcept      { return m_access_type == Type::FrameConstant; }
@@ -159,7 +159,7 @@ using ProgramBindingValueByArgument = std::unordered_map<ProgramArgument, Progra
 // Root-Constant-View argument accessors
 
 #define META_PROGRAM_ARG_ROOT_BUFFER(shader_type, arg_name, access_type) \
-    META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::RootConstBuffer)
+    META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::RootConstantBuffer)
 
 #define META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(shader_type, arg_name) \
     META_PROGRAM_ARG_ROOT_BUFFER(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Constant)

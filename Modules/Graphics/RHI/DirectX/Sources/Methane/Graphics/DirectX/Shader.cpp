@@ -138,8 +138,8 @@ static ProgramArgumentBindingType GetProgramArgumentBindingType(Rhi::ProgramArgu
     META_FUNCTION_TASK();
     switch(arg_value_type)
     {
-    case Rhi::ProgramArgumentValueType::RootConstBuffer: return ProgramArgumentBindingType::ConstantBufferView;
-    case Rhi::ProgramArgumentValueType::RootConstValue:  return ProgramArgumentBindingType::Constant32Bit;
+    case Rhi::ProgramArgumentValueType::RootConstantBuffer: return ProgramArgumentBindingType::ConstantBufferView;
+    case Rhi::ProgramArgumentValueType::RootConstantValue:  return ProgramArgumentBindingType::Constant32Bit;
     case Rhi::ProgramArgumentValueType::ResourceView:    return ProgramArgumentBindingType::DescriptorTable;
     case Rhi::ProgramArgumentValueType::BufferAddress:
         {
