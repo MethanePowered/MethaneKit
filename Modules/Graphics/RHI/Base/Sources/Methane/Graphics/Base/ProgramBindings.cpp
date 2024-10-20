@@ -121,6 +121,12 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings, 
     InitializeArgumentBindings(&other_program_bindings);
 }
 
+ProgramBindings::~ProgramBindings()
+{
+    META_FUNCTION_TASK();
+    static_cast<Program&>(*m_program_ptr).DecrementBindingsCount();
+}
+
 Rhi::IProgram& ProgramBindings::GetProgram() const
 {
     META_FUNCTION_TASK();

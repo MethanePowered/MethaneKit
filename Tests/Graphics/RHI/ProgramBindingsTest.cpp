@@ -193,7 +193,7 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         }
         CHECK(compute_program.GetBindingsCount() == 10);
         program_bindings.clear();
-        // FIXME: CHECK(compute_program.GetBindingsCount() == 0);
+        CHECK(compute_program.GetBindingsCount() == 0);
     }
 
     SECTION("Create A Copy of Program Bindings with Replacements")

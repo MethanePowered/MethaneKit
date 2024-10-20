@@ -82,7 +82,7 @@ public:
     virtual ~RootConstantStorage();
 
     // RootConstantStorage virtual methods
-    virtual [[nodiscard]] UniquePtr<Accessor> ReserveRootConstant(Data::Size root_constant_size);
+    [[nodiscard]] virtual UniquePtr<Accessor> ReserveRootConstant(Data::Size root_constant_size);
     virtual void ReleaseRootConstant(const Accessor& accessor);
     virtual void SetRootConstant(const Accessor& accessor, const Rhi::RootConstant& root_constant);
 
