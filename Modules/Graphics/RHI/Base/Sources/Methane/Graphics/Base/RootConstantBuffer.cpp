@@ -37,8 +37,10 @@ namespace Methane::Graphics::Base
 // Root constants memory alignment should match D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT
 static constexpr Data::Size g_root_constant_alignment = 256;
 
-RootConstantAccessor::RootConstantAccessor(RootConstantBuffer& buffer, const Range& buffer_range, Data::Size data_size)
-    : m_buffer(buffer)
+//////////////////// RootConstantAccessor ////////////////////
+
+RootConstantAccessor::RootConstantAccessor(RootConstantStorage& storage, const Range& buffer_range, Data::Size data_size)
+    : m_storage_ref(storage)
     , m_buffer_range(buffer_range)
     , m_data_size(data_size)
 {
@@ -49,14 +51,14 @@ RootConstantAccessor::RootConstantAccessor(RootConstantBuffer& buffer, const Ran
 RootConstantAccessor::~RootConstantAccessor()
 {
     META_FUNCTION_TASK();
-    m_buffer.get().ReleaseRootConstant(*this);
+    m_storage_ref.get().ReleaseRootConstant(*this);
 }
 
 Rhi::RootConstant RootConstantAccessor::GetRootConstant() const
 {
     META_FUNCTION_TASK();
     return m_is_initialized
-         ? Rhi::RootConstant(m_buffer.get().GetData().data() + m_buffer_range.GetStart(), m_data_size)
+         ? Rhi::RootConstant(m_storage_ref.get().GetData().data() + m_buffer_range.GetStart(), m_data_size)
          : Rhi::RootConstant();
 }
 
@@ -66,26 +68,21 @@ bool RootConstantAccessor::SetRootConstant(const Rhi::RootConstant& root_constan
     if (root_constant == GetRootConstant())
         return false;
 
-    m_buffer.get().SetRootConstant(*this, root_constant);
+    m_storage_ref.get().SetRootConstant(*this, root_constant);
     m_is_initialized = true;
     return true;
 }
 
-const Rhi::ResourceView RootConstantAccessor::GetResourceView() const
+Rhi::ResourceView RootConstantAccessor::GetResourceView() const
 {
     META_FUNCTION_TASK();
-    return Rhi::ResourceView(m_buffer.get().GetBuffer(), m_buffer_range.GetStart(), m_data_size);
+    auto& root_constant_buffer = dynamic_cast<RootConstantBuffer&>(m_storage_ref.get());
+    return root_constant_buffer.GetResourceView(m_buffer_range.GetStart(), m_data_size);
 }
 
-RootConstantBuffer::RootConstantBuffer(Context& context, std::string_view buffer_name)
-    : m_context(context)
-    , m_buffer_name(buffer_name)
-{
-    META_FUNCTION_TASK();
-    dynamic_cast<Data::IEmitter<IContextCallback>&>(context).Connect(*this);
-}
+//////////////////// RootConstantStorage ////////////////////
 
-RootConstantBuffer::~RootConstantBuffer()
+RootConstantStorage::~RootConstantStorage()
 {
     META_FUNCTION_TASK();
     std::lock_guard lock(m_mutex);
@@ -93,7 +90,7 @@ RootConstantBuffer::~RootConstantBuffer()
            m_free_ranges == RangeSet({ { 0, m_deferred_size } }));
 }
 
-UniquePtr<RootConstantAccessor> RootConstantBuffer::ReserveRootConstant(Data::Size root_constant_size)
+UniquePtr<RootConstantAccessor> RootConstantStorage::ReserveRootConstant(Data::Size root_constant_size)
 {
     META_FUNCTION_TASK();
     std::lock_guard lock(m_mutex);
@@ -104,8 +101,7 @@ UniquePtr<RootConstantAccessor> RootConstantBuffer::ReserveRootConstant(Data::Si
     if (m_free_ranges.IsEmpty())
     {
         m_deferred_size += aligned_constant_size;
-        m_buffer_data_resize_required = true;
-        m_buffer_resize_required = true;
+        m_data_resize_required = true;
         buffer_range = Accessor::Range(m_deferred_size - aligned_constant_size, m_deferred_size);
     }
     else
@@ -116,7 +112,7 @@ UniquePtr<RootConstantAccessor> RootConstantBuffer::ReserveRootConstant(Data::Si
     return std::make_unique<Accessor>(*this, buffer_range, root_constant_size);
 }
 
-void RootConstantBuffer::ReleaseRootConstant(const Accessor& accessor)
+void RootConstantStorage::ReleaseRootConstant(const Accessor& accessor)
 {
     META_FUNCTION_TASK();
     std::lock_guard lock(m_mutex);
@@ -134,7 +130,7 @@ void RootConstantBuffer::ReleaseRootConstant(const Accessor& accessor)
     }
 }
 
-void RootConstantBuffer::SetRootConstant(const Accessor& accessor, const Rhi::RootConstant& root_constant)
+void RootConstantStorage::SetRootConstant(const Accessor& accessor, const Rhi::RootConstant& root_constant)
 {
     META_FUNCTION_TASK();
     META_CHECK_FALSE_DESCR(root_constant.IsEmptyOrNull(), "can not set empty or null root constant");
@@ -145,17 +141,17 @@ void RootConstantBuffer::SetRootConstant(const Accessor& accessor, const Rhi::Ro
     META_CHECK_LESS_OR_EQUAL_DESCR(root_constant.GetDataSize(), data_range.GetLength(),
                                    "root constant size should be less or equal to reserved memory range size");
     std::copy(root_constant.GetDataPtr(), root_constant.GetDataEndPtr(), data.data() + data_range.GetStart());
-
-    m_buffer_data_changed = true;
-
-    // Buffer resource data is updated in OnContextUploadingResources just before upload to GPU
-    m_context.RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources);
 }
 
-Data::Bytes& RootConstantBuffer::GetData()
+std::lock_guard<RootConstantStorage::Mutex> RootConstantStorage::GetLockGuard()
+{
+    return std::lock_guard<Mutex>(m_mutex);
+}
+
+Data::Bytes& RootConstantStorage::GetData()
 {
     META_FUNCTION_TASK();
-    if (!m_buffer_data_resize_required)
+    if (!m_data_resize_required)
         return m_buffer_data;
 
     std::lock_guard lock(m_mutex);
@@ -164,9 +160,39 @@ Data::Bytes& RootConstantBuffer::GetData()
     // so that its uninitialized state differs from the first initialized state
     // and buffer views will be written in descriptor views.
     m_buffer_data.resize(m_deferred_size, std::numeric_limits<Data::Byte>::max());
-    m_buffer_data_resize_required = false;
+    m_data_resize_required = false;
 
     return m_buffer_data;
+}
+
+//////////////////// RootConstantBuffer ////////////////////
+
+RootConstantBuffer::RootConstantBuffer(Context& context, std::string_view buffer_name)
+    : RootConstantStorage()
+    , m_context(context)
+    , m_buffer_name(buffer_name)
+{
+    META_FUNCTION_TASK();
+    dynamic_cast<Data::IEmitter<IContextCallback>&>(context).Connect(*this);
+}
+
+UniquePtr<RootConstantStorage::Accessor> RootConstantBuffer::ReserveRootConstant(Data::Size root_constant_size)
+{
+    META_FUNCTION_TASK();
+    UniquePtr<Accessor> accessor_ptr = RootConstantStorage::ReserveRootConstant(root_constant_size);
+    m_buffer_resize_required = RootConstantStorage::IsDataResizeRequired();
+    return accessor_ptr;
+}
+
+void RootConstantBuffer::SetRootConstant(const Accessor& accessor, const Rhi::RootConstant& root_constant)
+{
+    META_FUNCTION_TASK();
+    RootConstantStorage::SetRootConstant(accessor, root_constant);
+
+    m_buffer_data_changed = true;
+
+    // Buffer resource data is updated in OnContextUploadingResources just before upload to GPU
+    m_context.RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources);
 }
 
 Rhi::IBuffer& RootConstantBuffer::GetBuffer()
@@ -175,10 +201,10 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
     if (!m_buffer_resize_required && m_buffer_ptr)
         return *m_buffer_ptr;
 
-    std::lock_guard lock(m_mutex);
+    std::lock_guard lock = RootConstantStorage::GetLockGuard();
 
     const bool buffer_changed = !!m_buffer_ptr;
-    const auto buffer_settings = Rhi::BufferSettings::ForConstantBuffer(m_deferred_size, true, true);
+    const auto buffer_settings = Rhi::BufferSettings::ForConstantBuffer(GetDataSize(), true, true);
     Ptr<Rhi::IBuffer> prev_buffer_ptr = m_buffer_ptr;
     m_buffer_ptr = m_context.CreateBuffer(buffer_settings);
     m_buffer_ptr->SetName(m_buffer_name);
@@ -194,6 +220,12 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
         Emit(&ICallback::OnRootConstantBufferChanged, *this, std::cref(prev_buffer_ptr));
     }
     return *m_buffer_ptr;
+}
+
+Rhi::ResourceView RootConstantBuffer::GetResourceView(Data::Size offset, Data::Size size)
+{
+    META_FUNCTION_TASK();
+    return Rhi::ResourceView(GetBuffer(), offset, size);
 }
 
 void RootConstantBuffer::SetBufferName(std::string_view buffer_name)
@@ -213,9 +245,12 @@ void RootConstantBuffer::UpdateGpuBuffer(Rhi::ICommandQueue& target_cmd_queue)
     if (!m_buffer_data_changed)
         return;
 
-    META_CHECK_NOT_EMPTY(m_buffer_data);
+    Data::Bytes& buffer_data = GetData();
+    META_CHECK_NOT_EMPTY(buffer_data);
+
     Rhi::IBuffer& buffer = GetBuffer();
-    buffer.SetData(target_cmd_queue, Rhi::SubResource(m_buffer_data));
+    buffer.SetData(target_cmd_queue, Rhi::SubResource(buffer_data));
+
     m_buffer_data_changed = false;
 }
 

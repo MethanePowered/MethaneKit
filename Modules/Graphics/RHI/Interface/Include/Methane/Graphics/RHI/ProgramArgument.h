@@ -135,6 +135,7 @@ public:
     [[nodiscard]] bool      IsAddressable() const noexcept        { return m_value_type == ValueType::BufferAddress; }
     [[nodiscard]] bool      IsRootConstantBuffer() const noexcept { return m_value_type == ValueType::RootConstantBuffer; }
     [[nodiscard]] bool      IsRootConstantValue() const noexcept  { return m_value_type == ValueType::RootConstantValue; }
+    [[nodiscard]] bool      IsRootConstant() const noexcept       { return IsRootConstantBuffer() || IsRootConstantValue(); }
     [[nodiscard]] bool      IsMutable() const noexcept            { return m_access_type == Type::Mutable; }
     [[nodiscard]] bool      IsConstant() const noexcept           { return m_access_type == Type::Constant; }
     [[nodiscard]] bool      IsFrameConstant() const noexcept      { return m_access_type == Type::FrameConstant; }
@@ -173,7 +174,7 @@ using ProgramBindingValueByArgument = std::unordered_map<ProgramArgument, Progra
 // Root-Constant-Value argument accessors
 
 #define META_PROGRAM_ARG_ROOT_VALUE(shader_type, arg_name, access_type) \
-META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::RootConstValue)
+META_PROGRAM_ARG(shader_type, arg_name, access_type, Methane::Graphics::Rhi::ProgramArgumentValueType::RootConstantValue)
 
 #define META_PROGRAM_ARG_ROOT_VALUE_CONSTANT(shader_type, arg_name) \
     META_PROGRAM_ARG_ROOT_VALUE(shader_type, arg_name, Methane::Graphics::Rhi::ProgramArgumentAccessType::Constant)

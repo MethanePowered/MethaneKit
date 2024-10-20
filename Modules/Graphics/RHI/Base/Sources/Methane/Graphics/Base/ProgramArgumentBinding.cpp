@@ -61,7 +61,7 @@ void ProgramArgumentBinding::MergeSettings(const ProgramArgumentBinding& other)
 bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
-    META_CHECK_FALSE_DESCR(m_settings.argument.IsRootConstantBuffer(),
+    META_CHECK_FALSE_DESCR(m_settings.argument.IsRootConstant(),
                            "Can not set resource view for argument which is marked with "
                            "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\".");
 
@@ -121,7 +121,7 @@ Rhi::RootConstant ProgramArgumentBinding::GetRootConstant() const
 bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_constant)
 {
     META_FUNCTION_TASK();
-    META_CHECK_TRUE_DESCR(m_settings.argument.IsRootConstantBuffer(),
+    META_CHECK_TRUE_DESCR(m_settings.argument.IsRootConstant(),
                           "Can not set root constant for argument with is not marked with "
                           "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\"");
     META_CHECK_NOT_NULL_DESCR(m_root_constant_accessor_ptr,
@@ -135,7 +135,8 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
     if (!m_root_constant_accessor_ptr->SetRootConstant(root_constant))
         return false;
 
-    UpdateRootConstantResourceViews();
+    if (m_settings.argument.IsRootConstantBuffer())
+        UpdateRootConstantResourceViews();
 
     if (m_emit_callback_enabled)
         Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
@@ -149,7 +150,8 @@ bool ProgramArgumentBinding::SetRootConstant(const Rhi::RootConstant& root_const
 bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
 {
     META_FUNCTION_TASK();
-    if (!m_root_constant_accessor_ptr)
+    if (!m_root_constant_accessor_ptr ||
+        !m_settings.argument.IsRootConstantBuffer())
         return false;
 
     // FIXME: Backend buffer changes inside GetResourceView call,
@@ -174,12 +176,18 @@ ProgramArgumentBinding::operator std::string() const
 void ProgramArgumentBinding::Initialize(Program& program, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    if (m_settings.argument.IsRootConstantBuffer() &&
-        !m_root_constant_accessor_ptr)
+    if (m_settings.argument.IsRootConstant() && !m_root_constant_accessor_ptr)
     {
-        RootConstantBuffer& root_constant_buffer = program.GetRootConstantBuffer(m_settings.argument.GetAccessorType(), frame_index);
-        m_root_constant_accessor_ptr = root_constant_buffer.ReserveRootConstant(m_settings.buffer_size);
-        root_constant_buffer.Connect(*this);
+        if (m_settings.argument.IsRootConstantValue())
+        {
+            m_root_constant_accessor_ptr = program.GetRootConstantStorage().ReserveRootConstant(m_settings.buffer_size);
+        }
+        else
+        {
+            RootConstantBuffer& root_constant_buffer = program.GetRootConstantBuffer(m_settings.argument.GetAccessorType(), frame_index);
+            m_root_constant_accessor_ptr = root_constant_buffer.ReserveRootConstant(m_settings.buffer_size);
+            root_constant_buffer.Connect(*this);
+        }
     }
 }
 

@@ -234,7 +234,7 @@ Rhi::IProgramBindings::BindingValueByArgument ProgramBindings::ReplaceBindingVal
             binding_value_by_argument.count(program_argument))
             continue;
 
-        if (argument_settings.argument.IsRootConstantBuffer())
+        if (argument_settings.argument.IsRootConstant())
             binding_value_by_argument.try_emplace(program_argument, argument_binding_ptr->GetRootConstant());
         else
             binding_value_by_argument.try_emplace(program_argument, argument_binding_ptr->GetResourceViews());
@@ -345,7 +345,7 @@ Rhi::ProgramArguments ProgramBindings::GetUnboundArguments() const
                                   "no resource binding is set for program argument '{}'",
                                   program_argument.GetName());
 
-        if (!argument_binding_ptr->GetSettings().argument.IsRootConstantBuffer() &&
+        if (!argument_binding_ptr->GetSettings().argument.IsRootConstant() &&
             argument_binding_ptr->GetResourceViews().empty())
         {
             unbound_arguments.insert(program_argument);

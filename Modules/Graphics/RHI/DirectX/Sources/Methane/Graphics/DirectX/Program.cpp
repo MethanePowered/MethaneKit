@@ -189,6 +189,10 @@ void Program::InitRootSignature()
             InitArgumentAsDescriptorTable(descriptor_ranges, root_parameters, descriptor_offset_by_heap_type, argument_binding, bind_settings, shader_visibility);
             break;
 
+        case DirectArgumentBinding::Type::Constant32Bit:
+            root_parameters.back().InitAsConstants(bind_settings.buffer_size / sizeof(uint32_t), bind_settings.point, bind_settings.space, shader_visibility);
+            break;
+
         case DirectArgumentBinding::Type::ConstantBufferView:
             root_parameters.back().InitAsConstantBufferView(bind_settings.point, bind_settings.space, D3D12_ROOT_DESCRIPTOR_FLAG_DATA_STATIC, shader_visibility);
             break;
@@ -217,7 +221,7 @@ void Program::InitRootSignature()
         {
             auto& argument_binding_dx = static_cast<ProgramBindings::ArgumentBinding&>(*frame_argument_bindings[frame_index]);
             argument_binding_dx.SetRootParameterIndex(initial_frame_binding.GetRootParameterIndex());
-            if (!argument_binding_dx.GetSettings().argument.IsRootConstantBuffer())
+            if (!argument_binding_dx.GetSettings().argument.IsRootConstant())
             {
                 argument_binding_dx.SetDescriptorRange(descriptor_range);
             }

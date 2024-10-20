@@ -268,7 +268,7 @@ void ProgramBindings::UpdateDynamicDescriptorOffsets()
         {
             const Rhi::ProgramArgumentAccessor& program_argument_accessor = argument_binding.GetSettings().argument;
             if (!program_argument_accessor.IsAddressable() &&
-                !program_argument_accessor.IsRootConstantBuffer())
+                !program_argument_accessor.IsRootConstant())
                 return;
 
             const Program::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(program_argument_accessor.GetAccessorType());

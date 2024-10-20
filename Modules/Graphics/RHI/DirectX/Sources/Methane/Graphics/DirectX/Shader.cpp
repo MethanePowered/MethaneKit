@@ -140,7 +140,7 @@ static ProgramArgumentBindingType GetProgramArgumentBindingType(Rhi::ProgramArgu
     {
     case Rhi::ProgramArgumentValueType::RootConstantBuffer: return ProgramArgumentBindingType::ConstantBufferView;
     case Rhi::ProgramArgumentValueType::RootConstantValue:  return ProgramArgumentBindingType::Constant32Bit;
-    case Rhi::ProgramArgumentValueType::ResourceView:    return ProgramArgumentBindingType::DescriptorTable;
+    case Rhi::ProgramArgumentValueType::ResourceView:       return ProgramArgumentBindingType::DescriptorTable;
     case Rhi::ProgramArgumentValueType::BufferAddress:
         {
             if (IsUnorderedAccessInputType(input_type))

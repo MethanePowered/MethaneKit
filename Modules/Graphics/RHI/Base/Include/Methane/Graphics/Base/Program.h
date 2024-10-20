@@ -61,11 +61,12 @@ public:
     // IObject overrides
     bool SetName(std::string_view name) override;
 
-    const Context&      GetContext() const      { return m_context; }
-    RootConstantBuffer& GetRootConstantBuffer() { return m_root_constant_buffer; }
-    RootConstantBuffer& GetRootMutableBuffer()  { return m_root_mutable_buffer; }
-    RootConstantBuffer& GetRootFrameConstantBuffer(Data::Index frame_index);
-    RootConstantBuffer& GetRootConstantBuffer(Rhi::ProgramArgumentAccessType access_type, uint32_t frame_index = 0U);
+    const Context&       GetContext() const       { return m_context; }
+    RootConstantStorage& GetRootConstantStorage() { return m_root_constant_storage; }
+    RootConstantBuffer&  GetRootConstantBuffer()  { return m_root_constant_buffer; }
+    RootConstantBuffer&  GetRootMutableBuffer()   { return m_root_mutable_buffer; }
+    RootConstantBuffer&  GetRootFrameConstantBuffer(Data::Index frame_index);
+    RootConstantBuffer&  GetRootConstantBuffer(Rhi::ProgramArgumentAccessType access_type, uint32_t frame_index = 0U);
 
 protected:
     using ArgumentBinding       = ProgramBindings::ArgumentBinding;
@@ -102,6 +103,7 @@ private:
     Settings                 m_settings;
     const ShadersByType      m_shaders_by_type;
     const Rhi::ShaderTypes   m_shader_types;
+    RootConstantStorage      m_root_constant_storage;
     RootFrameConstantBuffers m_root_frame_constant_buffers;
     RootConstantBuffer       m_root_constant_buffer;
     RootConstantBuffer       m_root_mutable_buffer;

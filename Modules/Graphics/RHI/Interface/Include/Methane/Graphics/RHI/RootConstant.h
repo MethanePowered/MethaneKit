@@ -34,8 +34,12 @@ class RootConstant
 public:
     RootConstant() = default;
 
-    RootConstant(Chunk&& chunk)
+    explicit RootConstant(Chunk&& chunk)
         : Data::Chunk(chunk)
+    { }
+
+    explicit RootConstant(Data::Size size)
+        : Data::Chunk(size)
     { }
 
     RootConstant(Data::ConstRawPtr data_ptr, Data::Size size) noexcept
