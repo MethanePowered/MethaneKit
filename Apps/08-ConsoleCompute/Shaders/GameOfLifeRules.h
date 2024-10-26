@@ -40,6 +40,7 @@ static const std::vector<std::string> g_gol_rule_labels{
 };
 
 using uint = uint32_t;
+using uint3 = std::array<uint, 3>;
 
 #endif
 
@@ -52,7 +53,8 @@ static const uint g_game_rule_vote       = 5; // B5678/S45678
 
 struct Constants
 {
-    uint game_rule_id;
+    uint   game_rule_id;
+    uint3 _padding;
 };
 
 #ifndef __cplusplus
