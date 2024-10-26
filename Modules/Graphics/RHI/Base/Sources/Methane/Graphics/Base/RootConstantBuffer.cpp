@@ -80,6 +80,12 @@ Rhi::ResourceView RootConstantAccessor::GetResourceView() const
     return root_constant_buffer.GetResourceView(m_buffer_range.GetStart(), m_data_size);
 }
 
+Data::Byte* RootConstantAccessor::GetDataPtr()
+{
+    META_FUNCTION_TASK();
+    return m_storage_ref.get().GetData().data() + m_buffer_range.GetStart();
+}
+
 //////////////////// RootConstantStorage ////////////////////
 
 RootConstantStorage::~RootConstantStorage()

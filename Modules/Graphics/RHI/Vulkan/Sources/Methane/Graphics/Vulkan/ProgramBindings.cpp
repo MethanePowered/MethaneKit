@@ -40,6 +40,16 @@ Vulkan implementation of the program bindings interface.
 namespace Methane::Graphics::Vulkan
 {
 
+ProgramBindings::PushConstantSetter::PushConstantSetter(Rhi::ProgramArgumentAccessType access_type,
+                                                        vk::ShaderStageFlags shader_stages, uint32_t offset,
+                                                        Base::RootConstantAccessor& root_const_accessor_ref)
+    : access_type(access_type)
+    , shader_stages(shader_stages)
+    , offset(offset)
+    , root_const_accessor_ref(root_const_accessor_ref)
+{
+}
+
 ProgramBindings::ProgramBindings(Program& program,
                                  const BindingValueByArgument& binding_value_by_argument,
                                  Data::Index frame_index)
@@ -88,18 +98,32 @@ ProgramBindings::ProgramBindings(Program& program,
     };
 
     // Initialize each argument binding with descriptor set pointer and binding index
-    ForEachArgumentBinding([&program, &descriptor_set_selector](const Rhi::ProgramArgument& program_argument, ArgumentBinding& argument_binding)
+    ForEachArgumentBinding([this, &program, &descriptor_set_selector]
+                           (const Rhi::ProgramArgument& program_argument, ArgumentBinding& argument_binding)
     {
         const ArgumentBinding::Settings& argument_binding_settings = argument_binding.GetVulkanSettings();
-        const Rhi::ProgramArgumentAccessType access_type = argument_binding_settings.argument.GetAccessorType();
-        const Program::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(access_type);
-        const auto layout_argument_it = std::find(layout_info.arguments.begin(), layout_info.arguments.end(), program_argument);
-        META_CHECK_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", static_cast<std::string>(program_argument));
-        const auto layout_binding_index = static_cast<uint32_t>(std::distance(layout_info.arguments.begin(), layout_argument_it));
-        const uint32_t binding_value = layout_info.bindings.at(layout_binding_index).binding;
-        const vk::DescriptorSet& descriptor_set = descriptor_set_selector(access_type);
-
-        argument_binding.SetDescriptorSetBinding(descriptor_set, binding_value);
+        if (argument_binding_settings.argument.GetValueType() == Rhi::ProgramArgumentValueType::RootConstantValue)
+        {
+            Base::RootConstantAccessor* root_const_accessor_ptr = argument_binding.GetRootConstantAccessorPtr();
+            META_CHECK_NOT_NULL(root_const_accessor_ptr);
+            m_push_constant_setters.emplace_back(
+                argument_binding_settings.argument.GetAccessorType(),
+                argument_binding.GetNativeShaderStageFlags(),
+                argument_binding.GetPushConstantsOffset(),
+                *root_const_accessor_ptr
+            );
+        }
+        else
+        {
+            const Rhi::ProgramArgumentAccessType access_type = argument_binding_settings.argument.GetAccessorType();
+            const Program::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(access_type);
+            const auto layout_argument_it = std::find(layout_info.arguments.begin(), layout_info.arguments.end(), program_argument);
+            META_CHECK_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", static_cast<std::string>(program_argument));
+            const auto layout_binding_index = static_cast<uint32_t>(std::distance(layout_info.arguments.begin(), layout_argument_it));
+            const uint32_t binding_value = layout_info.bindings.at(layout_binding_index).binding;
+            const vk::DescriptorSet& descriptor_set = descriptor_set_selector(access_type);
+            argument_binding.SetDescriptorSetBinding(descriptor_set, binding_value);
+        }
     });
 
     UpdateMutableDescriptorSetName();
@@ -189,14 +213,39 @@ void ProgramBindings::Apply(ICommandList& command_list_vk, const Rhi::ICommandQu
                             const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_NOT_EMPTY(m_descriptor_sets);
     ReleaseRetainedRootConstantBuffers();
+
+    auto& program = static_cast<Program&>(GetProgram());
+    const vk::PipelineLayout&   vk_pipeline_layout       = program.GetNativePipelineLayout();
+    const vk::CommandBuffer&    vk_command_buffer        = command_list_vk.GetNativeCommandBufferDefault();
+    const vk::PipelineBindPoint vk_pipeline_bind_point   = command_list_vk.GetNativePipelineBindPoint();
+
+    // Push constants...
+    const bool is_constant_binding_applied = apply_behavior.HasAnyBit(ApplyBehavior::ConstantOnce) && applied_program_bindings_ptr;
+    for(const PushConstantSetter& push_constant_setter : m_push_constant_setters)
+    {
+        if (is_constant_binding_applied &&
+            (push_constant_setter.access_type == Rhi::ProgramArgumentAccessType::Constant ||
+             push_constant_setter.access_type == Rhi::ProgramArgumentAccessType::FrameConstant))
+            continue;
+
+        Base::RootConstantAccessor& root_constant_accessor = push_constant_setter.root_const_accessor_ref.get();
+        vk_command_buffer.pushConstants(vk_pipeline_layout,
+                                        push_constant_setter.shader_stages,
+                                        push_constant_setter.offset,
+                                        root_constant_accessor.GetDataSize(),
+                                        root_constant_accessor.GetDataPtr());
+    }
+
+    // Bind descriptor sets...
+    if (m_descriptor_sets.empty())
+        return;
 
     Rhi::ProgramArgumentAccessMask apply_access;
     apply_access.SetBitOn(Rhi::ProgramArgumentAccessType::Mutable);
     uint32_t first_descriptor_set_layout_index = 0U;
 
-    if (apply_behavior == ApplyBehaviorMask(ApplyBehavior::ConstantOnce) && applied_program_bindings_ptr)
+    if (is_constant_binding_applied)
     {
         if (!m_has_mutable_descriptor_set)
             return;
@@ -215,14 +264,11 @@ void ProgramBindings::Apply(ICommandList& command_list_vk, const Rhi::ICommandQu
         Base::ProgramBindings::ApplyResourceTransitionBarriers(command_list_vk, apply_access, &command_queue);
     }
 
-    const vk::CommandBuffer&    vk_command_buffer      = command_list_vk.GetNativeCommandBufferDefault();
-    const vk::PipelineBindPoint vk_pipeline_bind_point = command_list_vk.GetNativePipelineBindPoint();
     const uint32_t first_dynamic_offset_index = m_dynamic_offset_index_by_set_index[first_descriptor_set_layout_index];
 
     // Bind descriptor sets to pipeline
-    auto& program = static_cast<Program&>(GetProgram());
     vk_command_buffer.bindDescriptorSets(vk_pipeline_bind_point,
-                                         program.GetNativePipelineLayout(),
+                                         vk_pipeline_layout,
                                          first_descriptor_set_layout_index,
                                          static_cast<uint32_t>(m_descriptor_sets.size() - first_descriptor_set_layout_index),
                                          m_descriptor_sets.data() + first_descriptor_set_layout_index,
@@ -267,8 +313,8 @@ void ProgramBindings::UpdateDynamicDescriptorOffsets()
                            (const Rhi::ProgramArgument&, const ArgumentBinding& argument_binding)
         {
             const Rhi::ProgramArgumentAccessor& program_argument_accessor = argument_binding.GetSettings().argument;
-            if (!program_argument_accessor.IsAddressable() &&
-                !program_argument_accessor.IsRootConstant())
+            if (!program_argument_accessor.IsAddressable() ||
+                 program_argument_accessor.IsRootConstantValue())
                 return;
 
             const Program::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(program_argument_accessor.GetAccessorType());

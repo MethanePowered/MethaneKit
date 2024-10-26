@@ -63,6 +63,7 @@ public:
     bool                    IsInitialized() const noexcept  { return m_is_initialized; }
     const Range&            GetBufferRange() const noexcept { return m_buffer_range; }
     Data::Size              GetDataSize() const noexcept    { return m_data_size; }
+    Data::Byte*             GetDataPtr();
     Rhi::ResourceView       GetResourceView() const;
     RootConstantStorage&    GetRootConstantBuffer() const   { return m_storage_ref.get(); }
 

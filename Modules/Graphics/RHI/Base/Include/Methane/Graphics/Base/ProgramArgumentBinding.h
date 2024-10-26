@@ -64,6 +64,7 @@ public:
     void SetEmitCallbackEnabled(bool enabled)    { m_emit_callback_enabled = enabled; }
 
     Ptr<ProgramArgumentBinding> GetPtr() { return shared_from_this(); }
+    RootConstantAccessor*       GetRootConstantAccessorPtr() const { return m_root_constant_accessor_ptr.get(); }
 
     void Initialize(Program& program, Data::Index frame_index);
     bool IsAlreadyApplied(const Rhi::IProgram& program,

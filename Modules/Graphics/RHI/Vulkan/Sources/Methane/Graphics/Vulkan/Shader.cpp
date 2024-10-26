@@ -118,6 +118,7 @@ static Rhi::IResource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorTy
     {
     case vk::DescriptorType::eUniformBuffer:
     case vk::DescriptorType::eStorageBuffer:
+    case vk::DescriptorType::eInlineUniformBlock:
         return Rhi::IResource::Type::Buffer;
 
     case vk::DescriptorType::eStorageImage:
@@ -170,17 +171,23 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
                                    : 0U;
 
         ProgramBindings::ArgumentBinding::ByteCodeMap byte_code_map{ shader_type };
-        META_CHECK_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationDescriptorSet, byte_code_map.descriptor_set_offset));
-        META_CHECK_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationBinding, byte_code_map.binding_offset));
+        if (vk_descriptor_type != vk::DescriptorType::eInlineUniformBlock)
+        {
+            META_CHECK_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationDescriptorSet, byte_code_map.descriptor_set_offset));
+            META_CHECK_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationBinding, byte_code_map.binding_offset));
+        }
 
         const uint32_t descriptor_set_id = spirv_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
         const Rhi::ProgramArgumentAccessType arg_access_type = Rhi::ProgramArgumentAccessor::GetTypeByRegisterSpace(descriptor_set_id);
+        const Rhi::ProgramArgumentValueType arg_value_type = vk_descriptor_type == vk::DescriptorType::eInlineUniformBlock
+                                                           ? Rhi::ProgramArgumentValueType::RootConstantValue
+                                                           : Rhi::ProgramArgumentValueType::ResourceView;
 
         const Rhi::ProgramArgument shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
         const Rhi::ProgramArgumentAccessor* argument_accessor_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
         const Rhi::ProgramArgumentAccessor argument_acc = argument_accessor_ptr
                                                           ? *argument_accessor_ptr
-                                                          : Rhi::ProgramArgumentAccessor(shader_argument, arg_access_type);
+                                                          : Rhi::ProgramArgumentAccessor(shader_argument, arg_access_type, arg_value_type);
 
         argument_bindings.push_back(std::make_shared<ProgramBindings::ArgumentBinding>(
             shader.GetContext(),
@@ -236,12 +243,13 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
     // Get only resources that are statically used in SPIRV-code (skip all resources that are never accessed by the shader)
     const spirv_cross::ShaderResources spirv_resources = spirv_compiler.get_shader_resources(spirv_compiler.get_active_interface_variables());
 
-    add_spirv_resources_to_argument_bindings(spirv_resources.uniform_buffers,   vk::DescriptorType::eUniformBuffer);
-    add_spirv_resources_to_argument_bindings(spirv_resources.storage_buffers,   vk::DescriptorType::eStorageBuffer);
-    add_spirv_resources_to_argument_bindings(spirv_resources.storage_images,    vk::DescriptorType::eStorageImage);
-    add_spirv_resources_to_argument_bindings(spirv_resources.sampled_images,    vk::DescriptorType::eCombinedImageSampler);
-    add_spirv_resources_to_argument_bindings(spirv_resources.separate_images,   vk::DescriptorType::eSampledImage);
-    add_spirv_resources_to_argument_bindings(spirv_resources.separate_samplers, vk::DescriptorType::eSampler);
+    add_spirv_resources_to_argument_bindings(spirv_resources.push_constant_buffers, vk::DescriptorType::eInlineUniformBlock);
+    add_spirv_resources_to_argument_bindings(spirv_resources.uniform_buffers,       vk::DescriptorType::eUniformBuffer);
+    add_spirv_resources_to_argument_bindings(spirv_resources.storage_buffers,       vk::DescriptorType::eStorageBuffer);
+    add_spirv_resources_to_argument_bindings(spirv_resources.storage_images,        vk::DescriptorType::eStorageImage);
+    add_spirv_resources_to_argument_bindings(spirv_resources.sampled_images,        vk::DescriptorType::eCombinedImageSampler);
+    add_spirv_resources_to_argument_bindings(spirv_resources.separate_images,       vk::DescriptorType::eSampledImage);
+    add_spirv_resources_to_argument_bindings(spirv_resources.separate_samplers,     vk::DescriptorType::eSampler);
     // TODO: add support for spirv_resources.atomic_counters, vk::DescriptorType::eMutableVALVE
 
     if (argument_bindings.empty())

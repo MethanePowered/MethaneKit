@@ -49,6 +49,12 @@ ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, con
     , m_settings_vk(settings)
 { }
 
+vk::ShaderStageFlagBits ProgramArgumentBinding::GetNativeShaderStageFlags() const
+{
+    META_FUNCTION_TASK();
+    return Shader::ConvertTypeToStageFlagBits(m_settings_vk.argument.GetShaderType());
+}
+
 void ProgramArgumentBinding::SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t binding_value) noexcept
 {
     META_FUNCTION_TASK();
@@ -69,6 +75,12 @@ void ProgramArgumentBinding::SetDescriptorSet(const vk::DescriptorSet& descripto
     {
         SetDescriptorsForResourceViews(resource_views);
     }
+}
+
+void ProgramArgumentBinding::SetPushConstantsOffset(uint32_t push_constant_offset) noexcept
+{
+    META_FUNCTION_TASK();
+    m_vk_push_constants_offset = push_constant_offset;
 }
 
 Ptr<Base::ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy() const

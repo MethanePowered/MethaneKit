@@ -23,6 +23,7 @@ Compute shader for Conway's Game of Life
 
 #include "GameOfLifeRules.h"
 
+[[vk::push_constant]]
 ConstantBuffer<Constants> g_constants     : register(b0, META_ARG_CONSTANT);
 RWTexture2D<uint>         g_frame_texture : register(u0, META_ARG_MUTABLE);
 

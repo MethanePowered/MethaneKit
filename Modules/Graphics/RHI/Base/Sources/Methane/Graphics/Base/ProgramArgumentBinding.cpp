@@ -182,18 +182,18 @@ ProgramArgumentBinding::operator std::string() const
 void ProgramArgumentBinding::Initialize(Program& program, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    if (m_settings.argument.IsRootConstant() && !m_root_constant_accessor_ptr)
+    if (!m_settings.argument.IsRootConstant() || m_root_constant_accessor_ptr)
+        return;
+
+    if (m_settings.argument.IsRootConstantValue())
     {
-        if (m_settings.argument.IsRootConstantValue())
-        {
-            m_root_constant_accessor_ptr = program.GetRootConstantStorage().ReserveRootConstant(m_settings.buffer_size);
-        }
-        else
-        {
-            RootConstantBuffer& root_constant_buffer = program.GetRootConstantBuffer(m_settings.argument.GetAccessorType(), frame_index);
-            m_root_constant_accessor_ptr = root_constant_buffer.ReserveRootConstant(m_settings.buffer_size);
-            root_constant_buffer.Connect(*this);
-        }
+        m_root_constant_accessor_ptr = program.GetRootConstantStorage().ReserveRootConstant(m_settings.buffer_size);
+    }
+    else
+    {
+        RootConstantBuffer& root_constant_buffer = program.GetRootConstantBuffer(m_settings.argument.GetAccessorType(), frame_index);
+        m_root_constant_accessor_ptr = root_constant_buffer.ReserveRootConstant(m_settings.buffer_size);
+        root_constant_buffer.Connect(*this);
     }
 }
 

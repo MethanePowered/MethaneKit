@@ -28,8 +28,6 @@ Game of Life Rules constants
 #include <vector>
 #include <string>
 
-#define HLSL_ALIGN alignas(16)
-
 // Game of Life alternative rules:
 // https://conwaylife.com/wiki/List_of_Life-like_rules
 // NOTE: indices of rules should match constants in "Shaders/GameOfLifeRules.h"
@@ -43,10 +41,6 @@ static const std::vector<std::string> g_gol_rule_labels{
 
 using uint = uint32_t;
 
-#else
-
-#define HLSL_ALIGN
-
 #endif
 
 static const uint g_game_rule_classic    = 0; // B3/S23
@@ -56,7 +50,7 @@ static const uint g_game_rule_coral      = 3; // B3/S45678
 static const uint g_game_rule_geology    = 4; // B3578/S24678
 static const uint g_game_rule_vote       = 5; // B5678/S45678
 
-struct HLSL_ALIGN Constants
+struct Constants
 {
     uint game_rule_id;
 };
