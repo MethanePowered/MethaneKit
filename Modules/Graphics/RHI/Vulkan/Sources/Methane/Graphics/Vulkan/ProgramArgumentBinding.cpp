@@ -24,6 +24,7 @@ Vulkan implementation of the program argument binding interface.
 #include <Methane/Graphics/Vulkan/ProgramArgumentBinding.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
+#include <Methane/Graphics/Vulkan/Shader.h>
 
 #include <Methane/Graphics/Base/Context.h>
 
