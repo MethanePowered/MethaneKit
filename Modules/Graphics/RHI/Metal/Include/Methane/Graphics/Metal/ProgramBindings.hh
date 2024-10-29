@@ -96,6 +96,9 @@ private:
 
     const ArgumentsRange& GetArgumentsRange(Rhi::ProgramArgumentAccessType access_type) const;
 
+    template<typename FuncType> // function void(const ProgramArgument&, ArgumentBinding&)
+    void ForEachArgumentBinding(FuncType argument_binding_function) const;
+
     template<typename FuncType> // function void(const ArgumentBinding&)
     void ForEachChangedArgumentBinding(const Base::ProgramBindings* applied_program_bindings_ptr,
                                        ApplyBehaviorMask apply_behavior,
@@ -133,6 +136,7 @@ private:
 
     AccessTypeMask            m_argument_buffer_initialized_access_types;
     ArgumentsRange            m_mutable_argument_buffer_range;
+    bool                      m_has_root_constant_values = false;
     NativeResourceSet         m_mtl_used_resources;
     TracyLockable(std::mutex, m_used_resources_mutex);
 };

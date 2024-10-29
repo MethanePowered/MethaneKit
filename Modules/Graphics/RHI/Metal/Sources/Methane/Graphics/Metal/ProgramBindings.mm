@@ -648,6 +648,17 @@ Program& ProgramBindings::GetMetalProgram() const
     return dynamic_cast<Program&>(Base::ProgramBindings::GetProgram());
 }
 
+template<typename FuncType> // function void(const Rhi::ProgramArgument&, ArgumentBinding&)
+void ProgramBindings::ForEachArgumentBinding(FuncType argument_binding_function) const
+{
+    META_FUNCTION_TASK();
+    for (auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
+    {
+        META_CHECK_NOT_NULL(argument_binding_ptr);
+        argument_binding_function(program_argument, static_cast<ArgumentBinding&>(*argument_binding_ptr));
+    }
+}
+
 template<typename FuncType> // function void(const ArgumentBinding&)
 void ProgramBindings::ForEachChangedArgumentBinding(const Base::ProgramBindings* applied_program_bindings_ptr,
                                                     ApplyBehaviorMask apply_behavior, FuncType functor) const
@@ -670,20 +681,22 @@ void ProgramBindings::SetMetalResources(const CommandEncoderType& mtl_cmd_encode
                                         ApplyBehaviorMask apply_behavior) const
 {
     META_FUNCTION_TASK();
+    // When argument buffers are used, only root constant values (aka Push Constants) are set separately wih SetBytes method
+    const bool set_root_constant_values_only = static_cast<bool>(m_argument_buffer_initialized_access_types);
     Rhi::IProgram& program = GetProgram();
     ForEachChangedArgumentBinding(applied_program_bindings_ptr, apply_behavior,
-        [&mtl_cmd_encoder, &program](const ArgumentBinding& argument_binding)
+        [&mtl_cmd_encoder, &program, &set_root_constant_values_only]
+        (const ArgumentBinding& argument_binding)
         {
-            const ProgramArgumentBinding::Settings& settings = argument_binding.GetMetalSettings();
-            if (settings.argument.IsRootConstantValue())
+            if (const ProgramArgumentBinding::Settings& settings = argument_binding.GetMetalSettings();
+                settings.argument.IsRootConstantValue())
             {
-                Base::RootConstantAccessor* root_const_accessor_ptr = argument_binding.GetRootConstantAccessorPtr();
                 SetMetalResourceForAll<command_type>(settings.argument.GetShaderType(),
                                                      program, mtl_cmd_encoder,
-                                                     root_const_accessor_ptr,
+                                                     argument_binding.GetRootConstantAccessorPtr(),
                                                      settings.argument_index);
             }
-            else
+            else if (!set_root_constant_values_only)
             {
                 switch (settings.resource_type)
                 {
@@ -828,13 +841,14 @@ void ProgramBindings::UpdateUsedResources()
     META_FUNCTION_TASK();
     std::lock_guard lock(m_used_resources_mutex);
     m_mtl_used_resources.clear();
-    for(const auto& [argument, argument_binding_ptr] : GetArgumentBindings())
+    m_has_root_constant_values = false;
+    ForEachArgumentBinding([this](const Rhi::ProgramArgument&, const ArgumentBinding& argument_binding)
     {
-        const auto& argument_binding = static_cast<const ArgumentBinding&>(*argument_binding_ptr);
+        m_has_root_constant_values |= argument_binding.GetSettings().argument.IsRootConstantValue();
         const ProgramArgumentBinding::NativeResources& argument_resources = argument_binding.GetNativeResources();
         std::copy(argument_resources.begin(), argument_resources.end(),
                   std::inserter(m_mtl_used_resources, m_mtl_used_resources.begin()));
-    }
+    });
 }
 
 void ProgramBindings::UpdateArgumentBuffer(const IArgumentBinding& changed_arg_binding)
@@ -898,11 +912,14 @@ void ProgramBindings::Apply(CommandListType& command_list, ApplyBehaviorMask app
     {
         UseMetalResources<command_type>(mtl_cmd_encoder, applied_program_bindings_ptr);
         SetMetalArgumentBuffers<command_type>(mtl_cmd_encoder, applied_program_bindings_ptr, apply_behavior);
+
+        // Root constant values (aka Push-Constants) are set separately from argument buffers,
+        // just as usual buffer bindings with SetBytes method.
+        if (!m_has_root_constant_values)
+            return;
     }
-    else
-    {
-        SetMetalResources<command_type>(mtl_cmd_encoder, applied_program_bindings_ptr, apply_behavior);
-    }
+
+    SetMetalResources<command_type>(mtl_cmd_encoder, applied_program_bindings_ptr, apply_behavior);
 }
 
 void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding& arg_binding,
