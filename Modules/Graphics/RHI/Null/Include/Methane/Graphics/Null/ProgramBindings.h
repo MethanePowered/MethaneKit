@@ -41,10 +41,10 @@ public:
 
     // IProgramBindings interface
     [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const BindingValueByArgument& replace_binding_value_by_argument, const Opt<Data::Index>& frame_index) override;
-    void Apply(Base::CommandList&, ApplyBehaviorMask) const override { /* Intentionally unimplemented */ }
 
-    // Base::ProgramBindings interface
+    // Base::ProgramBindings overrides...
     void CompleteInitialization() override { /* Intentionally unimplemented */ }
+    void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 };
 
 } // namespace Methane::Graphics::Null

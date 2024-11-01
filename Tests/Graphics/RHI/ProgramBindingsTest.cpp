@@ -300,6 +300,13 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         CHECK(buffer_binding_ptr->GetResourceViews().at(0).GetResourcePtr().get() == buffer1.GetInterfacePtr().get());
     }
 
+    SECTION("Can not Get Non-Existing Argument Binding")
+    {
+        CHECK_THROWS_AS(program_bindings.Get({ Rhi::ShaderType::Compute, "NonExisting" }), Rhi::ProgramArgumentNotFoundException);
+        CHECK_THROWS_AS(program_bindings.Get({ Rhi::ShaderType::All, "OutBuffer" }), Rhi::ProgramArgumentNotFoundException);
+        CHECK_THROWS_AS(program_bindings.Get({ Rhi::ShaderType::Pixel, "InSampler" }), Rhi::ProgramArgumentNotFoundException);
+    }
+
     SECTION("Can Change Buffer Argument Binding")
     {
         Rhi::IProgramArgumentBinding& buffer_binding = program_bindings.Get({ Rhi::ShaderType::Compute, "OutBuffer" });
