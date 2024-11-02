@@ -246,6 +246,7 @@ jobs:
           files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
           flags: unittests,${{ runner.os }}
           name: ${{ matrix.name }}
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Publish Code Coverage to CodeCov server (from PR target)
         if: ${{ github.event_name == 'pull_request_target' && (success() || failure()) }}
@@ -256,6 +257,7 @@ jobs:
           files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
           flags: unittests,${{ runner.os }}
           name: ${{ matrix.name }}
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Publish Test Results to GitHub
         if: ${{ success() || failure() }}
