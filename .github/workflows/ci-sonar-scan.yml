@@ -263,7 +263,7 @@ jobs:
         if: ${{ github.event_name != 'pull_request_target' && (success() || failure()) }}
         uses: codecov/test-results-action@v1
         with:
-          directory: Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/junit
+          files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/junit/*Test.xml
           flags: unittests,${{ runner.os }}
           name: ${{ matrix.name }}
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -274,7 +274,7 @@ jobs:
         with:
           override_pr: ${{ github.event.pull_request.number }}
           override_commit: ${{ github.event.pull_request.head.sha }}
-          directory: Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/junit
+          files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/junit/*Test.xml
           flags: unittests,${{ runner.os }}
           name: ${{ matrix.name }}
           token: ${{ secrets.CODECOV_TOKEN }}
