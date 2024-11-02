@@ -259,6 +259,26 @@ jobs:
           name: ${{ matrix.name }}
           token: ${{ secrets.CODECOV_TOKEN }}
 
+      - name: Publish Test Results to Codecov server
+        if: ${{ github.event_name != 'pull_request_target' && (success() || failure()) }}
+        uses: codecov/test-results-action@v1
+        with:
+          directory: Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/junit
+          flags: unittests,${{ runner.os }}
+          name: ${{ matrix.name }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Publish Test Results to Codecov server (from PR target)
+        if: ${{ github.event_name == 'pull_request_target' && (success() || failure()) }}
+        uses: codecov/test-results-action@v1
+        with:
+          override_pr: ${{ github.event.pull_request.number }}
+          override_commit: ${{ github.event.pull_request.head.sha }}
+          directory: Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/junit
+          flags: unittests,${{ runner.os }}
+          name: ${{ matrix.name }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Publish Test Results to GitHub
         if: ${{ success() || failure() }}
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
