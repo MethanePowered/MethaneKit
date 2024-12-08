@@ -29,12 +29,13 @@ Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInte
 `ShadowCubeApp` class is declared in header file [ShadowCubeApp.h](ShadowCubeApp.h) and the application class
 is derived from [UserInterface::App](/Modules/UserInterface/App) base class, same as in [previous tutorial](../02-TexturedCube).
 [Shaders/ShadowCubeUniforms.h](Shaders/ShadowCubeUniforms.h) header contains declaration of shader uniform structures shared between [HLSL shader code](#shadow-cube-shaders) and C++:
-- `Constants` data structure is stored in the `m_scene_constants` member and is uploaded into the `Rhi::Buffer` 
-  object `m_const_buffer_ptr`, which has single instance in application since its data is constant for all frames.
-- `SceneUniforms` data structure is stored in the `m_scene_uniforms` member and is uploaded into the `Rhi::Buffer` 
-  objects in the per-frame `ShadowCubeFrame` objects, each with it's own state of volatile uniform values.
-- `MeshUniforms` data structure contains Model/MVP matrices and shadow MVP+Transform matrix stored in 4 instances:
-uniforms for shadow and final passes stored in `gfx::TexturedMeshBuffers` objects one for cube mesh in `m_cube_buffers_ptr` 
+- `Constants` data structure with lighting parameters is saved to the root constant buffer via program argument binding
+`g_constants`, which has single instance in application and its data is constant for all frames.
+- `SceneUniforms` data structure with eye and light positions is saved to the root constant buffer via program argument
+binding `g_scene_uniforms` with per-frame buffers with volatile uniforms data.
+- `MeshUniforms` data structure contains Model/MVP matrices and shadow MVP+Transform matrix stored in 4 instances of
+cube and floor meshes multiplied by shadow and final passes.
+Uniforms for shadow and final passes stored in `gfx::TexturedMeshBuffers` objects one for cube mesh in `m_cube_buffers_ptr` 
 and one for floor mesh in `m_floor_buffers_ptr`.
 
 Uniform structures in [Shaders/ShadowCubeUniforms.h](Shaders/ShadowCubeUniforms.h):
@@ -45,30 +46,26 @@ struct Constants
     float  light_power;
     float  light_ambient_factor;
     float  light_specular_factor;
+    float  _padding;
 };
 
 struct SceneUniforms
 {
-    float4 eye_position;
-    float3 light_position;
+    float4   eye_position;
+    float4   light_position;
 };
 
 struct MeshUniforms
 {
     float4x4 model_matrix;
     float4x4 mvp_matrix;
-#ifdef ENABLE_SHADOWS
     float4x4 shadow_mvpx_matrix;
-#endif
 };
 ```
 
 [MeshBuffers.hpp](../../Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp) implements auxiliary class
-`TexturedMeshBuffers<UniformsType>` which is managing vertex, index, uniforms buffers and texture with data for particular
+`TexturedMeshBuffers<UniformsType>` which is managing vertex and index buffers and texture with data for particular
 mesh drawing passed to constructor as a reference to [BaseMesh<VType>]((../../../Modules/Graphics/Primitives/Include/Methane/Graphics/Mesh/BaseMesh.hpp)) object.
-
-Supplementary member `m_scene_uniforms_subresource` stores a pointer to the `m_scene_uniforms` in the `std::vector` 
-type `gfx::IResource::SubResources` which is passed to `Rhi::Buffer::SetData(...)` method to update the buffer data on GPU.
 
 Two `gfx::Camera` objects are used: one `m_view_camera` is usual perspective view camera, while the other `m_light_camera`
 is a directional light camera with orthogonal projection used to generate transformation matrix from view to light
@@ -109,23 +106,7 @@ class ShadowCubeApp final : public UserInterfaceApp
    ...
 
 private:
-    using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<hlslpp::MeshUniforms>;
-    class TexturedMeshBuffers : public TexturedMeshBuffersBase
-    {
-    public:
-        using TexturedMeshBuffersBase::TexturedMeshBuffersBase;
-
-        void SetShadowPassUniforms(hlslpp::MeshUniforms&& uniforms) noexcept { m_shadow_pass_uniforms = std::move(uniforms); }
-
-        [[nodiscard]] const hlslpp::MeshUniforms& GetShadowPassUniforms() const noexcept             { return m_shadow_pass_uniforms; }
-        [[nodiscard]] const rhi::SubResources&    GetShadowPassUniformsSubresources() const noexcept { return m_shadow_pass_uniforms_subresources; }
-
-    private:
-        hlslpp::MeshUniforms m_shadow_pass_uniforms{};
-        rhi::SubResources    m_shadow_pass_uniforms_subresources{
-            { reinterpret_cast<Data::ConstRawPtr>(&m_shadow_pass_uniforms), sizeof(hlslpp::MeshUniforms) } // NOSONAR
-        };
-    };
+    using TexturedMeshBuffers = gfx::TexturedMeshBuffers<hlslpp::MeshUniforms>;
 
     struct RenderPassState
     {
@@ -141,20 +122,8 @@ private:
     bool Animate(double elapsed_seconds, double delta_seconds);
     void RenderScene(const RenderPassState& render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const;
 
-    const float                 m_scene_scale = 15.F;
-    const hlslpp::Constants     m_scene_constants{
-        { 1.F, 1.F, 0.74F, 1.F }, // - light_color
-        700.F,                    // - light_power
-        0.04F,                    // - light_ambient_factor
-        30.F                      // - light_specular_factor
-    };
-    hlslpp::SceneUniforms    m_scene_uniforms{ };
-    rhi::SubResources        m_scene_uniforms_subresource{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), sizeof(hlslpp::SceneUniforms) } // NOSONAR
-    };
     gfx::Camera              m_view_camera;
     gfx::Camera              m_light_camera;
-    rhi::Buffer              m_const_buffer;
     rhi::Sampler             m_texture_sampler;
     rhi::Sampler             m_shadow_sampler;
     Ptr<TexturedMeshBuffers> m_cube_buffers_ptr;
@@ -169,13 +138,13 @@ private:
 
 `ShadowCubeFrame` struct contains frame-dependent volatile resources:
 - Shadow & final pass resources in `shadow_pass` and `final_pass`:
-  - Mesh resources for `cube` and `floor`:
-    - Mesh uniforms buffer `uniforms_buffer`
+  - Mesh bindings for `cube` and `floor`:
     - Program bindings configuration `program_bindings`
+    - Program argument binding for scene uniforms `scene_uniforms_binding_ptr`
+    - Program argument binding for mesh uniforms `mesh_uniforms_binding_ptr`
   - Render target texture `rt_texture`
-  - Render pass setup object `render_pass`
+  - Render pass object `render_pass`
   - Render command list `cmd_list`
-- Scene uniforms buffer in `scene_uniforms_buffer`
 - Command list set for execution on frame, which contains command lists from shadow and final passes.
 
 ```cpp
@@ -183,22 +152,22 @@ struct ShadowCubeFrame final : gfx::AppFrame
 {
     struct PassResources
     {
-        struct MeshResources
+        struct ProgramBindings
         {
-            rhi::Buffer          uniforms_buffer;
-            rhi::ProgramBindings program_bindings;
+            rhi::ProgramBindings          program_bindings;
+            rhi::IProgramArgumentBinding* scene_uniforms_binding_ptr = nullptr;
+            rhi::IProgramArgumentBinding* mesh_uniforms_binding_ptr  = nullptr;
         };
 
-        MeshResources          cube;
-        MeshResources          floor;
         rhi::Texture           rt_texture;
         rhi::RenderPass        render_pass;
         rhi::RenderCommandList cmd_list;
+        ProgramBindings        cube_bindings;
+        ProgramBindings        floor_bindings;
     };
 
     PassResources       shadow_pass;
     PassResources       final_pass;
-    rhi::Buffer         scene_uniforms_buffer;
     rhi::CommandListSet execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
@@ -240,7 +209,12 @@ description here.
                         rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                rhi::ProgramArgumentAccessors{ },
+                rhi::ProgramArgumentAccessors
+                {
+                    META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
+                    META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::Pixel, "g_scene_uniforms"),
+                    META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Vertex, "g_mesh_uniforms")
+                },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }
         ),
@@ -292,7 +266,10 @@ Vertex shader since it will be used for rendering to depth buffer only without c
                     { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), vs_main, textured_definitions } },
                 },
                 final_state_settings.program.GetSettings().input_buffer_layouts,
-                rhi::ProgramArgumentAccessors{ },
+                rhi::ProgramArgumentAccessors
+                {
+                    META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Vertex, "g_mesh_uniforms")
+                },
                 m_shadow_pass_pattern.GetAttachmentFormats()
             }
         ),
@@ -317,9 +294,6 @@ one for shadow pass rendering and another for final pass rendering.
 ```cpp
     for(ShadowCubeFrame& frame : GetFrames())
     {
-        // Create uniforms buffer with volatile parameters for the whole scene rendering
-        frame.scene_uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(scene_uniforms_data_size, false, true));
-
         // ========= Shadow Pass Resources =========
         ...
 
@@ -346,10 +320,9 @@ depth-stencil format taken from render context settings. Shadow-map texture sett
     );
 ```
 
-Volatile uniform buffers `frame.shadow_pass.[floor|cube].uniforms_buffer` are created separately for cube and floor 
-meshes both for shadow and final passes rendering. Program bindings are created both for cube and floor meshes, 
-which are binding created uniform buffers to the `g_mesh_uniforms` program argument of `All` shader types
-(taking into account that there's only Vertex shader in that program).
+Program bindings `frame.shadow_pass.[cube|floor]_bindings.program_bindings` are created both for cube and floor meshes,
+with argument binding for `g_mesh_uniforms` argument of `Vertex` shader type saved to `mesh_uniforms_binding_ptr`
+to be used later in `ShadowCubeApp::Update()` method for setup of the root constant data.
 
 Shadow render pass `frame.shadow_pass.render_pass` is created without color attachments, but with depth attachment
 bound to the shadow-map texture for the current frame `frame.shadow_pass.rt_texture`.
@@ -360,22 +333,16 @@ rendered depth texture content for the next render pass. Render command list is 
 ```cpp
         // ========= Shadow Pass Resources =========
         
-        // Create uniforms buffer for Cube rendering in Shadow pass
-        frame.shadow_pass.cube.uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
-        
-        // Create uniforms buffer for Floor rendering in Shadow pass
-        frame.shadow_pass.floor.uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
-        
         // Shadow-pass resource bindings for cube rendering
-        frame.shadow_pass.cube.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms" }, { { frame.shadow_pass.cube.uniforms_buffer.GetInterface() } } },
-        }, frame.index);
-        
+        ShadowCubeFrame::PassResources::ProgramBindings& shadow_cube_binds = frame.shadow_pass.cube_bindings;
+        shadow_cube_binds.program_bindings = shadow_state_settings.program.CreateBindings({ }, frame.index);
+        shadow_cube_binds.mesh_uniforms_binding_ptr = &shadow_cube_binds.program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms" });
+
         // Shadow-pass resource bindings for floor rendering
-        frame.shadow_pass.floor.program_bindings = shadow_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms" }, { { frame.shadow_pass.floor.uniforms_buffer.GetInterface() } } },
-        }, frame.index);
-        
+        ShadowCubeFrame::PassResources::ProgramBindings& shadow_floor_binds = frame.shadow_pass.floor_bindings;
+        shadow_floor_binds.program_bindings = shadow_state_settings.program.CreateBindings({ }, frame.index);
+        shadow_floor_binds.mesh_uniforms_binding_ptr = &shadow_floor_binds.program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms" });
+
         // Create depth texture for shadow map rendering
         frame.shadow_pass.rt_texture = render_context.CreateTexture(shadow_texture_settings);
         
@@ -389,9 +356,9 @@ rendered depth texture content for the next render pass. Render command list is 
         frame.shadow_pass.cmd_list = render_cmd_queue.CreateRenderCommandList(frame.shadow_pass.render_pass);
 ```
 
-The same resources are created for the final render pass: uniform buffers for cube and floor meshes.
-Program bindings are created for cube and floor rendering too but with more complex set of program arguments, because
-final pass rendering program includes pixel and vertex shaders, but not only vertex shader like in shadow pass.
+The same resources are created for the final render pass.
+Program bindings are created for cube and floor rendering but with extended set of program arguments, because
+final pass rendering program includes both pixel and vertex shaders, but not only vertex shader like in shadow pass.
 
 Render target texture is bound to frame screen texture i.e. frame buffer in swap-chain.
 Final render pass is also bound to the screen render pass for the current frame, which is created by base graphics 
@@ -400,28 +367,25 @@ application class `Methane::Graphics::App`. Render command list is created bound
 ```cpp
         // ========= Final Pass Resources =========
 
-        // Create uniforms buffer for Cube rendering in Final pass
-        frame.final_pass.cube.uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
-
-        // Create uniforms buffer for Floor rendering in Final pass
-        frame.final_pass.floor.uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(mesh_uniforms_data_size, false, true));
-
         // Final-pass resource bindings for cube rendering
-        frame.final_pass.cube.program_bindings = final_state_settings.program.CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.cube.uniforms_buffer.GetInterface()  } } },
-            { { rhi::ShaderType::Pixel,  "g_scene_uniforms" }, { { frame.scene_uniforms_buffer.GetInterface()            } } },
-            { { rhi::ShaderType::Pixel,  "g_constants"      }, { { m_const_buffer.GetInterface()                         } } },
-            { { rhi::ShaderType::Pixel,  "g_shadow_map"     }, { { frame.shadow_pass.rt_texture.GetInterface()           } } },
-            { { rhi::ShaderType::Pixel,  "g_shadow_sampler" }, { { m_shadow_sampler.GetInterface()                       } } },
-            { { rhi::ShaderType::Pixel,  "g_texture"        }, { { m_cube_buffers_ptr->GetTexture().GetInterface()       } } },
-            { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, { { m_texture_sampler.GetInterface()                      } } },
+        ShadowCubeFrame::PassResources::ProgramBindings& final_cube_binds = frame.final_pass.cube_bindings;
+        final_cube_binds.program_bindings = final_state_settings.program.CreateBindings({
+            { { rhi::ShaderType::Pixel,  "g_constants"      }, rhi::RootConstant(g_scene_constants)               },
+            { { rhi::ShaderType::Pixel,  "g_shadow_map"     }, frame.shadow_pass.rt_texture.GetResourceView()     },
+            { { rhi::ShaderType::Pixel,  "g_shadow_sampler" }, m_shadow_sampler.GetResourceView()                 },
+            { { rhi::ShaderType::Pixel,  "g_texture"        }, m_cube_buffers_ptr->GetTexture().GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, m_texture_sampler.GetResourceView()                },
         }, frame.index);
+        final_cube_binds.scene_uniforms_binding_ptr = &final_cube_binds.program_bindings.Get({ rhi::ShaderType::Pixel, "g_scene_uniforms" });
+        final_cube_binds.mesh_uniforms_binding_ptr  = &final_cube_binds.program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms" });
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
-        frame.final_pass.floor.program_bindings = rhi::ProgramBindings(frame.final_pass.cube.program_bindings, {
-            { { rhi::ShaderType::Vertex, "g_mesh_uniforms"  }, { { frame.final_pass.floor.uniforms_buffer.GetInterface() } } },
-            { { rhi::ShaderType::Pixel,  "g_texture"        }, { { m_floor_buffers_ptr->GetTexture().GetInterface()      } } },
+        ShadowCubeFrame::PassResources::ProgramBindings& final_floor_binds = frame.final_pass.floor_bindings;
+        final_floor_binds.program_bindings = rhi::ProgramBindings(frame.final_pass.cube_bindings.program_bindings, {
+            { { rhi::ShaderType::Pixel,  "g_texture" }, m_floor_buffers_ptr->GetTexture().GetResourceView() },
         }, frame.index);
+        final_floor_binds.scene_uniforms_binding_ptr = &final_floor_binds.program_bindings.Get({ rhi::ShaderType::Pixel,  "g_scene_uniforms" });
+        final_floor_binds.mesh_uniforms_binding_ptr  = &final_floor_binds.program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms"  });
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.
         frame.final_pass.rt_texture  = frame.screen_texture;
@@ -452,7 +416,6 @@ void ShadowCubeApp::OnContextReleased(gfx::Context& context)
 
     m_shadow_sampler = {};
     m_texture_sampler = {};
-    m_const_buffer = {};
     m_shadow_pass_pattern = {};
 
     UserInterfaceApp::OnContextReleased(context);
@@ -486,8 +449,8 @@ bool ShadowCubeApp::Animate(double, double delta_seconds)
 ```
 
 `ShadowCubeApp::Update()` function is called before `App::Render()` call to update shader uniforms:
-- Scene uniforms structure is updated with eye and light positions calculated in `ShadowCubeApp::Animate` function.
-- Cube and Floor mesh uniform structures are updated separately for Final and Render passes:
+- Scene uniforms structure is created with eye and light positions calculated in `ShadowCubeApp::Animate` function.
+- Cube and Floor mesh uniform structures are created separately for Final and Render passes:
   - Shadow pass MVP matrix is calculated from the light point of view using `m_light_camera.GetViewProjMatrix()`
     and the shadow-MVPx matrix is not used for shadow-map rendering, so it is set to zero matrix.
   - Final pass MVP matrix is calculated from the observer point of view using `m_view_camera.GetViewProjMatrix()`.
@@ -495,60 +458,71 @@ bool ShadowCubeApp::Animate(double, double delta_seconds)
     MVP matrix used during shadow pass rendering multiplied by coordinates transformation matrix to convert 
     from homogenous [-1, 1] to texture coordinates [0,1].
 
+All uniforms are set directly to program argument binding with `rhi::ProgramArgumentBinding::SetRootConstant(...)` method.
+
 ```cpp
 bool ShadowCubeApp::Update()
 {
     if (!UserInterfaceApp::Update())
         return false;
 
+    const hlslpp::SceneUniforms scene_uniforms{
+        hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F), // eye_position
+        hlslpp::float4(m_light_camera.GetOrientation().eye, 1.F) // light_position
+    };
+    const rhi::RootConstant scene_uniforms_constant(scene_uniforms);
+
     // Prepare homogenous [-1,1] to texture [0,1] coordinates transformation matrix
-    static const hlslpp::float4x4 s_homogen_to_texture_coords_matrix = hlslpp::mul(hlslpp::float4x4::scale(0.5F, -0.5F, 1.F), hlslpp::float4x4::translation(0.5F, 0.5F, 0.F));
+    static const hlslpp::float4x4 s_homogen_to_texture_coords_matrix = hlslpp::mul(
+        hlslpp::float4x4::scale(0.5F, -0.5F, 1.F),
+        hlslpp::float4x4::translation(0.5F, 0.5F, 0.F)
+    );
 
-    // Update scene uniforms
-    m_scene_uniforms.eye_position    = hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F);
-    m_scene_uniforms.light_position  = m_light_camera.GetOrientation().eye;
+    const hlslpp::float4x4 scale_matrix = hlslpp::float4x4::scale(15.F);
+    const hlslpp::float4x4 cube_model_matrix = hlslpp::mul(hlslpp::float4x4::translation(0.F, 0.5F, 0.F), scale_matrix);
 
-    hlslpp::float4x4 scale_matrix = hlslpp::float4x4::scale(m_scene_scale);
-
-    // Cube model matrix
-    hlslpp::float4x4 cube_model_matrix = hlslpp::mul(hlslpp::float4x4::translation(0.F, 0.5F, 0.F), scale_matrix); // move up by half of cube model height
+    const ShadowCubeFrame& frame = GetCurrentFrame();
 
     // Update Cube uniforms
-    m_cube_buffers_ptr->SetFinalPassUniforms(hlslpp::MeshUniforms{
+    const hlslpp::MeshUniforms final_cube_uniforms{
         hlslpp::transpose(cube_model_matrix),
         hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_view_camera.GetViewProjMatrix())),
         hlslpp::transpose(hlslpp::mul(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
-    });
-    m_cube_buffers_ptr->SetShadowPassUniforms(hlslpp::MeshUniforms{
+    };
+    const hlslpp::MeshUniforms shadow_cube_uniforms{
         hlslpp::transpose(cube_model_matrix),
         hlslpp::transpose(hlslpp::mul(cube_model_matrix, m_light_camera.GetViewProjMatrix())),
         hlslpp::float4x4()
-    });
+    };
+    frame.final_pass.cube_bindings.scene_uniforms_binding_ptr->SetRootConstant(scene_uniforms_constant);
+    frame.final_pass.cube_bindings.mesh_uniforms_binding_ptr->SetRootConstant(rhi::RootConstant(final_cube_uniforms));
+    frame.shadow_pass.cube_bindings.mesh_uniforms_binding_ptr->SetRootConstant(rhi::RootConstant(shadow_cube_uniforms));
 
     // Update Floor uniforms
-    m_floor_buffers_ptr->SetFinalPassUniforms(hlslpp::MeshUniforms{
+    const hlslpp::MeshUniforms final_floor_uniforms{
         hlslpp::transpose(scale_matrix),
         hlslpp::transpose(hlslpp::mul(scale_matrix, m_view_camera.GetViewProjMatrix())),
         hlslpp::transpose(hlslpp::mul(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix()), s_homogen_to_texture_coords_matrix))
-    });
-    m_floor_buffers_ptr->SetShadowPassUniforms(hlslpp::MeshUniforms{
+    };
+    const hlslpp::MeshUniforms shadow_floor_uniforms{
         hlslpp::transpose(scale_matrix),
         hlslpp::transpose(hlslpp::mul(scale_matrix, m_light_camera.GetViewProjMatrix())),
         hlslpp::float4x4()
-    });
+    };
+    frame.final_pass.floor_bindings.scene_uniforms_binding_ptr->SetRootConstant(scene_uniforms_constant);
+    frame.final_pass.floor_bindings.mesh_uniforms_binding_ptr->SetRootConstant(rhi::RootConstant(final_floor_uniforms));
+    frame.shadow_pass.floor_bindings.mesh_uniforms_binding_ptr->SetRootConstant(rhi::RootConstant(shadow_floor_uniforms));
     
     return true;
 }
 ```
 
-Scene rendering consists is done in `ShadowCubeApp::Render()` method in 4 steps:
-1. 5 Volatile uniform buffers are updated with uniform structures data, previously calculated and filled 
-   in `ShadowCubeApp::Update()` method.
-2. Shadow pass rendering commands are encoded with `ShadowCubeApp::RenderScene(...)` method for the current scene 
+Scene rendering consists is done in `ShadowCubeApp::Render()` method in 3 steps:
+1. Shadow pass rendering commands are encoded with `ShadowCubeApp::RenderScene(...)` method for the current scene 
    using already configured shadow render pass bound to shadow render command list and shadow-pass uniforms.
-3. Final pass rendering commands are encoded with `ShadowCubeApp::RenderScene(...)` method for the same scene 
+2. Final pass rendering commands are encoded with `ShadowCubeApp::RenderScene(...)` method for the same scene 
    using already configured final render pass bound to final render command list and final-pass uniforms.
-4. Shadow and Final pass rendering command lists are sent for execution to GPU using render command queue from context 
+3. Shadow and Final pass rendering command lists are sent for execution to GPU using render command queue from context 
    and frame present is scheduled.
 
 ```cpp
@@ -557,16 +531,8 @@ bool ShadowCubeApp::Render()
     if (!UserInterfaceApp::Render())
         return false;
 
-    // Upload uniform buffers to GPU
-    const ShadowCubeFrame& frame = GetCurrentFrame();
-    const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.scene_uniforms_buffer.SetData(render_cmd_queue, m_scene_uniforms_subresource);
-    frame.shadow_pass.floor.uniforms_buffer.SetData(render_cmd_queue, m_floor_buffers_ptr->GetShadowPassUniformsSubresources());
-    frame.shadow_pass.cube.uniforms_buffer.SetData(render_cmd_queue, m_cube_buffers_ptr->GetShadowPassUniformsSubresources());
-    frame.final_pass.floor.uniforms_buffer.SetData(render_cmd_queue, m_floor_buffers_ptr->GetFinalPassUniformsSubresources());
-    frame.final_pass.cube.uniforms_buffer.SetData(render_cmd_queue, m_cube_buffers_ptr->GetFinalPassUniformsSubresources());
-
     // Record commands for shadow & final render passes
+    const ShadowCubeFrame& frame = GetCurrentFrame();
     RenderScene(m_shadow_pass, frame.shadow_pass);
     RenderScene(m_final_pass, frame.final_pass);
 
@@ -601,8 +567,8 @@ void ShadowCubeApp::RenderScene(const RenderPassState& render_pass, const Shadow
     cmd_list.SetViewState(render_pass.view_state);
 
     // Draw scene with cube and floor
-    m_cube_buffers_ptr->Draw(cmd_list, render_pass_resources.cube.program_bindings);
-    m_floor_buffers_ptr->Draw(cmd_list, render_pass_resources.floor.program_bindings);
+    m_cube_buffers_ptr->Draw(cmd_list, render_pass_resources.cube_bindings.program_bindings);
+    m_floor_buffers_ptr->Draw(cmd_list, render_pass_resources.floor_bindings.program_bindings);
 
     if (render_pass.is_final_pass)
     {
@@ -641,7 +607,7 @@ pre-processor guards. These code blocks are enabled with macro-definitions passe
 
 ```cpp
 #include "ShadowCubeUniforms.h"
-#include "..\..\Common\Shaders\Primitives.hlsl"
+#include "../../Common/Shaders/Primitives.hlsl"
 
 struct VSInput
 {
@@ -665,18 +631,18 @@ struct PSInput
 #endif
 };
 
-ConstantBuffer<Constants>     g_constants       : register(b0);
-ConstantBuffer<SceneUniforms> g_scene_uniforms  : register(b1);
-ConstantBuffer<MeshUniforms>  g_mesh_uniforms   : register(b2);
+ConstantBuffer<Constants>     g_constants       : register(b0, META_ARG_CONSTANT);
+ConstantBuffer<SceneUniforms> g_scene_uniforms  : register(b1, META_ARG_FRAME_CONSTANT);
+ConstantBuffer<MeshUniforms>  g_mesh_uniforms   : register(b2, META_ARG_MUTABLE);
 
 #ifdef ENABLE_SHADOWS
-Texture2D    g_shadow_map      : register(t0);
-SamplerState g_shadow_sampler  : register(s0);
+Texture2D    g_shadow_map      : register(t0, META_ARG_FRAME_CONSTANT);
+SamplerState g_shadow_sampler  : register(s0, META_ARG_CONSTANT);
 #endif
 
 #ifdef ENABLE_TEXTURING
-Texture2D    g_texture         : register(t1);
-SamplerState g_texture_sampler : register(s1);
+Texture2D    g_texture         : register(t1, META_ARG_MUTABLE);
+SamplerState g_texture_sampler : register(s1, META_ARG_CONSTANT);
 #endif
 
 PSInput CubeVS(VSInput input)
@@ -699,7 +665,7 @@ PSInput CubeVS(VSInput input)
 
 float4 CubePS(PSInput input) : SV_TARGET
 {
-    const float3 fragment_to_light             = normalize(g_scene_uniforms.light_position - input.world_position);
+    const float3 fragment_to_light             = normalize(g_scene_uniforms.light_position.xyz - input.world_position);
     const float3 fragment_to_eye               = normalize(g_scene_uniforms.eye_position.xyz - input.world_position);
     const float3 light_reflected_from_fragment = reflect(-fragment_to_light, input.world_normal);
 
@@ -721,7 +687,7 @@ float4 CubePS(PSInput input) : SV_TARGET
     const float4 ambient_color  = texel_color * g_constants.light_ambient_factor;
     const float4 base_color     = texel_color * g_constants.light_color * g_constants.light_power;
 
-    const float  distance       = length(g_scene_uniforms.light_position - input.world_position);
+    const float  distance       = length(g_scene_uniforms.light_position.xyz - input.world_position);
     const float  diffuse_part   = clamp(dot(fragment_to_light, input.world_normal), 0.0, 1.0);
     const float4 diffuse_color  = base_color * diffuse_part / (distance * distance);
 

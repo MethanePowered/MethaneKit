@@ -44,7 +44,6 @@ struct Vertex
 };
 
 static const gfx::FrameSize    g_shadow_map_size(1024, 1024);
-static const float             g_scene_scale = 15.F;
 static const hlslpp::Constants g_scene_constants{
     { 1.F, 1.F, 0.74F, 1.F }, // - light_color
     700.F,                    // - light_power
@@ -230,7 +229,7 @@ void ShadowCubeApp::Init()
 
         // Shadow-pass resource bindings for floor rendering
         ShadowCubeFrame::PassResources::ProgramBindings& shadow_floor_binds = frame.shadow_pass.floor_bindings;
-        shadow_floor_binds.program_bindings = shadow_state_settings.program.CreateBindings({}, frame.index);
+        shadow_floor_binds.program_bindings = shadow_state_settings.program.CreateBindings({ }, frame.index);
         shadow_floor_binds.program_bindings.SetName(fmt::format("Floor Shadow-Pass Bindings {}", frame.index));
         shadow_floor_binds.mesh_uniforms_binding_ptr = &shadow_floor_binds.program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms" });
 
@@ -321,8 +320,8 @@ bool ShadowCubeApp::Update()
         return false;
 
     const hlslpp::SceneUniforms scene_uniforms{
-        /* eye_position   */ hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F),
-        /* light_position */ hlslpp::float4(m_light_camera.GetOrientation().eye, 1.F)
+        hlslpp::float4(m_view_camera.GetOrientation().eye, 1.F), // eye_position
+        hlslpp::float4(m_light_camera.GetOrientation().eye, 1.F) // light_position
     };
     const rhi::RootConstant scene_uniforms_constant(scene_uniforms);
 
@@ -332,7 +331,7 @@ bool ShadowCubeApp::Update()
         hlslpp::float4x4::translation(0.5F, 0.5F, 0.F)
     );
 
-    const hlslpp::float4x4 scale_matrix = hlslpp::float4x4::scale(g_scene_scale);
+    const hlslpp::float4x4 scale_matrix = hlslpp::float4x4::scale(15.F);
     const hlslpp::float4x4 cube_model_matrix = hlslpp::mul(hlslpp::float4x4::translation(0.F, 0.5F, 0.F), scale_matrix);
 
     const ShadowCubeFrame& frame = GetCurrentFrame();

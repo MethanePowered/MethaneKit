@@ -45,7 +45,6 @@ namespace Methane::Graphics
 {
 
 class Camera;
-struct MeshBufferBindings;
 
 class SkyBox // NOSONAR - manual copy, move constructors and assignment operators
 {
