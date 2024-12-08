@@ -44,7 +44,6 @@ struct CubeVertex
     };
 };
 
-constexpr float         g_cube_scale = 15.F;
 const hlslpp::Constants g_shader_constants{
     { 1.F, 1.F, 0.74F, 1.F },  // - light_color
     700.F,                     // - light_power
@@ -62,9 +61,9 @@ TexturedCubeApp::TexturedCubeApp()
         "Methane tutorial of textured cube rendering")
 {
     m_shader_uniforms.light_position = hlslpp::float3(0.F, 20.F, -25.F);
-    m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
+    m_shader_uniforms.model_matrix = hlslpp::float4x4::scale(15.F);
 
-    m_shader_uniforms.model_matrix = hlslpp::float4x4::scale(g_cube_scale);
+    m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -209,9 +208,10 @@ bool TexturedCubeApp::Render()
     if (!UserInterfaceApp::Render())
         return false;
 
+    const TexturedCubeFrame& frame = GetCurrentFrame();
+
     // Issue commands for cube rendering
     META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
-    const TexturedCubeFrame& frame = GetCurrentFrame();
     frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
     frame.render_cmd_list.SetViewState(GetViewState());
     frame.render_cmd_list.SetProgramBindings(frame.program_bindings);

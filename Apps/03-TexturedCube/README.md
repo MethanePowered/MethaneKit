@@ -83,29 +83,28 @@ private:
 ```
 
 Methane Kit is designed to use [deferred rendering approach](https://docs.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-render-multi-thread-render) 
-with triple buffering for minimized waiting of frame-buffer release in swap-chain.
+with triple buffering to minimize waiting of frame-buffer releases in swap-chain.
 In order to prepare graphics resource states ahead of next frames rendering, `TexturedCubeFrame` structure keeps 
-volatile frame dependent resources used for rendering to dedicated frame-buffer. It includes uniforms buffer and 
-program bindings objects as well as render command list for render commands encoding
-and a set of command lists submitted for execution on GPU via command queue.
+volatile frame dependent resources used for rendering to dedicated frame-buffer. It includes program bindings object
+as well as render command list for render commands encoding and a set of command lists submitted
+for execution on GPU via command queue.
 
 ```cpp
 struct TexturedCubeFrame final : Graphics::AppFrame
 {
-    rhi::Buffer            uniforms_buffer;
-    rhi::ProgramBindings   program_bindings;
-    rhi::RenderCommandList render_cmd_list;
-    rhi::CommandListSet    execute_cmd_list_set;
+    rhi::ProgramBindings          program_bindings;
+    rhi::IProgramArgumentBinding* uniforms_binding_ptr = nullptr;
+    rhi::RenderCommandList        render_cmd_list;
+    rhi::CommandListSet           execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };
 ```
 
 [Shaders/TexturedCubeUniforms.h](Shaders/TexturedCubeUniforms.h) header contains declaration of `Constants` and `Uniforms` 
-structures with data saved in constants buffer `m_const_buffer` field of `TexturedCubeApp` class below and uniforms buffer 
-`uniforms_buffer` field of `TexturedCubeFrame` structure above.
+structures with data saved in root constant buffers of the main program object.
 Structures from this header are reused in [HLSL shader code](#textured-cube-shaders) and 16-byte packing in C++ is used
-gor common memory layout in HLSL and C++.
+for common memory layout in HLSL and C++.
 
 Uniform structures in [Shaders/TexturedCubeUniforms.h](Shaders/TexturedCubeUniforms.h):
 ```hlsl
@@ -115,6 +114,7 @@ struct Constants
     float  light_power;
     float  light_ambient_factor;
     float  light_specular_factor;
+    float  _padding;
 };
 
 struct Uniforms
@@ -126,6 +126,10 @@ struct Uniforms
 };
 ```
 
+Size of the uniform buffer structures should be aligned to 16 bytes, which is 
+defined with pragma pack directive in application header file [TexturedCubeApp.h](TexturedCubeApp.h).
+Uniforms data is stored in the application class member `m_shader_uinforms` and is updated in `TexturedCubeApp::Update()` method. 
+
 ```cpp
 namespace hlslpp
 {
@@ -134,31 +138,39 @@ namespace hlslpp
 #pragma pack(pop)
 }
 
+namespace Methane::Tutorials
+{
+
 class TexturedCubeApp final : public UserInterfaceApp
 {
     ...
 
 private:
-    const float             m_cube_scale = 15.F;
-    const hlslpp::Constants m_shader_constants{
-        { 1.F, 1.F, 0.74F, 1.F },  // - light_color
-        700.F,                     // - light_power
-        0.04F,                     // - light_ambient_factor
-        30.F                       // - light_specular_factor
-    };
     hlslpp::Uniforms m_shader_uniforms { };
     gfx::Camera      m_camera;
     rhi::RenderState m_render_state;
     rhi::BufferSet   m_vertex_buffer_set;
     rhi::Buffer      m_index_buffer;
-    rhi::Buffer      m_const_buffer;
     rhi::Texture     m_cube_texture;
     rhi::Sampler     m_texture_sampler;
-
-    const gfx::SubResources m_shader_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) }
-    };
 };
+
+} // namespace Methane::Tutorials
+```
+
+Default values of the shader constants are defined in the application source file  and
+checked in [TexturedCubeApp.cpp](TexturedCubeApp.cpp) and size alignment is checked with static asserts:
+
+```cpp
+const hlslpp::Constants g_shader_constants{
+    { 1.F, 1.F, 0.74F, 1.F },  // - light_color
+    700.F,                     // - light_power
+    0.04F,                     // - light_ambient_factor
+    30.F                       // - light_specular_factor
+};
+
+static_assert(sizeof(hlslpp::Constants) % 16 == 0, "Size of Constants struct should have 16 byte alignment!");
+static_assert(sizeof(hlslpp::Uniforms) % 16 == 0,  "Size of Uniforms struct should have 16 byte alignment!");
 ```
 
 ## Application Construction and Initialization
@@ -177,9 +189,9 @@ TexturedCubeApp::TexturedCubeApp()
         "Methane tutorial of textured cube rendering")
 {
     m_shader_uniforms.light_position = hlslpp::float3(0.F, 20.F, -25.F);
-    m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
+    m_shader_uniforms.model_matrix = hlslpp::float4x4::scale(15.F);
 
-    m_shader_uniforms.model_matrix = hlslpp::float4x4::scale(m_cube_scale);
+    m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
     // Setup animations
     GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
@@ -216,9 +228,6 @@ using vertex structure with layout description defined above. Vertex and index b
 `rhi::BufferSettings::ForIndexBuffer(...)` settings. Generated data is copied to buffers with `Rhi::Buffer::SetData(...)` call,
 which is taking a sub-resource derived from `Data::Chunk` class describing continuous memory range and holding its data.
 
-Similarly, constants buffer is created with `GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(...))`
-and filled with data from member variable `m_shader_constants`.
-
 ```cpp
 void TexturedCubeApp::Init()
 {
@@ -232,6 +241,7 @@ void TexturedCubeApp::Init()
     const Data::Size vertex_data_size   = cube_mesh.GetVertexDataSize();
     const Data::Size  vertex_size       = cube_mesh.GetVertexSize();
     rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForVertexBuffer(vertex_data_size, vertex_size));
+    vertex_buffer.SetName("Cube Vertex Buffer");
     vertex_buffer.SetData(render_cmd_queue, {
         reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetVertices().data()),
         vertex_data_size
@@ -239,20 +249,13 @@ void TexturedCubeApp::Init()
     m_vertex_buffer_set = rhi::BufferSet(rhi::BufferType::Vertex, { vertex_buffer });
 
     // Create index buffer for cube mesh
-    const Data::Size index_data_size = cube_mesh.GetIndexDataSize();
+    const Data::Size index_data_size    = cube_mesh.GetIndexDataSize();
     const gfx::PixelFormat index_format = gfx::GetIndexFormat(cube_mesh.GetIndex(0));
     m_index_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForIndexBuffer(index_data_size, index_format));
+    m_index_buffer.SetName("Cube Index Buffer");
     m_index_buffer.SetData(render_cmd_queue, {
         reinterpret_cast<Data::ConstRawPtr>(cube_mesh.GetIndices().data()),
         index_data_size
-    });
-
-    // Create constants buffer for frame rendering
-    const auto constants_data_size = static_cast<Data::Size>(sizeof(m_shader_constants));
-    m_const_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(constants_data_size));
-    m_const_buffer.SetData(render_cmd_queue, {
-        reinterpret_cast<Data::ConstRawPtr>(&m_shader_constants),
-        constants_data_size
     });
 
     ...
@@ -294,6 +297,16 @@ Vertex and Pixel shaders are created and loaded from embedded resources as pre-c
 Also, it is important to note that render state settings enables depth testing for correct rendering of cube faces.
 Finally, render state is created using settings structure via `GetRenderContext().CreateRenderState(...)` factory method.
 
+`Rhi::ProgramArgumentAccessors{ ... }` in `Rhi::Program::Settings` overrides program argument accessor definitions:
+- Uniform argument `g_uniforms` of all shaders is defined as root constant buffer automatically managed by program
+with frame-constant access pattern (one buffer per frame is used). Note that `FRAME_CONSTANT` access pattern defined in
+C++ should match with `META_ARG_FRAME_CONSTANT` space modifier defined in shaders HLSL.
+- Uniform argument `g_constants` of pixel shader is also defined as root constant buffer with constant access pattern
+(single buffer is used for all frames in swap-chain). Note that `CONSTANT` access pattern defined in C++ should match 
+with `META_ARG_CONSTANT` space modifier defined in shaders HLSL.
+- Other program arguments `g_texture` and `g_sampler` are not overridden in program settings and 
+used with default access patterns defined in shaders HLSL.
+
 ```cpp
 void TexturedCubeApp::Init()
 {
@@ -318,7 +331,11 @@ void TexturedCubeApp::Init()
                             rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                         }
                     },
-                    rhi::ProgramArgumentAccessors{ },
+                    rhi::ProgramArgumentAccessors
+                    {
+                        META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
+                        META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::All, "g_uniforms")
+                    },
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }
             ),
@@ -331,8 +348,9 @@ void TexturedCubeApp::Init()
 ```
 
 Final part of initialization is related to frame-dependent resources, creating independent resource objects for each frame in swap-chain:
-- Create uniforms buffer with `GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(...))` method.
 - Create program arguments to resources bindings with `m_render_state.GetProgram().CreateBindings(..)` function.
+Note that program argument `g_uniforms` binding is not initialized here and its pointer is saved to `uniforms_binding_ptr` field
+for later initialization in `TexturedCubeApp::Update()` method.
 - Create rendering command list with `render_cmd_queue.CreateRenderCommandList(...)` and 
 create set of command lists with `rhi::CommandListSet(...)` for execution in command queue.
 
@@ -345,20 +363,16 @@ void TexturedCubeApp::Init()
     ...
 
     // Create frame buffer resources
-    const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
     for(TexturedCubeFrame& frame : GetFrames())
     {
-        // Create uniforms buffer with volatile parameters for frame rendering
-        frame.uniforms_buffer = GetRenderContext().CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
-
         // Configure program resource bindings
         frame.program_bindings = m_render_state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::All,   "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } },
-            { { rhi::ShaderType::Pixel, "g_constants" }, { { m_const_buffer.GetInterface()        } } },
-            { { rhi::ShaderType::Pixel, "g_texture"   }, { { m_cube_texture.GetInterface()        } } },
-            { { rhi::ShaderType::Pixel, "g_sampler"   }, { { m_texture_sampler.GetInterface()     } } },
+            { { rhi::ShaderType::Pixel, "g_constants" }, rhi::RootConstant(g_shader_constants) },
+            { { rhi::ShaderType::Pixel, "g_texture"   }, m_cube_texture.GetResourceView() },
+            { { rhi::ShaderType::Pixel, "g_sampler"   }, m_texture_sampler.GetResourceView() }
         }, frame.index);
-        
+        frame.uniforms_binding_ptr = &frame.program_bindings.Get({ rhi::ShaderType::All, "g_uniforms" });
+
         // Create command list for rendering
         frame.render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);
         frame.execute_cmd_list_set = rhi::CommandListSet({ frame.render_cmd_list.GetInterface() }, frame.index);
@@ -377,7 +391,6 @@ void TexturedCubeApp::OnContextReleased(gfx::Context& context)
 {
     m_texture_sampler = {};
     m_cube_texture = {};
-    m_const_buffer = {};
     m_index_buffer = {};
     m_vertex_buffer_set = {};
     m_render_state = {};
@@ -395,7 +408,7 @@ This function rotates light position and camera in opposite directions.
 bool TexturedCubeApp::Animate(double, double delta_seconds)
 {
     const float rotation_angle_rad = static_cast<float>(delta_seconds * 360.F / 4.F) * gfx::ConstFloat::RadPerDeg;
-    hlslpp::float3x3 light_rotate_matrix = hlslpp::float3x3::rotation_axis(m_camera.GetOrientation().up, rotation_angle_rad);
+    const hlslpp::float3x3 light_rotate_matrix = hlslpp::float3x3::rotation_axis(m_camera.GetOrientation().up, rotation_angle_rad);
     m_shader_uniforms.light_position = hlslpp::mul(m_shader_uniforms.light_position, light_rotate_matrix);
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
     return true;
@@ -403,7 +416,8 @@ bool TexturedCubeApp::Animate(double, double delta_seconds)
 ```
 
 `TexturedCubeApp::Update()` function is called before `App::Render()` call to update shader uniforms with model-view-project (MVP)
-matrices and eye position based on current camera orientation, updated in animation.
+matrices and eye position based on current camera orientation, updated in animation. Root constant buffer is updated
+with this data using program argument binding method `Rhi::IProgramArgumentBinding::SetRootConstant(...)`.
 
 ```cpp
 bool TexturedCubeApp::Update()
@@ -414,23 +428,23 @@ bool TexturedCubeApp::Update()
     // Update Model, View, Projection matrices based on camera location
     m_shader_uniforms.mvp_matrix   = hlslpp::transpose(hlslpp::mul(m_shader_uniforms.model_matrix, m_camera.GetViewProjMatrix()));
     m_shader_uniforms.eye_position = m_camera.GetOrientation().eye;
-    
+
+    GetCurrentFrame().uniforms_binding_ptr->SetRootConstant(rhi::RootConstant(m_shader_uniforms));
     return true;
 }
 ```
 
 `TexturedCubeApp::Render()` method is called after all. Initial base method `UserInterfaceApp::Render()` call waits for 
 previously current frame buffer presenting is completed. When frame buffer is free, new frame rendering can be started:
-1. Uniforms buffer is filled with new shader uniforms data updated in calls above.
-2. Render command list encoding starts with `IRenderCommandList::Reset(...)` call taking render state object and optional debug group,
+1. Render command list encoding starts with `Rhi::RenderCommandList::Reset(...)` call taking render state object and optional debug group,
 which is defining named region in commands sequence.
     1. View state is set with viewports and scissor rects
     2. Program bindings are set
     3. Vertex buffers set is set
     4. Indexed draw call is issued
-3. `UserInterface::App::RenderOverlay(...)` is called to record UI drawing command in render command list.
-4. Render command list is committed and passed to `Graphics::ICommandQueue::Execute` call for execution on GPU.
-5. `RenderContext::Present()` is called to schedule frame buffer presenting to screen.
+2. `UserInterface::App::RenderOverlay(...)` is called to record UI drawing command in render command list.
+3. Render command list is committed and passed to `Rhi::CommandQueue::Execute` call for execution on GPU.
+4. `RenderContext::Present()` is called to schedule frame buffer presenting to screen.
 
 ```cpp
 bool TexturedCubeApp::Render()
@@ -438,10 +452,7 @@ bool TexturedCubeApp::Render()
     if (!UserInterfaceApp::Render())
         return false;
 
-    // Update uniforms buffer related to current frame
     const TexturedCubeFrame& frame = GetCurrentFrame();
-    const rhi::CommandQueue& render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
-    frame.uniforms_buffer.SetData(render_cmd_queue, m_shader_uniforms_subresources);
 
     // Issue commands for cube rendering
     META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
@@ -456,7 +467,7 @@ bool TexturedCubeApp::Render()
 
     // Execute command list on render queue and present frame to screen
     frame.render_cmd_list.Commit();
-    render_cmd_queue.Execute(frame.execute_cmd_list_set);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(frame.execute_cmd_list_set);
     GetRenderContext().Present();
 
     return true;
@@ -480,7 +491,7 @@ SRGB gamma-correction is implemented with `ColorLinearToSrgb(...)` function from
 
 ```cpp
 #include "TexturedCubeUniforms.h"
-#include "..\..\..\Common\Shaders\Primitives.hlsl"
+#include "../../Common/Shaders/Primitives.hlsl"
 
 struct VSInput
 {
@@ -497,10 +508,10 @@ struct PSInput
     float2 texcoord         : TEXCOORD;
 };
 
-ConstantBuffer<Constants> g_constants : register(b0);
-ConstantBuffer<Uniforms>  g_uniforms  : register(b1);
-Texture2D                 g_texture   : register(t0);
-SamplerState              g_sampler   : register(s0);
+ConstantBuffer<Constants> g_constants : register(b0, META_ARG_CONSTANT);
+ConstantBuffer<Uniforms>  g_uniforms  : register(b1, META_ARG_FRAME_CONSTANT);
+Texture2D                 g_texture   : register(t0, META_ARG_CONSTANT);
+SamplerState              g_sampler   : register(s0, META_ARG_CONSTANT);
 
 PSInput CubeVS(VSInput input)
 {
@@ -534,7 +545,6 @@ float4 CubePS(PSInput input) : SV_TARGET
 
     return ColorLinearToSrgb(ambient_color + diffuse_color + specular_color);
 }
-
 ```
 
 ## CMake Build Configuration

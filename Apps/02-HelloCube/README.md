@@ -467,7 +467,7 @@ struct HelloCubeFrame final : AppFrame
 The compiled vertex shader is loaded from resources with respect to macro definition `UNIFORMS_ENABLED`,
 which was used to compile it at build-time using CMake function `add_methane_shaders_source`.
 `Rhi::ProgramArgumentAccessors{ ... }` overrides program argument accessor definitions:
-uniform argument `g_uniforms` of the vertex buffer is defined as root constant buffer automatically managed by program
+uniform argument `g_uniforms` of the vertex shader is defined as root constant buffer automatically managed by program
 with frame-constant access pattern. Note that `FRAME_CONSTANT` access pattern defined in C++ should match with 
 `META_ARG_FRAME_CONSTANT` space modifier defined in HLSL.
 
