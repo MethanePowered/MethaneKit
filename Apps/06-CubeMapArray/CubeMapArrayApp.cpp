@@ -249,9 +249,7 @@ bool CubeMapArrayApp::Render()
     if (!UserInterfaceApp::Render())
         return false;
 
-    // Update uniforms buffer related to current frame
     const CubeMapArrayFrame& frame = GetCurrentFrame();
-    const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
 
     // 1) Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     META_DEBUG_GROUP_VAR(s_debug_group, "Cube Instances Rendering");
@@ -267,7 +265,7 @@ bool CubeMapArrayApp::Render()
     frame.render_cmd_list.Commit();
 
     // Execute command list on render queue and present frame to screen
-    render_cmd_queue.Execute(frame.execute_cmd_list_set);
+    GetRenderContext().GetRenderCommandKit().GetQueue().Execute(frame.execute_cmd_list_set);
     GetRenderContext().Present();
 
     return true;
