@@ -403,9 +403,10 @@ bool ParallelRenderingApp::Update()
     if (!UserInterfaceApp::Update())
         return false;
 
+    const ParallelRenderingFrame& frame  = GetCurrentFrame();
+
     // Update MVP-matrices for all cube instances so that they are positioned in a cube grid
     tf::Taskflow task_flow;
-    const ParallelRenderingFrame& frame  = GetCurrentFrame();
     task_flow.for_each_index(0U, static_cast<uint32_t>(m_cube_array_parameters.size()), 1U,
         [this, &frame](const uint32_t cube_index)
         {

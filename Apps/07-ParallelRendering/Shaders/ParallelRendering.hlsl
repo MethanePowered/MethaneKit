@@ -22,7 +22,6 @@ Shaders for cube rendering with sampling from Texture2DArray in parallel renderi
 ******************************************************************************/
 
 #include "ParallelRenderingUniforms.h"
-#include "../../Common/Shaders/Primitives.hlsl"
 
 struct VSInput
 {
