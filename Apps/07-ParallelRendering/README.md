@@ -62,6 +62,11 @@ update is all at once and bind buffer views to the particular addresses in this 
 
 ### Uniform Root Constants (Option-1)
 
+Render state and program are created with root constant buffer used for `g_uniforms` argument binding.
+Per-frame program bindings are created for each cube instance and uniform argument binding pointers are saved for further modification.
+Program bindings for the first cube instance is initialized with texture array and sampler resource views.
+Other program bindings are duplicated from the first one in a parallel for loop.
+
 ```cpp
 void ParallelRenderingApp::Init()
 {
@@ -118,6 +123,12 @@ void ParallelRenderingApp::Init()
 ```
 
 ### Uniform Buffer Views (Option-2)
+
+Render state and program are created with buffer address views used for `g_uniforms` argument binding.
+Per-frame uniform buffers are created.
+Program bindings are created for each cube instance and uniform argument binding pointers are saved for further modification.
+Program bindings for the first cube instance are initialized with uniforms buffer view of the first element, texture array and sampler resource views.
+Other program bindings are duplicated from the first one in a parallel for loop and override uniforms buffer view with the next element offsets.
 
 ```cpp
 void ParallelRenderingApp::Init()
@@ -188,22 +199,38 @@ void ParallelRenderingApp::Init()
 
 ### Create Parallel Render Command List
 
+Per-frame parallel render command list is created for the screen render pass to do multi-threaded rendering commands recording.
+Parallel command lists count is set to the number of active render threads, which allocates one render command list for each thread.
+Additional beginning and ending command lists are created for the screen pass to set up and finalize synchronization and rendering commands.
+Commands validation is disabled to increase commands recording performance.
+
 ```cpp
 void ParallelRenderingApp::Init()
 {
     ...
-    
-    // Create parallel command list for rendering to the screen pass
-    frame.parallel_render_cmd_list = render_cmd_queue.CreateParallelRenderCommandList(frame.screen_pass);
-    frame.parallel_render_cmd_list.SetParallelCommandListsCount(m_settings.GetActiveRenderThreadCount());
-    frame.parallel_render_cmd_list.SetValidationEnabled(false);
-    frame.execute_cmd_list_set = rhi::CommandListSet({ frame.parallel_render_cmd_list.GetInterface() }, frame.index);
-    
+    for(ParallelRenderingFrame& frame : GetFrames())
+    {
+        ...
+        // Create parallel command list for rendering to the screen pass
+        frame.parallel_render_cmd_list = render_cmd_queue.CreateParallelRenderCommandList(frame.screen_pass);
+        frame.parallel_render_cmd_list.SetParallelCommandListsCount(m_settings.GetActiveRenderThreadCount());
+        frame.parallel_render_cmd_list.SetValidationEnabled(false);
+        frame.execute_cmd_list_set = rhi::CommandListSet({ frame.parallel_render_cmd_list.GetInterface() }, frame.index);
+    }
     ...
 }
 ```
 
 ### Rotating Cube Parameters Initialization
+
+The `InitializeCubeArrayParameters` function is responsible for setting up the initial parameters for an 3D grid of cubes
+that will be rendered in parallel. Each cube is positioned in the grid, scaled, and rotated with random speed around Y and Z axes;
+also each cube is assigned to particular thread index.
+After initializing the parameters, the cubes are sorted by their thread indices to ensure that the actual distribution
+of cubes among render threads matches the assigned thread indices.
+This sorting also improves rendering performance by ensuring that each thread uses a single texture for all its cubes.
+Finally, the function ensures an even distribution of cubes among the threads by adjusting the thread indices.
+The tasks are executed in parallel and the initialized cube parameters are returned.
 
 ```cpp
 struct CubeParameters
@@ -282,6 +309,11 @@ std::vector<CubeParameters> ParallelRenderingApp::InitializeCubeArrayParameters(
 
 ## Update Cube Uniforms
 
+Cube uniforms are updated before rendering in parallel for loop which calculated MVP matrix based on cube model matrix and camera VP matrix.
+- When root constants are enabled, uniforms structure is set to the `g_uniforms` argument binding directly with `SetRootConstant` call.
+- When uniform buffer views are enabled, uniforms are just copied to the temporary memory buffer inside `MeshBuffers`
+with `m_cube_array_buffers_ptr->SetFinalPassUniforms(...)`. Later in `Render` method, this memory buffer will be uploaded to the GPU.
+
 ```cpp
 bool ParallelRenderingApp::Update()
 {
@@ -314,6 +346,19 @@ bool ParallelRenderingApp::Update()
 ```
 
 ## Parallel Rendering
+
+In case when uniform buffer views are used, temporary memory buffer filled in `Update` method
+is uploaded to the GPU uniforms buffer with `frame.cubes_array.uniforms_buffer.SetData(...)` call.
+
+Vector of per-thread rendering command lists is acquired from the parallel render command list with
+`frame.parallel_render_cmd_list.GetParallelCommandLists()` call. These command lists are used independently in 
+a parallel for loop for rendering some part of the cube instances in the `RenderCubesRange(...)` method.
+
+`RenderCubesRange(...)` method is executed in parallel threads, each execution for a separate range of cube instances.
+Per-cube program bindings are bound to render pipeline with a special `bindings_apply_behavior` bit mask.
+This mask is used to apply constant bindings only once per command list and retain resources for the first binding instance,
+which is done to reduce unnecessary operations during repeated resource bindings. After that cube instance is drawn
+with a simple `DrawIndexed` draw-call.
 
 ```cpp
 bool ParallelRenderingApp::Render()
