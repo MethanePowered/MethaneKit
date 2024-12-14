@@ -1,8 +1,8 @@
 CPMAddPackage(
     NAME FreeType2
     GITHUB_REPOSITORY MethanePowered/FreeType2
-    GIT_TAG VER-2-12-1
-    VERSION 2.12.1
+    GIT_TAG VER-2-13-3
+    VERSION 2.13.3
     OPTIONS
         "FT_DISABLE_ZLIB ON"
         "FT_DISABLE_BZIP2 ON"
