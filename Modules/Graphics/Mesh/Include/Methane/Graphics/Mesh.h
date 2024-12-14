@@ -29,7 +29,7 @@ Abstract mesh class
 #include <vector>
 #include <array>
 #include <string_view>
-#include <map>
+#include <iterator>
 
 namespace Methane::Graphics
 {

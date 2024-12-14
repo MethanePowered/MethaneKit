@@ -28,6 +28,8 @@ DirectX 12 implementation of the program argument binding interface.
 #include <Methane/Graphics/Base/Context.h>
 
 #include <magic_enum.hpp>
+#include <algorithm>
+#include <iterator>
 
 namespace Methane::Graphics::DirectX
 {

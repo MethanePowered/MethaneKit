@@ -30,16 +30,17 @@ DirectX 12 implementation of the texture interface.
 #include <Methane/Graphics/DirectX/Types.h>
 #include <Methane/Graphics/DirectX/ErrorHandling.h>
 
-#include <Methane/Graphics/DirectX/ErrorHandling.h>
 #include <Methane/Graphics/TypeFormatters.hpp>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <fmt/format.h>
 #include <directx/d3dx12_resource_helpers.h>
 #include <DirectXTex.h>
+
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>

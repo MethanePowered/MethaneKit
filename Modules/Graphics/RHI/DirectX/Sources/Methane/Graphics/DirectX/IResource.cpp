@@ -25,6 +25,9 @@ DirectX 12 specialization of the resource interface.
 #include <Methane/Graphics/RHI/ITexture.h>
 #include <Methane/Data/EnumMaskUtil.hpp>
 
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
 {

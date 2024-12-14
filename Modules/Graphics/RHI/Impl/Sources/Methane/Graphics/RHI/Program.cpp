@@ -36,6 +36,7 @@ Methane Program PIMPL wrappers for direct calls to final implementation.
 #endif
 
 #include <algorithm>
+#include <iterator>
 
 namespace Methane::Graphics::Rhi
 {

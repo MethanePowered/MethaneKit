@@ -27,6 +27,9 @@ Base implementation of the program argument binding interface.
 #include <Methane/Graphics/RHI/TypeFormatters.hpp>
 #include <Methane/Data/EnumMaskUtil.hpp>
 
+#include <fmt/format.h>
+#include <fmt/ranges.h>
+
 namespace Methane::Graphics::Base
 {
 
