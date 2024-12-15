@@ -241,7 +241,6 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
 
     SECTION("Object Name Set Unchanged")
     {
-        const Rhi::ProgramBindings program_bindings = compute_program.CreateBindings(compute_resource_views);
         CHECK(program_bindings.SetName("My Program Bindings"));
         ObjectCallbackTester object_callback_tester(program_bindings);
         CHECK_FALSE(program_bindings.SetName("My Program Bindings"));
@@ -250,7 +249,6 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
 
     SECTION("Can Get Program Binding Arguments")
     {
-        const Rhi::ProgramBindings program_bindings = compute_program.CreateBindings(compute_resource_views);
         REQUIRE(program_bindings.GetArguments().size() == 5U);
         Rhi::ProgramArguments program_arguments;
         REQUIRE_NOTHROW(program_arguments = program_bindings.GetArguments());
@@ -263,7 +261,6 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
 
     SECTION("Can Get Texture Argument Binding")
     {
-        const Rhi::ProgramBindings program_bindings = compute_program.CreateBindings(compute_resource_views);
         Rhi::IProgramArgumentBinding* texture_binding_ptr = nullptr;
         REQUIRE_NOTHROW(texture_binding_ptr = &program_bindings.Get({ Rhi::ShaderType::Compute, "InTexture" }));
         REQUIRE(texture_binding_ptr);
@@ -276,7 +273,6 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
 
     SECTION("Can Get Sampler Argument Binding")
     {
-        const Rhi::ProgramBindings program_bindings = compute_program.CreateBindings(compute_resource_views);
         Rhi::IProgramArgumentBinding* sampler_binding_ptr = nullptr;
         REQUIRE_NOTHROW(sampler_binding_ptr = &program_bindings.Get({ Rhi::ShaderType::Compute, "InSampler" }));
         REQUIRE(sampler_binding_ptr);
