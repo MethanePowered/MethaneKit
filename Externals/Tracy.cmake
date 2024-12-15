@@ -1,7 +1,7 @@
 CPMAddPackage(
     NAME Tracy
     GITHUB_REPOSITORY MethanePowered/Tracy
-    VERSION 0.11.1.1
+    VERSION 0.12.0.1
     OPTIONS
         "TRACY_STATIC ON"
         "TRACY_ENABLE ${METHANE_TRACY_PROFILING_ENABLED}"

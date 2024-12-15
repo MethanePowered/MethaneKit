@@ -575,6 +575,7 @@ bool ProgramBindings::WriteArgumentsBufferRange(DescriptorManager& descriptor_ma
                                                 Rhi::ProgramArgumentAccessType access_type,
                                                 const ArgumentsRange& args_range)
 {
+    META_FUNCTION_TASK();
     if (args_range.IsEmpty())
         return false;
 
