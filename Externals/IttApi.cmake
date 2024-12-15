@@ -1,7 +1,7 @@
 CPMAddPackage(
     NAME IttApi
     GITHUB_REPOSITORY MethanePowered/IttApi
-    VERSION 3.24.6
+    VERSION 3.25.3
 )
 
 set_target_properties(ittnotify
