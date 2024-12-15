@@ -29,7 +29,7 @@ Methane sub-resource used for resource data transfers.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Rhi
 {

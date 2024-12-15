@@ -28,7 +28,7 @@ Metal implementation of the program argument binding interface.
 #include <Methane/Graphics/Metal/Texture.hh>
 #include <Methane/Graphics/Metal/Sampler.hh>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Metal
 {

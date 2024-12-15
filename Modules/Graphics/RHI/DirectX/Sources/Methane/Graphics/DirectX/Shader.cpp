@@ -41,7 +41,7 @@ DirectX 12 implementation of the shader interface.
 #include <set>
 
 #ifdef METHANE_LOGGING_ENABLED
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #endif
 
 namespace Methane::Graphics::DirectX

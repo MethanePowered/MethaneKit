@@ -30,7 +30,7 @@ DirectX 12 implementation of the program bindings interface.
 #include <wrl.h>
 #include <directx/d3d12.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <functional>
 #include <array>
 

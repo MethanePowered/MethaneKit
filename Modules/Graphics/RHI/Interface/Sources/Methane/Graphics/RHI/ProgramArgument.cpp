@@ -25,7 +25,7 @@ Methane program argument, accessor and related types.
 #include <Methane/Graphics/RHI/IProgram.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Rhi
 {

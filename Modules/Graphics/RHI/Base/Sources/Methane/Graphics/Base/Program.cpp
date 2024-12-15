@@ -26,7 +26,7 @@ Base implementation of the program interface.
 
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <algorithm>
 
 namespace Methane::Graphics::Base

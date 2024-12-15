@@ -42,7 +42,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::UserInterface
 {

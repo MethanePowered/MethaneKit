@@ -34,7 +34,7 @@ Base implementation of the program bindings interface.
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <array>

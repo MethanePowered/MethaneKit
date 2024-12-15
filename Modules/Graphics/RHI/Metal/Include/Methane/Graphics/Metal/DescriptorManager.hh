@@ -31,7 +31,7 @@ Metal descriptor manager of the argument buffer
 #include <Methane/Data/RangeSet.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <mutex>
 #include <array>

@@ -40,7 +40,7 @@ Vulkan implementation of the render context interface.
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <sstream>
 #include <cassert>
 

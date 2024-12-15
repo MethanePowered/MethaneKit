@@ -34,7 +34,7 @@ Vulkan implementation of the program interface.
 #include <Methane/Graphics/Base/RenderContext.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <sstream>
 
 namespace Methane::Graphics::Vulkan

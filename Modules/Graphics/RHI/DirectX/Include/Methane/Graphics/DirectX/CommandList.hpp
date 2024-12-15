@@ -44,7 +44,7 @@ DirectX 12 base template implementation of the command list interface.
 #include <fmt/format.h>
 
 #ifdef METHANE_LOGGING_ENABLED
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #endif
 
 namespace Methane::Graphics::DirectX

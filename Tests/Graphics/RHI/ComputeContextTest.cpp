@@ -38,7 +38,7 @@ Unit-tests of the RHI ComputeContext
 #include <Methane/Graphics/RHI/Sampler.h>
 
 #include <taskflow/taskflow.hpp>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 using namespace Methane;

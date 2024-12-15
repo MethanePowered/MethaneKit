@@ -27,7 +27,7 @@ DirectX 12 implementation of the program argument binding interface.
 #include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/Base/Context.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <algorithm>
 #include <iterator>
 

@@ -40,7 +40,7 @@ Vulkan base template implementation of the command list interface.
 #include <vulkan/vulkan.hpp>
 #include <nowide/convert.hpp>
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <array>
 #include <vector>

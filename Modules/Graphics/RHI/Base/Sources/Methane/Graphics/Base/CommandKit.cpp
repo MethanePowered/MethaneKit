@@ -39,7 +39,7 @@ Methane command kit implementation.
 #include <condition_variable>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Base
 {

@@ -36,7 +36,7 @@ Metal implementation of the shader interface.
 #include <Methane/Checks.hpp>
 
 #ifndef NDEBUG
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #endif
 
 #include <regex>

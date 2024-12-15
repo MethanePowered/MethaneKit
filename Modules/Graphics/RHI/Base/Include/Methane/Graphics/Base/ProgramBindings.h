@@ -30,7 +30,7 @@ Base implementation of the program bindings interface.
 #include <Methane/Graphics/RHI/IResource.h>
 #include <Methane/Data/Emitter.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Base
 {

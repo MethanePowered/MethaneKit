@@ -34,7 +34,7 @@ Vulkan GPU query pool implementation.
 #include <Methane/Checks.hpp>
 
 #include <chrono>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 static const vk::TimeDomainEXT g_vk_cpu_time_domain =
 #if defined(_WIN32)

@@ -28,7 +28,7 @@ Base implementation of the resource interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 

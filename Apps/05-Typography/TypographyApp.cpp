@@ -27,7 +27,7 @@ Tutorial demonstrating dynamic text rendering and fonts management with Methane 
 #include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Data/TimeAnimation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <array>
 
 namespace Methane::Tutorials

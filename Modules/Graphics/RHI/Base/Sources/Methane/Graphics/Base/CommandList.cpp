@@ -31,7 +31,7 @@ Base implementation of the command list interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 // Disable debug groups instrumentation with discontinuous CPU frames in Tracy,
 // because it is not working for parallel render command lists by some reason

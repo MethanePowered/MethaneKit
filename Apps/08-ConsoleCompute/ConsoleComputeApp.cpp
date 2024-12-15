@@ -28,7 +28,7 @@ Tutorial demonstrating "game of life" computing on GPU in console application
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <random>
 
 namespace gfx = Methane::Graphics;

@@ -27,7 +27,7 @@ Base implementation of the buffer-set interface.
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <sstream>
 
 namespace Methane::Graphics::Base

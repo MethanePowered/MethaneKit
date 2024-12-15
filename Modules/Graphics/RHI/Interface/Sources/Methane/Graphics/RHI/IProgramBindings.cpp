@@ -28,7 +28,7 @@ Methane program bindings interface for resources binding to program arguments.
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::ProgramArgument>

@@ -30,7 +30,7 @@ Base implementation of the context interface.
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Base
 {

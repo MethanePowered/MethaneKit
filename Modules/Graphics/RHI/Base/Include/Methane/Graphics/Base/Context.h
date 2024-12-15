@@ -30,7 +30,7 @@ Base implementation of the context interface.
 #include <Methane/Graphics/RHI/ICommandKit.h>
 #include <Methane/Data/Emitter.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <array>
 #include <string>
 

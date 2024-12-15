@@ -29,7 +29,7 @@ Vulkan implementation of the program interface.
 #include <Methane/Graphics/Base/Program.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <vulkan/vulkan.hpp>
 
 #include <array>

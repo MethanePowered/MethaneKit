@@ -32,7 +32,7 @@ Vulkan implementation of the system interface.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <vector>
 #include <sstream>
