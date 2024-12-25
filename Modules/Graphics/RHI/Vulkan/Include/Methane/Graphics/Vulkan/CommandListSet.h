@@ -42,7 +42,7 @@ public:
 
     // Base::CommandListSet interface
     void Execute(const Rhi::ICommandList::CompletedCallback& completed_callback) override;
-    void WaitUntilCompleted() override;
+    void WaitUntilCompleted(uint32_t timeout_ms) override;
 
     const std::vector<vk::CommandBuffer>& GetNativeCommandBuffers() const noexcept { return m_vk_command_buffers; }
     const vk::Semaphore& GetNativeExecutionCompletedSemaphore() const noexcept     { return m_vk_unique_execution_completed_semaphore.get(); }

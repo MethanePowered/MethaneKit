@@ -39,7 +39,7 @@ public:
     using Base::CommandListSet::Complete;
 
     // Base::CommandListSet interface
-    void WaitUntilCompleted() override;
+    void WaitUntilCompleted(uint32_t timeout_ms) override;
 };
 
 } // namespace Methane::Graphics::Null

@@ -270,13 +270,17 @@ void CommandList::SetCommandListState(State state)
 void CommandList::SetCommandListStateNoLock(State state)
 {
     META_FUNCTION_TASK();
-    if (m_state == state)
-        return;
+    {
+        std::lock_guard state_change_lock(m_state_change_mutex);
+        if (m_state == state)
+            return;
 
-    META_LOG("{} Command list '{}' change state from {} to {}",
-             magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
+        META_LOG("{} Command list '{}' change state from {} to {}",
+                 magic_enum::enum_name(m_type), GetName(), magic_enum::enum_name(m_state), magic_enum::enum_name(state));
 
-    m_state = state;
+        m_state = state;
+    }
+
     m_state_change_condition_var.notify_one();
 
     Data::Emitter<Rhi::ICommandListCallback>::Emit(&Rhi::ICommandListCallback::OnCommandListStateChanged, *this);

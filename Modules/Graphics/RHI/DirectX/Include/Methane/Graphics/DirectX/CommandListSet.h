@@ -45,7 +45,7 @@ public:
 
     // Base::CommandListSet interface
     void Execute(const Rhi::ICommandList::CompletedCallback& completed_callback) override;
-    void WaitUntilCompleted() override;
+    void WaitUntilCompleted(uint32_t timeout_ms) override;
 
     using NativeCommandLists = std::vector<ID3D12CommandList*>;
     const NativeCommandLists& GetNativeCommandLists() const noexcept { return m_native_command_lists; }

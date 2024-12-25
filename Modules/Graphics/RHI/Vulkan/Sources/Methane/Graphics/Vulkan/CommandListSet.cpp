@@ -153,7 +153,7 @@ void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& complet
     m_signalled_execution_completed_fence = true;
 }
 
-void CommandListSet::WaitUntilCompleted()
+void CommandListSet::WaitUntilCompleted(uint32_t /*timeout_ms*/)
 {
     META_FUNCTION_TASK();
     std::scoped_lock fence_guard(m_execution_completed_fence_mutex);

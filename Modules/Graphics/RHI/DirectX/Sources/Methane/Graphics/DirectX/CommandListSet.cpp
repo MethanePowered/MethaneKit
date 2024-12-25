@@ -78,7 +78,7 @@ void CommandListSet::Execute(const Rhi::ICommandList::CompletedCallback& complet
     m_execution_completed_fence.Signal();
 }
 
-void CommandListSet::WaitUntilCompleted()
+void CommandListSet::WaitUntilCompleted(uint32_t /*timeout_ms*/)
 {
     META_FUNCTION_TASK();
     m_execution_completed_fence.WaitOnCpu();

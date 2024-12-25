@@ -52,7 +52,7 @@ public:
 
     // CommandListSet interface
     virtual void Execute(const Rhi::ICommandList::CompletedCallback& completed_callback);
-    virtual void WaitUntilCompleted() = 0;
+    virtual void WaitUntilCompleted(uint32_t timeout_ms = 0U) = 0;
 
     bool IsExecuting() const noexcept { return m_is_executing; }
     void Complete() const;

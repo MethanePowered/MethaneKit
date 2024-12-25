@@ -144,7 +144,7 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
     default: META_UNEXPECTED(wait_for);
     }
 
-    GetMetalDefaultCommandQueue(cl_type).CompleteExecution(frame_buffer_index);
+    GetMetalDefaultCommandQueue(cl_type).WaitUntilCompleted(frame_buffer_index, 16);
 }
 
 void RenderContext::Resize(const FrameSize& frame_size)

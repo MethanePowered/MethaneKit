@@ -124,6 +124,19 @@ void CommandQueueTracking::CompleteExecution(const Opt<Data::Index>& frame_index
     m_execution_waiting_condition_var.notify_one();
 }
 
+void CommandQueueTracking::WaitUntilCompleted(const Opt<Data::Index>& frame_index, uint32_t timeout_ms)
+{
+    META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_executing_command_lists_mutex);
+    while (!m_executing_command_lists.empty() &&
+           m_executing_command_lists.front()->GetFrameIndex() == frame_index)
+    {
+        m_executing_command_lists.front()->WaitUntilCompleted(timeout_ms);
+        m_executing_command_lists.pop();
+    }
+    m_execution_waiting_condition_var.notify_one();
+}
+
 void CommandQueueTracking::WaitForExecution() noexcept
 {
     try

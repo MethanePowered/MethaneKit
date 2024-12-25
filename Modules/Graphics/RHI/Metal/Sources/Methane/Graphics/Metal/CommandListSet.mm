@@ -43,4 +43,13 @@ CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs,
     : Base::CommandListSet(command_list_refs, frame_index_opt)
 { }
 
+void CommandListSet::WaitUntilCompleted(uint32_t timeout_ms)
+{
+    META_FUNCTION_TASK();
+    for(const Ref<Base::CommandList>& command_list_ref : GetBaseRefs())
+    {
+        command_list_ref.get().WaitUntilCompleted(timeout_ms);
+    }
+}
+
 } // namespace Methane::Graphics::Metal

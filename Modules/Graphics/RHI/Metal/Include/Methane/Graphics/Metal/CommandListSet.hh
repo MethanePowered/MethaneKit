@@ -34,11 +34,7 @@ class CommandListSet final
 public:
     explicit CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs, Opt<Data::Index> frame_index_opt);
 
-    virtual void WaitUntilCompleted()
-    {
-        // Command list execution tracking is not needed in Metal,
-        // because native API has command list wait mechanism used directly in CommandList::Execute(...)
-    }
+    void WaitUntilCompleted(uint32_t timeout_ms) override;
 };
 
 } // namespace Methane::Graphics::Metal

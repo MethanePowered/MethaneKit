@@ -60,7 +60,9 @@ public:
     // IObject interface
     bool SetName(std::string_view name) override;
 
+    // CommandQueueTracking interface
     virtual void CompleteExecution(const Opt<Data::Index>& frame_index = { });
+    virtual void WaitUntilCompleted(const Opt<Data::Index>& frame_index = { }, uint32_t timeout_ms = 0U);
 
     Ptr<CommandListSet> GetLastExecutingCommandListSet() const;
     const Ptr<Rhi::ITimestampQueryPool>& GetTimestampQueryPoolPtr() final;
