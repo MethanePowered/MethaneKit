@@ -25,6 +25,7 @@ Metal implementation of the render context interface.
 #include <Methane/Graphics/Metal/RenderPass.hh>
 #include <Methane/Graphics/Metal/RenderState.hh>
 #include <Methane/Graphics/Metal/RenderPattern.hh>
+#include <Methane/Graphics/Metal/CommandQueue.hh>
 #include <Methane/Graphics/Metal/Types.hh>
 #include <Methane/Graphics/Metal/RenderContextAppView.hh>
 
@@ -128,16 +129,32 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
 #else
     Context<Base::RenderContext>::WaitForGpu(wait_for);
 #endif
-    
-    if (wait_for == WaitFor::FramePresented)
+
+    std::optional<Data::Index> frame_buffer_index;
+    Rhi::CommandListType cl_type = Rhi::CommandListType::Render;
+    switch (wait_for)
     {
+    case WaitFor::RenderComplete:
+        break;
+
+    case WaitFor::FramePresented:
 #ifdef USE_DISPATCH_QUEUE_SEMAPHORE
         OnGpuWaitStart(wait_for);
         dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
         OnGpuWaitComplete(wait_for);
 #endif
         BeginFrameCaptureScope();
+        frame_buffer_index = GetFrameBufferIndex();
+        break;
+
+    case WaitFor::ResourcesUploaded:
+        cl_type = Rhi::CommandListType::Transfer;
+        break;
+
+    default: META_UNEXPECTED(wait_for);
     }
+
+    GetMetalDefaultCommandQueue(cl_type).CompleteExecution(frame_buffer_index);
 }
 
 void RenderContext::Resize(const FrameSize& frame_size)

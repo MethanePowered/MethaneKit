@@ -40,7 +40,7 @@ namespace Methane::Graphics::Metal
 {
 
 CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type)
-    : Base::CommandQueue(context, command_lists_type)
+    : Base::CommandQueueTracking(context, command_lists_type)
     , m_mtl_command_queue([GetMetalContext().GetMetalDevice().GetNativeDevice() newCommandQueue])
 {
     META_FUNCTION_TASK();
