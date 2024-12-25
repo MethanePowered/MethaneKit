@@ -32,11 +32,6 @@ Metal implementation of the render context interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Apple/Types.hh>
 
-// Either use dispatch queue semaphore or fence primitives for CPU-GPU frames rendering synchronization
-// NOTE: when fences are used for frames synchronization,
-// application runs slower than expected when started from XCode, but runs normally when started from Finder
-//#define USE_DISPATCH_QUEUE_SEMAPHORE
-
 // Enables automatic capture of all initialization commands before the first frame rendering
 //#define CAPTURE_INITIALIZATION_SCOPE
 
@@ -47,12 +42,11 @@ RenderContext::RenderContext(const Platform::AppEnvironment& env, Base::Device& 
     : Context<Base::RenderContext>(device, parallel_executor, settings)
     , m_app_view(CreateRenderContextAppView(env, settings))
     , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:Context<Base::RenderContext>::GetMetalDevice().GetNativeDevice()])
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
     , m_dispatch_semaphore(dispatch_semaphore_create(settings.frame_buffers_count))
 #endif
 {
     META_FUNCTION_TASK();
-    META_UNUSED(m_dispatch_semaphore);
 
     m_frame_capture_scope.label = MacOS::ConvertToNsString(fmt::format("{} Frame Scope", device.GetName()));
     [MTLCaptureManager sharedCaptureManager].defaultCaptureScope = m_frame_capture_scope;
@@ -70,10 +64,6 @@ RenderContext::RenderContext(const Platform::AppEnvironment& env, Base::Device& 
 RenderContext::~RenderContext()
 {
     META_FUNCTION_TASK();
-
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
-    dispatch_release(m_dispatch_semaphore);
-#endif
 }
 
 Ptr<Rhi::IRenderState> RenderContext::CreateRenderState(const Rhi::RenderStateSettings& settings) const
@@ -93,9 +83,9 @@ void RenderContext::Release()
     META_FUNCTION_TASK();
     
     m_app_view.redrawing = NO;
-    
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
-    dispatch_release(m_dispatch_semaphore);
+
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
+    m_dispatch_semaphore = nil;
 #endif
 
     Context<Base::RenderContext>::Release();
@@ -106,7 +96,7 @@ void RenderContext::Initialize(Base::Device& device, bool is_callback_emitted)
     META_FUNCTION_TASK();
     Context<Base::RenderContext>::Initialize(device, is_callback_emitted);
     
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
     m_dispatch_semaphore = dispatch_semaphore_create(GetSettings().frame_buffers_count);
 #endif
     
@@ -123,7 +113,7 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
     
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
     if (wait_for != WaitFor::FramePresented)
         Context<Base::RenderContext>::WaitForGpu(wait_for);
 #else
@@ -138,7 +128,7 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
         break;
 
     case WaitFor::FramePresented:
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
         OnGpuWaitStart(wait_for);
         dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
         OnGpuWaitComplete(wait_for);
@@ -170,7 +160,7 @@ void RenderContext::Present()
 
     id<MTLCommandBuffer> mtl_cmd_buffer = [GetMetalDefaultCommandQueue(Rhi::CommandListType::Render).GetNativeCommandQueue() commandBuffer];
     mtl_cmd_buffer.label = [NSString stringWithFormat:@"%@ Present Command", GetNsName()];
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
     [mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
         dispatch_semaphore_signal(m_dispatch_semaphore);
     }];
@@ -180,7 +170,7 @@ void RenderContext::Present()
 
     EndFrameCaptureScope();
 
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
     Context<Base::RenderContext>::OnCpuPresentComplete(false);
 #else
     Context<Base::RenderContext>::OnCpuPresentComplete(true);
