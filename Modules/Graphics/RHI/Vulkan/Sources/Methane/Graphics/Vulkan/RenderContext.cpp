@@ -135,7 +135,7 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
     default: META_UNEXPECTED(wait_for);
     }
 
-    GetVulkanDefaultCommandQueue(cl_type).CompleteExecution(frame_buffer_index);
+    GetVulkanDefaultCommandQueue(cl_type).WaitUntilCompleted(frame_buffer_index, 16);
 
     m_vk_deferred_release_pipelines.clear();
 }

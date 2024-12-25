@@ -33,7 +33,7 @@ AppOptions::Mask AppOptions::GetDefaultWithColorOnly() noexcept
 {
     AppOptions::Mask options;
     options |= AppOptions::Bit::ClearColor;
-#if defined(__APPLE__) && !defined(APPLE_MACOS) // iOS
+#ifdef APPLE_IOS
     options |= AppOptions::Bit::FullScreen;
     options |= AppOptions::Bit::HudVisible;
 #endif
