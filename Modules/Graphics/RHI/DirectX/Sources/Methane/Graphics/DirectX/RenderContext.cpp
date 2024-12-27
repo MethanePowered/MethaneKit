@@ -95,7 +95,7 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
     default: META_UNEXPECTED(wait_for);
     }
 
-    GetDirectDefaultCommandQueue(cl_type).CompleteExecution(frame_buffer_index);
+    GetDirectDefaultCommandQueue(cl_type).WaitUntilCompleted(frame_buffer_index);
 }
 
 void RenderContext::Release()
