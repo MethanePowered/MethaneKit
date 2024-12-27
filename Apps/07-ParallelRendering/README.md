@@ -354,12 +354,6 @@ Vector of per-thread rendering command lists is acquired from the parallel rende
 `frame.parallel_render_cmd_list.GetParallelCommandLists()` call. These command lists are used independently in 
 a parallel for loop for rendering some part of the cube instances in the `RenderCubesRange(...)` method.
 
-`RenderCubesRange(...)` method is executed in parallel threads, each execution for a separate range of cube instances.
-Per-cube program bindings are bound to render pipeline with a special `bindings_apply_behavior` bit mask.
-This mask is used to apply constant bindings only once per command list and retain resources for the first binding instance,
-which is done to reduce unnecessary operations during repeated resource bindings. After that cube instance is drawn
-with a simple `DrawIndexed` draw-call.
-
 ```cpp
 bool ParallelRenderingApp::Render()
 {
@@ -408,6 +402,12 @@ bool ParallelRenderingApp::Render()
     return true;
 }
 ```
+
+`RenderCubesRange(...)` method is executed in parallel threads, each execution for a separate range of cube instances.
+Per-cube program bindings are bound to render pipeline with a special `bindings_apply_behavior` bit mask.
+This mask is used to apply constant bindings only once per command list and retain resources for the first binding instance,
+which is done to reduce unnecessary operations during repeated resource bindings. After that cube instance is drawn
+with a simple `DrawIndexed` draw-call.
 
 ```cpp
 void ParallelRenderingApp::RenderCubesRange(const rhi::RenderCommandList& render_cmd_list,
