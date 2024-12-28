@@ -51,7 +51,17 @@ RootConstantAccessor::RootConstantAccessor(RootConstantStorage& storage, const R
 RootConstantAccessor::~RootConstantAccessor()
 {
     META_FUNCTION_TASK();
-    m_storage_ref.get().ReleaseRootConstant(*this);
+    try
+    {
+        m_storage_ref.get().ReleaseRootConstant(*this);
+    }
+    catch(const std::exception& e)
+    {
+        META_UNUSED(e);
+        META_LOG("WARNING: Unexpected error during release of root constant: {}", e.what());
+        assert(false);
+    }
+
 }
 
 Rhi::RootConstant RootConstantAccessor::GetRootConstant() const
@@ -149,9 +159,9 @@ void RootConstantStorage::SetRootConstant(const Accessor& accessor, const Rhi::R
     std::copy(root_constant.GetDataPtr(), root_constant.GetDataEndPtr(), data.data() + data_range.GetStart());
 }
 
-std::lock_guard<RootConstantStorage::Mutex> RootConstantStorage::GetLockGuard()
+std::scoped_lock<RootConstantStorage::Mutex> RootConstantStorage::GetLockGuard()
 {
-    return std::lock_guard<Mutex>(m_mutex);
+    return std::scoped_lock<Mutex>(m_mutex);
 }
 
 Data::Bytes& RootConstantStorage::GetData()
@@ -207,7 +217,7 @@ Rhi::IBuffer& RootConstantBuffer::GetBuffer()
     if (!m_buffer_resize_required && m_buffer_ptr)
         return *m_buffer_ptr;
 
-    std::lock_guard lock = RootConstantStorage::GetLockGuard();
+    std::scoped_lock lock = RootConstantStorage::GetLockGuard();
 
     const bool buffer_changed = !!m_buffer_ptr;
     const auto buffer_settings = Rhi::BufferSettings::ForConstantBuffer(GetDataSize(), true, true);
@@ -251,7 +261,7 @@ void RootConstantBuffer::UpdateGpuBuffer(Rhi::ICommandQueue& target_cmd_queue)
     if (!m_buffer_data_changed)
         return;
 
-    Data::Bytes& buffer_data = GetData();
+    const Data::Bytes& buffer_data = GetData();
     META_CHECK_NOT_EMPTY(buffer_data);
 
     Rhi::IBuffer& buffer = GetBuffer();

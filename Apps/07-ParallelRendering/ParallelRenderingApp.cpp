@@ -67,9 +67,9 @@ static const std::map<pin::Keyboard::State, ParallelRenderingAppAction> g_parall
 };
 
 #ifdef ROOT_CONSTANTS_ENABLED
-#define APP_VARIANT_NAME "Root Constants"
+constexpr char const* g_app_variant_name = "Root Constants";
 #else
-#define APP_VARIANT_NAME "Buffer Views"
+constexpr char const* g_app_variant_name = "Buffer Views";
 #endif
 
 bool ParallelRenderingApp::Settings::operator==(const Settings& other) const noexcept
@@ -93,7 +93,8 @@ uint32_t ParallelRenderingApp::Settings::GetActiveRenderThreadCount() const noex
 
 ParallelRenderingApp::ParallelRenderingApp()
     : UserInterfaceApp(
-        GetGraphicsTutorialAppSettings("Methane Parallel Rendering (" APP_VARIANT_NAME ")", AppOptions::GetDefaultWithColorDepthAndAnim()),
+        GetGraphicsTutorialAppSettings(fmt::format("Methane Parallel Rendering ({})", g_app_variant_name),
+                                       AppOptions::GetDefaultWithColorDepthAndAnim()),
         GetUserInterfaceTutorialAppSettings(AppOptions::GetDefaultWithColorDepthAndAnim()),
         "Methane tutorial of parallel rendering")
 {
@@ -196,7 +197,7 @@ void ParallelRenderingApp::Init()
     );
 
     // Create frame buffer resources
-    const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
+
     tf::Taskflow program_bindings_task_flow;
     for(ParallelRenderingFrame& frame : GetFrames())
     {
@@ -218,6 +219,7 @@ void ParallelRenderingApp::Init()
         frame.cubes_uniform_argument_binding_ptrs[0] = &frame.cubes_program_bindings[0].Get({ rhi::ShaderType::All, "g_uniforms" });
         frame.cubes_program_bindings[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 #else
+        const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
         frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
         frame.cubes_array.program_bindings_per_instance[0] = render_state_settings.program.CreateBindings({
             {
@@ -229,21 +231,22 @@ void ParallelRenderingApp::Init()
             { { rhi::ShaderType::Pixel, "g_sampler"       }, m_texture_sampler.GetResourceView() },
         }, frame.index);
         frame.cubes_array.program_bindings_per_instance[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
+
+        const MeshBuffers& cube_array_buffers = *m_cube_array_buffers_ptr;
 #endif
 
-        MeshBuffers& cube_array_buffers = *m_cube_array_buffers_ptr;
         program_bindings_task_flow.for_each_index(1U, cubes_count, 1U,
-            [&frame, &cube_array_buffers, uniform_data_size](const uint32_t cube_index)
-            {
-                // NOTE: workaround for Clang error unused-lambda-capture uniform_data_size (false positive)
-                META_UNUSED(uniform_data_size);
-
 #ifdef ROOT_CONSTANTS_ENABLED
-                META_UNUSED(cube_array_buffers);
+            [&frame](const uint32_t cube_index)
+            {
                 rhi::ProgramBindings& cube_program_bindings = frame.cubes_program_bindings[cube_index];
                 cube_program_bindings = rhi::ProgramBindings(frame.cubes_program_bindings[0], {}, frame.index);
                 frame.cubes_uniform_argument_binding_ptrs[cube_index] = &cube_program_bindings.Get({ rhi::ShaderType::All, "g_uniforms" });
+                cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
+            }
 #else
+            [&frame, &cube_array_buffers, uniform_data_size](const uint32_t cube_index)
+            {
                 rhi::ProgramBindings& cube_program_bindings = frame.cubes_array.program_bindings_per_instance[cube_index];
                 cube_program_bindings = rhi::ProgramBindings(frame.cubes_array.program_bindings_per_instance[0], {
                     {
@@ -253,9 +256,10 @@ void ParallelRenderingApp::Init()
                             uniform_data_size)
                     }
                 }, frame.index);
-#endif
                 cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
-            });
+            }
+#endif
+        );
 
         if (m_settings.parallel_rendering_enabled)
         {

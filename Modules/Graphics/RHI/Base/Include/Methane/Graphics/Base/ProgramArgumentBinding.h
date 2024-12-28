@@ -36,7 +36,7 @@ class ProgramBindings;
 class RootConstantAccessor;
 class RootConstantBuffer;
 
-class ProgramArgumentBinding
+class ProgramArgumentBinding // NOSONAR - destructor is defaulted in CPP, to allow deleting of incomplete type
     : public Rhi::IProgramArgumentBinding
     , public Data::Emitter<Rhi::IProgramArgumentBindingCallback>
     , public std::enable_shared_from_this<ProgramArgumentBinding>

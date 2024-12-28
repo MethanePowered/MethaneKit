@@ -264,7 +264,7 @@ void ProgramBindings::SetResourcesForArguments(const BindingValueByArgument& bin
         auto& argument_binding = dynamic_cast<ArgumentBinding&>(Get(program_argument));
         argument_binding.SetEmitCallbackEnabled(false); // do not emit callback during initialization
         std::visit(
-            [&argument_binding](auto&& value)
+            [&argument_binding](auto& value)
             {
                 using T = std::decay_t<decltype(value)>;
                 if constexpr (std::is_same_v<T, Rhi::RootConstant>)

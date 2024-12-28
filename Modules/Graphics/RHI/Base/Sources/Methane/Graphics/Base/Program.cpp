@@ -79,10 +79,22 @@ const Ptr<Rhi::IShader>& Program::GetShader(Rhi::ShaderType shader_type) const
 void Program::InitArgumentBindings()
 {
     META_FUNCTION_TASK();
-    Rhi::ShaderTypes all_shader_types;
-    std::map<std::string_view, Rhi::ShaderTypes, std::less<>> shader_types_by_argument_name_map;
-    std::map<Argument, Ptr<ArgumentBinding>> binding_by_argument;
 
+    Rhi::ShaderTypes                                          all_shader_types;
+    std::map<std::string_view, Rhi::ShaderTypes, std::less<>> shader_types_by_argument_name_map;
+    ExtractShaderTypesByArgumentName(all_shader_types, shader_types_by_argument_name_map);
+
+    if (all_shader_types.size() > 1)
+    {
+        MergeAllShaderBindings(all_shader_types, shader_types_by_argument_name_map);
+    }
+
+    InitFrameConstantArgumentBindings();
+}
+
+void Program::ExtractShaderTypesByArgumentName(Rhi::ShaderTypes& all_shader_types,
+                                               std::map<std::string_view, Rhi::ShaderTypes, std::less<>>& shader_types_by_argument_name_map)
+{
     m_binding_by_argument.clear();
     for (const Ptr<Rhi::IShader>& shader_ptr : m_settings.shaders)
     {
@@ -104,49 +116,53 @@ void Program::InitArgumentBindings()
             }
         }
     }
+}
 
-    if (all_shader_types.size() > 1)
+void Program::MergeAllShaderBindings(const Rhi::ShaderTypes& all_shader_types,
+                                     const std::map<std::string_view, Rhi::ShaderTypes, std::less<>>& shader_types_by_argument_name_map)
+{
+    // Replace bindings for argument set for all shader types in program to one binding set for argument with ShaderType::All
+    for (const auto& [argument_name, shader_types]: shader_types_by_argument_name_map)
     {
-        // Replace bindings for argument set for all shader types in program to one binding set for argument with ShaderType::All
-        for (const auto& [argument_name, shader_types]: shader_types_by_argument_name_map)
+        if (shader_types != all_shader_types)
         {
-            if (shader_types != all_shader_types)
+            for(Rhi::ShaderType shader_type : shader_types)
             {
-                for(Rhi::ShaderType shader_type : shader_types)
-                {
-                    const Argument shader_argument(shader_type, argument_name);
-                    const auto argument_and_binding_it = m_binding_by_argument.find(shader_argument);
-                    META_CHECK_TRUE(argument_and_binding_it != m_binding_by_argument.end() && argument_and_binding_it->second);
-                    m_settings.argument_accessors.emplace(argument_and_binding_it->second->GetSettings().argument);
-                }
-                continue;
+                const Argument shader_argument(shader_type, argument_name);
+                const auto     argument_and_binding_it = m_binding_by_argument.find(shader_argument);
+                META_CHECK_TRUE(argument_and_binding_it != m_binding_by_argument.end() && argument_and_binding_it->second);
+                m_settings.argument_accessors.emplace(argument_and_binding_it->second->GetSettings().argument);
             }
-
-            Ptr<ProgramBindings::ArgumentBinding> argument_binding_ptr;
-            for (Rhi::ShaderType shader_type: all_shader_types)
-            {
-                const Argument argument{ shader_type, argument_name };
-                auto binding_by_argument_it = m_binding_by_argument.find(argument);
-                META_CHECK_DESCR(argument, binding_by_argument_it != m_binding_by_argument.end(),
-                                 "Resource binding was not initialized for for argument");
-                if (argument_binding_ptr)
-                {
-                    argument_binding_ptr->MergeSettings(*binding_by_argument_it->second);
-                }
-                else
-                {
-                    argument_binding_ptr = binding_by_argument_it->second;
-                }
-                m_binding_by_argument.erase(binding_by_argument_it);
-            }
-
-            META_CHECK_NOT_NULL_DESCR(argument_binding_ptr, "failed to create resource binding for argument '{}'", argument_name);
-            const Argument all_shaders_argument{ Rhi::ShaderType::All, argument_name };
-            m_binding_by_argument.try_emplace(all_shaders_argument, argument_binding_ptr);
-            m_settings.argument_accessors.emplace(all_shaders_argument, argument_binding_ptr->GetSettings().argument.GetAccessorType());
+            continue;
         }
-    }
 
+        Ptr<ProgramBindings::ArgumentBinding> argument_binding_ptr;
+        for (Rhi::ShaderType shader_type: all_shader_types)
+        {
+            const Argument argument{ shader_type, argument_name };
+            auto           binding_by_argument_it = m_binding_by_argument.find(argument);
+            META_CHECK_DESCR(argument, binding_by_argument_it != m_binding_by_argument.end(),
+                             "Resource binding was not initialized for for argument");
+            if (argument_binding_ptr)
+            {
+                argument_binding_ptr->MergeSettings(*binding_by_argument_it->second);
+            }
+            else
+            {
+                argument_binding_ptr = binding_by_argument_it->second;
+            }
+            m_binding_by_argument.erase(binding_by_argument_it);
+        }
+
+        META_CHECK_NOT_NULL_DESCR(argument_binding_ptr, "failed to create resource binding for argument '{}'", argument_name);
+        const Argument all_shaders_argument{ Rhi::ShaderType::All, argument_name };
+        m_binding_by_argument.try_emplace(all_shaders_argument, argument_binding_ptr);
+        m_settings.argument_accessors.emplace(all_shaders_argument, argument_binding_ptr->GetSettings().argument.GetAccessorType());
+    }
+}
+
+void Program::InitFrameConstantArgumentBindings()
+{
     if (m_context.GetType() != Rhi::IContext::Type::Render)
     {
         const auto frame_constant_binding_by_arg_it =
@@ -160,7 +176,7 @@ void Program::InitArgumentBindings()
 
     // Create frame-constant argument bindings only when program is created in render context
     m_frame_bindings_by_argument.clear();
-    const auto& render_context = static_cast<const RenderContext&>(m_context);
+    const auto&    render_context      = static_cast<const RenderContext&>(m_context);
     const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
     META_CHECK_GREATER_OR_EQUAL(frame_buffers_count, 2);
 
@@ -177,6 +193,7 @@ void Program::InitArgumentBindings()
         }
         m_frame_bindings_by_argument.try_emplace(program_argument, std::move(per_frame_argument_bindings));
     }
+    return;
 }
 
 bool Program::SetName(std::string_view name)

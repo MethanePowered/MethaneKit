@@ -53,8 +53,8 @@ public:
     const Settings&          GetSettings() const noexcept final           { return m_settings; }
     const Rhi::ShaderTypes&  GetShaderTypes() const noexcept final        { return m_shader_types; }
     const Ptr<Rhi::IShader>& GetShader(Rhi::ShaderType shader_type) const final;
-    bool                     HasShader(Rhi::ShaderType shader_type) const { return !!GetShader(shader_type); }
-    Data::Size               GetBindingsCount() const noexcept final      { return m_bindings_count; }
+    bool       HasShader(Rhi::ShaderType shader_type) const { return !!GetShader(shader_type); }
+    Data::Size GetBindingsCount() const noexcept final      { return m_bindings_count; }
 
     // IObject overrides
     bool SetName(std::string_view name) override;
@@ -97,6 +97,12 @@ protected:
 
 private:
     using RootFrameConstantBuffers = std::vector<UniquePtr<RootConstantBuffer>>;
+
+    void ExtractShaderTypesByArgumentName(Rhi::ShaderTypes& all_shader_types,
+                std::map<std::string_view, Rhi::ShaderTypes, std::less<>>& shader_types_by_argument_name_map);
+    void MergeAllShaderBindings(const Rhi::ShaderTypes& all_shader_types,
+                const std::map<std::string_view, Rhi::ShaderTypes, std::less<>>& shader_types_by_argument_name_map);
+    void InitFrameConstantArgumentBindings();
 
     const Context&           m_context;
     Settings                 m_settings;

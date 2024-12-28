@@ -34,17 +34,10 @@ class RootConstant
 public:
     RootConstant() = default;
 
+    using Chunk::Chunk;
+
     explicit RootConstant(Chunk&& chunk)
-        : Data::Chunk(chunk)
-    { }
-
-    RootConstant(Data::ConstRawPtr data_ptr, Data::Size size) noexcept
-        : Data::Chunk(data_ptr, size)
-    { }
-
-    template<typename T>
-    explicit RootConstant(T&& value)
-        : Data::Chunk(std::forward<T>(value))
+        : Data::Chunk(std::move(chunk))
     { }
 
     template<typename T>

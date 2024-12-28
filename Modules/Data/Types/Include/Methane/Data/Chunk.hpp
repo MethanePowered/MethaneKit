@@ -25,6 +25,8 @@ Data chunk representing owning or non-owning memory container
 
 #include "Types.h"
 
+#include <type_traits>
+
 namespace Methane::Data
 {
 
@@ -43,15 +45,18 @@ public:
         , m_data_size(static_cast<Size>(m_data_storage.size()))
     { }
 
-    template<typename T>
+    template<typename T,
+             typename = std::enable_if_t<!std::is_base_of_v<Chunk, std::remove_cv_t<std::remove_reference_t<T>>>>>
     explicit Chunk(T& value)
         : m_data_ptr(GetByteAddress(value))
         , m_data_size(static_cast<Size>(sizeof(T)))
     { }
 
-    template<typename T>
+    template<typename T,
+             typename = std::enable_if_t<!std::is_base_of_v<Chunk, std::remove_cv_t<std::remove_reference_t<T>>>>>
     explicit Chunk(T&& value)
-        : m_data_storage(GetByteAddress(value), GetByteAddress(value) + sizeof(T))
+        : m_data_storage(GetByteAddress(std::forward<T>(value)),
+                         GetByteAddress(std::forward<T>(value)) + sizeof(T))
         , m_data_ptr(m_data_storage.data())
         , m_data_size(static_cast<Size>(m_data_storage.size()))
     { }
@@ -84,19 +89,19 @@ public:
         return *this;
     }
 
-    bool operator==(const Chunk& other) const noexcept
+    friend bool operator==(const Chunk& left, const Chunk& right) noexcept
     {
-        return m_data_size == other.m_data_size &&
-               (m_data_ptr == other.m_data_ptr ||
-                memcmp(m_data_ptr, other.m_data_ptr, m_data_size) == 0);
+        return left.m_data_size == right.m_data_size &&
+               (left.m_data_ptr == right.m_data_ptr ||
+                memcmp(left.m_data_ptr, right.m_data_ptr, left.m_data_size) == 0);
     }
 
-    bool operator!=(const Chunk& other) const noexcept
+    friend bool operator!=(const Chunk& left, const Chunk& right) noexcept
     {
-        return !operator==(other);
+        return !(left == right);
     }
 
-    operator bool() const noexcept
+    explicit operator bool() const noexcept
     {
         return !IsEmptyOrNull();
     }
@@ -135,7 +140,7 @@ public:
 
 private:
     template<typename T>
-    static const std::byte* GetByteAddress(T&& value)
+    static const std::byte* GetByteAddress(const T& value)
     {
         return reinterpret_cast<const std::byte*>(std::addressof(value)); // NOSONAR
     }

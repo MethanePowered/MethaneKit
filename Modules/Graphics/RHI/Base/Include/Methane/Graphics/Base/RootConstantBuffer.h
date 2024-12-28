@@ -49,7 +49,7 @@ namespace Methane::Graphics::Base
 
 class RootConstantStorage;
 
-class RootConstantAccessor
+class RootConstantAccessor // NOSONAR - custom destructor is required
 {
 public:
     using Range = Data::Range<Data::Index>;
@@ -97,7 +97,7 @@ protected:
     using Mutex = std::mutex;
 #endif
 
-    std::lock_guard<Mutex> GetLockGuard();
+    std::scoped_lock<Mutex> GetLockGuard();
     bool IsDataResizeRequired() const noexcept { return m_data_resize_required.load(); }
 
 private:
@@ -142,7 +142,7 @@ public:
     [[nodiscard]] Rhi::ResourceView GetResourceView(Data::Size offset, Data::Size size);
 
     void SetBufferName(std::string_view buffer_name);
-    std::string_view GetBufferName() { return m_buffer_name; }
+    std::string_view GetBufferName() const { return m_buffer_name; }
 
 private:
     using RangeSet = Data::RangeSet<Data::Index>;
@@ -150,9 +150,9 @@ private:
     void UpdateGpuBuffer(Rhi::ICommandQueue& target_cmd_queue);
 
     // Rhi::IContextCallback overrides
-    void OnContextUploadingResources(Rhi::IContext& context) final;
-    void OnContextReleased(Rhi::IContext&) final    { /* event not handled */ }
-    void OnContextInitialized(Rhi::IContext&) final { /* event not handled */ }
+    void OnContextUploadingResources(Rhi::IContext& context) override;
+    void OnContextReleased(Rhi::IContext&) override    { /* event not handled */ }
+    void OnContextInitialized(Rhi::IContext&) override { /* event not handled */ }
 
     Context&          m_context;
     std::string       m_buffer_name;
