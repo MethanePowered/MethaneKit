@@ -99,12 +99,14 @@ public:
         return size_type(-1) / sizeof(value_type);
     }
 
-    bool operator!=(const AlignedAllocator<T, N>& other) const
+    friend bool operator!=(const AlignedAllocator& left,
+                           const AlignedAllocator& right)
     {
-        return !(*this == other);
+        return !(left == right);
     }
 
-    bool operator==(const AlignedAllocator<T, N>&) const
+    friend bool operator==(const AlignedAllocator&,
+                           const AlignedAllocator&)
     {
         return true;
     }

@@ -134,109 +134,110 @@ public:
         }
     }
 
-    [[nodiscard]] bool operator==(const PointType& other) const noexcept
+    [[nodiscard]] friend bool operator==(const PointType& left, const PointType& right) noexcept
     {
 #if defined(__APPLE__) && defined(__x86_64__)
         // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/61):
         //        Integer vector comparison is working incorrectly on Intel based Macs with MacOS >= 11
-        return AsArray() == other.AsArray();
+        return left.AsArray() == right.AsArray();
 #else
-        return hlslpp::all(m_vector == other.AsVector());
+        return hlslpp::all(left.m_vector == right.AsVector());
 #endif
     }
 
-    [[nodiscard]] bool operator<(const PointType& other) const noexcept
-    {
-#if defined(__APPLE__) && defined(__x86_64__)
-        // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/61):
-        //        Integer vector comparison is working incorrectly on Intel based Macs with MacOS >= 11
-        for(size_t i = 0; i < size; ++i)
-            if ((*this)[i] >= other[i])
-                return false;
-        return true;
-#else
-        return hlslpp::all(m_vector <  other.AsVector());
-#endif
-    }
-
-    [[nodiscard]] bool operator>(const PointType& other) const noexcept
+    [[nodiscard]] friend bool operator<(const PointType& left, const PointType& right) noexcept
     {
 #if defined(__APPLE__) && defined(__x86_64__)
         // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/61):
         //        Integer vector comparison is working incorrectly on Intel based Macs with MacOS >= 11
         for(size_t i = 0; i < size; ++i)
-            if ((*this)[i] <= other[i])
+            if (left[i] >= right[i])
                 return false;
         return true;
 #else
-        return hlslpp::all(m_vector >  other.AsVector());
+        return hlslpp::all(left.m_vector <  right.AsVector());
 #endif
     }
 
-    bool operator!=(const PointType& other) const noexcept { return !operator==(other); }
-    bool operator<=(const PointType& other) const noexcept { return hlslpp::all(m_vector <= other.AsVector()); }
-    bool operator>=(const PointType& other) const noexcept { return hlslpp::all(m_vector >= other.AsVector()); }
+    [[nodiscard]] friend bool operator>(const PointType& left, const PointType& right) noexcept
+    {
+#if defined(__APPLE__) && defined(__x86_64__)
+        // FIXME: workaround for HLSL++ issue (https://github.com/redorav/hlslpp/issues/61):
+        //        Integer vector comparison is working incorrectly on Intel based Macs with MacOS >= 11
+        for(size_t i = 0; i < size; ++i)
+            if (left[i] <= right[i])
+                return false;
+        return true;
+#else
+        return hlslpp::all(left.m_vector >  right.AsVector());
+#endif
+    }
 
-    PointType operator+(const PointType& other) const noexcept { return PointType(m_vector + other.AsVector()); }
-    PointType operator-(const PointType& other) const noexcept { return PointType(m_vector - other.AsVector()); }
+    friend bool operator!=(const PointType& left, const PointType& right) noexcept { return !(left == right); }
+    friend bool operator<=(const PointType& left, const PointType& right) noexcept { return hlslpp::all(left.m_vector <= right.AsVector()); }
+    friend bool operator>=(const PointType& left, const PointType& right) noexcept { return hlslpp::all(left.m_vector >= right.AsVector()); }
+
+    friend PointType operator+(const PointType& left, const PointType& right) noexcept { return PointType(left.m_vector + right.AsVector()); }
+    friend PointType operator-(const PointType& left, const PointType& right) noexcept { return PointType(left.m_vector - right.AsVector()); }
+
     PointType& operator+=(const PointType& other) noexcept     { m_vector += other.AsVector(); return *this; }
     PointType& operator-=(const PointType& other) noexcept     { m_vector -= other.AsVector(); return *this; }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator*(M multiplier) const noexcept
+    friend std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator*(const PointType& point, M multiplier) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
-            return PointType(m_vector * multiplier);
+            return PointType(point.m_vector * multiplier);
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                return PointType(Point<M, size>(*this) * multiplier);
+                return PointType(Point<M, size>(point) * multiplier);
             else
-                return PointType(m_vector * static_cast<T>(multiplier));
+                return PointType(point.m_vector * static_cast<T>(multiplier));
         }
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator/(M divisor) const noexcept
+    friend std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator/(const PointType& point, M divisor) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
-            return PointType(m_vector / divisor);
+            return PointType(point.m_vector / divisor);
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                return PointType(Point<M, size>(*this) / divisor);
+                return PointType(Point<M, size>(point) / divisor);
             else
-                return PointType(m_vector / static_cast<T>(divisor));
+                return PointType(point.m_vector / static_cast<T>(divisor));
         }
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator*(const Point<M, size>& multiplier) const noexcept
+    friend std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator*(const PointType& point, const Point<M, size>& multiplier) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
-            return PointType(m_vector * multiplier.AsVector());
+            return PointType(point.m_vector * multiplier.AsVector());
         else
         {
             if constexpr (std::is_floating_point_v<M>)
             {
-                return PointType(Point<M, size>(static_cast<Point<M, size>>(*this).AsVector() * multiplier.AsVector()));
+                return PointType(Point<M, size>(static_cast<Point<M, size>>(point).AsVector() * multiplier.AsVector()));
             }
             else
-                return PointType(m_vector * static_cast<PointType>(multiplier).AsVector());
+                return PointType(point.m_vector * static_cast<PointType>(multiplier).AsVector());
         }
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator/(const Point<M, size>& divisor) const noexcept
+    friend std::enable_if_t<std::is_arithmetic_v<M>, PointType> operator/(const PointType& point, const Point<M, size>& divisor) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
-            return PointType(m_vector / divisor.AsVector());
+            return PointType(point.m_vector / divisor.AsVector());
         else
         {
             if constexpr (std::is_floating_point_v<M>)
-                return PointType(Point<M, size>(static_cast<Point<M, size>>(*this).AsVector() / divisor.AsVector()));
+                return PointType(Point<M, size>(static_cast<Point<M, size>>(point).AsVector() / divisor.AsVector()));
             else
-                return PointType(m_vector / static_cast<PointType>(divisor).AsVector());
+                return PointType(point.m_vector / static_cast<PointType>(divisor).AsVector());
         }
     }
 

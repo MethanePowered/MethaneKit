@@ -72,11 +72,12 @@ constexpr char const* g_app_variant_name = "Root Constants";
 constexpr char const* g_app_variant_name = "Buffer Views";
 #endif
 
-bool ParallelRenderingApp::Settings::operator==(const Settings& other) const noexcept
+bool operator==(const ParallelRenderingApp::Settings& left,
+                const ParallelRenderingApp::Settings& right) noexcept
 {
     META_FUNCTION_TASK();
-    return std::tie(cubes_grid_size, render_thread_count, parallel_rendering_enabled) ==
-           std::tie(other.cubes_grid_size, other.render_thread_count, other.parallel_rendering_enabled);
+    return std::tie(left.cubes_grid_size, left.render_thread_count, left.parallel_rendering_enabled) ==
+           std::tie(right.cubes_grid_size, right.render_thread_count, right.parallel_rendering_enabled);
 }
 
 uint32_t ParallelRenderingApp::Settings::GetTotalCubesCount() const noexcept
@@ -219,7 +220,7 @@ void ParallelRenderingApp::Init()
         frame.cubes_uniform_argument_binding_ptrs[0] = &frame.cubes_program_bindings[0].Get({ rhi::ShaderType::All, "g_uniforms" });
         frame.cubes_program_bindings[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 #else
-        const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
+        static const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
         frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
         frame.cubes_array.program_bindings_per_instance[0] = render_state_settings.program.CreateBindings({
             {
@@ -245,7 +246,7 @@ void ParallelRenderingApp::Init()
                 cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
             }
 #else
-            [&frame, &cube_array_buffers, uniform_data_size](const uint32_t cube_index)
+            [&frame, &cube_array_buffers](const uint32_t cube_index)
             {
                 rhi::ProgramBindings& cube_program_bindings = frame.cubes_array.program_bindings_per_instance[cube_index];
                 cube_program_bindings = rhi::ProgramBindings(frame.cubes_array.program_bindings_per_instance[0], {

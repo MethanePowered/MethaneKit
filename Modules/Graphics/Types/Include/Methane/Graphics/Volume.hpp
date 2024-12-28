@@ -96,56 +96,64 @@ public:
         m_depth = depth;
     }
 
-    bool operator==(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator==(other) && m_depth == other.m_depth; }
+    friend bool operator==(const VolumeSize& left, const VolumeSize& right) noexcept
+    { return static_cast<const RectSize<D>&>(left) == right && left.m_depth == right.m_depth; }
 
-    bool operator!=(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator!=(other) || m_depth != other.m_depth; }
+    friend bool operator!=(const VolumeSize& left, const VolumeSize& right) noexcept
+    { return static_cast<const RectSize<D>&>(left) != right || left.m_depth != right.m_depth; }
 
-    bool operator<=(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator<=(other) && m_depth <= other.m_depth; }
+    friend bool operator<=(const VolumeSize& left, const VolumeSize& right) noexcept
+    { return static_cast<const RectSize<D>&>(left) <= right && left.m_depth <= right.m_depth; }
 
-    bool operator<(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator<(other) && m_depth < other.m_depth; }
+    friend bool operator<(const VolumeSize& left, const VolumeSize& right) noexcept
+    { return static_cast<const RectSize<D>&>(left) < right && left.m_depth < right.m_depth; }
 
-    bool operator>=(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator>=(other) && m_depth >= other.m_depth; }
+    friend bool operator>=(const VolumeSize& left, const VolumeSize& right) noexcept
+    { return static_cast<const RectSize<D>&>(left) >= right && left.m_depth >= right.m_depth; }
 
-    bool operator>(const VolumeSize& other) const noexcept
-    { return RectSize<D>::operator>(other) && m_depth > other.m_depth; }
+    friend bool operator>(const VolumeSize& left, const VolumeSize& right) noexcept
+    { return static_cast<const RectSize<D>&>(left) > right && left.m_depth > right.m_depth; }
 
-    VolumeSize operator+(const VolumeSize& other) const noexcept
-    { return VolumeSize(RectSize<D>::operator+(other), m_depth + other.m_depth); }
+    friend VolumeSize operator+(const VolumeSize& left, const VolumeSize& right) noexcept
+    { return VolumeSize(static_cast<const RectSize<D>&>(left) + right, left.m_depth + right.m_depth); }
 
-    VolumeSize operator-(const VolumeSize& other) const noexcept
-    { return VolumeSize(RectSize<D>::operator-(other), m_depth - other.m_depth); }
+    friend VolumeSize operator-(const VolumeSize& left, const VolumeSize& right) noexcept
+    { return VolumeSize(static_cast<const RectSize<D>&>(left) - right, left.m_depth - right.m_depth); }
 
     VolumeSize& operator+=(const VolumeSize& other) noexcept
-    { m_depth += other.m_depth; RectSize<D>::operator+=(other); return *this; }
+    {
+        m_depth += other.m_depth;
+        RectSize<D>::operator+=(other);
+        return *this;
+    }
 
     VolumeSize& operator-=(const VolumeSize& other) noexcept
-    { m_depth -= other.m_depth; RectSize<D>::operator-=(other); return *this; }
-
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(M multiplier) const noexcept(std::is_unsigned_v<M>)
     {
-        D depth {};
-        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            depth = Data::RoundCast<D>(static_cast<M>(m_depth) * multiplier);
-        else
-            depth = m_depth * Data::RoundCast<D>(multiplier);
-        return VolumeSize(RectSize<D>::operator*(multiplier), depth);
+        m_depth -= other.m_depth;
+        RectSize<D>::operator-=(other);
+        return *this;
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(M divisor) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(const VolumeSize& sz, M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            depth = Data::RoundCast<D>(static_cast<M>(m_depth) / divisor);
+            depth = Data::RoundCast<D>(static_cast<M>(sz.m_depth) * multiplier);
         else
-            depth = m_depth / Data::RoundCast<D>(divisor);
-        return VolumeSize(RectSize<D>::operator/(divisor), depth);
+            depth = sz.m_depth * Data::RoundCast<D>(multiplier);
+        return VolumeSize(static_cast<const RectSize<D>&>(sz) * multiplier, depth);
+    }
+
+    template<typename M>
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(const VolumeSize& sz, M divisor) noexcept(std::is_unsigned_v<M>)
+    {
+        D depth {};
+        if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
+            depth = Data::RoundCast<D>(static_cast<M>(sz.m_depth) / divisor);
+        else
+            depth = sz.m_depth / Data::RoundCast<D>(divisor);
+        return VolumeSize(static_cast<const RectSize<D>&>(sz) / divisor, depth);
     }
 
     template<typename M>
@@ -171,7 +179,7 @@ public:
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(const Point3T<M>& multiplier) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(const VolumeSize& sz, const Point3T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -179,14 +187,14 @@ public:
         }
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            depth = Data::RoundCast<D>(static_cast<M>(m_depth) * multiplier.GetZ());
+            depth = Data::RoundCast<D>(static_cast<M>(sz.m_depth) * multiplier.GetZ());
         else
-            depth = m_depth * Data::RoundCast<D>(multiplier.GetZ());
-        return VolumeSize(RectSize<D>::operator*(Point2T<M>(multiplier.GetX(), multiplier.GetY())), depth);
+            depth = sz.m_depth * Data::RoundCast<D>(multiplier.GetZ());
+        return VolumeSize(static_cast<const RectSize<D>&>(sz) * Point2T<M>(multiplier.GetX(), multiplier.GetY()), depth);
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(const Point3T<M>& divisor) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(const VolumeSize& sz, const Point3T<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -194,10 +202,10 @@ public:
         }
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            depth = Data::RoundCast<D>(static_cast<M>(m_depth) / divisor.GetZ());
+            depth = Data::RoundCast<D>(static_cast<M>(sz.m_depth) / divisor.GetZ());
         else
-            depth = m_depth / Data::RoundCast<D>(divisor.GetZ());
-        return VolumeSize(RectSize<D>::operator/(Point2T<M>(divisor.GetX(), divisor.GetY())), depth);
+            depth = sz.m_depth / Data::RoundCast<D>(divisor.GetZ());
+        return VolumeSize(static_cast<const RectSize<D>&>(sz) / Point2T<M>(divisor.GetX(), divisor.GetY()), depth);
     }
 
     template<typename M>
@@ -231,7 +239,7 @@ public:
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(const VolumeSize<M>& multiplier) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(const VolumeSize& sz, const VolumeSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -239,14 +247,14 @@ public:
         }
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            depth = Data::RoundCast<D>(static_cast<M>(m_depth) * multiplier.GetDepth());
+            depth = Data::RoundCast<D>(static_cast<M>(sz.m_depth) * multiplier.GetDepth());
         else
-            depth = m_depth * Data::RoundCast<D>(multiplier.GetDepth());
-        return VolumeSize(RectSize<D>::operator*(multiplier), depth);
+            depth = sz.m_depth * Data::RoundCast<D>(multiplier.GetDepth());
+        return VolumeSize(static_cast<const RectSize<D>&>(sz) * multiplier, depth);
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(const VolumeSize<M>& divisor) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(const VolumeSize& sz, const VolumeSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -254,10 +262,10 @@ public:
         }
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            depth = Data::RoundCast<D>(static_cast<M>(m_depth) / divisor.GetDepth());
+            depth = Data::RoundCast<D>(static_cast<M>(sz.m_depth) / divisor.GetDepth());
         else
-            depth = m_depth / Data::RoundCast<D>(divisor.GetDepth());
-        return VolumeSize(RectSize<D>::operator/(divisor), depth);
+            depth = sz.m_depth / Data::RoundCast<D>(divisor.GetDepth());
+        return VolumeSize(static_cast<const RectSize<D>&>(sz) / divisor, depth);
     }
 
     template<typename M>
@@ -335,35 +343,35 @@ struct Volume // NOSONAR - class has more than 35 methods
     T GetNear() const noexcept   { return origin.GetZ(); }
     T GetFar() const noexcept    { return origin.GetZ() + Data::RoundCast<T>(size.GetDepth()); }
 
-    bool operator==(const Volume& other) const noexcept
+    friend bool operator==(const Volume& left, const Volume& right) noexcept
     {
-        return std::tie(origin, size) == std::tie(other.origin, other.size);
+        return std::tie(left.origin, left.size) == std::tie(right.origin, right.size);
     }
 
-    bool operator!=(const Volume& other) const noexcept
+    friend bool operator!=(const Volume& left, const Volume& right) noexcept
     {
-        return std::tie(origin, size) != std::tie(other.origin, other.size);
+        return std::tie(left.origin, left.size) != std::tie(right.origin, right.size);
     }
 
-    bool operator<(const Volume& other) const noexcept
+    friend bool operator<(const Volume& left, const Volume& right) noexcept
     {
-        return std::tie(origin, size) < std::tie(other.origin, other.size);
+        return std::tie(left.origin, left.size) < std::tie(right.origin, right.size);
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator*(M multiplier) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator*(const Volume& v, M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "volume multiplier can not be less than zero");
-        return Volume<T, D>{ origin * multiplier, size * multiplier };
+        return Volume<T, D>{ v.origin * multiplier, v.size * multiplier };
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator/(M divisor) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator/(const Volume& v, M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_GREATER_OR_EQUAL_DESCR(divisor, 0, "volume divisor can not be less than zero");
-        return Volume<T, D>{ origin / divisor, size / divisor };
+        return Volume<T, D>{ v.origin / divisor, v.size / divisor };
     }
 
     template<typename M>

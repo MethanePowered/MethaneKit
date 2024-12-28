@@ -71,7 +71,7 @@ public:
         uint32_t render_thread_count        = std::thread::hardware_concurrency();
         bool     parallel_rendering_enabled = true;
 
-        bool operator==(const Settings& other) const noexcept;
+        friend bool operator==(const Settings& left, const Settings& right) noexcept;
 
         uint32_t GetTotalCubesCount() const noexcept;
         uint32_t GetActiveRenderThreadCount() const noexcept;
@@ -92,10 +92,6 @@ public:
     const Settings& GetSettings() const noexcept { return m_settings; }
     void SetSettings(const Settings& settings);
 
-protected:
-    // IContextCallback override
-    void OnContextReleased(rhi::IContext& context) override;
-
 private:
     struct CubeParameters
     {
@@ -113,6 +109,9 @@ private:
     void RenderCubesRange(const rhi::RenderCommandList& remder_cmd_list,
                           const std::vector<rhi::ProgramBindings>& program_bindings_per_instance,
                           uint32_t begin_instance_index, const uint32_t end_instance_index) const;
+
+    // IContextCallback override
+    void OnContextReleased(rhi::IContext& context) override;
 
     Settings            m_settings;
     gfx::Camera         m_camera;

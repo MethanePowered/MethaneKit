@@ -93,29 +93,29 @@ public:
     D GetPixelsCount() const noexcept { return m_width * m_height; }
     D GetLongestSide() const noexcept { return std::max(m_width, m_height); }
 
-    bool operator==(const RectSize& other) const noexcept
-    { return std::tie(m_width, m_height) == std::tie(other.m_width, other.m_height); }
+    friend bool operator==(const RectSize& left, const RectSize& right) noexcept
+    { return std::tie(left.m_width, left.m_height) == std::tie(right.m_width, right.m_height); }
 
-    bool operator!=(const RectSize& other) const noexcept
-    { return std::tie(m_width, m_height) != std::tie(other.m_width, other.m_height); }
+    friend bool operator!=(const RectSize& left, const RectSize& right) noexcept
+    { return std::tie(left.m_width, left.m_height) != std::tie(right.m_width, right.m_height); }
 
-    bool operator<=(const RectSize& other) const noexcept
-    { return m_width <= other.m_width && m_height <= other.m_height; }
+    friend bool operator<=(const RectSize& left, const RectSize& right) noexcept
+    { return left.m_width <= right.m_width && left.m_height <= right.m_height; }
 
-    bool operator<(const RectSize& other) const noexcept
-    { return m_width < other.m_width && m_height < other.m_height; }
+    friend bool operator<(const RectSize& left, const RectSize& right) noexcept
+    { return left.m_width < right.m_width && left.m_height < right.m_height; }
 
-    bool operator>=(const RectSize& other) const noexcept
-    { return m_width >= other.m_width && m_height >= other.m_height; }
+    friend bool operator>=(const RectSize& left, const RectSize& right) noexcept
+    { return left.m_width >= right.m_width && left.m_height >= right.m_height; }
 
-    bool operator>(const RectSize& other) const noexcept
-    { return m_width > other.m_width && m_height > other.m_height; }
+    friend bool operator>(const RectSize& left, const RectSize& right) noexcept
+    { return left.m_width > right.m_width && left.m_height > right.m_height; }
 
-    RectSize operator+(const RectSize& other) const noexcept
-    { return RectSize(m_width + other.m_width, m_height + other.m_height); }
+    friend RectSize operator+(const RectSize& left, const RectSize& right) noexcept
+    { return RectSize(left.m_width + right.m_width, left.m_height + right.m_height); }
 
-    RectSize operator-(const RectSize& other) const noexcept
-    { return RectSize(m_width - other.m_width, m_height - other.m_height); }
+    friend RectSize operator-(const RectSize& left, const RectSize& right) noexcept
+    { return RectSize(left.m_width - right.m_width, left.m_height - right.m_height); }
 
     RectSize& operator+=(const RectSize& other) noexcept
     { m_width += other.m_width; m_height += other.m_height; return *this; }
@@ -124,29 +124,29 @@ public:
     { m_width -= other.m_width; m_height -= other.m_height; return *this; }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(M multiplier) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const RectSize& sz, M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
             META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle size multiplier can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            return RectSize(RoundCast<D>(static_cast<M>(m_width) * multiplier), RoundCast<D>(static_cast<M>(m_height) * multiplier));
+            return RectSize(RoundCast<D>(static_cast<M>(sz.m_width) * multiplier), RoundCast<D>(static_cast<M>(sz.m_height) * multiplier));
         else
-            return RectSize(m_width * RoundCast<D>(multiplier), m_height * RoundCast<D>(multiplier));
+            return RectSize(sz.m_width * RoundCast<D>(multiplier), sz.m_height * RoundCast<D>(multiplier));
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(M divisor) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const RectSize& sz, M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
             META_CHECK_GREATER_DESCR(divisor, 0, "rectangle size divisor can not be less or equal to zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            return RectSize(RoundCast<D>(static_cast<M>(m_width) / divisor), RoundCast<D>(static_cast<M>(m_height) / divisor));
+            return RectSize(RoundCast<D>(static_cast<M>(sz.m_width) / divisor), RoundCast<D>(static_cast<M>(sz.m_height) / divisor));
         else
-            return RectSize(m_width / RoundCast<D>(divisor), m_height / RoundCast<D>(divisor));
+            return RectSize(sz.m_width / RoundCast<D>(divisor), sz.m_height / RoundCast<D>(divisor));
     }
 
     template<typename M>
@@ -190,7 +190,7 @@ public:
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const Point2T<M>& multiplier) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const RectSize& sz, const Point2T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -198,13 +198,15 @@ public:
             META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetY(), 0, "rectangle size multiplier coordinate y can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            return RectSize(RoundCast<D>(static_cast<M>(m_width) * multiplier.GetX()), RoundCast<D>(static_cast<M>(m_height) * multiplier.GetY()));
+            return RectSize(RoundCast<D>(static_cast<M>(sz.m_width)  * multiplier.GetX()),
+                            RoundCast<D>(static_cast<M>(sz.m_height) * multiplier.GetY()));
         else
-            return RectSize(m_width * RoundCast<D>(multiplier.GetX()), m_height * RoundCast<D>(multiplier.GetY()));
+            return RectSize(sz.m_width  * RoundCast<D>(multiplier.GetX()),
+                            sz.m_height * RoundCast<D>(multiplier.GetY()));
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const Point2T<M>& divisor) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const RectSize& sz, const Point2T<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -212,9 +214,11 @@ public:
             META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetY(), 0, "rectangle size divisor coordinate y can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            return RectSize(RoundCast<D>(static_cast<M>(m_width) / divisor.GetX()), RoundCast<D>(static_cast<M>(m_height) / divisor.GetY()));
+            return RectSize(RoundCast<D>(static_cast<M>(sz.m_width)  / divisor.GetX()),
+                            RoundCast<D>(static_cast<M>(sz.m_height) / divisor.GetY()));
         else
-            return RectSize(m_width / RoundCast<D>(divisor.GetX()), m_height / RoundCast<D>(divisor.GetY()));
+            return RectSize(sz.m_width  / RoundCast<D>(divisor.GetX()),
+                            sz.m_height / RoundCast<D>(divisor.GetY()));
     }
 
     template<typename M>
@@ -260,7 +264,7 @@ public:
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const RectSize<M>& multiplier) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const RectSize& sz, const RectSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -268,13 +272,15 @@ public:
             META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier.GetHeight(), 0, "rectangle size multiplier height can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            return RectSize(RoundCast<D>(static_cast<M>(m_width) * multiplier.GetWidth()), RoundCast<D>(static_cast<M>(m_height) * multiplier.GetHeight()));
+            return RectSize(RoundCast<D>(static_cast<M>(sz.m_width)  * multiplier.GetWidth()),
+                            RoundCast<D>(static_cast<M>(sz.m_height) * multiplier.GetHeight()));
         else
-            return RectSize(m_width * RoundCast<D>(multiplier.GetWidth()), m_height * RoundCast<D>(multiplier.GetHeight()));
+            return RectSize(sz.m_width  * RoundCast<D>(multiplier.GetWidth()),
+                            sz.m_height * RoundCast<D>(multiplier.GetHeight()));
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const RectSize<M>& divisor) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const RectSize& sz, const RectSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -282,9 +288,11 @@ public:
             META_CHECK_GREATER_OR_EQUAL_DESCR(divisor.GetHeight(), 0, "rectangle size divisor height can not be less than zero");
         }
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
-            return RectSize(RoundCast<D>(static_cast<M>(m_width) / divisor.GetWidth()), RoundCast<D>(static_cast<M>(m_height) / divisor.GetHeight()));
+            return RectSize(RoundCast<D>(static_cast<M>(sz.m_width)  / divisor.GetWidth()),
+                            RoundCast<D>(static_cast<M>(sz.m_height) / divisor.GetHeight()));
         else
-            return RectSize(m_width / RoundCast<D>(divisor.GetWidth()), m_height / RoundCast<D>(divisor.GetHeight()));
+            return RectSize(sz.m_width  / RoundCast<D>(divisor.GetWidth()),
+                            sz.m_height / RoundCast<D>(divisor.GetHeight()));
     }
 
     template<typename M>
@@ -378,35 +386,35 @@ struct Rect
     T GetTop() const noexcept    { return origin.GetY(); }
     T GetBottom() const noexcept { return origin.GetY() + RoundCast<T>(size.GetHeight()); }
 
-    bool operator==(const Rect& other) const noexcept
+    friend bool operator==(const Rect& left, const Rect& right) noexcept
     {
-        return std::tie(origin, size) == std::tie(other.origin, other.size);
+        return std::tie(left.origin, left.size) == std::tie(right.origin, right.size);
     }
 
-    bool operator!=(const Rect& other) const noexcept
+    friend bool operator!=(const Rect& left, const Rect& right) noexcept
     {
-        return std::tie(origin, size) != std::tie(other.origin, other.size);
+        return std::tie(left.origin, left.size) != std::tie(right.origin, right.size);
     }
 
-    bool operator<(const Rect& other) const noexcept
+    friend bool operator<(const Rect& left, const Rect& right) noexcept
     {
-        return std::tie(origin, size) < std::tie(other.origin, other.size);
+        return std::tie(left.origin, left.size) < std::tie(right.origin, right.size);
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator*(M multiplier) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator*(const Rect& rect, M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "rectangle multiplier can not be less than zero");
-        return Rect<T, D>(origin * multiplier, size * multiplier);
+        return Rect<T, D>(rect.origin * multiplier, rect.size * multiplier);
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator/(M divisor) const noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator/(const Rect& rect, M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_GREATER_OR_EQUAL_DESCR(divisor, 0, "rectangle divisor can not be less than zero");
-        return Rect<T, D>(origin / divisor, size / divisor);
+        return Rect<T, D>(rect.origin / divisor, rect.size / divisor);
     }
 
     template<typename M>
