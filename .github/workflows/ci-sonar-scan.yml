@@ -121,14 +121,14 @@ jobs:
         if: ${{ github.event_name != 'pull_request_target' }}
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # 2 commits are necessary for CodeCov diff
+          fetch-depth: 0 # checkout all history for all branches, as required by Sonar scanner
 
       - name: Checkout pull-request merge commit from fork
         if: ${{ github.event_name == 'pull_request_target' }}
         uses: actions/checkout@v4
         with:
           ref: "${{ github.event.pull_request.merge_commit_sha }}"
-          fetch-depth: 2 # 2 commits are necessary for CodeCov diff
+          fetch-depth: 0 # checkout all history for all branches, as required by Sonar scanner
 
       - name: Install Linux prerequisites
         if: ${{ runner.os == 'Linux' }}
