@@ -153,7 +153,7 @@ public:
         return ProgramBindingsAndUniformArgumentBinding(std::move(program_bindings), &uniforms_arg_binding);
     }
 
-    void Update(Rhi::IProgramArgumentBinding& uniforms_argument_binding)
+    void Update(Rhi::IProgramArgumentBinding& uniforms_argument_binding) const
     {
         META_FUNCTION_TASK();
         uniforms_argument_binding.SetRootConstant(

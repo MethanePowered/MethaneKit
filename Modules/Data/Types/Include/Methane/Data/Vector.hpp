@@ -182,30 +182,30 @@ public:
     template<size_t sz = size, typename = std::enable_if_t<sz == 4>>
     [[nodiscard]] HlslVector<T, 4> AsHlsl() const noexcept { return HlslVector<T, 4>(GetX(), GetY(), GetZ(), GetW()); }
 
-    [[nodiscard]] bool operator==(const RawVectorType& other) const noexcept
+    [[nodiscard]] friend bool operator==(const RawVectorType& left, const RawVectorType& right) noexcept
     {
-        if (m_components[0] != other[0])
+        if (left.m_components[0] != right[0])
         {
             return false;
         }
-        if (m_components[1] != other[1])
+        if (left.m_components[1] != right[1])
         {
             return false;
         }
         if constexpr (size > 2)
         {
-            if (m_components[2] != other[2])
+            if (left.m_components[2] != right[2])
                 return false;
         }
         if constexpr (size > 3)
         {
-            if (m_components[3] != other[3])
+            if (left.m_components[3] != right[3])
                 return false;
         }
         return true;
     }
 
-    [[nodiscard]] bool operator!=(const RawVectorType& other) const noexcept { return !operator==(other); }
+    [[nodiscard]] friend bool operator!=(const RawVectorType& left, const RawVectorType& right) noexcept { return !(left == right); }
 
     RawVectorType& operator*=(T multiplier) noexcept
     {
@@ -219,14 +219,14 @@ public:
         return *this;
     }
 
-    [[nodiscard]] RawVectorType operator*(T multiplier) const noexcept
+    [[nodiscard]] friend RawVectorType operator*(const RawVectorType& v, T multiplier) noexcept
     {
-        return UnrollComputeComponents([multiplier](T component, size_t) { return component * multiplier; });
+        return UnrollComputeComponents(v, [multiplier](T component, size_t) { return component * multiplier; });
     }
 
-    [[nodiscard]] RawVectorType operator/(T divisor) const noexcept
+    [[nodiscard]] friend RawVectorType operator/(const RawVectorType& v, T divisor) noexcept
     {
-        return UnrollComputeComponents([divisor](T component, size_t) { return component / divisor; });
+        return UnrollComputeComponents(v, [divisor](T component, size_t) { return component / divisor; });
     }
 
     RawVectorType& operator+=(const RawVectorType& other) noexcept
@@ -241,14 +241,14 @@ public:
         return *this;
     }
 
-    [[nodiscard]] RawVectorType operator+(const RawVectorType& other) const noexcept
+    [[nodiscard]] friend RawVectorType operator+(const RawVectorType& v, const RawVectorType& other) noexcept
     {
-        return UnrollComputeComponents([&other](T component, size_t i) { return component + other[i]; });
+        return UnrollComputeComponents(v, [&other](T component, size_t i) { return component + other[i]; });
     }
 
-    [[nodiscard]] RawVectorType operator-(const RawVectorType& other) const noexcept
+    [[nodiscard]] friend RawVectorType operator-(const RawVectorType& v, const RawVectorType& other) noexcept
     {
-        return UnrollComputeComponents([&other](T component, size_t i) { return component - other[i]; });
+        return UnrollComputeComponents(v, [&other](T component, size_t i) { return component - other[i]; });
     }
 
     [[nodiscard]] T GetLength() const noexcept
@@ -285,43 +285,62 @@ public:
 
 private:
     template<typename ComponentFn /* [](T component) -> void */>
+    static constexpr void ForEachComponent(const RawVectorType& v, ComponentFn component_action) noexcept
+    {
+        component_action(v.m_components[0]);
+        component_action(v.m_components[1]);
+        if constexpr (size >= 3)
+            component_action(v.m_components[2]);
+        if constexpr (size == 4)
+            component_action(v.m_components[3]);
+    }
+
+    template<typename ComponentFn /* [](T component) -> void */>
     constexpr void ForEachComponent(ComponentFn component_action) const noexcept
     {
-        component_action(m_components[0]);
-        component_action(m_components[1]);
+        ForEachComponent(*this, component_action);
+    }
+
+    template<typename ComponentFn /* [](T& component, size_t index) -> void */>
+    static constexpr void UnrollUpdateComponents(RawVectorType& v, ComponentFn component_modifier) noexcept
+    {
+        component_modifier(v.m_components[0], 0);
+        component_modifier(v.m_components[1], 1);
         if constexpr (size >= 3)
-            component_action(m_components[2]);
+            component_modifier(v.m_components[2], 2);
         if constexpr (size == 4)
-            component_action(m_components[3]);
+            component_modifier(v.m_components[3], 3);
     }
 
     template<typename ComponentFn /* [](T& component, size_t index) -> void */>
     constexpr void UnrollUpdateComponents(ComponentFn component_modifier) noexcept
     {
-        component_modifier(m_components[0], 0);
-        component_modifier(m_components[1], 1);
+        UnrollUpdateComponents(*this, component_modifier);
+    }
+
+    template<typename ComponentFn /* [](T component, size_t index) -> T */>
+    static constexpr RawVectorType UnrollComputeComponents(const RawVectorType& v, ComponentFn component_compute) noexcept
+    {
+        RawVectorType result;
+        result[0] = component_compute(v.m_components[0], 0);
+        result[1] = component_compute(v.m_components[1], 1);
         if constexpr (size >= 3)
-            component_modifier(m_components[2], 2);
+            result[2] = component_compute(v.m_components[2], 2);
         if constexpr (size == 4)
-            component_modifier(m_components[3], 3);
+            result[3] = component_compute(v.m_components[3], 3);
+        return result;
     }
 
     template<typename ComponentFn /* [](T component, size_t index) -> T */>
     constexpr RawVectorType UnrollComputeComponents(ComponentFn component_compute) const noexcept
     {
-        RawVectorType result;
-        result[0] = component_compute(m_components[0], 0);
-        result[1] = component_compute(m_components[1], 1);
-        if constexpr (size >= 3)
-            result[2] = component_compute(m_components[2], 2);
-        if constexpr (size == 4)
-            result[3] = component_compute(m_components[3], 3);
-        return result;
+        return UnrollComputeComponents(*this, component_compute);
     }
 
     std::array<T, size> m_components{{ }};
 
-    static_assert(sizeof(m_components) == sizeof(T) * size, "RawVector components raw array does not satisfy to dense memory packing requirement.");
+    static_assert(sizeof(m_components) == sizeof(T) * size,
+                  "RawVector components raw array does not satisfy to dense memory packing requirement.");
 };
 
 using RawVector2F = RawVector<float, 2>;

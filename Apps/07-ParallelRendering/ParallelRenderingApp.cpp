@@ -72,14 +72,6 @@ constexpr char const* g_app_variant_name = "Root Constants";
 constexpr char const* g_app_variant_name = "Buffer Views";
 #endif
 
-bool operator==(const ParallelRenderingApp::Settings& left,
-                const ParallelRenderingApp::Settings& right) noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(left.cubes_grid_size, left.render_thread_count, left.parallel_rendering_enabled) ==
-           std::tie(right.cubes_grid_size, right.render_thread_count, right.parallel_rendering_enabled);
-}
-
 uint32_t ParallelRenderingApp::Settings::GetTotalCubesCount() const noexcept
 {
     META_FUNCTION_TASK();

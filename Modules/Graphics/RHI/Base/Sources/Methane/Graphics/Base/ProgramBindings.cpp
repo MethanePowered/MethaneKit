@@ -325,7 +325,7 @@ ProgramBindings::operator std::string() const
 void ProgramBindings::Initialize()
 {
     META_FUNCTION_TASK();
-    auto& program = static_cast<Program&>(GetProgram());
+    const auto& program = static_cast<const Program&>(GetProgram());
     Rhi::IDescriptorManager& descriptor_manager = program.GetContext().GetDescriptorManager();
     descriptor_manager.AddProgramBindings(*this);
 

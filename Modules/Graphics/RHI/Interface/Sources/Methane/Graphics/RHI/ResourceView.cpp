@@ -76,25 +76,6 @@ void SubResourceCount::operator+=(const SubResourceIndex& other) noexcept
     m_mip_levels_count = std::max(m_mip_levels_count, other.GetMipLevel()   + 1U);
 }
 
-bool SubResourceCount::operator==(const SubResourceCount& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(m_depth, m_array_size, m_mip_levels_count) ==
-           std::tie(other.m_depth, other.m_array_size, other.m_mip_levels_count);
-}
-
-bool SubResourceCount::operator<(const SubResourceCount& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return GetRawCount() < other.GetRawCount();
-}
-
-bool SubResourceCount::operator>=(const SubResourceCount& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return GetRawCount() >= other.GetRawCount();
-}
-
 SubResourceCount::operator SubResourceIndex() const noexcept
 {
     META_FUNCTION_TASK();
@@ -130,92 +111,16 @@ SubResourceIndex::SubResourceIndex(const SubResourceCount& count)
     , m_mip_level(count.GetMipLevelsCount())
 { }
 
-bool SubResourceIndex::operator==(const SubResourceIndex& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(m_depth_slice, m_array_index, m_mip_level) ==
-           std::tie(other.m_depth_slice, other.m_array_index, other.m_mip_level);
-}
-
-bool SubResourceIndex::operator<(const SubResourceIndex& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(m_depth_slice, m_array_index, m_mip_level) <
-           std::tie(other.m_depth_slice, other.m_array_index, other.m_mip_level);
-}
-
-bool SubResourceIndex::operator>=(const SubResourceIndex& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return !operator<(other);
-}
-
-bool SubResourceIndex::operator<(const SubResourceCount& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return m_depth_slice < other.GetDepth() &&
-           m_array_index < other.GetArraySize() &&
-           m_mip_level   < other.GetMipLevelsCount();
-}
-
-bool SubResourceIndex::operator>=(const SubResourceCount& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return !operator<(other);
-}
-
 SubResourceIndex::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
     return fmt::format("index(d:{}, a:{}, m:{})", m_depth_slice, m_array_index, m_mip_level);
 }
 
-bool ResourceViewSettings::operator<(const ResourceViewSettings& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(subresource_index, subresource_count, offset, size, texture_dimension_type_opt) <
-           std::tie(other.subresource_index, other.subresource_count, other.offset, other.size, other.texture_dimension_type_opt);
-}
-
-bool ResourceViewSettings::operator==(const ResourceViewSettings& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(subresource_index, subresource_count, offset, size, texture_dimension_type_opt) ==
-           std::tie(other.subresource_index, other.subresource_count, other.offset, other.size, other.texture_dimension_type_opt);
-}
-
-bool ResourceViewSettings::operator!=(const ResourceViewSettings& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(subresource_index, subresource_count, offset, size, texture_dimension_type_opt) !=
-           std::tie(other.subresource_index, other.subresource_count, other.offset, other.size, other.texture_dimension_type_opt);
-}
-
 ResourceViewId::ResourceViewId(ResourceUsageMask usage, const ResourceViewSettings& settings)
     : ResourceViewSettings(settings)
     , usage(usage)
 { }
-
-bool ResourceViewId::operator<(const ResourceViewId& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    if (usage != other.usage)
-        return usage < other.usage;
-
-    return ResourceViewSettings::operator<(other);
-}
-
-bool ResourceViewId::operator==(const ResourceViewId& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return usage == other.usage && ResourceViewSettings::operator==(other);
-}
-
-bool ResourceViewId::operator!=(const ResourceViewId& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return usage != other.usage && ResourceViewSettings::operator!=(other);
-}
 
 ResourceView::ResourceView(IResource& resource, const Settings& settings)
     : m_resource_ptr(resource.GetDerivedPtr<IResource>())
@@ -251,20 +156,6 @@ ResourceView::ResourceView(IResource& resource,
         texture_dimension_type_opt
     })
 { }
-
-bool ResourceView::operator==(const ResourceView& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(m_resource_ptr, m_settings) ==
-           std::tie(other.m_resource_ptr, other.m_settings);
-}
-
-bool ResourceView::operator!=(const ResourceView& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(m_resource_ptr, m_settings) !=
-           std::tie(other.m_resource_ptr, other.m_settings);
-}
 
 ResourceView::operator std::string() const
 {

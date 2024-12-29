@@ -76,8 +76,15 @@ public:
         CheckComponentsRange();
     }
 
-    [[nodiscard]] bool operator==(const Color& other) const noexcept  { return hlslpp::all(m_components == other.m_components); }
-    [[nodiscard]] bool operator!=(const Color& other) const noexcept  { return !operator==(other); }
+    [[nodiscard]] friend bool operator==(const Color& left, const Color& right) noexcept
+    {
+        return hlslpp::all(left.m_components == right.m_components);
+    }
+
+    [[nodiscard]] friend bool operator!=(const Color& left, const Color& right) noexcept
+    {
+        return !(left == right);
+    }
 
     [[nodiscard]] size_t GetSize() const noexcept { return Size; }
 

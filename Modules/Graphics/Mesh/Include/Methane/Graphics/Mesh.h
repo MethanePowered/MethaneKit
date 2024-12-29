@@ -138,7 +138,11 @@ protected:
         
         Edge(Mesh::Index v1_index, Mesh::Index v2_index);
 
-        [[nodiscard]] bool operator<(const Edge& other) const;
+        [[nodiscard]] friend bool operator<(const Edge& left, const Edge& right)
+        {
+            return left.first_index < right.first_index ||
+                   (left.first_index == right.first_index && left.second_index < right.second_index);
+        }
     };
     
     using VertexFieldOffsets = std::array<int32_t, static_cast<size_t>(VertexField::Count)>;

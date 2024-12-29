@@ -204,11 +204,5 @@ Mesh::Edge::Edge(Mesh::Index v1_index, Mesh::Index v2_index)
     , second_index(v1_index < v2_index ? v2_index : v1_index)
 {
 }
-    
-bool Mesh::Edge::operator<(const Edge& other) const
-{
-    return first_index < other.first_index ||
-          (first_index == other.first_index && second_index < other.second_index);
-}
 
 } // namespace Methane::Graphics

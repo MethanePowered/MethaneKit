@@ -43,20 +43,6 @@ ProgramArgument::ProgramArgument(ShaderType shader_type, std::string_view argume
     , m_hash(GetProgramArgumentHash(shader_type, argument_name))
 { }
 
-bool ProgramArgument::operator==(const ProgramArgument& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(m_hash, m_shader_type, m_name) ==
-           std::tie(other.m_hash, other.m_shader_type, other.m_name);
-}
-
-bool ProgramArgument::operator<(const ProgramArgument& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(m_hash, m_shader_type, m_name) <
-           std::tie(other.m_hash, other.m_shader_type, other.m_name);
-}
-
 ProgramArgument::operator std::string() const noexcept
 {
     META_FUNCTION_TASK();
@@ -66,8 +52,7 @@ ProgramArgument::operator std::string() const noexcept
 void ProgramArgument::MergeShaderTypes(ShaderType shader_type)
 {
     META_FUNCTION_TASK();
-    ShaderTypes merged_shader_types{ m_shader_type, shader_type };
-    if (merged_shader_types != g_all_shader_types)
+    if (ShaderTypes{ m_shader_type, shader_type } != g_all_shader_types)
         return;
 
     m_shader_type = ShaderType::All;

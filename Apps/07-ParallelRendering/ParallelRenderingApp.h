@@ -71,7 +71,11 @@ public:
         uint32_t render_thread_count        = std::thread::hardware_concurrency();
         bool     parallel_rendering_enabled = true;
 
-        friend bool operator==(const Settings& left, const Settings& right) noexcept;
+        friend bool operator==(const Settings& left, const Settings& right) noexcept
+        {
+            return std::tie(left.cubes_grid_size, left.render_thread_count, left.parallel_rendering_enabled) ==
+                   std::tie(right.cubes_grid_size, right.render_thread_count, right.parallel_rendering_enabled);
+        }
 
         uint32_t GetTotalCubesCount() const noexcept;
         uint32_t GetActiveRenderThreadCount() const noexcept;

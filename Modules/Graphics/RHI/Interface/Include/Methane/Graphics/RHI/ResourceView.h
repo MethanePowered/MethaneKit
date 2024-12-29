@@ -59,13 +59,28 @@ public:
     { return m_array_size * m_depth; }
 
     void operator+=(const SubResourceIndex& other) noexcept;
-    [[nodiscard]] bool operator==(const SubResourceCount& other) const noexcept;
 
-    [[nodiscard]] bool operator!=(const SubResourceCount& other) const noexcept
-    { return !operator==(other); }
+    [[nodiscard]] friend bool operator==(const SubResourceCount& left, const SubResourceCount& right) noexcept
+    {
+        return std::tie(left.m_depth, left.m_array_size, left.m_mip_levels_count)
+            == std::tie(right.m_depth, right.m_array_size, right.m_mip_levels_count);
+    }
 
-    [[nodiscard]] bool operator<(const SubResourceCount& other) const noexcept;
-    [[nodiscard]] bool operator>=(const SubResourceCount& other) const noexcept;
+    [[nodiscard]] friend bool operator!=(const SubResourceCount& left, const SubResourceCount& right) noexcept
+    {
+        return !(left == right);
+    }
+
+    [[nodiscard]] friend bool operator<(const SubResourceCount& left, const SubResourceCount& right) noexcept
+    {
+        return left.GetRawCount() < right.GetRawCount();
+    }
+
+    [[nodiscard]] friend bool operator>=(const SubResourceCount& left, const SubResourceCount& right) noexcept
+    {
+        return left.GetRawCount() >= right.GetRawCount();
+    }
+
     [[nodiscard]] explicit operator SubResourceIndex() const noexcept;
     [[nodiscard]] explicit operator std::string() const noexcept;
 
@@ -96,13 +111,40 @@ public:
     [[nodiscard]] Data::Index GetBaseLayerIndex(const SubResourceCount& count) const noexcept
     { return (m_array_index * count.GetDepth() + m_depth_slice); }
 
-    [[nodiscard]] bool operator==(const SubResourceIndex& other) const noexcept;
-    [[nodiscard]] bool operator!=(const SubResourceIndex& other) const noexcept { return !operator==(other); }
+    [[nodiscard]] friend bool operator==(const SubResourceIndex& left, const SubResourceIndex& right) noexcept
+    {
+        return std::tie(left.m_depth_slice, left.m_array_index, left.m_mip_level)
+            == std::tie(right.m_depth_slice, right.m_array_index, right.m_mip_level);
+    }
 
-    [[nodiscard]] bool operator<(const SubResourceIndex& other) const noexcept;
-    [[nodiscard]] bool operator>=(const SubResourceIndex& other) const noexcept;
-    [[nodiscard]] bool operator<(const SubResourceCount& other) const noexcept;
-    [[nodiscard]] bool operator>=(const SubResourceCount& other) const noexcept;
+    [[nodiscard]] friend bool operator!=(const SubResourceIndex& left, const SubResourceIndex& right) noexcept
+    {
+        return !(left == right);
+    }
+
+    [[nodiscard]] friend bool operator<(const SubResourceIndex& left, const SubResourceIndex& right) noexcept
+    {
+        return std::tie(left.m_depth_slice, left.m_array_index, left.m_mip_level)
+             < std::tie(right.m_depth_slice, right.m_array_index, right.m_mip_level);
+    }
+
+    [[nodiscard]] friend bool operator>=(const SubResourceIndex& left, const SubResourceIndex& right) noexcept
+    {
+        return !(left < right);
+    }
+
+    [[nodiscard]] friend bool operator<(const SubResourceIndex& index, const SubResourceCount& count) noexcept
+    {
+        return index.m_depth_slice < count.GetDepth() &&
+               index.m_array_index < count.GetArraySize() &&
+               index.m_mip_level   < count.GetMipLevelsCount();
+    }
+
+    [[nodiscard]] friend bool operator>=(const SubResourceIndex& index, const SubResourceCount& count) noexcept
+    {
+        return !(index < count);
+    }
+
     [[nodiscard]] explicit operator std::string() const noexcept;
 
 private:
@@ -180,9 +222,22 @@ struct ResourceViewSettings
     Data::Size                size   = 0U;
     Opt<TextureDimensionType> texture_dimension_type_opt;
 
-    [[nodiscard]] bool operator<(const ResourceViewSettings& other) const noexcept;
-    [[nodiscard]] bool operator==(const ResourceViewSettings& other) const noexcept;
-    [[nodiscard]] bool operator!=(const ResourceViewSettings& other) const noexcept;
+    [[nodiscard]] friend bool operator<(const ResourceViewSettings& left, const ResourceViewSettings& right) noexcept
+    {
+        return std::tie(left.subresource_index, left.subresource_count, left.offset, left.size, left.texture_dimension_type_opt)
+             < std::tie(right.subresource_index, right.subresource_count, right.offset, right.size, right.texture_dimension_type_opt);
+    }
+
+    [[nodiscard]] friend bool operator==(const ResourceViewSettings& left, const ResourceViewSettings& right) noexcept
+    {
+        return std::tie(left.subresource_index, left.subresource_count, left.offset, left.size, left.texture_dimension_type_opt)
+            == std::tie(right.subresource_index, right.subresource_count, right.offset, right.size, right.texture_dimension_type_opt);
+    }
+
+    [[nodiscard]] friend bool operator!=(const ResourceViewSettings& left, const ResourceViewSettings& right) noexcept
+    {
+        return !(left == right);
+    }
 };
 
 struct ResourceViewId : ResourceViewSettings
@@ -191,9 +246,24 @@ struct ResourceViewId : ResourceViewSettings
 
     ResourceViewId(ResourceUsageMask usage, const ResourceViewSettings& settings);
 
-    [[nodiscard]] bool operator<(const ResourceViewId& other) const noexcept;
-    [[nodiscard]] bool operator==(const ResourceViewId& other) const noexcept;
-    [[nodiscard]] bool operator!=(const ResourceViewId& other) const noexcept;
+    [[nodiscard]] friend bool operator<(const ResourceViewId& left, const ResourceViewId& right) noexcept
+    {
+        if (left.usage != right.usage)
+            return left.usage < right.usage;
+
+        return static_cast<const ResourceViewSettings&>(left) < static_cast<const ResourceViewSettings&>(right);
+    }
+
+    [[nodiscard]] friend bool operator==(const ResourceViewId& left, const ResourceViewId& right) noexcept
+    {
+        return left.usage == right.usage &&
+               static_cast<const ResourceViewSettings&>(left) == static_cast<const ResourceViewSettings&>(right);
+    }
+
+    [[nodiscard]] friend bool operator!=(const ResourceViewId& left, const ResourceViewId& right) noexcept
+    {
+        return !(left == right);
+    }
 };
 
 class ResourceView
@@ -214,8 +284,17 @@ public:
                  const SubResource::Count& subresource_count = {},
                  Opt<TextureDimensionType> texture_dimension_type_opt = std::nullopt);
 
-    [[nodiscard]] bool operator==(const ResourceView& other) const noexcept;
-    [[nodiscard]] bool operator!=(const ResourceView& other) const noexcept;
+    [[nodiscard]] friend bool operator==(const ResourceView& left, const ResourceView& right) noexcept
+    {
+        return std::tie(left.m_resource_ptr, left.m_settings)
+            == std::tie(right.m_resource_ptr, right.m_settings);
+    }
+
+    [[nodiscard]] friend bool operator!=(const ResourceView& left, const ResourceView& right) noexcept
+    {
+        return !(left == right);
+    }
+
     [[nodiscard]] explicit operator std::string() const;
 
     [[nodiscard]] const Ptr<IResource>&     GetResourcePtr() const noexcept      { return m_resource_ptr; }
