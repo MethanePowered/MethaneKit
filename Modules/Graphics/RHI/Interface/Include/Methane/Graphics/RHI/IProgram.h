@@ -85,7 +85,7 @@ struct IProgram
                                                         const Argument& argument);
 
     // Create IProgram instance
-    [[nodiscard]] static Ptr<IProgram> Create(const IContext& context, const Settings& settings);
+    [[nodiscard]] static Ptr<IProgram> Create(IContext& context, const Settings& settings);
 
     // IProgram interface
     [[nodiscard]] virtual Ptr<IProgramBindings> CreateBindings(const BindingValueByArgument& binding_value_by_argument,

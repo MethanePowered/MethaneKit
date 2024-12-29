@@ -120,7 +120,7 @@ static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>
     descriptor_offset += bind_settings.resource_count;
 }
 
-Program::Program(const Base::Context& context, const Settings& settings)
+Program::Program(Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
     , m_dx_context(dynamic_cast<const IContext&>(context))
 {

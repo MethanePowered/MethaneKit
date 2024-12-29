@@ -42,7 +42,7 @@ const ProgramArgumentAccessor* IProgram::FindArgumentAccessor(const ArgumentAcce
     return arg_access_it == argument_accessors.end() ? nullptr : &*arg_access_it;
 }
 
-Ptr<IProgram> IProgram::Create(const IContext& context, const Settings& settings)
+Ptr<IProgram> IProgram::Create(IContext& context, const Settings& settings)
 {
     META_FUNCTION_TASK();
     return context.CreateProgram(settings);

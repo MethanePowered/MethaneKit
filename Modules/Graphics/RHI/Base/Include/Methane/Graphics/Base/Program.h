@@ -47,7 +47,7 @@ class Program
     friend class ProgramBindings;
 
 public:
-    Program(const Context& context, const Settings& settings);
+    Program(Context& context, const Settings& settings);
 
     // IProgram interface
     const Settings&          GetSettings() const noexcept final           { return m_settings; }
@@ -104,7 +104,7 @@ private:
                 const std::map<std::string_view, Rhi::ShaderTypes, std::less<>>& shader_types_by_argument_name_map);
     void InitFrameConstantArgumentBindings();
 
-    const Context&           m_context;
+    Context&                 m_context;
     Settings                 m_settings;
     const ShadersByType      m_shaders_by_type;
     const Rhi::ShaderTypes   m_shader_types;

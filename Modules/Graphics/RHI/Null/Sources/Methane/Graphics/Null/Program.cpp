@@ -28,7 +28,7 @@ Null implementation of the program interface.
 namespace Methane::Graphics::Null
 {
 
-Program::Program(const Base::Context& context, const Settings& settings)
+Program::Program(Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
 {
 }

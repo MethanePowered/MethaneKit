@@ -61,14 +61,13 @@ static Rhi::ShaderTypes CreateShaderTypes(const Ptrs<Rhi::IShader>& shaders)
     return shader_types;
 }
 
-Program::Program(const Context& context, const Settings& settings)
+Program::Program(Context& context, const Settings& settings)
     : m_context(context)
     , m_settings(settings)
     , m_shaders_by_type(CreateShadersByType(settings.shaders))
     , m_shader_types(CreateShaderTypes(settings.shaders))
-    // FIXME: get rid of const-cast required to Connect to signal
-    , m_root_constant_buffer(const_cast<Context&>(context), "Program Root Constant Buffer")
-    , m_root_mutable_buffer(const_cast<Context&>(context),  "Program Root Mutable Buffer")
+    , m_root_constant_buffer(context, "Program Root Constant Buffer")
+    , m_root_mutable_buffer(context,  "Program Root Mutable Buffer")
 { }
 
 const Ptr<Rhi::IShader>& Program::GetShader(Rhi::ShaderType shader_type) const
@@ -176,7 +175,7 @@ void Program::InitFrameConstantArgumentBindings()
 
     // Create frame-constant argument bindings only when program is created in render context
     m_frame_bindings_by_argument.clear();
-    const auto&    render_context      = static_cast<const RenderContext&>(m_context);
+    auto&          render_context      = static_cast<RenderContext&>(m_context);
     const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
     META_CHECK_GREATER_OR_EQUAL(frame_buffers_count, 2);
 
@@ -217,8 +216,7 @@ RootConstantBuffer& Program::GetRootFrameConstantBuffer(Data::Index frame_index)
     while (frame_index >= m_root_frame_constant_buffers.size())
     {
         m_root_frame_constant_buffers.emplace_back(
-            std::make_unique<RootConstantBuffer>(const_cast<Context&>(m_context), // FIXME: remove const cast
-                                                 GetRootFrameConstantBufferName(GetName(), frame_index))
+            std::make_unique<RootConstantBuffer>(m_context, GetRootFrameConstantBufferName(GetName(), frame_index))
         );
     }
     return *m_root_frame_constant_buffers[frame_index];

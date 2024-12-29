@@ -46,7 +46,7 @@ class Program final : public Base::Program // NOSONAR - this class requires dest
     friend class ProgramBindings;
 
 public:
-    Program(const Base::Context& context, const Settings& settings);
+    Program(Base::Context& context, const Settings& settings);
     ~Program() override;
 
     // IProgram interface

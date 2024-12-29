@@ -40,7 +40,7 @@ Vulkan implementation of the program interface.
 namespace Methane::Graphics::Vulkan
 {
 
-Program::Program(const Base::Context& context, const Settings& settings)
+Program::Program(Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
     , m_vk_context(dynamic_cast<const IContext&>(context))
 {

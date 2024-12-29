@@ -34,7 +34,7 @@ class Program final
     : public Base::Program
 {
 public:
-    Program(const Base::Context& context, const Settings& settings);
+    Program(Base::Context& context, const Settings& settings);
 
     // IProgram interface
     [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index) override;

@@ -44,7 +44,7 @@ Metal implementation of the program interface.
 namespace Methane::Graphics::Metal
 {
 
-Program::Program(const Base::Context& context, const Settings& settings)
+Program::Program(Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
 {
     META_FUNCTION_TASK();

@@ -124,7 +124,7 @@ struct IContext
     [[nodiscard]] virtual Ptr<ICommandQueue> CreateCommandQueue(CommandListType type) const = 0;
     [[nodiscard]] virtual Ptr<ICommandKit>   CreateCommandKit(CommandListType type) const = 0;
     [[nodiscard]] virtual Ptr<IShader>       CreateShader(ShaderType type, const ShaderSettings& settings) const = 0;
-    [[nodiscard]] virtual Ptr<IProgram>      CreateProgram(const ProgramSettings& settings) const = 0;
+    [[nodiscard]] virtual Ptr<IProgram>      CreateProgram(const ProgramSettings& settings) = 0;
     [[nodiscard]] virtual Ptr<IComputeState> CreateComputeState(const ComputeStateSettings& settings) const = 0;
     [[nodiscard]] virtual Ptr<IBuffer>       CreateBuffer(const BufferSettings& settings) const = 0;
     [[nodiscard]] virtual Ptr<ITexture>      CreateTexture(const TextureSettings& settings) const = 0;

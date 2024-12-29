@@ -56,7 +56,7 @@ public:
         std::vector<ByteCodeMaps>                   byte_code_maps_for_arguments; // related bytecode maps for each binding/argument
     };
 
-    Program(const Base::Context& context, const Settings& settings);
+    Program(Base::Context& context, const Settings& settings);
 
     // IProgram interface
     [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index) override;
