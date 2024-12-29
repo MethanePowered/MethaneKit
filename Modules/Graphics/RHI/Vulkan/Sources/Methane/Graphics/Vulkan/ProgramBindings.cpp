@@ -35,7 +35,7 @@ Vulkan implementation of the program bindings interface.
 
 #include <algorithm>
 
-#define DYNAMIC_BUFFER_OFFSETS_ENABLED 0
+//#define DYNAMIC_BUFFER_OFFSETS_ENABLED
 
 namespace Methane::Graphics::Vulkan
 {
@@ -324,7 +324,7 @@ void ProgramBindings::UpdateDynamicDescriptorOffsets()
             dynamic_offsets.clear();
 
             const Rhi::ResourceViews& resource_views = argument_binding.GetResourceViews();
-#if DYNAMIC_BUFFER_OFFSETS_ENABLED
+#ifdef DYNAMIC_BUFFER_OFFSETS_ENABLED
             std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(dynamic_offsets),
                            [](const Rhi::IResource::View& resource_view)
                            { return resource_view.GetOffset(); });

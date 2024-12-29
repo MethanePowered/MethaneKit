@@ -93,7 +93,8 @@ public:
     {
         return left.m_data_size == right.m_data_size &&
                (left.m_data_ptr == right.m_data_ptr ||
-                memcmp(left.m_data_ptr, right.m_data_ptr, left.m_data_size) == 0);
+                    (left.m_data_ptr && right.m_data_ptr &&
+                        memcmp(left.m_data_ptr, right.m_data_ptr, left.m_data_size) == 0));
     }
 
     friend bool operator!=(const Chunk& left, const Chunk& right) noexcept

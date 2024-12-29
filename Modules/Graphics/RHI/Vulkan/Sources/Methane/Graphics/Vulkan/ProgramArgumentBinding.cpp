@@ -56,14 +56,14 @@ vk::ShaderStageFlagBits ProgramArgumentBinding::GetNativeShaderStageFlags() cons
     return Shader::ConvertTypeToStageFlagBits(m_settings_vk.argument.GetShaderType());
 }
 
-void ProgramArgumentBinding::SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t binding_value) noexcept
+void ProgramArgumentBinding::SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t binding_value)
 {
     META_FUNCTION_TASK();
     m_vk_binding_value = binding_value;
     SetDescriptorSet(descriptor_set);
 }
 
-void ProgramArgumentBinding::SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept
+void ProgramArgumentBinding::SetDescriptorSet(const vk::DescriptorSet& descriptor_set)
 {
     META_FUNCTION_TASK();
     if (m_vk_descriptor_set == descriptor_set)

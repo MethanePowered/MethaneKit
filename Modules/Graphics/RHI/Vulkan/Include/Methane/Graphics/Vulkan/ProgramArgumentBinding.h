@@ -62,8 +62,8 @@ public:
     uint32_t GetPushConstantsOffset() const noexcept { return m_vk_push_constants_offset; }
     vk::ShaderStageFlagBits GetNativeShaderStageFlags() const;
 
-    void SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index) noexcept;
-    void SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept;
+    void SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index);
+    void SetDescriptorSet(const vk::DescriptorSet& descriptor_set);
     void SetPushConstantsOffset(uint32_t push_constant_offset) noexcept;
 
     // Base::ProgramArgumentBinding interface

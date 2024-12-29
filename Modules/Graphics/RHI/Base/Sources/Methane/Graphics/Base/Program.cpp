@@ -175,7 +175,7 @@ void Program::InitFrameConstantArgumentBindings()
 
     // Create frame-constant argument bindings only when program is created in render context
     m_frame_bindings_by_argument.clear();
-    auto&          render_context      = static_cast<RenderContext&>(m_context);
+    const auto&    render_context      = static_cast<const RenderContext&>(m_context);
     const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
     META_CHECK_GREATER_OR_EQUAL(frame_buffers_count, 2);
 

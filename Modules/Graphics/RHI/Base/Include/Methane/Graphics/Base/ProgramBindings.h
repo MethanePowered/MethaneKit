@@ -53,7 +53,7 @@ public:
     ProgramBindings(Program& program, const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const BindingValueByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const Opt<Data::Index>& frame_index);
-    ProgramBindings(ProgramBindings&&) noexcept = default;
+    ProgramBindings(ProgramBindings&&) noexcept = default; // NOSONAR - it's enough to use default move constructor
     ~ProgramBindings() override;
 
     ProgramBindings& operator=(const ProgramBindings& other) = delete;

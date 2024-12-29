@@ -208,8 +208,9 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
 
         Ptr<ArgumentBinding> new_argument_binding_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
         new_argument_binding_ptr->Initialize(program, m_frame_index);
-        const Rhi::ProgramArgumentAccessor& arg_accessor = new_argument_binding_ptr->GetSettings().argument;
-        if (arg_accessor.IsRootConstantBuffer())
+
+        if (const Rhi::ProgramArgumentAccessor& arg_accessor = new_argument_binding_ptr->GetSettings().argument;
+            arg_accessor.IsRootConstantBuffer())
             root_constant_access_types_mask.SetBitOn(arg_accessor.GetAccessorType());
 
         m_binding_by_argument.try_emplace(program_argument, std::move(new_argument_binding_ptr));

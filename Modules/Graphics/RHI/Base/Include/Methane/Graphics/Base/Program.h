@@ -88,7 +88,7 @@ protected:
     void       DecrementBindingsCount() noexcept       { m_bindings_count--; }
 
     template<typename ShaderFuncType>
-    void ForEachShader(const ShaderFuncType& shader_functor)
+    void ForEachShader(const ShaderFuncType& shader_functor) const
     {
         for(const Ptr<Rhi::IShader>& shader_ptr : m_shaders_by_type)
             if (shader_ptr)
