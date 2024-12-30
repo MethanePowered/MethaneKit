@@ -157,8 +157,8 @@ bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
         !m_settings.argument.IsRootConstantBuffer())
         return false;
 
-    // FIXME: Backend buffer changes inside GetResourceView call,
-    //        which executes callback OnRootConstantBufferChanged, which also updates resource views:
+    // NOTE: Backend buffer may change inside GetResourceView call,
+    //       which executes callback OnRootConstantBufferChanged, which in turn updates resource views again.
     const Rhi::ResourceView root_constant_resource_view = m_root_constant_accessor_ptr->GetResourceView();
 
     if (m_resource_views.size() == 1 &&
