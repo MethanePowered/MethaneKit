@@ -41,12 +41,13 @@
 ## Fetch Sources
 
 ### Notes
-- Since v0.6 Methane Kit does not use Git submodules anymore and switches to [CPM.cmake](https://github.com/cpm-cmake/CPM.cmake)
-to fetch dependent repositories during CMake configuration stage, so it should be both possible to acquire sources
-with `git clone` command or to download as ZIP-archive using `Code > Download ZIP` button.
+- Since v0.6, Methane Kit does not use Git submodules anymore and uses [CPM.cmake](https://github.com/cpm-cmake/CPM.cmake)
+  to fetch dependent repositories during the CMake configuration stage. Therefore, it is possible to acquire sources
+  with the `git clone` command or to download them as a ZIP archive using the `Code > Download ZIP` button.
 - All [External](/Externals) dependencies are fetched to the `Build/Output/ExternalsCache/...` directory,
-which can be changed by adding `-DCPM_SOURCE_CACHE=<cache_path>` to the CMake configuration command. 
-- Consider enabling [paths longer than 260 symbols in Windows](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell) to allow CMake generate build subdirectories normally. Long paths can be enabled with this command run from Administrator PowerShell terminal:
+  which can be changed by adding `-DCPM_SOURCE_CACHE=<cache_path>` to the CMake configuration command.
+- Consider enabling [paths longer than 260 symbols in Windows](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=powershell)
+  to allow CMake to generate build subdirectories normally. Long paths can be enabled with this command run from an Administrator PowerShell terminal:
 ```powershell
 New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
 ```

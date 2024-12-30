@@ -10,11 +10,12 @@ This tutorial demonstrates textured cube rendering using Methane Kit:
 - [Shaders/TexturedCubeUniforms.h](Shaders/TexturedCubeUniforms.h)
 - [Shaders/TexturedCube.hlsl](Shaders/TexturedCube.hlsl)
 
-Tutorial demonstrates the following Methane Kit features additionally to demonstrated in [Hello Cube](../02-HelloCube):
-- Use base user interface application for graphics UI overlay rendering
-- Create 2D textures with data loaded data from images and creating samplers
+Tutorial demonstrates the following Methane Kit features in addition to those demonstrated in 
+[Hello Cube](../02-HelloCube):
+- Use the base user interface application for graphics UI overlay rendering
+- Create 2D textures with data loaded from images and create samplers
 - Bind buffers and textures to program arguments and configure argument access modifiers
-- SRGB gamma-correction support in textures loader and color transformation in pixel shaders
+- Support SRGB gamma-correction in the textures loader and color transformation in pixel shaders
 
 ## Application Controls
 
@@ -25,12 +26,11 @@ Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInte
 
 ## Application and Frame Class Definitions
 
-Let's start from the application header file [TexturedCubeApp.h](TexturedCubeApp.h) which declares
-application class `TexturedCubeApp` derived from the base class `UserInterface::App<TexturedCubeFrame>`
-and frame class `TexturedCubeFrame` derived from the base class `Graphics::AppFrame` 
-similar to how it was done in [HelloCube](../02-HelloCube) tutorial.
-The difference here is the [UserInterface::App](../../Modules/UserInterface/App) base class used instead of
-[Graphics::App](../../Modules/Graphics/App) class for visualization of optional UI elements and rendering it in screen overlay.
+Let's start from the application header file `TexturedCubeApp.h`, which declares the application class `TexturedCubeApp` 
+derived from the base class `UserInterface::App<TexturedCubeFrame>` and the frame class `TexturedCubeFrame` derived from 
+the base class `Graphics::AppFrame`, similar to how it was done in the [Hello Cube](../02-HelloCube) tutorial. 
+The difference here is the use of the [UserInterface::App](../../Modules/UserInterface/App) base class instead of the 
+[Graphics::App](../../Modules/Graphics/App) class for visualizing optional UI elements and rendering them in a screen overlay.
 
 ```cpp
 #pragma once
@@ -82,12 +82,12 @@ private:
 } // namespace Methane::Tutorials
 ```
 
-Methane Kit is designed to use [deferred rendering approach](https://docs.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-render-multi-thread-render) 
-with triple buffering to minimize waiting of frame-buffer releases in swap-chain.
-In order to prepare graphics resource states ahead of next frames rendering, `TexturedCubeFrame` structure keeps 
-volatile frame dependent resources used for rendering to dedicated frame-buffer. It includes program bindings object
-as well as render command list for render commands encoding and a set of command lists submitted
-for execution on GPU via command queue.
+Methane Kit is designed to use the 
+[deferred rendering approach](https://docs.microsoft.com/en-us/windows/win32/direct3d11/overviews-direct3d-11-render-multi-thread-render) 
+with triple buffering to minimize waiting for frame-buffer releases in the swap-chain. To prepare graphics resource states 
+ahead of the next frame's rendering, the `TexturedCubeFrame` structure keeps volatile frame-dependent resources used for 
+rendering to a dedicated frame-buffer. It includes a program bindings object, a render command list for encoding render 
+commands, and a set of command lists submitted for execution on the GPU via the command queue.
 
 ```cpp
 struct TexturedCubeFrame final : Graphics::AppFrame
@@ -126,9 +126,9 @@ struct Uniforms
 };
 ```
 
-Size of the uniform buffer structures should be aligned to 16 bytes, which is 
-defined with pragma pack directive in application header file [TexturedCubeApp.h](TexturedCubeApp.h).
-Uniforms data is stored in the application class member `m_shader_uinforms` and is updated in `TexturedCubeApp::Update()` method. 
+The size of the uniform buffer structures should be aligned to 16 bytes, which is defined with the `pragma pack` directive in 
+the application header file [TexturedCubeApp.h](TexturedCubeApp.h). Uniforms data is stored in the application class member
+`m_shader_uniforms` and is updated in the `TexturedCubeApp::Update()` method.
 
 ```cpp
 namespace hlslpp
@@ -158,7 +158,7 @@ private:
 } // namespace Methane::Tutorials
 ```
 
-Default values of the shader constants are defined in the application source file  and
+Default values of the shader constants are defined in the application source file and
 checked in [TexturedCubeApp.cpp](TexturedCubeApp.cpp) and size alignment is checked with static asserts:
 
 ```cpp
@@ -175,11 +175,11 @@ static_assert(sizeof(hlslpp::Uniforms) % 16 == 0,  "Size of Uniforms struct shou
 
 ## Application Construction and Initialization
 
-Application is created with constructor defined in [TexturedCubeApp.cpp](TexturedCubeApp.cpp).
-Graphics application settings are generated by utility function `GetGraphicsTutorialAppSettings(...)` 
-defined in [Methane/Tutorials/AppSettings.hpp](../../Common/Include/Methane/Tutorials/AppSettings.hpp).
-Camera orientation is reset to the default state. Camera and light rotating animation is added to the animation pool bound to 
-`TexturedCubeApp::Animate` function described below.
+Application is created with constructor defined in [TexturedCubeApp.cpp](TexturedCubeApp.cpp). Graphics application settings 
+are generated by utility function `GetGraphicsTutorialAppSettings(...)` defined in 
+[Methane/Tutorials/AppSettings.hpp](../../Common/Include/Methane/Tutorials/AppSettings.hpp). Camera orientation is reset to 
+the default state. Camera and light rotating animation is added to the animation pool bound to `TexturedCubeApp::Animate` 
+function described below.
 
 ```cpp
 TexturedCubeApp::TexturedCubeApp()
@@ -200,8 +200,8 @@ TexturedCubeApp::TexturedCubeApp()
 
 ## Graphics Resources Initialization
 
-Cube vertex structure is defined with fields for position, normal and texture coordinates, as well auxiliary
-layout description used for automatic mesh vertex data generation.
+Cube vertex structure is defined with fields for position, normal, and texture coordinates, as well as an auxiliary layout 
+description used for automatic mesh vertex data generation.
 
 ```cpp
 struct CubeVertex
@@ -218,15 +218,15 @@ struct CubeVertex
 };
 ```
 
-Initialization of the `UserInterface::App` resources is done with base class `UserInterface::Init()` method.
-Initial camera projection size is set with `m_camera.Resize(...)` call by passing frame size from the context settings,
-initialized in the base class `Graphics::App::InitContext(...)`.
+Initialization of the `UserInterface::App` resources is done with the base class `UserInterface::Init()` method. Initial camera 
+projection size is set with the `m_camera.Resize(...)` call by passing the frame size from the context settings, initialized in the 
+base class `Graphics::App::InitContext(...)`.
 
-Vertices and indices data of the cube mesh are generated with `Graphics::CubeMesh<CubeVertex>` template class defined
-using vertex structure with layout description defined above. Vertex and index buffers are created with 
+Vertices and indices data of the cube mesh are generated with the `Graphics::CubeMesh<CubeVertex>` template class defined using the 
+vertex structure with the layout description defined above. Vertex and index buffers are created with the 
 `GetRenderContext().CreateBuffer(...)` factory method using `rhi::BufferSettings::ForVertexBuffer(...)` and 
-`rhi::BufferSettings::ForIndexBuffer(...)` settings. Generated data is copied to buffers with `Rhi::Buffer::SetData(...)` call,
-which is taking a sub-resource derived from `Data::Chunk` class describing continuous memory range and holding its data.
+`rhi::BufferSettings::ForIndexBuffer(...)` settings. Generated data is copied to buffers with the `rhi::Buffer::SetData(...)` call, 
+which takes a sub-resource derived from the `Data::Chunk` class describing a continuous memory range and holding its data.
 
 ```cpp
 void TexturedCubeApp::Init()
@@ -262,13 +262,13 @@ void TexturedCubeApp::Init()
 }
 ```
 
-Cube face texture is created using `Graphics::ImageLoader` class available via `Graphics::App::GetImageLoader()` function.
-Texture is loaded from JPEG image embedded in application resources by path in embedded file system `MethaneBubbles.jpg`.
-Image is added to application resources in build time and [configured in CMakeLists.txt](#cmake-build-configuration).
-`Graphics::ImageOptionMask` is passed to image loader function to request mipmaps generation and use SRGB color format.
+Cube face texture is created using the `Graphics::ImageLoader` class available via the `Graphics::App::GetImageLoader()` function.
+The texture is loaded from a JPEG image embedded in the application resources by the path in the embedded file system 
+`MethaneBubbles.jpg`. The image is added to the application resources at build time and is [configured in CMakeLists.txt](#cmake-build-configuration).
+The `Graphics::ImageOptionMask` is passed to the image loader function to request mipmaps generation and to use the SRGB color format.
 
-`Rhi::Sampler` object is created with `GetRenderContext().CreateSampler(...)` function which defines
-parameters of texture sampling from shader.
+The `rhi::Sampler` object is created with the `GetRenderContext().CreateSampler(...)` function, which defines the parameters of 
+texture sampling from the shader.
 
 ```cpp
 void TexturedCubeApp::Init()
@@ -292,20 +292,21 @@ void TexturedCubeApp::Init()
 }
 ```
 
-`Rhi::Program` object is created in `Rhi::Program::Settings` structure using `GetRenderContext().CreateProgram(...)` factory method.
-Vertex and Pixel shaders are created and loaded from embedded resources as pre-compiled byte-code.
-Also, it is important to note that render state settings enables depth testing for correct rendering of cube faces.
-Finally, render state is created using settings structure via `GetRenderContext().CreateRenderState(...)` factory method.
+`rhi::Program` object is created in the `rhi::Program::Settings` structure using the `GetRenderContext().CreateProgram(...)` 
+factory method. Vertex and Pixel shaders are created and loaded from embedded resources as pre-compiled byte-code. 
+It is important to note that render state settings enable depth testing for the correct rendering of cube faces. 
+Finally, the render state is created using the settings structure via the `GetRenderContext().CreateRenderState(...)` 
+factory method.
 
-`Rhi::ProgramArgumentAccessors{ ... }` in `Rhi::Program::Settings` overrides program argument accessor definitions:
-- Uniform argument `g_uniforms` of all shaders is defined as root constant buffer automatically managed by program
-with frame-constant access pattern (one buffer per frame is used). Note that `FRAME_CONSTANT` access pattern defined in
-C++ should match with `META_ARG_FRAME_CONSTANT` space modifier defined in shaders HLSL.
-- Uniform argument `g_constants` of pixel shader is also defined as root constant buffer with constant access pattern
-(single buffer is used for all frames in swap-chain). Note that `CONSTANT` access pattern defined in C++ should match 
-with `META_ARG_CONSTANT` space modifier defined in shaders HLSL.
-- Other program arguments `g_texture` and `g_sampler` are not overridden in program settings and 
-used with default access patterns defined in shaders HLSL.
+`rhi::ProgramArgumentAccessors{ ... }` in `rhi::Program::Settings` overrides program argument accessor definitions:
+- The uniform argument `g_uniforms` of all shaders is defined as a root constant buffer automatically managed by the program 
+with a frame-constant access pattern (one buffer per frame is used). Note that the `FRAME_CONSTANT` access pattern defined 
+in C++ should match the `META_ARG_FRAME_CONSTANT` space modifier defined in the shaders HLSL.
+- The uniform argument `g_constants` of the pixel shader is also defined as a root constant buffer with a constant access 
+pattern (a single buffer is used for all frames in the swap-chain). Note that the `CONSTANT` access pattern defined in C++ 
+should match the `META_ARG_CONSTANT` space modifier defined in the shaders HLSL.
+- Other program arguments `g_texture` and `g_sampler` are not overridden in the program settings and are used with default 
+access patterns defined in the shaders HLSL.
 
 ```cpp
 void TexturedCubeApp::Init()
@@ -347,15 +348,16 @@ void TexturedCubeApp::Init()
 }
 ```
 
-Final part of initialization is related to frame-dependent resources, creating independent resource objects for each frame in swap-chain:
-- Create program arguments to resources bindings with `m_render_state.GetProgram().CreateBindings(..)` function.
-Note that program argument `g_uniforms` binding is not initialized here and its pointer is saved to `uniforms_binding_ptr` field
-for later initialization in `TexturedCubeApp::Update()` method.
-- Create rendering command list with `render_cmd_queue.CreateRenderCommandList(...)` and 
-create set of command lists with `rhi::CommandListSet(...)` for execution in command queue.
+Final part of initialization is related to frame-dependent resources, creating independent resource objects for each frame in 
+the swap-chain:
+- Create program arguments to resources bindings with `m_render_state.GetProgram().CreateBindings(..)` function. Note that 
+  the program argument `g_uniforms` binding is not initialized here, and its pointer is saved to the `uniforms_binding_ptr` 
+  field for later initialization in the `TexturedCubeApp::Update()` method.
+- Create a rendering command list with `render_cmd_queue.CreateRenderCommandList(...)` and create a set of command lists 
+  with `rhi::CommandListSet(...)` for execution in the command queue.
 
-Finally at the end of `Init()` function `App::CompleteInitialization()` is called to complete graphics
-resources initialization to prepare for rendering. It uploads graphics resources to GPU and initializes shader bindings on GPU.
+Finally, at the end of the `Init()` function, `App::CompleteInitialization()` is called to complete graphics resources 
+initialization to prepare for rendering. It uploads graphics resources to the GPU and initializes shader bindings on the GPU.
 
 ```cpp
 void TexturedCubeApp::Init()
@@ -382,9 +384,10 @@ void TexturedCubeApp::Init()
 }
 ```
 
-`TexturedCubeApp::OnContextReleased` callback method releases all graphics resources before graphics context is released,
-which is necessary when graphics device is switched via [Graphics::AppContextController](../../Modules/Graphics/App/README.md#graphicsappcontextcontrollerincludemethanegraphicsappcontextcontrollerh)
-with `LCtrl + X` shortcut.
+`TexturedCubeApp::OnContextReleased` callback method releases all graphics resources before the graphics context is released.
+This is necessary when the graphics device is switched via 
+[Graphics::AppContextController](../../Modules/Graphics/App/README.md#graphicsappcontextcontrollerincludemethanegraphicsappcontextcontrollerh)
+using the `LCtrl + X` shortcut.
 
 ```cpp
 void TexturedCubeApp::OnContextReleased(gfx::Context& context)
@@ -401,8 +404,8 @@ void TexturedCubeApp::OnContextReleased(gfx::Context& context)
 
 ## Frame Rendering Cycle
 
-Animation function bound to time-animation is called automatically as a part of every render cycle, just before `App::Update` function call.
-This function rotates light position and camera in opposite directions.
+Animation function bound to time-animation is called automatically as part of every render cycle, just before the 
+`App::Update` function call. This function rotates the light position and camera in opposite directions.
 
 ```cpp
 bool TexturedCubeApp::Animate(double, double delta_seconds)
@@ -415,9 +418,9 @@ bool TexturedCubeApp::Animate(double, double delta_seconds)
 }
 ```
 
-`TexturedCubeApp::Update()` function is called before `App::Render()` call to update shader uniforms with model-view-project (MVP)
-matrices and eye position based on current camera orientation, updated in animation. Root constant buffer is updated
-with this data using program argument binding method `Rhi::IProgramArgumentBinding::SetRootConstant(...)`.
+`TexturedCubeApp::Update()` function is called before the `App::Render()` call to update shader uniforms with model-view-project 
+(MVP) matrices and eye position based on the current camera orientation, updated in animation. The root constant buffer is updated 
+with this data using the program argument binding method `rhi::IProgramArgumentBinding::SetRootConstant(...)`.
 
 ```cpp
 bool TexturedCubeApp::Update()
@@ -435,16 +438,16 @@ bool TexturedCubeApp::Update()
 ```
 
 `TexturedCubeApp::Render()` method is called after all. Initial base method `UserInterfaceApp::Render()` call waits for 
-previously current frame buffer presenting is completed. When frame buffer is free, new frame rendering can be started:
-1. Render command list encoding starts with `Rhi::RenderCommandList::Reset(...)` call taking render state object and optional debug group,
-which is defining named region in commands sequence.
-    1. View state is set with viewports and scissor rects
-    2. Program bindings are set
-    3. Vertex buffers set is set
-    4. Indexed draw call is issued
-2. `UserInterface::App::RenderOverlay(...)` is called to record UI drawing command in render command list.
-3. Render command list is committed and passed to `Rhi::CommandQueue::Execute` call for execution on GPU.
-4. `RenderContext::Present()` is called to schedule frame buffer presenting to screen.
+previously current frame buffer presenting to be completed. When the frame buffer is free, new frame rendering can be started:
+1. Render command list encoding starts with `rhi::RenderCommandList::Reset(...)` call taking render state object and optional 
+   debug group, which defines a named region in the commands sequence.
+    1. View state is set with viewports and scissor rects.
+    2. Program bindings are set.
+    3. Vertex buffers set is set.
+    4. Indexed draw call is issued.
+2. `UserInterface::App::RenderOverlay(...)` is called to record UI drawing command in the render command list.
+3. Render command list is committed and passed to `rhi::CommandQueue::Execute` call for execution on the GPU.
+4. `RenderContext::Present()` is called to schedule frame buffer presenting to the screen.
 
 ```cpp
 bool TexturedCubeApp::Render()
@@ -485,9 +488,9 @@ int main(int argc, const char* argv[])
 
 ## Textured Cube Shaders
 
-HLSL 6 shaders [Shaders/Cube.hlsl](Shaders/Cube.hlsl) implement Phong shading with texturing.
-SRGB gamma-correction is implemented with `ColorLinearToSrgb(...)` function from [Common/Shaders/Primitives.hlsl](../Common/Shaders/Primitives.hlsl)
- which is converting final color from linear-space to SRGB color-space.
+HLSL 6 shaders [Shaders/Cube.hlsl](Shaders/Cube.hlsl) implement Phong shading with texturing. SRGB gamma-correction is implemented 
+with the `ColorLinearToSrgb(...)` function from [Common/Shaders/Primitives.hlsl](../Common/Shaders/Primitives.hlsl), which converts 
+the final color from linear-space to SRGB color-space.
 
 ```cpp
 #include "TexturedCubeUniforms.h"
@@ -549,14 +552,15 @@ float4 CubePS(PSInput input) : SV_TARGET
 
 ## CMake Build Configuration
 
-CMake build configuration [CMakeLists.txt](CMakeLists.txt) of the application
-is powered by the included Methane CMake modules:
+CMake build configuration [CMakeLists.txt](CMakeLists.txt) of the application is powered by the included Methane CMake 
+modules:
 - [MethaneApplications.cmake](../../CMake/MethaneApplications.cmake) - defines function `add_methane_application`
 - [MethaneShaders.cmake](../../CMake/MethaneShaders.cmake) - defines function `add_methane_shaders`
-- [MethaneResources.cmake](../../CMake/MethaneResources.cmake) - defines functions `add_methane_embedded_textures` and `add_methane_copy_textures`
+- [MethaneResources.cmake](../../CMake/MethaneResources.cmake) - defines functions `add_methane_embedded_textures` and 
+`add_methane_copy_textures`
 
-Shaders are compiled in build time and added as byte code to the application embedded resources.
-Texture images are added to the application embedded resources too.
+Shaders are compiled at build time and added as byte code to the application's embedded resources. Texture images are also 
+added to the application's embedded resources.
 
 ```cmake
 include(MethaneApplications)

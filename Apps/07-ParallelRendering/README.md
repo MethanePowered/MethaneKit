@@ -5,27 +5,27 @@
 | ![ParallelRendering on Windows](Screenshots/ParallelRenderingWinDirectX12.jpg) | ![ParallelRendering on Linux](Screenshots/ParallelRenderingLinVulkan.jpg) | ![ParallelRendering on MacOS](Screenshots/ParallelRenderingMacMetal.jpg) | ![ParallelRendering on iOS](Screenshots/ParallelRenderingIOSMetal.jpg) | 
 
 This tutorial demonstrates multithreaded rendering with `Rhi::ParallelRenderCommandList` using Methane Kit:
-  - [ParallelRenderingApp.h](ParallelRenderingApp.h)
-  - [ParallelRenderingApp.cpp](ParallelRenderingApp.cpp)
-  - [ParallelRenderingAppController.h](ParallelRenderingAppController.h)
-  - [ParallelRenderingAppController.cpp](ParallelRenderingAppController.cpp)
-  - [Shaders/ParallelRendering.hlsl](Shaders/ParallelRendering.hlsl)
-  - [Shaders/ParallelRenderingUniforms.h](Shaders/ParallelRenderingUniforms.h)
+- [ParallelRenderingApp.h](ParallelRenderingApp.h)
+- [ParallelRenderingApp.cpp](ParallelRenderingApp.cpp)
+- [ParallelRenderingAppController.h](ParallelRenderingAppController.h)
+- [ParallelRenderingAppController.cpp](ParallelRenderingAppController.cpp)
+- [Shaders/ParallelRendering.hlsl](Shaders/ParallelRendering.hlsl)
+- [Shaders/ParallelRenderingUniforms.h](Shaders/ParallelRenderingUniforms.h)
 
 Tutorial demonstrates the following techniques:
-  - Creating render target texture 2D array;
-  - Rendering text labels to the faces of texture 2D array via separate render passes
-    using helper class [TextureLabeler](/Apps/Common/Include/TextureLabeler.h);
-  - Using [MeshBuffers](/Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp) extension
-    primitive to represent cube instances, create index and vertex buffers and render with a single Draw command.
-  - Using single addressable uniforms buffer to store an array of uniform structures for
-    all cube instance parameters at once and binding array elements in that buffer to the particular
-    cube instance draws with byte offset in buffer memory.
-  - Binding faces of the texture 2D array to the cube instances to display rendering thread number as text on cube faces.
-  - Using [TaskFlow](https://github.com/taskflow/taskflow) library for task-based parallelism and parallel for loops.
-  - Randomly distributing cubes between render threads and rendering them in parallel using `IParallelRenderCommandList` all to the screen render pass.
-  - Use Methane instrumentation to profile application execution on CPU and GPU 
-    using [Tracy](https://github.com/wolfpld/tracy) or [Intel GPA Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer).
+- Creating a render target texture 2D array;
+- Rendering text labels to the faces of the texture 2D array via separate render passes using the helper class 
+  [TextureLabeler](/Apps/Common/Include/TextureLabeler.h);
+- Using the [MeshBuffers](/Modules/Graphics/Extensions/Include/Methane/Graphics/MeshBuffers.hpp) extension primitive to 
+  represent cube instances, create index and vertex buffers, and render with a single Draw command;
+- Using a single addressable uniforms buffer to store an array of uniform structures for all cube instance parameters at 
+  once and binding array elements in that buffer to the particular cube instance draws with a byte offset in buffer memory;
+- Binding faces of the texture 2D array to the cube instances to display the rendering thread number as text on cube faces;
+- Using the [TaskFlow](https://github.com/taskflow/taskflow) library for task-based parallelism and parallel for loops;
+- Randomly distributing cubes between render threads and rendering them in parallel using `IParallelRenderCommandList` all 
+  to the screen render pass;
+- Using Methane instrumentation to profile application execution on CPU and GPU using [Tracy](https://github.com/wolfpld/tracy) 
+  or [Intel GPA Trace Analyzer](https://software.intel.com/en-us/gpa/graphics-trace-analyzer).
 
 ## Application Controls
 
@@ -48,24 +48,23 @@ Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInte
 ## Uniforms Binding with Buffer Views vs Root Constants
 
 Parallel Rendering tutorial is compiled in two versions:
-1. **ParallelRenderingRootConstants**: Program bindings using root constants for cube uniforms (macros `ROOT_CONSTANTS_ENABLED` is defined).
-2. **ParallelRenderingBufferViews**: Program bindings use direct buffer views for cube uniforms (above macros is not defined).
+1. **ParallelRenderingRootConstants**: Program bindings use root constants for cube uniforms (macro `ROOT_CONSTANTS_ENABLED` is defined).
+2. **ParallelRenderingBufferViews**: Program bindings use direct buffer views for cube uniforms (the above macro is not defined).
 
-FPS performance of the 2-nd version is roughly 30% higher than the 1-st version,
-because of the additional memory copying overhead in case of using root constants.
-This demonstration warns developers about the hidden performance impact of root constants usage,
-while it is more convenient to use them for small uniform structures. In some cases when uniforms buffer
-changes frequently and can be updated all at once, it is more efficient to manually manage uniforms buffer,
-update is all at once and bind buffer views to the particular addresses in this buffer.
+The FPS performance of the second version is roughly 30% higher than the first version due to the additional memory copying 
+overhead when using root constants. This demonstration warns developers about the hidden performance impact of using root 
+constants, even though they are more convenient for small uniform structures. In some cases, when the uniforms buffer changes 
+frequently and can be updated all at once, it is more efficient to manually manage the uniforms buffer, update it all at once, 
+and bind buffer views to the specific addresses in this buffer.
 
 ## Initialization
 
 ### Uniform Root Constants (Option-1)
 
-Render state and program are created with root constant buffer used for `g_uniforms` argument binding.
-Per-frame program bindings are created for each cube instance and uniform argument binding pointers are saved for further modification.
-Program bindings for the first cube instance is initialized with texture array and sampler resource views.
-Other program bindings are duplicated from the first one in a parallel for loop.
+Render state and program are created with a root constant buffer used for `g_uniforms` argument binding. Per-frame program 
+bindings are created for each cube instance, and uniform argument binding pointers are saved for further modification. Program 
+bindings for the first cube instance are initialized with texture array and sampler resource views. Other program bindings are 
+duplicated from the first one in a parallel for loop.
 
 ```cpp
 void ParallelRenderingApp::Init()
@@ -124,11 +123,11 @@ void ParallelRenderingApp::Init()
 
 ### Uniform Buffer Views (Option-2)
 
-Render state and program are created with buffer address views used for `g_uniforms` argument binding.
-Per-frame uniform buffers are created.
-Program bindings are created for each cube instance and uniform argument binding pointers are saved for further modification.
-Program bindings for the first cube instance are initialized with uniforms buffer view of the first element, texture array and sampler resource views.
-Other program bindings are duplicated from the first one in a parallel for loop and override uniforms buffer view with the next element offsets.
+Render state and program are created with buffer address views used for \`g\_uniforms\` argument binding. Per-frame uniform 
+buffers are created. Program bindings are created for each cube instance, and uniform argument binding pointers are saved for 
+further modification. Program bindings for the first cube instance are initialized with the uniforms buffer view of the first 
+element, texture array, and sampler resource views. Other program bindings are duplicated from the first one in a parallel for 
+loop and override the uniforms buffer view with the next element offsets.
 
 ```cpp
 void ParallelRenderingApp::Init()
@@ -199,10 +198,11 @@ void ParallelRenderingApp::Init()
 
 ### Create Parallel Render Command List
 
-Per-frame parallel render command list is created for the screen render pass to do multi-threaded rendering commands recording.
-Parallel command lists count is set to the number of active render threads, which allocates one render command list for each thread.
-Additional beginning and ending command lists are created for the screen pass to set up and finalize synchronization and rendering commands.
-Commands validation is disabled to increase commands recording performance.
+Per-frame parallel render command list is created for the screen render pass to do multi-threaded rendering commands 
+recording. Parallel command lists count is set to the number of active render threads, which allocates one render 
+command list for each thread. Additional beginning and ending command lists are created for the screen pass to set up 
+and finalize synchronization and rendering commands. Commands validation is disabled to increase commands recording 
+performance.
 
 ```cpp
 void ParallelRenderingApp::Init()
@@ -223,14 +223,13 @@ void ParallelRenderingApp::Init()
 
 ### Rotating Cube Parameters Initialization
 
-The `InitializeCubeArrayParameters` function is responsible for setting up the initial parameters for an 3D grid of cubes
-that will be rendered in parallel. Each cube is positioned in the grid, scaled, and rotated with random speed around Y and Z axes;
-also each cube is assigned to particular thread index.
-After initializing the parameters, the cubes are sorted by their thread indices to ensure that the actual distribution
-of cubes among render threads matches the assigned thread indices.
-This sorting also improves rendering performance by ensuring that each thread uses a single texture for all its cubes.
-Finally, the function ensures an even distribution of cubes among the threads by adjusting the thread indices.
-The tasks are executed in parallel and the initialized cube parameters are returned.
+The `InitializeCubeArrayParameters` function is responsible for setting up the initial parameters for a 3D grid of cubes that 
+will be rendered in parallel. Each cube is positioned in the grid, scaled, and rotated with random speed around the Y and Z axes; 
+each cube is also assigned to a particular thread index. After initializing the parameters, the cubes are sorted by their thread 
+indices to ensure that the actual distribution of cubes among render threads matches the assigned thread indices. This sorting 
+also improves rendering performance by ensuring that each thread uses a single texture for all its cubes. Finally, the function 
+ensures an even distribution of cubes among the threads by adjusting the thread indices. The tasks are executed in parallel, and 
+the initialized cube parameters are returned.
 
 ```cpp
 struct CubeParameters
@@ -309,10 +308,11 @@ std::vector<CubeParameters> ParallelRenderingApp::InitializeCubeArrayParameters(
 
 ## Update Cube Uniforms
 
-Cube uniforms are updated before rendering in parallel for loop which calculated MVP matrix based on cube model matrix and camera VP matrix.
-- When root constants are enabled, uniforms structure is set to the `g_uniforms` argument binding directly with `SetRootConstant` call.
-- When uniform buffer views are enabled, uniforms are just copied to the temporary memory buffer inside `MeshBuffers`
-with `m_cube_array_buffers_ptr->SetFinalPassUniforms(...)`. Later in `Render` method, this memory buffer will be uploaded to the GPU.
+Cube uniforms are updated before rendering in a parallel for loop, which calculates the MVP matrix based on the cube model 
+matrix and the camera VP matrix. When root constants are enabled, the uniforms structure is set to the `g_uniforms` argument 
+binding directly with the `SetRootConstant` call. When uniform buffer views are enabled, uniforms are copied to the temporary 
+memory buffer inside `MeshBuffers` with `m_cube_array_buffers_ptr->SetFinalPassUniforms(...)`. Later in the `Render` method, 
+this memory buffer will be uploaded to the GPU.
 
 ```cpp
 bool ParallelRenderingApp::Update()
@@ -347,12 +347,12 @@ bool ParallelRenderingApp::Update()
 
 ## Parallel Rendering
 
-In case when uniform buffer views are used, temporary memory buffer filled in `Update` method
-is uploaded to the GPU uniforms buffer with `frame.cubes_array.uniforms_buffer.SetData(...)` call.
+In case when uniform buffer views are used, a temporary memory buffer filled in the `Update` method is uploaded to the GPU 
+uniforms buffer with the `frame.cubes_array.uniforms_buffer.SetData(...)` call.
 
-Vector of per-thread rendering command lists is acquired from the parallel render command list with
-`frame.parallel_render_cmd_list.GetParallelCommandLists()` call. These command lists are used independently in 
-a parallel for loop for rendering some part of the cube instances in the `RenderCubesRange(...)` method.
+A vector of per-thread rendering command lists is acquired from the parallel render command list with the 
+`frame.parallel_render_cmd_list.GetParallelCommandLists()` call. These command lists are used independently in a parallel 
+for loop for rendering some part of the cube instances in the `RenderCubesRange(...)` method.
 
 ```cpp
 bool ParallelRenderingApp::Render()
@@ -404,10 +404,10 @@ bool ParallelRenderingApp::Render()
 ```
 
 `RenderCubesRange(...)` method is executed in parallel threads, each execution for a separate range of cube instances.
-Per-cube program bindings are bound to render pipeline with a special `bindings_apply_behavior` bit mask.
+Per-cube program bindings are bound to the render pipeline with a special `bindings_apply_behavior` bit mask.
 This mask is used to apply constant bindings only once per command list and retain resources for the first binding instance,
-which is done to reduce unnecessary operations during repeated resource bindings. After that cube instance is drawn
-with a simple `DrawIndexed` draw-call.
+which reduces unnecessary operations during repeated resource bindings. After that, the cube instance is drawn with a simple
+`DrawIndexed` draw call.
 
 ```cpp
 void ParallelRenderingApp::RenderCubesRange(const rhi::RenderCommandList& render_cmd_list,
@@ -435,10 +435,9 @@ void ParallelRenderingApp::RenderCubesRange(const rhi::RenderCommandList& render
 
 ## Parallel Rendering Shaders
 
-Shader is similar to one used in the previous tutorial [CubeMapArray](../06-CubeMapArray), it renders simple cube mesh
-using a given MVP matrix and texture index and samples a texture array by this index.
-The trick in rendering huge amount of cubes is in parallel recording of the command lists which set uniforms 
-via program bindings and issues draw commands.
+Shader is similar to the one used in the previous tutorial \[CubeMapArray\](../06-CubeMapArray). It renders a simple cube mesh
+using a given MVP matrix and texture index, and samples a texture array by this index. The trick in rendering a huge number of
+cubes is in parallel recording of the command lists, which set uniforms via program bindings and issue draw commands.
 
 ```cpp
 #include "ParallelRenderingUniforms.h"

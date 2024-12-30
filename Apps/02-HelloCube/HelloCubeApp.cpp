@@ -48,7 +48,7 @@ struct HelloCubeFrame final : AppFrame
 {
 #ifdef UNIFORMS_ENABLED
     Rhi::ProgramBindings          program_bindings;
-    rhi::IProgramArgumentBinding* uniforms_binding_ptr = nullptr;
+    Rhi::IProgramArgumentBinding* uniforms_binding_ptr = nullptr;
 #else
     Rhi::BufferSet         vertex_buffer_set;
 #endif

@@ -5,18 +5,18 @@
 | ![CubeMapArray on Windows](Screenshots/CubeMapArrayWinDirectX12.jpg) | ![CubeMapArray on Linux](Screenshots/CubeMapArrayLinVulkan.jpg) | ![CubeMapArray on MacOS](Screenshots/CubeMapArrayMacMetal.jpg) | ![CubeMapArray on iOS](Screenshots/CubeMapArrayIOSMetal.jpg) * No simulator support |
 
 This tutorial demonstrates cube-map array texturing and sky-box rendering with Methane Kit:
-  - [CubeMapArrayApp.h](CubeMapArrayApp.h)
-  - [CubeMapArrayApp.cpp](CubeMapArrayApp.cpp)
-  - [Shaders/CubeMapArray.hlsl](Shaders/CubeMapArray.hlsl)
-  - [Shaders/CubeMapArrayUniforms.h](Shaders/CubeMapArrayUniforms.h)
+- [CubeMapArrayApp.h](CubeMapArrayApp.h)
+- [CubeMapArrayApp.cpp](CubeMapArrayApp.cpp)
+- [Shaders/CubeMapArray.hlsl](Shaders/CubeMapArray.hlsl)
+- [Shaders/CubeMapArrayUniforms.h](Shaders/CubeMapArrayUniforms.h)
 
 Tutorial demonstrates the following techniques:
-  - Loading face images to cube map texture and using it for sky-box rendering in background;
-  - Creating cube-map array render target texture;
-  - Rendering text labels to the faces of cube-map array texture via separate render passes 
-    using helper class [TextureLabeler](/Apps/Common/Include/TextureLabeler.h);
-  - Instanced rendering of multiple cubes displaying all faces of the pre-rendered cube-map array texture;
-  - Using Sky-box rendering extension with panoramic cube-map texture loaded from image files.
+- Loading face images to cube map texture and using it for sky-box rendering in the background;
+- Creating a cube-map array render target texture;
+- Rendering text labels to the faces of the cube-map array texture via separate render passes using the helper class 
+  [TextureLabeler](/Apps/Common/Include/TextureLabeler.h);
+- Instanced rendering of multiple cubes displaying all faces of the pre-rendered cube-map array texture;
+- Using the Sky-box rendering extension with a panoramic cube-map texture loaded from image files.
 
 ## Application Controls
 
@@ -27,13 +27,13 @@ Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInte
 
 ## Cube-Map Texture Initialization
 
-Cube-map texture is created using settings generated with `rhi::ITexture::Settings::ForCubeImage(...)`
-amd is set the `TexturedMeshBuffers` instance with `m_cube_buffers_ptr->SetTexture(...)`. Then this texture
-is bound to Pixel shader argument `g_texture_array` in `frame.cube.program_bindings` initialization.
+Cube-map texture is created using settings generated with `rhi::ITexture::Settings::ForCubeImage(...)` and is set to the 
+`TexturedMeshBuffers` instance with `m_cube_buffers_ptr->SetTexture(...)`. Then this texture is bound to the Pixel shader 
+argument `g_texture_array` in `frame.cube.program_bindings` initialization.
 
-Content of the texture is rendered to its faces using `TextureLabeler` class, which is rendering face identification
-text labels to the texture faces. Rendering is done after `UserInterfaceApp::CompleteInitialization()` call,
-to be sure that all necessary resources have been uploaded to the GPU.
+The content of the texture is rendered to its faces using the `TextureLabeler` class, which renders face identification text 
+labels to the texture faces. Rendering is done after the `UserInterfaceApp::CompleteInitialization()` call to ensure that all 
+necessary resources have been uploaded to the GPU.
 
 ```cpp
 void CubeMapArrayApp::Init()
@@ -83,8 +83,8 @@ void CubeMapArrayApp::Init()
 
 ## Cube-Map Rendering
 
-Rendering of the cube instances is done similarly to other tutorials, but with the use of `instance_count` parameter
-in the `m_cube_buffers_ptr->Draw(..., CUBE_MAP_ARRAY_SIZE)` call. `instance_id` related to this count is passed in the
+Rendering of the cube instances is done similarly to other tutorials, but with the use of the `instance_count` parameter
+in the `m_cube_buffers_ptr->Draw(..., CUBE_MAP_ARRAY_SIZE)` call. The `instance_id` related to this count is passed in the
 vertex shader and used to form texture coordinates for cube-map array texture sampling.
 
 ```cpp
@@ -119,9 +119,9 @@ struct Uniforms
 
 ### CubeMapArray.hlsl
 
-Vertex shader prepares texture coordinates `uvwi` for cube-map texture sampling by writing cube vertex position to `uvw`
-texture coordinates and instance id to the `i` component, which is used as index in the texture array.
-Sampling of cube-map array texture `g_texture_array` is done in the pixel shader from interpolated coordinates `uvwi`.
+Vertex shader prepares texture coordinates `uvwi` for cube-map texture sampling by writing the cube vertex position to `uvw`
+texture coordinates and the instance id to the `i` component, which is used as an index in the texture array. Sampling of the 
+cube-map array texture `g_texture_array` is done in the pixel shader from interpolated coordinates `uvwi`.
 
 ```hlsl
 
