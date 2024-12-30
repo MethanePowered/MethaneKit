@@ -44,13 +44,6 @@ using uint3 = std::array<uint, 3>;
 
 #endif
 
-static const uint g_game_rule_classic    = 0; // B3/S23
-static const uint g_game_rule_flock      = 1; // B3/S12
-static const uint g_game_rule_star_trek  = 2; // B3/S0248
-static const uint g_game_rule_coral      = 3; // B3/S45678
-static const uint g_game_rule_geology    = 4; // B3578/S24678
-static const uint g_game_rule_vote       = 5; // B5678/S45678
-
 struct Constants
 {
     uint   game_rule_id;
@@ -58,6 +51,14 @@ struct Constants
 };
 
 #ifndef __cplusplus
+
+static const uint g_game_rule_classic    = 0; // B3/S23
+static const uint g_game_rule_flock      = 1; // B3/S12
+static const uint g_game_rule_star_trek  = 2; // B3/S0248
+static const uint g_game_rule_coral      = 3; // B3/S45678
+static const uint g_game_rule_geology    = 4; // B3578/S24678
+static const uint g_game_rule_vote       = 5; // B5678/S45678
+
 static bool IsCellSurvived(uint game_rule_id, uint alive_neighbors_count)
 {
     switch(game_rule_id)
