@@ -23,7 +23,6 @@ Unit-tests of the RHI Buffer
 
 #include "RhiTestHelpers.hpp"
 
-#include <Methane/Data/AppShadersProvider.h>
 #include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>

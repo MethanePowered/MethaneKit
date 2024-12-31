@@ -47,6 +47,7 @@ enum class ShaderType : uint32_t
 };
 
 using ShaderTypes = std::set<ShaderType>;
+static const ShaderTypes g_all_shader_types = { ShaderType::Vertex, ShaderType::Pixel };
 
 struct ShaderMacroDefinition
 {
@@ -56,8 +57,15 @@ struct ShaderMacroDefinition
     explicit ShaderMacroDefinition(std::string name);
     ShaderMacroDefinition(std::string name, std::string value);
 
-    bool operator==(const ShaderMacroDefinition& other) const noexcept;
-    bool operator!=(const ShaderMacroDefinition& other) const noexcept;
+    friend bool operator==(const ShaderMacroDefinition& left, const ShaderMacroDefinition& right) noexcept
+    {
+        return std::tie(left.name, left.value) == std::tie(right.name, right.value);
+    }
+
+    friend bool operator!=(const ShaderMacroDefinition& left, const ShaderMacroDefinition& right) noexcept
+    {
+        return !(left == right);
+    }
 
     [[nodiscard]] static std::string ToString(const std::vector<ShaderMacroDefinition>& macro_definitions,
                                               std::string_view splitter = ", ") noexcept;
@@ -70,8 +78,16 @@ struct ShaderEntryFunction
     std::string file_name;
     std::string function_name;
 
-    bool operator==(const ShaderEntryFunction& other) const noexcept;
-    bool operator!=(const ShaderEntryFunction& other) const noexcept;
+    friend bool operator==(const ShaderEntryFunction& left, const ShaderEntryFunction& right) noexcept
+    {
+        return std::tie(left.file_name, left.function_name)
+            == std::tie(right.file_name, right.function_name);
+    }
+
+    friend bool operator!=(const ShaderEntryFunction& left, const ShaderEntryFunction& right) noexcept
+    {
+        return !(left == right);
+    }
 };
 
 struct ShaderSettings
@@ -84,8 +100,19 @@ struct ShaderSettings
     std::string source_file_path;
     std::string source_compile_target;
 
-    bool operator==(const ShaderSettings& other) const noexcept;
-    bool operator!=(const ShaderSettings& other) const noexcept;
+    friend bool operator==(const ShaderSettings& left, const ShaderSettings& right) noexcept
+    {
+        if (std::addressof(left.data_provider) != std::addressof(right.data_provider))
+            return false;
+
+        return std::tie(left.entry_function, left.compile_definitions, left.source_file_path, left.source_compile_target)
+            == std::tie(right.entry_function, right.compile_definitions, right.source_file_path, right.source_compile_target);
+    }
+
+    friend bool operator!=(const ShaderSettings& left, const ShaderSettings& right) noexcept
+    {
+        return !(left == right);
+    }
 };
 
 struct IContext;

@@ -38,8 +38,8 @@ ComputeState::ComputeState(const Rhi::IContext& context, const Settings& setting
 void ComputeState::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "program is not initialized in render state settings");
-    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr->GetShader(Rhi::ShaderType::Compute), "Program used in compute state must include compute shader");
+    META_CHECK_NOT_NULL_DESCR(settings.program_ptr, "program is not initialized in render state settings");
+    META_CHECK_NOT_NULL_DESCR(settings.program_ptr->GetShader(Rhi::ShaderType::Compute), "Program used in compute state must include compute shader");
 
     m_settings = settings;
 }
@@ -47,7 +47,7 @@ void ComputeState::Reset(const Settings& settings)
 Rhi::IProgram& ComputeState::GetProgram()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_settings.program_ptr);
+    META_CHECK_NOT_NULL(m_settings.program_ptr);
     return *m_settings.program_ptr;
 }
 

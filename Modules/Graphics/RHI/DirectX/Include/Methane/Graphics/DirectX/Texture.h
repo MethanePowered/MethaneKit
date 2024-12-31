@@ -81,8 +81,8 @@ private:
     void GenerateMipLevels(std::vector<D3D12_SUBRESOURCE_DATA>& dx_sub_resources, ::DirectX::ScratchImage& scratch_image) const;
 
     // Upload & Read-back resources are created for TextureType::Image only
-    wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
-    wrl::ComPtr<ID3D12Resource> m_cp_read_back_resource;
+    wrl::ComPtr<ID3D12Resource> m_upload_resource_cptr;
+    wrl::ComPtr<ID3D12Resource> m_read_back_resource_cptr;
 };
 
 } // namespace Methane::Graphics::DirectX

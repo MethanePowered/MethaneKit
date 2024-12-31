@@ -25,7 +25,7 @@ Methane CommandListDebugGroup PIMPL wrappers for direct calls to final implement
 
 #include <Methane/Pimpl.h>
 
-#include <Methane/Graphics/RHI/ICommandList.h>
+#include <Methane/Graphics/RHI/ICommandListDebugGroup.h>
 
 namespace Methane::Graphics::META_GFX_NAME
 {
@@ -61,7 +61,7 @@ public:
     META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // ICommandListDebugGroup interface methods
-    META_PIMPL_API CommandListDebugGroup AddSubGroup(Data::Index id, const std::string& name) const;
+    META_PIMPL_API CommandListDebugGroup AddSubGroup(Data::Index id, std::string_view name) const;
     [[nodiscard]] META_PIMPL_API Opt<CommandListDebugGroup> GetSubGroup(Data::Index id) const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API bool HasSubGroups() const META_PIMPL_NOEXCEPT;
 

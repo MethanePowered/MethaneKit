@@ -31,6 +31,11 @@ Metal implementation of the render context interface.
 
 #import <Metal/Metal.h>
 
+// Either use dispatch queue semaphore or fence primitives for CPU-GPU frames rendering synchronization
+// NOTE: when fences are used for frames synchronization,
+// application runs slower than expected when started from XCode, but runs normally when started from Finder
+//#define FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
+
 namespace Methane::Graphics::Metal
 {
 
@@ -38,7 +43,8 @@ class RenderContext final
     : public Context<Base::RenderContext>
 {
 public:
-    RenderContext(const Platform::AppEnvironment& env, Base::Device& device, tf::Executor& parallel_executor, const Settings& settings);
+    RenderContext(const Platform::AppEnvironment& env, Base::Device& device,
+                  tf::Executor& parallel_executor, const Settings& settings);
     ~RenderContext() override;
 
     // IContext interface
@@ -70,7 +76,10 @@ private:
     AppViewMetal*        m_app_view;
     id<MTLCaptureScope>  m_frame_capture_scope;
     bool                 m_frame_capture_scope_begun = false;
+
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
     dispatch_semaphore_t m_dispatch_semaphore;
+#endif
 };
 
 } // namespace Methane::Graphics::Metal

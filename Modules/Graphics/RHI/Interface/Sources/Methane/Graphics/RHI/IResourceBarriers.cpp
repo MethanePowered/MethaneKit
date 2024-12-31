@@ -26,7 +26,7 @@ Methane resource barriers for manual or automatic resource state synchronization
 
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -39,17 +39,17 @@ ResourceBarrierId::ResourceBarrierId(Type type, Rhi::IResource& resource) noexce
 bool ResourceBarrierId::operator<(const ResourceBarrierId& other) const noexcept
 {
     META_FUNCTION_TASK();
-    const Rhi::IResource* p_this_resource  = std::addressof(m_resource_ref.get());
-    const Rhi::IResource* p_other_resource = std::addressof(other.GetResource());
-    return std::tie(m_type, p_this_resource) < std::tie(other.m_type, p_other_resource);
+    const Rhi::IResource* this_resource_ptr  = std::addressof(m_resource_ref.get());
+    const Rhi::IResource* other_resource_ptr = std::addressof(other.GetResource());
+    return std::tie(m_type, this_resource_ptr) < std::tie(other.m_type, other_resource_ptr);
 }
 
 bool ResourceBarrierId::operator==(const ResourceBarrierId& other) const noexcept
 {
     META_FUNCTION_TASK();
-    const Rhi::IResource* p_this_resource  = std::addressof(m_resource_ref.get());
-    const Rhi::IResource* p_other_resource = std::addressof(other.GetResource());
-    return std::tie(m_type, p_this_resource) == std::tie(other.m_type, p_other_resource);
+    const Rhi::IResource* this_resource_ptr  = std::addressof(m_resource_ref.get());
+    const Rhi::IResource* other_resource_ptr = std::addressof(other.GetResource());
+    return std::tie(m_type, this_resource_ptr) == std::tie(other.m_type, other_resource_ptr);
 }
 
 bool ResourceBarrierId::operator!=(const ResourceBarrierId& other) const noexcept
@@ -155,7 +155,7 @@ bool ResourceBarrier::operator!=(const ResourceBarrier& other) const noexcept
 bool ResourceBarrier::operator==(const StateChange& other_state_change) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(m_id.GetType(), Type::StateTransition);
+    META_CHECK_EQUAL(m_id.GetType(), Type::StateTransition);
     return m_change.state == other_state_change;
 }
 
@@ -167,7 +167,7 @@ bool ResourceBarrier::operator!=(const StateChange& other_state_change) const
 bool ResourceBarrier::operator==(const OwnerChange& other_owner_change) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(m_id.GetType(), Type::StateTransition);
+    META_CHECK_EQUAL(m_id.GetType(), Type::StateTransition);
     return m_change.owner == other_owner_change;
 }
 bool ResourceBarrier::operator!=(const OwnerChange& other_owner_change) const
@@ -199,14 +199,14 @@ ResourceBarrier::operator std::string() const noexcept
 const ResourceStateChange& ResourceBarrier::GetStateChange() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(m_id.GetType(), ResourceBarrier::Type::StateTransition);
+    META_CHECK_EQUAL(m_id.GetType(), ResourceBarrier::Type::StateTransition);
     return m_change.state;
 }
 
 const ResourceOwnerChange& ResourceBarrier::GetOwnerChange() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(m_id.GetType(), ResourceBarrier::Type::OwnerTransition);
+    META_CHECK_EQUAL(m_id.GetType(), ResourceBarrier::Type::OwnerTransition);
     return m_change.owner;
 }
 
@@ -216,19 +216,19 @@ void ResourceBarrier::ApplyTransition() const
     switch(m_id.GetType())
     {
     case Type::StateTransition:
-        META_CHECK_ARG_EQUAL_DESCR(m_id.GetResource().GetState(), m_change.state.GetStateBefore(),
-                                   "state of resource '{}' does not match with transition barrier 'before' state",
-                                   m_id.GetResource().GetName());
+        META_CHECK_EQUAL_DESCR(m_id.GetResource().GetState(), m_change.state.GetStateBefore(),
+                               "state of resource '{}' does not match with transition barrier 'before' state",
+                               m_id.GetResource().GetName());
         m_id.GetResource().SetState(m_change.state.GetStateAfter());
         break;
 
     case Type::OwnerTransition:
-        META_CHECK_ARG_TRUE_DESCR(m_id.GetResource().GetOwnerQueueFamily().has_value(),
-                                  "can not transition resource '{}' ownership which has no existing owner queue family",
-                                  m_id.GetResource().GetName());
-        META_CHECK_ARG_EQUAL_DESCR(m_id.GetResource().GetOwnerQueueFamily().value(), m_change.owner.GetQueueFamilyBefore(),
-                                   "owner of resource '{}' does not match with transition barrier 'before' state",
-                                   m_id.GetResource().GetName());
+        META_CHECK_TRUE_DESCR(m_id.GetResource().GetOwnerQueueFamily().has_value(),
+                              "can not transition resource '{}' ownership which has no existing owner queue family",
+                              m_id.GetResource().GetName());
+        META_CHECK_EQUAL_DESCR(m_id.GetResource().GetOwnerQueueFamily().value(), m_change.owner.GetQueueFamilyBefore(),
+                               "owner of resource '{}' does not match with transition barrier 'before' state",
+                               m_id.GetResource().GetName());
         m_id.GetResource().SetOwnerQueueFamily(m_change.owner.GetQueueFamilyAfter());
         break;
     }

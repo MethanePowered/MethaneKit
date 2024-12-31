@@ -68,7 +68,7 @@ public:
                                         static_cast<Methane::Data::Size>(std::distance(res_file.cbegin(), res_file.cend())));
         }
 
-        META_CHECK_ARG_DESCR(path, FileProvider::HasData(path), "invalid resource path '{}'", path);
+        META_CHECK_DESCR(path, FileProvider::HasData(path), "invalid resource path '{}'", path);
         return FileProvider::GetData(path);
     }
 

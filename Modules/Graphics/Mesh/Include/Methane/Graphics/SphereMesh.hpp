@@ -43,9 +43,9 @@ public:
         , m_long_lines_count(long_lines_count)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NAME_DESCR("vertex_layout", !Mesh::HasVertexField(Mesh::VertexField::Color), "colored vertices are not supported by sphere mesh");
-        META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(m_lat_lines_count,  3, "latitude lines count should not be less than 3");
-        META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(m_long_lines_count, 3, "longitude lines count should not be less than 3");
+        META_CHECK_NAME_DESCR("vertex_layout", !Mesh::HasVertexField(Mesh::VertexField::Color), "colored vertices are not supported by sphere mesh");
+        META_CHECK_GREATER_OR_EQUAL_DESCR(m_lat_lines_count,  3, "latitude lines count should not be less than 3");
+        META_CHECK_GREATER_OR_EQUAL_DESCR(m_long_lines_count, 3, "longitude lines count should not be less than 3");
 
         GenerateSphereVertices();
         GenerateSphereIndices();

@@ -50,7 +50,7 @@ std::string_view ButtonConverter::ToString() const
     case Button::VScroll: return "V_SCROLL";
     case Button::HScroll: return "H_SCROLL";
     default:
-        META_UNEXPECTED_ARG_DESCR_RETURN(m_button, "", "unexpected mouse button");
+        META_UNEXPECTED_RETURN_DESCR(m_button, "", "unexpected mouse button");
     }
 };
 

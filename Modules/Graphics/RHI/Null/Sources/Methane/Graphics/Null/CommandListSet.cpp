@@ -43,7 +43,7 @@ CommandListSet::CommandListSet(const Refs<Rhi::ICommandList>& command_list_refs,
 {
 }
 
-void CommandListSet::WaitUntilCompleted()
+void CommandListSet::WaitUntilCompleted(uint32_t /*timeout_ms*/)
 {
     Complete();
 }

@@ -68,8 +68,8 @@ class QueryPool : public Base::QueryPool
 {
 public:
     QueryPool(CommandQueue& command_queue, Type type,
-                Data::Size max_query_count, Rhi::IQuery::Count slots_count_per_query,
-                Data::Size buffer_size, Data::Size query_size);
+              Data::Size max_query_count, Rhi::IQuery::Count slots_count_per_query,
+              Data::Size buffer_size, Data::Size query_size);
 
     CommandQueue&    GetDirectCommandQueue() noexcept;
     const IContext&  GetDirectContext() const noexcept        { return m_context_dx; }

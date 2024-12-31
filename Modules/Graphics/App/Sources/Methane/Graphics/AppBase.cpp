@@ -31,7 +31,7 @@ Base implementation of the Methane graphics application.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <thread>
 
 namespace Methane::Graphics
@@ -84,7 +84,7 @@ Rhi::Device AppBase::GetDefaultDevice() const
         return Rhi::System::Get().GetSoftwareGpuDevice();
 
     const std::vector<Rhi::Device>& devices = Rhi::System::Get().GetGpuDevices();
-    META_CHECK_ARG_NOT_EMPTY_DESCR(devices, "no suitable GPU devices were found for application rendering");
+    META_CHECK_NOT_EMPTY_DESCR(devices, "no suitable GPU devices were found for application rendering");
 
     if (static_cast<size_t>(m_settings.default_device_index) < devices.size())
         return devices[m_settings.default_device_index];
@@ -100,7 +100,7 @@ void AppBase::InitContext(const Platform::AppEnvironment& env, const FrameSize& 
     // Get default device for rendering
     Rhi::System::Get().UpdateGpuDevices(env, m_settings.device_capabilities);
     const Rhi::Device device = GetDefaultDevice();
-    META_CHECK_ARG_TRUE(device.IsInitialized());
+    META_CHECK_TRUE(device.IsInitialized());
 
     // Create render context of the current window size
     m_initial_context_settings.frame_size = frame_size;
@@ -244,7 +244,7 @@ bool AppBase::Render()
         return false;
     }
 
-    META_CHECK_ARG_TRUE_DESCR(m_context.IsInitialized(), "RenderContext is not initialized before rendering.");
+    META_CHECK_TRUE_DESCR(m_context.IsInitialized(), "RenderContext is not initialized before rendering.");
     if (!m_context.ReadyToRender())
         return false;
 

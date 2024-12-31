@@ -47,7 +47,7 @@ static MTLSamplerAddressMode ConvertAddressModeToMetal(const Base::Sampler::Addr
 #endif
         case AddressMode::Repeat:               return MTLSamplerAddressModeRepeat;
         case AddressMode::RepeatMirror:         return MTLSamplerAddressModeMirrorRepeat;
-        default:                                META_UNEXPECTED_ARG_RETURN(address_mode, MTLSamplerAddressModeClampToEdge);
+        default:                                META_UNEXPECTED_RETURN(address_mode, MTLSamplerAddressModeClampToEdge);
     }
 }
 
@@ -60,7 +60,7 @@ static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const Base::Sampler::Fi
     {
         case MinMagFilter::Nearest:             return MTLSamplerMinMagFilterNearest;
         case MinMagFilter::Linear:              return MTLSamplerMinMagFilterLinear;
-        default:                                META_UNEXPECTED_ARG_RETURN(min_mag_filter, MTLSamplerMinMagFilterNearest);
+        default:                                META_UNEXPECTED_RETURN(min_mag_filter, MTLSamplerMinMagFilterNearest);
     }
 }
 
@@ -74,7 +74,7 @@ static MTLSamplerMipFilter ConvertMipFilterToMetal(const Base::Sampler::Filter::
         case MipFilter::NotMipmapped:           return MTLSamplerMipFilterNotMipmapped;
         case MipFilter::Nearest:                return MTLSamplerMipFilterNearest;
         case MipFilter::Linear:                 return MTLSamplerMipFilterLinear;
-        default:                                META_UNEXPECTED_ARG_RETURN(mip_filter, MTLSamplerMipFilterNotMipmapped);
+        default:                                META_UNEXPECTED_RETURN(mip_filter, MTLSamplerMipFilterNotMipmapped);
     }
 }
 
@@ -89,7 +89,7 @@ static MTLSamplerBorderColor ConvertBorderColorToMetal(const Base::Sampler::Bord
         case BorderColor::TransparentBlack:     return MTLSamplerBorderColorTransparentBlack;
         case BorderColor::OpaqueBlack:          return MTLSamplerBorderColorOpaqueBlack;
         case BorderColor::OpaqueWhite:          return MTLSamplerBorderColorOpaqueWhite;
-        default:                                META_UNEXPECTED_ARG_RETURN(border_color, MTLSamplerBorderColorTransparentBlack);
+        default:                                META_UNEXPECTED_RETURN(border_color, MTLSamplerBorderColorTransparentBlack);
     }
 }
 #endif
@@ -117,6 +117,10 @@ Sampler::Sampler(const Base::Context& context, const Settings& settings)
 #ifndef APPLE_TVOS
     m_mtl_sampler_desc.borderColor     = ConvertBorderColorToMetal(settings.border_color);
 #endif
+
+#ifdef ARGUMENT_BUFFERS_ENABLED
+    m_mtl_sampler_desc.supportArgumentBuffers = YES;
+#endif
     
     ResetSamplerState();
 }
@@ -127,7 +131,7 @@ bool Sampler::SetName(std::string_view name)
     if (!Resource::SetName(name))
         return false;
 
-    META_CHECK_ARG_NOT_NULL(m_mtl_sampler_desc);
+    META_CHECK_NOT_NULL(m_mtl_sampler_desc);
     m_mtl_sampler_desc.label = MacOS::ConvertToNsString(name);
 
     ResetSamplerState();
@@ -137,7 +141,7 @@ bool Sampler::SetName(std::string_view name)
 void Sampler::ResetSamplerState()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_mtl_sampler_desc);
+    META_CHECK_NOT_NULL(m_mtl_sampler_desc);
     m_mtl_sampler_state = [GetMetalContext().GetMetalDevice().GetNativeDevice() newSamplerStateWithDescriptor:m_mtl_sampler_desc];
 }
 

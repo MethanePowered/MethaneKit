@@ -36,7 +36,7 @@ Context::Context(const pal::IApp& app, const rhi::CommandQueue& render_cmd_queue
     , m_font_resolution_dpi(app.GetFontResolutionDpi())
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(render_cmd_queue.GetCommandListType(), rhi::CommandListType::Render);
+    META_CHECK_EQUAL(render_cmd_queue.GetCommandListType(), rhi::CommandListType::Render);
 }
 
 UnitSize Context::GetFrameSizeInUnits(Units units) const

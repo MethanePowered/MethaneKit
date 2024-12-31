@@ -29,7 +29,7 @@ Vulkan implementation of the program interface.
 #include <Methane/Graphics/Base/Program.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <vulkan/vulkan.hpp>
 
 #include <array>
@@ -56,10 +56,10 @@ public:
         std::vector<ByteCodeMaps>                   byte_code_maps_for_arguments; // related bytecode maps for each binding/argument
     };
 
-    Program(const Base::Context& context, const Settings& settings);
+    Program(Base::Context& context, const Settings& settings);
 
     // IProgram interface
-    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index) override;
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index) override;
 
     // Base::Object overrides
     bool SetName(std::string_view name) override;
@@ -70,6 +70,7 @@ public:
     std::vector<vk::PipelineShaderStageCreateInfo> GetNativeShaderStageCreateInfos() const;
     vk::PipelineVertexInputStateCreateInfo GetNativeVertexInputStateCreateInfo() const;
     const std::vector<vk::DescriptorSetLayout>& GetNativeDescriptorSetLayouts() const;
+    const std::vector<vk::PushConstantRange>& GetNativePushConstantRanges() const;
     const vk::DescriptorSetLayout& GetNativeDescriptorSetLayout(ArgumentAccessor::Type argument_access_type) const;
     const DescriptorSetLayoutInfo& GetDescriptorSetLayoutInfo(ArgumentAccessor::Type argument_access_type) const;
     const vk::PipelineLayout& GetNativePipelineLayout() const;
@@ -90,6 +91,7 @@ private:
     DescriptorSetLayoutInfoByAccessType        m_descriptor_set_layout_info_by_access_type;
     std::vector<vk::UniqueDescriptorSetLayout> m_vk_unique_descriptor_set_layouts;
     std::vector<vk::DescriptorSetLayout>       m_vk_descriptor_set_layouts;
+    std::vector<vk::PushConstantRange>         m_vk_push_constant_ranges;
     vk::UniquePipelineLayout                   m_vk_unique_pipeline_layout;
     std::optional<vk::DescriptorSet>           m_vk_constant_descriptor_set_opt;
     std::vector<vk::DescriptorSet>             m_vk_frame_constant_descriptor_sets;

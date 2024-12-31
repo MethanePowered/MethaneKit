@@ -99,6 +99,14 @@
                 "METHANE_APPLE_CODE_SIGNING_ENABLED": {
                     "type": "BOOL",
                     "value": "OFF"
+                },
+                "METHANE_METAL_SHADER_CONVERTER_ENABLED": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                },
+                "METHANE_METAL_ARGUMENT_BUFFERS_ENABLED": {
+                    "type": "BOOL",
+                    "value": "ON"
                 }
             }
         },

@@ -12,6 +12,7 @@ add_executable(${TARGET}
     ConsoleApp.cpp
     ConsoleComputeApp.h
     ConsoleComputeApp.cpp
+    Shaders/GameOfLifeRules.h
 )
 
 target_link_libraries(${TARGET}

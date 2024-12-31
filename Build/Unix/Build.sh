@@ -2,15 +2,15 @@
 # Run Build.sh with optional arguments:
 #   --apple-platform PLATFORM - Apple platform name (MacOS - by default, OS64 - iOS, SIMULATORARM64 - iOS Sim, TVOS, SIMULATOR_TVOS, ...)
 #   --apple-dev-team TEAM_ID  - Apple development team id used for code signing (required for iOS platforms)
-#   --apple-deploy-target X.Y - minimum version of Apple OS deployment target (15.0 by default)
+#   --apple-deploy-target X.Y - minimum version of Apple OS deployment target (16.0 by default)
 #   --debug                   - Debug build instead of Release build by default
 #   --vulkan VULKAN_SDK       - use Vulkan graphics API via Vulkan SDK path (~/VulkanSDK/1.2.182.0/macOS) instead of Metal on MacOS by default
 #   --graphviz                - enable GraphViz cmake module diagrams generation in Dot and Png formats
 #   --analyze SONAR_TOKEN     - run local build with Sonar Scanner static analysis and submit results to the server using token login
 
 BUILD_VERSION_MAJOR=0
-BUILD_VERSION_MINOR=7
-BUILD_VERSION_PATCH=3
+BUILD_VERSION_MINOR=8
+BUILD_VERSION_PATCH=0
 BUILD_VERSION=$BUILD_VERSION_MAJOR.$BUILD_VERSION_MINOR.$BUILD_VERSION_PATCH
 
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
@@ -152,7 +152,10 @@ CMAKE_FLAGS="$CMAKE_FLAGS \
     -DMETHANE_ITT_METADATA_ENABLED:BOOL=OFF \
     -DMETHANE_GPU_INSTRUMENTATION_ENABLED:BOOL=OFF \
     -DMETHANE_TRACY_PROFILING_ENABLED:BOOL=OFF \
-    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF"
+    -DMETHANE_TRACY_PROFILING_ON_DEMAND:BOOL=OFF \
+    -DMETHANE_MEMORY_SANITIZER_ENABLED:BOOL=OFF \
+    -DMETHANE_METAL_SHADER_CONVERTER_ENABLED:BOOL=OFF \
+    -DMETHANE_METAL_ARGUMENT_BUFFERS_ENABLED:BOOL=ON"
 
 if [ "$IS_GRAPHVIZ_BUILD" == true ]; then
     GRAPHVIZ_DIR=$CONFIG_DIR/GraphViz

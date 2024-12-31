@@ -44,32 +44,52 @@ class ProgramBindings final
 public:
     using ArgumentBinding = ProgramArgumentBinding;
 
-    ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
-    ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
-
-    void Initialize();
+    ProgramBindings(Program& program, const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index);
+    ProgramBindings(const ProgramBindings& other_program_bindings, const BindingValueByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
 
     // IProgramBindings interface
-    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index) override;
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const BindingValueByArgument& replace_binding_value_by_argument, const Opt<Data::Index>& frame_index) override;
     void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 
     // Base::ProgramBindings interface
     void CompleteInitialization() override;
 
     void Apply(ICommandList& command_list, const Rhi::ICommandQueue& command_queue,
-               const Base::ProgramBindings* p_applied_program_bindings, ApplyBehaviorMask apply_behavior) const;
+               const Base::ProgramBindings* applied_program_bindings_ptr, ApplyBehaviorMask apply_behavior) const;
+
+protected:
+    // IProgramBindings::IProgramArgumentBindingCallback
+    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&,
+                                                      const Rhi::ResourceViews&,
+                                                      const Rhi::ResourceViews&) override;
 
 private:
     // IObjectCallback interface
     void OnObjectNameChanged(Rhi::IObject&, const std::string&) override; // IProgram name changed
 
-    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
+    void SetResourcesForArguments(const BindingValueByArgument& binding_value_by_argument);
 
-    template<typename FuncType> // function void(const IProgram::Argument&, ArgumentBinding&)
+    template<typename FuncType> // function void(const ProgramArgument&, ArgumentBinding&)
     void ForEachArgumentBinding(FuncType argument_binding_function) const;
+    void UpdateDynamicDescriptorOffsets();
     void UpdateMutableDescriptorSetName();
 
+    struct PushConstantSetter
+    {
+        Rhi::ProgramArgumentAccessType access_type;
+        vk::ShaderStageFlags shader_stages{};
+        uint32_t offset;
+        Ref<Base::RootConstantAccessor> root_const_accessor_ref;
+
+        PushConstantSetter(Rhi::ProgramArgumentAccessType access_type,
+                           vk::ShaderStageFlags shader_stages, uint32_t offset,
+                           Base::RootConstantAccessor& root_const_accessor_ref);
+    };
+
+    using PushConstantSetters = std::vector<PushConstantSetter>;
+
     mutable Ptr<Rhi::IResourceBarriers> m_resource_ownership_transition_barriers_ptr;
+    PushConstantSetters                 m_push_constant_setters;
     std::vector<vk::DescriptorSet>      m_descriptor_sets; // descriptor sets corresponding to pipeline layout in the order of their access type
     bool                                m_has_mutable_descriptor_set = false; // if true, then m_descriptor_sets.back() is mutable descriptor set
     std::vector<uint32_t>               m_dynamic_offsets; // dynamic buffer offsets for all descriptor sets from the bound ResourceView::Settings::offset

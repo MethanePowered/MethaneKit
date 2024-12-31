@@ -82,7 +82,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
     const rhi::ITexture::Settings& rt_texture_settings = m_rt_texture.GetSettings();
     const rhi::SubResource::Count& sub_res_count       = m_rt_texture.GetSubresourceCount();
 
-    META_CHECK_ARG_TRUE(rt_texture_settings.usage_mask.HasAnyBit(rhi::ResourceUsage::RenderTarget));
+    META_CHECK_TRUE(rt_texture_settings.usage_mask.HasAnyBit(rhi::ResourceUsage::RenderTarget));
 
     m_texture_face_render_pattern = m_gui_context.GetRenderContext().CreateRenderPattern(rhi::RenderPattern::Settings
         {
@@ -188,7 +188,7 @@ void TextureLabeler::Render() const
     META_DEBUG_GROUP_VAR(s_debug_group, "Texture Faces Rendering");
     for (const Slice& slice : m_slices)
     {
-        META_CHECK_ARG_TRUE(slice.render_cmd_list.IsInitialized());
+        META_CHECK_TRUE(slice.render_cmd_list.IsInitialized());
 
         slice.bg_quad.Draw(slice.render_cmd_list, &s_debug_group);
         slice.label_text.Draw(slice.render_cmd_list, &s_debug_group);

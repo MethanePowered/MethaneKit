@@ -25,6 +25,8 @@ Data chunk representing owning or non-owning memory container
 
 #include "Types.h"
 
+#include <type_traits>
+
 namespace Methane::Data
 {
 
@@ -40,6 +42,22 @@ public:
     explicit Chunk(Bytes&& data) noexcept
         : m_data_storage(std::move(data))
         , m_data_ptr(m_data_storage.empty() ? nullptr : m_data_storage.data())
+        , m_data_size(static_cast<Size>(m_data_storage.size()))
+    { }
+
+    template<typename T,
+             typename = std::enable_if_t<!std::is_base_of_v<Chunk, std::remove_cv_t<std::remove_reference_t<T>>>>>
+    explicit Chunk(T& value)
+        : m_data_ptr(GetByteAddress(value))
+        , m_data_size(static_cast<Size>(sizeof(T)))
+    { }
+
+    template<typename T,
+             typename = std::enable_if_t<!std::is_base_of_v<Chunk, std::remove_cv_t<std::remove_reference_t<T>>>>>
+    explicit Chunk(T&& value)
+        : m_data_storage(GetByteAddress(std::forward<T>(value)),
+                         GetByteAddress(std::forward<T>(value)) + sizeof(T))
+        , m_data_ptr(m_data_storage.data())
         , m_data_size(static_cast<Size>(m_data_storage.size()))
     { }
 
@@ -71,8 +89,31 @@ public:
         return *this;
     }
 
+    friend bool operator==(const Chunk& left, const Chunk& right) noexcept
+    {
+        return left.m_data_size == right.m_data_size &&
+               (left.m_data_ptr == right.m_data_ptr ||
+                    (left.m_data_ptr && right.m_data_ptr &&
+                        memcmp(left.m_data_ptr, right.m_data_ptr, left.m_data_size) == 0));
+    }
+
+    friend bool operator!=(const Chunk& left, const Chunk& right) noexcept
+    {
+        return !(left == right);
+    }
+
+    explicit operator bool() const noexcept
+    {
+        return !IsEmptyOrNull();
+    }
+
     [[nodiscard]] bool IsEmptyOrNull() const noexcept { return !m_data_ptr || !m_data_size; }
     [[nodiscard]] bool IsDataStored() const noexcept  { return !m_data_storage.empty(); }
+
+    static Chunk StoreFrom(const Chunk& other)
+    {
+        return Chunk(Bytes(other.GetDataPtr(), other.GetDataEndPtr()));
+    }
 
     template<typename T = Byte>
     [[nodiscard]] Size GetDataSize() const noexcept
@@ -99,6 +140,12 @@ public:
     }
 
 private:
+    template<typename T>
+    static const std::byte* GetByteAddress(const T& value)
+    {
+        return reinterpret_cast<const std::byte*>(std::addressof(value)); // NOSONAR
+    }
+
     // Data storage is used only when m_data_storage is not managed by m_data_storage provider and
     // returned with chunk (when m_data_storage is loaded from file, for example)
     Bytes       m_data_storage;

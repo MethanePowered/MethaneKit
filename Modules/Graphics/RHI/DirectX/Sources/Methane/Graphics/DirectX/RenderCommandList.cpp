@@ -35,7 +35,7 @@ DirectX 12 implementation of the render command list interface.
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Base
 {
@@ -61,7 +61,7 @@ static D3D12_PRIMITIVE_TOPOLOGY PrimitiveToDXTopology(Rhi::RenderPrimitive primi
     case Rhi::RenderPrimitive::LineStrip:      return D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
     case Rhi::RenderPrimitive::Triangle:       return D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
     case Rhi::RenderPrimitive::TriangleStrip:  return D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
-    default:                              META_UNEXPECTED_ARG_RETURN(primitive, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
+    default:                              META_UNEXPECTED_RETURN(primitive, D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
     }
 }
 
@@ -86,11 +86,11 @@ void RenderCommandList::ResetNative(const Ptr<RenderState>& render_state_ptr)
     SetNativeCommitted(false);
     SetCommandListState(Rhi::CommandListState::Encoding);
 
-    ID3D12PipelineState* p_dx_initial_state = render_state_ptr ? render_state_ptr->GetNativePipelineState().Get() : nullptr;
+    ID3D12PipelineState* dx_initial_state_ptr = render_state_ptr ? render_state_ptr->GetNativePipelineState().Get() : nullptr;
     ID3D12CommandAllocator& dx_cmd_allocator = GetNativeCommandAllocatorRef();
-    ID3D12Device* p_native_device = GetDirectCommandQueue().GetDirectContext().GetDirectDevice().GetNativeDevice().Get();
-    ThrowIfFailed(dx_cmd_allocator.Reset(), p_native_device);
-    ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, p_dx_initial_state), p_native_device);
+    ID3D12Device* native_device_ptr = GetDirectCommandQueue().GetDirectContext().GetDirectDevice().GetNativeDevice().Get();
+    ThrowIfFailed(dx_cmd_allocator.Reset(), native_device_ptr);
+    ThrowIfFailed(GetNativeCommandListRef().Reset(&dx_cmd_allocator, dx_initial_state_ptr), native_device_ptr);
 
     BeginGpuZone();
 

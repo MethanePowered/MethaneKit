@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.21.0)
 
 # Methane version, build & product info
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
-set(METHANE_VERSION_MINOR 7 CACHE STRING "Methane minor version")
-set(METHANE_VERSION_PATCH 3 CACHE STRING "Methane patch version")
+set(METHANE_VERSION_MINOR 8 CACHE STRING "Methane minor version")
+set(METHANE_VERSION_PATCH 0 CACHE STRING "Methane patch version")
 set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 
 # Define CMake languages list
@@ -68,6 +68,12 @@ option(METHANE_CODE_COVERAGE_ENABLED        "Enable code coverage data collectio
 option(METHANE_SHADERS_CODEVIEW_ENABLED     "Enable shaders code symbols viewing in debug tools" OFF)
 option(METHANE_OPEN_IMAGE_IO_ENABLED        "Enable using OpenImageIO library for images loading" OFF)
 
+if(APPLE)
+    option(METHANE_METAL_FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE "Enable Metal frame synchronization with dispatch semaphore instead of fence" OFF)
+    option(METHANE_METAL_SHADER_CONVERTER_ENABLED "Enable Apple Metal Shader Converter instead of SPIRV-Cross" OFF)
+    option(METHANE_METAL_ARGUMENT_BUFFERS_ENABLED "Enable Metal Argument Buffers for Program Resource Bindings" ON)
+endif()
+
 # Profiling and instrumentation configuration
 option(METHANE_COMMAND_DEBUG_GROUPS_ENABLED "Enable command list debug groups with frame markup" OFF)
 option(METHANE_LOGGING_ENABLED              "Enable debug logging" OFF)
@@ -93,6 +99,11 @@ if(CMAKE_VERSION VERSION_EQUAL "3.28.2" AND CMAKE_GENERATOR STREQUAL "Unix Makef
     message(WARNING "METHANE precompiled headers are forcibly disabled because of a bug"
                     "in CMake version ${CMAKE_VERSION} with '${CMAKE_GENERATOR}' generator.")
     set(METHANE_PRECOMPILED_HEADERS_ENABLED OFF CACHE BOOL "" FORCE)
+endif()
+
+if(METHANE_METAL_SHADER_CONVERTER_ENABLED AND NOT METHANE_METAL_ARGUMENT_BUFFERS_ENABLED)
+    message(WARNING "METHANE Metal Argument Buffer is forcibly enabled because it is required by Metal Shader Converter")
+    set(METHANE_METAL_ARGUMENT_BUFFERS_ENABLED ON CACHE BOOL "" FORCE)
 endif()
 
 # Methane version, build & product info
@@ -144,6 +155,8 @@ message(STATUS "METHANE Tracy profiling on demand................ ${METHANE_TRAC
 message(STATUS "METHANE memory sanitizer......................... ${METHANE_MEMORY_SANITIZER_ENABLED}")
 
 if (APPLE)
+    message(STATUS "METHANE Metal shader converter (or SPIRV-Cross).. ${METHANE_METAL_SHADER_CONVERTER_ENABLED}")
+    message(STATUS "METHANE Metal argument buffers for bindings ..... ${METHANE_METAL_ARGUMENT_BUFFERS_ENABLED}")
     message(STATUS "METHANE Apple code signing....................... ${METHANE_APPLE_CODE_SIGNING_ENABLED} (dev.team: '${APPLE_DEVELOPMENT_TEAM}')")
 endif()
 

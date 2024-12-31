@@ -34,9 +34,10 @@ class Texture;
 class Buffer;
 class ViewState;
 class CommandQueue;
-class ProgramBindings;
 class RenderPattern;
 class RenderCommandList;
+class ProgramBindings;
+struct IProgramArgumentBinding;
 
 } // namespace Methane::Graphics::Rhi
 
@@ -44,7 +45,6 @@ namespace Methane::Graphics
 {
 
 class Camera;
-struct MeshBufferBindings;
 
 class SkyBox // NOSONAR - manual copy, move constructors and assignment operators
 {
@@ -67,15 +67,22 @@ public:
         float         lod_bias = 0.F;
     };
 
+    using ProgramBindingsAndUniformArgumentBinding = std::pair<Rhi::ProgramBindings, Rhi::IProgramArgumentBinding*>;
+
     static Data::Size GetUniformsSize();
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_NO_INLINE(SkyBox);
 
-    SkyBox(const Rhi::CommandQueue& render_cmd_queue, const Rhi::RenderPattern& render_pattern, const Rhi::Texture& cube_map_texture, const Settings& settings);
+    SkyBox(const Rhi::CommandQueue& render_cmd_queue,
+           const Rhi::RenderPattern& render_pattern,
+           const Rhi::Texture& cube_map_texture,
+           const Settings& settings);
 
-    Rhi::ProgramBindings CreateProgramBindings(const Rhi::Buffer& uniforms_buffer, Data::Index frame_index) const;
-    void Update() const;
-    void Draw(const Rhi::RenderCommandList& render_cmd_list, const MeshBufferBindings& buffer_bindings, const Rhi::ViewState& view_state) const;
+    ProgramBindingsAndUniformArgumentBinding CreateProgramBindings(Data::Index frame_index) const;
+    void Update(Rhi::IProgramArgumentBinding& uniforms_argument_binding) const;
+    void Draw(const Rhi::RenderCommandList& render_cmd_list,
+              const Rhi::ProgramBindings& program_bindings,
+              const Rhi::ViewState& view_state) const;
 
     bool IsInitialized() const noexcept { return static_cast<bool>(m_impl_ptr); }
 

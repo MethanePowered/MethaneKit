@@ -32,7 +32,7 @@ DirectX 12 implementation of the buffer interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <directx/d3dx12_core.h>
 
 namespace Methane::Graphics::DirectX
@@ -40,13 +40,35 @@ namespace Methane::Graphics::DirectX
 
 static Rhi::BufferSettings UpdateBufferSettings(const Rhi::BufferSettings& settings)
 {
+    META_FUNCTION_TASK();
+    if (settings.type != Rhi::BufferType::Constant &&
+        settings.type != Rhi::BufferType::Storage)
+        return settings;
+
     Rhi::BufferSettings new_settings = settings;
-    if (new_settings.type == Rhi::BufferType::Constant ||
-        new_settings.type == Rhi::BufferType::Storage)
+    if (settings.item_stride_size)
+    {
+        const Data::Size items_count = settings.size / settings.item_stride_size;
+        new_settings.item_stride_size = Data::AlignUp(settings.item_stride_size, Data::Size(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT));
+        new_settings.size = items_count * new_settings.item_stride_size;
+    }
+    else
     {
         new_settings.size = Data::AlignUp(settings.size, Data::Size(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT));
     }
     return new_settings;
+}
+
+static Rhi::ResourceState GetInitialBufferState(bool is_private_storage, bool is_read_back_buffer)
+{
+    META_FUNCTION_TASK();
+    
+    if (is_read_back_buffer)
+        return Rhi::ResourceState::CopyDest;
+
+    return is_private_storage
+         ? Rhi::ResourceState::Common
+         : Rhi::ResourceState::GenericRead;
 }
 
 Buffer::Buffer(const Base::Context& context, const Settings& orig_settings)
@@ -58,9 +80,7 @@ Buffer::Buffer(const Base::Context& context, const Settings& orig_settings)
     const bool          is_read_back_buffer = settings.usage_mask.HasAnyBit(Usage::ReadBack);
     const D3D12_HEAP_TYPE  normal_heap_type = is_private_storage ? D3D12_HEAP_TYPE_DEFAULT  : D3D12_HEAP_TYPE_UPLOAD;
     const D3D12_HEAP_TYPE  heap_type        = is_read_back_buffer ? D3D12_HEAP_TYPE_READBACK : normal_heap_type;
-    const Rhi::ResourceState resource_state = is_read_back_buffer || is_private_storage
-                                              ? Rhi::ResourceState::Common
-                                              : Rhi::ResourceState::GenericRead;
+    const Rhi::ResourceState resource_state = GetInitialBufferState(is_private_storage, is_read_back_buffer);
 
     D3D12_RESOURCE_FLAGS resource_flags = D3D12_RESOURCE_FLAG_NONE;
     if (settings.usage_mask.HasAnyBit(Usage::ShaderWrite))
@@ -72,7 +92,7 @@ Buffer::Buffer(const Base::Context& context, const Settings& orig_settings)
     if (is_private_storage)
     {
         resource_desc.Width = Data::AlignUp(resource_desc.Width, UINT64(D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT));
-        m_cp_upload_resource = CreateCommittedResource(resource_desc, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
+        m_upload_resource_cptr = CreateCommittedResource(resource_desc, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_GENERIC_READ);
     }
 
     // Resources on D3D12_HEAP_TYPE_UPLOAD heaps requires D3D12_RESOURCE_STATE_GENERIC_READ or D3D12_RESOURCE_STATE_RESOLVE_SOURCE, which can not be changed.
@@ -86,9 +106,9 @@ bool Buffer::SetName(std::string_view name)
     if (!Resource::SetName(name))
         return false;
 
-    if (m_cp_upload_resource)
+    if (m_upload_resource_cptr)
     {
-        m_cp_upload_resource->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
+        m_upload_resource_cptr->SetName(nowide::widen(fmt::format("{} Upload Resource", name)).c_str());
     }
     return true;
 }
@@ -101,19 +121,19 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& su
     const Settings&     settings = GetSettings();
     const CD3DX12_RANGE zero_read_range(0U, 0U);
     const bool       is_private_storage = settings.storage_mode == IBuffer::StorageMode::Private;
-    ID3D12Resource&      d3d12_resource = is_private_storage ? *m_cp_upload_resource.Get() : GetNativeResourceRef();
+    ID3D12Resource&      d3d12_resource = is_private_storage ? *m_upload_resource_cptr.Get() : GetNativeResourceRef();
 
     // Using zero range, since we're not going to read this resource on CPU
     const Data::Index sub_resource_raw_index = sub_resource.GetIndex().GetRawIndex(Rhi::SubResourceCount());
-    Data::RawPtr      p_sub_resource_data    = nullptr;
+    Data::RawPtr sub_resource_data_ptr    = nullptr;
     ThrowIfFailed(
         d3d12_resource.Map(sub_resource_raw_index, &zero_read_range,
-                           reinterpret_cast<void**>(&p_sub_resource_data)), // NOSONAR
+                           reinterpret_cast<void**>(&sub_resource_data_ptr)), // NOSONAR
         GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
     );
 
-    META_CHECK_ARG_NOT_NULL_DESCR(p_sub_resource_data, "failed to map buffer subresource");
-    stdext::checked_array_iterator target_data_it(p_sub_resource_data, sub_resource.GetDataSize());
+    META_CHECK_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+    stdext::checked_array_iterator target_data_it(sub_resource_data_ptr, sub_resource.GetDataSize());
     std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
 
     if (sub_resource.HasDataRange())
@@ -131,15 +151,15 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& su
 
     // In case of private GPU storage, copy buffer data from intermediate upload resource to the private GPU resource
     const TransferCommandList& upload_cmd_list = PrepareResourceTransfer(TransferOperation::Upload, target_cmd_queue, State::CopyDest);
-    upload_cmd_list.GetNativeCommandList().CopyBufferRegion(GetNativeResource(), 0U, m_cp_upload_resource.Get(), 0U, settings.size);
+    upload_cmd_list.GetNativeCommandList().CopyBufferRegion(GetNativeResource(), 0U, m_upload_resource_cptr.Get(), 0U, settings.size);
     GetContext().RequestDeferredAction(Rhi::IContext::DeferredAction::UploadResources);
 }
 
 Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt& data_range)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
-                              "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
+    META_CHECK_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
+                          "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
     const Data::Index data_start  = data_range ? data_range->GetStart()  : 0U;
     const Data::Index data_length = data_range ? data_range->GetLength() : GetDataSize();
@@ -153,7 +173,7 @@ Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt& data_
         GetDirectContext().GetDirectDevice().GetNativeDevice().Get()
     );
 
-    META_CHECK_ARG_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
+    META_CHECK_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
 
     stdext::checked_array_iterator source_data_it(sub_resource_data_ptr, data_end);
     Data::Bytes                    sub_resource_data(data_length, {});
@@ -169,7 +189,7 @@ D3D12_VERTEX_BUFFER_VIEW Buffer::GetNativeVertexBufferView() const
 {
     META_FUNCTION_TASK();
     const Rhi::BufferSettings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::BufferType::Vertex);
+    META_CHECK_EQUAL(settings.type, Rhi::BufferType::Vertex);
 
     D3D12_VERTEX_BUFFER_VIEW buffer_view{};
     buffer_view.BufferLocation = GetNativeGpuAddress();
@@ -182,7 +202,7 @@ D3D12_INDEX_BUFFER_VIEW Buffer::GetNativeIndexBufferView() const
 {
     META_FUNCTION_TASK();
     const Rhi::BufferSettings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::BufferType::Index);
+    META_CHECK_EQUAL(settings.type, Rhi::BufferType::Index);
 
     D3D12_INDEX_BUFFER_VIEW buffer_view{};
     buffer_view.BufferLocation = GetNativeGpuAddress();
@@ -195,7 +215,7 @@ D3D12_CONSTANT_BUFFER_VIEW_DESC Buffer::GetNativeConstantBufferViewDesc() const
 {
     META_FUNCTION_TASK();
     const Rhi::BufferSettings& settings = GetSettings();
-    META_CHECK_ARG_EQUAL(settings.type, Rhi::BufferType::Constant);
+    META_CHECK_EQUAL(settings.type, Rhi::BufferType::Constant);
 
     D3D12_CONSTANT_BUFFER_VIEW_DESC buffer_view_desc{};
     buffer_view_desc.BufferLocation = GetNativeGpuAddress();

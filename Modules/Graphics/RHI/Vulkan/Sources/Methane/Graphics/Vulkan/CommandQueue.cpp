@@ -210,7 +210,7 @@ const CommandQueue::WaitInfo& CommandQueue::GetWaitForExecutionCompleted() const
 
     while(!executing_command_list_sets.empty())
     {
-        META_CHECK_ARG_NOT_NULL(executing_command_list_sets.front());
+        META_CHECK_NOT_NULL(executing_command_list_sets.front());
         const auto& executing_command_list_set = static_cast<const CommandListSet&>(*executing_command_list_sets.front());
         m_wait_execution_completed.semaphores.emplace_back(executing_command_list_set.GetNativeExecutionCompletedSemaphore());
         executing_command_list_sets.pop();

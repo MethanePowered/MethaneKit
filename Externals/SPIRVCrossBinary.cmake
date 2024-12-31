@@ -1,7 +1,8 @@
 CPMAddPackage(
     NAME SPIRVCrossBinary
     GITHUB_REPOSITORY MethanePowered/SPIRVCrossBinary
-    GIT_TAG 0de2aa43453675b493952ff8544969965f5d9114 # 2020-01-16
+    GIT_TAG vulkan-sdk-1.3.268.0
+    VERSION 1.3.268.0
 )
 
 get_platform_dir(PLATFORM_DIR CPP_EXT)

@@ -77,7 +77,7 @@ void ComputeCommandList::SetComputeState(Rhi::IComputeState& compute_state)
 ComputeState& ComputeCommandList::GetComputeState()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_compute_state_ptr, "Compute command list '{}' state was not set.", GetName());
+    META_CHECK_NOT_NULL_DESCR(m_compute_state_ptr, "Compute command list '{}' state was not set.", GetName());
     return *m_compute_state_ptr;
 }
 

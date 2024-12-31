@@ -39,14 +39,14 @@ class AlignedAllocator
 {
 public:
     using value_type = T;
-    using size_type = std::size_t    ;
+    using size_type = std::size_t;
     using difference_type =  std::ptrdiff_t;
 
     using pointer = T*;
     using const_pointer = const T*;
 
-    using reference = T&       ;
-    using const_reference = const T& ;
+    using reference = T&;
+    using const_reference = const T&;
     
     template <typename T2>
     struct rebind
@@ -68,10 +68,10 @@ public:
 #ifdef WIN32
         return static_cast<pointer>(_aligned_malloc(allocate_size, N));
 #else
-        void* p_memory = nullptr;
-        if (posix_memalign(&p_memory, N, allocate_size))
+        void* memory_ptr = nullptr;
+        if (posix_memalign(&memory_ptr, N, allocate_size))
             throw std::bad_alloc();
-        return static_cast<pointer>(p_memory);
+        return static_cast<pointer>(memory_ptr);
 #endif
     }
 
@@ -99,12 +99,14 @@ public:
         return size_type(-1) / sizeof(value_type);
     }
 
-    bool operator!=(const AlignedAllocator<T, N>& other) const
+    friend bool operator!=(const AlignedAllocator& left,
+                           const AlignedAllocator& right)
     {
-        return !(*this == other);
+        return !(left == right);
     }
 
-    bool operator==(const AlignedAllocator<T, N>&) const
+    friend bool operator==(const AlignedAllocator&,
+                           const AlignedAllocator&)
     {
         return true;
     }

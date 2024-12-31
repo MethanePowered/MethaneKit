@@ -52,10 +52,10 @@ public:
         if (!m_root_bin.TryPack(rect, m_rect_margins))
             return false;
 
-        META_CHECK_ARG_GREATER_OR_EQUAL(rect.GetLeft(), 0);
-        META_CHECK_ARG_GREATER_OR_EQUAL(rect.GetTop(), 0);
-        META_CHECK_ARG_LESS(rect.GetRight(), m_root_bin.GetRect().size.GetWidth() + 1);
-        META_CHECK_ARG_LESS(rect.GetBottom(), m_root_bin.GetRect().size.GetHeight() + 1);
+        META_CHECK_GREATER_OR_EQUAL(rect.GetLeft(), 0);
+        META_CHECK_GREATER_OR_EQUAL(rect.GetTop(), 0);
+        META_CHECK_LESS(rect.GetRight(), m_root_bin.GetRect().size.GetWidth() + 1);
+        META_CHECK_LESS(rect.GetBottom(), m_root_bin.GetRect().size.GetHeight() + 1);
         return true;
     }
 

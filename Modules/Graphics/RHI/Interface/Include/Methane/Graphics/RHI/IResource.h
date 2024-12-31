@@ -103,6 +103,7 @@ struct IResource
     [[nodiscard]] virtual const DescriptorByViewId& GetDescriptorByViewId() const noexcept = 0;
     [[nodiscard]] virtual const IContext&           GetContext() const noexcept = 0;
     [[nodiscard]] virtual const Opt<uint32_t>&      GetOwnerQueueFamily() const noexcept = 0;
+    [[nodiscard]] virtual ResourceView              GetResourceView() = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

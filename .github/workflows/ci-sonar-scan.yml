@@ -6,6 +6,7 @@
 name: '🎯 CI Sonar Scan'
 
 on:
+  workflow_dispatch:
   push:
     branches: [ master, develop ]
     paths:
@@ -57,8 +58,8 @@ on:
 
 env:
   METHANE_VERSION_MAJOR: 0
-  METHANE_VERSION_MINOR: 7
-  METHANE_VERSION_PATCH: 3
+  METHANE_VERSION_MINOR: 8
+  METHANE_VERSION_PATCH: 0
   METHANE_VERSION_BUILD: ${{ github.run_number }}
 
 jobs:
@@ -118,16 +119,16 @@ jobs:
     steps:
       - name: Checkout pull-request merge commit from origin
         if: ${{ github.event_name != 'pull_request_target' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # 2 commits are necessary for CodeCov diff
+          fetch-depth: 0 # checkout all history for all branches, as required by Sonar scanner
 
       - name: Checkout pull-request merge commit from fork
         if: ${{ github.event_name == 'pull_request_target' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: "${{ github.event.pull_request.merge_commit_sha }}"
-          fetch-depth: 2 # 2 commits are necessary for CodeCov diff
+          fetch-depth: 0 # checkout all history for all branches, as required by Sonar scanner
 
       - name: Install Linux prerequisites
         if: ${{ runner.os == 'Linux' }}
@@ -141,7 +142,7 @@ jobs:
 
       # .NET Core is required by ReportGenerator
       - name: Install .NET Core
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 6.0.400
 
@@ -150,12 +151,12 @@ jobs:
 
       # Ninja build is required to generate compile commands file used by Sonar-Scanner
       - name: Install Ninja
-        uses: MethanePowered/gha-setup-ninja@master
+        uses: seanmiddleditch/gha-setup-ninja@v5
         with:
           version: 1.11.1
 
       - name: Initialize Externals Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: Build/Output/ExternalsCache
           key: ExternalsCache-${{ matrix.config_preset }}-${{ hashFiles('Externals/*.cmake') }}
@@ -214,7 +215,7 @@ jobs:
 
       - name: Generate Code Coverage Reports
         if: ${{ success() || failure() }}
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.1.13
+        uses: danielpalme/ReportGenerator-GitHub-Action@5
         with:
           reports: ${{ matrix.tests_coverage_reports }}
           targetdir: 'Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report'
@@ -224,7 +225,7 @@ jobs:
 
       - name: Upload Code Coverage Cobertura Report
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MethaneKit_${{ matrix.name }}_CoverageResults
           path: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
@@ -240,21 +241,43 @@ jobs:
 
       - name: Publish Code Coverage to CodeCov server
         if: ${{ github.event_name != 'pull_request_target' && (success() || failure()) }}
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
           flags: unittests,${{ runner.os }}
           name: ${{ matrix.name }}
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Publish Code Coverage to CodeCov server (from PR target)
         if: ${{ github.event_name == 'pull_request_target' && (success() || failure()) }}
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           override_pr: ${{ github.event.pull_request.number }}
           override_commit: ${{ github.event.pull_request.head.sha }}
           files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Coverage/Report/Cobertura.xml
           flags: unittests,${{ runner.os }}
           name: ${{ matrix.name }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Publish Test Results to Codecov server
+        if: ${{ github.event_name != 'pull_request_target' && (success() || failure()) }}
+        uses: codecov/test-results-action@v1
+        with:
+          files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/junit/*Test.xml
+          flags: unittests,${{ runner.os }}
+          name: ${{ matrix.name }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Publish Test Results to Codecov server (from PR target)
+        if: ${{ github.event_name == 'pull_request_target' && (success() || failure()) }}
+        uses: codecov/test-results-action@v1
+        with:
+          override_pr: ${{ github.event.pull_request.number }}
+          override_commit: ${{ github.event.pull_request.head.sha }}
+          files: Build/Output/${{ matrix.config_preset }}/Install/Tests/Results/junit/*Test.xml
+          flags: unittests,${{ runner.os }}
+          name: ${{ matrix.name }}
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Publish Test Results to GitHub
         if: ${{ success() || failure() }}
@@ -292,7 +315,7 @@ jobs:
 
       - name: Upload Archived Scan Artifacts
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MethaneKit_${{ matrix.name }}_${{ env.METHANE_VERSION_MAJOR }}.${{ env.METHANE_VERSION_MINOR }}.${{ env.METHANE_VERSION_PATCH }}.${{ env.METHANE_VERSION_BUILD }}
           path: Build/Output/${{ matrix.config_preset }}/Install/MethaneKit_${{ matrix.name }}.7z
@@ -304,7 +327,7 @@ jobs:
 
       - name: Update Badge JSON
         if: ${{ (github.event_name == 'push' || github.event_name == 'schedule') && always() }}
-        uses: schneegans/dynamic-badges-action@v1.6.0
+        uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}
           gistID: 96d788046ccd52b45b3354a99f8569c3

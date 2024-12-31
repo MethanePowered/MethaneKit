@@ -33,14 +33,14 @@ jobs:
 
     steps:
       - name: Download Event File
-        uses: dawidd6/action-download-artifact@246dbf436b23d7c49e21a7ab8204ca9ecd1fe615
+        uses: dawidd6/action-download-artifact@v7
         with:
           run_id: ${{ github.event.workflow_run.id }}
           name: EventFile
           path: EventFile
 
       - name: Download Test Results
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v7
         with:
           run_id: ${{ github.event.workflow_run.id }}
           name: ^MethaneKit_${{ matrix.name }}_TestResults_.*$

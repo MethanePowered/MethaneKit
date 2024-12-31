@@ -37,6 +37,28 @@ public:
     { }
 };
 
+MTLResourceUsage ConvertResourceUsageToMetal(Rhi::ResourceUsage resource_usage)
+{
+    META_FUNCTION_TASK();
+    switch(resource_usage)
+    {
+        case Rhi::ResourceUsage::ShaderRead:  return MTLResourceUsageRead;
+        case Rhi::ResourceUsage::ShaderWrite: return MTLResourceUsageWrite;
+        default: META_UNEXPECTED_DESCR(resource_usage, "resource usage can not be converted to Metal");
+    }
+}
+
+MTLResourceUsage ConvertResourceUsageMaskToMetal(Rhi::ResourceUsageMask resource_usage_mask)
+{
+    META_FUNCTION_TASK();
+    MTLResourceUsage mtl_resource_usage{};
+    if (resource_usage_mask.HasBit(Rhi::ResourceUsage::ShaderRead))
+        mtl_resource_usage |= MTLResourceUsageRead;
+    if (resource_usage_mask.HasBit(Rhi::ResourceUsage::ShaderWrite))
+        mtl_resource_usage |= MTLResourceUsageWrite;
+    return mtl_resource_usage;
+}
+
 } // namespace Methane::Graphics::Metal
 
 namespace Methane::Graphics::Rhi

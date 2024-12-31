@@ -105,17 +105,17 @@ ImageData ImageLoader::LoadImageData(const std::string& image_path, Data::Size c
 
     // Read image format with general information
     const OIIO::ImageSpec& image_spec = image_buf.spec();
-    META_CHECK_ARG_DESCR(image_path, !image_spec.undefined(), "failed to load image specification");
+    META_CHECK_DESCR(image_path, !image_spec.undefined(), "failed to load image specification");
 
     const bool read_success = image_buf.read();
-    META_CHECK_ARG_DESCR(image_path, read_success, "failed to read image data from file, error: {}", image_buf.geterror());
+    META_CHECK_DESCR(image_path, read_success, "failed to read image data from file, error: {}", image_buf.geterror());
 
     // Convert image pixels data to the target texture format RGBA8 Unorm
     OIIO::ROI image_roi = OIIO::get_roi(image_spec);
     Data::Bytes texture_data(channels_count * image_roi.npixels(), 255);
     const OIIO::TypeDesc texture_format(OIIO::TypeDesc::BASETYPE::UCHAR);
     const decode_success = image_buf.get_pixels(image_roi, texture_format, texture_data.data(), channels_count * sizeof(texture_data[0]));
-    META_CHECK_ARG_DESCR(image_path, decode_success, "failed to decode image pixels, error: {}", image_buf.geterror());
+    META_CHECK_DESCR(image_path, decode_success, "failed to decode image pixels, error: {}", image_buf.geterror());
 
     return ImageData(Dimensions(static_cast<uint32_t>(image_spec.GetWidth()), static_cast<uint32_t>(image_spec.GetHeight())),
                                 static_cast<uint32_t>(channels_count),
@@ -125,15 +125,15 @@ ImageData ImageLoader::LoadImageData(const std::string& image_path, Data::Size c
     int image_width = 0;
     int image_height = 0;
     int image_channels_count = 0;
-    stbi_uc* p_image_data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(raw_image_data.GetDataPtr()), // NOSONAR
-                                                  static_cast<int>(raw_image_data.GetDataSize()),
-                                                  &image_width, &image_height, &image_channels_count,
-                                                  static_cast<int>(channels_count));
+    stbi_uc* image_data_ptr = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(raw_image_data.GetDataPtr()), // NOSONAR
+                                                    static_cast<int>(raw_image_data.GetDataSize()),
+                                                    &image_width, &image_height, &image_channels_count,
+                                                    static_cast<int>(channels_count));
 
-    META_CHECK_ARG_NOT_NULL_DESCR(p_image_data, "failed to load image data from memory");
-    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_width, 1, "invalid image width");
-    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_height, 1, "invalid image height");
-    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(image_channels_count, 1, "invalid image channels count");
+    META_CHECK_NOT_NULL_DESCR(image_data_ptr, "failed to load image data from memory");
+    META_CHECK_GREATER_OR_EQUAL_DESCR(image_width, 1, "invalid image width");
+    META_CHECK_GREATER_OR_EQUAL_DESCR(image_height, 1, "invalid image height");
+    META_CHECK_GREATER_OR_EQUAL_DESCR(image_channels_count, 1, "invalid image channels count");
 
     const Dimensions image_dimensions(static_cast<uint32_t>(image_width), static_cast<uint32_t>(image_height));
     const auto image_data_size = static_cast<Data::Size>(sizeof(stbi_uc)) *
@@ -143,16 +143,16 @@ ImageData ImageLoader::LoadImageData(const std::string& image_path, Data::Size c
 
     if (create_copy)
     {
-        Data::Bytes image_data_copy(reinterpret_cast<Data::ConstRawPtr>(p_image_data), // NOSONAR
-                                    reinterpret_cast<Data::ConstRawPtr>(p_image_data + image_data_size)); // NOSONAR
+        Data::Bytes image_data_copy(reinterpret_cast<Data::ConstRawPtr>(image_data_ptr), // NOSONAR
+                                    reinterpret_cast<Data::ConstRawPtr>(image_data_ptr + image_data_size)); // NOSONAR
         ImageData image_data(image_dimensions, static_cast<uint32_t>(image_channels_count), Data::Chunk(std::move(image_data_copy)));
-        stbi_image_free(p_image_data);
+        stbi_image_free(image_data_ptr);
         return image_data;
     }
     else
     {
         return ImageData(image_dimensions, static_cast<uint32_t>(image_channels_count),
-                         Data::Chunk(reinterpret_cast<Data::ConstRawPtr>(p_image_data), image_data_size)); // NOSONAR
+                         Data::Chunk(reinterpret_cast<Data::ConstRawPtr>(image_data_ptr), image_data_size)); // NOSONAR
     }
 
 #endif
@@ -202,17 +202,17 @@ Rhi::Texture ImageLoader::LoadImagesToTextureCube(const Rhi::CommandQueue& targe
     target_cmd_queue.GetContext().GetParallelExecutor().run(load_task_flow).get();
 
     // Verify cube textures
-    META_CHECK_ARG_EQUAL_DESCR(face_images_data.size(), image_paths.size(), "some faces of cube texture have failed to load");
+    META_CHECK_EQUAL_DESCR(face_images_data.size(), image_paths.size(), "some faces of cube texture have failed to load");
     const Dimensions face_dimensions     = face_images_data.front().second.GetDimensions();
     const uint32_t   face_channels_count = face_images_data.front().second.GetChannelsCount();
-    META_CHECK_ARG_EQUAL_DESCR(face_dimensions.GetWidth(), face_dimensions.GetHeight(), "all images of cube texture faces must have equal width and height");
+    META_CHECK_EQUAL_DESCR(face_dimensions.GetWidth(), face_dimensions.GetHeight(), "all images of cube texture faces must have equal width and height");
 
     Rhi::IResource::SubResources face_sub_resources;
     face_sub_resources.reserve(face_images_data.size());
     for(const auto& [face_index, image_data] : face_images_data)
     {
-        META_CHECK_ARG_EQUAL_DESCR(face_dimensions,     image_data.GetDimensions(),    "all face image of cube texture must have equal dimensions");
-        META_CHECK_ARG_EQUAL_DESCR(face_channels_count, image_data.GetChannelsCount(), "all face image of cube texture must have equal channels count");
+        META_CHECK_EQUAL_DESCR(face_dimensions,     image_data.GetDimensions(),    "all face image of cube texture must have equal dimensions");
+        META_CHECK_EQUAL_DESCR(face_channels_count, image_data.GetChannelsCount(), "all face image of cube texture must have equal channels count");
         face_sub_resources.emplace_back(image_data.GetPixels().GetDataPtr(), image_data.GetPixels().GetDataSize(), Rhi::IResource::SubResource::Index(face_index));
     }
 

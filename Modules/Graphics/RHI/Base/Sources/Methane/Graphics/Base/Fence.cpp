@@ -52,7 +52,7 @@ void Fence::WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue)
 {
     META_FUNCTION_TASK();
     META_UNUSED(wait_on_command_queue);
-    META_CHECK_ARG_NAME_DESCR("wait_on_command_queue", std::addressof(wait_on_command_queue) != std::addressof(m_command_queue),
+    META_CHECK_NAME_DESCR("wait_on_command_queue", std::addressof(wait_on_command_queue) != std::addressof(m_command_queue),
                               "fence can not be waited on GPU at the same command queue where it was signalled");
     META_LOG("Fence '{}' WAIT on GPU command queue '{}' with value {}", GetName(), wait_on_command_queue.GetName(), m_value);
 }

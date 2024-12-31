@@ -34,6 +34,7 @@ struct ResourceArgumentDesc
 {
     Rhi::ResourceType resource_type;
     uint32_t resource_count;
+    uint32_t buffer_size;
 };
 
 using ResourceArgumentDescs = std::map<Rhi::ProgramArgumentAccessor, ResourceArgumentDesc>;
@@ -50,7 +51,7 @@ public:
     void InitArgumentBindings(const ResourceArgumentDescs& argument_descriptions);
 
 private:
-    Ptrs<Base::ProgramArgumentBinding> m_argument_bindings;
+    ResourceArgumentDescs m_argument_descriptions;
 };
 
 } // namespace Methane::Graphics::Null

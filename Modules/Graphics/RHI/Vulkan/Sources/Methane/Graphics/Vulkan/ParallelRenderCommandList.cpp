@@ -113,7 +113,7 @@ void ParallelRenderCommandList::UpdateParallelCommandBuffers()
 void ParallelRenderCommandList::Commit()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_FALSE(IsCommitted());
+    META_CHECK_FALSE(IsCommitted());
     Base::ParallelRenderCommandList::Commit();
 
     const vk::CommandBuffer& vk_beginning_primary_cmd_buffer = m_beginning_command_list.GetNativeCommandBuffer(CommandBufferType::Primary);

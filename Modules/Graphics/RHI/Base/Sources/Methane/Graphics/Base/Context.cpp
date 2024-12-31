@@ -30,7 +30,7 @@ Base implementation of the context interface.
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Base
 {
@@ -57,7 +57,9 @@ Context::Context(Device& device, UniquePtr<Rhi::IDescriptorManager>&& descriptor
     , m_device_ptr(device.GetPtr<Device>())
     , m_descriptor_manager_ptr(std::move(descriptor_manager_ptr))
     , m_parallel_executor(parallel_executor)
-{ }
+{
+    META_FUNCTION_TASK();
+}
 
 Context::~Context() = default;
 
@@ -82,8 +84,7 @@ void Context::CompleteInitialization()
     m_is_completing_initialization = true;
     META_LOG("Complete initialization of context '{}'", GetName());
 
-    Data::Emitter<Rhi::IContextCallback>::Emit(&Rhi::IContextCallback::OnContextCompletingInitialization, *this);
-    UploadResources();
+    UploadResourcesAndNotify();
     GetDescriptorManager().CompleteInitialization();
 
     m_requested_action             = DeferredAction::None;
@@ -200,28 +201,28 @@ Rhi::ICommandKit& Context::GetDefaultCommandKit(Rhi::ICommandQueue& cmd_queue) c
 const Rhi::IDevice& Context::GetDevice() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_device_ptr);
+    META_CHECK_NOT_NULL(m_device_ptr);
     return *m_device_ptr;
 }
 
 Device& Context::GetBaseDevice()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_device_ptr);
+    META_CHECK_NOT_NULL(m_device_ptr);
     return *m_device_ptr;
 }
 
 const Device& Context::GetBaseDevice() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_device_ptr);
+    META_CHECK_NOT_NULL(m_device_ptr);
     return *m_device_ptr;
 }
 
 Rhi::IDescriptorManager& Context::GetDescriptorManager() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_descriptor_manager_ptr);
+    META_CHECK_NOT_NULL(m_descriptor_manager_ptr);
     return *m_descriptor_manager_ptr;
 }
 
@@ -317,15 +318,31 @@ bool Context::UploadResources() const
     return true;
 }
 
+bool Context::UploadResourcesAndNotify()
+{
+    META_FUNCTION_TASK();
+    Data::Emitter<Rhi::IContextCallback>::Emit(&Rhi::IContextCallback::OnContextUploadingResources, *this);
+    return UploadResources();
+}
+
 void Context::PerformRequestedAction()
 {
     META_FUNCTION_TASK();
     switch(m_requested_action)
     {
-    case DeferredAction::None:                   break;
-    case DeferredAction::UploadResources:        UploadResources(); break;
-    case DeferredAction::CompleteInitialization: CompleteInitialization(); break;
-    default:                                     META_UNEXPECTED_ARG(m_requested_action);
+    case DeferredAction::None:
+        break;
+
+    case DeferredAction::UploadResources:
+        UploadResourcesAndNotify();
+        break;
+
+    case DeferredAction::CompleteInitialization:
+        CompleteInitialization();
+        break;
+
+    default:
+        META_UNEXPECTED(m_requested_action);
     }
     m_requested_action = DeferredAction::None;
 }

@@ -22,6 +22,7 @@ Console UI application base class implemented using FTXUI framework
 ******************************************************************************/
 
 #include "ConsoleApp.h"
+#include "Shaders/GameOfLifeRules.h"
 
 #include <Methane/Version.h>
 #include <Methane/Instrumentation.h>
@@ -92,11 +93,19 @@ void ConsoleApp::InitUserInterface()
         Init();
     };
 
+    m_game_rule_option.on_change = [this]()
+    {
+        ResetRules();
+    };
+
     auto sidebar = Container::Vertical({
         Renderer([]{ return text("GPU Devices:") | ftxui::bold; }),
         Radiobox(&GetComputeDeviceNames(), &m_compute_device_index, m_compute_device_option),
-        Renderer([] { return separator(); }),
         Checkbox("30 FPS limit", &m_30fps_screen_refresh_limit_enabled),
+        Renderer([] { return separator(); }),
+        Renderer([]{ return text("Game Rules:") | ftxui::bold; }),
+        Radiobox(&g_gol_rule_labels, &m_game_rule_index, m_game_rule_option),
+        Renderer([] { return separator(); }),
         Container::Horizontal({
             Button("Restart",      [this]() { Restart(); },             ButtonOption::Border()),
             Button("Play | Pause", [this]() { ToggleScreenRefresh(); }, ButtonOption::Border()),

@@ -30,7 +30,7 @@ Base implementation of the program bindings interface.
 #include <Methane/Graphics/RHI/IResource.h>
 #include <Methane/Data/Emitter.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Base
 {
@@ -43,33 +43,36 @@ class ProgramBindings
     : public Rhi::IProgramBindings
     , public Object
     , public Data::Receiver<Rhi::IProgramBindings::IArgumentBindingCallback>
+    , protected Data::Receiver<IRootConstantBufferCallback>
 {
 public:
     using ArgumentBinding  = ProgramArgumentBinding;
-    using ArgumentBindings = std::unordered_map<Rhi::IProgram::Argument, Ptr<ArgumentBinding>, Rhi::IProgram::Argument::Hash>;
+    using ArgumentBindings = std::unordered_map<Rhi::ProgramArgument, Ptr<ArgumentBinding>, Rhi::ProgramArgument::Hash>;
 
     ProgramBindings(Program& program, Data::Index frame_index);
-    ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
-    ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
+    ProgramBindings(Program& program, const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index);
+    ProgramBindings(const ProgramBindings& other_program_bindings, const BindingValueByArgument& replace_resource_view_by_argument, const Opt<Data::Index>& frame_index);
     ProgramBindings(const ProgramBindings& other_program_bindings, const Opt<Data::Index>& frame_index);
-    ProgramBindings(ProgramBindings&&) noexcept = default;
+    ProgramBindings(ProgramBindings&&) noexcept = default; // NOSONAR - it's enough to use default move constructor
+    ~ProgramBindings() override;
 
     ProgramBindings& operator=(const ProgramBindings& other) = delete;
     ProgramBindings& operator=(ProgramBindings&& other) = delete;
 
     // IProgramBindings interface
-    Rhi::IProgram&                  GetProgram() const final;
-    const Rhi::IProgram::Arguments& GetArguments() const noexcept final     { return m_arguments; }
-    Data::Index                     GetFrameIndex() const noexcept final    { return m_frame_index; }
-    Data::Index                     GetBindingsIndex() const noexcept final { return m_bindings_index; }
-    IArgumentBinding&               Get(const Rhi::IProgram::Argument& shader_argument) const final;
+    Rhi::IProgram&               GetProgram() const final;
+    const Rhi::ProgramArguments& GetArguments() const noexcept final     { return m_arguments; }
+    Data::Index                  GetFrameIndex() const noexcept final    { return m_frame_index; }
+    Data::Index                  GetBindingsIndex() const noexcept final { return m_bindings_index; }
+    IArgumentBinding&            Get(const Rhi::ProgramArgument& shader_argument) const final;
     explicit operator std::string() const final;
 
     // ProgramBindings interface
+    virtual void Initialize();
     virtual void CompleteInitialization() = 0;
     virtual void Apply(CommandList& command_list, ApplyBehaviorMask apply_behavior = ApplyBehaviorMask(~0U)) const = 0;
 
-    Rhi::IProgram::Arguments GetUnboundArguments() const;
+    Rhi::ProgramArguments GetUnboundArguments() const;
 
     template<typename CommandListType>
     void ApplyResourceTransitionBarriers(CommandListType& command_list,
@@ -84,22 +87,29 @@ public:
     }
 
 protected:
-    // IProgramBindings::IProgramArgumentBindingCallback
-    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&, const Rhi::IResource::Views&, const Rhi::IResource::Views&) override;
+    // IProgramBindings::IProgramArgumentBindingCallback overrides...
+    void OnProgramArgumentBindingResourceViewsChanged(const IArgumentBinding&   argument_binding,
+                                                      const Rhi::ResourceViews& old_resource_views,
+                                                      const Rhi::ResourceViews& new_resource_views) override;
+    void OnProgramArgumentBindingRootConstantChanged(const IArgumentBinding&, const Rhi::RootConstant&) override;
 
-    void SetResourcesForArguments(const ResourceViewsByArgument& resource_views_by_argument);
+    // IRootConstantBufferCallback overrides...
+    void OnRootConstantBufferChanged(RootConstantBuffer&, const Ptr<Rhi::IBuffer>& old_buffer_ptr) override;
 
+    void ReleaseRetainedRootConstantBuffers() const;
+    void RemoveFromDescriptorManager();
+    void SetResourcesForArguments(const BindingValueByArgument& binding_value_by_argument);
     void InitializeArgumentBindings(const ProgramBindings* other_program_bindings_ptr = nullptr);
-    ResourceViewsByArgument ReplaceResourceViews(const ArgumentBindings& argument_bindings,
-                                                 const ResourceViewsByArgument& replace_resource_views) const;
+    BindingValueByArgument ReplaceBindingValues(const ArgumentBindings& argument_bindings,
+                                                 const BindingValueByArgument& replace_resource_views) const;
     void VerifyAllArgumentsAreBoundToResources() const;
     const ArgumentBindings& GetArgumentBindings() const { return m_binding_by_argument; }
     const Refs<Rhi::IResource>& GetResourceRefsByAccess(Rhi::ProgramArgumentAccessType access_type) const;
 
     void ClearTransitionResourceStates();
-    void RemoveTransitionResourceStates(const Rhi::IProgramBindings::IArgumentBinding& argument_binding, const Rhi::IResource& resource);
-    void AddTransitionResourceState(const Rhi::IProgramBindings::IArgumentBinding& argument_binding, Rhi::IResource& resource);
-    void AddTransitionResourceStates(const Rhi::IProgramBindings::IArgumentBinding& argument_binding);
+    void RemoveTransitionResourceStates(const Rhi::IProgramArgumentBinding& argument_binding, const Rhi::IResource& resource);
+    void AddTransitionResourceState(const Rhi::IProgramArgumentBinding& argument_binding, Rhi::IResource& resource);
+    void AddTransitionResourceStates(const Rhi::IProgramArgumentBinding& argument_binding);
 
 private:
     struct ResourceAndState
@@ -119,11 +129,12 @@ private:
 
     const Ptr<Rhi::IProgram>             m_program_ptr;
     Data::Index                          m_frame_index;
-    Rhi::IProgram::Arguments             m_arguments;
+    Rhi::ProgramArguments                m_arguments;
     ArgumentBindings                     m_binding_by_argument;
     ResourceStatesByAccess               m_transition_resource_states_by_access;
     ResourceRefsByAccess                 m_resource_refs_by_access;
     mutable Ptr<Rhi::IResourceBarriers>  m_resource_state_transition_barriers_ptr;
+    mutable Ptrs<Rhi::IBuffer>           m_retained_root_constant_buffer_ptrs;
     Data::Index                          m_bindings_index = 0u; // index of this program bindings object between all program bindings of the program
 };
 

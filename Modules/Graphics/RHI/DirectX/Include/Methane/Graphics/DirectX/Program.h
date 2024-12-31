@@ -46,11 +46,11 @@ class Program final : public Base::Program // NOSONAR - this class requires dest
     friend class ProgramBindings;
 
 public:
-    Program(const Base::Context& context, const Settings& settings);
+    Program(Base::Context& context, const Settings& settings);
     ~Program() override;
 
     // IProgram interface
-    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index) override;
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateBindings(const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index) override;
 
     // IObject interface
     bool SetName(std::string_view name) override;
@@ -58,7 +58,7 @@ public:
     Shader& GetDirectVertexShader() const;
     Shader& GetDirectPixelShader() const;
 
-    const wrl::ComPtr<ID3D12RootSignature>& GetNativeRootSignature() const noexcept { return m_cp_root_signature; }
+    const wrl::ComPtr<ID3D12RootSignature>& GetNativeRootSignature() const noexcept { return m_root_signature_cptr; }
     D3D12_INPUT_LAYOUT_DESC                 GetNativeInputLayoutDesc() const noexcept;
 
     const IContext& GetDirectContext() const noexcept { return m_dx_context; }
@@ -76,7 +76,7 @@ private:
     using DescriptorRangeByHeapAndAccessType = std::map<std::pair<DescriptorHeap::Type, ArgumentAccessor::Type>, DescriptorHeapReservation>;
 
     const IContext&                               m_dx_context;
-    wrl::ComPtr<ID3D12RootSignature>              m_cp_root_signature;
+    wrl::ComPtr<ID3D12RootSignature>              m_root_signature_cptr;
     mutable std::vector<D3D12_INPUT_ELEMENT_DESC> m_dx_vertex_input_layout;
 
     DescriptorRangeByHeapAndAccessType m_constant_descriptor_range_by_heap_and_access_type;

@@ -52,9 +52,9 @@ constexpr size_t g_max_rtv_count = sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC::RT
 inline CD3DX12_SHADER_BYTECODE GetShaderByteCode(const Ptr<Rhi::IShader>& shader_ptr)
 {
     META_FUNCTION_TASK();
-    const Data::Chunk* p_byte_code_chunk = shader_ptr ? static_cast<const Shader&>(*shader_ptr).GetNativeByteCode() : nullptr;
-    return p_byte_code_chunk
-        ? CD3DX12_SHADER_BYTECODE(p_byte_code_chunk->GetDataPtr(), p_byte_code_chunk->GetDataSize())
+    const Data::Chunk* byte_code_chunk_ptr = shader_ptr ? static_cast<const Shader&>(*shader_ptr).GetNativeByteCode() : nullptr;
+    return byte_code_chunk_ptr
+        ? CD3DX12_SHADER_BYTECODE(byte_code_chunk_ptr->GetDataPtr(), byte_code_chunk_ptr->GetDataSize())
         : CD3DX12_SHADER_BYTECODE(nullptr, 0);
 }
 
@@ -68,7 +68,7 @@ static D3D12_FILL_MODE ConvertRasterizerFillModeToD3D12(Rhi::IRenderState::Raste
     {
     case RasterizerFillMode::Solid:     return D3D12_FILL_MODE_SOLID;
     case RasterizerFillMode::Wireframe: return D3D12_FILL_MODE_WIREFRAME;
-    default:                            META_UNEXPECTED_ARG_RETURN(fill_mode, D3D12_FILL_MODE_SOLID);
+    default:                            META_UNEXPECTED_RETURN(fill_mode, D3D12_FILL_MODE_SOLID);
     }
 }
 
@@ -83,7 +83,7 @@ static D3D12_CULL_MODE ConvertRasterizerCullModeToD3D12(Rhi::IRenderState::Raste
     case RasterizerCullMode::None:      return D3D12_CULL_MODE_NONE;
     case RasterizerCullMode::Front:     return D3D12_CULL_MODE_FRONT;
     case RasterizerCullMode::Back:      return D3D12_CULL_MODE_BACK;
-    default:                            META_UNEXPECTED_ARG_RETURN(cull_mode, D3D12_CULL_MODE_NONE);
+    default:                            META_UNEXPECTED_RETURN(cull_mode, D3D12_CULL_MODE_NONE);
     }
 }
 
@@ -121,7 +121,7 @@ static D3D12_BLEND_OP ConvertBlendingOperationToD3D12(Rhi::IRenderState::Blendin
     case BlendOp::ReverseSubtract:  return D3D12_BLEND_OP_REV_SUBTRACT;
     case BlendOp::Minimum:          return D3D12_BLEND_OP_MIN;
     case BlendOp::Maximum:          return D3D12_BLEND_OP_MAX;
-    default:                        META_UNEXPECTED_ARG_RETURN(blend_operation, D3D12_BLEND_OP_ADD);
+    default:                        META_UNEXPECTED_RETURN(blend_operation, D3D12_BLEND_OP_ADD);
     }
 }
 
@@ -152,7 +152,7 @@ static D3D12_BLEND ConvertBlendingFactorToD3D12(Rhi::IRenderState::Blending::Fac
     case BlendFactor::OneMinusSource1Color:     return D3D12_BLEND_INV_SRC1_COLOR;
     case BlendFactor::Source1Alpha:             return D3D12_BLEND_SRC1_ALPHA;
     case BlendFactor::OneMinusSource1Alpha:     return D3D12_BLEND_INV_SRC1_ALPHA;
-    default:                                    META_UNEXPECTED_ARG_RETURN(blend_factor, D3D12_BLEND_ZERO);
+    default:                                    META_UNEXPECTED_RETURN(blend_factor, D3D12_BLEND_ZERO);
     }
 }
 
@@ -171,7 +171,7 @@ static D3D12_STENCIL_OP ConvertStencilOperationToD3D12(Rhi::FaceOperation operat
     case Rhi::FaceOperation::DecrementClamp:  return D3D12_STENCIL_OP_DECR_SAT;
     case Rhi::FaceOperation::IncrementWrap:   return D3D12_STENCIL_OP_INCR;
     case Rhi::FaceOperation::DecrementWrap:   return D3D12_STENCIL_OP_DECR;
-    default:                             META_UNEXPECTED_ARG_RETURN(operation, D3D12_STENCIL_OP_KEEP);
+    default:                             META_UNEXPECTED_RETURN(operation, D3D12_STENCIL_OP_KEEP);
     }
 }
 
@@ -230,7 +230,7 @@ void RenderState::Reset(const Settings& settings)
     }
 
     // Set blending factor
-    META_CHECK_ARG_LESS(settings.blending_color.GetSize(), 5);
+    META_CHECK_LESS(settings.blending_color.GetSize(), 5);
     for (Data::Size component_index = 0; component_index < settings.blending_color.GetSize(); ++component_index)
     {
         m_blend_factor[component_index] = settings.blending_color[component_index];
@@ -262,8 +262,8 @@ void RenderState::Reset(const Settings& settings)
 
     // Set RTV, DSV formats for pipeline state
     const AttachmentFormats attachment_formats = settings.render_pattern_ptr->GetAttachmentFormats();
-    META_CHECK_ARG_LESS_DESCR(attachment_formats.colors.size(), g_max_rtv_count + 1,
-                              "number of color attachments exceeds maximum RTV count in DirectX");
+    META_CHECK_LESS_DESCR(attachment_formats.colors.size(), g_max_rtv_count + 1,
+                          "number of color attachments exceeds maximum RTV count in DirectX");
     std::fill_n(m_pipeline_state_desc.RTVFormats, g_max_rtv_count, DXGI_FORMAT_UNKNOWN);
     uint32_t attachment_index = 0;
     for (PixelFormat color_format : attachment_formats.colors)
@@ -275,7 +275,7 @@ void RenderState::Reset(const Settings& settings)
                                     ? TypeConverter::PixelFormatToDxgi(attachment_formats.depth)
                                     : DXGI_FORMAT_UNKNOWN;
 
-    m_cp_pipeline_state.Reset();
+    m_pipeline_state_cptr.Reset();
 }
 
 void RenderState::Apply(Base::RenderCommandList& command_list, Groups state_groups)
@@ -303,9 +303,9 @@ bool RenderState::SetName(std::string_view name)
     if (!Base::RenderState::SetName(name))
         return false;
 
-    if (m_cp_pipeline_state)
+    if (m_pipeline_state_cptr)
     {
-        m_cp_pipeline_state->SetName(nowide::widen(name).c_str());
+        m_pipeline_state_cptr->SetName(nowide::widen(name).c_str());
     }
     return true;
 }
@@ -313,22 +313,22 @@ bool RenderState::SetName(std::string_view name)
 void RenderState::InitializeNativePipelineState()
 {
     META_FUNCTION_TASK();
-    if (m_cp_pipeline_state)
+    if (m_pipeline_state_cptr)
         return;
 
-    const wrl::ComPtr<ID3D12Device>& cp_native_device = GetDirectRenderContext().GetDirectDevice().GetNativeDevice();
-    ThrowIfFailed(cp_native_device->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_cp_pipeline_state)), cp_native_device.Get());
+    const wrl::ComPtr<ID3D12Device>& native_device_cptr = GetDirectRenderContext().GetDirectDevice().GetNativeDevice();
+    ThrowIfFailed(native_device_cptr->CreateGraphicsPipelineState(&m_pipeline_state_desc, IID_PPV_ARGS(&m_pipeline_state_cptr)), native_device_cptr.Get());
     SetName(GetName());
 }
 
 wrl::ComPtr<ID3D12PipelineState>& RenderState::GetNativePipelineState()
 {
     META_FUNCTION_TASK();
-    if (!m_cp_pipeline_state)
+    if (!m_pipeline_state_cptr)
     {
         InitializeNativePipelineState();
     }
-    return m_cp_pipeline_state;
+    return m_pipeline_state_cptr;
 }
 
 Program& RenderState::GetDirectProgram()

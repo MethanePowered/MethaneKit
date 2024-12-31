@@ -24,6 +24,13 @@ Methane Graphics RHI Type formatters for use with fmt::format(...)
 #pragma once
 
 #include "ResourceView.h"
+#include "IResource.h"
+#include "IProgram.h"
+
+#include <Methane/Data/EnumMaskUtil.hpp>
+
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::SubResource::Index>
@@ -42,6 +49,39 @@ struct fmt::formatter<Methane::Graphics::Rhi::SubResource::Count>
     template<typename FormatContext>
     auto format(const Methane::Graphics::Rhi::SubResource::Count& count, FormatContext& ctx) const
     { return format_to(ctx.out(), "{}", static_cast<std::string>(count)); }
+
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
+};
+
+template<>
+struct fmt::formatter<Methane::Graphics::Rhi::ResourceView>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::IResource::View& rl, FormatContext& ctx) const
+    { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
+};
+
+template<>
+struct fmt::formatter<Methane::Graphics::Rhi::ProgramArgumentAccessor>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ProgramArgumentAccessor& rl, FormatContext& ctx) const
+    { return format_to(ctx.out(), "{}", static_cast<std::string>(rl)); }
+
+    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
+    { return ctx.end(); }
+};
+
+template<>
+struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsageMask>
+{
+    template<typename FormatContext>
+    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsageMask& rl, FormatContext& ctx) const
+    { return format_to(ctx.out(), "{}", Methane::Data::GetEnumMaskName(rl)); }
 
     [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
     { return ctx.end(); }

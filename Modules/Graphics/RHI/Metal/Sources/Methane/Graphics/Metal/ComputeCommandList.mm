@@ -43,8 +43,9 @@ void ComputeCommandList::Reset(Rhi::ICommandListDebugGroup* debug_group_ptr)
         return;
     }
 
-    const id<MTLCommandBuffer>& mtl_cmd_buffer = InitializeCommandBuffer();
-    InitializeCommandEncoder([mtl_cmd_buffer computeCommandEncoder]);
+    InitializeCommandBufferAndEncoder([](id<MTLCommandBuffer> mtl_cmd_buffer)
+                                      { return [mtl_cmd_buffer computeCommandEncoder]; });
+    
     Base::CommandList::Reset(debug_group_ptr);
 }
 
@@ -54,7 +55,7 @@ void ComputeCommandList::Dispatch(const Rhi::ThreadGroupsCount& thread_groups_co
     Base::ComputeCommandList::Dispatch(thread_groups_count);
 
     const auto& mtl_cmd_encoder = GetNativeCommandEncoder();
-    META_CHECK_ARG_NOT_NULL(mtl_cmd_encoder);
+    META_CHECK_NOT_NULL(mtl_cmd_encoder);
 
     const Rhi::ThreadGroupSize& thread_group_size = GetComputeState().GetSettings().thread_group_size;
     const MTLSize mtl_thread_groups{ thread_groups_count.GetWidth(), thread_groups_count.GetHeight(), thread_groups_count.GetDepth() };

@@ -45,22 +45,22 @@ struct ShadowCubeFrame final
 {
     struct PassResources
     {
-        struct MeshResources
+        struct ProgramBindings
         {
-            rhi::Buffer          uniforms_buffer;
-            rhi::ProgramBindings program_bindings;
+            rhi::ProgramBindings          program_bindings;
+            rhi::IProgramArgumentBinding* scene_uniforms_binding_ptr = nullptr;
+            rhi::IProgramArgumentBinding* mesh_uniforms_binding_ptr  = nullptr;
         };
 
-        MeshResources          cube;
-        MeshResources          floor;
         rhi::Texture           rt_texture;
         rhi::RenderPass        render_pass;
         rhi::RenderCommandList cmd_list;
+        ProgramBindings        cube_bindings;
+        ProgramBindings        floor_bindings;
     };
 
     PassResources       shadow_pass;
     PassResources       final_pass;
-    rhi::Buffer         scene_uniforms_buffer;
     rhi::CommandListSet execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
@@ -86,24 +86,7 @@ protected:
     void OnContextReleased(rhi::IContext& context) override;
 
 private:
-    using TexturedMeshBuffersBase = gfx::TexturedMeshBuffers<hlslpp::MeshUniforms>;
-    class TexturedMeshBuffers : public TexturedMeshBuffersBase
-    {
-    public:
-        using TexturedMeshBuffersBase::TexturedMeshBuffersBase;
-
-        void SetShadowPassUniforms(hlslpp::MeshUniforms&& uniforms) noexcept { m_shadow_pass_uniforms = std::move(uniforms); }
-
-        [[nodiscard]] const hlslpp::MeshUniforms& GetShadowPassUniforms() const noexcept            { return m_shadow_pass_uniforms; }
-        [[nodiscard]] const rhi::SubResource&     GetShadowPassUniformsSubresource() const noexcept { return m_shadow_pass_uniforms_subresource; }
-
-    private:
-        hlslpp::MeshUniforms   m_shadow_pass_uniforms{};
-        const rhi::SubResource m_shadow_pass_uniforms_subresource{
-            reinterpret_cast<Data::ConstRawPtr>(&m_shadow_pass_uniforms), // NOSONAR
-            sizeof(hlslpp::MeshUniforms)
-        };
-    };
+    using TexturedMeshBuffers = gfx::TexturedMeshBuffers<hlslpp::MeshUniforms>;
 
     struct RenderPassState
     {
@@ -119,21 +102,8 @@ private:
     bool Animate(double elapsed_seconds, double delta_seconds);
     void RenderScene(const RenderPassState& render_pass, const ShadowCubeFrame::PassResources& render_pass_resources) const;
 
-    const float                 m_scene_scale = 15.F;
-    const hlslpp::Constants     m_scene_constants{
-        { 1.F, 1.F, 0.74F, 1.F }, // - light_color
-        700.F,                    // - light_power
-        0.04F,                    // - light_ambient_factor
-        30.F                      // - light_specular_factor
-    };
-    hlslpp::SceneUniforms    m_scene_uniforms{ };
-    rhi::SubResource         m_scene_uniforms_subresource{
-        reinterpret_cast<Data::ConstRawPtr>(&m_scene_uniforms), // NOSONAR
-        sizeof(hlslpp::SceneUniforms)
-    };
     gfx::Camera              m_view_camera;
     gfx::Camera              m_light_camera;
-    rhi::Buffer              m_const_buffer;
     rhi::Sampler             m_texture_sampler;
     rhi::Sampler             m_shadow_sampler;
     Ptr<TexturedMeshBuffers> m_cube_buffers_ptr;

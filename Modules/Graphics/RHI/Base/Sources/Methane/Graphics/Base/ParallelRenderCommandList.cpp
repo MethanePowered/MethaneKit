@@ -53,7 +53,7 @@ void ParallelRenderCommandList::SetValidationEnabled(bool is_validation_enabled)
     m_is_validation_enabled = is_validation_enabled;
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+        META_CHECK_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->SetValidationEnabled(m_is_validation_enabled);
     }
 }
@@ -65,7 +65,7 @@ void ParallelRenderCommandList::Reset(IDebugGroup* debug_group_ptr)
     {
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
-        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+        META_CHECK_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->Reset(debug_group_ptr ? debug_group_ptr->GetSubGroup(command_list_index) : nullptr);
     });
 }
@@ -77,7 +77,7 @@ void ParallelRenderCommandList::ResetWithState(Rhi::IRenderState& render_state, 
     {
         META_FUNCTION_TASK();
         const Ptr<RenderCommandList>& render_command_list_ptr = m_parallel_command_lists[command_list_index];
-        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+        META_CHECK_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->ResetWithState(render_state, debug_group_ptr ? debug_group_ptr->GetSubGroup(command_list_index) : nullptr);
     });
 }
@@ -114,7 +114,7 @@ void ParallelRenderCommandList::Commit()
     commit_task_flow.for_each(m_parallel_command_lists.begin(), m_parallel_command_lists.end(),
         [](const Ptr<RenderCommandList>& render_command_list_ptr)
         {
-            META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+            META_CHECK_NOT_NULL(render_command_list_ptr);
             render_command_list_ptr->Commit();
         }
     );
@@ -127,7 +127,7 @@ void ParallelRenderCommandList::SetViewState(Rhi::IViewState& view_state)
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+        META_CHECK_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->SetViewState(view_state);
     }
 }
@@ -165,7 +165,7 @@ void ParallelRenderCommandList::Execute(const Rhi::ICommandList::CompletedCallba
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+        META_CHECK_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->Execute();
     }
 
@@ -177,7 +177,7 @@ void ParallelRenderCommandList::Complete()
     META_FUNCTION_TASK();
     for(const Ptr<RenderCommandList>& render_command_list_ptr : m_parallel_command_lists)
     {
-        META_CHECK_ARG_NOT_NULL(render_command_list_ptr);
+        META_CHECK_NOT_NULL(render_command_list_ptr);
         render_command_list_ptr->Complete();
     }
 
@@ -193,7 +193,7 @@ bool ParallelRenderCommandList::SetName(std::string_view name)
     uint32_t render_cmd_list_index = 0;
     for(const Ptr<RenderCommandList>& render_cmd_list_ptr : m_parallel_command_lists)
     {
-        META_CHECK_ARG_NOT_NULL(render_cmd_list_ptr);
+        META_CHECK_NOT_NULL(render_cmd_list_ptr);
         render_cmd_list_ptr->SetName(GetThreadCommandListName(name, render_cmd_list_index));
         render_cmd_list_index++;
     }
@@ -203,7 +203,7 @@ bool ParallelRenderCommandList::SetName(std::string_view name)
 RenderPass& ParallelRenderCommandList::GetRenderPass() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_render_pass_ptr);
+    META_CHECK_NOT_NULL(m_render_pass_ptr);
     return *m_render_pass_ptr;
 }
 

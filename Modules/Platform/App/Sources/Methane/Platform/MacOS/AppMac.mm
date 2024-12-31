@@ -39,7 +39,7 @@ static NSAlertStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Type msg_
         case AppBase::Message::Type::Information: return NSAlertStyleInformational;
         case AppBase::Message::Type::Warning:     return NSAlertStyleWarning;
         case AppBase::Message::Type::Error:       return NSAlertStyleCritical;
-        default: META_UNEXPECTED_ARG_RETURN(msg_type, NSAlertStyleInformational);
+        default: META_UNEXPECTED_RETURN(msg_type, NSAlertStyleInformational);
     }
 }
 
@@ -54,7 +54,7 @@ AppMac::AppMac(const AppBase::Settings& settings)
     , m_ns_app([NSApplication sharedApplication])
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(s_instance_ptr, nullptr, "Application can have only one instance");
+    META_CHECK_EQUAL_DESCR(s_instance_ptr, nullptr, "Application can have only one instance");
     s_instance_ptr = this;
 }
 
@@ -62,10 +62,10 @@ void AppMac::InitContext(const Platform::AppEnvironment& /*env*/, const Data::Fr
 {
     META_FUNCTION_TASK();
     AppView app_view = GetView();
-    META_CHECK_ARG_NOT_NULL(app_view.p_native_view);
-    META_CHECK_ARG_NOT_NULL(m_ns_window);
+    META_CHECK_NOT_NULL(app_view.native_view_ptr);
+    META_CHECK_NOT_NULL(m_ns_window);
 
-    [m_ns_window.contentView addSubview: app_view.p_native_view];
+    [m_ns_window.contentView addSubview: app_view.native_view_ptr];
 }
 
 int AppMac::Run(const RunArgs& args)
@@ -121,7 +121,7 @@ void AppMac::SetWindow(NSWindow* ns_window)
 void AppMac::ShowAlert(const Message& msg)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_ns_app_delegate);
+    META_CHECK_NOT_NULL(m_ns_app_delegate);
 
     [m_ns_app_delegate alert: MacOS::ConvertToNsString(msg.title)
              withInformation: MacOS::ConvertToNsString(msg.information)

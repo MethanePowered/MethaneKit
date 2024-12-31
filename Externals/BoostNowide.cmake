@@ -1,8 +1,7 @@
 CPMAddPackage(
     NAME BoostNowide
     GITHUB_REPOSITORY MethanePowered/BoostNowide
-    GIT_TAG 40666d41d287b9cbb2092f564e8832d3b8c0e1d9 # last commit from 'standalone' branch
-    VERSION 11.1.4
+    VERSION 1.87.0.1 # tag from 'standalone' branch
     OPTIONS
         "BUILD_SHARED_LIBS OFF"
         "BUILD_TESTING OFF"

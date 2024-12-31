@@ -61,7 +61,7 @@ private:
 
     const Device&                     m_device;
     D3D12_COMPUTE_PIPELINE_STATE_DESC m_pipeline_state_desc{ };
-    wrl::ComPtr<ID3D12PipelineState>  m_cp_pipeline_state;
+    wrl::ComPtr<ID3D12PipelineState>  m_pipeline_state_cptr;
 };
 
 } // namespace Methane::Graphics::DirectX

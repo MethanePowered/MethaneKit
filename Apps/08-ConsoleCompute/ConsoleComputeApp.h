@@ -59,6 +59,7 @@ protected:
     void Compute() override;
     void Present(ftxui::Canvas& canvas) override;
     void Restart() override;
+    void ResetRules() override;
 
 private:
     void RandomizeFrameData();

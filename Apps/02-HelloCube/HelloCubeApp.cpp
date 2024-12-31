@@ -28,7 +28,7 @@ Tutorial demonstrating colored cube rendering with Methane graphics API
 #include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Data/TimeAnimation.h>
 
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
 namespace hlslpp // NOSONAR
 {
 #pragma pack(push, 16)
@@ -46,9 +46,9 @@ using namespace Methane::Graphics;
 
 struct HelloCubeFrame final : AppFrame
 {
-#ifdef UNIFORMS_BUFFER_ENABLED
-    Rhi::Buffer            uniforms_buffer;
-    Rhi::ProgramBindings   program_bindings;
+#ifdef UNIFORMS_ENABLED
+    Rhi::ProgramBindings          program_bindings;
+    Rhi::IProgramArgumentBinding* uniforms_binding_ptr = nullptr;
 #else
     Rhi::BufferSet         vertex_buffer_set;
 #endif
@@ -78,13 +78,8 @@ private:
     const hlslpp::float4x4     m_model_matrix = hlslpp::float4x4::scale(15.F);
     Camera                     m_camera;
 
-#ifdef UNIFORMS_BUFFER_ENABLED
-    hlslpp::Uniforms       m_shader_uniforms { };
-    const Rhi::SubResource m_shader_uniforms_subresource{
-        reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), // NOSONAR
-        sizeof(hlslpp::Uniforms)
-    };
-    Rhi::BufferSet m_vertex_buffer_set;
+#ifdef UNIFORMS_ENABLED
+    Rhi::BufferSet   m_vertex_buffer_set;
 #else
     std::vector<CubeVertex> m_proj_vertices;
 #endif
@@ -98,7 +93,7 @@ public:
         : GraphicsApp(
             []() {
                 Graphics::CombinedAppSettings settings = Tutorials::GetGraphicsTutorialAppSettings(g_app_name, Tutorials::AppOptions::GetDefaultWithColorOnlyAndAnim());
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
                 settings.graphics_app.SetScreenPassAccess(Rhi::RenderPassAccessMask(Rhi::RenderPassAccess::ShaderResources));
 #else
                 settings.graphics_app.SetScreenPassAccess({});
@@ -106,7 +101,7 @@ public:
                 return settings;
             }(),
             "Tutorial demonstrating colored rotating cube rendering with Methane Kit.")
-#ifndef UNIFORMS_BUFFER_ENABLED
+#ifndef UNIFORMS_ENABLED
         , m_proj_vertices(m_cube_mesh.GetVertices())
 #endif
     {
@@ -133,8 +128,8 @@ public:
 
         m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
-#ifdef UNIFORMS_BUFFER_ENABLED
-        const Rhi::Shader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_BUFFER_ENABLED", "" } };
+#ifdef UNIFORMS_ENABLED
+        const Rhi::Shader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_ENABLED", "" } };
 #else
         const Rhi::Shader::MacroDefinitions vertex_shader_definitions;
 #endif
@@ -158,14 +153,12 @@ public:
                                 Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION" , "COLOR" }
                             }
                         },
-#ifdef UNIFORMS_BUFFER_ENABLED
                         Rhi::ProgramArgumentAccessors
                         {
-                            { { Rhi::ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccessType::FrameConstant }
-                        },
-#else
-                        Rhi::ProgramArgumentAccessors{ },
+#ifdef UNIFORMS_ENABLED
+                            META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_uniforms")
 #endif
+                        },
                         GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
@@ -185,7 +178,7 @@ public:
             m_cube_mesh.GetIndexDataSize()
         });
 
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
         // Create constant vertex buffer
         Rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize()));
         vertex_buffer.SetName("Cube Vertex Buffer");
@@ -194,23 +187,16 @@ public:
             m_cube_mesh.GetVertexDataSize()
         });
         m_vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
-
-        const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
 #endif
 
         // Create per-frame command lists
         for(HelloCubeFrame& frame : GetFrames())
         {
-#ifdef UNIFORMS_BUFFER_ENABLED
-            // Create uniforms buffer with volatile parameters for frame rendering
-            frame.uniforms_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
-            frame.uniforms_buffer.SetName(fmt::format("Uniforms Buffer {}", frame.index));
-
+#ifdef UNIFORMS_ENABLED
             // Configure program resource bindings
-            frame.program_bindings = m_render_state.GetProgram().CreateBindings({
-                { { Rhi::ShaderType::Vertex, "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } }
-            }, frame.index);
+            frame.program_bindings = m_render_state.GetProgram().CreateBindings({ }, frame.index);
             frame.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
+            frame.uniforms_binding_ptr = &frame.program_bindings.Get({ Rhi::ShaderType::Vertex, "g_uniforms" });
 #else
             // Create vertex buffers for each frame
             Rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true));
@@ -242,11 +228,16 @@ public:
         if (!GraphicsApp::Update())
             return false;
 
+        const HelloCubeFrame& frame = GetCurrentFrame();
         const hlslpp::float4x4 mvp_matrix = hlslpp::mul(m_model_matrix, m_camera.GetViewProjMatrix());
 
-#ifdef UNIFORMS_BUFFER_ENABLED
-        // Save transposed camera Model-View-Projection matrix in shader uniforms to be uploaded in uniforms buffer on GPU
-        m_shader_uniforms.mvp_matrix = hlslpp::transpose(mvp_matrix);
+#ifdef UNIFORMS_ENABLED
+        // Save transposed camera Model-View-Projection matrix in shader uniforms
+        // Before frame rendering set uniforms to root constant buffer to be uploaded to GPU
+        const hlslpp::Uniforms shader_uniforms{ hlslpp::transpose(mvp_matrix) };
+
+        // Update root constant in program bindings to apply model-view-projection transformation in vertex shader on GPU
+        frame.uniforms_binding_ptr->SetRootConstant(Rhi::RootConstant(shader_uniforms));
 #else
         // Update vertex buffer with camera Model-View-Projection matrix applied on CPU
         for(size_t vertex_index = 0; vertex_index < m_proj_vertices.size(); ++vertex_index)
@@ -255,6 +246,12 @@ public:
             const hlslpp::float4 proj_position_vec = hlslpp::mul(orig_position_vec, mvp_matrix);
             m_proj_vertices[vertex_index].position = Mesh::Position(proj_position_vec.xyz / proj_position_vec.w);
         }
+
+        // Update vertex buffer with vertices in camera's projection view
+        frame.vertex_buffer_set[0].SetData(m_render_cmd_queue, {
+            reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), // NOSONAR
+            m_cube_mesh.GetVertexDataSize()
+        });
 #endif
 
         return true;
@@ -267,22 +264,11 @@ public:
 
         const HelloCubeFrame& frame = GetCurrentFrame();
 
-#ifdef UNIFORMS_BUFFER_ENABLED
-        // Update uniforms buffer on GPU and apply model-view-projection transformation in vertex shader on GPU
-        frame.uniforms_buffer.SetData(m_render_cmd_queue, m_shader_uniforms_subresource);
-#else
-        // Update vertex buffer with vertices in camera's projection view
-        frame.vertex_buffer_set[0].SetData(m_render_cmd_queue, {
-            reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), // NOSONAR
-            m_cube_mesh.GetVertexDataSize()
-        });
-#endif
-
         // Issue commands for cube rendering
         META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
         frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
         frame.render_cmd_list.SetViewState(GetViewState());
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
         frame.render_cmd_list.SetProgramBindings(frame.program_bindings);
         frame.render_cmd_list.SetVertexBuffers(m_vertex_buffer_set);
 #else

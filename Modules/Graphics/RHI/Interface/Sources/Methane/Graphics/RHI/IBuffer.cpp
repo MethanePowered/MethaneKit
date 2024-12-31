@@ -93,16 +93,4 @@ BufferSettings BufferSettings::ForReadBackBuffer(Data::Size size)
     };
 }
 
-bool BufferSettings::operator==(const BufferSettings& other) const
-{
-    return std::tie(type, usage_mask, size, item_stride_size, data_format, storage_mode)
-        == std::tie(other.type, other.usage_mask, other.size, other.item_stride_size, other.data_format, other.storage_mode);
-}
-
-bool BufferSettings::operator!=(const BufferSettings& other) const
-{
-    return std::tie(type, usage_mask, size, item_stride_size, data_format, storage_mode)
-        != std::tie(other.type, other.usage_mask, other.size, other.item_stride_size, other.data_format, other.storage_mode);
-}
-
 } // namespace Methane::Graphics::Rhi

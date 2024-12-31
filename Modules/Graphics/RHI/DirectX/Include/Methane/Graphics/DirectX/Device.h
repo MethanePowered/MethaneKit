@@ -42,9 +42,9 @@ namespace wrl = Microsoft::WRL;
 class Device final : public Base::Device
 {
 public:
-    static Rhi::DeviceFeatureMask GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level);
+    static Rhi::DeviceFeatureMask GetSupportedFeatures(const wrl::ComPtr<IDXGIAdapter>& adapter_cptr, D3D_FEATURE_LEVEL feature_level);
 
-    Device(const wrl::ComPtr<IDXGIAdapter>& cp_adapter, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities);
+    Device(const wrl::ComPtr<IDXGIAdapter>& adapter_cptr, D3D_FEATURE_LEVEL feature_level, const Capabilities& capabilities);
 
     // IDevice interface
     [[nodiscard]] Ptr<Rhi::IRenderContext>  CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const Rhi::RenderContextSettings& settings) override;
@@ -55,15 +55,15 @@ public:
 
     using NativeFeatureOptions5 = std::optional<D3D12_FEATURE_DATA_D3D12_OPTIONS5>;
     const NativeFeatureOptions5&        GetNativeFeatureOptions5() const { return m_feature_options_5; }
-    const wrl::ComPtr<IDXGIAdapter>&    GetNativeAdapter() const         { return m_cp_adapter; }
+    const wrl::ComPtr<IDXGIAdapter>&    GetNativeAdapter() const         { return m_adapter_cptr; }
     const wrl::ComPtr<ID3D12Device>&    GetNativeDevice() const;
     void ReleaseNativeDevice();
 
 private:
-    const wrl::ComPtr<IDXGIAdapter>     m_cp_adapter;
-    const D3D_FEATURE_LEVEL             m_feature_level;
-    mutable NativeFeatureOptions5       m_feature_options_5;
-    mutable wrl::ComPtr<ID3D12Device>   m_cp_device;
+    const wrl::ComPtr<IDXGIAdapter>   m_adapter_cptr;
+    const D3D_FEATURE_LEVEL           m_feature_level;
+    mutable NativeFeatureOptions5     m_feature_options_5;
+    mutable wrl::ComPtr<ID3D12Device> m_device_cptr;
 };
 
 bool IsSoftwareAdapterDxgi(IDXGIAdapter1& adapter);

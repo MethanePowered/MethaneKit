@@ -99,7 +99,7 @@ target_link_libraries(${TARGET}
         nowide
         # DirectX Libs
         DirectXTex
-        DirectXCompiler
+        DirectXCompiler # Implements deprecated functions D3DCompileFromFile, D3DReflect
         d3d12
         dxgi
         dxguid

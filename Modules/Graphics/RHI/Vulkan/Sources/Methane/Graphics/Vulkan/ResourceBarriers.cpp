@@ -97,7 +97,7 @@ Base::ResourceBarriers::AddResult ResourceBarriers::Add(const Rhi::ResourceBarri
     case AddResult::Added:   SetResourceBarrier(id, barrier, true); break;
     case AddResult::Updated: SetResourceBarrier(id, barrier, false); break;
     case AddResult::Existing: break;
-    default: META_UNEXPECTED_ARG_RETURN(result, result);
+    default: META_UNEXPECTED_RETURN(result, result);
     }
 
     return result;
@@ -118,7 +118,7 @@ bool ResourceBarriers::Remove(const Rhi::ResourceBarrier::Id& id)
     {
     case Rhi::ResourceType::Buffer:  RemoveBufferMemoryBarrier(dynamic_cast<const Buffer&>(resource).GetNativeResource(), barrier_type); break;
     case Rhi::ResourceType::Texture: RemoveImageMemoryBarrier(dynamic_cast<const Texture&>(resource).GetNativeImage(), barrier_type); break;
-    default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
+    default: META_UNEXPECTED_DESCR(resource_type, "resource type is not supported by transitions");
     }
 
     if (barrier_type == Rhi::ResourceBarrier::Type::StateTransition)
@@ -178,7 +178,7 @@ void ResourceBarriers::SetResourceBarrier(const Rhi::ResourceBarrier::Id& id, co
     {
     case Rhi::IResource::Type::Buffer:  SetBufferMemoryBarrier(dynamic_cast<const Buffer&>(resource), barrier); break;
     case Rhi::IResource::Type::Texture: SetImageMemoryBarrier(dynamic_cast<const Texture&>(resource), barrier); break;
-    default: META_UNEXPECTED_ARG_DESCR(resource_type, "resource type is not supported by transitions");
+    default: META_UNEXPECTED_DESCR(resource_type, "resource type is not supported by transitions");
     }
 
     if (is_new_barrier)

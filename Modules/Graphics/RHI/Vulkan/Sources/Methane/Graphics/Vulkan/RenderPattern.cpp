@@ -46,7 +46,7 @@ vk::SampleCountFlagBits GetVulkanSampleCountFlag(Data::Size samples_count)
     case 16U: return vk::SampleCountFlagBits::e16;
     case 32U: return vk::SampleCountFlagBits::e32;
     case 64U: return vk::SampleCountFlagBits::e64;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(samples_count, vk::SampleCountFlagBits::e1, "attachment samples count is not in supported set");
+    default: META_UNEXPECTED_RETURN_DESCR(samples_count, vk::SampleCountFlagBits::e1, "attachment samples count is not in supported set");
     }
 }
 
@@ -59,7 +59,7 @@ static vk::AttachmentLoadOp GetVulkanAttachmentLoadOp(Rhi::IRenderPattern::Attac
     case LoadAction::DontCare:  return vk::AttachmentLoadOp::eDontCare;
     case LoadAction::Load:      return vk::AttachmentLoadOp::eLoad;
     case LoadAction::Clear:     return vk::AttachmentLoadOp::eClear;
-    default: META_UNEXPECTED_ARG_RETURN(attachment_load_action, vk::AttachmentLoadOp::eDontCare);
+    default: META_UNEXPECTED_RETURN(attachment_load_action, vk::AttachmentLoadOp::eDontCare);
     }
 }
 
@@ -72,7 +72,7 @@ static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(Rhi::IRenderPattern::Att
     case StoreAction::DontCare:  return vk::AttachmentStoreOp::eDontCare;
     case StoreAction::Store:     return vk::AttachmentStoreOp::eStore;
     case StoreAction::Resolve:   return vk::AttachmentStoreOp::eNoneQCOM; // ?
-    default: META_UNEXPECTED_ARG_RETURN(attachment_store_action, vk::AttachmentStoreOp::eDontCare);
+    default: META_UNEXPECTED_RETURN(attachment_store_action, vk::AttachmentStoreOp::eDontCare);
     }
 }
 
@@ -88,8 +88,8 @@ static vk::ImageLayout GetFinalImageLayoutOfAttachment(const Rhi::IRenderPattern
     case Rhi::IRenderPattern::Attachment::Type::Depth:   return vk::ImageLayout::eDepthStencilAttachmentOptimal;
     case Rhi::IRenderPattern::Attachment::Type::Stencil: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
     default:
-        META_UNEXPECTED_ARG_DESCR_RETURN(attachment_type, vk::ImageLayout::eUndefined,
-                                         "attachment type is not supported by render pass");
+        META_UNEXPECTED_RETURN_DESCR(attachment_type, vk::ImageLayout::eUndefined,
+                                     "attachment type is not supported by render pass");
     }
 }
 

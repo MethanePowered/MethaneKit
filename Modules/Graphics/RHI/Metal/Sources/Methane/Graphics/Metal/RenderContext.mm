@@ -25,16 +25,12 @@ Metal implementation of the render context interface.
 #include <Methane/Graphics/Metal/RenderPass.hh>
 #include <Methane/Graphics/Metal/RenderState.hh>
 #include <Methane/Graphics/Metal/RenderPattern.hh>
+#include <Methane/Graphics/Metal/CommandQueue.hh>
 #include <Methane/Graphics/Metal/Types.hh>
 #include <Methane/Graphics/Metal/RenderContextAppView.hh>
 
 #include <Methane/Instrumentation.h>
 #include <Methane/Platform/Apple/Types.hh>
-
-// Either use dispatch queue semaphore or fence primitives for CPU-GPU frames rendering synchronization
-// NOTE: when fences are used for frames synchronization,
-// application runs slower than expected when started from XCode, but runs normally when started from Finder
-//#define USE_DISPATCH_QUEUE_SEMAPHORE
 
 // Enables automatic capture of all initialization commands before the first frame rendering
 //#define CAPTURE_INITIALIZATION_SCOPE
@@ -46,12 +42,11 @@ RenderContext::RenderContext(const Platform::AppEnvironment& env, Base::Device& 
     : Context<Base::RenderContext>(device, parallel_executor, settings)
     , m_app_view(CreateRenderContextAppView(env, settings))
     , m_frame_capture_scope([[MTLCaptureManager sharedCaptureManager] newCaptureScopeWithDevice:Context<Base::RenderContext>::GetMetalDevice().GetNativeDevice()])
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
     , m_dispatch_semaphore(dispatch_semaphore_create(settings.frame_buffers_count))
 #endif
 {
     META_FUNCTION_TASK();
-    META_UNUSED(m_dispatch_semaphore);
 
     m_frame_capture_scope.label = MacOS::ConvertToNsString(fmt::format("{} Frame Scope", device.GetName()));
     [MTLCaptureManager sharedCaptureManager].defaultCaptureScope = m_frame_capture_scope;
@@ -69,10 +64,6 @@ RenderContext::RenderContext(const Platform::AppEnvironment& env, Base::Device& 
 RenderContext::~RenderContext()
 {
     META_FUNCTION_TASK();
-
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
-    dispatch_release(m_dispatch_semaphore);
-#endif
 }
 
 Ptr<Rhi::IRenderState> RenderContext::CreateRenderState(const Rhi::RenderStateSettings& settings) const
@@ -92,9 +83,9 @@ void RenderContext::Release()
     META_FUNCTION_TASK();
     
     m_app_view.redrawing = NO;
-    
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
-    dispatch_release(m_dispatch_semaphore);
+
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
+    m_dispatch_semaphore = nil;
 #endif
 
     Context<Base::RenderContext>::Release();
@@ -103,10 +94,9 @@ void RenderContext::Release()
 void RenderContext::Initialize(Base::Device& device, bool is_callback_emitted)
 {
     META_FUNCTION_TASK();
-
     Context<Base::RenderContext>::Initialize(device, is_callback_emitted);
     
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
     m_dispatch_semaphore = dispatch_semaphore_create(GetSettings().frame_buffers_count);
 #endif
     
@@ -123,22 +113,38 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
 {
     META_FUNCTION_TASK();
     
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
     if (wait_for != WaitFor::FramePresented)
         Context<Base::RenderContext>::WaitForGpu(wait_for);
 #else
     Context<Base::RenderContext>::WaitForGpu(wait_for);
 #endif
-    
-    if (wait_for == WaitFor::FramePresented)
+
+    std::optional<Data::Index> frame_buffer_index;
+    Rhi::CommandListType cl_type = Rhi::CommandListType::Render;
+    switch (wait_for)
     {
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+    case WaitFor::RenderComplete:
+        break;
+
+    case WaitFor::FramePresented:
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
         OnGpuWaitStart(wait_for);
         dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
         OnGpuWaitComplete(wait_for);
 #endif
         BeginFrameCaptureScope();
+        frame_buffer_index = GetFrameBufferIndex();
+        break;
+
+    case WaitFor::ResourcesUploaded:
+        cl_type = Rhi::CommandListType::Transfer;
+        break;
+
+    default: META_UNEXPECTED(wait_for);
     }
+
+    GetMetalDefaultCommandQueue(cl_type).WaitUntilCompleted(frame_buffer_index, 16);
 }
 
 void RenderContext::Resize(const FrameSize& frame_size)
@@ -154,7 +160,7 @@ void RenderContext::Present()
 
     id<MTLCommandBuffer> mtl_cmd_buffer = [GetMetalDefaultCommandQueue(Rhi::CommandListType::Render).GetNativeCommandQueue() commandBuffer];
     mtl_cmd_buffer.label = [NSString stringWithFormat:@"%@ Present Command", GetNsName()];
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
     [mtl_cmd_buffer addCompletedHandler:^(id<MTLCommandBuffer> _Nonnull) {
         dispatch_semaphore_signal(m_dispatch_semaphore);
     }];
@@ -164,7 +170,7 @@ void RenderContext::Present()
 
     EndFrameCaptureScope();
 
-#ifdef USE_DISPATCH_QUEUE_SEMAPHORE
+#ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
     Context<Base::RenderContext>::OnCpuPresentComplete(false);
 #else
     Context<Base::RenderContext>::OnCpuPresentComplete(true);
@@ -214,7 +220,7 @@ void RenderContext::BeginFrameCaptureScope()
 void RenderContext::EndFrameCaptureScope()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(m_frame_capture_scope_begun, "Metal frame capture scope was not begun");
+    META_CHECK_TRUE_DESCR(m_frame_capture_scope_begun, "Metal frame capture scope was not begun");
 
     [m_frame_capture_scope endScope];
     m_frame_capture_scope_begun = false;
@@ -223,7 +229,7 @@ void RenderContext::EndFrameCaptureScope()
 void RenderContext::Capture(const id<MTLCaptureScope>& mtl_capture_scope)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(mtl_capture_scope);
+    META_CHECK_NOT_NULL(mtl_capture_scope);
     
     MTLCaptureManager*    mtl_capture_manager = [MTLCaptureManager sharedCaptureManager];
     MTLCaptureDescriptor* mtl_capture_desc    = [[MTLCaptureDescriptor alloc] init];
@@ -231,7 +237,7 @@ void RenderContext::Capture(const id<MTLCaptureScope>& mtl_capture_scope)
 
     NSError* ns_error = nil;
     const bool capture_success = [mtl_capture_manager startCaptureWithDescriptor:mtl_capture_desc error:&ns_error];
-    META_CHECK_ARG_TRUE_DESCR(capture_success, "failed to capture Metal scope '{}', error: {}",
+    META_CHECK_TRUE_DESCR(capture_success, "failed to capture Metal scope '{}', error: {}",
                               MacOS::ConvertFromNsString(mtl_capture_scope.label),
                               MacOS::ConvertFromNsString([ns_error localizedDescription]));
 }

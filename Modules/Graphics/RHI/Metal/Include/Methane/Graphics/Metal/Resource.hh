@@ -52,6 +52,8 @@ public:
         Data::Emitter<Rhi::IResourceCallback>::Emit(&Rhi::IResourceCallback::OnResourceReleased, std::ref(*this));
     }
 
+    MTLResourceUsage GetNativeResourceUsage() const noexcept { return m_mtl_resource_usage; }
+
     const Rhi::IResource::DescriptorByViewId& GetDescriptorByViewId() const noexcept final
     {
         static const Rhi::IResource::DescriptorByViewId s_dummy_descriptor_by_view_id;
@@ -85,7 +87,7 @@ protected:
         else
         {
             Data::RawPtr resource_data_ptr = static_cast<Data::RawPtr>([mtl_upload_subresource_buffer contents]);
-            META_CHECK_ARG_NOT_NULL(resource_data_ptr);
+            META_CHECK_NOT_NULL(resource_data_ptr);
             std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), resource_data_ptr);
         }
         return mtl_upload_subresource_buffer;
@@ -103,9 +105,18 @@ protected:
         return m_mtl_read_back_buffer;
     }
 
+    void SetNativeResourceUsage(MTLResourceUsage mtl_resouce_usage)
+    {
+        m_mtl_resource_usage = mtl_resouce_usage;
+    }
+
 private:
     std::vector<id<MTLBuffer>> m_upload_subresource_buffers;
     id<MTLBuffer> m_mtl_read_back_buffer;
+    MTLResourceUsage m_mtl_resource_usage = MTLResourceUsageRead;
 };
+
+MTLResourceUsage ConvertResourceUsageToMetal(Rhi::ResourceUsage resource_usage);
+MTLResourceUsage ConvertResourceUsageMaskToMetal(Rhi::ResourceUsageMask resource_usage_mask);
 
 } // namespace Methane::Graphics::Metal

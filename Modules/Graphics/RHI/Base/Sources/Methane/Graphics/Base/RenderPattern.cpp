@@ -25,7 +25,9 @@ Base implementation of the render pattern interface.
 #include <Methane/Graphics/Base/RenderContext.h>
 
 #include <Methane/Instrumentation.h>
-#include <Methane/Checks.hpp>
+
+#include <algorithm>
+#include <iterator>
 
 namespace Methane::Graphics::Base
 {

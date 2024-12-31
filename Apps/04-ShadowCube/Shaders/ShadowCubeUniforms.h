@@ -18,21 +18,20 @@ struct Constants
     float  light_power;
     float  light_ambient_factor;
     float  light_specular_factor;
+    float  _padding;
 };
 
 struct SceneUniforms
 {
     float4   eye_position;
-    float3   light_position;
+    float4   light_position;
 };
 
 struct MeshUniforms
 {
     float4x4 model_matrix;
     float4x4 mvp_matrix;
-#ifdef ENABLE_SHADOWS
     float4x4 shadow_mvpx_matrix;
-#endif
 };
 
 #endif // SHADOW_CUBE_UNIFORMS_H

@@ -29,7 +29,7 @@ namespace Methane::Platform { class AppMac; }
 
 @property (nonatomic, readonly, nullable) NSWindow* window;
 
-- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) p_app andFrameRect : (NSRect) frame;
+- (id _Nullable) initWithApp : (Methane::Platform::AppMac* _Nonnull) app_ptr andFrameRect : (NSRect) frame;
 - (Methane::Platform::AppMac* _Nonnull) getApp;
 
 @end

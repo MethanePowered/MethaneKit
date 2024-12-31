@@ -58,7 +58,7 @@ public:
 private:
     CommandQueue& GetDirectCommandQueue();
 
-    wrl::ComPtr<ID3D12Fence> m_cp_fence;
+    wrl::ComPtr<ID3D12Fence> m_fence_cptr;
     HANDLE                   m_event = nullptr;
 };
 

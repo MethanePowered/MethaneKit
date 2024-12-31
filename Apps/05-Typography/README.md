@@ -4,15 +4,14 @@
 |------------------------------------------------------------------|-------------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------|
 | ![Typography on Windows](Screenshots/TypographyWinDirectX12.jpg) | ![Typography on Linux](Screenshots/TypographyLinVulkan.jpg) | ![Typography on MacOS](Screenshots/TypographyMacMetal.jpg) | ![Typography on MacOS](Screenshots/TypographyIOSMetal.jpg) |
 
-This tutorial demonstrates animated text rendering with dynamic font atlas updates using Methane UI.
-Three colored text blocks are animated with continuous characters typing. Each text block is rendered as a single mesh
-displaying character glyphs from the font atlas texture to screen rectangles, which are generated on CPU 
-using Freetype 2.0 library.
+This tutorial demonstrates animated text rendering with dynamic font atlas updates using Methane UI. Three colored text blocks 
+are animated with continuous character typing. Each text block is rendered as a single mesh displaying character glyphs from the 
+font atlas texture to screen rectangles, which are generated on the CPU using the Freetype 2.0 library.
 
-Font atlas texture can be updated dynamically by adding new character glyphs on demand,
-as the user types text including any non-Ascii character sets. Text characters layout and mesh generation is done on CPU
-using Methane implementation, without using 3rd-party libraries and supports horizontal and vertical text alignment in 
-rectangular areas with wrapping by characters and words. Right-to-left and Arabic language characters layout is not supported yet.
+The font atlas texture can be updated dynamically by adding new character glyphs on demand, as the user types text, including 
+any non-ASCII character sets. Text character layout and mesh generation are done on the CPU using Methane implementation, 
+without using third-party libraries, and support horizontal and vertical text alignment in rectangular areas with wrapping by 
+characters and words. Right-to-left and Arabic language character layout is not supported yet.
 
 ## Application Controls
 
@@ -36,26 +35,28 @@ Common keyboard controls are enabled by the `Platform`, `Graphics` and `UserInte
 
 ## Application and Frame Class Definitions
 
-`TypographyApp` class is declared in header file [TypographyApp.h](TypographyApp.h),
-and is derived from [UserInterface::App](../../Modules/UserInterface/App) base class, same as in [previous tutorial](../03-ShadowCube).
-Base application class `UserInterface::App<TypographyFrame>` is using frame structure `TypographyFrame`, which defines only
-render command list and execution command list set which wraps this command list.
+`TypographyApp` class is declared in header file `TypographyApp.h`, and is derived from
+[UserInterface::App](../../Modules/UserInterface/App) base class, same as in [previous tutorial](../03-ShadowCube).
+Base application class `UserInterface::App<TypographyFrame>` uses frame structure `TypographyFrame`, which defines only
+the render command list and execution command list set that wraps this command list.
 
-`TypographyApp` class defines settings structure `TypographyApp::Settings`, getter of the current settings
-`TypographyApp::GetSettings` and individual setters for each application setting:
-- `TypographyApp::SetTextLayout` - allows to change word wrapping mode, horizontal and vertical text layouts for all text blocks;
-- `TypographyApp::SetForwardTypingDirection` - changes text typing animation: appending new characters if `true`, or backspace deleting if `false`;
+`TypographyApp` class defines a settings structure `TypographyApp::Settings`, a getter for the current settings 
+`TypographyApp::GetSettings`, and individual setters for each application setting:
+- `TypographyApp::SetTextLayout` - allows changing word wrapping mode, horizontal and vertical text layouts for all text blocks;
+- `TypographyApp::SetForwardTypingDirection` - changes text typing animation: appending new characters if `true`, or backspace 
+  deleting if `false`;
 - `TypographyApp::SetTextUpdateInterval` - changes text typing time interval in milliseconds;
 - `TypographyApp::SetIncrementalTextUpdate` - enables or disables incremental updating of text block mesh buffers.
 
-Application setting getters can be changed by user in runtime with keyboard shortcuts, handled in [TypographyAppController.h](TypographyAppController.h).
+Application setting getters can be changed by the user at runtime with keyboard shortcuts, handled in
+[TypographyAppController.h](TypographyAppController.h).
 
 `TypographyApp` class contains the following private members:
-- `gui::Font` objects each one for unique font, size and color;
-- `gui::TextItem` objects each for one text block;
+- `gui::Font` objects, each for a unique font, size, and color;
+- `gui::TextItem` objects, each for one text block;
 - `gui::Badge` objects for rendering font atlas textures on screen;
-- `std::vector<size_t>` displayed lengths of text in each text block incremented with animation;
-- `Timer::TimeDuration` holds duration of the last text block update to be displayed on screen.
+- `std::vector<size_t>` displayed lengths of text in each text block, incremented with animation;
+- `Timer::TimeDuration` holds the duration of the last text block update to be displayed on screen.
 
 ```cpp
 #pragma once
@@ -128,9 +129,9 @@ private:
 
 ## Graphics Resources Initialization
 
-Fonts and text blocks are initialized in `TypographyApp::Init()` method in a `for` loop for each block index.
-Text blocks are positioned one below another with `vertical_text_pos_in_dots` variable which holds vertical
-position in DPI-independent Dot units.
+Fonts and text blocks are initialized in the `TypographyApp::Init()` method in a `for` loop for each block index. Text blocks 
+are positioned one below another using the `vertical_text_pos_in_dots` variable, which holds the vertical position in 
+DPI-independent Dot units.
 
 ```cpp
     const gfx::FrameSize frame_size_in_dots = GetFrameSizeInDots();
@@ -153,18 +154,18 @@ position in DPI-independent Dot units.
     }
 ```
 
-Font objects are used to create and render text blocks on screen. Font objects are loaded from `Data::FontProvider` singleton 
-with specified font settings and are added to fonts library. `Data::FontProvider` loads `TTF` fonts from application
-resources. Font settings include:
+Font objects are used to create and render text blocks on screen. Font objects are loaded from the `Data::FontProvider` 
+singleton with specified font settings and are added to the fonts library. `Data::FontProvider` loads `TTF` fonts from 
+application resources. Font settings include:
 - Font description:
-  - Font unique name for registration in fonts library
-  - Font file path loaded with data provider
-  - Font size in points
+  - Unique name for registration in the fonts library
+  - File path loaded with the data provider
+  - Size in points
 - Font resolution DPI
-- Initial alphabet to be rendered and added to font atlas (it is also dynamically extended on demand)
+- Initial alphabet to be rendered and added to the font atlas (it is also dynamically extended on demand)
 
-`UserInterface::FontContext` is a helper class which holds references of `FontLibrary` and `Data::IProvider`
-to facilitate font creation and queries via `FontContext::GetFont` method.
+`UserInterface::FontContext` is a helper class that holds references to `FontLibrary` and `Data::IProvider` to facilitate 
+font creation and queries via the `FontContext::GetFont` method.
 
 ```cpp
         // Add font to library
@@ -180,16 +181,16 @@ to facilitate font creation and queries via `FontContext::GetFont` method.
         );
 ```
 
-Each text block object is created using `UserInterface::Context` object acquired with `UserInterface::App::GetUIContext()`
-method, font object which was created previously and text settings:
-- Font name registered in fonts library
+Each text block object is created using the `UserInterface::Context` object acquired with the `UserInterface::App::GetUIContext()`
+method, the font object which was created previously, and text settings:
+- Font name registered in the fonts library
 - Text string in UTF8 or UTF32 format
-- Rectangle area in Dots or Pixels on screen for fit the text in
-- Layout describing how the text will be fit into the rectangular area
+- Rectangle area in Dots or Pixels on the screen to fit the text in
+- Layout describing how the text will fit into the rectangular area
   - Wrapping mode (No wrapping, Wrap anywhere, Wrap on word boundaries)
   - Horizontal alignment (Left, Right, Center)
   - Vertical alignment (Top, Bottom, Center)
-- Color of text block
+- Color of the text block
 - Incremental text mesh update flag
 
 ```cpp
@@ -214,8 +215,8 @@ method, font object which was created previously and text settings:
         );
 ```
 
-Font objects hold a font atlas textures which are displayed on screen in this tutorial using `UserInterface::Badge` objects,
-created in `TypographyTutorial::UpdateFontAtlasBadges()` method:
+Font objects hold font atlas textures, which are displayed on screen in this tutorial using `UserInterface::Badge` objects.
+These badges are created in the `TypographyApp::UpdateFontAtlasBadges()` method:
 
 ```cpp
 oid TypographyApp::UpdateFontAtlasBadges()
@@ -269,15 +270,14 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const
 }
 ```
 
-`TypographyApp::LayoutFontAtlasBadges` is positioning all created atlas badges in the left-bottom corner of the screen
-located one after another starting with largest textures and ending with smallest.
+`TypographyApp::LayoutFontAtlasBadges` positions all created atlas badges in the bottom-left corner of the screen, 
+arranging them one after another, starting with the largest textures and ending with the smallest.
 
 ## Frame Rendering Cycle
 
-Animation function bound to time-animation in constructor of `TypographyApp` class is called automatically as a part of
-every render cycle, just before `App::Update` function call. 
-`TypographyApp::Animate` function updates text displayed in text blocks by adding or deleting characters and updates 
-text block positions once in a equal time spans.
+Animation function bound to time-animation in the constructor of the `TypographyApp` class is called automatically as a part 
+of every render cycle, just before the `App::Update` function call. The `TypographyApp::Animate` function updates the text 
+displayed in text blocks by adding or deleting characters and updates text block positions at equal time intervals.
 
 ```cpp
 TypographyApp::TypographyApp()
@@ -305,14 +305,14 @@ bool TypographyApp::Animate(double elapsed_seconds, double)
 }
 ```
 
-Each text rendering object is managing its own set of GPU resources for each frame in swap-chain:
+Each text rendering object manages its own set of GPU resources for each frame in the swap-chain:
 - Vertex and index buffers
 - Shader uniforms buffer
 - Font atlas texture
 - Program bindings
 
-To update text resources on GPU to make them ready for frame rendering,
-`Text::Update(...)` method is called for each text object in `TypographyApp::Update()`.
+To update text resources on the GPU and make them ready for frame rendering, the `Text::Update(...)` method is called for each 
+text object in `TypographyApp::Update()`.
 
 ```cpp
 bool TypographyApp::Update()
@@ -330,8 +330,9 @@ bool TypographyApp::Update()
 }
 ```
 
-After updating text resources on GPU, the rendering is simple: `UserInterface::Text::Draw(...)` is called for each text object 
-with per-frame render command list and debug group. Font atlas badges are rendered in the same way `UserInterface::Badge::Draw(...)`.
+After updating text resources on the GPU, rendering is straightforward: `UserInterface::Text::Draw(...)` is called for each text 
+object with a per-frame render command list and debug group. Font atlas badges are rendered similarly using 
+`UserInterface::Badge::Draw(...)`.
 
 ```cpp
 bool TypographyApp::Render()

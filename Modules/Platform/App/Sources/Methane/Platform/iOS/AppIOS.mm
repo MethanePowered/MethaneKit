@@ -41,7 +41,7 @@ static UIAlertActionStyle ConvertMessageTypeToNsAlertStyle(AppBase::Message::Typ
         case AppBase::Message::Type::Information: return UIAlertActionStyleDefault;
         case AppBase::Message::Type::Warning:     return UIAlertActionStyleCancel;
         case AppBase::Message::Type::Error:       return UIAlertActionStyleDestructive;
-        default: META_UNEXPECTED_ARG_RETURN(msg_type, UIAlertActionStyleDestructive);
+        default: META_UNEXPECTED_RETURN(msg_type, UIAlertActionStyleDestructive);
     }
 }
 
@@ -55,7 +55,7 @@ AppIOS::AppIOS(const AppBase::Settings& settings)
     : AppBase(settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(s_instance_ptr, nullptr, "Application can have only one instance");
+    META_CHECK_EQUAL_DESCR(s_instance_ptr, nullptr, "Application can have only one instance");
     s_instance_ptr = this;
 }
 
@@ -111,7 +111,7 @@ void AppIOS::ShowAlert(const Message& msg)
     META_FUNCTION_TASK();
     
     AppDelegate* app_delegate = static_cast<AppDelegate*>([UIApplication sharedApplication].delegate);
-    META_CHECK_ARG_NOT_NULL(app_delegate);
+    META_CHECK_NOT_NULL(app_delegate);
 
     [app_delegate alert: MacOS::ConvertToNsString(msg.title)
         withInformation: MacOS::ConvertToNsString(msg.information)

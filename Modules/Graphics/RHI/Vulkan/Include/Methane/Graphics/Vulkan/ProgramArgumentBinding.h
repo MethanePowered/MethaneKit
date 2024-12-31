@@ -59,9 +59,12 @@ public:
     ProgramArgumentBinding(const ProgramArgumentBinding& other) = default;
 
     const Settings& GetVulkanSettings() const noexcept { return m_settings_vk; }
+    uint32_t GetPushConstantsOffset() const noexcept { return m_vk_push_constants_offset; }
+    vk::ShaderStageFlagBits GetNativeShaderStageFlags() const;
 
-    void SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index) noexcept;
-    void SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept;
+    void SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t layout_binding_index);
+    void SetDescriptorSet(const vk::DescriptorSet& descriptor_set);
+    void SetPushConstantsOffset(uint32_t push_constant_offset) noexcept;
 
     // Base::ProgramArgumentBinding interface
     [[nodiscard]] Ptr<Base::ProgramArgumentBinding> CreateCopy() const override;
@@ -69,14 +72,21 @@ public:
 
     // IArgumentBinding interface
     const Settings& GetSettings() const noexcept override { return m_settings_vk; }
-    bool SetResourceViews(const Rhi::IResource::Views& resource_views) override;
+    bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
 
     void UpdateDescriptorSetsOnGpu();
 
+protected:
+    // Base::ProgramArgumentBinding overrides...
+    bool UpdateRootConstantResourceViews() override;
+
 private:
+    void SetDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views);
+
     Settings                              m_settings_vk;
-    const vk::DescriptorSet*              m_vk_descriptor_set_ptr = nullptr;
-    uint32_t                              m_vk_binding_value      = 0U;
+    vk::DescriptorSet                     m_vk_descriptor_set;
+    uint32_t                              m_vk_binding_value        = 0U;
+    uint32_t                              m_vk_push_constants_offset = 0U;
     vk::WriteDescriptorSet                m_vk_write_descriptor_set;
     std::vector<vk::DescriptorImageInfo>  m_vk_descriptor_images;
     std::vector<vk::DescriptorBufferInfo> m_vk_descriptor_buffers;

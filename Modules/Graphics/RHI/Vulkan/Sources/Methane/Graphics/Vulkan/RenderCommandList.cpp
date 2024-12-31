@@ -56,7 +56,7 @@ static vk::IndexType GetVulkanIndexTypeByStride(Data::Size index_stride_bytes)
     case 1: return vk::IndexType::eUint8EXT;
     case 2: return vk::IndexType::eUint16;
     case 4: return vk::IndexType::eUint32;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(index_stride_bytes, vk::IndexType::eNoneKHR, "unsupported index buffer stride size");
+    default: META_UNEXPECTED_RETURN_DESCR(index_stride_bytes, vk::IndexType::eNoneKHR, "unsupported index buffer stride size");
     }
 }
 
@@ -170,7 +170,7 @@ void RenderCommandList::Draw(Primitive primitive, uint32_t vertex_count, uint32_
 void RenderCommandList::Commit()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_FALSE(IsCommitted());
+    META_CHECK_FALSE(IsCommitted());
 
     if (!IsParallel())
     {

@@ -58,10 +58,10 @@ inline void SafeCloseHandle(HANDLE& handle) noexcept
     handle = nullptr;
 }
 
-inline void ThrowIfFailed(HRESULT hr, ID3D12Device* p_device = nullptr)
+inline void ThrowIfFailed(HRESULT hr, ID3D12Device* device_ptr = nullptr)
 {
     if (FAILED(hr))
-        throw RuntimeException(hr, p_device);
+        throw RuntimeException(hr, device_ptr);
 }
 
 inline void ThrowIfFailed(HRESULT hr, const wrl::ComPtr<ID3DBlob>& error_blob)

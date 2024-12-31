@@ -32,6 +32,10 @@ and by Methane App implementations.
 #import "iOS/AppViewMetal.hh"
 #endif
 
+#else // __OBJC__
+
+#include <stdint.h>
+
 #endif // __OBJC__
 
 #include <stdexcept>
@@ -53,7 +57,7 @@ using NativeAppViewPtr = NativeAppView*;
 
 struct AppView
 {
-    NativeAppViewPtr p_native_view;
+    NativeAppViewPtr native_view_ptr;
 };
 
 class AppViewResizeRequiredError

@@ -56,6 +56,7 @@ struct IProgramBindings;
 struct IDescriptorManager
 {
     virtual void AddProgramBindings(IProgramBindings& program_bindings) = 0;
+    virtual void RemoveProgramBindings(IProgramBindings& program_bindings) = 0;
     virtual void CompleteInitialization() = 0;
     virtual void Release() = 0;
 

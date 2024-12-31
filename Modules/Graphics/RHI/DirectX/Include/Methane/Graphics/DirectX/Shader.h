@@ -56,8 +56,8 @@ public:
 
 private:
     UniquePtr<Data::Chunk>              m_byte_code_chunk_ptr;
-    wrl::ComPtr<ID3DBlob>               m_cp_byte_code;
-    wrl::ComPtr<ID3D12ShaderReflection> m_cp_reflection;
+    wrl::ComPtr<ID3DBlob>               m_byte_code_cptr;
+    wrl::ComPtr<ID3D12ShaderReflection> m_reflection_cptr;
 };
 
 } // namespace Methane::Graphics::DirectX

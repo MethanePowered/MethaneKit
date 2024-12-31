@@ -122,37 +122,37 @@ bool CommandKit::HasListWithState(CommandListState cmd_list_state, CommandListId
 
 RenderCommandList CommandKit::GetRenderList(CommandListId cmd_list_id) const
 {
-    META_CHECK_ARG_EQUAL(GetListType(), CommandListType::Render);
+    META_CHECK_EQUAL(GetListType(), CommandListType::Render);
     return RenderCommandList(dynamic_cast<IRenderCommandList&>(GetImpl(m_impl_ptr).GetList(cmd_list_id)));
 }
 
 RenderCommandList CommandKit::GetRenderListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const
 {
-    META_CHECK_ARG_EQUAL(GetListType(), CommandListType::Render);
+    META_CHECK_EQUAL(GetListType(), CommandListType::Render);
     return RenderCommandList(dynamic_cast<IRenderCommandList&>(GetImpl(m_impl_ptr).GetListForEncoding(cmd_list_id, debug_group_name)));
 }
 
 ComputeCommandList CommandKit::GetComputeList(CommandListId cmd_list_id) const
 {
-    META_CHECK_ARG_EQUAL(GetListType(), CommandListType::Compute);
+    META_CHECK_EQUAL(GetListType(), CommandListType::Compute);
     return ComputeCommandList(dynamic_cast<IComputeCommandList&>(GetImpl(m_impl_ptr).GetList(cmd_list_id)));
 }
 
 ComputeCommandList CommandKit::GetComputeListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const
 {
-    META_CHECK_ARG_EQUAL(GetListType(), CommandListType::Compute);
+    META_CHECK_EQUAL(GetListType(), CommandListType::Compute);
     return ComputeCommandList(dynamic_cast<IComputeCommandList&>(GetImpl(m_impl_ptr).GetListForEncoding(cmd_list_id, debug_group_name)));
 }
 
 TransferCommandList CommandKit::GetTransferList(CommandListId cmd_list_id) const
 {
-    META_CHECK_ARG_EQUAL(GetListType(), CommandListType::Transfer);
+    META_CHECK_EQUAL(GetListType(), CommandListType::Transfer);
     return TransferCommandList(dynamic_cast<ITransferCommandList&>(GetImpl(m_impl_ptr).GetList(cmd_list_id)));
 }
 
 TransferCommandList CommandKit::GetTransferListForEncoding(CommandListId cmd_list_id, std::string_view debug_group_name) const
 {
-    META_CHECK_ARG_EQUAL(GetListType(), CommandListType::Transfer);
+    META_CHECK_EQUAL(GetListType(), CommandListType::Transfer);
     return TransferCommandList(dynamic_cast<ITransferCommandList&>(GetImpl(m_impl_ptr).GetListForEncoding(cmd_list_id, debug_group_name)));
 }
 

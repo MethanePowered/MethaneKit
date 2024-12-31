@@ -63,13 +63,13 @@ void Fence::WaitOnCpu()
     META_FUNCTION_TASK();
     Base::Fence::WaitOnCpu();
 
-    META_CHECK_ARG_NOT_NULL(m_mtl_event);
+    META_CHECK_NOT_NULL(m_mtl_event);
     uint64_t signalled_value = m_mtl_event.signaledValue;
     if (signalled_value >= GetValue())
         return;
 
-    META_CHECK_ARG_FALSE(m_is_signalled);
-    META_CHECK_ARG_NOT_NULL(m_mtl_event_listener);
+    META_CHECK_FALSE(m_is_signalled);
+    META_CHECK_NOT_NULL(m_mtl_event_listener);
     [m_mtl_event notifyListener:m_mtl_event_listener
                         atValue:GetValue()
                           block:^(id<MTLSharedEvent>, uint64_t /*value*/)

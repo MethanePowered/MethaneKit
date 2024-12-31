@@ -25,7 +25,7 @@ Metal implementation of the command queue interface.
 
 #include "QueryPool.hh"
 
-#include <Methane/Graphics/Base/CommandQueue.h>
+#include <Methane/Graphics/Base/CommandQueueTracking.h>
 
 #import <Metal/Metal.h>
 
@@ -35,7 +35,8 @@ namespace Methane::Graphics::Metal
 struct IContext;
 class RenderContext;
 
-class CommandQueue final : public Base::CommandQueue
+class CommandQueue final
+    : public Base::CommandQueueTracking
 {
 public:
     CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type);
@@ -48,7 +49,6 @@ public:
     [[nodiscard]] Ptr<Rhi::IParallelRenderCommandList> CreateParallelRenderCommandList(Rhi::IRenderPass& render_pass) override;
     [[nodiscard]] Ptr<Rhi::ITimestampQueryPool>        CreateTimestampQueryPool(uint32_t max_timestamps_per_frame) override;
     uint32_t                                           GetFamilyIndex() const noexcept override { return 0U; }
-    const Ptr<Rhi::ITimestampQueryPool>&               GetTimestampQueryPoolPtr() override      { return m_timestamp_query_pool_ptr; }
 
     // IObject interface
     bool SetName(std::string_view name) override;
@@ -62,7 +62,6 @@ private:
     void Reset();
     
     id<MTLCommandQueue> m_mtl_command_queue = nil;
-    Ptr<Rhi::ITimestampQueryPool> m_timestamp_query_pool_ptr = std::make_shared<TimestampQueryPool>(*this, 1000U);
 };
 
 } // namespace Methane::Graphics::Metal

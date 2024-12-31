@@ -41,7 +41,7 @@ DirectX 12 implementation of the shader interface.
 #include <set>
 
 #ifdef METHANE_LOGGING_ENABLED
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #endif
 
 namespace Methane::Graphics::DirectX
@@ -69,7 +69,7 @@ static Rhi::IResource::Type GetResourceTypeByDimensionType(D3D_SRV_DIMENSION dim
     case D3D_SRV_DIMENSION_TEXTURECUBEARRAY:
         return Rhi::IResource::Type::Texture;
 
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(dimension_type, Rhi::IResource::Type::Buffer, "unable to determine resource type by DX resource dimension type");
+    default: META_UNEXPECTED_RETURN_DESCR(dimension_type, Rhi::IResource::Type::Buffer, "unable to determine resource type by DX resource dimension type");
     }
 }
 
@@ -86,7 +86,7 @@ static Rhi::IResource::Type GetResourceTypeByInputAndDimensionType(D3D_SHADER_IN
     case D3D_SIT_TEXTURE:     return Rhi::IResource::Type::Texture;
     case D3D_SIT_SAMPLER:     return Rhi::IResource::Type::Sampler;
     case D3D_SIT_UAV_RWTYPED: return GetResourceTypeByDimensionType(dimension_type);
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(input_type, Rhi::IResource::Type::Buffer, "unable to determine resource type by DX shader input type");
+    default: META_UNEXPECTED_RETURN_DESCR(input_type, Rhi::IResource::Type::Buffer, "unable to determine resource type by DX shader input type");
     }
 }
 
@@ -111,7 +111,50 @@ static D3D12_INPUT_CLASSIFICATION GetInputClassificationByLayoutStepType(StepTyp
     {
     case StepType::PerVertex:     return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
     case StepType::PerInstance:   return D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
-    default:                      META_UNEXPECTED_ARG_RETURN(step_type, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA);
+    default:                      META_UNEXPECTED_RETURN(step_type, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA);
+    }
+}
+
+[[nodiscard]]
+static D3D12_SHADER_BUFFER_DESC GetConstantBufferDesc(ID3D12ShaderReflection& shader_reflection,
+                                                      const D3D12_SHADER_INPUT_BIND_DESC& binding_desc)
+{
+    if (binding_desc.Type != D3D_SIT_CBUFFER)
+        return {};
+
+    ID3D12ShaderReflectionConstantBuffer* buffer_reflection_ptr = shader_reflection.GetConstantBufferByName(binding_desc.Name);
+    META_CHECK_NOT_NULL_DESCR(buffer_reflection_ptr,
+                              "Failed to get buffer reflection from shader for argument \"{}\"", binding_desc.Name);
+
+    D3D12_SHADER_BUFFER_DESC buffer_desc = {};
+    ThrowIfFailed(buffer_reflection_ptr->GetDesc(&buffer_desc));
+    return buffer_desc;
+}
+
+[[nodiscard]]
+static ProgramArgumentBindingType GetProgramArgumentBindingType(Rhi::ProgramArgumentValueType arg_value_type,
+                                                                D3D_SHADER_INPUT_TYPE input_type)
+{
+    META_FUNCTION_TASK();
+    switch(arg_value_type)
+    {
+    case Rhi::ProgramArgumentValueType::RootConstantBuffer: return ProgramArgumentBindingType::ConstantBufferView;
+    case Rhi::ProgramArgumentValueType::RootConstantValue:  return ProgramArgumentBindingType::Constant32Bit;
+    case Rhi::ProgramArgumentValueType::ResourceView:       return ProgramArgumentBindingType::DescriptorTable;
+    case Rhi::ProgramArgumentValueType::BufferAddress:
+        {
+            if (IsUnorderedAccessInputType(input_type))
+            {
+                // SRV or UAV root descriptors can only be Raw or Structured buffers, textures must be bound through DescriptorTable
+                return input_type == D3D_SIT_UAV_RWTYPED
+                     ? ProgramBindings::ArgumentBinding::Type::DescriptorTable
+                     : ProgramBindings::ArgumentBinding::Type::UnorderedAccessView;
+            }
+            return input_type == D3D_SIT_CBUFFER
+                 ? ProgramBindings::ArgumentBinding::Type::ConstantBufferView
+                 : ProgramBindings::ArgumentBinding::Type::ShaderResourceView;
+        }
+    default: META_UNEXPECTED(arg_value_type);
     }
 }
 
@@ -145,32 +188,32 @@ Shader::Shader(Type type, const Base::Context& context, const Settings& settings
             settings.source_compile_target.c_str(),
             shader_compile_flags,
             0,
-            &m_cp_byte_code,
+            &m_byte_code_cptr,
             &error_blob
         ), error_blob);
 
-        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(static_cast<Data::ConstRawPtr>(m_cp_byte_code->GetBufferPointer()),
-                                                             static_cast<Data::Size>(m_cp_byte_code->GetBufferSize()));
+        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(static_cast<Data::ConstRawPtr>(m_byte_code_cptr->GetBufferPointer()),
+                                                             static_cast<Data::Size>(m_byte_code_cptr->GetBufferSize()));
     }
     else
     {
         const std::string compiled_func_name = GetCompiledEntryFunctionName();
-        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(fmt::format("{}.obj", compiled_func_name)));
+        m_byte_code_chunk_ptr = std::make_unique<Data::Chunk>(settings.data_provider.GetData(fmt::format("{}.dxil", compiled_func_name)));
     }
 
-    META_CHECK_ARG_NOT_NULL(m_byte_code_chunk_ptr);
-    ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->GetDataPtr(), m_byte_code_chunk_ptr->GetDataSize(), IID_PPV_ARGS(&m_cp_reflection)));
+    META_CHECK_NOT_NULL(m_byte_code_chunk_ptr);
+    ThrowIfFailed(D3DReflect(m_byte_code_chunk_ptr->GetDataPtr(), m_byte_code_chunk_ptr->GetDataSize(), IID_PPV_ARGS(&m_reflection_cptr)));
 }
 
 Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::ProgramArgumentAccessors& argument_accessors) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_cp_reflection);
+    META_CHECK_NOT_NULL(m_reflection_cptr);
 
     Ptrs<Base::ProgramArgumentBinding> argument_bindings;
 
     D3D12_SHADER_DESC shader_desc{};
-    m_cp_reflection->GetDesc(&shader_desc);
+    ThrowIfFailed(m_reflection_cptr->GetDesc(&shader_desc));
 
 #ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
@@ -182,37 +225,26 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
     for (UINT resource_index = 0; resource_index < shader_desc.BoundResources; ++resource_index)
     {
         D3D12_SHADER_INPUT_BIND_DESC binding_desc{};
-        ThrowIfFailed(m_cp_reflection->GetResourceBindingDesc(resource_index, &binding_desc));
+        ThrowIfFailed(m_reflection_cptr->GetResourceBindingDesc(resource_index, &binding_desc));
 
-        const Rhi::IProgram::Argument shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
-        const auto argument_acc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const Rhi::ProgramArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
-                                                   ? Rhi::ProgramArgumentAccessor(shader_argument)
-                                                   : *argument_acc_it;
-
-        ProgramBindings::ArgumentBinding::Type dx_binding_type = ProgramBindings::ArgumentBinding::Type::DescriptorTable;
-        if (argument_acc.IsAddressable())
-        {
-            if (IsUnorderedAccessInputType(binding_desc.Type))
-                // SRV or UAV root descriptors can only be Raw or Structured buffers, textures must be bound through DescriptorTable
-                dx_binding_type = binding_desc.Type == D3D_SIT_UAV_RWTYPED
-                                ? ProgramBindings::ArgumentBinding::Type::DescriptorTable
-                                : ProgramBindings::ArgumentBinding::Type::UnorderedAccessView;
-            else
-                dx_binding_type = binding_desc.Type == D3D_SIT_CBUFFER
-                                ? ProgramBindings::ArgumentBinding::Type::ConstantBufferView
-                                : ProgramBindings::ArgumentBinding::Type::ShaderResourceView;
-        }
+        const Rhi::ProgramArgumentAccessType arg_access_type = Rhi::ProgramArgumentAccessor::GetTypeByRegisterSpace(binding_desc.Space);
+        const Rhi::ProgramArgument shader_argument(GetType(), Base::Shader::GetCachedArgName(binding_desc.Name));
+        const Rhi::ProgramArgumentAccessor* argument_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Rhi::ProgramArgumentAccessor argument_acc = argument_ptr ? *argument_ptr
+                                                        : Rhi::ProgramArgumentAccessor(shader_argument, arg_access_type);
+        const D3D12_SHADER_BUFFER_DESC buffer_desc = GetConstantBufferDesc(*m_reflection_cptr.Get(), binding_desc);
+        const ProgramArgumentBindingType dx_binding_type = GetProgramArgumentBindingType(argument_acc.GetValueType(), binding_desc.Type);
 
         argument_bindings.push_back(std::make_shared<ProgramBindings::ArgumentBinding>(
             GetContext(),
-            ProgramBindings::ArgumentBinding::Settings
+            ProgramArgumentBindingSettings
             {
-                Rhi::IProgramArgumentBinding::Settings
+                Rhi::ProgramArgumentBindingSettings
                 {
                     argument_acc,
                     GetResourceTypeByInputAndDimensionType(binding_desc.Type, binding_desc.Dimension),
-                    binding_desc.BindCount
+                    binding_desc.BindCount,
+                    buffer_desc.Size
                 },
                 dx_binding_type,
                 binding_desc.Type,
@@ -227,16 +259,13 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                << ": type="         << magic_enum::enum_name(binding_desc.Type)
                << ", dimension="    << magic_enum::enum_name(binding_desc.Dimension)
                << ", return_type="  << magic_enum::enum_name(binding_desc.ReturnType)
+               << ", buffer_size="  << buffer_desc.Size
                << ", samples_count="<< binding_desc.NumSamples
                << ", count="        << binding_desc.BindCount
                << ", point="        << binding_desc.BindPoint
                << ", space="        << binding_desc.Space
                << ", flags="        << binding_desc.uFlags
                << ", id="           << binding_desc.uID;
-        if (argument_acc_it == argument_accessors.end())
-        {
-            log_ss << ", no user argument description was found, using default";
-        }
         if (resource_index < shader_desc.BoundResources - 1)
             log_ss << std::endl;
 #endif
@@ -249,10 +278,10 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
 std::vector<D3D12_INPUT_ELEMENT_DESC> Shader::GetNativeProgramInputLayout(const Program& program) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_cp_reflection);
+    META_CHECK_NOT_NULL(m_reflection_cptr);
 
     D3D12_SHADER_DESC shader_desc{};
-    m_cp_reflection->GetDesc(&shader_desc);
+    m_reflection_cptr->GetDesc(&shader_desc);
 
 #ifdef METHANE_LOGGING_ENABLED
     std::stringstream log_ss;
@@ -266,7 +295,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> Shader::GetNativeProgramInputLayout(const 
     for (UINT param_index = 0; param_index < shader_desc.InputParameters; ++param_index)
     {
         D3D12_SIGNATURE_PARAMETER_DESC param_desc{};
-        m_cp_reflection->GetInputParameterDesc(param_index, &param_desc);
+        m_reflection_cptr->GetInputParameterDesc(param_index, &param_desc);
 
 #ifdef METHANE_LOGGING_ENABLED
         log_ss << "  - Parameter "     << param_index
@@ -286,9 +315,9 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> Shader::GetNativeProgramInputLayout(const 
         const Base::Program::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
         const uint32_t buffer_index = GetProgramInputBufferIndexByArgumentSemantic(program, param_desc.SemanticName);
 
-        META_CHECK_ARG_LESS_DESCR(buffer_index, input_buffer_layouts.size(),
-                                  "Provided description of program input layout has insufficient buffers count {}, while shader requires buffer at index {}",
-                                  input_buffer_layouts.size(), buffer_index);
+        META_CHECK_LESS_DESCR(buffer_index, input_buffer_layouts.size(),
+                              "Provided description of program input layout has insufficient buffers count {}, while shader requires buffer at index {}",
+                              input_buffer_layouts.size(), buffer_index);
         const Base::Program::InputBufferLayout& input_buffer_layout = input_buffer_layouts[buffer_index];
 
         if (buffer_index <= input_buffer_byte_offsets.size())
@@ -298,13 +327,13 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> Shader::GetNativeProgramInputLayout(const 
 
         uint32_t element_byte_size = 0;
         D3D12_INPUT_ELEMENT_DESC element_desc{};
-        element_desc.SemanticName             = param_desc.SemanticName;
-        element_desc.SemanticIndex            = param_desc.SemanticIndex;
-        element_desc.InputSlot                = buffer_index;
-        element_desc.InputSlotClass           = GetInputClassificationByLayoutStepType(input_buffer_layout.step_type);
-        element_desc.InstanceDataStepRate     = input_buffer_layout.step_type == StepType::PerVertex ? 0 : input_buffer_layout.step_rate;
-        element_desc.Format                   = TypeConverter::ParameterDescToDxgiFormatAndSize(param_desc, element_byte_size);
-        element_desc.AlignedByteOffset        = buffer_byte_offset;
+        element_desc.SemanticName         = param_desc.SemanticName;
+        element_desc.SemanticIndex        = param_desc.SemanticIndex;
+        element_desc.InputSlot            = buffer_index;
+        element_desc.InputSlotClass       = GetInputClassificationByLayoutStepType(input_buffer_layout.step_type);
+        element_desc.InstanceDataStepRate = input_buffer_layout.step_type == StepType::PerVertex ? 0 : input_buffer_layout.step_rate;
+        element_desc.Format               = TypeConverter::ParameterDescToDxgiFormatAndSize(param_desc, element_byte_size);
+        element_desc.AlignedByteOffset    = buffer_byte_offset;
 
         dx_input_layout.push_back(element_desc);
         buffer_byte_offset += element_byte_size;

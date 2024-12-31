@@ -18,6 +18,7 @@ struct Constants
     float  light_power;
     float  light_ambient_factor;
     float  light_specular_factor;
+    float  _padding;
 };
 
 struct Uniforms

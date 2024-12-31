@@ -33,6 +33,8 @@ class Fence final
 {
 public:
     using Base::Fence::Fence;
+    using Base::Fence::GetValue;
+    using Base::Fence::GetCommandQueue;
 };
 
 } // namespace Methane::Graphics::Null

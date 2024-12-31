@@ -98,9 +98,9 @@ void ComputeState::InitializeNativePipelineState()
                                                                                      options: MTLPipelineOptionNone
                                                                                   reflection: nil
                                                                                        error: &ns_error];
-    META_CHECK_ARG_NOT_NULL_DESCR(m_mtl_pipeline_state,
-                                  "failed to create Metal compute pipeline state: {}",
-                                  MacOS::ConvertFromNsString([ns_error localizedDescription]));
+    META_CHECK_NOT_NULL_DESCR(m_mtl_pipeline_state,
+                              "failed to create Metal compute pipeline state: {}",
+                              MacOS::ConvertFromNsString([ns_error localizedDescription]));
 }
 
 id<MTLComputePipelineState> ComputeState::GetNativePipelineState()

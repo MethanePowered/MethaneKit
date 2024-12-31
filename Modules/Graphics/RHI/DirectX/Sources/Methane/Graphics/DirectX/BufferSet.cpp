@@ -27,7 +27,7 @@ DirectX 12 implementation of the buffer-set interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Rhi
 {
@@ -71,8 +71,8 @@ const std::vector<D3D12_VERTEX_BUFFER_VIEW>& BufferSet::GetNativeVertexBufferVie
 {
     META_FUNCTION_TASK();
     const Rhi::BufferType buffers_type = GetType();
-    META_CHECK_ARG_EQUAL_DESCR(buffers_type, Rhi::BufferType::Vertex,
-                               "unable to get vertex buffer views from buffer of {} type", magic_enum::enum_name(buffers_type));
+    META_CHECK_EQUAL_DESCR(buffers_type, Rhi::BufferType::Vertex,
+                           "unable to get vertex buffer views from buffer of {} type", magic_enum::enum_name(buffers_type));
     return m_vertex_buffer_views;
 }
 

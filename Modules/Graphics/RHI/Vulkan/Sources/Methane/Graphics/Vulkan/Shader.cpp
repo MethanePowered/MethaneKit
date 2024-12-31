@@ -45,7 +45,7 @@ static vk::VertexInputRate ConvertInputBufferLayoutStepTypeToVertexInputRate(Rhi
     {
     case StepType::PerVertex:   return vk::VertexInputRate::eVertex;
     case StepType::PerInstance: return vk::VertexInputRate::eInstance;
-    default:                    META_UNEXPECTED_ARG_RETURN(step_type, vk::VertexInputRate::eVertex);
+    default:                    META_UNEXPECTED_RETURN(step_type, vk::VertexInputRate::eVertex);
     }
 }
 
@@ -58,7 +58,7 @@ static vk::Format GetFloatVectorFormat(uint32_t vector_size)
     case 2: return vk::Format::eR32G32Sfloat;
     case 3: return vk::Format::eR32G32B32Sfloat;
     case 4: return vk::Format::eR32G32B32A32Sfloat;
-    default: META_UNEXPECTED_ARG_RETURN(vector_size, vk::Format::eUndefined);
+    default: META_UNEXPECTED_RETURN(vector_size, vk::Format::eUndefined);
     }
 }
 
@@ -71,7 +71,7 @@ static vk::Format GetSignedIntegerVectorFormat(uint32_t vector_size)
     case 2: return vk::Format::eR32G32Sint;
     case 3: return vk::Format::eR32G32B32Sint;
     case 4: return vk::Format::eR32G32B32A32Sint;
-    default: META_UNEXPECTED_ARG_RETURN(vector_size, vk::Format::eUndefined);
+    default: META_UNEXPECTED_RETURN(vector_size, vk::Format::eUndefined);
     }
 }
 
@@ -84,7 +84,7 @@ static vk::Format GetUnsignedIntegerVectorFormat(uint32_t vector_size)
     case 2: return vk::Format::eR32G32Uint;
     case 3: return vk::Format::eR32G32B32Uint;
     case 4: return vk::Format::eR32G32B32A32Uint;
-    default: META_UNEXPECTED_ARG_RETURN(vector_size, vk::Format::eUndefined);
+    default: META_UNEXPECTED_RETURN(vector_size, vk::Format::eUndefined);
     }
 }
 
@@ -96,7 +96,7 @@ static vk::Format GetVertexAttributeFormatFromSpirvType(const spirv_cross::SPIRT
     case spirv_cross::SPIRType::Float: return GetFloatVectorFormat(attribute_type.vecsize);
     case spirv_cross::SPIRType::UInt:  return GetSignedIntegerVectorFormat(attribute_type.vecsize);
     case spirv_cross::SPIRType::Int:   return GetUnsignedIntegerVectorFormat(attribute_type.vecsize);
-    default:                           META_UNEXPECTED_ARG_RETURN(attribute_type.basetype, vk::Format::eUndefined);
+    default:                           META_UNEXPECTED_RETURN(attribute_type.basetype, vk::Format::eUndefined);
     }
 }
 
@@ -118,6 +118,7 @@ static Rhi::IResource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorTy
     {
     case vk::DescriptorType::eUniformBuffer:
     case vk::DescriptorType::eStorageBuffer:
+    case vk::DescriptorType::eInlineUniformBlock:
         return Rhi::IResource::Type::Buffer;
 
     case vk::DescriptorType::eStorageImage:
@@ -128,7 +129,7 @@ static Rhi::IResource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorTy
         return Rhi::IResource::Type::Sampler;
 
     default:
-        META_UNEXPECTED_ARG_RETURN(vk_descriptor_type, Rhi::IResource::Type::Buffer);
+        META_UNEXPECTED_RETURN(vk_descriptor_type, Rhi::IResource::Type::Buffer);
     }
 }
 
@@ -142,8 +143,8 @@ static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_desc
     {
     case vk::DescriptorType::eUniformBuffer: return vk::DescriptorType::eUniformBufferDynamic;
     case vk::DescriptorType::eStorageBuffer: return vk::DescriptorType::eStorageBufferDynamic;
-    default: META_UNEXPECTED_ARG_DESCR_RETURN(vk_shader_descriptor_type, vk_shader_descriptor_type,
-                                              "addressable arguments support only Uniform or Storage buffers");
+    default: META_UNEXPECTED_RETURN_DESCR(vk_shader_descriptor_type, vk_shader_descriptor_type,
+                                          "addressable arguments support only Uniform or Storage buffers");
     }
 }
 
@@ -163,18 +164,30 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
 
     for (const spirv_cross::Resource& resource : spirv_resources)
     {
-        const Rhi::IProgram::Argument shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
-        const auto argument_acc_it = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
-        const Rhi::ProgramArgumentAccessor argument_acc = argument_acc_it == argument_accessors.end()
-                                                   ? Rhi::ProgramArgumentAccessor(shader_argument)
-                                                   : *argument_acc_it;
-
         const spirv_cross::SPIRType& spirv_type = spirv_compiler.get_type(resource.type_id);
         const uint32_t array_size = GetArraySize(spirv_type);
+        const uint32_t buffer_size = spirv_type.basetype == spirv_cross::SPIRType::BaseType::Struct
+                                   ? static_cast<uint32_t>(spirv_compiler.get_declared_struct_size(spirv_type))
+                                   : 0U;
 
         ProgramBindings::ArgumentBinding::ByteCodeMap byte_code_map{ shader_type };
-        META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationDescriptorSet, byte_code_map.descriptor_set_offset));
-        META_CHECK_ARG_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationBinding, byte_code_map.binding_offset));
+        if (vk_descriptor_type != vk::DescriptorType::eInlineUniformBlock)
+        {
+            META_CHECK_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationDescriptorSet, byte_code_map.descriptor_set_offset));
+            META_CHECK_TRUE(spirv_compiler.get_binary_offset_for_decoration(resource.id, spv::DecorationBinding, byte_code_map.binding_offset));
+        }
+
+        const uint32_t descriptor_set_id = spirv_compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+        const Rhi::ProgramArgumentAccessType arg_access_type = Rhi::ProgramArgumentAccessor::GetTypeByRegisterSpace(descriptor_set_id);
+        const Rhi::ProgramArgumentValueType arg_value_type = vk_descriptor_type == vk::DescriptorType::eInlineUniformBlock
+                                                           ? Rhi::ProgramArgumentValueType::RootConstantValue
+                                                           : Rhi::ProgramArgumentValueType::ResourceView;
+
+        const Rhi::ProgramArgument shader_argument(shader_type, shader.GetCachedArgName(spirv_compiler.get_name(resource.id)));
+        const Rhi::ProgramArgumentAccessor* argument_accessor_ptr = Rhi::IProgram::FindArgumentAccessor(argument_accessors, shader_argument);
+        const Rhi::ProgramArgumentAccessor argument_acc = argument_accessor_ptr
+                                                          ? *argument_accessor_ptr
+                                                          : Rhi::ProgramArgumentAccessor(shader_argument, arg_access_type, arg_value_type);
 
         argument_bindings.push_back(std::make_shared<ProgramBindings::ArgumentBinding>(
             shader.GetContext(),
@@ -184,7 +197,8 @@ static void AddSpirvResourcesToArgumentBindings(const spirv_cross::Compiler& spi
                 {
                     argument_acc,
                     resource_type,
-                    array_size
+                    array_size,
+                    buffer_size
                 },
                 UpdateDescriptorType(vk_descriptor_type, argument_acc),
                 { std::move(byte_code_map) }
@@ -229,12 +243,13 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
     // Get only resources that are statically used in SPIRV-code (skip all resources that are never accessed by the shader)
     const spirv_cross::ShaderResources spirv_resources = spirv_compiler.get_shader_resources(spirv_compiler.get_active_interface_variables());
 
-    add_spirv_resources_to_argument_bindings(spirv_resources.uniform_buffers,   vk::DescriptorType::eUniformBuffer);
-    add_spirv_resources_to_argument_bindings(spirv_resources.storage_buffers,   vk::DescriptorType::eStorageBuffer);
-    add_spirv_resources_to_argument_bindings(spirv_resources.storage_images,    vk::DescriptorType::eStorageImage);
-    add_spirv_resources_to_argument_bindings(spirv_resources.sampled_images,    vk::DescriptorType::eCombinedImageSampler);
-    add_spirv_resources_to_argument_bindings(spirv_resources.separate_images,   vk::DescriptorType::eSampledImage);
-    add_spirv_resources_to_argument_bindings(spirv_resources.separate_samplers, vk::DescriptorType::eSampler);
+    add_spirv_resources_to_argument_bindings(spirv_resources.push_constant_buffers, vk::DescriptorType::eInlineUniformBlock);
+    add_spirv_resources_to_argument_bindings(spirv_resources.uniform_buffers,       vk::DescriptorType::eUniformBuffer);
+    add_spirv_resources_to_argument_bindings(spirv_resources.storage_buffers,       vk::DescriptorType::eStorageBuffer);
+    add_spirv_resources_to_argument_bindings(spirv_resources.storage_images,        vk::DescriptorType::eStorageImage);
+    add_spirv_resources_to_argument_bindings(spirv_resources.sampled_images,        vk::DescriptorType::eCombinedImageSampler);
+    add_spirv_resources_to_argument_bindings(spirv_resources.separate_images,       vk::DescriptorType::eSampledImage);
+    add_spirv_resources_to_argument_bindings(spirv_resources.separate_samplers,     vk::DescriptorType::eSampler);
     // TODO: add support for spirv_resources.atomic_counters, vk::DescriptorType::eMutableVALVE
 
     if (argument_bindings.empty())
@@ -285,7 +300,7 @@ vk::PipelineShaderStageCreateInfo Shader::GetNativeStageCreateInfo() const
 vk::PipelineVertexInputStateCreateInfo Shader::GetNativeVertexInputStateCreateInfo(const Program& program)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(GetType(), Rhi::ShaderType::Vertex);
+    META_CHECK_EQUAL(GetType(), Rhi::ShaderType::Vertex);
     std::lock_guard lock(m_mutex);
 
     if (!m_vertex_input_initialized)
@@ -309,8 +324,8 @@ Data::MutableChunk& Shader::GetMutableByteCode() noexcept
 void Shader::InitializeVertexInputDescriptions(const Program& program)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(GetType(), Rhi::ShaderType::Vertex);
-    META_CHECK_ARG_FALSE_DESCR(m_vertex_input_initialized, "vertex input descriptions are already initialized");
+    META_CHECK_EQUAL(GetType(), Rhi::ShaderType::Vertex);
+    META_CHECK_FALSE_DESCR(m_vertex_input_initialized, "vertex input descriptions are already initialized");
 
     const Rhi::IShader::Settings              & shader_settings      = GetSettings();
     const Base::Program::InputBufferLayouts& input_buffer_layouts = program.GetSettings().input_buffer_layouts;
@@ -347,7 +362,7 @@ void Shader::InitializeVertexInputDescriptions(const Program& program)
     {
         const bool has_semantic = spirv_compiler.has_decoration(input_resource.id, spv::DecorationHlslSemanticGOOGLE);
         const bool has_location = spirv_compiler.has_decoration(input_resource.id, spv::DecorationLocation);
-        META_CHECK_ARG_TRUE(has_semantic && has_location);
+        META_CHECK_TRUE(has_semantic && has_location);
 
         const std::string&           semantic_name    = spirv_compiler.get_decoration_string(input_resource.id, spv::DecorationHlslSemanticGOOGLE);
         const uint32_t               input_location   = spirv_compiler.get_decoration(input_resource.id, spv::DecorationLocation);
@@ -355,7 +370,7 @@ void Shader::InitializeVertexInputDescriptions(const Program& program)
         const vk::Format             attribute_format = GetVertexAttributeFormatFromSpirvType(attribute_type);
 
         const uint32_t buffer_index = GetProgramInputBufferIndexByArgumentSemantic(program, semantic_name);
-        META_CHECK_ARG_LESS(buffer_index, m_vertex_input_binding_descriptions.size());
+        META_CHECK_LESS(buffer_index, m_vertex_input_binding_descriptions.size());
         vk::VertexInputBindingDescription& input_binding_desc = m_vertex_input_binding_descriptions[buffer_index];
 
         m_vertex_input_attribute_descriptions.emplace_back(
@@ -392,7 +407,7 @@ vk::ShaderStageFlagBits Shader::ConvertTypeToStageFlagBits(Rhi::ShaderType shade
     case Rhi::ShaderType::Vertex:  return vk::ShaderStageFlagBits::eVertex;
     case Rhi::ShaderType::Pixel:   return vk::ShaderStageFlagBits::eFragment;
     case Rhi::ShaderType::Compute: return vk::ShaderStageFlagBits::eCompute;
-    default: META_UNEXPECTED_ARG_RETURN(shader_type, vk::ShaderStageFlagBits::eAll);
+    default: META_UNEXPECTED_RETURN(shader_type, vk::ShaderStageFlagBits::eAll);
     }
 }
 

@@ -46,7 +46,7 @@ public:
         const bool has_normals  = BaseMeshT::HasVertexField(Mesh::VertexField::Normal);
         const bool has_texcoord = BaseMeshT::HasVertexField(Mesh::VertexField::TexCoord);
 
-        META_CHECK_ARG_FALSE_DESCR(has_colors, "colored vertices are not supported by icosahedron mesh");
+        META_CHECK_FALSE_DESCR(has_colors, "colored vertices are not supported by icosahedron mesh");
 
         const float a = (radius + std::sqrt(radius * 5.F)) / 2.F;
         const float b = radius;
@@ -131,8 +131,8 @@ public:
     void Subdivide()
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(Mesh::GetIndexCount(), Mesh::GetIndexCount() % 3 == 0,
-                             "icosahedron indices count should be a multiple of three representing triangles list");
+        META_CHECK_DESCR(Mesh::GetIndexCount(), Mesh::GetIndexCount() % 3 == 0,
+                         "icosahedron indices count should be a multiple of three representing triangles list");
 
         Mesh::Indices new_indices;
         new_indices.reserve(Mesh::GetIndexCount() * 4);

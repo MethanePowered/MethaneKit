@@ -22,12 +22,13 @@ Tutorial demonstrating "game of life" computing on GPU in console application
 ******************************************************************************/
 
 #include "ConsoleComputeApp.h"
+#include "Shaders/GameOfLifeRules.h"
 
 #include <Methane/Data/AppShadersProvider.h>
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <random>
 
 namespace gfx = Methane::Graphics;
@@ -149,12 +150,14 @@ void ConsoleComputeApp::Init()
 
     m_compute_state = m_compute_context.CreateComputeState({
             m_compute_context.CreateProgram({
-            rhi::Program::ShaderSet { { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } } },
-            rhi::ProgramInputBufferLayouts { },
-            rhi::ProgramArgumentAccessors
-            {
-                { { rhi::ShaderType::Compute, "g_frame_texture" }, rhi::ProgramArgumentAccessor::Type::Mutable },
-            },
+                rhi::Program::ShaderSet {
+                    { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } }
+                },
+                rhi::ProgramInputBufferLayouts{ /* not applicable for compute pipeline */},
+                rhi::ProgramArgumentAccessors
+                {
+                    META_PROGRAM_ARG_ROOT_VALUE_CONSTANT(rhi::ShaderType::Compute, "g_constants")
+                },
         }),
         rhi::ThreadGroupSize(16U, 16U, 1U)
     });
@@ -177,8 +180,10 @@ void ConsoleComputeApp::Init()
     m_frame_texture = m_compute_context.CreateTexture(frame_texture_settings);
     m_frame_texture.SetName("Game of Life Frame Texture");
 
+    const Constants game_constants{ static_cast<uint>(GetGameRuleIndex()) };
     m_compute_bindings = m_compute_state.GetProgram().CreateBindings({
-        { { rhi::ShaderType::Compute, "g_frame_texture" }, { { m_frame_texture.GetInterface() } } },
+        { { rhi::ShaderType::Compute, "g_constants"     }, rhi::RootConstant(game_constants) },
+        { { rhi::ShaderType::Compute, "g_frame_texture" }, m_frame_texture.GetResourceView() }
     });
     m_compute_bindings.SetName("Game of Life Compute Bindings");
 
@@ -254,7 +259,14 @@ void ConsoleComputeApp::Restart()
     std::unique_lock lock(GetScreenRefreshMutex());
     m_compute_context.WaitForGpu(rhi::ContextWaitFor::ComputeComplete);
     RandomizeFrameData();
-    m_compute_context.UploadResources();
+    ResetRules();
+}
+
+void ConsoleComputeApp::ResetRules()
+{
+    const Constants game_constants{ static_cast<uint>(GetGameRuleIndex()) };
+    m_compute_bindings.Get({ rhi::ShaderType::Compute, "g_constants" })
+                      .SetRootConstant(rhi::RootConstant(game_constants));
 }
 
 void ConsoleComputeApp::RandomizeFrameData()

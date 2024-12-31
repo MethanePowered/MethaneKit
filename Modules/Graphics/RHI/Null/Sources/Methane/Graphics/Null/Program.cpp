@@ -28,14 +28,16 @@ Null implementation of the program interface.
 namespace Methane::Graphics::Null
 {
 
-Program::Program(const Base::Context& context, const Settings& settings)
+Program::Program(Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
 {
 }
 
-Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<Rhi::IProgramBindings> Program::CreateBindings(const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index)
 {
-    return std::make_shared<ProgramBindings>(*this, resource_views_by_argument, frame_index);
+    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, binding_value_by_argument, frame_index);
+    program_bindings_ptr->Initialize();
+    return program_bindings_ptr;
 }
 
 void Program::SetArgumentBindings(const ResourceArgumentDescs& argument_descriptions)
@@ -44,7 +46,7 @@ void Program::SetArgumentBindings(const ResourceArgumentDescs& argument_descript
     {
         dynamic_cast<Shader&>(GetShaderRef(shader_type)).InitArgumentBindings(argument_descriptions);
     }
-    Base::Program::InitArgumentBindings(GetSettings().argument_accessors);
+    Base::Program::InitArgumentBindings();
 }
 
 } // namespace Methane::Graphics::Null

@@ -28,6 +28,7 @@ Methane render pattern interface.
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::RenderPassColorAttachment>

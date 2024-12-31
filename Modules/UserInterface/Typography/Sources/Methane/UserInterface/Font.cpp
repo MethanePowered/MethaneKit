@@ -65,7 +65,7 @@ std::string Font::ConvertUtf32To8(std::u32string_view text)
 std::u32string Font::GetAlphabetInRange(char32_t from, char32_t to)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_GREATER_OR_EQUAL_DESCR(static_cast<uint32_t>(to), static_cast<uint32_t>(from), "invalid characters range");
+    META_CHECK_GREATER_OR_EQUAL_DESCR(static_cast<uint32_t>(to), static_cast<uint32_t>(from), "invalid characters range");
 
     std::u32string alphabet(to - from + 1, 0);
     for(char32_t utf32_char = from; utf32_char <= to; ++utf32_char)

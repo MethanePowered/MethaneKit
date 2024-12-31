@@ -91,7 +91,7 @@ vk::DescriptorSet DescriptorManager::AllocDescriptorSet(vk::DescriptorSetLayout 
     // Reallocate descriptor set for the new pool
     m_vk_current_pool = AcquireDescriptorPool();
     const auto descriptor_sets = vk_device.allocateDescriptorSets(vk::DescriptorSetAllocateInfo(m_vk_current_pool, 1, &layout));
-    META_CHECK_ARG_NOT_EMPTY(descriptor_sets);
+    META_CHECK_NOT_EMPTY(descriptor_sets);
     return descriptor_sets.back();
 }
 

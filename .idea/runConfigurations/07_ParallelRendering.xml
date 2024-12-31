@@ -1,7 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="07-ParallelRendering" type="CMakeRunConfiguration" factoryName="Application" folderName="Tutorials" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="METHANE_KIT" TARGET_NAME="MethaneParallelRendering" CONFIG_NAME="Win64 DX Debug" RUN_TARGET_PROJECT_NAME="METHANE_KIT" RUN_TARGET_NAME="MethaneParallelRendering">
-    <method v="2">
-      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-    </method>
-  </configuration>
-</component>

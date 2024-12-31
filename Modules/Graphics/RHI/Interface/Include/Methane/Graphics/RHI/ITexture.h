@@ -51,8 +51,6 @@ public:
                 const SubResource::Count& subresource_count = {},
                 Opt<TextureDimensionType> texture_dimension_type_opt = {});
 
-    using ResourceView::operator==;
-    using ResourceView::operator!=;
     using ResourceView::operator std::string;
 
     [[nodiscard]] const Ptr<ITexture>& GetTexturePtr() const noexcept { return m_texture_ptr; }
@@ -82,8 +80,18 @@ struct TextureSettings
     Opt<Data::Index>        frame_index_opt;          // for TextureType::FrameBuffer
     Opt<DepthStencilValues> depth_stencil_clear_opt;  // for TextureType::DepthStencil
 
-    bool operator==(const TextureSettings& other) const;
-    bool operator!=(const TextureSettings& other) const;
+    friend bool operator==(const TextureSettings& left, const TextureSettings& right)
+    {
+        return std::tie(left.type, left.dimension_type, left.usage_mask, left.pixel_format, left.dimensions,
+                        left.array_length, left.mipmapped, left.frame_index_opt, left.depth_stencil_clear_opt)
+            == std::tie(right.type, right.dimension_type, right.usage_mask, right.pixel_format, right.dimensions,
+                        right.array_length, right.mipmapped, right.frame_index_opt, right.depth_stencil_clear_opt);
+    }
+
+    friend bool operator!=(const TextureSettings& left, const TextureSettings& right)
+    {
+        return !(left == right);
+    }
 
     [[nodiscard]] static TextureSettings ForImage(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped,
                                                   ResourceUsageMask usage = { ResourceUsage::ShaderRead });
@@ -115,6 +123,9 @@ struct ITexture
     [[nodiscard]] virtual const Settings&    GetSettings() const = 0;
     [[nodiscard]] virtual Data::Size         GetSubResourceDataSize(const SubResource::Index& sub_resource_index = {}) const = 0;
     [[nodiscard]] virtual SubResource::Count GetSubresourceCount() const noexcept = 0;
+    [[nodiscard]] virtual ResourceView       GetTextureView(const SubResource::Index& subresource_index,
+                                                            const SubResource::Count& subresource_count = {},
+                                                            Opt<TextureDimensionType> texture_dimension_type_opt = std::nullopt) = 0;
     [[nodiscard]] virtual SubResource        GetData(ICommandQueue& target_cmd_queue,
                                                      const SubResourceIndex& sub_resource_index = {},
                                                      const BytesRangeOpt& data_range = {}) = 0;

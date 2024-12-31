@@ -67,7 +67,7 @@ bool Container::SetRect(const UnitRect& ui_rect)
     const UnitPoint& panel_origin_px = GetRectInPixels().GetUnitOrigin();
     for (const Ptr<Item>& child_item_ptr : GetChildren())
     {
-        META_CHECK_ARG_NOT_NULL(child_item_ptr);
+        META_CHECK_NOT_NULL(child_item_ptr);
         child_item_ptr->SetOrigin(panel_origin_px + child_item_ptr->GetRelOriginInPixels());
     }
 

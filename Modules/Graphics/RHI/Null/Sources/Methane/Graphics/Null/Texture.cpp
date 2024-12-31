@@ -37,8 +37,8 @@ Texture::Texture(const Base::Context& context, const Settings& settings)
 Texture::Texture(const RenderContext& render_context, const Settings& settings, Data::Index frame_index)
     : Resource(render_context, settings)
 {
-    META_CHECK_ARG_TRUE(settings.frame_index_opt.has_value());
-    META_CHECK_ARG_EQUAL(frame_index, settings.frame_index_opt.value());
+    META_CHECK_TRUE(settings.frame_index_opt.has_value());
+    META_CHECK_EQUAL(frame_index, settings.frame_index_opt.value());
 }
 
 Rhi::SubResource Texture::GetData(Rhi::ICommandQueue&, const SubResource::Index&, const BytesRangeOpt&)

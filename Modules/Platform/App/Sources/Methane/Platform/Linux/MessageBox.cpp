@@ -58,7 +58,7 @@ MessageButtonStyle GetMessageButtonStyle(IApp::Message::Type message_type)
     case IApp::Message::Type::Warning:     return { "Continue", Linux::SystemColor::ButtonBackgroundWarning, Linux::SystemColor::ButtonBackgroundWarningHovered };
     case IApp::Message::Type::Error:       return { "Close",    Linux::SystemColor::ButtonBackgroundError,   Linux::SystemColor::ButtonBackgroundErrorHovered };
     default:
-        META_UNEXPECTED_ARG_RETURN(message_type, MessageButtonStyle{}); 
+        META_UNEXPECTED_RETURN(message_type, MessageButtonStyle{});
     }
 }
 
@@ -66,9 +66,9 @@ MessageBox::MessageBox(const AppEnvironment& app_env)
     : m_app_env(app_env)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(m_app_env.display, "X11 display should be opened");
-    META_CHECK_ARG_NOT_NULL_DESCR(m_app_env.screen, "XCB screen should be initialized");
-    META_CHECK_ARG_NOT_NULL_DESCR(m_app_env.connection, "XCB connection should be initialized");
+    META_CHECK_NOT_NULL_DESCR(m_app_env.display, "X11 display should be opened");
+    META_CHECK_NOT_NULL_DESCR(m_app_env.screen, "XCB screen should be initialized");
+    META_CHECK_NOT_NULL_DESCR(m_app_env.connection, "XCB connection should be initialized");
 
     // Prepare initial window properties
     const uint32_t back_color = Linux::GetXcbSystemColor(Linux::SystemColor::Background);

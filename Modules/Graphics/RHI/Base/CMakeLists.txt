@@ -37,6 +37,7 @@ set(HEADERS
     ${INCLUDE_DIR}/ParallelRenderCommandList.h
     ${INCLUDE_DIR}/ComputeCommandList.h
     ${INCLUDE_DIR}/DescriptorManager.h
+    ${INCLUDE_DIR}/RootConstantBuffer.h
     ${INCLUDE_DIR}/QueryPool.h
 )
 
@@ -73,6 +74,7 @@ set(SOURCES ${GRAPHICS_API_SOURCES}
     ${SOURCES_DIR}/ParallelRenderCommandList.cpp
     ${SOURCES_DIR}/ComputeCommandList.cpp
     ${SOURCES_DIR}/DescriptorManager.cpp
+    ${SOURCES_DIR}/RootConstantBuffer.cpp
     ${SOURCES_DIR}/QueryPool.cpp
 )
 

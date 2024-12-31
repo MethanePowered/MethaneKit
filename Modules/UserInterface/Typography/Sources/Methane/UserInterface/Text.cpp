@@ -74,26 +74,27 @@ public:
     {
         Mesh,
         Uniforms,
+        Constants,
         Atlas,
     };
 
     using DirtyResourceMask = Data::EnumMask<DirtyResource>;
 
 private:
-    uint32_t             m_frame_index;
-    DirtyResourceMask    m_dirty_mask{ ~0U };
-    rhi::BufferSet       m_vertex_buffer_set;
-    rhi::Buffer          m_index_buffer;
-    rhi::Buffer          m_uniforms_buffer;
-    rhi::Texture         m_atlas_texture;
-    rhi::ProgramBindings m_program_bindings;
+    uint32_t                      m_frame_index;
+    DirtyResourceMask             m_dirty_mask{ ~0U };
+    rhi::BufferSet                m_vertex_buffer_set;
+    rhi::Buffer                   m_index_buffer;
+    rhi::Texture                  m_atlas_texture;
+    rhi::ProgramBindings          m_program_bindings;
+    rhi::IProgramArgumentBinding* m_uniforms_argument_binding_ptr = nullptr;
+    rhi::IProgramArgumentBinding* m_constants_argument_binding_ptr = nullptr;
 
 public:
     struct CommonResourceRefs
     {
         const rhi::RenderContext& render_context;
         const rhi::RenderState  & render_state;
-        const rhi::Buffer       & const_buffer;
         const rhi::Texture      & atlas_texture;
         const rhi::Sampler      & atlas_sampler;
         const TextMesh          & text_mesh;
@@ -103,6 +104,12 @@ public:
         : m_frame_index(frame_index)
         , m_atlas_texture(common_resources.atlas_texture)
     { }
+
+    void SetDirty(DirtyResource dirty_bit) noexcept
+    {
+        META_FUNCTION_TASK();
+        m_dirty_mask.SetBitOn(dirty_bit);
+    }
 
     void SetDirty(DirtyResourceMask dirty_mask) noexcept
     {
@@ -120,10 +127,11 @@ public:
     {
         META_FUNCTION_TASK();
         return m_dirty_mask.HasAnyBits({
-                                           DirtyResource::Mesh,
-                                           DirtyResource::Uniforms,
-                                           DirtyResource::Atlas
-                                       });
+            DirtyResource::Mesh,
+            DirtyResource::Uniforms,
+            DirtyResource::Constants,
+            DirtyResource::Atlas
+        });
     }
 
     [[nodiscard]] bool IsInitialized() const noexcept
@@ -175,7 +183,7 @@ public:
         if (!m_program_bindings.IsInitialized())
             return false;
 
-        m_program_bindings.Get({ rhi::ShaderType::Pixel, "g_texture" }).SetResourceViews({ { m_atlas_texture.GetInterface() } });
+        m_program_bindings.Get({ rhi::ShaderType::Pixel, "g_texture" }).SetResourceView(m_atlas_texture.GetResourceView());
         return true;
     }
 
@@ -185,7 +193,7 @@ public:
 
         // Update vertex buffer
         const Data::Size vertices_data_size = text_mesh.GetVerticesDataSize();
-        META_CHECK_ARG_NOT_ZERO(vertices_data_size);
+        META_CHECK_NOT_ZERO(vertices_data_size);
 
         if (!m_vertex_buffer_set.IsInitialized() || m_vertex_buffer_set[0].GetDataSize() < vertices_data_size)
         {
@@ -204,7 +212,7 @@ public:
 
         // Update index buffer
         const Data::Size indices_data_size = text_mesh.GetIndicesDataSize();
-        META_CHECK_ARG_NOT_ZERO(indices_data_size);
+        META_CHECK_NOT_ZERO(indices_data_size);
 
         if (!m_index_buffer.IsInitialized() || m_index_buffer.GetDataSize() < indices_data_size)
         {
@@ -223,14 +231,15 @@ public:
         m_dirty_mask.SetBitOff(DirtyResource::Mesh);
     }
 
-    void UpdateUniformsBuffer(const rhi::RenderContext& render_context, const TextMesh& text_mesh, std::string_view text_name)
+    void UpdateUniforms(const TextMesh& text_mesh)
     {
         META_FUNCTION_TASK();
+        META_CHECK_NOT_NULL(m_uniforms_argument_binding_ptr);
 
         const gfx::FrameSize& content_size = text_mesh.GetContentSize();
-        META_CHECK_ARG_NOT_ZERO_DESCR(content_size, "text uniforms buffer can not be updated when one of content size dimensions is zero");
+        META_CHECK_NOT_ZERO_DESCR(content_size, "text uniforms buffer can not be updated when one of content size dimensions is zero");
 
-        hlslpp::TextUniforms uniforms{
+        const hlslpp::TextUniforms uniforms{
             hlslpp::mul(
                 hlslpp::float4x4::scale(2.F / static_cast<float>(content_size.GetWidth()),
                                         2.F / static_cast<float>(content_size.GetHeight()),
@@ -238,42 +247,43 @@ public:
                 hlslpp::float4x4::translation(-1.F, 1.F, 0.F))
         };
 
-        const auto uniforms_data_size = static_cast<Data::Size>(sizeof(uniforms));
-
-        if (!m_uniforms_buffer.IsInitialized())
-        {
-            m_uniforms_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(uniforms_data_size));
-            m_uniforms_buffer.SetName(fmt::format("{} Text Uniforms Buffer {}", text_name, m_frame_index));
-
-            if (m_program_bindings.IsInitialized())
-            {
-                m_program_bindings.Get({ rhi::ShaderType::Vertex, "g_uniforms" }).SetResourceViews({ { m_uniforms_buffer.GetInterface() } });
-            }
-        }
-        m_uniforms_buffer.SetData(render_context.GetRenderCommandKit().GetQueue(),
-                                  { reinterpret_cast<Data::ConstRawPtr>(&uniforms), uniforms_data_size }); // NOSONAR
+        m_uniforms_argument_binding_ptr->SetRootConstant(rhi::RootConstant(uniforms));
         m_dirty_mask.SetBitOff(DirtyResource::Uniforms);
     }
 
-    void InitializeProgramBindings(const rhi::RenderState& state, const rhi::Buffer& const_buffer,
-                                   const rhi::Sampler& atlas_sampler, std::string_view text_name)
+    bool UpdateConstants(const Text::SettingsUtf32& settings)
+    {
+        META_FUNCTION_TASK();
+        META_CHECK_NOT_NULL(m_constants_argument_binding_ptr);
+
+        const hlslpp::TextConstants constants{
+            settings.color.AsVector()
+        };
+
+        m_constants_argument_binding_ptr->SetRootConstant(rhi::RootConstant(constants));
+        m_dirty_mask.SetBitOff(DirtyResource::Constants);
+        return true;
+    }
+
+    void InitializeProgramBindings(const rhi::RenderState& state,
+                                   const rhi::Sampler& atlas_sampler,
+                                   std::string_view text_name)
     {
         META_FUNCTION_TASK();
         if (m_program_bindings.IsInitialized())
             return;
 
-        META_CHECK_ARG_TRUE(const_buffer.IsInitialized());
-        META_CHECK_ARG_TRUE(atlas_sampler.IsInitialized());
-        META_CHECK_ARG_TRUE(m_atlas_texture.IsInitialized());
-        META_CHECK_ARG_TRUE(m_uniforms_buffer.IsInitialized());
+        META_CHECK_TRUE(atlas_sampler.IsInitialized());
+        META_CHECK_TRUE(m_atlas_texture.IsInitialized());
 
         m_program_bindings = state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::Vertex, "g_uniforms" },  { { m_uniforms_buffer.GetInterface() } } },
-            { { rhi::ShaderType::Pixel,  "g_constants" }, { { const_buffer.GetInterface() } } },
-            { { rhi::ShaderType::Pixel,  "g_texture" },   { { m_atlas_texture.GetInterface() } } },
-            { { rhi::ShaderType::Pixel,  "g_sampler" },   { { atlas_sampler.GetInterface() } } },
+            { { rhi::ShaderType::Pixel,  "g_texture" },   m_atlas_texture.GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_sampler" },   atlas_sampler.GetResourceView() },
         });
         m_program_bindings.SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
+
+        m_uniforms_argument_binding_ptr  = &m_program_bindings.Get({ rhi::ShaderType::Vertex, "g_uniforms" });
+        m_constants_argument_binding_ptr = &m_program_bindings.Get({ rhi::ShaderType::Pixel, "g_constants" });
     }
 };
 
@@ -285,7 +295,7 @@ private:
     using FrameResources = TextFrameResources;
     using PerFrameResources = std::vector<TextFrameResources>;
 
-    Context& m_ui_context;
+    Context&            m_ui_context;
     SettingsUtf32       m_settings;
     UnitRect            m_frame_rect;
     FrameSize           m_render_attachment_size = FrameSize::Max();
@@ -293,11 +303,9 @@ private:
     UniquePtr<TextMesh> m_text_mesh_ptr;
     rhi::RenderState    m_render_state;
     rhi::ViewState      m_view_state;
-    rhi::Buffer         m_const_buffer;
     rhi::Sampler        m_atlas_sampler;
     PerFrameResources   m_frame_resources;
-    bool                m_is_viewport_dirty      = true;
-    bool                m_is_const_buffer_dirty  = true;
+    bool                m_is_viewport_dirty  = true;
 
 public:
     Impl(Context& ui_context, const rhi::RenderPattern& render_pattern, const Font& font, const SettingsUtf32& settings)
@@ -306,7 +314,7 @@ public:
         , m_font(font)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NOT_EMPTY_DESCR(m_settings.state_name, "Text state name can not be empty");
+        META_CHECK_NOT_EMPTY_DESCR(m_settings.state_name, "Text state name can not be empty");
 
         m_font.Connect(*this);
         m_frame_rect = m_ui_context.ConvertTo<Units::Pixels>(m_settings.rect);
@@ -315,9 +323,9 @@ public:
         if (const auto render_state_ptr = std::dynamic_pointer_cast<rhi::IRenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
             render_state_ptr)
         {
-            META_CHECK_ARG_EQUAL_DESCR(render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
-                                       "Text '{}' render state '{}' from cache has incompatible render pattern settings", m_settings.name,
-                                       m_settings.state_name);
+            META_CHECK_EQUAL_DESCR(render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
+                                   "Text '{}' render state '{}' from cache has incompatible render pattern settings", m_settings.name,
+                                   m_settings.state_name);
             m_render_state = rhi::RenderState(render_state_ptr);
         }
         else
@@ -340,12 +348,9 @@ public:
                                 rhi::Program::InputBufferLayout::ArgumentSemantics{ "POSITION", "TEXCOORD" }
                             }
                         },
-                        rhi::ProgramArgumentAccessors
-                        {
-                            { { rhi::ShaderType::Vertex, "g_uniforms" },  rhi::ProgramArgumentAccessor::Type::Mutable },
-                            { { rhi::ShaderType::Pixel,  "g_constants" }, rhi::ProgramArgumentAccessor::Type::Mutable },
-                            { { rhi::ShaderType::Pixel,  "g_texture" },   rhi::ProgramArgumentAccessor::Type::Mutable },
-                            { { rhi::ShaderType::Pixel,  "g_sampler" },   rhi::ProgramArgumentAccessor::Type::Constant },
+                        rhi::ProgramArgumentAccessors{
+                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Pixel, "g_constants"),
+                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Vertex, "g_uniforms")
                         },
                         render_pattern.GetAttachmentFormats()
                     }),
@@ -495,7 +500,7 @@ public:
             return;
 
         m_settings.color = color;
-        m_is_const_buffer_dirty = true;
+        MakeFrameResourcesDirty(FrameResources::DirtyResource::Constants);
     }
 
     void SetLayout(const Layout& layout)
@@ -569,10 +574,6 @@ public:
         {
             UpdateViewport(frame_size);
         }
-        if (m_is_const_buffer_dirty)
-        {
-            UpdateConstantsBuffer();
-        }
         if (frame_resources.IsDirty(FrameResources::DirtyResource::Mesh) && m_text_mesh_ptr)
         {
             frame_resources.UpdateMeshBuffers(m_ui_context.GetRenderContext(), *m_text_mesh_ptr, m_settings.name,
@@ -582,13 +583,18 @@ public:
         {
             frame_resources.UpdateAtlasTexture(m_font.GetAtlasTexture(m_ui_context.GetRenderContext()));
         }
-        if (frame_resources.IsDirty(FrameResources::DirtyResource::Uniforms) && m_text_mesh_ptr)
-        {
-            frame_resources.UpdateUniformsBuffer(m_ui_context.GetRenderContext(), *m_text_mesh_ptr, m_settings.name);
-        }
+
         if (m_render_state.IsInitialized())
         {
-            frame_resources.InitializeProgramBindings(m_render_state, m_const_buffer, m_atlas_sampler, m_settings.name);
+            frame_resources.InitializeProgramBindings(m_render_state, m_atlas_sampler, m_settings.name);
+        }
+        if (frame_resources.IsDirty(FrameResources::DirtyResource::Constants))
+        {
+            frame_resources.UpdateConstants(m_settings);
+        }
+        if (frame_resources.IsDirty(FrameResources::DirtyResource::Uniforms) && m_text_mesh_ptr)
+        {
+            frame_resources.UpdateUniforms(*m_text_mesh_ptr);
         }
         assert(!frame_resources.IsDirty() || !m_text_mesh_ptr);
     }
@@ -620,7 +626,7 @@ public:
             (new_atlas_texture_ptr && m_ui_context.GetRenderContext().GetInterfacePtr().get() != std::addressof(new_atlas_texture_ptr->GetContext())))
             return;
 
-        MakeFrameResourcesDirty(FrameResources::DirtyResourceMask(FrameResources::DirtyResource::Atlas));
+        MakeFrameResourcesDirty(FrameResources::DirtyResource::Atlas);
 
         if (m_text_mesh_ptr)
         {
@@ -646,19 +652,13 @@ private:
     void InitializeFrameResources()
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NAME_DESCR("m_frame_resources", m_frame_resources.empty(), "frame resources have been initialized already");
-        META_CHECK_ARG_TRUE_DESCR(m_render_state.IsInitialized(), "text render state is not initialized");
-        META_CHECK_ARG_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh is not initialized");
+        META_CHECK_NAME_DESCR("m_frame_resources", m_frame_resources.empty(), "frame resources have been initialized already");
+        META_CHECK_TRUE_DESCR(m_render_state.IsInitialized(), "text render state is not initialized");
+        META_CHECK_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh is not initialized");
 
         const rhi::RenderContext& render_context = m_ui_context.GetRenderContext();
         const uint32_t frame_buffers_count = render_context.GetSettings().frame_buffers_count;
         m_frame_resources.reserve(frame_buffers_count);
-
-        if (!m_const_buffer.IsInitialized())
-        {
-            m_const_buffer = render_context.CreateBuffer(rhi::BufferSettings::ForConstantBuffer(static_cast<Data::Size>(sizeof(hlslpp::TextConstants))));
-            m_const_buffer.SetName(fmt::format("{} Text Constants Buffer", m_settings.name));
-        }
 
         const rhi::Texture& atlas_texture = m_font.GetAtlasTexture(render_context);
         for(uint32_t frame_buffer_index = 0U; frame_buffer_index < frame_buffers_count; ++frame_buffer_index)
@@ -669,7 +669,6 @@ private:
                 {
                     render_context,
                     m_render_state,
-                    m_const_buffer,
                     atlas_texture,
                     m_atlas_sampler,
                     *m_text_mesh_ptr
@@ -678,12 +677,21 @@ private:
         }
     }
 
-    void MakeFrameResourcesDirty(FrameResources::DirtyResourceMask resource)
+    void MakeFrameResourcesDirty(FrameResources::DirtyResource dirty_resource)
     {
         META_FUNCTION_TASK();
         for(FrameResources& frame_resources : m_frame_resources)
         {
-            frame_resources.SetDirty(resource);
+            frame_resources.SetDirty(dirty_resource);
+        }
+    }
+
+    void MakeFrameResourcesDirty(FrameResources::DirtyResourceMask dirty_mask)
+    {
+        META_FUNCTION_TASK();
+        for(FrameResources& frame_resources : m_frame_resources)
+        {
+            frame_resources.SetDirty(dirty_mask);
         }
     }
 
@@ -691,7 +699,7 @@ private:
     {
         META_FUNCTION_TASK();
         const uint32_t frame_index = m_ui_context.GetRenderContext().GetFrameBufferIndex();
-        META_CHECK_ARG_LESS_DESCR(frame_index, m_frame_resources.size(), "no resources available for the current frame buffer index");
+        META_CHECK_LESS_DESCR(frame_index, m_frame_resources.size(), "no resources available for the current frame buffer index");
         return m_frame_resources[frame_index];
     }
 
@@ -739,19 +747,6 @@ private:
         }));
     }
 
-    void UpdateConstantsBuffer()
-    {
-        META_FUNCTION_TASK();
-        META_CHECK_ARG_TRUE(m_const_buffer.IsInitialized());
-
-        const hlslpp::TextConstants constants{
-            m_settings.color.AsVector()
-        };
-        m_const_buffer.SetData(m_ui_context.GetRenderContext().GetRenderCommandKit().GetQueue(),
-                               { reinterpret_cast<Data::ConstRawPtr>(&constants), static_cast<Data::Size>(sizeof(constants)) }); // NOSONAR
-        m_is_const_buffer_dirty = false;
-    }
-
     struct UpdateRectResult
     {
         bool rect_changed = false;
@@ -786,11 +781,11 @@ private:
     FrameRect GetAlignedViewportRect() const
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh must be initialized");
+        META_CHECK_NOT_NULL_DESCR(m_text_mesh_ptr, "text mesh must be initialized");
 
         FrameSize content_size = m_text_mesh_ptr->GetContentSize();
-        META_CHECK_ARG_NOT_ZERO_DESCR(content_size, "all dimension of text content size should be non-zero");
-        META_CHECK_ARG_NOT_ZERO_DESCR(m_frame_rect.size, "all dimension of frame size should be non-zero");
+        META_CHECK_NOT_ZERO_DESCR(content_size, "all dimension of text content size should be non-zero");
+        META_CHECK_NOT_ZERO_DESCR(m_frame_rect.size, "all dimension of frame size should be non-zero");
 
         // Position viewport rect inside frame rect based on text alignment
         FrameRect viewport_rect(m_frame_rect.origin, content_size);
@@ -799,7 +794,7 @@ private:
         {
             // Apply vertical offset to make top of content match the rect top coordinate
             const uint32_t content_top_offset = m_text_mesh_ptr->GetContentTopOffset();
-            META_CHECK_ARG_LESS(content_top_offset, content_size.GetHeight() + 1);
+            META_CHECK_LESS(content_top_offset, content_size.GetHeight() + 1);
 
             content_size.SetHeight(content_size.GetHeight() - content_top_offset);
             viewport_rect.origin.SetY(m_frame_rect.origin.GetY() - content_top_offset);
@@ -813,7 +808,7 @@ private:
             case HorizontalAlignment::Left:   break;
             case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth())); break;
             case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth()) / 2); break;
-            default:                          META_UNEXPECTED_ARG(m_settings.layout.horizontal_alignment);
+            default:                          META_UNEXPECTED(m_settings.layout.horizontal_alignment);
             }
         }
         if (content_size.GetHeight() != m_frame_rect.size.GetHeight())
@@ -823,7 +818,7 @@ private:
             case VerticalAlignment::Top:      break;
             case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight())); break;
             case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight()) / 2); break;
-            default:                          META_UNEXPECTED_ARG(m_settings.layout.vertical_alignment);
+            default:                          META_UNEXPECTED(m_settings.layout.vertical_alignment);
             }
         }
 

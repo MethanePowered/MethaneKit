@@ -37,21 +37,8 @@ TextureView::TextureView(ITexture& texture, const SubResource::Index& subresourc
 
 Rhi::ITexture& TextureView::GetTexture() const
 {
-    META_CHECK_ARG_NOT_NULL_DESCR(m_texture_ptr, "can not get texture from uninitialized resource view");
+    META_CHECK_NOT_NULL_DESCR(m_texture_ptr, "can not get texture from uninitialized resource view");
     return *m_texture_ptr;
-}
-
-bool TextureSettings::operator==(const TextureSettings& other) const
-{
-    return std::tie(type, dimension_type, usage_mask, pixel_format, dimensions, array_length, mipmapped, frame_index_opt, depth_stencil_clear_opt)
-        == std::tie(other.type, other.dimension_type, other.usage_mask, other.pixel_format, other.dimensions, other.array_length, other.mipmapped,
-                    other.frame_index_opt, other.depth_stencil_clear_opt);
-}
-bool TextureSettings::operator!=(const TextureSettings& other) const
-{
-    return std::tie(type, dimension_type, usage_mask, pixel_format, dimensions, array_length, mipmapped, frame_index_opt, depth_stencil_clear_opt)
-        != std::tie(other.type, other.dimension_type, other.usage_mask, other.pixel_format, other.dimensions, other.array_length, other.mipmapped,
-                    other.frame_index_opt, other.depth_stencil_clear_opt);
 }
 
 TextureSettings TextureSettings::ForImage(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format,

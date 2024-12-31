@@ -67,7 +67,7 @@ static D3D12_DESCRIPTOR_RANGE_TYPE GetDescriptorRangeTypeByShaderInputType(D3D_S
         return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 
     default:
-        META_UNEXPECTED_ARG_RETURN(input_type, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
+        META_UNEXPECTED_RETURN(input_type, D3D12_DESCRIPTOR_RANGE_TYPE_SRV);
     }
 }
 
@@ -91,7 +91,7 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Rhi::ShaderType shader_
     case Rhi::ShaderType::Vertex:  return D3D12_SHADER_VISIBILITY_VERTEX;
     case Rhi::ShaderType::Pixel:   return D3D12_SHADER_VISIBILITY_PIXEL;
     case Rhi::ShaderType::Compute: return D3D12_SHADER_VISIBILITY_ALL;
-    default:                       META_UNEXPECTED_ARG_RETURN(shader_type, D3D12_SHADER_VISIBILITY_ALL);
+    default:                       META_UNEXPECTED_RETURN(shader_type, D3D12_SHADER_VISIBILITY_ALL);
     }
 };
 
@@ -120,12 +120,12 @@ static void InitArgumentAsDescriptorTable(std::vector<CD3DX12_DESCRIPTOR_RANGE1>
     descriptor_offset += bind_settings.resource_count;
 }
 
-Program::Program(const Base::Context& context, const Settings& settings)
+Program::Program(Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
     , m_dx_context(dynamic_cast<const IContext&>(context))
 {
     META_FUNCTION_TASK();
-    InitArgumentBindings(settings.argument_accessors);
+    InitArgumentBindings();
     InitRootSignature();
 }
 
@@ -142,9 +142,9 @@ Program::~Program()
     }
 }
 
-Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<Rhi::IProgramBindings> Program::CreateBindings(const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index)
 {
-    auto program_bindings_ptr = std::make_shared<DirectX::ProgramBindings>(*this, resource_views_by_argument, frame_index);
+    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, binding_value_by_argument, frame_index);
     program_bindings_ptr->Initialize();
     return program_bindings_ptr;
 }
@@ -155,8 +155,8 @@ bool Program::SetName(std::string_view name)
     if (!Base::Program::SetName(name))
         return false;
 
-    META_CHECK_ARG_NOT_NULL(m_cp_root_signature);
-    m_cp_root_signature->SetName(nowide::widen(name).c_str());
+    META_CHECK_NOT_NULL(m_root_signature_cptr);
+    m_root_signature_cptr->SetName(nowide::widen(name).c_str());
     return true;
 }
 
@@ -175,7 +175,7 @@ void Program::InitRootSignature()
     std::map<DescriptorHeap::Type, DescriptorsCountByAccess> descriptor_offset_by_heap_type;
     for (const auto& [program_argument, argument_binding_ptr] : binding_by_argument)
     {
-        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
+        META_CHECK_NOT_NULL(argument_binding_ptr);
         auto& argument_binding = static_cast<DirectArgumentBinding&>(*argument_binding_ptr);
         const DirectArgumentBinding::Settings& bind_settings = argument_binding.GetDirectSettings();
         const D3D12_SHADER_VISIBILITY shader_visibility = GetShaderVisibilityByType(program_argument.GetShaderType());
@@ -187,6 +187,10 @@ void Program::InitRootSignature()
         {
         case DirectArgumentBinding::Type::DescriptorTable:
             InitArgumentAsDescriptorTable(descriptor_ranges, root_parameters, descriptor_offset_by_heap_type, argument_binding, bind_settings, shader_visibility);
+            break;
+
+        case DirectArgumentBinding::Type::Constant32Bit:
+            root_parameters.back().InitAsConstants(bind_settings.buffer_size / sizeof(uint32_t), bind_settings.point, bind_settings.space, shader_visibility);
             break;
 
         case DirectArgumentBinding::Type::ConstantBufferView:
@@ -202,14 +206,14 @@ void Program::InitRootSignature()
             break;
 
         default:
-            META_UNEXPECTED_ARG(bind_settings.type);
+            META_UNEXPECTED(bind_settings.type);
         }
     }
 
     // Replicate descriptor ranges for all frame-constant argument binding instances
     for (const auto& [program_argument, frame_argument_bindings] : GetFrameArgumentBindings())
     {
-        META_CHECK_ARG_NOT_EMPTY(frame_argument_bindings);
+        META_CHECK_NOT_EMPTY(frame_argument_bindings);
         const auto& initial_frame_binding = static_cast<ProgramBindings::ArgumentBinding&>(*frame_argument_bindings.front());
         const ProgramBindings::ArgumentBinding::DescriptorRange& descriptor_range = initial_frame_binding.GetDescriptorRange();
 
@@ -217,7 +221,10 @@ void Program::InitRootSignature()
         {
             auto& argument_binding_dx = static_cast<ProgramBindings::ArgumentBinding&>(*frame_argument_bindings[frame_index]);
             argument_binding_dx.SetRootParameterIndex(initial_frame_binding.GetRootParameterIndex());
-            argument_binding_dx.SetDescriptorRange(descriptor_range);
+            if (!argument_binding_dx.GetSettings().argument.IsRootConstant())
+            {
+                argument_binding_dx.SetDescriptorRange(descriptor_range);
+            }
         }
     }
 
@@ -227,8 +234,8 @@ void Program::InitRootSignature()
     D3D12_FEATURE_DATA_ROOT_SIGNATURE feature_data{};
     feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_1;
 
-    const wrl::ComPtr<ID3D12Device>& cp_native_device = GetDirectContext().GetDirectDevice().GetNativeDevice();
-    if (FAILED(cp_native_device->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &feature_data, sizeof(feature_data))))
+    const wrl::ComPtr<ID3D12Device>& native_device_cptr = GetDirectContext().GetDirectDevice().GetNativeDevice();
+    if (FAILED(native_device_cptr->CheckFeatureSupport(D3D12_FEATURE_ROOT_SIGNATURE, &feature_data, sizeof(feature_data))))
     {
         feature_data.HighestVersion = D3D_ROOT_SIGNATURE_VERSION_1_0;
     }
@@ -236,7 +243,8 @@ void Program::InitRootSignature()
     wrl::ComPtr<ID3DBlob> root_signature_blob;
     wrl::ComPtr<ID3DBlob> error_blob;
     ThrowIfFailed(D3DX12SerializeVersionedRootSignature(&root_signature_desc, feature_data.HighestVersion, &root_signature_blob, &error_blob), error_blob);
-    ThrowIfFailed(cp_native_device->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(), IID_PPV_ARGS(&m_cp_root_signature)), cp_native_device.Get());
+    ThrowIfFailed(native_device_cptr->CreateRootSignature(0, root_signature_blob->GetBufferPointer(), root_signature_blob->GetBufferSize(),
+                                                          IID_PPV_ARGS(&m_root_signature_cptr)), native_device_cptr.Get());
 }
 
 DescriptorHeap::Range Program::ReserveDescriptorRange(DescriptorHeap& heap, ArgumentAccessor::Type access_type, uint32_t range_length)
@@ -245,7 +253,7 @@ DescriptorHeap::Range Program::ReserveDescriptorRange(DescriptorHeap& heap, Argu
     if (access_type == ArgumentAccessor::Type::Mutable)
     {
         DescriptorHeap::Range descriptor_range = heap.ReserveRange(range_length);
-        META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
+        META_CHECK_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
         return descriptor_range;
     }
 
@@ -257,15 +265,15 @@ DescriptorHeap::Range Program::ReserveDescriptorRange(DescriptorHeap& heap, Argu
         constant_descriptor_range_it != m_constant_descriptor_range_by_heap_and_access_type.end())
     {
         const DescriptorHeapReservation& heap_reservation = constant_descriptor_range_it->second;
-        META_CHECK_ARG_NAME_DESCR("heap", std::addressof(heap) == std::addressof(heap_reservation.heap.get()),
-                                  "constant descriptor range was previously reserved for the program on a different descriptor heap of the same type");
-        META_CHECK_ARG_EQUAL_DESCR(range_length, heap_reservation.range.GetLength(),
-                                   "constant descriptor range previously reserved for the program differs in length from requested reservation");
+        META_CHECK_NAME_DESCR("heap", std::addressof(heap) == std::addressof(heap_reservation.heap.get()),
+                              "constant descriptor range was previously reserved for the program on a different descriptor heap of the same type");
+        META_CHECK_EQUAL_DESCR(range_length, heap_reservation.range.GetLength(),
+                               "constant descriptor range previously reserved for the program differs in length from requested reservation");
         return heap_reservation.range;
     }
 
     DescriptorHeap::Range descriptor_range = heap.ReserveRange(range_length);
-    META_CHECK_ARG_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
+    META_CHECK_NOT_ZERO_DESCR(descriptor_range, "descriptor heap does not have enough space to reserve descriptor range for a program");
     m_constant_descriptor_range_by_heap_and_access_type.try_emplace(heap_and_access_type, DescriptorHeapReservation{ heap, descriptor_range });
     return descriptor_range;
 }

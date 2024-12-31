@@ -38,7 +38,7 @@ static vk::Filter ConvertMinMagFilterToVulkan(Rhi::ISampler::Filter::MinMag filt
     {
     case Rhi::ISampler::Filter::MinMag::Nearest: return vk::Filter::eNearest;
     case Rhi::ISampler::Filter::MinMag::Linear:  return vk::Filter::eLinear;
-    default: META_UNEXPECTED_ARG_RETURN(filter_min_mag, vk::Filter::eNearest);
+    default: META_UNEXPECTED_RETURN(filter_min_mag, vk::Filter::eNearest);
     }
 }
 
@@ -50,7 +50,7 @@ static vk::SamplerMipmapMode ConvertMipmapFilterToVulkan(Rhi::ISampler::Filter::
     case Rhi::ISampler::Filter::Mip::NotMipmapped:
     case Rhi::ISampler::Filter::Mip::Nearest:      return vk::SamplerMipmapMode::eNearest;
     case Rhi::ISampler::Filter::Mip::Linear:       return vk::SamplerMipmapMode::eLinear;
-    default: META_UNEXPECTED_ARG_RETURN(filter_mip_map, vk::SamplerMipmapMode::eNearest);
+    default: META_UNEXPECTED_RETURN(filter_mip_map, vk::SamplerMipmapMode::eNearest);
     }
 }
 
@@ -64,7 +64,7 @@ static vk::SamplerAddressMode ConvertSamplerAddressModeToVulkan(Rhi::ISampler::A
     case Rhi::ISampler::Address::Mode::ClampToBorderColor: return vk::SamplerAddressMode::eClampToBorder;
     case Rhi::ISampler::Address::Mode::Repeat:             return vk::SamplerAddressMode::eRepeat;
     case Rhi::ISampler::Address::Mode::RepeatMirror:       return vk::SamplerAddressMode::eMirroredRepeat;
-    default: META_UNEXPECTED_ARG_RETURN(address_mode, vk::SamplerAddressMode::eClampToEdge);
+    default: META_UNEXPECTED_RETURN(address_mode, vk::SamplerAddressMode::eClampToEdge);
     }
 }
 
@@ -76,7 +76,7 @@ static vk::BorderColor ConvertSamplerBorderColorToVulkan(Rhi::ISampler::BorderCo
     case Rhi::ISampler::BorderColor::TransparentBlack: return vk::BorderColor::eFloatTransparentBlack;
     case Rhi::ISampler::BorderColor::OpaqueBlack:      return vk::BorderColor::eFloatOpaqueBlack;
     case Rhi::ISampler::BorderColor::OpaqueWhite:      return vk::BorderColor::eFloatOpaqueWhite;
-    default: META_UNEXPECTED_ARG_RETURN(border_color, vk::BorderColor::eFloatTransparentBlack);
+    default: META_UNEXPECTED_RETURN(border_color, vk::BorderColor::eFloatTransparentBlack);
     }
 }
 

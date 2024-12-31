@@ -87,41 +87,115 @@ public:
 
     // Disable Sonar Check for variadic arguments constructor, since it reports false positive about slicing for universal references
     template<typename... BaseArgs>
-    explicit UnitType(Units units, BaseArgs&&... base_args) noexcept : BaseType(std::forward<BaseArgs>(base_args)...), m_units(units) { } //NOSONAR
+    explicit UnitType(Units units, BaseArgs&&... base_args) noexcept
+        : BaseType(std::forward<BaseArgs>(base_args)...)
+        , m_units(units)
+    { }
 
     template<typename T = BaseType, typename = std::enable_if_t<std::is_same_v<FramePoint, T>>>
-    explicit UnitType(const UnitType<FrameSize>& size) noexcept : UnitType<FramePoint>(size.GetUnits(), size.GetWidth(), size.GetHeight()) { }
+    explicit UnitType(const UnitType<FrameSize>& size) noexcept
+        : UnitType<FramePoint>(size.GetUnits(), size.GetWidth(), size.GetHeight())
+    { }
 
     Units GetUnits() const noexcept { return m_units; }
 
-    template<typename T> bool operator==(const T& other) const noexcept     { return BaseType::operator==(static_cast<const BaseType&>(other)) && m_units == other.GetUnits(); }
-    template<typename T> bool operator!=(const T& other) const noexcept     { return BaseType::operator!=(static_cast<const BaseType&>(other)) || m_units != other.GetUnits(); }
+    friend bool operator==(const UnitType& left, const UnitType& right) noexcept
+    { return left == static_cast<const BaseType&>(right) && left.m_units == right.GetUnits(); }
 
-    template<typename T> bool operator<=(const T& other) const              { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator<=(other); }
-    template<typename T> bool operator<(const T& other) const               { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator<(other);  }
-    template<typename T> bool operator>=(const T& other) const              { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator>=(other); }
-    template<typename T> bool operator>(const T& other) const               { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return BaseType::operator>(other);  }
+    friend bool operator!=(const UnitType& left, const UnitType& right) noexcept
+    { return left != static_cast<const BaseType&>(right) || left.m_units != right.GetUnits(); }
 
-    template<typename T> UnitType operator+(const T& other) const           { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return UnitType<BaseType>(m_units, BaseType::operator+(other)); }
-    template<typename T> UnitType operator-(const T& other) const           { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); return UnitType<BaseType>(m_units, BaseType::operator-(other)); }
-    template<typename T> UnitType& operator+=(const T& other)               { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); BaseType::operator+=(other); return *this; }
-    template<typename T> UnitType& operator-=(const T& other)               { META_CHECK_ARG_EQUAL(other.GetUnits(), m_units); BaseType::operator-=(other); return *this; }
+    friend bool operator<=(const UnitType& left, const UnitType& right)
+    {
+        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
+        return static_cast<const BaseType&>(left) <= right;
+    }
 
-    template<typename T> UnitType  operator*(T&& multiplier) const noexcept { return UnitType<BaseType>(m_units, BaseType::operator*(std::forward<T>(multiplier))); }
-    template<typename T> UnitType  operator/(T&& divisor) const noexcept    { return UnitType<BaseType>(m_units, BaseType::operator/(std::forward<T>(divisor))); }
-    template<typename T> UnitType& operator*=(T&& multiplier) noexcept      { BaseType::operator*=(std::forward<T>(multiplier)); return *this; }
-    template<typename T> UnitType& operator/=(T&& divisor) noexcept         { BaseType::operator/=(std::forward<T>(divisor)); return *this; }
+    friend bool operator<(const UnitType& left, const UnitType& right)
+    {
+        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
+        return static_cast<const BaseType&>(left) < right;
+    }
+
+    friend bool operator>=(const UnitType& left, const UnitType& right)
+    {
+        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
+        return static_cast<const BaseType&>(left) >= right;
+    }
+
+    friend bool operator>(const UnitType& left, const UnitType& right)
+    {
+        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
+        return static_cast<const BaseType&>(left) > right;
+    }
+
+    friend UnitType operator+(const UnitType& left, const UnitType& right)
+    {
+        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
+        return UnitType<BaseType>(left.m_units, static_cast<const BaseType&>(left) + right);
+    }
+
+    friend UnitType operator-(const UnitType& left, const UnitType& right)
+    {
+        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
+        return UnitType<BaseType>(left.m_units, static_cast<const BaseType&>(left) - right);
+    }
+
+    template<typename T> friend UnitType operator*(const UnitType& p, T&& multiplier) noexcept
+    {
+        return UnitType<BaseType>(p.m_units, static_cast<const BaseType&>(p) * std::forward<T>(multiplier));
+    }
+
+    template<typename T> friend UnitType operator/(const UnitType& p, T&& divisor) noexcept
+    {
+        return UnitType<BaseType>(p.m_units, static_cast<const BaseType&>(p) / std::forward<T>(divisor));
+    }
+
+    UnitType& operator+=(const UnitType& other)
+    {
+        META_CHECK_EQUAL(other.GetUnits(), m_units);
+        BaseType::operator+=(other);
+        return *this;
+    }
+
+    UnitType& operator-=(const UnitType& other)
+    {
+        META_CHECK_EQUAL(other.GetUnits(), m_units);
+        BaseType::operator-=(other);
+        return *this;
+    }
+
+    template<typename T> UnitType& operator*=(T&& multiplier) noexcept
+    {
+        BaseType::operator*=(std::forward<T>(multiplier));
+        return *this;
+    }
+
+    template<typename T> UnitType& operator/=(T&& divisor) noexcept
+    {
+        BaseType::operator/=(std::forward<T>(divisor));
+        return *this;
+    }
 
     BaseType&       AsBase() noexcept         { return static_cast<BaseType&>(*this); }
     const BaseType& AsBase() const noexcept   { return static_cast<const BaseType&>(*this); }
 
     template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
-    EnableReturnTypeIf<T, Data::Rect<C, D>, UnitType<Data::Point2T<C>>> GetUnitOrigin() const noexcept { return UnitType<Data::Point2T<C>>(m_units, BaseType::origin); }
+    EnableReturnTypeIf<T, Data::Rect<C, D>, UnitType<Data::Point2T<C>>> GetUnitOrigin() const noexcept
+    {
+        return UnitType<Data::Point2T<C>>(m_units, BaseType::origin);
+    }
 
     template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
-    EnableReturnTypeIf<T, Data::Rect<C, D>, UnitType<Data::RectSize<D>>>  GetUnitSize() const noexcept { return UnitType<Data::RectSize<D>>(m_units, BaseType::size); }
+    EnableReturnTypeIf<T, Data::Rect<C, D>, UnitType<Data::RectSize<D>>>  GetUnitSize() const noexcept
+    {
+        return UnitType<Data::RectSize<D>>(m_units, BaseType::size);
+    }
 
-    explicit operator std::string() const { return fmt::format("{:s} in {:s}", BaseType::operator std::string(), GetUnitsName(m_units)); }
+    explicit operator std::string() const
+    {
+        return fmt::format("{:s} in {:s}", BaseType::operator std::string(), GetUnitsName(m_units));
+    }
 
 private:
     Units m_units = Units::Pixels;

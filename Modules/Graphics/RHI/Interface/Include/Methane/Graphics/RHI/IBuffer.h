@@ -59,8 +59,16 @@ struct BufferSettings
     [[nodiscard]] static BufferSettings ForConstantBuffer(Data::Size size, bool addressable = false, bool is_volatile = false);
     [[nodiscard]] static BufferSettings ForReadBackBuffer(Data::Size size);
 
-    bool operator==(const BufferSettings& other) const;
-    bool operator!=(const BufferSettings& other) const;
+    friend bool operator==(const BufferSettings& left, const BufferSettings& right)
+    {
+        return std::tie(left.type, left.usage_mask, left.size, left.item_stride_size, left.data_format, left.storage_mode)
+            == std::tie(right.type, right.usage_mask, right.size, right.item_stride_size, right.data_format, right.storage_mode);
+    }
+
+    friend bool operator!=(const BufferSettings& left, const BufferSettings& right)
+    {
+        return !(left == right);
+    }
 };
 
 struct IBuffer
@@ -76,6 +84,7 @@ struct IBuffer
     // IBuffer interface
     [[nodiscard]] virtual const Settings& GetSettings() const noexcept = 0;
     [[nodiscard]] virtual uint32_t        GetFormattedItemsCount() const noexcept = 0;
+    [[nodiscard]] virtual ResourceView    GetBufferView(Data::Size offset, Data::Size size) = 0;
     [[nodiscard]] virtual SubResource     GetData(ICommandQueue& target_cmd_queue, const BytesRangeOpt& data_range = {}) = 0;
     virtual void SetData(ICommandQueue& target_cmd_queue, const SubResource& sub_resource) = 0;
 };

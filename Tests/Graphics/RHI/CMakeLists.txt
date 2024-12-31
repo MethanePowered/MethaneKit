@@ -7,11 +7,15 @@ add_executable(${TARGET}
     ProgramBindingsTest.cpp
     ComputeContextTest.cpp
     ComputeStateTest.cpp
+    ViewStateTest.cpp
     CommandQueueTest.cpp
     FenceTest.cpp
+    CommandListDebugGroupTest.cpp
     TransferCommandListTest.cpp
     ComputeCommandListTest.cpp
+    CommandKitTest.cpp
     BufferTest.cpp
+    BufferSetTest.cpp
     SamplerTest.cpp
     TextureTest.cpp
 )

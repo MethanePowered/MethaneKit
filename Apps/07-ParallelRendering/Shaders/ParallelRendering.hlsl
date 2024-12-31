@@ -22,7 +22,6 @@ Shaders for cube rendering with sampling from Texture2DArray in parallel renderi
 ******************************************************************************/
 
 #include "ParallelRenderingUniforms.h"
-#include "..\..\Common\Shaders\Primitives.hlsl"
 
 struct VSInput
 {
@@ -36,9 +35,9 @@ struct PSInput
     float2 texcoord    : TEXCOORD;
 };
 
-ConstantBuffer<Uniforms>  g_uniforms      : register(b1);
-Texture2DArray            g_texture_array : register(t0);
-SamplerState              g_sampler       : register(s0);
+ConstantBuffer<Uniforms>  g_uniforms      : register(b0, META_ARG_MUTABLE);
+Texture2DArray            g_texture_array : register(t0, META_ARG_CONSTANT);
+SamplerState              g_sampler       : register(s0, META_ARG_CONSTANT);
 
 PSInput CubeVS(VSInput input)
 {

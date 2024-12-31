@@ -34,9 +34,9 @@ struct PSInput
     float3 uvw      : UVFACE;
 };
 
-ConstantBuffer<SkyBoxUniforms> g_skybox_uniforms : register(b1);
-TextureCube                    g_skybox_texture  : register(t1);
-SamplerState                   g_texture_sampler : register(s1);
+ConstantBuffer<SkyBoxUniforms> g_skybox_uniforms : register(b0, META_ARG_FRAME_CONSTANT);
+TextureCube                    g_skybox_texture  : register(t0, META_ARG_CONSTANT);
+SamplerState                   g_texture_sampler : register(s0, META_ARG_CONSTANT);
 
 PSInput SkyboxVS(VSInput input)
 {

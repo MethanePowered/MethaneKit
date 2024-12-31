@@ -42,7 +42,7 @@ public:
     bool SetName(std::string_view) override;
 
     // IDebugGroup interface
-    Rhi::ICommandListDebugGroup& AddSubGroup(Data::Index id, const std::string& name) final;
+    Rhi::ICommandListDebugGroup& AddSubGroup(Data::Index id, std::string_view name) final;
     Rhi::ICommandListDebugGroup* GetSubGroup(Data::Index id) const noexcept final;
     bool                         HasSubGroups() const noexcept final { return !m_sub_groups.empty(); }
 

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2019-2020 Evgeny Gorodetskiy
+Copyright 2019-2024 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -27,41 +27,66 @@ Metal implementation of the program argument binding interface.
 
 #import <Metal/Metal.h>
 
+#include <map>
+
 namespace Methane::Graphics::Metal
 {
 
 struct ProgramArgumentBindingSettings final
     : Rhi::ProgramArgumentBindingSettings
 {
+    using StructOffset = uint32_t;
+    using StructOffsetByShaderType = std::map<Rhi::ShaderType, StructOffset>;
+
     uint32_t argument_index;
+    StructOffsetByShaderType argument_buffer_offset_by_shader_type;
 };
+
+class Program;
 
 class ProgramArgumentBinding final
     : public Base::ProgramArgumentBinding
 {
 public:
-    using Settings            = ProgramArgumentBindingSettings;
-    using NativeBuffers       = std::vector<__unsafe_unretained id<MTLBuffer>>;
-    using NativeTextures      = std::vector<__unsafe_unretained id<MTLTexture>>;
-    using NativeSamplerStates = std::vector<__unsafe_unretained id<MTLSamplerState>>;
-    using NativeOffsets       = std::vector<NSUInteger>;
+    using Settings             = ProgramArgumentBindingSettings;
+    using NativeResources      = std::vector<__unsafe_unretained id<MTLResource>>;
+    using NativeBuffers        = std::vector<__unsafe_unretained id<MTLBuffer>>;
+    using NativeTextures       = std::vector<__unsafe_unretained id<MTLTexture>>;
+    using NativeSamplerStates  = std::vector<__unsafe_unretained id<MTLSamplerState>>;
+    using NativeOffsets        = std::vector<NSUInteger>;
 
     ProgramArgumentBinding(const Base::Context& context, const Settings& settings);
 
     // Base::ProgramArgumentBinding interface
     [[nodiscard]] Ptr<Base::ProgramArgumentBinding> CreateCopy() const override;
+    void MergeSettings(const Base::ProgramArgumentBinding& other) override;
 
     // IArgumentBinding interface
-    bool SetResourceViews(const Rhi::IResource::Views& resource_views) override;
+    bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
 
-    const Settings&            GetMetalSettings() const noexcept { return m_settings_mt; }
-    const NativeSamplerStates& GetNativeSamplerStates() const { return m_mtl_sampler_states; }
-    const NativeTextures&      GetNativeTextures() const      { return m_mtl_textures; }
-    const NativeBuffers&       GetNativeBuffers() const       { return m_mtl_buffers; }
-    const NativeOffsets&       GetBufferOffsets() const       { return m_mtl_buffer_offsets; }
+    void UpdateArgumentBufferOffsets(const Program& program);
+
+    bool                       IsArgumentBufferMode() const noexcept   { return !m_settings_mt.argument_buffer_offset_by_shader_type.empty(); }
+    const Settings&            GetMetalSettings() const noexcept       { return m_settings_mt; }
+    MTLResourceUsage           GetNativeResourceUsage() const noexcept { return m_mtl_resource_usage; }
+    MTLRenderStages            GetNativeRenderStages() const noexcept  { return m_mtl_render_stages; }
+    const NativeResources&     GetNativeResources() const noexcept     { return m_mtl_resources; }
+    const NativeSamplerStates& GetNativeSamplerStates() const noexcept { return m_mtl_sampler_states; }
+    const NativeTextures&      GetNativeTextures() const noexcept      { return m_mtl_textures; }
+    const NativeBuffers&       GetNativeBuffers() const noexcept       { return m_mtl_buffers; }
+    const NativeOffsets&       GetBufferOffsets() const noexcept       { return m_mtl_buffer_offsets; }
+
+protected:
+    // Base::ProgramArgumentBinding overrides...
+    bool UpdateRootConstantResourceViews() override;
 
 private:
-    const Settings      m_settings_mt;
+    void SetMetalResourcesForViews(const Rhi::ResourceViews& resource_views);
+
+    Settings            m_settings_mt;
+    MTLResourceUsage    m_mtl_resource_usage = MTLResourceUsageRead;
+    MTLRenderStages     m_mtl_render_stages;
+    NativeResources     m_mtl_resources;
     NativeSamplerStates m_mtl_sampler_states;
     NativeTextures      m_mtl_textures;
     NativeBuffers       m_mtl_buffers;

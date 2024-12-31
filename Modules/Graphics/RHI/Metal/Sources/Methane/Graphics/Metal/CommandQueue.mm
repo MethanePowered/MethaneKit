@@ -40,7 +40,7 @@ namespace Methane::Graphics::Metal
 {
 
 CommandQueue::CommandQueue(const Base::Context& context, Rhi::CommandListType command_lists_type)
-    : Base::CommandQueue(context, command_lists_type)
+    : Base::CommandQueueTracking(context, command_lists_type)
     , m_mtl_command_queue([GetMetalContext().GetMetalDevice().GetNativeDevice() newCommandQueue])
 {
     META_FUNCTION_TASK();
@@ -95,7 +95,7 @@ bool CommandQueue::SetName(std::string_view name)
     if (!Base::CommandQueue::SetName(name))
         return false;
 
-    META_CHECK_ARG_NOT_NULL(m_mtl_command_queue);
+    META_CHECK_NOT_NULL(m_mtl_command_queue);
     m_mtl_command_queue.label = MacOS::ConvertToNsString(name);
     return true;
 }
@@ -110,7 +110,7 @@ const RenderContext& CommandQueue::GetMetalRenderContext() const
 {
     META_FUNCTION_TASK();
     const Base::Context& context = GetBaseContext();
-    META_CHECK_ARG_EQUAL_DESCR(context.GetType(), Rhi::ContextType::Render, "incompatible context type");
+    META_CHECK_EQUAL_DESCR(context.GetType(), Rhi::ContextType::Render, "incompatible context type");
     return static_cast<const RenderContext&>(context);
 }
 

@@ -25,7 +25,7 @@ Optional macro definition: ENABLE_SHADOWS, ENABLE_TEXTURING
 ******************************************************************************/
 
 #include "ShadowCubeUniforms.h"
-#include "..\..\Common\Shaders\Primitives.hlsl"
+#include "../../Common/Shaders/Primitives.hlsl"
 
 struct VSInput
 {
@@ -49,18 +49,18 @@ struct PSInput
 #endif
 };
 
-ConstantBuffer<Constants>     g_constants       : register(b1);
-ConstantBuffer<SceneUniforms> g_scene_uniforms  : register(b2);
-ConstantBuffer<MeshUniforms>  g_mesh_uniforms   : register(b3);
+ConstantBuffer<Constants>     g_constants       : register(b0, META_ARG_CONSTANT);
+ConstantBuffer<SceneUniforms> g_scene_uniforms  : register(b1, META_ARG_FRAME_CONSTANT);
+ConstantBuffer<MeshUniforms>  g_mesh_uniforms   : register(b2, META_ARG_MUTABLE);
 
 #ifdef ENABLE_SHADOWS
-Texture2D    g_shadow_map      : register(t0);
-SamplerState g_shadow_sampler  : register(s0);
+Texture2D    g_shadow_map      : register(t0, META_ARG_FRAME_CONSTANT);
+SamplerState g_shadow_sampler  : register(s0, META_ARG_CONSTANT);
 #endif
 
 #ifdef ENABLE_TEXTURING
-Texture2D    g_texture         : register(t1);
-SamplerState g_texture_sampler : register(s1);
+Texture2D    g_texture         : register(t1, META_ARG_MUTABLE);
+SamplerState g_texture_sampler : register(s1, META_ARG_CONSTANT);
 #endif
 
 PSInput CubeVS(VSInput input)
@@ -83,7 +83,7 @@ PSInput CubeVS(VSInput input)
 
 float4 CubePS(PSInput input) : SV_TARGET
 {
-    const float3 fragment_to_light             = normalize(g_scene_uniforms.light_position - input.world_position);
+    const float3 fragment_to_light             = normalize(g_scene_uniforms.light_position.xyz - input.world_position);
     const float3 fragment_to_eye               = normalize(g_scene_uniforms.eye_position.xyz - input.world_position);
     const float3 light_reflected_from_fragment = reflect(-fragment_to_light, input.world_normal);
 
@@ -105,7 +105,7 @@ float4 CubePS(PSInput input) : SV_TARGET
     const float4 ambient_color  = texel_color * g_constants.light_ambient_factor;
     const float4 base_color     = texel_color * g_constants.light_color * g_constants.light_power;
 
-    const float  distance       = length(g_scene_uniforms.light_position - input.world_position);
+    const float  distance       = length(g_scene_uniforms.light_position.xyz - input.world_position);
     const float  diffuse_part   = clamp(dot(fragment_to_light, input.world_normal), 0.0, 1.0);
     const float4 diffuse_color  = base_color * diffuse_part / (distance * distance);
 

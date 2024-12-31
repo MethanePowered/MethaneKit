@@ -34,6 +34,7 @@ Methane common exception types
 
 #include <stdexcept>
 #include <string>
+#include <typeinfo>
 
 namespace Methane
 {

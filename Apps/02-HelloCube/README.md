@@ -4,21 +4,22 @@
 |-----------------------------------------------------------------|------------------------------------------------------------|-----------------------------------------------------------|---------------------------------------------------------|
 | ![Hello Cube on Windows](Screenshots/HelloCubeWinDirectX12.jpg) | ![Hello Cube on Linux](Screenshots/HelloCubeLinVulkan.jpg) | ![Hello Cube on MacOS](Screenshots/HelloCubeMacMetal.jpg) | ![Hello Cube on iOS](Screenshots/HelloCubeIOSMetal.jpg) |
 
-This tutorial demonstrates colored cube rendering implemented in just 220 lines of code using Methane Kit:
+This tutorial demonstrates colored cube rendering implemented in just 250 lines of code using Methane Kit:
 - [HelloCubeApp.cpp](HelloCubeApp.cpp)
 - [Shaders/HelloCube.hlsl](Shaders/HelloCube.hlsl)
 - [Shaders/HelloCubeUniforms.h](Shaders/HelloCubeUniforms.h)
 
-Tutorial demonstrates the following Methane Kit features and techniques additionally to demonstrated in [Hello Triangle](../01-HelloTriangle):
-- **Simple version** (when macros `UNIFORMS_BUFFER_ENABLED` is not defined):
-  - Create vertex and index buffers on GPU and filling them with data from CPU.
-  - Generate cube mesh vertices and indices data with custom vertex layout.
+The tutorial demonstrates the following Methane Kit features and techniques in addition to those demonstrated in
+[Hello Triangle](../01-HelloTriangle):
+- **Simple version** (when the macro `UNIFORMS_ENABLED` is not defined):
+  - Create vertex and index buffers on the GPU and fill them with data from the CPU.
+  - Generate cube mesh vertices and indices data with a custom vertex layout.
   - Use time animation for camera rotation.
   - Create camera view and projection matrices.
-  - Transform cube vertices with camera matrices on CPU and update vertex buffers on GPU.
-- **Uniforms version** (when macros `UNIFORMS_BUFFER_ENABLED` is defined):
-  - Use uniform buffer to upload MVP matrix to GPU and transform vertices on GPU in vertex shader.
-  - Use program bindings to bind uniform buffer to the graphics pipeline and make it available to shaders.
+  - Transform cube vertices with camera matrices on the CPU and update vertex buffers on the GPU.
+- **Uniforms version** (when the macro `UNIFORMS_ENABLED` is defined):
+  - Use a root constant uniforms buffer to upload the MVP matrix to the GPU and transform vertices on the GPU in the vertex shader.
+  - Use program bindings to bind the uniforms buffer to the graphics pipeline and make it available to shaders.
 
 ## Application Controls
 
@@ -30,9 +31,9 @@ Common keyboard controls are enabled by the `Platform` and `Graphics` applicatio
 
 ### Application and Frame Class Members
 
-Application Frame class `HelloCubeFrame` is derived from the base class `Graphics::AppFrame` and extends it
-with render command list `render_cmd_list`, command list set `execute_cmd_list_set` and volatile 
-vertex buffer set `vertex_buffer_set` used for cube drawing.
+Application frame class `HelloCubeFrame` is derived from the base class `Graphics::AppFrame` and extends it with the render 
+command list `render_cmd_list`, command list set `execute_cmd_list_set`, and volatile vertex buffer set `vertex_buffer_set` 
+used for cube drawing.
 
 ```cpp
 struct HelloCubeFrame final : AppFrame
@@ -45,7 +46,7 @@ struct HelloCubeFrame final : AppFrame
 };
 ```
 
-Application class `HelloCubeApp` is derived from the base template class [Graphics::App<HelloCubeFrame>](/Modules/Graphics/App).
+Application class `HelloCubeApp` is derived from the base template class [Graphics::App<HelloCubeFrame>](/Modules/Graphics/App):
 - `m_cube_mesh` member of type `CubeMesh<CubeVertex>` generates and holds cube model vertices defined by `CubeVertex` struct with layout which contains positions and colors.
 - `m_model_matrix` matrix is used for cube model scaling.
 - `m_camera` is perspective camera model which is used to generate view and projection matrices.
@@ -77,14 +78,14 @@ private:
 };
 ```
 
-`HelloCubeApp` constructor calls base constructor `GraphicsApp` with `Graphics::CombinedAppSettings` initialized
-using helper function `Tutorials::GetGraphicsTutorialAppSettings` which is called with predefined flags to enable color buffer 
-without depth and enable animations. `m_proj_vertices` is initialized with vertices data taken from cube mesh generator.
+`HelloCubeApp` constructor calls the base constructor `GraphicsApp` with `Graphics::CombinedAppSettings` initialized using the 
+helper function `Tutorials::GetGraphicsTutorialAppSettings`, which is called with predefined flags to enable the color buffer 
+without depth and enable animations. `m_proj_vertices` is initialized with vertex data taken from the cube mesh generator.
 
-Initial camera orientation is set with `Camera::ResetOrientation` via `Camera::Orientation` struct with
-`eye`, `aim` and `up` vectors. Then we setup camera rotation animation which automatically updates the orientation
-before every iteration of update/render. Animation is setup simply by adding `Data::TimeAnimation` object with
-lamda function taking `delta_seconds` argument used to calculate the rotation delta angle around camera's `up` axis.
+The initial camera orientation is set with `Camera::ResetOrientation` via the `Camera::Orientation` struct with `eye`, `aim`, 
+and `up` vectors. Then, we set up the camera rotation animation, which automatically updates the orientation before every 
+iteration of update/render. The animation is set up simply by adding a `Data::TimeAnimation` object with a lambda function 
+taking the `delta_seconds` argument used to calculate the rotation delta angle around the camera's `up` axis.
 
 ```cpp
 HelloCubeApp()
@@ -111,15 +112,18 @@ HelloCubeApp()
 
 ### Graphics Resources Initialization
 
-Application class `HelloCubeApp` keeps frame independent resources in class members: render state `m_render_state`, 
-per-frame vertex buffers and index buffer used for triangle rendering `m_index_buffer` are initialized in `HelloCubeApp::Init` method.
-Also camera view is resized according to frame size to maintain the correct aspect ratio of the projection.
+Application class `HelloCubeApp` keeps frame-independent resources in class members: render state `m_render_state`, 
+per-frame vertex buffers, and index buffer used for triangle rendering `m_index_buffer` are initialized in the 
+`HelloCubeApp::Init` method. Also, the camera view is resized according to frame size to maintain the correct aspect 
+ratio of the projection.
 
-Render state is created with `GetRenderContext().CreateRenderState(...)` function similarly as in [HelloTriangle](../01-HelloTriangle) tutorial.
-Program is created as a part of the state with `GetRenderContext().CreateProgram(...)` function taking `Rhi::Program::Settings`, which differs
-from program settings in [HelloTriangle](../01-HelloTriangle) in configuration of `Rhi::ProgramInputBufferLayouts`. In this tutorial
-we use single input vertex buffer with interleaved positions and colors, which is described by `Rhi::Program::InputBufferLayout` with
-an array of HLSL vertex shader input semantics, corresponding to `CubeVertex` struct layout.
+The render state is created with the `GetRenderContext().CreateRenderState(...)` function, similar to the 
+[HelloTriangle](../01-HelloTriangle) tutorial. The program is created as part of the state with the 
+`GetRenderContext().CreateProgram(...)` function, taking `Rhi::Program::Settings`. This differs from the program 
+settings in [HelloTriangle](../01-HelloTriangle) in the configuration of `Rhi::ProgramInputBufferLayouts`. In this 
+tutorial, we use a single input vertex buffer with interleaved positions and colors, described by 
+`Rhi::Program::InputBufferLayout` with an array of HLSL vertex shader input semantics, corresponding to the `CubeVertex` 
+struct layout.
 
 ```cpp
 class HelloCubeApp final : public GraphicsApp
@@ -141,7 +145,6 @@ public:
         m_camera.Resize(GetRenderContext().GetSettings().frame_size);
 
         // Create render state with program
-        const Rhi::Shader::MacroDefinitions vertex_shader_definitions;
         m_render_state = GetRenderContext().CreateRenderState(
             Rhi::RenderState::Settings
             {
@@ -150,7 +153,7 @@ public:
                     {
                         Rhi::Program::ShaderSet
                         {
-                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions } },
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" } } },
                             { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
                         },
                         Rhi::ProgramInputBufferLayouts
@@ -176,19 +179,19 @@ public:
 ```
 
 Constant index buffer is created with `GetRenderContext().CreateBuffer()` and settings initialized using 
-`Rhi::BufferSettings::ForIndexBuffer(...)` function which takes index data size in bytes and index format. 
-The data of index buffer in set with `IBuffer::SetData` call which takes an array of sub-resources.
-In case of index buffer we need to provide only one default sub-resource with data pointer and data size.
+`Rhi::BufferSettings::ForIndexBuffer(...)` function, which takes index data size in bytes and index format. 
+The data of the index buffer is set with the `IBuffer::SetData` call, which takes an array of sub-resources.
+In the case of the index buffer, we need to provide only one default sub-resource with a data pointer and data size.
 
-Volatile vertex buffers are created for each frame with `GetRenderContext().CreateBuffer(...)` and settings initialized using 
-`Rhi::BufferSettings::ForVertexBuffer(...)` so that they can be updated independently:
-while one vertex buffer data is updated for current frame, other frames are rendered using their own dedicated vertex buffers.
-Buffers are created in volatile mode, which enables more effective synchronous data updates (aka map-updates).
-Each vertex buffer is encapsulated in the buffer set with `Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer })`,
-used for render command list encoding in `SetVertexBuffers(...)`.
+Volatile vertex buffers are created for each frame with `GetRenderContext().CreateBuffer(...)` and settings initialized 
+using `Rhi::BufferSettings::ForVertexBuffer(...)` so that they can be updated independently: while one vertex buffer data 
+is updated for the current frame, other frames are rendered using their own dedicated vertex buffers. Buffers are created 
+in volatile mode, which enables more effective synchronous data updates (aka map-updates). Each vertex buffer is 
+encapsulated in the buffer set with `Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer })`, used for render command 
+list encoding in `SetVertexBuffers(...)`.
 
-Render command lists are created for each frame using `m_render_cmd_queue.CreateRenderCommandList(...)` function,
-same as in [HelloTriangle](../01-HelloTriangle) tutorial.
+Render command lists are created for each frame using the `m_render_cmd_queue.CreateRenderCommandList(...)` function, 
+the same as in the [HelloTriangle](../01-HelloTriangle) tutorial.
 
 ```cpp
 class HelloTriangleApp final : public GraphicsApp
@@ -227,14 +230,15 @@ class HelloTriangleApp final : public GraphicsApp
 
 ### Frame Rendering Cycle
 
-Each rendering cycle is started with `GraphicsApp::Update()` method used for updating the data for frame rendering.
-This method is called just before `GraphicsApp::Render()` so that frame data is prepared while previous frames are rendered on GPU,
-just before waiting for current frame buffer is released from previous rendering cycle. For the purpose of simplicity,
-in this tutorial we transform vertex positions from model to projection coordinates on CPU, while usually it is done on GPU.
-This allows to avoid using uniform buffers and program bindings for educational purposes. Vertex positions are updated
-using model-view-projection (MVP) matrix calculated as multiplication of model scaling matrix and camera view-projection matrix.
-Projected positions in `m_proj_vertices` are calculated as multiplication of original positions to the MVP matrix and 
-normalization by W-coordinate.
+Each rendering cycle is started with the `GraphicsApp::Update()` method used for updating the data for frame rendering. This
+method is called just before `GraphicsApp::Render()` so that frame data is prepared while previous frames are rendered on the
+GPU, just before waiting for the current frame buffer to be released from the previous rendering cycle. For simplicity, in this
+tutorial, we transform vertex positions from model to projection coordinates on the CPU, while usually, it is done on the GPU.
+This allows us to avoid using uniform buffers and program bindings for educational purposes. Vertex positions are updated using
+the model-view-projection (MVP) matrix calculated as the multiplication of the model scaling matrix and the camera view-projection
+matrix. Projected positions in `m_proj_vertices` are calculated as the multiplication of the original positions by the MVP matrix
+and normalization by the W-coordinate. Vertex buffer data is updated on the GPU with the `frame.vertex_buffer_set[0].SetData(...)`
+call.
 
 ```cpp
 class HelloCubeApp final : public GraphicsApp
@@ -254,6 +258,12 @@ class HelloCubeApp final : public GraphicsApp
             const hlslpp::float4 proj_position_vec = hlslpp::mul(orig_position_vec, mvp_matrix);
             m_proj_vertices[vertex_index].position = Mesh::Position(proj_position_vec.xyz / proj_position_vec.w);
         }
+        
+        // Update vertex buffer with vertices in camera's projection view
+        frame.vertex_buffer_set[0].SetData(m_render_cmd_queue, {
+            reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()), // NOSONAR
+            m_cube_mesh.GetVertexDataSize()
+        });
 
         return true;
     }
@@ -262,20 +272,20 @@ class HelloCubeApp final : public GraphicsApp
 };
 ```
 
-Rendering is performed in overridden `HelloCubeApp::Render` method. Scene rendering is started strictly after
-the base graphics application rendering logic is completed in `GraphicsApp::Render()`, because it waits for
-previous iteration of rendering cycle completion and availability of all frame resources. Then current frame resources 
-are requested with `GraphicsApp::GetCurrentFrame()` and used for render commands encoding.
+Rendering is performed in the overridden `HelloCubeApp::Render` method. Scene rendering starts strictly after the base 
+graphics application rendering logic is completed in `GraphicsApp::Render()`, as it waits for the previous iteration of 
+the rendering cycle to complete and for the availability of all frame resources. Then, current frame resources are 
+requested with `GraphicsApp::GetCurrentFrame()` and used for render commands encoding.
 
-We update volatile vertex buffers with projected vertex data, which was calculated in the previous
-method call `HelloCubeApp::Update()`. Cube rendering is done similar to the triangle rendering in previous
-tutorial with the only difference of setting vertex and index buffers with `Rhi::RenderCommandList::SetVertexBuffers(...)`
-and `Rhi::RenderCommandList::SetIndexBuffers(...)` encoded before `Rhi::RenderCommandList::DrawIndexed(...)` call. 
-Note that number of vertices is not passed explicitly for `DrawIndexed`, but is taken from the number of indies in index buffer.
+Cube rendering is done similarly to the triangle rendering in the previous tutorial, with the only difference being the 
+setting of vertex and index buffers with `Rhi::RenderCommandList::SetVertexBuffers(...)` and 
+`Rhi::RenderCommandList::SetIndexBuffers(...)` encoded before the `Rhi::RenderCommandList::DrawIndexed(...)` call. Note 
+that the number of vertices is not passed explicitly for `DrawIndexed`, but is taken from the number of indices in the 
+index buffer.
 
-Execution of GPU rendering is started with `Rhi::CommandQueue::Execute(...)` method called on the same command queue
-which was used to create the command list submitted for execution. Frame buffer with the result image is presented by
-swap-chain with `Rhi::RenderContext::Present()` method call.
+Execution of GPU rendering is started with the `Rhi::CommandQueue::Execute(...)` method called on the same command queue 
+which was used to create the command list submitted for execution. The frame buffer with the result image is presented 
+by the swap-chain with the `Rhi::RenderContext::Present()` method call.
 
 ```cpp
 class HelloCubeApp final : public GraphicsApp
@@ -288,12 +298,6 @@ class HelloCubeApp final : public GraphicsApp
             return false;
 
         const HelloCubeFrame& frame = GetCurrentFrame();
-        
-        // Update vertex buffer with vertices in camera's projection view
-        frame.vertex_buffer_set[0].SetData(m_render_cmd_queue, {
-            reinterpret_cast<Data::ConstRawPtr>(m_proj_vertices.data()),
-            m_cube_mesh.GetVertexDataSize()
-        });
 
         // Issue commands for cube rendering
         META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
@@ -313,7 +317,8 @@ class HelloCubeApp final : public GraphicsApp
 };
 ```
 
-Graphics render loop is started from `main(...)` entry function using `GraphicsApp::Run(...)` method which is also parsing command line arguments.
+Graphics render loop is started from `main(...)` entry function using `GraphicsApp::Run(...)` method which is also
+parsing command line arguments.
 
 ```cpp
 int main(int argc, const char* argv[])
@@ -324,8 +329,8 @@ int main(int argc, const char* argv[])
 
 ### Frame Resizing
 
-Additionally, camera view needs to be resized along with the window in the override method `HelloCubeApp::Resize(...)` 
-so that projected image aspect ratio will be the same as for window. 
+Additionally, the camera view needs to be resized along with the window in the overridden method `HelloCubeApp::Resize(...)`
+so that the projected image aspect ratio will be the same as the window.
 
 ```cpp
 class HelloCubeApp final : public GraphicsApp
@@ -348,10 +353,10 @@ class HelloCubeApp final : public GraphicsApp
 
 ### Simple Cube Rendering Shaders
 
-This tutorial uses simple HLSL shader [Shaders/HelloCube.hlsl](Shaders/HelloCube.hlsl).
-Note that semantic names of `VSInput` structure members, passed as argument to vertex shader function `CubeVS(VSInput input)`,
-are matching to input buffer layout arguments `Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION", "COLOR" }`
-passed in Settings of `CreateProgram(...)` call and also correspond to `CubeVertex` struct layout.
+This tutorial uses a simple HLSL shader \[`Shaders/HelloCube.hlsl`\]. Note that the semantic names of the `VSInput` structure
+members, passed as an argument to the vertex shader function `CubeVS(VSInput input)`, match the input buffer layout arguments
+`Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION", "COLOR" }` passed in the settings of the `CreateProgram(...)`
+call and also correspond to the `CubeVertex` struct layout.
 
 ```cpp
 struct VSInput
@@ -394,26 +399,27 @@ struct Uniforms
 };
 ```
 
-Shaders source file [Shaders/HelloCube.hlsl](Shaders/HelloCube.hlsl) includes uniforms header and
-defines global variable `g_uniforms` of type `ConstantBuffer<Uniforms>` which represents our uniform buffer.
-MVP matrix from this buffer is used in vertex shader `CubeVS`  to transform vertices from model to projection 
-coordinates on GPU.
+Shaders source file \[`Shaders/HelloCube.hlsl`\] includes the uniforms header and defines a global variable `g_uniforms` of type 
+`ConstantBuffer<Uniforms>`, which represents our uniform buffer. Note that the uniforms buffer is bound to register `b0` and is 
+marked with the `META_ARG_FRAME_CONSTANT` space modifier, allowing different uniform buffer resources to be used for rendering 
+different frames in flight. The MVP matrix from this buffer is used in the vertex shader `CubeVS` to transform vertices from 
+model to projection coordinates on the GPU.
 
 ```cpp
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
 #include "HelloCubeUniforms.h"
 #endif
 
 ...
 
-#ifdef UNIFORMS_BUFFER_ENABLED
-ConstantBuffer<Uniforms> g_uniforms : register(b1);
+#ifdef UNIFORMS_ENABLED
+ConstantBuffer<Uniforms> g_uniforms : register(b0, META_ARG_FRAME_CONSTANT);
 #endif
 
 PSInput CubeVS(VSInput input)
 {
     PSInput output;
-#ifdef UNIFORMS_BUFFER_ENABLED
+#ifdef UNIFORMS_ENABLED
     output.position = mul(float4(input.position, 1.F), g_uniforms.mvp_matrix);
 #else
     output.position = float4(input.position, 1.F);
@@ -423,7 +429,7 @@ PSInput CubeVS(VSInput input)
 }
 ```
 
-In order to compile vertex shader with `UNIFORMS_BUFFER_ENABLED` macro definition, we add it to shader types
+In order to compile vertex shader with `UNIFORMS_ENABLED` macro definition, we add it to shader types
 description in `CMakeLists.txt` inside `add_methane_shaders_source` function.
 
 ```cmake
@@ -432,16 +438,16 @@ add_methane_shaders_source(
     SOURCE Shaders/HelloCube.hlsl
     VERSION 6_0
     TYPES
-        vert=CubeVS:UNIFORMS_BUFFER_ENABLED
+        vert=CubeVS:UNIFORMS_ENABLED
         frag=CubePS
 )
 ```
 
 ### Add Uniforms Buffer in Application Code
 
-In C++ source file [HelloCubeApp.cpp](HelloCubeApp.cpp) uniform header is included inside namespace `hlslpp` to reuse
-matrix type definitions from `hlsl++.h` and is wrapped in `#pragma pack(push, 16)` to use the same structure fields
-memory alignment as in HLSL shaders.
+In C++ source file `HelloCubeApp.cpp`, the uniform header is included inside the namespace `hlslpp` to reuse matrix type 
+definitions from `hlsl++.h`. It is wrapped in `#pragma pack(push, 16)` to use the same structure fields memory alignment 
+as in HLSL shaders.
 
 ```cpp
 namespace hlslpp
@@ -452,42 +458,25 @@ namespace hlslpp
 }
 ```
 
-Uniform `Rhi::Buffer` is declared inside the frame structure along with `Rhi::ProgramBindings` required to bind buffer to graphics pipeline.
+Frame structure contains `Rhi::ProgramBindings` member `program_bindings` required to set uniforms as root constant to shader uniforms.
+Corresponding `uniforms_binding_ptr` member is used to save a pointer to the uniforms argument binding `Rhi::IProgramArgumentBinding*`
+used to efficiently set the root constant buffer data in `HelloCubeApp::Update()` method.
 
 ```cpp
 struct HelloCubeFrame final : AppFrame
 {
-    Rhi::Buffer>          uniforms_buffer;
-    Rhi::ProgramBindings> program_bindings;
+    Rhi::ProgramBindings          program_bindings;
+    Rhi::IProgramArgumentBinding* uniforms_binding_ptr = nullptr;
     
     ...
-}
+};
 ```
 
-`Uniforms` field `m_shader_uniforms` is allocated on stack of application class `HelloCubeApp` along with a helper structure
-`Rhi::SubResources` with a pointer and size of `m_shader_uniforms` field. It will be used later to set data of the
-uniform buffer on GPU.
-
-```cpp
-class HelloCubeApp final : public GraphicsApp
-{
-private:
-    ...
-    
-    hlslpp::Uniforms              m_shader_uniforms { };
-    const IResource::SubResources m_shader_uniforms_subresources{
-        { reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), sizeof(hlslpp::Uniforms) }
-    };
-    Rhi::BufferSet m_vertex_buffer_set;
-}
-```
-
-The compiled vertex shader is loaded from resources with respect to macro definition `UNIFORMS_BUFFER_ENABLED`,
-which was used to compile it at build-time using CMake function `add_methane_shaders_source`.
-Also `ProgramArgumentAccessors` now describe new program argument `g_uniforms`: it contains shader type where it is used
-and type of access to the argument `ProgramArgumentAccessor::Type::FrameConstant`, which means that only one buffer
-is bound to this program argument at each frame (argument is constant per frame). Other argument accessor types include 
-`Constant` (bound to single resource all the time) and `Mutable` (can be bound to different resources).
+The compiled vertex shader is loaded from resources with respect to the macro definition `UNIFORMS_ENABLED`, which was 
+used to compile it at build-time using the CMake function `add_methane_shaders_source`. `Rhi::ProgramArgumentAccessors{ ... }` 
+overrides program argument accessor definitions. The uniform argument `g_uniforms` of the vertex shader is defined as a root 
+constant buffer automatically managed by the program with a frame-constant access pattern. Note that the `FRAME_CONSTANT` 
+access pattern defined in C++ should match the `META_ARG_FRAME_CONSTANT` space modifier defined in HLSL.
 
 ```cpp
 class HelloCubeApp final : public GraphicsApp
@@ -498,7 +487,7 @@ class HelloCubeApp final : public GraphicsApp
     {
         ...
 
-        const Rhi::Shader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_BUFFER_ENABLED", "" } };
+        const Rhi::Shader::MacroDefinitions vertex_shader_definitions{ { "UNIFORMS_ENABLED", "" } };
         m_render_state = GetRenderContext().CreateRenderState(
             Rhi::RenderState::Settings
             {
@@ -513,7 +502,7 @@ class HelloCubeApp final : public GraphicsApp
                         ...
                         Rhi::ProgramArgumentAccessors
                         {
-                            { { Rhi::ShaderType::Vertex, "g_uniforms" }, Rhi::ProgramArgumentAccessType::FrameConstant }
+                            META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_uniforms")
                         },
                         ...
                     }
@@ -524,14 +513,14 @@ class HelloCubeApp final : public GraphicsApp
         
         ...
     }
-}
+};
 ```
 
-We create single vertex buffer `vertex_buffer`, as it's content will not change during frames rendering,
-fill it with cube vertices data and place it in vertex buffer set `m_vertex_buffer_set`.
-Separate uniform buffers are created for each frame `frame.uniforms_buffer` because their content will be changed 
-on every frame, and we want to make these updates fully independent of other frames rendering in flight.
-And finally, we create `Rhi::ProgramBindings` object to bind `frame.uniforms_buffer` to vertex buffer argument `g_uniforms`.
+We create a single vertex buffer `vertex_buffer`, as its content will not change during frame rendering, fill it with cube 
+vertices data, and place it in the vertex buffer set `m_vertex_buffer_set`. Program bindings are created for each frame in 
+`frame.program_bindings` with empty argument initializers, and a pointer to the `g_uniforms` argument binding is saved in 
+`frame.uniforms_binding_ptr` to use later during frame updates in the `HelloCubeApp::Update()` method for setting data to 
+the underlying root constant buffer.
 
 ```cpp
 class HelloCubeApp final : public GraphicsApp
@@ -550,34 +539,26 @@ class HelloCubeApp final : public GraphicsApp
         });
         m_vertex_buffer_set = Rhi::BufferSet(Rhi::BufferType::Vertex, { vertex_buffer });
 
-        const auto uniforms_data_size = static_cast<Data::Size>(sizeof(m_shader_uniforms));
-
         // Create per-frame command lists
         for(HelloCubeFrame& frame : GetFrames())
         {
-            // Create uniforms buffer with volatile parameters for frame rendering
-            frame.uniforms_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(uniforms_data_size, false, true));
-
-            // Configure program resource bindings
-            frame.program_bindings = m_render_state.GetProgram().CreateBindings({
-                { { Rhi::ShaderType::Vertex, "g_uniforms"  }, { { frame.uniforms_buffer.GetInterface() } } }
-            }, frame.index);
+            frame.program_bindings = m_render_state.GetProgram().CreateBindings({ }, frame.index);
+            frame.uniforms_binding_ptr = &frame.program_bindings.Get({ Rhi::ShaderType::Vertex, "g_uniforms" });
             
             ...
         }
     }
     
     ...
-}
+};
 ```
 
 ### Use Uniforms Buffer for Cube Rendering
 
-In the `HelloCubeApp::Update()` method we update the MVP matrix in the `m_shader_uniforms`
-structure, so that it can be uploaded to the uniform buffer on GPU with `frame.uniforms_buffer.SetData(...)`
-in `Render()` method. Note that matrix is transposed in order to match the HLSL default row-vector, column-major matrix layout.
-Uniform buffer is bound to graphics pipeline with `frame.render_cmd_list.SetProgramBindings(...)` call
-using previously created program bindings object `frame.program_bindings`.
+In the `HelloCubeApp::Update()` method, we update the MVP matrix in the `Uniforms` structure using the argument binding with 
+the `frame.uniforms_binding_ptr->SetRootConstant(...)` method. Uniform data is copied to the underlying root constant buffer 
+managed by the program instance and is automatically uploaded to the GPU just before frame rendering starts. Note that the 
+matrix is transposed to match the HLSL default row-vector, column-major matrix layout.
 
 ```cpp
 class HelloCubeApp final : public GraphicsApp
@@ -590,8 +571,23 @@ class HelloCubeApp final : public GraphicsApp
             return false;
         
         const hlslpp::float4x4 mvp_matrix = hlslpp::mul(m_model_matrix, m_camera.GetViewProjMatrix());
-        m_shader_uniforms.mvp_matrix = hlslpp::transpose(mvp_matrix);
+        const hlslpp::Uniforms shader_uniforms{ hlslpp::transpose(mvp_matrix) };
+        
+        const HelloCubeFrame& frame = GetCurrentFrame();
+        frame.uniforms_binding_ptr->SetRootConstant(Rhi::RootConstant(shader_uniforms));
     }
+    
+    ...
+};
+```
+
+Uniform buffer is bound to graphics pipeline with `frame.render_cmd_list.SetProgramBindings(...)` call
+using previously created program bindings object `frame.program_bindings` in `HelloCubeApp::Render()` method.
+
+```cpp
+class HelloCubeApp final : public GraphicsApp
+{
+    ...
     
     bool Render() override
     {
@@ -600,14 +596,11 @@ class HelloCubeApp final : public GraphicsApp
 
         const HelloCubeFrame& frame = GetCurrentFrame();
 
-        // Update uniforms buffer on GPU and apply model-view-projection transformation in vertex shader on GPU
-        frame.uniforms_buffer.SetData(m_render_cmd_queue, m_shader_uniforms_subresources);
-
         // Issue commands for cube rendering
         META_DEBUG_GROUP_VAR(s_debug_group, "Cube Rendering");
         frame.render_cmd_list.ResetWithState(m_render_state, &s_debug_group);
         frame.render_cmd_list.SetViewState(GetViewState());
-        frame.render_cmd_list.SetProgramBindings(frame.program_bindings);
+        frame.render_cmd_list.SetProgramBindings(frame.program_bindings); // <<< Bind uniforms root constant buffer
         frame.render_cmd_list.SetVertexBuffers(m_vertex_buffer_set);
         frame.render_cmd_list.SetIndexBuffer(m_index_buffer);
         frame.render_cmd_list.DrawIndexed(Rhi::RenderPrimitive::Triangle);
@@ -619,12 +612,12 @@ class HelloCubeApp final : public GraphicsApp
 
         return true;
     }
-}
+};
 ```
 
-Instead of transforming cube vertices on the CPU and uploading all of them to GPU, now we calculate and upload 
-single MVP matrix to GPU using uniform buffer, bind it to render pipeline using program bindings and use it to 
-transform cube vertices to projection coordinates on the GPU in vertex shader.
+Instead of transforming cube vertices on the CPU and uploading all of them to the GPU, we now calculate and upload a single 
+MVP matrix to the GPU using a root constant buffer. We bind it to the render pipeline using program bindings and use it to 
+transform cube vertices to projection coordinates on the GPU in the vertex shader.
 
 ## CMake Build Configuration
 
@@ -645,7 +638,7 @@ add_methane_shaders_source(
     SOURCE Shaders/HelloCube.hlsl
     VERSION 6_0
     TYPES
-        vert=CubeVS
+        vert=CubeVS:UNIFORMS_ENABLED
         frag=CubePS
 )
 

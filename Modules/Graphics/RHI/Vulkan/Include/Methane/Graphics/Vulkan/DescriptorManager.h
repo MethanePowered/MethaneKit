@@ -57,7 +57,7 @@ public:
     using PoolSizeRatioByDescType = std::map<vk::DescriptorType, float>;
 
     DescriptorManager(Base::Context& context, uint32_t pool_sets_count = 1000U,
-                        const PoolSizeRatioByDescType& pool_size_ratio_by_desc_type = {
+                      const PoolSizeRatioByDescType& pool_size_ratio_by_desc_type = {
         { vk::DescriptorType::eSampler,              0.5f },
         { vk::DescriptorType::eCombinedImageSampler, 4.f  },
         { vk::DescriptorType::eSampledImage,         4.f  },

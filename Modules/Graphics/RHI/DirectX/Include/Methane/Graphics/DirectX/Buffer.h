@@ -51,7 +51,7 @@ public:
     D3D12_CONSTANT_BUFFER_VIEW_DESC GetNativeConstantBufferViewDesc() const;
 
 private:
-    wrl::ComPtr<ID3D12Resource> m_cp_upload_resource;
+    wrl::ComPtr<ID3D12Resource> m_upload_resource_cptr;
 };
 
 } // namespace Methane::Graphics::DirectX

@@ -39,11 +39,11 @@ CommandQueue::CommandQueue(const Context& context, Rhi::CommandListType command_
 {
     if (context.GetType() == Rhi::ContextType::Compute)
     {
-        META_CHECK_ARG_NOT_EQUAL_DESCR(command_lists_type, Rhi::CommandListType::Render,
-                                       "compute context can not be used to create render command queues");
+        META_CHECK_NOT_EQUAL_DESCR(command_lists_type, Rhi::CommandListType::Render,
+                                   "compute context can not be used to create render command queues");
     }
-    META_CHECK_ARG_NOT_EQUAL_DESCR(command_lists_type, Rhi::CommandListType::ParallelRender,
-                                   "command queue should be created with Render type to support ParallelRender command lists");
+    META_CHECK_NOT_EQUAL_DESCR(command_lists_type, Rhi::CommandListType::ParallelRender,
+                               "command queue should be created with Render type to support ParallelRender command lists");
 }
 
 bool CommandQueue::SetName(std::string_view name)
@@ -81,7 +81,7 @@ void CommandQueue::Execute(Rhi::ICommandListSet& command_lists, const Rhi::IComm
 Tracy::GpuContext& CommandQueue::GetTracyContext() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_tracy_gpu_context_ptr);
+    META_CHECK_NOT_NULL(m_tracy_gpu_context_ptr);
     return *m_tracy_gpu_context_ptr;
 }
 

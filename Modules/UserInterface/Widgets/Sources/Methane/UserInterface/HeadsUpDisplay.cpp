@@ -42,7 +42,7 @@ Heads-Up-Display widget for displaying runtime rendering parameters.
 #include <Methane/Data/AppResourceProviders.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::UserInterface
 {
@@ -310,7 +310,7 @@ TextItem& HeadsUpDisplay::GetTextBlock(TextBlock block) const
 {
     META_FUNCTION_TASK();
     const Ptr<TextItem>& text_item_ptr = m_text_blocks[static_cast<size_t>(block)];
-    META_CHECK_ARG_NOT_NULL(text_item_ptr);
+    META_CHECK_NOT_NULL(text_item_ptr);
     return *text_item_ptr;
 }
 

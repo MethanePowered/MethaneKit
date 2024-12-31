@@ -27,7 +27,7 @@ EnumMask utility functions based on magic-enum.
 
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <vector>
 #include <array>
 #include <string>

@@ -72,7 +72,7 @@ public:
 
 private:
     const IContext&                 m_dx_context;
-    wrl::ComPtr<ID3D12CommandQueue> m_cp_command_queue;
+    wrl::ComPtr<ID3D12CommandQueue> m_command_queue_cptr;
     TracyD3D12Ctx                   m_tracy_context;
 };
 

@@ -43,24 +43,24 @@ public:
         : m_start(start)
         , m_end(end)
     {
-        META_CHECK_ARG_DESCR(m_start, m_start <= m_end, "range start must be less of equal than end");
+        META_CHECK_DESCR(m_start, m_start <= m_end, "range start must be less of equal than end");
     }
 
     Range(std::initializer_list<ScalarT> init) // NOSONAR - initializer list constructor is not explicit intentionally
         : Range(*init.begin(), *(init.begin() + 1))
     { }
 
-    [[nodiscard]] bool operator==(const Range<ScalarT>& other) const noexcept { return m_start == other.m_start && m_end == other.m_end; }
-    [[nodiscard]] bool operator!=(const Range<ScalarT>& other) const noexcept { return !operator==(other); }
-    [[nodiscard]] bool operator< (const Range<ScalarT>& other) const noexcept { return m_end  <= other.m_start; }
-    [[nodiscard]] bool operator> (const Range<ScalarT>& other) const noexcept { return m_start > other.end; }
+    [[nodiscard]] friend bool operator==(const Range& left, const Range& right) noexcept { return left.m_start == right.m_start && left.m_end == right.m_end; }
+    [[nodiscard]] friend bool operator!=(const Range& left, const Range& right) noexcept { return !(left == right); }
+    [[nodiscard]] friend bool operator< (const Range& left, const Range& right) noexcept { return left.m_end  <= right.m_start; }
+    [[nodiscard]] friend bool operator> (const Range& left, const Range& right) noexcept { return left.m_start > right.m_end; }
 
-    [[nodiscard]] ScalarT GetStart() const noexcept                           { return m_start; }
-    [[nodiscard]] ScalarT GetEnd() const noexcept                             { return m_end; }
-    [[nodiscard]] ScalarT GetMin() const noexcept                             { return m_start; }
-    [[nodiscard]] ScalarT GetMax() const noexcept                             { return m_end; }
-    [[nodiscard]] ScalarT GetLength() const noexcept                          { return m_end - m_start; }
-    [[nodiscard]] bool    IsEmpty() const noexcept                            { return m_start == m_end; }
+    [[nodiscard]] ScalarT GetStart() const noexcept  { return m_start; }
+    [[nodiscard]] ScalarT GetEnd() const noexcept    { return m_end; }
+    [[nodiscard]] ScalarT GetMin() const noexcept    { return m_start; }
+    [[nodiscard]] ScalarT GetMax() const noexcept    { return m_end; }
+    [[nodiscard]] ScalarT GetLength() const noexcept { return m_end - m_start; }
+    [[nodiscard]] bool    IsEmpty() const noexcept   { return m_start == m_end; }
 
     [[nodiscard]] bool    IsAdjacent(const Range& other) const noexcept       { return m_start == other.m_end   || other.m_start == m_end; }
     [[nodiscard]] bool    IsOverlapping(const Range& other) const noexcept    { return m_start <  other.m_end   && other.m_start <  m_end; }
@@ -68,28 +68,28 @@ public:
     [[nodiscard]] bool    Contains(const Range& other) const noexcept         { return m_start <= other.m_start && other.m_end   <= m_end; }
 
     [[nodiscard]]
-    Range operator+(const Range& other) const // merge
+    friend Range operator+(const Range& left, const Range& right) // merge
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(other, IsMergeable(other), "can not merge ranges which are not overlapping or adjacent");
-        return Range(std::min(m_start, other.m_start), std::max(m_end, other.m_end));
+        META_CHECK_DESCR(right, left.IsMergeable(right), "can not merge ranges which are not overlapping or adjacent");
+        return Range(std::min(left.m_start, right.m_start), std::max(left.m_end, right.m_end));
     }
 
     [[nodiscard]]
-    Range operator%(const Range& other) const // intersect
+    friend Range operator%(const Range& left, const Range& right) // intersect
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(other, IsMergeable(other), "can not intersect ranges which are not overlapping or adjacent");
-        return Range(std::max(m_start, other.m_start), std::min(m_end, other.m_end));
+        META_CHECK_DESCR(right, left.IsMergeable(right), "can not intersect ranges which are not overlapping or adjacent");
+        return Range(std::max(left.m_start, right.m_start), std::min(left.m_end, right.m_end));
     }
 
     [[nodiscard]]
-    Range operator-(const Range& other) const // subtract
+    friend Range operator-(const Range& left, const Range& right) // subtract
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(other, IsOverlapping(other), "can not subtract ranges which are not overlapping");
-        META_CHECK_ARG_DESCR(other, !Contains(other) && !other.Contains(*this), "can not subtract ranges containing one another");
-        return (m_start <= other.m_start) ? Range(m_start, other.m_start) : Range(other.m_end, m_end);
+        META_CHECK_DESCR(right, left.IsOverlapping(right), "can not subtract ranges which are not overlapping");
+        META_CHECK_DESCR(right, !left.Contains(right) && !right.Contains(left), "can not subtract ranges containing one another");
+        return (left.m_start <= right.m_start) ? Range(left.m_start, right.m_start) : Range(right.m_end, left.m_end);
     }
 
     [[nodiscard]] explicit operator bool() const noexcept        { return !IsEmpty(); }

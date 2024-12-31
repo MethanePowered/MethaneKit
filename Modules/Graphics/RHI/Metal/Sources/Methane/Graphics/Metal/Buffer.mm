@@ -46,7 +46,7 @@ static MTLResourceOptions GetNativeResourceOptions(Rhi::BufferStorageMode storag
     {
     case Rhi::BufferStorageMode::Managed: return NativeResourceStorageModeManaged;
     case Rhi::BufferStorageMode::Private: return MTLResourceStorageModePrivate;
-    default: META_UNEXPECTED_ARG_RETURN(storage_mode, MTLResourceStorageModeShared);
+    default: META_UNEXPECTED_RETURN(storage_mode, MTLResourceStorageModeShared);
     }
 }
 
@@ -54,7 +54,10 @@ Buffer::Buffer(const Base::Context& context, const Settings& settings)
     : Resource(context, settings)
     , m_mtl_buffer([GetMetalContext().GetMetalDevice().GetNativeDevice() newBufferWithLength:settings.size
                                                                                      options:GetNativeResourceOptions(settings.storage_mode)])
-{ }
+{
+    META_FUNCTION_TASK();
+    SetNativeResourceUsage(ConvertResourceUsageMaskToMetal(settings.usage_mask));
+}
 
 bool Buffer::SetName(std::string_view name)
 {
@@ -75,15 +78,15 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& su
     {
     case IBuffer::StorageMode::Managed: SetDataToManagedBuffer(sub_resource); break;
     case IBuffer::StorageMode::Private: SetDataToPrivateBuffer(sub_resource); break;
-    default: META_UNEXPECTED_ARG(GetSettings().storage_mode);
+    default: META_UNEXPECTED(GetSettings().storage_mode);
     }
 }
 
 Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt& data_range)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
-                              "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
+    META_CHECK_TRUE_DESCR(GetUsage().HasAnyBit(Rhi::ResourceUsage::ReadBack),
+                          "getting buffer data from GPU is allowed for buffers with CPU Read-back flag only");
 
     const BytesRange buffer_data_range(data_range ? data_range->GetStart() : 0U,
                                        data_range ? data_range->GetEnd()   : GetDataSize());
@@ -93,7 +96,7 @@ Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt& data_
     {
     case IBuffer::StorageMode::Managed: data = GetDataFromManagedBuffer(buffer_data_range); break;
     case IBuffer::StorageMode::Private: data = GetDataFromPrivateBuffer(buffer_data_range); break;
-    default: META_UNEXPECTED_ARG_RETURN(GetSettings().storage_mode, SubResource());
+    default: META_UNEXPECTED_RETURN(GetSettings().storage_mode, SubResource());
     }
 
     return Rhi::SubResource(std::move(data), Rhi::SubResourceIndex(), data_range);
@@ -102,12 +105,12 @@ Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt& data_
 void Buffer::SetDataToManagedBuffer(const SubResource& sub_resource)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(GetSettings().storage_mode, IBuffer::StorageMode::Managed);
-    META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
-    META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, NativeStorageModeManaged);
+    META_CHECK_EQUAL(GetSettings().storage_mode, IBuffer::StorageMode::Managed);
+    META_CHECK_NOT_NULL(m_mtl_buffer);
+    META_CHECK_EQUAL(m_mtl_buffer.storageMode, NativeStorageModeManaged);
 
     Data::RawPtr resource_data_ptr = static_cast<Data::RawPtr>([m_mtl_buffer contents]);
-    META_CHECK_ARG_NOT_NULL(resource_data_ptr);
+    META_CHECK_NOT_NULL(resource_data_ptr);
 
     Data::Size data_offset = 0;
     if (sub_resource.HasDataRange())
@@ -123,15 +126,15 @@ void Buffer::SetDataToManagedBuffer(const SubResource& sub_resource)
 void Buffer::SetDataToPrivateBuffer(const SubResource& sub_resource)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL(GetSettings().storage_mode, IBuffer::StorageMode::Private);
-    META_CHECK_ARG_NOT_NULL(m_mtl_buffer);
-    META_CHECK_ARG_EQUAL(m_mtl_buffer.storageMode, MTLStorageModePrivate);
+    META_CHECK_EQUAL(GetSettings().storage_mode, IBuffer::StorageMode::Private);
+    META_CHECK_NOT_NULL(m_mtl_buffer);
+    META_CHECK_EQUAL(m_mtl_buffer.storageMode, MTLStorageModePrivate);
 
     TransferCommandList& transfer_command_list = dynamic_cast<TransferCommandList&>(GetBaseContext().GetUploadCommandKit().GetListForEncoding());
     transfer_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
-    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
+    META_CHECK_NOT_NULL(mtl_blit_encoder);
 
     Data::Size data_offset = 0;
     if (sub_resource.HasDataRange())
@@ -152,7 +155,7 @@ Data::Bytes Buffer::GetDataFromManagedBuffer(const BytesRange& data_range)
     auto* data_ptr = reinterpret_cast<std::byte*>([m_mtl_buffer contents]);
     Data::Size data_size = static_cast<Data::Size>([m_mtl_buffer length]);
 
-    META_CHECK_ARG_LESS_DESCR(data_range.GetEnd(), data_size, "provided subresource data range is out of buffer bounds");
+    META_CHECK_LESS_DESCR(data_range.GetEnd(), data_size, "provided subresource data range is out of buffer bounds");
     data_ptr += data_range.GetStart();
 
     return Data::Bytes(data_ptr, data_ptr + data_range.GetLength());
@@ -165,7 +168,7 @@ Data::Bytes Buffer::GetDataFromPrivateBuffer(const BytesRange& data_range)
     transfer_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
-    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
+    META_CHECK_NOT_NULL(mtl_blit_encoder);
 
     const id<MTLBuffer> mtl_read_back_buffer = GetReadBackBuffer(data_range.GetLength());
     [mtl_blit_encoder copyFromBuffer:m_mtl_buffer

@@ -45,10 +45,10 @@ Fence::Fence(Base::CommandQueue& command_queue)
         ThrowIfFailed(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    const wrl::ComPtr<ID3D12Device>& cp_device = GetDirectCommandQueue().GetDirectContext().GetDirectDevice().GetNativeDevice();
-    META_CHECK_ARG_NOT_NULL(cp_device);
+    const wrl::ComPtr<ID3D12Device> device_cptr = GetDirectCommandQueue().GetDirectContext().GetDirectDevice().GetNativeDevice();
+    META_CHECK_NOT_NULL(device_cptr);
 
-    ThrowIfFailed(cp_device->CreateFence(GetValue(), D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_cp_fence)), cp_device.Get());
+    ThrowIfFailed(device_cptr->CreateFence(GetValue(), D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence_cptr)), device_cptr.Get());
 }
 
 Fence::~Fence()
@@ -62,9 +62,9 @@ void Fence::Signal()
     META_FUNCTION_TASK();
     Base::Fence::Signal();
 
-    META_CHECK_ARG_NOT_NULL(m_cp_fence);
+    META_CHECK_NOT_NULL(m_fence_cptr);
     CommandQueue& command_queue = GetDirectCommandQueue();
-    ThrowIfFailed(command_queue.GetNativeCommandQueue().Signal(m_cp_fence.Get(), GetValue()),
+    ThrowIfFailed(command_queue.GetNativeCommandQueue().Signal(m_fence_cptr.Get(), GetValue()),
                   command_queue.GetDirectContext().GetDirectDevice().GetNativeDevice().Get());
 }
 
@@ -74,16 +74,16 @@ void Fence::WaitOnCpu()
     Base::Fence::WaitOnCpu();
 
     const uint64_t wait_value = GetValue();
-    const uint64_t curr_value = m_cp_fence->GetCompletedValue();
+    const uint64_t curr_value = m_fence_cptr->GetCompletedValue();
     if (curr_value >= wait_value) // NOSONAR - curr_value declared outside if
         return;
 
     META_LOG("Fence '{}' with value {} SLEEP until value {}", GetName(), curr_value, wait_value);
 
-    META_CHECK_ARG_NOT_NULL(m_cp_fence);
-    META_CHECK_ARG_NOT_NULL(m_event);
+    META_CHECK_NOT_NULL(m_fence_cptr);
+    META_CHECK_NOT_NULL(m_event);
 
-    ThrowIfFailed(m_cp_fence->SetEventOnCompletion(GetValue(), m_event),
+    ThrowIfFailed(m_fence_cptr->SetEventOnCompletion(GetValue(), m_event),
                   GetDirectCommandQueue().GetDirectContext().GetDirectDevice().GetNativeDevice().Get());
     WaitForSingleObjectEx(m_event, INFINITE, FALSE);
 
@@ -95,10 +95,10 @@ void Fence::WaitOnGpu(Rhi::ICommandQueue& wait_on_command_queue)
     META_FUNCTION_TASK();
     Base::Fence::WaitOnGpu(wait_on_command_queue);
 
-    META_CHECK_ARG_NOT_NULL(m_cp_fence);
+    META_CHECK_NOT_NULL(m_fence_cptr);
     auto& dx_wait_on_command_queue = static_cast<CommandQueue&>(wait_on_command_queue);
     ID3D12CommandQueue& native_wait_on_command_queue = dx_wait_on_command_queue.GetNativeCommandQueue();
-    ThrowIfFailed(native_wait_on_command_queue.Wait(m_cp_fence.Get(), GetValue()),
+    ThrowIfFailed(native_wait_on_command_queue.Wait(m_fence_cptr.Get(), GetValue()),
                   dx_wait_on_command_queue.GetDirectContext().GetDirectDevice().GetNativeDevice().Get());
 }
 
@@ -108,8 +108,8 @@ bool Fence::SetName(std::string_view name)
     if (!Base::Fence::SetName(name))
         return false;
 
-    META_CHECK_ARG_NOT_NULL(m_cp_fence);
-    m_cp_fence->SetName(nowide::widen(name).c_str());
+    META_CHECK_NOT_NULL(m_fence_cptr);
+    m_fence_cptr->SetName(nowide::widen(name).c_str());
     return true;
 }
 

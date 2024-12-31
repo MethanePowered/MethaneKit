@@ -36,6 +36,12 @@ template<typename EventType>
 class Emitter // NOSONAR - custom destructor is required, rule of zero is not applicable
     : public virtual IEmitter<EventType> // NOSONAR - virtual inheritance is required
 {
+    using ReceiverAndPriority = std::pair<Receiver<EventType>*, int32_t>;
+    static bool CompareReceiverAndPriority(const ReceiverAndPriority& left, const ReceiverAndPriority& right)
+    {
+        return left.second > right.second;
+    }
+
 public:
     Emitter() = default;
     Emitter(const Emitter& other) noexcept
@@ -82,22 +88,22 @@ public:
         return *this;
     }
 
-    void Connect(Receiver<EventType>& receiver) noexcept final
+    void Connect(Receiver<EventType>& receiver, int32_t priority = 0) noexcept final
     {
         META_FUNCTION_TASK();
         std::lock_guard lock(m_connected_receivers_mutex);
         if (FindConnectedReceiver(receiver) != m_connected_receivers.end())
             return;
 
-        if (m_is_emitting)
-        {
-            // Modification of connected receivers collection is prohibited during emit cycle, so we add them to separate collection and merge later
-            m_additional_connected_receivers.insert(&receiver);
-        }
-        else
-        {
-            m_connected_receivers.emplace_back(&receiver);
-        }
+        // Modification of connected receivers collection is prohibited during emit cycle, so we add them to separate collection and merge later
+        auto& connected_receivers = m_is_emitting ? m_additional_connected_receivers : m_connected_receivers;
+        const auto receiver_and_priority = std::make_pair(&receiver, priority);
+        connected_receivers.insert(
+           std::upper_bound(connected_receivers.begin(), connected_receivers.end(),
+                            receiver_and_priority, CompareReceiverAndPriority),
+           receiver_and_priority
+        );
+
         receiver.OnConnected(*this);
     }
 
@@ -111,7 +117,12 @@ public:
         {
             if (m_is_emitting)
             {
-                m_additional_connected_receivers.erase(&receiver);
+                const auto receiver_it = std::find_if(
+                    m_additional_connected_receivers.begin(), m_additional_connected_receivers.end(),
+                    [&receiver](const ReceiverAndPriority& receiver_and_priority)
+                    { return &receiver == receiver_and_priority.first; }
+                );
+                m_additional_connected_receivers.erase(receiver_it);
             }
             return;
         }
@@ -119,7 +130,7 @@ public:
         if (m_is_emitting)
         {
             // Modification of connected receivers collection is prohibited during emit cycle, so we just clear the reference instead of erasing from collection
-            *connected_receiver_it = nullptr;
+            connected_receiver_it->first = nullptr;
         }
         else
         {
@@ -158,20 +169,24 @@ protected:
         if (!was_emitting && !m_additional_connected_receivers.empty())
         {
             m_connected_receivers.insert(m_connected_receivers.end(), m_additional_connected_receivers.begin(), m_additional_connected_receivers.end());
+            std::sort(m_connected_receivers.begin(), m_connected_receivers.end(), CompareReceiverAndPriority);
             m_additional_connected_receivers.clear();
         }
     }
 
-    size_t GetConnectedReceiversCount() const noexcept { return m_connected_receivers.size() + m_additional_connected_receivers.size(); }
+    size_t GetConnectedReceiversCount() const noexcept
+    {
+        return m_connected_receivers.size() + m_additional_connected_receivers.size();
+    }
 
 private:
     [[nodiscard]]
     inline decltype(auto) FindConnectedReceiver(Receiver<EventType>& receiver) noexcept
     {
         return std::find_if(m_connected_receivers.begin(), m_connected_receivers.end(),
-            [&receiver](Receiver<EventType>* p_connected_receiver)
+            [&receiver](const ReceiverAndPriority& receiver_and_priority)
             {
-                return p_connected_receiver && p_connected_receiver == std::addressof(receiver);
+                return receiver_and_priority.first && receiver_and_priority.first == std::addressof(receiver);
             }
         );
     }
@@ -180,20 +195,20 @@ private:
     bool EmitFuncOfReceivers(ReceiversContainerType& receivers, FuncType&& func_ptr, ArgTypes&&... args)
     {
         bool is_cleanup_required = false;
-        for(Receiver<EventType>* const& p_receiver : receivers)
+        for(const ReceiverAndPriority& receiver_and_priority : receivers)
         {
-            if (!p_receiver)
+            if (!receiver_and_priority.first)
             {
                 is_cleanup_required = true;
                 continue;
             }
 
             // Call the emitted event function in receiver
-            (p_receiver->*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
+            (receiver_and_priority.first->*std::forward<FuncType>(func_ptr))(std::forward<ArgTypes>(args)...);
 
-            if (!p_receiver)
+            if (!receiver_and_priority.first)
             {
-                // Receiver may be disconnected or destroyed during emitted event and it will be cleaned up after full emit cycle
+                // Receiver may be disconnected or destroyed during emitted event, so it will be cleaned up after full emit cycle
                 is_cleanup_required = true;
             }
         }
@@ -206,7 +221,7 @@ private:
         std::lock_guard lock(m_connected_receivers_mutex);
         for(auto connected_receiver_it  = m_connected_receivers.begin(); connected_receiver_it != m_connected_receivers.end();)
         {
-            if (*connected_receiver_it)
+            if (connected_receiver_it->first)
                 connected_receiver_it++;
             else
                 connected_receiver_it = m_connected_receivers.erase(connected_receiver_it);
@@ -216,10 +231,10 @@ private:
     inline void ConnectReceivers() noexcept
     {
         std::lock_guard lock(m_connected_receivers_mutex);
-        for(Receiver<EventType>* p_connected_receiver : m_connected_receivers)
+        for(const ReceiverAndPriority& receiver_and_priority : m_connected_receivers)
         {
-            if (p_connected_receiver)
-                p_connected_receiver->OnConnected(*this);
+            if (receiver_and_priority.first)
+                receiver_and_priority.first->OnConnected(*this);
         }
     }
 
@@ -228,19 +243,19 @@ private:
         // Move connected receivers so that OnDisconnected callbacks are not processed (m_connected_receivers would be empty)
         std::lock_guard lock(m_connected_receivers_mutex);
         const auto connected_receivers = std::move(m_connected_receivers);
-        for(Receiver<EventType>* p_receiver : connected_receivers)
+        for(const ReceiverAndPriority& receiver_and_priority : connected_receivers)
         {
-            if (!p_receiver)
+            if (!receiver_and_priority.first)
                 continue;
 
-            p_receiver->OnDisconnected(*this);
+            receiver_and_priority.first->OnDisconnected(*this);
         }
         return connected_receivers;
     }
 
     bool                                m_is_emitting = false;
-    std::vector<Receiver<EventType>*>   m_connected_receivers;
-    std::set<Receiver<EventType>*>      m_additional_connected_receivers;
+    std::vector<ReceiverAndPriority>    m_connected_receivers;
+    std::vector<ReceiverAndPriority>    m_additional_connected_receivers;
 #if defined(__GNUG__) && !defined(__clang__)
     // GCC fails with internal compiler error: Segmentation fault
     std::recursive_mutex                m_connected_receivers_mutex;

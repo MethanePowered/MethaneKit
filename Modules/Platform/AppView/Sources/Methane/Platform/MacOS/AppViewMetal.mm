@@ -179,12 +179,12 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
                                    const CVTimeStamp* /*output_time*/,
                                    CVOptionFlags /*flags_in*/,
                                    CVOptionFlags* /*flags_out*/,
-                                   void* p_display_link_context)
+                                   void* display_link_context_ptr)
 {
     META_FUNCTION_TASK();
     // 'DispatchRenderLoop' is always called on a secondary thread.
     // Merge the dispatch source setup for the main queue so that rendering occurs on the main thread.
-    __weak dispatch_source_t source = (__bridge dispatch_source_t)p_display_link_context;
+    __weak dispatch_source_t source = (__bridge dispatch_source_t) display_link_context_ptr;
     dispatch_source_merge_data(source, 1);
     return kCVReturnSuccess;
 }
@@ -203,12 +203,12 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
     // DispatchRenderLoop merges this dispatch source in each call
     // to execute rendering on the main thread.
     m_display_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, dispatch_get_main_queue());
-    __weak AppViewMetal* p_weak_view = self;
+    __weak AppViewMetal* weak_view_ptr = self;
     dispatch_source_set_event_handler(m_display_source, ^(){
-        if (!p_weak_view.redrawing)
+        if (!weak_view_ptr.redrawing)
             return;
 
-        [p_weak_view redraw];
+        [weak_view_ptr redraw];
     });
     dispatch_resume(m_display_source);
 
@@ -433,7 +433,7 @@ static CVReturn DispatchRenderLoop(CVDisplayLinkRef /*display_link*/,
         return;
     
     bool delegate_can_draw_in_view = [self.delegate respondsToSelector:@selector(drawInView:)];
-    META_CHECK_ARG_TRUE_DESCR(delegate_can_draw_in_view, "application delegate can not draw in view");
+    META_CHECK_TRUE_DESCR(delegate_can_draw_in_view, "application delegate can not draw in view");
 
     @autoreleasepool
     {

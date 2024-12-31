@@ -44,16 +44,6 @@ if(WIN32)
 
 elseif(APPLE)
 
-    if (NOT CMAKE_OSX_ARCHITECTURES)
-        # Warn about requirement to set OSX architectures for fat-binary starting with XCode & Clang v12.0
-        # Build architectures have to be set with cmake generator command line option -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-        EXECUTE_PROCESS(COMMAND clang --version OUTPUT_VARIABLE CLANG_FULL_VERSION_STRING)
-        string(REGEX REPLACE ".*clang version ([0-9]+\\.[0-9]+).*" "\\1" CLANG_VERSION_STRING ${CLANG_FULL_VERSION_STRING})
-        if (CLANG_VERSION_STRING VERSION_GREATER_EQUAL 12.0)
-            message(WARNING "Apple Clang v12.0 requires build architectures to be set explicitly with cmake generator option -DCMAKE_OSX_ARCHITECTURES=\"arm64;x86_64\"")
-        endif()
-    endif()
-
     # Set OS deployment target minimum version
     if (DEPLOYMENT_TARGET)
         set(CMAKE_OSX_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}")
@@ -88,7 +78,7 @@ elseif(APPLE)
     # Enable Obj-C automatic reference counting and Apple app options
     set(CMAKE_XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_ARC "YES")
     set(CMAKE_BUILD_WITH_INSTALL_RPATH true)
-    set(CMAKE_INSTALL_RPATH "@executable_path")
+    set(CMAKE_INSTALL_RPATH "/usr/local/lib")
     set(CMAKE_XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path")
 
     if (METHANE_GFX_API EQUAL METHANE_GFX_VULKAN)

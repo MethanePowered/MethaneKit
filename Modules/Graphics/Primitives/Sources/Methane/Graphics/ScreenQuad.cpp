@@ -86,7 +86,6 @@ private:
     Rhi::ViewState           m_view_state;
     Rhi::BufferSet           m_vertex_buffer_set;
     Rhi::Buffer              m_index_buffer;
-    Rhi::Buffer              m_const_buffer;
     Rhi::Texture             m_texture;
     Rhi::Sampler             m_texture_sampler;
     Rhi::ProgramBindings     m_const_program_bindings;
@@ -106,21 +105,12 @@ public:
         META_FUNCTION_TASK();
         if (m_settings.texture_mode != TextureMode::Disabled)
         {
-            META_CHECK_ARG_TRUE_DESCR(m_texture.IsInitialized(), "screen-quad texture can not be empty when quad texturing is enabled");
+            META_CHECK_TRUE_DESCR(m_texture.IsInitialized(), "screen-quad texture can not be empty when quad texturing is enabled");
         }
 
         const Rhi::RenderContext render_context = render_pattern.GetRenderContext();
         static const QuadMesh<ScreenQuadVertex> s_quad_mesh(ScreenQuadVertex::layout, 2.F, 2.F);
         const Rhi::IShader::MacroDefinitions ps_macro_definitions = GetPixelShaderMacroDefinitions(m_settings.texture_mode);
-        Rhi::ProgramArgumentAccessors program_argument_accessors {
-            { { Rhi::ShaderType::Pixel, "g_constants" }, Rhi::ProgramArgumentAccessType::Mutable }
-        };
-
-        if (m_settings.texture_mode != TextureMode::Disabled)
-        {
-            program_argument_accessors.emplace(Rhi::ShaderType::Pixel, "g_texture", Rhi::ProgramArgumentAccessType::Mutable);
-            program_argument_accessors.emplace(Rhi::ShaderType::Pixel, "g_sampler", Rhi::ProgramArgumentAccessType::Constant);
-        }
 
         const std::string quad_name = GetQuadName(m_settings, ps_macro_definitions);
         const std::string state_name = fmt::format("{} Render State", quad_name);
@@ -149,7 +139,10 @@ public:
                                 Rhi::IProgram::InputBufferLayout::ArgumentSemantics { s_quad_mesh.GetVertexLayout().GetSemantics() }
                             }
                         },
-                        program_argument_accessors,
+                        Rhi::ProgramArgumentAccessors
+                        {
+                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(Rhi::ShaderType::Pixel, "g_constants")
+                        },
                         render_pattern.GetAttachmentFormats(),
                     }),
                 render_pattern
@@ -185,10 +178,10 @@ public:
             }
             else
             {
-                m_texture_sampler = render_context.CreateSampler( {
-                                                                      Rhi::ISampler::Filter(Rhi::ISampler::Filter::MinMag::Linear),
-                                                                      Rhi::ISampler::Address(Rhi::ISampler::Address::Mode::ClampToZero),
-                                                                  });
+                m_texture_sampler = render_context.CreateSampler({
+                    Rhi::ISampler::Filter(Rhi::ISampler::Filter::MinMag::Linear),
+                    Rhi::ISampler::Address(Rhi::ISampler::Address::Mode::ClampToZero),
+                });
                 m_texture_sampler.SetName(s_sampler_name);
                 render_context.GetObjectRegistry().AddGraphicsObject(m_texture_sampler.GetInterface());
             }
@@ -239,24 +232,19 @@ public:
             render_context.GetObjectRegistry().AddGraphicsObject(m_index_buffer.GetInterface());
         }
 
-        m_const_buffer = render_context.CreateBuffer(
-            Rhi::BufferSettings::ForConstantBuffer(static_cast<Data::Size>(sizeof(hlslpp::ScreenQuadConstants))));
-        m_const_buffer.SetName(fmt::format("{} Screen-Quad Constants Buffer", m_settings.name));
-
-        Rhi::ProgramBindings::ResourceViewsByArgument program_binding_resource_views = {
-            { { Rhi::ShaderType::Pixel, "g_constants" }, { { m_const_buffer.GetInterface() } } }
-        };
-
+        Rhi::ProgramBindings::BindingValueByArgument program_binding_resource_views;
         if (m_settings.texture_mode != TextureMode::Disabled)
         {
-            program_binding_resource_views.try_emplace(Rhi::Program::Argument(Rhi::ShaderType::Pixel, "g_texture"), Rhi::ResourceViews{ { m_texture.GetInterface()         } });
-            program_binding_resource_views.try_emplace(Rhi::Program::Argument(Rhi::ShaderType::Pixel, "g_sampler"), Rhi::ResourceViews{ { m_texture_sampler.GetInterface() } });
+            program_binding_resource_views = {
+                { { Rhi::ShaderType::Pixel, "g_texture" }, m_texture.GetResourceView() },
+                { { Rhi::ShaderType::Pixel, "g_sampler" }, m_texture_sampler.GetResourceView() }
+            };
         }
 
         m_const_program_bindings = m_render_state.GetProgram().CreateBindings(program_binding_resource_views);
         m_const_program_bindings.SetName(fmt::format("{} Screen-Quad Constant Bindings", m_settings.name));
 
-        UpdateConstantsBuffer();
+        UpdateConstants();
     }
 
     void SetBlendColor(const Color4F& blend_color)
@@ -266,7 +254,7 @@ public:
             return;
 
         m_settings.blend_color  = blend_color;
-        UpdateConstantsBuffer();
+        UpdateConstants();
     }
 
     void SetScreenRect(const FrameRect& screen_rect, const FrameSize& render_attachment_size)
@@ -297,14 +285,15 @@ public:
     void SetTexture(Rhi::Texture texture)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_NOT_EQUAL_DESCR(m_settings.texture_mode, TextureMode::Disabled, "can not set texture of screen quad with Disabled texture mode");
-        META_CHECK_ARG_TRUE_DESCR(texture.IsInitialized(), "can not set null texture to screen quad");
+        META_CHECK_NOT_EQUAL_DESCR(m_settings.texture_mode, TextureMode::Disabled, "can not set texture of screen quad with Disabled texture mode");
+        META_CHECK_TRUE_DESCR(texture.IsInitialized(), "can not set null texture to screen quad");
 
         if (m_texture == texture)
             return;
 
         m_texture = texture;
-        m_const_program_bindings.Get({ Rhi::ShaderType::Pixel, "g_texture" }).SetResourceViews({ { m_texture.GetInterface() } });
+        m_const_program_bindings.Get({ Rhi::ShaderType::Pixel, "g_texture" })
+                                .SetResourceView(m_texture.GetResourceView());
     }
 
     [[nodiscard]] const Settings& GetQuadSettings() const noexcept
@@ -329,17 +318,15 @@ public:
     }
 
 private:
-    void UpdateConstantsBuffer() const
+    void UpdateConstants() const
     {
         META_FUNCTION_TASK();
         const hlslpp::ScreenQuadConstants constants {
             m_settings.blend_color.AsVector()
         };
 
-        m_const_buffer.SetData(m_render_cmd_queue, {
-            reinterpret_cast<Data::ConstRawPtr>(&constants), // NOSONAR
-            static_cast<Data::Size>(sizeof(constants))
-        });
+        m_const_program_bindings.Get({ Rhi::ShaderType::Pixel, "g_constants" })
+                                .SetRootConstant(Rhi::RootConstant(constants));
     }
 
     [[nodiscard]] static Rhi::IShader::MacroDefinitions GetPixelShaderMacroDefinitions(TextureMode texture_mode)
@@ -363,7 +350,7 @@ private:
             break;
 
         default:
-            META_UNEXPECTED_ARG(texture_mode);
+            META_UNEXPECTED(texture_mode);
         }
 
         return macro_definitions;

@@ -43,9 +43,10 @@ public:
     Data::Size GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
 
     // IBuffer interface
-    const Settings& GetSettings() const noexcept final { return m_settings; }
-    uint32_t        GetFormattedItemsCount() const noexcept final;
-    void            SetData(Rhi::ICommandQueue&, const SubResource& sub_resource) override;
+    const Settings&   GetSettings() const noexcept final { return m_settings; }
+    uint32_t          GetFormattedItemsCount() const noexcept final;
+    Rhi::ResourceView GetBufferView(Data::Size offset, Data::Size size) final;
+    void              SetData(Rhi::ICommandQueue&, const SubResource& sub_resource) override;
 
 private:
     Settings m_settings;

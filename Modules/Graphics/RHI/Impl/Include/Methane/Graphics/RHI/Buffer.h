@@ -93,6 +93,8 @@ public:
     [[nodiscard]] META_PIMPL_API const DescriptorByViewId& GetDescriptorByViewId() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const IContext&           GetContext() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const Opt<uint32_t>&      GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API Rhi::ResourceView         GetBufferView(Data::Size offset, Data::Size size) const;
+    [[nodiscard]] META_PIMPL_API Rhi::ResourceView         GetResourceView() const;
 
     // Data::IEmitter<IResourceCallback> interface methods
     META_PIMPL_API void Connect(Data::Receiver<IResourceCallback>& receiver) const;

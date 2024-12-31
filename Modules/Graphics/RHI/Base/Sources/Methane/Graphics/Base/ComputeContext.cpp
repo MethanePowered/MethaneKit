@@ -51,15 +51,17 @@ void ComputeContext::WaitForGpu(WaitFor wait_for)
     case WaitFor::ComputeComplete:
         WaitForGpuComputeComplete(); break;
     case WaitFor::ResourcesUploaded: break; // Handled in Context::WaitForGpu
-    default: META_UNEXPECTED_ARG(wait_for);
+    default: META_UNEXPECTED(wait_for);
     }
 }
 
-void ComputeContext::WaitForGpuComputeComplete() const
+void ComputeContext::WaitForGpuComputeComplete()
 {
     META_FUNCTION_TASK();
-    META_SCOPE_TIMER("ComputeContextDX::WaitForGpu::ComputeComplete");
+    META_SCOPE_TIMER("ComputeContext::WaitForGpu::ComputeComplete");
+    OnGpuWaitStart(WaitFor::ComputeComplete);
     GetComputeFence().FlushOnCpu();
+    OnGpuWaitComplete(WaitFor::ComputeComplete);
     META_CPU_FRAME_DELIMITER(0, 0);
 }
 

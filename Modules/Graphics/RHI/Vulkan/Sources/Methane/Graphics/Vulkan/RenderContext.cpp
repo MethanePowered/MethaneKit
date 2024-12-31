@@ -40,7 +40,7 @@ Vulkan implementation of the render context interface.
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <sstream>
 #include <cassert>
 
@@ -132,10 +132,10 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
     case WaitFor::RenderComplete:    m_vk_device.waitIdle(); break;
     case WaitFor::FramePresented:    frame_buffer_index = GetFrameBufferIndex(); break;
     case WaitFor::ResourcesUploaded: cl_type = Rhi::CommandListType::Transfer; break;
-    default: META_UNEXPECTED_ARG(wait_for);
+    default: META_UNEXPECTED(wait_for);
     }
 
-    GetVulkanDefaultCommandQueue(cl_type).CompleteExecution(frame_buffer_index);
+    GetVulkanDefaultCommandQueue(cl_type).WaitUntilCompleted(frame_buffer_index);
 
     m_vk_deferred_release_pipelines.clear();
 }
@@ -220,7 +220,7 @@ bool RenderContext::SetFrameBuffersCount(uint32_t frame_buffers_count)
 const vk::Image& RenderContext::GetNativeFrameImage(uint32_t frame_buffer_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(frame_buffer_index, m_vk_frame_images.size());
+    META_CHECK_LESS(frame_buffer_index, m_vk_frame_images.size());
     return m_vk_frame_images[frame_buffer_index];
 }
 
@@ -233,7 +233,7 @@ const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore() cons
 const vk::Semaphore& RenderContext::GetNativeFrameImageAvailableSemaphore(uint32_t frame_buffer_index) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS(frame_buffer_index, m_vk_frame_image_available_semaphores.size());
+    META_CHECK_LESS(frame_buffer_index, m_vk_frame_image_available_semaphores.size());
     return m_vk_frame_image_available_semaphores[frame_buffer_index];
 }
 
@@ -418,11 +418,11 @@ void RenderContext::InitializeNativeSwapchain()
     // Acquire first image from swapchain
     const vk::UniqueFence first_image_fence = m_vk_device.createFenceUnique(vk::FenceCreateInfo());
     const vk::ResultValue<uint32_t> first_image_acquire_result = m_vk_device.acquireNextImageKHR(GetNativeSwapchain(), std::numeric_limits<uint64_t>::max(), {}, first_image_fence.get());
-    META_CHECK_ARG_EQUAL_DESCR(first_image_acquire_result.result, vk::Result::eSuccess, "failed to acquire first image of the just created swapchain");
+    META_CHECK_EQUAL_DESCR(first_image_acquire_result.result, vk::Result::eSuccess, "failed to acquire first image of the just created swapchain");
     InvalidateFrameBufferIndex(first_image_acquire_result.value);
 
     const vk::Result wait_first_image_result = m_vk_device.waitForFences(first_image_fence.get(), true, std::numeric_limits<uint64_t>::max());
-    META_CHECK_ARG_EQUAL_DESCR(wait_first_image_result, vk::Result::eSuccess, "failed to wait for acquiring first image of the just created swapchain");
+    META_CHECK_EQUAL_DESCR(wait_first_image_result, vk::Result::eSuccess, "failed to wait for acquiring first image of the just created swapchain");
 
     ResetNativeObjectNames();
 
@@ -488,7 +488,7 @@ void RenderContext::FrameSync::Wait(const vk::Device& vk_device)
     if (vk_device.getFenceStatus(vk_unique_fence.get()) == vk::Result::eNotReady)
     {
         const vk::Result wait_result = vk_device.waitForFences(vk_unique_fence.get(), true, std::numeric_limits<uint64_t>::max());
-        META_CHECK_ARG_EQUAL_DESCR(wait_result, vk::Result::eSuccess, "failed to wait for frame synchronization fence (-N-1)");
+        META_CHECK_EQUAL_DESCR(wait_result, vk::Result::eSuccess, "failed to wait for frame synchronization fence (-N-1)");
     }
 
     vk_device.resetFences(vk_unique_fence.get());

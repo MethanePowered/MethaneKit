@@ -42,10 +42,16 @@ namespace rhi = Methane::Graphics::Rhi;
 struct CubeMapArrayFrame final
     : Graphics::AppFrame
 {
-    gfx::MeshBufferBindings cube;
-    gfx::MeshBufferBindings sky_box;
-    rhi::RenderCommandList  render_cmd_list;
-    rhi::CommandListSet     execute_cmd_list_set;
+    struct Bindings
+    {
+        rhi::ProgramBindings program_bindings;
+        rhi::IProgramArgumentBinding* uniforms_argument_binding_ptr;
+    };
+
+    Bindings               cube;
+    Bindings               sky_box;
+    rhi::RenderCommandList render_cmd_list;
+    rhi::CommandListSet    execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };

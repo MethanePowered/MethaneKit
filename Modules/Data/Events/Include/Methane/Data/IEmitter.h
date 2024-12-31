@@ -23,8 +23,17 @@ Event emitter abstract interface
 
 #pragma once
 
+#include <cstdint>
+
 namespace Methane::Data
 {
+
+enum class ConnectionPriority : int32_t
+{
+    Normal = 0,
+    High   = 1,
+    Low    = -1,
+};
 
 template<class>
 class Receiver;
@@ -32,7 +41,9 @@ class Receiver;
 template<class EventType>
 struct IEmitter
 {
-    virtual void Connect(Receiver<EventType>& receiver) = 0;
+
+
+    virtual void Connect(Receiver<EventType>& receiver, int32_t priority = 0) = 0;
     virtual void Disconnect(Receiver<EventType>& receiver) = 0;
 
     virtual ~IEmitter() = default;

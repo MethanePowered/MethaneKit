@@ -30,7 +30,7 @@ DirectX 12 implementation of the program bindings interface.
 #include <wrl.h>
 #include <directx/d3d12.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <functional>
 #include <array>
 
@@ -49,14 +49,15 @@ class ProgramBindings final // NOSONAR - custom destructor is required
 public:
     using ArgumentBinding = ProgramArgumentBinding;
     
-    ProgramBindings(Program& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index);
-    ProgramBindings(const ProgramBindings& other_program_bindings, const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index);
+    ProgramBindings(Program& program, const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index);
+    ProgramBindings(const ProgramBindings& other_program_bindings, const BindingValueByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index);
     ~ProgramBindings() override;
 
-    void Initialize();
+    // Base::ProgramBindings overrides
+    void Initialize() override;
 
-    // IProgramBindings interface
-    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index) override;
+    // IProgramBindings overrides
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const BindingValueByArgument& replace_binding_value_by_argument, const Opt<Data::Index>& frame_index) override;
     void CompleteInitialization() override;
     void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 
@@ -79,7 +80,7 @@ private:
     void ReserveDescriptorHeapRanges();
     void AddRootParameterBinding(const Rhi::ProgramArgumentAccessor& argument_desc, const RootParameterBinding& root_parameter_binding);
     void UpdateRootParameterBindings();
-    void AddRootParameterBindingsForArgument(ArgumentBinding& argument_binding, const DescriptorHeap::Reservation* p_heap_reservation);
+    void AddRootParameterBindingsForArgument(ArgumentBinding& argument_binding, const DescriptorHeap::Reservation* heap_reservation_ptr);
     void ApplyRootParameterBindings(Rhi::ProgramArgumentAccessMask access, const ICommandList& command_list,
                                     const Base::ProgramBindings* applied_program_bindings_ptr, bool apply_changes_only) const;
     template<Rhi::CommandListType command_list_type>
@@ -88,7 +89,7 @@ private:
 
     void CopyDescriptorsToGpu() const;
     void CopyDescriptorsToGpuForArgument(const wrl::ComPtr<ID3D12Device>& d3d12_device, ArgumentBinding& argument_binding,
-                                         const DescriptorHeap::Reservation* p_heap_reservation) const;
+                                         const DescriptorHeap::Reservation* heap_reservation_ptr) const;
 
     using RootParameterBindings = std::vector<RootParameterBinding>;
     using RootParameterBindingsByAccess = std::array<RootParameterBindings, magic_enum::enum_count<Rhi::ProgramArgumentAccessType>()>;

@@ -111,7 +111,7 @@ target_link_libraries(${TARGET}
         # Vulkan Libs
         $<$<NOT:$<BOOL:${APPLE}>>:Vulkan-Headers> # Lin/Win: Dynamic linking with Vulkan, only Vulkan headers are needed
         $<$<BOOL:${APPLE}>:Vulkan::Vulkan>        # MacOS: Link statically with Molten framework on MacOS
-        $<$<BOOL:${LINUX}>:dl> # Linux: Link with dynamic linker for vk::DynamicLoader on Linux
+        $<$<BOOL:${LINUX}>:dl>                    # Linux: Link with dynamic linker for vk::DynamicLoader on Linux
     PRIVATE
         MethaneBuildOptions
         MethaneDataPrimitives

@@ -28,7 +28,7 @@ Base implementation of the resource interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 
@@ -140,6 +140,12 @@ bool Resource::SetOwnerQueueFamily(uint32_t family_index)
 
     m_owner_queue_family_index_opt = family_index;
     return true;
+}
+
+Rhi::ResourceView Resource::GetResourceView()
+{
+    META_FUNCTION_TASK();
+    return Rhi::ResourceView(dynamic_cast<Rhi::IResource&>(*this));
 }
 
 } // namespace Methane::Graphics::Base

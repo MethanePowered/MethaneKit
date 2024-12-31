@@ -220,4 +220,11 @@ if(METHANE_TESTS_BUILD_ENABLED)
         )
     endif()
 
+    set_target_properties(${TEST_TARGET}
+        PROPERTIES
+        FOLDER Modules/Graphics/RHI
+        UNITY_BUILD ${METHANE_UNITY_BUILD_ENABLED}
+        UNITY_BUILD_BATCH_SIZE 4
+    )
+
 endif() # METHANE_TESTS_BUILD_ENABLED

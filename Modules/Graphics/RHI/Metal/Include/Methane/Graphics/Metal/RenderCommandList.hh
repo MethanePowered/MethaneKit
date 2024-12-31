@@ -57,6 +57,9 @@ private:
     RenderPass& GetMetalRenderPass();
     void ResetCommandEncoder();
 
+    Data::Index GetStartVertexBufferIndex() const;
+
+    Data::Index m_start_vertex_buffer_index = 0U;
     const ParallelRenderCommandList* m_parallel_render_command_list_ptr = nullptr;
     const bool m_device_supports_gpu_family_apple_3;
 };

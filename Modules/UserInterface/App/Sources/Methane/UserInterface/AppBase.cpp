@@ -309,7 +309,7 @@ bool AppBase::UpdateTextPanel(TextPanel& text_panel)
         return false;
     }
 
-    META_CHECK_ARG_NOT_NULL_DESCR(m_ui_context_ptr, "help text can not be initialized without render context");
+    META_CHECK_NOT_NULL_DESCR(m_ui_context_ptr, "help text can not be initialized without render context");
 
     if (!text_panel.panel_ptr)
     {
@@ -393,7 +393,7 @@ Font& AppBase::GetMainFont()
     if (m_main_font_opt)
         return *m_main_font_opt;
 
-    META_CHECK_ARG_NOT_NULL_DESCR(m_ui_context_ptr, "main font can not be initialized without render context");
+    META_CHECK_NOT_NULL_DESCR(m_ui_context_ptr, "main font can not be initialized without render context");
     m_main_font_opt = m_font_context.GetFontLibrary().GetFont(
         Data::FontProvider::Get(),
         Font::Settings{ m_app_settings.main_font, m_ui_context_ptr->GetFontResolutionDpi(), Font::GetAlphabetDefault() }

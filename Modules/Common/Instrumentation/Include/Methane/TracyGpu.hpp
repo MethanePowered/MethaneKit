@@ -122,7 +122,7 @@ public:
         case Type::Vulkan:    return tracy::GpuContextType::Vulkan;
         case Type::Metal:     return tracy::GpuContextType::Invalid;
         case Type::Undefined: return tracy::GpuContextType::Invalid;
-        default:              META_UNEXPECTED_ARG_RETURN(type, tracy::GpuContextType::Invalid);
+        default:              META_UNEXPECTED_RETURN(type, tracy::GpuContextType::Invalid);
         }
     }
 
@@ -130,7 +130,7 @@ public:
         : m_id(tracy::GetGpuCtxCounter().fetch_add( 1, std::memory_order_relaxed ))
         , m_prev_calibration_cpu_timestamp(settings.cpu_timestamp)
     {
-        META_CHECK_ARG_LESS_DESCR(m_id, 255, "Tracy GPU context count is exceeding the maximum 255.");
+        META_CHECK_LESS_DESCR(m_id, 255, "Tracy GPU context count is exceeding the maximum 255.");
 
         auto item = tracy::Profiler::QueueSerial();
         tracy::MemWrite(&item->hdr.type,              tracy::QueueType::GpuNewContext);
@@ -303,7 +303,7 @@ public:
         if (!m_context_ptr)
             return;
 
-        META_CHECK_ARG_NOT_EMPTY(name);
+        META_CHECK_NOT_EMPTY(name);
         
 #ifdef TRACY_ON_DEMAND
         m_is_active = tracy::GetProfiler().IsConnected();
@@ -328,7 +328,7 @@ public:
             return;
 #endif
 
-        META_CHECK_ARG_EQUAL_DESCR(m_state, State::Begun, "GPU scope can end only from begun states");
+        META_CHECK_EQUAL_DESCR(m_state, State::Begun, "GPU scope can end only from begun states");
         m_state        = State::Ended;
         m_end_query_id = m_context_ptr->NextQueryId();
 
@@ -351,9 +351,9 @@ public:
             return;
 #endif
 
-        META_CHECK_ARG_EQUAL_DESCR(m_state, State::Ended, "GPU scope can be completed only from ended state");
-        META_CHECK_ARG_RANGE_INC_DESCR(gpu_begin_timestamp, Timestamp(0), gpu_end_timestamp,
-                                       "GPU begin timestamp should be less or equal to end timestamp and both should be positive");
+        META_CHECK_EQUAL_DESCR(m_state, State::Ended, "GPU scope can be completed only from ended state");
+        META_CHECK_RANGE_INC_DESCR(gpu_begin_timestamp, Timestamp(0), gpu_end_timestamp,
+                                   "GPU begin timestamp should be less or equal to end timestamp and both should be positive");
         m_state = State::Completed;
 
         auto begin_item = tracy::Profiler::QueueSerial();
@@ -396,8 +396,8 @@ private:
 #define TRACY_GPU_SCOPE_TYPE Methane::Tracy::GpuScope
 #define TRACY_GPU_SCOPE_INIT(gpu_context) gpu_context
 
-#define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location) \
-    gpu_scope.Begin(p_location)
+#define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, location_ptr) \
+    gpu_scope.Begin(location_ptr)
 
 #define TRACY_GPU_SCOPE_BEGIN_UNNAMED(gpu_scope) \
     gpu_scope.Begin(__LINE__, __FUNCTION__,  __FILE__)
@@ -405,9 +405,9 @@ private:
 #define TRACY_GPU_SCOPE_BEGIN_NAMED(gpu_scope, name) \
     gpu_scope.Begin(name, __LINE__, __FUNCTION__,  __FILE__)
 
-#define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, p_location) \
+#define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, location_ptr) \
     if (gpu_scope.GetState() != Methane::Tracy::GpuScope::State::Begun) \
-        gpu_scope.Begin(p_location)
+        gpu_scope.Begin(location_ptr)
 
 #define TRACY_GPU_SCOPE_TRY_BEGIN_UNNAMED(gpu_scope) \
     if (gpu_scope.GetState() != Methane::Tracy::GpuScope::State::Begun) \
@@ -461,10 +461,10 @@ struct SourceLocationStub { };
 #define TRACY_SOURCE_LOCATION_ALLOC(name) 0U
 #define TRACY_GPU_SCOPE_TYPE char* /* NOSONAR */
 #define TRACY_GPU_SCOPE_INIT(gpu_context) nullptr
-#define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, p_location)
+#define TRACY_GPU_SCOPE_BEGIN_AT_LOCATION(gpu_scope, location_ptr)
 #define TRACY_GPU_SCOPE_BEGIN_UNNAMED(gpu_scope)
 #define TRACY_GPU_SCOPE_BEGIN_NAMED(gpu_scope, name)
-#define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, p_location)
+#define TRACY_GPU_SCOPE_TRY_BEGIN_AT_LOCATION(gpu_scope, location_ptr)
 #define TRACY_GPU_SCOPE_TRY_BEGIN_UNNAMED(gpu_scope)
 #define TRACY_GPU_SCOPE_TRY_BEGIN_NAMED(gpu_scope, name)
 #define TRACY_GPU_SCOPE_BEGIN(gpu_scope, name)

@@ -41,10 +41,10 @@ namespace rhi = Methane::Graphics::Rhi;
 
 struct TexturedCubeFrame final : Graphics::AppFrame
 {
-    rhi::Buffer            uniforms_buffer;
-    rhi::ProgramBindings   program_bindings;
-    rhi::RenderCommandList render_cmd_list;
-    rhi::CommandListSet    execute_cmd_list_set;
+    rhi::ProgramBindings          program_bindings;
+    rhi::IProgramArgumentBinding* uniforms_binding_ptr = nullptr;
+    rhi::RenderCommandList        render_cmd_list;
+    rhi::CommandListSet           execute_cmd_list_set;
 
     using gfx::AppFrame::AppFrame;
 };
@@ -71,26 +71,13 @@ protected:
 private:
     bool Animate(double elapsed_seconds, double delta_seconds);
 
-    const float             m_cube_scale = 15.F;
-    const hlslpp::Constants m_shader_constants{
-        { 1.F, 1.F, 0.74F, 1.F },  // - light_color
-        700.F,                     // - light_power
-        0.04F,                     // - light_ambient_factor
-        30.F                       // - light_specular_factor
-    };
     hlslpp::Uniforms m_shader_uniforms { };
     gfx::Camera      m_camera;
     rhi::RenderState m_render_state;
     rhi::BufferSet   m_vertex_buffer_set;
     rhi::Buffer      m_index_buffer;
-    rhi::Buffer      m_const_buffer;
     rhi::Texture     m_cube_texture;
     rhi::Sampler     m_texture_sampler;
-
-    const rhi::SubResource m_shader_uniforms_subresource{
-        reinterpret_cast<Data::ConstRawPtr>(&m_shader_uniforms), // NOSONAR
-        sizeof(hlslpp::Uniforms)
-    };
 };
 
 } // namespace Methane::Tutorials

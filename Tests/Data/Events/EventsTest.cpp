@@ -132,6 +132,32 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         }
     }
 
+    SECTION("Emit by priority")
+    {
+        TestEmitter emitter;
+        std::array<TestReceiver, 8> receivers{
+            TestReceiver( 1, true),
+            TestReceiver( 3, true),
+            TestReceiver( 0, true),
+            TestReceiver(-1, true),
+            TestReceiver( 5, true),
+            TestReceiver( 2, true),
+            TestReceiver(-2, true),
+            TestReceiver( 4, true)
+        };
+
+        for(TestReceiver& receiver : receivers)
+        {
+            receiver.Bind(emitter, static_cast<int32_t>(receiver.GetId()));
+        }
+
+        TestReceiver::ClearCalledReceiverIds();
+        CHECK_NOTHROW(emitter.EmitFoo());
+
+        const TestReceiver::Ids expected_calls_order{ 5, 4, 3, 2, 1, 0, -1, -2 };
+        CHECK(TestReceiver::GetCalledReceiverIds() == expected_calls_order);
+    }
+
     SECTION("Emit with arguments")
     {
         TestEmitter emitter;
@@ -243,14 +269,14 @@ TEST_CASE("Connect one emitter to many receivers", "[events]")
         TestEmitter emitter;
         Ptrs<TestReceiver> receivers_ptrs(5);
 
-        size_t receiver_index = 0;
+        uint32_t receiver_index = 0;
         for(Ptr<TestReceiver>& receiver_ptr : receivers_ptrs)
         {
             receiver_ptr = std::make_shared<TestReceiver>(receiver_index++);
             receiver_ptr->CheckBind(emitter);
         }
 
-        CHECK_NOTHROW(emitter.EmitCall([&receivers_ptrs](size_t receiver_index)
+        CHECK_NOTHROW(emitter.EmitCall([&receivers_ptrs](uint32_t receiver_index)
         {
              receivers_ptrs[receiver_index].reset();
         }));

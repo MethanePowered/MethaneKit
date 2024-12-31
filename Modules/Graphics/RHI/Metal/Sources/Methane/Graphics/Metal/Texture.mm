@@ -51,7 +51,7 @@ static MTLTextureType GetNativeTextureType(Rhi::TextureDimensionType dimension_t
     case Rhi::TextureDimensionType::CubeArray:         return MTLTextureTypeCubeArray;
     case Rhi::TextureDimensionType::Tex3D:             return MTLTextureType3D;
     // TODO: add support for MTLTextureTypeTextureBuffer
-    default: META_UNEXPECTED_ARG_RETURN(dimension_type, MTLTextureType1D);
+    default: META_UNEXPECTED_RETURN(dimension_type, MTLTextureType1D);
     }
 }
 
@@ -71,7 +71,7 @@ static MTLRegion GetTextureRegion(const Dimensions& dimensions, Rhi::TextureDime
              return MTLRegionMake2D(0, 0, dimensions.GetWidth(), dimensions.GetHeight());
     case Rhi::TextureDimensionType::Tex3D:
              return MTLRegionMake3D(0, 0, 0, dimensions.GetWidth(), dimensions.GetHeight(), dimensions.GetDepth());
-    default: META_UNEXPECTED_ARG_RETURN(dimension_type, MTLRegion{});
+    default: META_UNEXPECTED_RETURN(dimension_type, MTLRegion{});
     }
 }
 
@@ -80,7 +80,10 @@ Texture::Texture(const Base::Context& context, const Settings& settings)
     , m_mtl_texture(settings.type == ITexture::Type::FrameBuffer
                       ? nil // actual frame buffer texture descriptor is set in UpdateFrameBuffer()
                       : [GetMetalContext().GetMetalDevice().GetNativeDevice()  newTextureWithDescriptor:GetNativeTextureDescriptor()])
-{ }
+{
+    META_FUNCTION_TASK();
+    SetNativeResourceUsage(ConvertResourceUsageMaskToMetal(settings.usage_mask));
+}
 
 bool Texture::SetName(std::string_view name)
 {
@@ -95,8 +98,8 @@ bool Texture::SetName(std::string_view name)
 void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& sub_resources)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_mtl_texture);
-    META_CHECK_ARG_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
+    META_CHECK_NOT_NULL(m_mtl_texture);
+    META_CHECK_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
 
     Base::Texture::SetData(target_cmd_queue, sub_resources);
 
@@ -104,7 +107,7 @@ void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& 
     transfer_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
-    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
+    META_CHECK_NOT_NULL(mtl_blit_encoder);
 
     const Settings& settings        = GetSettings();
     const uint32_t  bytes_per_row   = settings.dimensions.GetWidth()  * GetPixelSize(settings.pixel_format);
@@ -152,8 +155,8 @@ void Texture::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResources& 
 Rhi::SubResource Texture::GetData(Rhi::ICommandQueue&, const SubResource::Index& sub_resource_index, const BytesRangeOpt& data_range)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_mtl_texture);
-    META_CHECK_ARG_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
+    META_CHECK_NOT_NULL(m_mtl_texture);
+    META_CHECK_EQUAL(m_mtl_texture.storageMode, MTLStorageModePrivate);
 
     ValidateSubResource(sub_resource_index, data_range);
 
@@ -161,7 +164,7 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue&, const SubResource::Index&
     transfer_command_list.RetainResource(*this);
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
-    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
+    META_CHECK_NOT_NULL(mtl_blit_encoder);
 
     const Settings& settings        = GetSettings();
     const uint32_t  bytes_per_row   = settings.dimensions.GetWidth()  * GetPixelSize(settings.pixel_format);
@@ -185,7 +188,7 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue&, const SubResource::Index&
     Data::Size data_size = static_cast<Data::Size>([mtl_read_back_buffer length]);
     if (data_range.has_value())
     {
-        META_CHECK_ARG_LESS_DESCR(data_range->GetEnd(), data_size, "provided texture subresource data range is out of bounds");
+        META_CHECK_LESS_DESCR(data_range->GetEnd(), data_size, "provided texture subresource data range is out of bounds");
         data_ptr += data_range->GetStart();
         data_size = data_range->GetLength();
     }
@@ -196,7 +199,7 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue&, const SubResource::Index&
 void Texture::UpdateFrameBuffer()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetSettings().type, Rhi::TextureType::FrameBuffer, "unable to update frame buffer on non-FB texture");
+    META_CHECK_EQUAL_DESCR(GetSettings().type, Rhi::TextureType::FrameBuffer, "unable to update frame buffer on non-FB texture");
     m_mtl_texture = [GetMetalRenderContext().GetNativeDrawable() texture];
 }
 
@@ -207,8 +210,8 @@ void Texture::GenerateMipLevels(TransferCommandList& transfer_command_list)
     transfer_command_list.Reset(s_debug_group.get());
 
     const id<MTLBlitCommandEncoder>& mtl_blit_encoder = transfer_command_list.GetNativeCommandEncoder();
-    META_CHECK_ARG_NOT_NULL(mtl_blit_encoder);
-    META_CHECK_ARG_NOT_NULL(m_mtl_texture);
+    META_CHECK_NOT_NULL(mtl_blit_encoder);
+    META_CHECK_NOT_NULL(m_mtl_texture);
 
     [mtl_blit_encoder generateMipmapsForTexture: m_mtl_texture];
 }
@@ -216,7 +219,7 @@ void Texture::GenerateMipLevels(TransferCommandList& transfer_command_list)
 const RenderContext& Texture::GetMetalRenderContext() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_EQUAL_DESCR(GetBaseContext().GetType(), Rhi::ContextType::Render, "incompatible context type");
+    META_CHECK_EQUAL_DESCR(GetBaseContext().GetType(), Rhi::ContextType::Render, "incompatible context type");
     return static_cast<const RenderContext&>(GetMetalContext());
 }
 
@@ -280,7 +283,7 @@ MTLTextureDescriptor* Texture::GetNativeTextureDescriptor()
         mtl_tex_desc.mipmapLevelCount   = GetSubresourceCount().GetMipLevelsCount();
         break;
 
-    default: META_UNEXPECTED_ARG(settings.dimension_type);
+    default: META_UNEXPECTED(settings.dimension_type);
     }
 
     if (!mtl_tex_desc)

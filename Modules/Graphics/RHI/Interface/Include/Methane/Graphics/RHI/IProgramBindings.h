@@ -23,7 +23,7 @@ Methane program bindings interface for resources binding to program arguments.
 
 #pragma once
 
-#include "IProgram.h"
+#include "ProgramArgument.h"
 #include "IResource.h"
 #include "IObject.h"
 
@@ -41,7 +41,8 @@ struct IProgramArgumentBinding;
 
 struct IProgramArgumentBindingCallback
 {
-    virtual void OnProgramArgumentBindingResourceViewsChanged(const IProgramArgumentBinding& argument_binding, const IResource::Views& old_resource_views, const IResource::Views& new_resource_views) = 0;
+    virtual void OnProgramArgumentBindingResourceViewsChanged(const IProgramArgumentBinding& argument_binding, const ResourceViews& old_resource_views, const ResourceViews& new_resource_views) = 0;
+    virtual void OnProgramArgumentBindingRootConstantChanged(const IProgramArgumentBinding& argument_binding, const RootConstant& root_constant) = 0;
 
     virtual ~IProgramArgumentBindingCallback() = default;
 };
@@ -50,14 +51,15 @@ class ProgramArgumentConstantModificationException
     : public std::logic_error
 {
 public:
-    explicit ProgramArgumentConstantModificationException(const IProgram::Argument& argument);
+    explicit ProgramArgumentConstantModificationException(const ProgramArgument& argument);
 };
 
 struct ProgramArgumentBindingSettings
 {
     ProgramArgumentAccessor argument;
     ResourceType            resource_type;
-    uint32_t                resource_count = 1;
+    uint32_t                resource_count = 1U;
+    uint32_t                buffer_size = 0U;
 };
 
 struct IProgramArgumentBinding
@@ -68,9 +70,12 @@ struct IProgramArgumentBinding
     using Settings                      = ProgramArgumentBindingSettings;
 
     // IProgramArgumentBinding interface
-    [[nodiscard]] virtual const Settings&         GetSettings() const noexcept = 0;
-    [[nodiscard]] virtual const IResource::Views& GetResourceViews() const noexcept = 0;
-    virtual bool SetResourceViews(const IResource::Views& resource_views) = 0;
+    [[nodiscard]] virtual const Settings&      GetSettings() const noexcept = 0;
+    [[nodiscard]] virtual const ResourceViews& GetResourceViews() const noexcept = 0;
+    virtual bool                               SetResourceViews(const ResourceViews& resource_views) = 0;
+    virtual bool                               SetResourceView(const ResourceView& resource_view) = 0;
+    [[nodiscard]] virtual RootConstant         GetRootConstant() const = 0;
+    virtual bool                               SetRootConstant(const RootConstant& root_constant) = 0;
     [[nodiscard]] virtual explicit operator std::string() const = 0;
 };
 
@@ -84,34 +89,39 @@ enum class ProgramBindingsApplyBehavior : uint32_t
 
 using ProgramBindingsApplyBehaviorMask = Data::EnumMask<ProgramBindingsApplyBehavior>;
 
+struct IProgram;
+
 class ProgramBindingsUnboundArgumentsException: public std::runtime_error
 {
 public:
-    ProgramBindingsUnboundArgumentsException(const IProgram& program, const IProgram::Arguments& unbound_arguments);
+    ProgramBindingsUnboundArgumentsException(const IProgram& program, const ProgramArguments& unbound_arguments);
 
-    [[nodiscard]] const IProgram&            GetProgram() const noexcept { return m_program; }
-    [[nodiscard]] const IProgram::Arguments& GetArguments() const noexcept { return m_unbound_arguments; }
+    [[nodiscard]] const IProgram&         GetProgram() const noexcept   { return m_program; }
+    [[nodiscard]] const ProgramArguments& GetArguments() const noexcept { return m_unbound_arguments; }
 
 private:
-    const IProgram&           m_program;
-    const IProgram::Arguments m_unbound_arguments;
+    const IProgram&        m_program;
+    const ProgramArguments m_unbound_arguments;
 };
 
 struct IProgramBindings
     : virtual IObject // NOSONAR
 {
-    using IArgumentBindingCallback = IProgramArgumentBindingCallback;
-    using IArgumentBinding = IProgramArgumentBinding;
-    using ApplyBehavior = ProgramBindingsApplyBehavior;
-    using ApplyBehaviorMask = ProgramBindingsApplyBehaviorMask;
+    using IArgumentBindingCallback  = IProgramArgumentBindingCallback;
+    using IArgumentBinding          = IProgramArgumentBinding;
+    using BindingValueByArgument    = ProgramBindingValueByArgument;
+    using ApplyBehavior             = ProgramBindingsApplyBehavior;
+    using ApplyBehaviorMask         = ProgramBindingsApplyBehaviorMask;
     using UnboundArgumentsException = ProgramBindingsUnboundArgumentsException;
-    using ResourceViewsByArgument = IProgram::ResourceViewsByArgument;
 
     // Create IProgramBindings instance
-    [[nodiscard]] static Ptr<IProgramBindings> Create(IProgram& program, const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index = 0U);
+    [[nodiscard]] static Ptr<IProgramBindings> Create(IProgram& program,
+                                                      const BindingValueByArgument& binding_value_by_argument,
+                                                      Data::Index frame_index = 0U);
 
     // IProgramBindings interface
-    [[nodiscard]] virtual Ptr<IProgramBindings>   CreateCopy(const IProgram::ResourceViewsByArgument& replace_resource_views_by_argument = {}, const Opt<Data::Index>& frame_index = {}) = 0;
+    [[nodiscard]] virtual Ptr<IProgramBindings>   CreateCopy(const BindingValueByArgument& replace_binding_value_by_argument = {},
+                                                             const Opt<Data::Index>& frame_index = {}) = 0;
     [[nodiscard]] virtual IProgram&               GetProgram() const = 0;
     [[nodiscard]] virtual IArgumentBinding&       Get(const ProgramArgument& shader_argument) const = 0;
     [[nodiscard]] virtual const ProgramArguments& GetArguments() const noexcept = 0;

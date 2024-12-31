@@ -35,7 +35,7 @@ bool CommandListDebugGroup::SetName(std::string_view)
     META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(false, "Debug Group can not be renamed");
 }
 
-Rhi::ICommandListDebugGroup& CommandListDebugGroup::AddSubGroup(Data::Index id, const std::string& name)
+Rhi::ICommandListDebugGroup& CommandListDebugGroup::AddSubGroup(Data::Index id, std::string_view name)
 {
     META_FUNCTION_TASK();
     if (id >= m_sub_groups.size())

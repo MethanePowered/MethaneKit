@@ -37,7 +37,7 @@ struct ICommandListDebugGroup
 {
     [[nodiscard]] static Ptr<ICommandListDebugGroup> Create(std::string_view name);
 
-    virtual ICommandListDebugGroup& AddSubGroup(Data::Index id, const std::string& name) = 0;
+    virtual ICommandListDebugGroup& AddSubGroup(Data::Index id, std::string_view name) = 0;
     [[nodiscard]] virtual ICommandListDebugGroup* GetSubGroup(Data::Index id) const noexcept = 0;
     [[nodiscard]] virtual bool HasSubGroups() const noexcept = 0;
 };
@@ -46,10 +46,10 @@ struct ICommandListDebugGroup
 
 #ifdef METHANE_COMMAND_DEBUG_GROUPS_ENABLED
 
-#define META_DEBUG_GROUP_CREATE(/*const std::string& */group_name) \
+#define META_DEBUG_GROUP_CREATE(/*std::string_view*/group_name) \
     Methane::Graphics::Rhi::ICommandListDebugGroup::Create(group_name)
 
-#define META_DEBUG_GROUP_PUSH(/*ICommandList& */cmd_list, /*const std::string& */group_name) \
+#define META_DEBUG_GROUP_PUSH(/*ICommandList& */cmd_list, /*std::string_view*/group_name) \
     { \
         const auto s_local_debug_group = META_DEBUG_GROUP_CREATE(group_name); \
         (cmd_list).PushDebugGroup(*s_local_debug_group); \
@@ -60,10 +60,10 @@ struct ICommandListDebugGroup
 
 #else
 
-#define META_DEBUG_GROUP_CREATE(/*const std::string& */group_name) \
+#define META_DEBUG_GROUP_CREATE(/*std::string_view*/group_name) \
     Methane::Ptr<Methane::Graphics::Rhi::ICommandListDebugGroup>()
 
-#define META_DEBUG_GROUP_PUSH(/*ICommandList& */cmd_list, /*const std::string& */group_name) \
+#define META_DEBUG_GROUP_PUSH(/*ICommandList& */cmd_list, /*std::string_view*/group_name) \
     META_UNUSED(cmd_list); META_UNUSED(group_name)
 
 #define META_DEBUG_GROUP_POP(/*ICommandList& */cmd_list) \
@@ -71,6 +71,6 @@ struct ICommandListDebugGroup
 
 #endif
 
-#define META_DEBUG_GROUP_CREATE_VAR(variable, /*const std::string&*/ group_name) \
+#define META_DEBUG_GROUP_CREATE_VAR(variable, /*std::string_view*/ group_name) \
     META_UNUSED(group_name); \
     static const Methane::Ptr<Methane::Graphics::Rhi::ICommandListDebugGroup> variable = META_DEBUG_GROUP_CREATE(group_name)

@@ -40,11 +40,11 @@ public:
     using Base::ProgramBindings::ProgramBindings;
 
     // IProgramBindings interface
-    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index) override;
-    void Apply(Base::CommandList&, ApplyBehaviorMask) const override { /* Intentionally unimplemented */ }
+    [[nodiscard]] Ptr<Rhi::IProgramBindings> CreateCopy(const BindingValueByArgument& replace_binding_value_by_argument, const Opt<Data::Index>& frame_index) override;
 
-    // Base::ProgramBindings interface
+    // Base::ProgramBindings overrides...
     void CompleteInitialization() override { /* Intentionally unimplemented */ }
+    void Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const override;
 };
 
 } // namespace Methane::Graphics::Null

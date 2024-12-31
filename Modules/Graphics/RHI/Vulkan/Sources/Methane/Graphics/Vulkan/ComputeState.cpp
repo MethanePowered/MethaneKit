@@ -76,7 +76,7 @@ void ComputeState::Reset(const Settings& settings)
     );
 
     auto pipe = m_vk_context.GetVulkanDevice().GetNativeDevice().createComputePipelineUnique(nullptr, vk_pipeline_create_info);
-    META_CHECK_ARG_EQUAL_DESCR(pipe.result, vk::Result::eSuccess, "Vulkan pipeline creation has failed");
+    META_CHECK_EQUAL_DESCR(pipe.result, vk::Result::eSuccess, "Vulkan pipeline creation has failed");
     m_vk_unique_pipeline = std::move(pipe.value);
 }
 

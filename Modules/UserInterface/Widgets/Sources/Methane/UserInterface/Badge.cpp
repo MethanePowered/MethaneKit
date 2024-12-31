@@ -162,8 +162,8 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
                                     const UnitSize& badge_margins, Badge::FrameCorner frame_corner)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_DESCR(frame_size.GetUnits(), frame_size.GetUnits() == badge_size.GetUnits() && badge_size.GetUnits() == badge_margins.GetUnits(),
-                         "frame size, badge size and margin units must be equal");
+    META_CHECK_DESCR(frame_size.GetUnits(), frame_size.GetUnits() == badge_size.GetUnits() && badge_size.GetUnits() == badge_margins.GetUnits(),
+                     "frame size, badge size and margin units must be equal");
 
     switch(frame_corner)
     {
@@ -180,7 +180,7 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
         return UnitRect(frame_size.GetUnits(), static_cast<gfx::FramePoint>(frame_size - badge_size - badge_margins), badge_size);
 
     default:
-        META_UNEXPECTED_ARG_RETURN(frame_corner, UnitRect());
+        META_UNEXPECTED_RETURN(frame_corner, UnitRect());
     }
 }
 

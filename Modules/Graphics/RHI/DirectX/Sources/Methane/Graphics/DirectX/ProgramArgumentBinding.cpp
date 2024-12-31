@@ -27,7 +27,9 @@ DirectX 12 implementation of the program argument binding interface.
 #include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/Base/Context.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
+#include <algorithm>
+#include <iterator>
 
 namespace Methane::Graphics::DirectX
 {
@@ -47,11 +49,11 @@ ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, con
     : Base::ProgramArgumentBinding(context, settings)
     , m_settings_dx(settings)
     , m_shader_usage(GetShaderUsage(settings.type))
-    , m_cp_native_device(dynamic_cast<const IContext&>(context).GetDirectDevice().GetNativeDevice())
+    , m_native_device_cptr(dynamic_cast<const IContext&>(context).GetDirectDevice().GetNativeDevice())
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_cp_native_device);
-    META_CHECK_ARG_NAME("m_p_descriptor_heap_reservation", !m_p_descriptor_heap_reservation);
+    META_CHECK_NOT_NULL(m_native_device_cptr);
+    META_CHECK_NAME("m_descriptor_heap_reservation_ptr", !m_descriptor_heap_reservation_ptr);
 }
 
 ProgramArgumentBinding::ProgramArgumentBinding(const ProgramArgumentBinding& other)
@@ -60,16 +62,16 @@ ProgramArgumentBinding::ProgramArgumentBinding(const ProgramArgumentBinding& oth
     , m_shader_usage(other.m_shader_usage)
     , m_root_parameter_index(other.m_root_parameter_index)
     , m_descriptor_range(other.m_descriptor_range)
-    , m_p_descriptor_heap_reservation(other.m_p_descriptor_heap_reservation)
+    , m_descriptor_heap_reservation_ptr(other.m_descriptor_heap_reservation_ptr)
     , m_resource_views_dx(other.m_resource_views_dx)
-    , m_cp_native_device(other.m_cp_native_device)
+    , m_native_device_cptr(other.m_native_device_cptr)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_cp_native_device);
-    if (m_p_descriptor_heap_reservation)
+    META_CHECK_NOT_NULL(m_native_device_cptr);
+    if (m_descriptor_heap_reservation_ptr)
     {
-        META_CHECK_ARG_TRUE( m_p_descriptor_heap_reservation->heap.get().IsShaderVisible());
-        META_CHECK_ARG_EQUAL(m_p_descriptor_heap_reservation->heap.get().GetSettings().type, m_descriptor_range.heap_type);
+        META_CHECK_TRUE( m_descriptor_heap_reservation_ptr->heap.get().IsShaderVisible());
+        META_CHECK_EQUAL(m_descriptor_heap_reservation_ptr->heap.get().GetSettings().type, m_descriptor_range.heap_type);
     }
 }
 
@@ -95,20 +97,20 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
 
     if (m_settings_dx.type == Type::DescriptorTable)
     {
-        META_CHECK_ARG_LESS_DESCR(resource_views.size(), m_descriptor_range.count + 1, "the number of bound resources exceeds reserved descriptors count");
+        META_CHECK_LESS_DESCR(resource_views.size(), m_descriptor_range.count + 1, "the number of bound resources exceeds reserved descriptors count");
     }
 
-    const uint32_t             descriptor_range_start = m_p_descriptor_heap_reservation
-                                                      ? m_p_descriptor_heap_reservation->GetRange(m_settings_dx.argument.GetAccessorIndex()).GetStart()
+    const uint32_t             descriptor_range_start = m_descriptor_heap_reservation_ptr
+                                                      ? m_descriptor_heap_reservation_ptr->GetRange(m_settings_dx.argument.GetAccessorIndex()).GetStart()
                                                       : std::numeric_limits<uint32_t>::max();
-    const DescriptorHeap*        p_dx_descriptor_heap = m_p_descriptor_heap_reservation
-                                                      ? static_cast<const DescriptorHeap*>(&m_p_descriptor_heap_reservation->heap.get())
+    const DescriptorHeap*      dx_descriptor_heap_ptr = m_descriptor_heap_reservation_ptr
+                                                      ? static_cast<const DescriptorHeap*>(&m_descriptor_heap_reservation_ptr->heap.get())
                                                       : nullptr;
-    const DescriptorHeap::Type   descriptor_heap_type = p_dx_descriptor_heap
-                                                      ? p_dx_descriptor_heap->GetSettings().type
+    const DescriptorHeap::Type   descriptor_heap_type = dx_descriptor_heap_ptr
+                                                      ? dx_descriptor_heap_ptr->GetSettings().type
                                                       : DescriptorHeap::Type::Undefined;
-    const D3D12_DESCRIPTOR_HEAP_TYPE native_heap_type = p_dx_descriptor_heap
-                                                      ? p_dx_descriptor_heap->GetNativeDescriptorHeapType()
+    const D3D12_DESCRIPTOR_HEAP_TYPE native_heap_type = dx_descriptor_heap_ptr
+                                                      ? dx_descriptor_heap_ptr->GetNativeDescriptorHeapType()
                                                       : D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
     uint32_t resource_index = 0;
@@ -118,19 +120,18 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     for(const Rhi::ResourceView& resource_view : resource_views)
     {
         m_resource_views_dx.emplace_back(resource_view, m_shader_usage);
-        if (!p_dx_descriptor_heap)
+        if (!dx_descriptor_heap_ptr)
             continue;
 
         const ResourceView& dx_resource_view = m_resource_views_dx.back();
-        META_CHECK_ARG_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
-                                   "incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
-                                   magic_enum::enum_name(descriptor_heap_type), m_settings_dx.argument.GetName(),
-                                   magic_enum::enum_name(m_settings_dx.argument.GetShaderType()));
+        META_CHECK_EQUAL_DESCR(m_descriptor_range.heap_type, descriptor_heap_type,
+                               "incompatible heap type '{}' is set for resource binding on argument '{}' of {} shader",
+                               magic_enum::enum_name(descriptor_heap_type), m_settings_dx.argument.GetName(),
+                               magic_enum::enum_name(m_settings_dx.argument.GetShaderType()));
 
         const uint32_t descriptor_index = descriptor_range_start + m_descriptor_range.offset + resource_index;
-        m_cp_native_device->CopyDescriptorsSimple(
-            1,
-            p_dx_descriptor_heap->GetNativeCpuDescriptorHandle(descriptor_index),
+        m_native_device_cptr->CopyDescriptorsSimple(1,
+            dx_descriptor_heap_ptr->GetNativeCpuDescriptorHandle(descriptor_index),
             dx_resource_view.GetNativeCpuDescriptorHandle(),
             native_heap_type
         );
@@ -146,25 +147,44 @@ void ProgramArgumentBinding::SetDescriptorRange(const DescriptorRange& descripto
 {
     META_FUNCTION_TASK();
     const DescriptorHeap::Type expected_heap_type = GetDescriptorHeapType();
-    META_CHECK_ARG_EQUAL_DESCR(descriptor_range.heap_type, expected_heap_type,
-                               "descriptor heap type '{}' is incompatible with the resource binding, expected heap type is '{}'",
-                               magic_enum::enum_name(descriptor_range.heap_type),
-                               magic_enum::enum_name(expected_heap_type));
-    META_CHECK_ARG_LESS_DESCR(descriptor_range.count, m_settings_dx.resource_count + 1,
-                              "descriptor range size {} will not fit bound shader resources count {}",
-                              descriptor_range.count, m_settings_dx.resource_count);
+    META_CHECK_EQUAL_DESCR(descriptor_range.heap_type, expected_heap_type,
+                           "descriptor heap type '{}' is incompatible with the resource binding, expected heap type is '{}'",
+                           magic_enum::enum_name(descriptor_range.heap_type),
+                           magic_enum::enum_name(expected_heap_type));
+    META_CHECK_LESS_DESCR(descriptor_range.count, m_settings_dx.resource_count + 1,
+                          "descriptor range size {} will not fit bound shader resources count {}",
+                          descriptor_range.count, m_settings_dx.resource_count);
 
     m_descriptor_range = descriptor_range;
 }
 
-void ProgramArgumentBinding::SetDescriptorHeapReservation(const DescriptorHeapReservation* p_reservation)
+void ProgramArgumentBinding::SetDescriptorHeapReservation(const DescriptorHeapReservation* reservation_ptr)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NAME_DESCR("p_reservation",
-                              !p_reservation || (p_reservation->heap.get().IsShaderVisible() && p_reservation->heap.get().GetSettings().type == m_descriptor_range.heap_type),
-                              "argument binding reservation must be made in shader visible descriptor heap of type '{}'",
-                              magic_enum::enum_name(m_descriptor_range.heap_type));
-    m_p_descriptor_heap_reservation = p_reservation;
+    META_CHECK_NAME_DESCR("p_reservation",
+                          !reservation_ptr ||
+                          (reservation_ptr->heap.get().IsShaderVisible() &&
+                           reservation_ptr->heap.get().GetSettings().type == m_descriptor_range.heap_type),
+                          "argument binding reservation must be made in shader visible descriptor heap of type '{}'",
+                          magic_enum::enum_name(m_descriptor_range.heap_type));
+    m_descriptor_heap_reservation_ptr = reservation_ptr;
+}
+
+bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
+{
+    if (!Base::ProgramArgumentBinding::UpdateRootConstantResourceViews())
+        return false;
+
+    const Rhi::ResourceViews& resource_views = (Base::ProgramArgumentBinding::GetResourceViews());
+    m_resource_views_dx.clear();
+
+    std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_resource_views_dx),
+        [this](const Rhi::ResourceView& resource_view)
+        { return ResourceView(resource_view, m_shader_usage); });
+
+    // Request complete initialization to update root constant buffer views in program binding descriptors
+    GetContext().RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization);
+    return true;
 }
 
 } // namespace Methane::Graphics::DirectX

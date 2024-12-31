@@ -60,7 +60,7 @@ public:
         return std::make_shared<Shader>(type, *this, settings);
     }
 
-    [[nodiscard]] Ptr<Rhi::IProgram> CreateProgram(const Rhi::ProgramSettings& settings) const final
+    [[nodiscard]] Ptr<Rhi::IProgram> CreateProgram(const Rhi::ProgramSettings& settings) final
     {
         return std::make_shared<Program>(*this, settings);
     }

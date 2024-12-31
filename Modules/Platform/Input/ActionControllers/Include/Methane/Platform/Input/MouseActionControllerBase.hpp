@@ -26,7 +26,7 @@
 #include <Methane/Platform/Input/IHelpProvider.h>
 #include <Methane/Platform/Input/Mouse.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <map>
 
 namespace Methane::Platform::Input::Mouse

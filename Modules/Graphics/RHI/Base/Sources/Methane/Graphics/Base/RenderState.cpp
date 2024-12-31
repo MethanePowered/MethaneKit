@@ -39,9 +39,9 @@ RenderState::RenderState(const RenderContext& context, const Settings& settings,
 void RenderState::Reset(const Settings& settings)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr, "program is not initialized in render state settings");
-    META_CHECK_ARG_NOT_NULL_DESCR(settings.render_pattern_ptr, "render pass pattern is not initialized in render state settings");
-    META_CHECK_ARG_NOT_NULL_DESCR(settings.program_ptr->GetShader(Rhi::ShaderType::Vertex), "Program used in render state must include vertex shader");
+    META_CHECK_NOT_NULL_DESCR(settings.program_ptr, "program is not initialized in render state settings");
+    META_CHECK_NOT_NULL_DESCR(settings.render_pattern_ptr, "render pass pattern is not initialized in render state settings");
+    META_CHECK_NOT_NULL_DESCR(settings.program_ptr->GetShader(Rhi::ShaderType::Vertex), "Program used in render state must include vertex shader");
 
     m_settings = settings;
 }
@@ -49,7 +49,7 @@ void RenderState::Reset(const Settings& settings)
 Rhi::IProgram& RenderState::GetProgram()
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_settings.program_ptr);
+    META_CHECK_NOT_NULL(m_settings.program_ptr);
     return *m_settings.program_ptr;
 }
 

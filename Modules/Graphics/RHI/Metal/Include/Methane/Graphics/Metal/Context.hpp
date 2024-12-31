@@ -33,7 +33,7 @@ Metal template implementation of the base context interface.
 #include "Texture.hh"
 #include "Sampler.hh"
 #include "ProgramLibrary.hh"
-#include "DescriptorManager.h"
+#include "DescriptorManager.hh"
 
 #include <Methane/Graphics/Base/Context.h>
 #include <Methane/Graphics/RHI/ICommandKit.h>
@@ -54,8 +54,15 @@ class Context
 {
 public:
     Context(Base::Device& device, tf::Executor& parallel_executor, const typename ContextBaseT::Settings& settings)
-        : ContextBaseT(device, std::make_unique<DescriptorManager>(), parallel_executor, settings)
-    { }
+        : ContextBaseT(device, std::make_unique<DescriptorManager>(*this), parallel_executor, settings)
+    {
+        // NOTE: set low priority of receiver callback, to be called after all other receivers - program bindings,
+        // which is required to guarantee that arguments buffer will be allocated before argument bindings initialization
+        Data::Emitter<Rhi::IContextCallback>::Connect(
+            dynamic_cast<DescriptorManager&>(ContextBaseT::GetDescriptorManager()),
+            static_cast<int32_t>(Data::ConnectionPriority::Low)
+        );
+    }
 
     // IContext overrides
 
@@ -71,7 +78,7 @@ public:
         return std::make_shared<Shader>(type, *this, settings);
     }
 
-    [[nodiscard]] Ptr<Rhi::IProgram> CreateProgram(const Rhi::ProgramSettings& settings) const final
+    [[nodiscard]] Ptr<Rhi::IProgram> CreateProgram(const Rhi::ProgramSettings& settings) final
     {
         META_FUNCTION_TASK();
         return std::make_shared<Program>(*this, settings);

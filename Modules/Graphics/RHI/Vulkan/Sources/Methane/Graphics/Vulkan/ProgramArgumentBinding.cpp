@@ -24,6 +24,7 @@ Vulkan implementation of the program argument binding interface.
 #include <Methane/Graphics/Vulkan/ProgramArgumentBinding.h>
 #include <Methane/Graphics/Vulkan/IContext.h>
 #include <Methane/Graphics/Vulkan/Device.h>
+#include <Methane/Graphics/Vulkan/Shader.h>
 
 #include <Methane/Graphics/Base/Context.h>
 
@@ -49,17 +50,38 @@ ProgramArgumentBinding::ProgramArgumentBinding(const Base::Context& context, con
     , m_settings_vk(settings)
 { }
 
-void ProgramArgumentBinding::SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t binding_value) noexcept
+vk::ShaderStageFlagBits ProgramArgumentBinding::GetNativeShaderStageFlags() const
 {
     META_FUNCTION_TASK();
-    m_vk_descriptor_set_ptr = &descriptor_set;
-    m_vk_binding_value      = binding_value;
+    return Shader::ConvertTypeToStageFlagBits(m_settings_vk.argument.GetShaderType());
 }
 
-void ProgramArgumentBinding::SetDescriptorSet(const vk::DescriptorSet& descriptor_set) noexcept
+void ProgramArgumentBinding::SetDescriptorSetBinding(const vk::DescriptorSet& descriptor_set, uint32_t binding_value)
 {
     META_FUNCTION_TASK();
-    m_vk_descriptor_set_ptr = &descriptor_set;
+    m_vk_binding_value = binding_value;
+    SetDescriptorSet(descriptor_set);
+}
+
+void ProgramArgumentBinding::SetDescriptorSet(const vk::DescriptorSet& descriptor_set)
+{
+    META_FUNCTION_TASK();
+    if (m_vk_descriptor_set == descriptor_set)
+        return;
+
+    m_vk_descriptor_set = descriptor_set;
+
+    if (const Rhi::ResourceViews& resource_views = GetResourceViews();
+        !resource_views.empty())
+    {
+        SetDescriptorsForResourceViews(resource_views);
+    }
+}
+
+void ProgramArgumentBinding::SetPushConstantsOffset(uint32_t push_constant_offset) noexcept
+{
+    META_FUNCTION_TASK();
+    m_vk_push_constants_offset = push_constant_offset;
 }
 
 Ptr<Base::ProgramArgumentBinding> ProgramArgumentBinding::CreateCopy() const
@@ -72,9 +94,10 @@ void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& o
 {
     META_FUNCTION_TASK();
     Base::ProgramArgumentBinding::MergeSettings(other);
+    m_settings_vk.argument = Base::ProgramArgumentBinding::GetSettings().argument;
 
     const Settings& settings_vk = dynamic_cast<const ProgramArgumentBinding&>(other).GetVulkanSettings();
-    META_CHECK_ARG_EQUAL(m_settings_vk.descriptor_type, settings_vk.descriptor_type);
+    META_CHECK_EQUAL(m_settings_vk.descriptor_type, settings_vk.descriptor_type);
     m_settings_vk.byte_code_maps.insert(m_settings_vk.byte_code_maps.end(), settings_vk.byte_code_maps.begin(), settings_vk.byte_code_maps.end());
 }
 
@@ -92,13 +115,52 @@ bool AddDescriptor(std::vector<VkDescriptorType>& descriptors, size_t total_desc
     return true;
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resource_views)
+bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
 {
     META_FUNCTION_TASK();
     if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
         return false;
 
-    META_CHECK_ARG_NOT_NULL(m_vk_descriptor_set_ptr);
+    SetDescriptorsForResourceViews(resource_views);
+    return true;
+}
+
+void ProgramArgumentBinding::UpdateDescriptorSetsOnGpu()
+{
+    META_FUNCTION_TASK();
+    if (m_vk_descriptor_images.empty() && m_vk_descriptor_buffers.empty() && m_vk_buffer_views.empty())
+        return;
+
+    const auto& vulkan_context = dynamic_cast<const IContext&>(GetContext());
+    vulkan_context.GetVulkanDevice().GetNativeDevice().updateDescriptorSets(m_vk_write_descriptor_set, {});
+
+    m_vk_descriptor_images.clear();
+    m_vk_descriptor_buffers.clear();
+    m_vk_buffer_views.clear();
+}
+
+bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
+{
+    if (!Base::ProgramArgumentBinding::UpdateRootConstantResourceViews())
+        return false;
+
+    if (m_vk_descriptor_set)
+    {
+        SetDescriptorsForResourceViews(GetResourceViews());
+    }
+
+    const Rhi::RootConstant root_constants = GetRootConstant();
+    Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
+        &Rhi::IProgramArgumentBindingCallback::OnProgramArgumentBindingRootConstantChanged,
+        std::cref(*this), std::cref(root_constants)
+    );
+    return true;
+}
+
+void ProgramArgumentBinding::SetDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views)
+{
+    META_FUNCTION_TASK();
+    META_CHECK_TRUE_DESCR(!!m_vk_descriptor_set, "program argument binding descriptor set was not initialized!");
 
     m_vk_descriptor_images.clear();
     m_vk_descriptor_buffers.clear();
@@ -121,7 +183,7 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
     }
 
     m_vk_write_descriptor_set = vk::WriteDescriptorSet(
-        *m_vk_descriptor_set_ptr,
+        m_vk_descriptor_set,
         m_vk_binding_value,
         0U,
         m_settings_vk.descriptor_type,
@@ -139,21 +201,6 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::IResource::Views& resou
     {
         UpdateDescriptorSetsOnGpu();
     }
-    return true;
-}
-
-void ProgramArgumentBinding::UpdateDescriptorSetsOnGpu()
-{
-    META_FUNCTION_TASK();
-    if (m_vk_descriptor_images.empty() && m_vk_descriptor_buffers.empty() && m_vk_buffer_views.empty())
-        return;
-
-    const auto& vulkan_context = dynamic_cast<const IContext&>(GetContext());
-    vulkan_context.GetVulkanDevice().GetNativeDevice().updateDescriptorSets(m_vk_write_descriptor_set, {});
-
-    m_vk_descriptor_images.clear();
-    m_vk_descriptor_buffers.clear();
-    m_vk_buffer_views.clear();
 }
 
 } // namespace Methane::Graphics::Vulkan

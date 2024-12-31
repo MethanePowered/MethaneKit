@@ -9,13 +9,13 @@
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/MethanePowered/MethaneKit)
 
 **Easy to use modern 3D graphics rendering abstraction API and cross-platform application framework:**
-- **Builds on top of modern native 3D graphics APIs**: DirectX 12 on Windows, Vulkan on Linux, Metal on MacOS, iOS & tvOS.
-- **Simplifies modern graphics programming** with object-oriented medium-level graphics API inspired by simplicity of Apple Metal. Common shaders code in HLSL 6 is used on all platforms.
-- **Provides cross-platform application framework** with CMake build toolchain, platform-independent application foundation classes and native-GUI layer for Windows, Linux and MacOS.
+- **Builds on top of modern native 3D graphics APIs**: DirectX 12 on Windows, Vulkan on Linux, Metal on macOS, iOS & tvOS.
+- **Simplifies modern graphics programming** with an object-oriented medium-level graphics API inspired by the simplicity of Apple Metal. Common shaders code in HLSL 6 is used on all platforms.
+- **Provides a cross-platform application framework** with a CMake build toolchain, platform-independent application foundation classes, and a native-GUI layer for Windows, Linux, and macOS.
 
-Download [release builds](https://github.com/MethanePowered/MethaneKit/releases) with pre-built samples, tutorials and tests to try them out. 
-Check latest build status, tests, code coverage and analysis results or get build artifacts from [GitHub Actions](https://github.com/MethanePowered/MethaneKit/actions) CI and [Sonar Cloud](https://sonarcloud.io/organizations/methane-powered).
-See [Build Instructions](/Build/README.md) topic for manual build instructions and start learning [Methane Graphics RHI](/Modules/Graphics/RHI) API with [Hello Triangle](/Apps/01-HelloTriangle) and other tutorials' documentation.
+Download [release builds](https://github.com/MethanePowered/MethaneKit/releases) with pre-built samples, tutorials, and tests to try them out.
+Check the latest build status, tests, code coverage, and analysis results or get build artifacts from [GitHub Actions](https://github.com/MethanePowered/MethaneKit/actions) CI and [Sonar Cloud](https://sonarcloud.io/organizations/methane-powered).
+See the [Build Instructions](/Build/README.md) topic for manual build instructions and start learning the [Methane Graphics RHI](/Modules/Graphics/RHI) API with [Hello Triangle](/Apps/01-HelloTriangle) and other tutorials' documentation.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/MethanePowered/MethaneKit)
 
@@ -107,42 +107,41 @@ Samples are distributes in form of separate repositories.
 
 ### Features
 
-- **Cross-platform application & input classes**: Windows, MacOS and Linux are supported
-  - **CMake modules** for convenient application build configuration, adding shaders and embedded resources
-  - **HLSL-6 Shaders** serving all graphics APIs converted to native shader language and compiled in build time with SPIRV-Cross & DirectXCompiler
+- **Cross-platform application & input classes**: Supports Windows, macOS, and Linux
+  - **CMake modules** for convenient application build configuration, adding shaders, and embedding resources
+  - **HLSL-6 Shaders** serving all graphics APIs, converted to native shader language and compiled at build time with SPIRV-Cross & DirectXCompiler
   - **HLSL++ Math** library with [HLSL-like syntax](https://docs.microsoft.com/en-us/windows/desktop/direct3dhlsl/dx-graphics-hlsl-reference) in C++
     and vector-instruction optimizations for different platforms
 - **Modern Graphics API abstractions**: based on DirectX 12, Vulkan and Metal APIs
   - Render state and program configuration with compact initialization syntax
   - Program binding objects implement efficient binding of shader arguments to resources
-  - Automatic resource state tracking used for automatic resource transition barriers setup
-  - Resources are automatically retained from destroying while in use on GPU with shared pointers in command list state
+  - Automatic resource state tracking for automatic resource transition barriers setup
+  - Resources are automatically retained from destruction while in use on GPU with shared pointers in command list state
   - Command list execution state tracking with optional GPU timestamps query on completion
-  - Parallel render command list for multi-threaded render commands encoding in single render pass
+  - Parallel render command list for multi-threaded render commands encoding in a single render pass
   - Multiple command queues execution on GPU with synchronization using fences
   - Private GPU resources asynchronously updated through the upload command list and shared resource
   - Registry of named graphics objects enabling reuse of render states and graphics resources between renderer objects
 - **Graphics primitives and extensions**:
-  - Graphics application base class with per-frame resource management and frame buffers resizing enable effective triple buffering
+  - Graphics application base class with per-frame resource management and frame buffers resizing enabling effective triple buffering
   - Camera primitive and interactive arc-ball camera
-  - Procedural mesh generation for quad, box, sphere, icosahedron and uber-mesh
+  - Procedural mesh generation for quad, box, sphere, icosahedron, and uber-mesh
   - Screen-quad and sky-box rendering extension classes
   - Texture loader (currently implemented with STB, planned for replacement with OpenImageIO)
 - **User Interface**:
-  - UI application base class with integrated HUD, logo badge and help/parameters text panels
-  - Typography library for fonts loading, dynamic atlas updating, text rendering & layout
+  - UI application base class with integrated HUD, logo badge, and help/parameters text panels
+  - Typography library for font loading, dynamic atlas updating, text rendering, and layout
   - Widgets library (under development)
 - **Platform Infrastructure**:
-  - Base application with window management and input handling for Windows, MacOS and Linux
+  - Base application with window management and input handling for Windows, macOS, and Linux
   - Events mechanism connecting emitters and receivers via callback interfaces
   - Animations subsystem
   - Embedded resource providers
 - **Integrated debugging and profiling capabilities**:
   - Library instrumentation for performance analysis with [trace profiling tools](#trace-profiling-tools)
   - Debug names for all GPU objects and debug regions for graphics API calls for use with [frame profiling tools](#frame-profiling-and-debugging-tools)
-- **Continuous integration** with automated multi-platform builds, unit-tests and
+- **Continuous integration** with automated multi-platform builds, unit tests, and
   [Sonar Cloud](https://sonarcloud.io/dashboard?id=methane-powered-kit-windows) static code analysis
-  in [GitHub Actions](https://github.com/MethanePowered/MethaneKit/actions)
 
 For detailed features description and development plans please refer to [Modules documentation](Modules).
 

@@ -26,7 +26,7 @@ Base user interface application controller
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace Methane::UserInterface
 {
@@ -58,7 +58,7 @@ void AppController::OnKeyboardStateAction(AppAction action)
         break;
 
     default:
-        META_UNEXPECTED_ARG(action);
+        META_UNEXPECTED(action);
     }
 }
 
@@ -69,7 +69,7 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     {
     case AppAction::None:                       return "none";
     case AppAction::SwitchHeadsUpDisplayMode:   return "switch heads-up-display mode";
-    default:                                    META_UNEXPECTED_ARG_RETURN(action, "");
+    default:                                    META_UNEXPECTED_RETURN(action, "");
     }
 }
 

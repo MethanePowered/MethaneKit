@@ -227,7 +227,7 @@ std::string_view KeyConverter::GetKeyName() const
 
         case Key::Unknown: return "Unknown";
         default:
-            META_UNEXPECTED_ARG_DESCR_RETURN(m_key, "", "unexpected key value");
+            META_UNEXPECTED_RETURN_DESCR(m_key, "", "unexpected key value");
     }
 }
 
@@ -306,7 +306,7 @@ KeyType State::SetKeyImpl(Key key, KeyState key_state)
     }
 
     const auto key_index = static_cast<size_t>(key);
-    META_CHECK_ARG_LESS(key_index, m_key_states.size());
+    META_CHECK_LESS(key_index, m_key_states.size());
     m_key_states[key_index] = key_state;
     return KeyType::Common;
 }

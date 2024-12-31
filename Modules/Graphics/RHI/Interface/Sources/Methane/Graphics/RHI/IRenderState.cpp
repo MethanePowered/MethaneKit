@@ -29,6 +29,7 @@ Methane render state interface: specifies configuration of the graphics pipeline
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 template<>
 struct fmt::formatter<Methane::Graphics::Rhi::RenderTargetSettings>

@@ -32,7 +32,7 @@ Vulkan implementation of the system interface.
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <vector>
 #include <sstream>
@@ -147,14 +147,16 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
         callback_data_ptr->messageIdNumber == 767975156   || // UNASSIGNED-BestPractices-vkCreateInstance-specialise-extension
         callback_data_ptr->messageIdNumber == -400166253  || // UNASSIGNED-CoreValidation-DrawState-QueueForwardProgress
         callback_data_ptr->messageIdNumber == -2117225404 || // VUID-vkCmdPipelineBarrier-dstStageMask-04996 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
-        callback_data_ptr->messageIdNumber == 1630022081)    // VUID-vkCmdPipelineBarrier-dstStageMask-03937 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
+        callback_data_ptr->messageIdNumber == 1630022081  || // VUID-vkCmdPipelineBarrier-dstStageMask-03937 (vkCmdPipelineBarrier(): .dstStageMask must not be 0 unless synchronization2 is enabled)
+        callback_data_ptr->messageIdNumber == 1901485743)    // VUID-vkQueueSubmit-pCommandBuffers-00065     (VkSemaphore is being signaled by VkQueue 'Render Queue', but it was previously signaled by VkQueue 'Render Queue' and has not since been waited on)
         return VK_FALSE;
 
 #ifdef __APPLE__
     // FIXME: disable warning on Apple "VkSemaphore is a timeline semaphore, but VkSubmitInfo does not include an instance of VkTimelineSemaphoreSubmitInfo",
     //        which was introduced as the result of the workaround of crash on vk::Queue::submit with vk::SubmitInfo containing a pointer to vk::TimelineSemaphoreSubmitInfo
     //        see Vulkan::CommandListSet::Execute() for more details
-    if (callback_data_ptr->messageIdNumber == -410448035) // VUID-VkSubmitInfo-pWaitSemaphores-03239
+    if (callback_data_ptr->messageIdNumber == -410448035 ||  // VUID-VkSubmitInfo-pWaitSemaphores-03239
+        callback_data_ptr->messageIdNumber == 1901485743)    // VUID-vkQueueSubmit-pCommandBuffers-00065
         return VK_FALSE;
 #endif
 

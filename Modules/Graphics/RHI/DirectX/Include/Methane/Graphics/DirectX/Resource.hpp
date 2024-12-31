@@ -92,9 +92,9 @@ public:
         if (!Base::Resource::SetName(name))
             return false;
 
-        if (m_cp_resource)
+        if (m_resource_cptr)
         {
-            m_cp_resource->SetName(nowide::widen(name).c_str());
+            m_resource_cptr->SetName(nowide::widen(name).c_str());
         }
         return true;
     }
@@ -104,7 +104,7 @@ public:
     void RestoreDescriptorViews(const DescriptorByViewId& descriptor_by_view_id) final
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_TRUE_DESCR(m_descriptor_by_view_id.empty(), "can not restore on resource with non-empty descriptor by view_id");
+        META_CHECK_TRUE_DESCR(m_descriptor_by_view_id.empty(), "can not restore on resource with non-empty descriptor by view_id");
         m_descriptor_by_view_id = descriptor_by_view_id;
         for (const auto& [view_id, descriptor] : m_descriptor_by_view_id)
         {
@@ -114,10 +114,10 @@ public:
     }
 
     // IResource overrides
-    ID3D12Resource&                    GetNativeResourceRef() const final             { META_CHECK_ARG_NOT_NULL(m_cp_resource); return *m_cp_resource.Get(); }
-    ID3D12Resource*                    GetNativeResource() const noexcept final       { return m_cp_resource.Get(); }
-    const wrl::ComPtr<ID3D12Resource>& GetNativeResourceComPtr() const noexcept final { return m_cp_resource; }
-    D3D12_GPU_VIRTUAL_ADDRESS          GetNativeGpuAddress() const noexcept final     { return m_cp_resource ? m_cp_resource->GetGPUVirtualAddress() : 0; }
+    ID3D12Resource&                    GetNativeResourceRef() const final             { META_CHECK_NOT_NULL(m_resource_cptr); return *m_resource_cptr.Get(); }
+    ID3D12Resource*                    GetNativeResource() const noexcept final       { return m_resource_cptr.Get(); }
+    const wrl::ComPtr<ID3D12Resource>& GetNativeResourceComPtr() const noexcept final { return m_resource_cptr; }
+    D3D12_GPU_VIRTUAL_ADDRESS          GetNativeGpuAddress() const noexcept final     { return m_resource_cptr ? m_resource_cptr->GetGPUVirtualAddress() : 0; }
 
 protected:
     enum class TransferOperation
@@ -133,36 +133,35 @@ protected:
     };
 
     const IContext& GetDirectContext() const noexcept { return m_dx_context; }
-    void SetNativeResourceComPtr(const wrl::ComPtr<ID3D12Resource>& cp_resource) noexcept { m_cp_resource = cp_resource; }
+    void SetNativeResourceComPtr(const wrl::ComPtr<ID3D12Resource> resource_cptr) noexcept { m_resource_cptr = resource_cptr; }
 
     wrl::ComPtr<ID3D12Resource> CreateCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
-                                                        D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
+                                                        D3D12_RESOURCE_STATES resource_state, const D3D12_CLEAR_VALUE* clear_value_ptr = nullptr)
     {
         META_FUNCTION_TASK();
-        wrl::ComPtr<ID3D12Resource> cp_resource;
+        wrl::ComPtr<ID3D12Resource> resource_cptr;
         const CD3DX12_HEAP_PROPERTIES heap_properties(heap_type);
-        const wrl::ComPtr<ID3D12Device>& cp_native_device = GetDirectContext().GetDirectDevice().GetNativeDevice();
+        const wrl::ComPtr<ID3D12Device> native_device_cptr = GetDirectContext().GetDirectDevice().GetNativeDevice();
         ThrowIfFailed(
-            cp_native_device->CreateCommittedResource(
+            native_device_cptr->CreateCommittedResource(
                 &heap_properties,
                 D3D12_HEAP_FLAG_NONE,
                 &resource_desc,
                 resource_state,
-                p_clear_value,
-                IID_PPV_ARGS(&cp_resource)
-            ),
-            cp_native_device.Get()
+                clear_value_ptr,
+                IID_PPV_ARGS(&resource_cptr)),
+            native_device_cptr.Get()
         );
-        return cp_resource;
+        return resource_cptr;
     }
 
     void InitializeCommittedResource(const D3D12_RESOURCE_DESC& resource_desc, D3D12_HEAP_TYPE heap_type,
-                                     Rhi::ResourceState resource_state, const D3D12_CLEAR_VALUE* p_clear_value = nullptr)
+                                     Rhi::ResourceState resource_state, const D3D12_CLEAR_VALUE* clear_value_ptr = nullptr)
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_DESCR(m_cp_resource.Get(), !m_cp_resource, "committed resource is already initialized");
+        META_CHECK_DESCR(m_resource_cptr.Get(), !m_resource_cptr, "committed resource is already initialized");
         const D3D12_RESOURCE_STATES d3d_resource_state = IResource::GetNativeResourceState(resource_state);
-        m_cp_resource = CreateCommittedResource(resource_desc, heap_type, d3d_resource_state, p_clear_value);
+        m_resource_cptr = CreateCommittedResource(resource_desc, heap_type, d3d_resource_state, clear_value_ptr);
         SetState(resource_state);
     }
 
@@ -227,7 +226,7 @@ private:
 
     const IContext&             m_dx_context;
     DescriptorByViewId          m_descriptor_by_view_id;
-    wrl::ComPtr<ID3D12Resource> m_cp_resource;
+    wrl::ComPtr<ID3D12Resource> m_resource_cptr;
     TransferBarriers            m_upload_barriers;
     TransferBarriers            m_read_back_barriers;
 };

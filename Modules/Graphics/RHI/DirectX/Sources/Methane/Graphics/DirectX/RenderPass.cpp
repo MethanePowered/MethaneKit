@@ -114,7 +114,7 @@ RenderPass::AccessDesc::AccessDesc(const Opt<StencilAttachment>& stencil_attachm
 void RenderPass::AccessDesc::InitDepthStencilClearValue(const Opt<DepthAttachment>& depth_attachment_opt, const Opt<StencilAttachment>& stencil_attachment_opt)
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL_DESCR(depth_attachment_opt, "depth attachment should point to the depth-stencil texture");
+    META_CHECK_NOT_NULL_DESCR(depth_attachment_opt, "depth attachment should point to the depth-stencil texture");
     const DXGI_FORMAT depth_format = TypeConverter::PixelFormatToDxgi(depth_attachment_opt->format);
     beginning.Clear.ClearValue = CD3DX12_CLEAR_VALUE(depth_format, depth_attachment_opt->clear_value, stencil_attachment_opt ? stencil_attachment_opt->clear_value : 0);
 }
@@ -127,7 +127,7 @@ D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE RenderPass::AccessDesc::GetBeginningAcce
     case Attachment::LoadAction::DontCare:  return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD;
     case Attachment::LoadAction::Load:      return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE;
     case Attachment::LoadAction::Clear:     return D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR;
-    default:                                META_UNEXPECTED_ARG_RETURN(load_action, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS);
+    default:                                META_UNEXPECTED_RETURN(load_action, D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_NO_ACCESS);
     }
 }
 
@@ -139,7 +139,7 @@ D3D12_RENDER_PASS_ENDING_ACCESS_TYPE RenderPass::AccessDesc::GetEndingAccessType
     case Attachment::StoreAction::DontCare:  return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD;
     case Attachment::StoreAction::Store:     return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
     case Attachment::StoreAction::Resolve:   return D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_RESOLVE;
-    default:                                 META_UNEXPECTED_ARG_RETURN(store_action, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
+    default:                                 META_UNEXPECTED_RETURN(store_action, D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_NO_ACCESS);
     }
 }
 
@@ -177,7 +177,7 @@ static DescriptorHeap::Type GetDescriptorHeapTypeByAccess(Rhi::RenderPassAccess 
     case Access::Samplers:        return DescriptorHeap::Type::Samplers;
     case Access::RenderTargets:   return DescriptorHeap::Type::RenderTargets;
     case Access::DepthStencil:    return DescriptorHeap::Type::DepthStencil;
-    default: META_UNEXPECTED_ARG_RETURN(access, DescriptorHeap::Type::Undefined);
+    default: META_UNEXPECTED_RETURN(access, DescriptorHeap::Type::Undefined);
     }
 }
 
@@ -249,8 +249,8 @@ void RenderPass::ReleaseAttachmentTextures()
 const ResourceView& RenderPass::GetDirectAttachmentTextureView(const Attachment& attachment) const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_LESS_DESCR(attachment.attachment_index, m_dx_attachments.size(),
-                              "attachment index is out of bounds of render pass DX attachments array");
+    META_CHECK_LESS_DESCR(attachment.attachment_index, m_dx_attachments.size(),
+                          "attachment index is out of bounds of render pass DX attachments array");
     return m_dx_attachments[attachment.attachment_index];
 }
 
@@ -361,16 +361,16 @@ void RenderPass::Begin(Base::RenderCommandList& command_list)
 
     SetNativeDescriptorHeaps(command_list_dx);
 
-    ID3D12GraphicsCommandList4* p_dx_command_list_4 = command_list_dx.GetNativeCommandList4();
+    ID3D12GraphicsCommandList4* dx_command_list_4_ptr = command_list_dx.GetNativeCommandList4();
     if (!m_is_native_render_pass_available.has_value() || m_is_native_render_pass_available.value())
     {
-        m_is_native_render_pass_available = !!p_dx_command_list_4;
+        m_is_native_render_pass_available = !!dx_command_list_4_ptr;
     }
 
     if (m_is_native_render_pass_available.value())
     {
         // Begin render pass
-        p_dx_command_list_4->BeginRenderPass(
+        dx_command_list_4_ptr->BeginRenderPass(
             static_cast<UINT>(m_render_target_descs.size()), m_render_target_descs.data(),
             m_depth_stencil_desc ? &*m_depth_stencil_desc : nullptr,
             m_pass_flags
@@ -401,9 +401,9 @@ void RenderPass::End(Base::RenderCommandList& command_list)
 
     if (m_is_native_render_pass_available.has_value() && m_is_native_render_pass_available.value())
     {
-        ID3D12GraphicsCommandList4* p_dx_command_list_4 = static_cast<RenderCommandList&>(command_list).GetNativeCommandList4();
-        META_CHECK_ARG_NOT_NULL(p_dx_command_list_4);
-        p_dx_command_list_4->EndRenderPass();
+        ID3D12GraphicsCommandList4* dx_command_list_4_ptr = static_cast<RenderCommandList&>(command_list).GetNativeCommandList4();
+        META_CHECK_NOT_NULL(dx_command_list_4_ptr);
+        dx_command_list_4_ptr->EndRenderPass();
     }
 
     if (GetBasePattern().GetSettings().is_final_pass)
@@ -433,8 +433,8 @@ void RenderPass::SetNativeRenderTargets(const RenderCommandList& dx_command_list
 {
     META_FUNCTION_TASK();
     const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& rt_cpu_handles = GetNativeRenderTargetCPUHandles();
-    const D3D12_CPU_DESCRIPTOR_HANDLE* p_depth_stencil_cpu_handle = GetNativeDepthStencilCPUHandle();
-    dx_command_list.GetNativeCommandList().OMSetRenderTargets(static_cast<UINT>(rt_cpu_handles.size()), rt_cpu_handles.data(), FALSE, p_depth_stencil_cpu_handle);
+    const D3D12_CPU_DESCRIPTOR_HANDLE* depth_stencil_cpu_handle_ptr = GetNativeDepthStencilCPUHandle();
+    dx_command_list.GetNativeCommandList().OMSetRenderTargets(static_cast<UINT>(rt_cpu_handles.size()), rt_cpu_handles.data(), FALSE, depth_stencil_cpu_handle_ptr);
 }
 
 const std::vector<ID3D12DescriptorHeap*>& RenderPass::GetNativeDescriptorHeaps() const

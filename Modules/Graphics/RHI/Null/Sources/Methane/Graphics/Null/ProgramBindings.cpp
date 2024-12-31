@@ -28,10 +28,21 @@ Null implementation of the program bindings interface.
 namespace Methane::Graphics::Null
 {
 
-Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const ResourceViewsByArgument& replace_resource_views_by_argument, const Opt<Data::Index>& frame_index)
+Ptr<Rhi::IProgramBindings> ProgramBindings::CreateCopy(const BindingValueByArgument& replace_binding_value_by_argument,
+                                                       const Opt<Data::Index>& frame_index)
 {
     META_FUNCTION_TASK();
-    return std::make_shared<ProgramBindings>(*this, replace_resource_views_by_argument, frame_index);
+    return std::make_shared<ProgramBindings>(*this, replace_binding_value_by_argument, frame_index);
+}
+
+void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask apply_behavior) const
+{
+    // Set resource transition barriers before applying resource bindings
+    if (apply_behavior.HasAnyBit(ApplyBehavior::StateBarriers))
+    {
+        Rhi::ProgramArgumentAccessMask apply_access(~0U);
+        Base::ProgramBindings::ApplyResourceTransitionBarriers(command_list, apply_access, &command_list.GetCommandQueue());
+    }
 }
 
 } // namespace Methane::Graphics::Null

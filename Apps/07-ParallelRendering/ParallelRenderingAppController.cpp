@@ -69,7 +69,7 @@ void ParallelRenderingAppController::OnKeyboardStateAction(ParallelRenderingAppA
         break;
 
     default:
-        META_UNEXPECTED_ARG(action);
+        META_UNEXPECTED(action);
     }
 
     m_app.SetSettings(app_settings);
@@ -84,7 +84,7 @@ std::string ParallelRenderingAppController::GetKeyboardActionName(ParallelRender
     case ParallelRenderingAppAction::DecreaseCubesGridSize:      return "decrease cubes grid size";
     case ParallelRenderingAppAction::IncreaseRenderThreadsCount: return "increase render threads count";
     case ParallelRenderingAppAction::DecreaseRenderThreadsCount: return "decrease render threads count";
-    default: META_UNEXPECTED_ARG_RETURN(action, "");
+    default: META_UNEXPECTED_RETURN(action, "");
     }
 }
 

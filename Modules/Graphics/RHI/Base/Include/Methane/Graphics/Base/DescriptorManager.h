@@ -48,13 +48,17 @@ public:
     explicit DescriptorManager(Context& context, bool is_parallel_bindings_processing_enabled = true);
 
     // IDescriptorManager interface
-    void AddProgramBindings(Rhi::IProgramBindings& program_bindings) final;
+    void AddProgramBindings(Rhi::IProgramBindings& program_bindings) override;
+    void RemoveProgramBindings(Rhi::IProgramBindings&) override { /* intentionally unimplemented */}
     void CompleteInitialization() override;
     void Release() override;
 
 protected:
     Context&       GetContext()       { return m_context; }
     const Context& GetContext() const { return m_context; }
+
+    void ReleaseExpiredProgramBindings();
+    void CompleteProgramBindingsInitialization();
 
     template<typename BindingsFuncType>
     void ForEachProgramBinding(const BindingsFuncType& bindings_functor)

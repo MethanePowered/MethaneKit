@@ -97,7 +97,7 @@ std::string System::ToString() const
     ss << "Available graphics devices:" << std::endl;
     for(const Ptr<Rhi::IDevice>& device_ptr : m_devices)
     {
-        META_CHECK_ARG_NOT_NULL(device_ptr);
+        META_CHECK_NOT_NULL(device_ptr);
         ss << "  - " << device_ptr->ToString() << ";" << std::endl;
     }
     return ss.str();

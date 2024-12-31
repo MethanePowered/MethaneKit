@@ -34,25 +34,25 @@ Vulkan implementation of the program interface.
 #include <Methane/Graphics/Base/RenderContext.h>
 #include <Methane/Instrumentation.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 #include <sstream>
 
 namespace Methane::Graphics::Vulkan
 {
 
-Program::Program(const Base::Context& context, const Settings& settings)
+Program::Program(Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
     , m_vk_context(dynamic_cast<const IContext&>(context))
 {
     META_FUNCTION_TASK();
-    InitArgumentBindings(settings.argument_accessors);
+    InitArgumentBindings();
     InitializeDescriptorSetLayouts();
 }
 
-Ptr<Rhi::IProgramBindings> Program::CreateBindings(const ResourceViewsByArgument& resource_views_by_argument, Data::Index frame_index)
+Ptr<Rhi::IProgramBindings> Program::CreateBindings(const BindingValueByArgument& binding_value_by_argument, Data::Index frame_index)
 {
     META_FUNCTION_TASK();
-    auto program_bindings_ptr = std::make_shared<Vulkan::ProgramBindings>(*this, resource_views_by_argument, frame_index);
+    auto program_bindings_ptr = std::make_shared<ProgramBindings>(*this, binding_value_by_argument, frame_index);
     program_bindings_ptr->Initialize();
     return program_bindings_ptr;
 }
@@ -101,6 +101,12 @@ const std::vector<vk::DescriptorSetLayout>& Program::GetNativeDescriptorSetLayou
     return m_vk_descriptor_set_layouts;
 }
 
+const std::vector<vk::PushConstantRange>& Program::GetNativePushConstantRanges() const
+{
+    META_FUNCTION_TASK();
+    return m_vk_push_constant_ranges;
+}
+
 const vk::DescriptorSetLayout& Program::GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType argument_access_type) const
 {
     META_FUNCTION_TASK();
@@ -118,7 +124,7 @@ const Program::DescriptorSetLayoutInfo& Program::GetDescriptorSetLayoutInfo(Rhi:
 const vk::PipelineLayout& Program::GetNativePipelineLayout() const
 {
     META_FUNCTION_TASK();
-    META_CHECK_ARG_NOT_NULL(m_vk_unique_pipeline_layout);
+    META_CHECK_NOT_NULL(m_vk_unique_pipeline_layout);
     return m_vk_unique_pipeline_layout.get();
 }
 
@@ -130,10 +136,10 @@ const vk::PipelineLayout& Program::AcquireNativePipelineLayout()
     if (m_vk_unique_pipeline_layout)
         return m_vk_unique_pipeline_layout.get();
 
-    const std::vector<vk::DescriptorSetLayout>& vk_descriptor_set_layouts = GetNativeDescriptorSetLayouts();
     const vk::Device& vk_device = GetVulkanContext().GetVulkanDevice().GetNativeDevice();
+    const vk::PipelineLayoutCreateInfo pipeline_layout_create_info({}, m_vk_descriptor_set_layouts, m_vk_push_constant_ranges);
 
-    m_vk_unique_pipeline_layout = vk_device.createPipelineLayoutUnique(vk::PipelineLayoutCreateInfo({}, vk_descriptor_set_layouts));
+    m_vk_unique_pipeline_layout = vk_device.createPipelineLayoutUnique(pipeline_layout_create_info);
     UpdatePipelineName();
 
     return m_vk_unique_pipeline_layout.get();
@@ -163,7 +169,7 @@ const vk::DescriptorSet& Program::AcquireFrameConstantDescriptorSet(Data::Index 
 
     if (!m_vk_frame_constant_descriptor_sets.empty())
     {
-        META_CHECK_ARG_LESS(frame_index, m_vk_frame_constant_descriptor_sets.size());
+        META_CHECK_LESS(frame_index, m_vk_frame_constant_descriptor_sets.size());
         return m_vk_frame_constant_descriptor_sets[frame_index];
     }
 
@@ -171,7 +177,7 @@ const vk::DescriptorSet& Program::AcquireFrameConstantDescriptorSet(Data::Index 
                                   ? dynamic_cast<const Base::RenderContext&>(GetContext()).GetSettings().frame_buffers_count
                                   : 1U;
     m_vk_frame_constant_descriptor_sets.resize(frames_count);
-    META_CHECK_ARG_LESS(frame_index, frames_count);
+    META_CHECK_LESS(frame_index, frames_count);
 
     const vk::DescriptorSetLayout& layout = GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType::FrameConstant);
     if (!layout)
@@ -190,23 +196,38 @@ const vk::DescriptorSet& Program::AcquireFrameConstantDescriptorSet(Data::Index 
 void Program::InitializeDescriptorSetLayouts()
 {
     META_FUNCTION_TASK();
+    uint32_t push_constants_offset = 0U;
+    m_vk_push_constant_ranges.clear();
     for (const auto& [program_argument, argument_binding_ptr] : GetArgumentBindings())
     {
-        META_CHECK_ARG_NOT_NULL(argument_binding_ptr);
-        const auto& vulkan_argument_binding = dynamic_cast<const ProgramBindings::ArgumentBinding&>(*argument_binding_ptr);
+        META_CHECK_NOT_NULL(argument_binding_ptr);
+        auto& vulkan_argument_binding = dynamic_cast<ProgramArgumentBinding&>(*argument_binding_ptr);
         const ProgramBindings::ArgumentBinding::Settings& vulkan_binding_settings = vulkan_argument_binding.GetVulkanSettings();
         const size_t accessor_type_index = magic_enum::enum_index(vulkan_binding_settings.argument.GetAccessorType()).value();
 
         DescriptorSetLayoutInfo& layout_info = m_descriptor_set_layout_info_by_access_type[accessor_type_index];
-        layout_info.descriptors_count += vulkan_binding_settings.resource_count;
-        layout_info.arguments.emplace_back(vulkan_binding_settings.argument);
-        layout_info.byte_code_maps_for_arguments.emplace_back(vulkan_binding_settings.byte_code_maps);
-        layout_info.bindings.emplace_back(
-            static_cast<uint32_t>(layout_info.bindings.size()),
-            vulkan_binding_settings.descriptor_type,
-            vulkan_binding_settings.resource_count,
-            Shader::ConvertTypeToStageFlagBits(program_argument.GetShaderType())
-        );
+        if (vulkan_binding_settings.argument.IsRootConstantValue())
+        {
+            vulkan_argument_binding.SetPushConstantsOffset(push_constants_offset);
+            m_vk_push_constant_ranges.emplace_back(
+                vulkan_argument_binding.GetNativeShaderStageFlags(),
+                push_constants_offset,
+                vulkan_binding_settings.buffer_size
+            );
+            push_constants_offset += vulkan_binding_settings.buffer_size;
+        }
+        else
+        {
+            layout_info.descriptors_count += vulkan_binding_settings.resource_count;
+            layout_info.arguments.emplace_back(vulkan_binding_settings.argument);
+            layout_info.byte_code_maps_for_arguments.emplace_back(vulkan_binding_settings.byte_code_maps);
+            layout_info.bindings.emplace_back(
+                static_cast<uint32_t>(layout_info.bindings.size()),
+                vulkan_binding_settings.descriptor_type,
+                vulkan_binding_settings.resource_count,
+                Shader::ConvertTypeToStageFlagBits(program_argument.GetShaderType())
+            );
+        }
     }
 
 #ifdef METHANE_LOGGING_ENABLED

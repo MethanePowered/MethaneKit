@@ -100,7 +100,7 @@ void System::OnDeviceNotification(id<MTLDevice> mtl_device, MTLDeviceNotificatio
     else
     {
         const Ptr<Rhi::IDevice>& device_ptr = FindMetalDevice(mtl_device);
-        META_CHECK_ARG_NOT_NULL_DESCR(device_ptr, "no device object found");
+        META_CHECK_NOT_NULL_DESCR(device_ptr, "no device object found");
 
         if (device_notification == MTLDeviceRemovalRequestedNotification)
             RequestRemoveDevice(*device_ptr);
@@ -127,7 +127,7 @@ const Ptr<Rhi::IDevice>& System::FindMetalDevice(const id<MTLDevice>& mtl_device
     const auto device_it = std::find_if(devices.begin(), devices.end(),
                                         [&mtl_device](const Ptr<Rhi::IDevice>& device_ptr)
                                         {
-                                            META_CHECK_ARG_NOT_NULL(device_ptr);
+                                            META_CHECK_NOT_NULL(device_ptr);
                                             Device& metal_device = static_cast<Device&>(*device_ptr);
                                             return metal_device.GetNativeDevice() == mtl_device;
                                         });

@@ -55,6 +55,7 @@ public:
     static MTLIndexType DataFormatToMetalIndexType(PixelFormat data_format);
     static MTLPixelFormat DataFormatToMetalPixelType(PixelFormat data_format);
     static MTLVertexFormat MetalDataTypeToVertexFormat(MTLDataType data_type, bool normalized = false);
+    static uint32_t ByteSizeOfDataType(MTLDataType data_type);
     static uint32_t ByteSizeOfVertexFormat(MTLVertexFormat vertex_format);
     static MTLClearColor ColorToMetalClearColor(const Color4F& color) noexcept;
     static NativeRect RectToNS(const FrameRect& rect) noexcept;

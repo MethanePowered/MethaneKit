@@ -81,7 +81,7 @@ public:
     {
         META_FUNCTION_TASK();
         const auto font_by_name_it = m_font_by_name.find(font_name);
-        META_CHECK_ARG_DESCR(font_name, font_by_name_it != m_font_by_name.end(), "there is no font with a give name in fonts library");
+        META_CHECK_DESCR(font_name, font_by_name_it != m_font_by_name.end(), "there is no font with a give name in fonts library");
         return font_by_name_it->second;
     }
 
@@ -99,7 +99,7 @@ public:
     {
         META_FUNCTION_TASK();
         auto [name_and_font_it, font_added] = m_font_by_name.try_emplace(font_settings.description.name, m_font_lib, data_provider, font_settings);
-        META_CHECK_ARG_DESCR(font_settings.description.name, font_added, "font with a give name already exists in fonts library");
+        META_CHECK_DESCR(font_settings.description.name, font_added, "font with a give name already exists in fonts library");
 
         Emit(&IFontLibraryCallback::OnFontAdded, name_and_font_it->second);
 

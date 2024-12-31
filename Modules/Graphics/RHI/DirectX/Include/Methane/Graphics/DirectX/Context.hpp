@@ -83,9 +83,9 @@ public:
         m_descriptor_manager_init_settings.default_heap_sizes        = descriptor_manager.GetDescriptorHeapSizes(true, false);
         m_descriptor_manager_init_settings.shader_visible_heap_sizes = descriptor_manager.GetDescriptorHeapSizes(true, true);
 
-        for(wrl::ComPtr<ID3D12QueryHeap>& cp_query_heap : m_query_heaps)
+        for(wrl::ComPtr<ID3D12QueryHeap>& query_heap_cptr : m_query_heaps)
         {
-            cp_query_heap.Reset();
+            query_heap_cptr.Reset();
         }
         GetDirectMutableDevice().ReleaseNativeDevice();
 
@@ -112,7 +112,7 @@ public:
         return std::make_shared<Shader>(type, *this, settings);
     }
 
-    [[nodiscard]] Ptr<Rhi::IProgram> CreateProgram(const Rhi::ProgramSettings& settings) const final
+    [[nodiscard]] Ptr<Rhi::IProgram> CreateProgram(const Rhi::ProgramSettings& settings) final
     {
         META_FUNCTION_TASK();
         return std::make_shared<Program>(*this, settings);
@@ -161,18 +161,18 @@ public:
     ID3D12QueryHeap& GetNativeQueryHeap(D3D12_QUERY_HEAP_TYPE type, uint32_t max_query_count = 1U << 15U) const final
     {
         META_FUNCTION_TASK();
-        META_CHECK_ARG_LESS(static_cast<size_t>(type), m_query_heaps.size());
-        wrl::ComPtr<ID3D12QueryHeap>& cp_query_heap = m_query_heaps[type];
-        if (!cp_query_heap)
+        META_CHECK_LESS(static_cast<size_t>(type), m_query_heaps.size());
+        wrl::ComPtr<ID3D12QueryHeap>& query_heap_cptr = m_query_heaps[type];
+        if (!query_heap_cptr)
         {
             D3D12_QUERY_HEAP_DESC query_heap_desc{};
             query_heap_desc.Count = max_query_count;
             query_heap_desc.Type  = type;
-            ThrowIfFailed(GetDirectDevice().GetNativeDevice()->CreateQueryHeap(&query_heap_desc, IID_PPV_ARGS(&cp_query_heap)),
+            ThrowIfFailed(GetDirectDevice().GetNativeDevice()->CreateQueryHeap(&query_heap_desc, IID_PPV_ARGS(&query_heap_cptr)),
                           GetDirectDevice().GetNativeDevice().Get());
         }
-        META_CHECK_ARG_NOT_NULL(cp_query_heap);
-        return *cp_query_heap.Get();
+        META_CHECK_NOT_NULL(query_heap_cptr);
+        return *query_heap_cptr.Get();
     }
 
 protected:
@@ -185,7 +185,7 @@ private:
     using NativeQueryHeaps = std::array<wrl::ComPtr<ID3D12QueryHeap>, D3D12_QUERY_HEAP_TYPE_COPY_QUEUE_TIMESTAMP + 1>;
 
     DescriptorManager::Settings m_descriptor_manager_init_settings{ true, {}, {} };
-    mutable NativeQueryHeaps    m_query_heaps;
+    mutable NativeQueryHeaps m_query_heaps;
 };
 
 } // namespace Methane::Graphics::DirectX
