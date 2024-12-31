@@ -153,7 +153,7 @@ Start Terminal, go to `MethaneKit` root directory, generate XCode workspace and 
 
 ```console
 OUTPUT_DIR=Build/Output/XCode/iOS
-cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_TOOLCHAIN_FILE="Externals/iOS-Toolchain.cmake" -DPLATFORM=[SIMULATORARM64|OS64|SIMULATOR_TVOS|TVOS] -DDEPLOYMENT_TARGET=15.0 -DENABLE_ARC:BOOL=ON [-DAPPLE_DEVELOPMENT_TEAM=12345X6ABC] -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
+cmake -S . -B $OUTPUT_DIR/Build -G Xcode -DCMAKE_TOOLCHAIN_FILE="Externals/iOS-Toolchain.cmake" -DPLATFORM=[SIMULATORARM64|OS64|SIMULATOR_TVOS|TVOS] -DDEPLOYMENT_TARGET=16.0 -DENABLE_ARC:BOOL=ON [-DAPPLE_DEVELOPMENT_TEAM=12345X6ABC] -DCMAKE_INSTALL_PREFIX="$(pwd)/$OUTPUT_DIR/Install"
 cmake --build $OUTPUT_DIR/Build --config Release --target install -- -allowProvisioningUpdates
 ```
 
@@ -177,7 +177,7 @@ by searching for the value of parameter named `DEVELOPMENT_TEAM`.
 Auxiliary build script [Build/Unix/Build.sh](/Build/Unix/Build.sh) can make it more simple for you:
 
 ```console
-./Build/Unix/Build.sh --apple-platform [SIMULATORARM64|OS64|SIMULATOR_TVOS|TVOS] [--apple-dev-team 12345X6ABC] [--apple-deploy-target 15.1] [--debug]
+./Build/Unix/Build.sh --apple-platform [SIMULATORARM64|OS64|SIMULATOR_TVOS|TVOS] [--apple-dev-team 12345X6ABC] [--apple-deploy-target 16.0] [--debug]
 ```
 
 Please open generated Xcode workspace, select application schema and run it on iOS / tvOS device or simulator from the Xcode IDE.

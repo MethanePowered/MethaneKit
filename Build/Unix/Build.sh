@@ -2,7 +2,7 @@
 # Run Build.sh with optional arguments:
 #   --apple-platform PLATFORM - Apple platform name (MacOS - by default, OS64 - iOS, SIMULATORARM64 - iOS Sim, TVOS, SIMULATOR_TVOS, ...)
 #   --apple-dev-team TEAM_ID  - Apple development team id used for code signing (required for iOS platforms)
-#   --apple-deploy-target X.Y - minimum version of Apple OS deployment target (15.0 by default)
+#   --apple-deploy-target X.Y - minimum version of Apple OS deployment target (16.0 by default)
 #   --debug                   - Debug build instead of Release build by default
 #   --vulkan VULKAN_SDK       - use Vulkan graphics API via Vulkan SDK path (~/VulkanSDK/1.2.182.0/macOS) instead of Metal on MacOS by default
 #   --graphviz                - enable GraphViz cmake module diagrams generation in Dot and Png formats
