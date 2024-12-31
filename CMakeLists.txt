@@ -71,7 +71,7 @@ option(METHANE_OPEN_IMAGE_IO_ENABLED        "Enable using OpenImageIO library fo
 if(APPLE)
     option(METHANE_METAL_FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE "Enable Metal frame synchronization with dispatch semaphore instead of fence" OFF)
     option(METHANE_METAL_SHADER_CONVERTER_ENABLED "Enable Apple Metal Shader Converter instead of SPIRV-Cross" OFF)
-    option(METHANE_METAL_ARGUMENT_BUFFERS_ENABLED "Enable Metal Argument Buffers for Program Resource Bindings" OFF)
+    option(METHANE_METAL_ARGUMENT_BUFFERS_ENABLED "Enable Metal Argument Buffers for Program Resource Bindings" ON)
 endif()
 
 # Profiling and instrumentation configuration

@@ -217,7 +217,7 @@ cmake -G [Generator] ... -D[BUILD_OPTION_NAME]:BOOL=[ON|OFF]
 | <sub>METHANE_APPLE_CODE_SIGNING_ENABLED</sub>                | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><b>OFF</b></sub>            | <sub>Enable code signing on Apple platforms (requires APPLE_DEVELOPMENT_TEAM)</sub>          |
 | <sub>METHANE_METAL_FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE</sub> | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>          | <sub>Enable Metal frame synchronization with dispatch semaphore instead of fence</sub>       |
 | <sub>METHANE_METAL_SHADER_CONVERTER_ENABLED</sub>            | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>          | <sub>Enable Metal Shader Converter instead of SPIRV-Cross (Experimental)</sub>               |
-| <sub>METHANE_METAL_ARGUMENT_BUFFERS_ENABLED</sub>            | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>           | <sub><em>OFF</em></sub>          | <sub>Enable Metal Argument Buffers for shader bindings with SPIRV-Cross (Experimental)</sub> |
+| <sub>METHANE_METAL_ARGUMENT_BUFFERS_ENABLED</sub>            | <sub><em>ON</em></sub>            | <sub><em>ON</em></sub>            | <sub><em>ON</em></sub>           | <sub>Enable Metal Argument Buffers for shader bindings with SPIRV-Cross (Experimental)</sub> |
 
 ### CMake Presets
 
