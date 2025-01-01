@@ -118,7 +118,7 @@ static Rhi::ResourceType GetResourceTypeOfMetalStructMember(MTLStructMember* mtl
     switch(mtl_struct_member.dataType)
     {
     case MTLDataTypeArray:
-        return GetResourceTypeByMetalDataType(static_cast<MTLArrayType*>(mtl_struct_member).elementType);
+        return GetResourceTypeByMetalDataType(mtl_struct_member.arrayType.elementType);
 
     default:
         return GetResourceTypeByMetalDataType(mtl_struct_member.dataType);
@@ -129,7 +129,7 @@ static Rhi::ResourceType GetResourceTypeOfMetalStructMember(MTLStructMember* mtl
 static uint32_t GetArraySizeOfStructMember(MTLStructMember* mtl_struct_member)
 {
     return mtl_struct_member.dataType == MTLDataTypeArray
-         ? static_cast<MTLArrayType*>(mtl_struct_member).arrayLength
+         ? mtl_struct_member.arrayType.arrayLength
          : 1U;
 }
 
