@@ -107,6 +107,10 @@
                 "METHANE_METAL_ARGUMENT_BUFFERS_ENABLED": {
                     "type": "BOOL",
                     "value": "ON"
+                },
+                "METHANE_METAL_FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE": {
+                    "type": "BOOL",
+                    "value": "OFF"
                 }
             }
         },
