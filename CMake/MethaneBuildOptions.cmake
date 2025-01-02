@@ -203,11 +203,12 @@ else() # Clang or GCC on Linux/MacOS
             )
         endif()
 
-        if(METHANE_RHI_PIMPL_INLINE_ENABLED AND METHANE_GFX_API EQUAL METHANE_GFX_METAL)
+        if(METHANE_GFX_API EQUAL METHANE_GFX_METAL)
             target_compile_options(MethaneBuildOptions INTERFACE
                 # Compile all C++ sources as Objective-C++ in case of RHI PIMPL inlining
-                -x objective-c++
-                # Enable automatic reference counting in Objective-C
+                $<$<BOOL:${METHANE_RHI_PIMPL_INLINE_ENABLED}>:-x objective-c++>
+                # Enable automatic reference counting in Objective-C for the whole application,
+                # otherwise memory leaks would happen even when PIMPL inlining is disabled
                 -fobjc-arc
             )
         endif()
