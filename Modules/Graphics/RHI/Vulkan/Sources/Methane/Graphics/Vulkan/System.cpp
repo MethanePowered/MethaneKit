@@ -259,7 +259,7 @@ static InstanceCreateInfoChain MakeInstanceCreateInfoChain(const vk::Application
 #endif
 }
 
-static vk::UniqueInstance CreateVulkanInstance(const vk::DynamicLoader& vk_loader,
+static vk::UniqueInstance CreateVulkanInstance(const VkDynamicLoader& vk_loader,
                                                const std::vector<std::string_view>& layers = {},
                                                const std::vector<std::string_view>& extensions = {},
                                                uint32_t vk_api_version = VK_API_VERSION_1_1)
