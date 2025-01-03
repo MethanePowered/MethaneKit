@@ -52,20 +52,4 @@ FrameTiming& FrameTiming::operator-=(const FrameTiming& other) noexcept
     return *this;
 }
 
-FrameTiming FrameTiming::operator/(double divisor) const noexcept
-{
-    META_FUNCTION_TASK();
-    return FrameTiming(m_total_time_sec    / divisor,
-                       m_present_time_sec  / divisor,
-                       m_gpu_wait_time_sec / divisor);
-}
-
-FrameTiming FrameTiming::operator*(double multiplier) const noexcept
-{
-    META_FUNCTION_TASK();
-    return FrameTiming(m_total_time_sec    * multiplier,
-                       m_present_time_sec  * multiplier,
-                       m_gpu_wait_time_sec * multiplier);
-}
-
 } // namespace Methane::Graphics::Rhi

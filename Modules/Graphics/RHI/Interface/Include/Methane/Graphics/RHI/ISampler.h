@@ -27,6 +27,7 @@ Methane sampler interface: GPU resource for texture sampling.
 
 #include <Methane/Memory.hpp>
 #include <Methane/Graphics/Types.h>
+#include <Methane/Instrumentation.h>
 
 #include <string>
 #include <limits>
@@ -53,8 +54,18 @@ struct SamplerFilter
     SamplerFilter(MinMag min_mag, Mip mip) : SamplerFilter(min_mag, min_mag, mip) { }
     explicit SamplerFilter(MinMag min_mag) : SamplerFilter(min_mag, Mip::NotMipmapped) { }
 
-    bool operator==(const SamplerFilter& other) const;
-    bool operator!=(const SamplerFilter& other) const;
+    [[nodiscard]] friend bool operator==(const SamplerFilter& left, const SamplerFilter& right)
+    {
+        META_FUNCTION_TASK();
+        return std::tie(left.min, left.mag, left.mip) ==
+               std::tie(right.min, right.mag, right.mip);
+    }
+
+    [[nodiscard]] friend bool operator!=(const SamplerFilter& left, const SamplerFilter& right)
+    {
+        return !(left == right);
+    }
+
 
     MinMag min = MinMag::Nearest;
     MinMag mag = MinMag::Nearest;
@@ -75,8 +86,17 @@ struct SamplerAddress
     SamplerAddress(Mode s, Mode t, Mode r) : s(s), t(t), r(r) { }
     explicit SamplerAddress(Mode all) : s(all), t(all), r(all) { }
 
-    bool operator==(const SamplerAddress& other) const;
-    bool operator!=(const SamplerAddress& other) const;
+    [[nodiscard]] friend bool operator==(const SamplerAddress& left, const SamplerAddress& right)
+    {
+        META_FUNCTION_TASK();
+        return std::tie(left.s, left.t, left.r) ==
+               std::tie(right.s, right.t, right.r);
+    }
+
+    [[nodiscard]] friend bool operator!=(const SamplerAddress& left, const SamplerAddress& right)
+    {
+        return !(left == right);
+    }
 
     Mode s = Mode::ClampToEdge; // width
     Mode t = Mode::ClampToEdge; // height
@@ -87,8 +107,17 @@ struct SamplerLevelOfDetail
 {
     SamplerLevelOfDetail(float bias = 0.F, float min = 0.F, float max = std::numeric_limits<float>::max());
 
-    bool operator==(const SamplerLevelOfDetail& other) const;
-    bool operator!=(const SamplerLevelOfDetail& other) const;
+    [[nodiscard]] friend bool operator==(const SamplerLevelOfDetail& left, const SamplerLevelOfDetail& right)
+    {
+        META_FUNCTION_TASK();
+        return std::tie(left.min, left.max, left.bias) ==
+               std::tie(right.min, right.max, right.bias);
+    }
+
+    [[nodiscard]] friend bool operator!=(const SamplerLevelOfDetail& left, const SamplerLevelOfDetail& right)
+    {
+        return !(left == right);
+    }
 
     float min  = 0.F;
     float max  = std::numeric_limits<float>::max();
@@ -111,8 +140,16 @@ struct SamplerSettings
                     SamplerBorderColor border_color = SamplerBorderColor::TransparentBlack,
                     Compare compare_function = Compare::Never);
 
-    bool operator==(const SamplerSettings& other) const;
-    bool operator!=(const SamplerSettings& other) const;
+    [[nodiscard]] friend bool operator==(const SamplerSettings& left, const SamplerSettings& right)
+    {
+        return std::tie(left.filter, left.address, left.lod, left.max_anisotropy, left.border_color, left.compare_function) ==
+               std::tie(right.filter, right.address, right.lod, right.max_anisotropy, right.border_color, right.compare_function);
+    }
+
+    [[nodiscard]] friend bool operator!=(const SamplerSettings& left, const SamplerSettings& right)
+    {
+        return !(left == right);
+    }
 
     SamplerFilter        filter;
     SamplerAddress       address;

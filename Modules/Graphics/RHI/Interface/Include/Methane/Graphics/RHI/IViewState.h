@@ -34,9 +34,25 @@ struct ViewSettings
     Viewports    viewports;
     ScissorRects scissor_rects;
 
-    [[nodiscard]] bool operator==(const ViewSettings& other) const noexcept;
-    [[nodiscard]] bool operator!=(const ViewSettings& other) const noexcept;
-    [[nodiscard]] bool operator<(const ViewSettings& other) const noexcept;
+    [[nodiscard]] friend bool operator==(const ViewSettings& left, const ViewSettings& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        return std::tie(left.viewports,  left.scissor_rects) ==
+               std::tie(right.viewports, right.scissor_rects);
+    }
+
+    [[nodiscard]] friend bool operator!=(const ViewSettings& left, const ViewSettings& right) noexcept
+    {
+        return !(left == right);
+    }
+
+    [[nodiscard]] friend bool operator< (const ViewSettings& left, const ViewSettings& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        return std::tie(left.viewports,  left.scissor_rects) <
+               std::tie(right.viewports, right.scissor_rects);
+    }
+
     [[nodiscard]] explicit operator std::string() const;
 };
 

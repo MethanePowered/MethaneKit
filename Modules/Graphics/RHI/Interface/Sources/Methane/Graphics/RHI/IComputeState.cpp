@@ -33,20 +33,6 @@ Methane render state interface: specifies configuration of the graphics pipeline
 namespace Methane::Graphics::Rhi
 {
 
-bool ComputeStateSettings::operator==(const ComputeStateSettings& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(program_ptr) ==
-           std::tie(other.program_ptr);
-}
-
-bool ComputeStateSettings::operator!=(const ComputeStateSettings& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(program_ptr) !=
-           std::tie(other.program_ptr);
-}
-
 ComputeStateSettings::operator std::string() const
 {
     META_FUNCTION_TASK();

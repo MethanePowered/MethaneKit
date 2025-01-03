@@ -31,15 +31,6 @@ provides basic multi-frame rendering synchronization and frame presenting APIs.
 namespace Methane::Graphics::Rhi
 {
 
-bool ComputeContextSettings::operator==(const ComputeContextSettings& other) const noexcept
-{
-    return options == other.options;
-}
-bool ComputeContextSettings::operator!=(const ComputeContextSettings& other) const noexcept
-{
-    return options != other.options;
-}
-
 Ptr<IComputeContext> IComputeContext::Create(IDevice& device, tf::Executor& parallel_executor, const Settings& settings)
 {
     META_FUNCTION_TASK();

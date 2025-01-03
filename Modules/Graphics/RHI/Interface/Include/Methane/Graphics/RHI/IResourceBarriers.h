@@ -24,6 +24,8 @@ Methane resource barriers for manual or automatic resource state synchronization
 #pragma once
 
 #include <Methane/Memory.hpp>
+#include <Methane/Checks.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <string>
 #include <map>
@@ -71,9 +73,26 @@ public:
 
     ResourceBarrierId(Type type, IResource& resource) noexcept;
 
-    [[nodiscard]] bool operator<(const ResourceBarrierId& other) const noexcept;
-    [[nodiscard]] bool operator==(const ResourceBarrierId& other) const noexcept;
-    [[nodiscard]] bool operator!=(const ResourceBarrierId& other) const noexcept;
+    [[nodiscard]] friend bool operator< (const ResourceBarrierId& left, const ResourceBarrierId& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        const IResource* this_resource_ptr  = std::addressof(left.m_resource_ref.get());
+        const IResource* other_resource_ptr = std::addressof(right.GetResource());
+        return std::tie(left.m_type, this_resource_ptr) < std::tie(right.m_type, other_resource_ptr);
+    }
+
+    [[nodiscard]] friend bool operator==(const ResourceBarrierId& left, const ResourceBarrierId& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        const IResource* this_resource_ptr  = std::addressof(left.m_resource_ref.get());
+        const IResource* other_resource_ptr = std::addressof(right.GetResource());
+        return std::tie(left.m_type, this_resource_ptr) == std::tie(right.m_type, other_resource_ptr);
+    }
+
+    [[nodiscard]] friend bool operator!=(const ResourceBarrierId& left, const ResourceBarrierId& right) noexcept
+    {
+        return !(left == right);
+    }
 
     [[nodiscard]] Type      GetType() const noexcept     { return m_type; }
     [[nodiscard]] IResource& GetResource() const noexcept { return m_resource_ref.get(); }
@@ -88,9 +107,22 @@ class ResourceStateChange
 public:
     ResourceStateChange(ResourceState before, ResourceState after) noexcept;
 
-    [[nodiscard]] bool operator<(const ResourceStateChange& other) const noexcept;
-    [[nodiscard]] bool operator==(const ResourceStateChange& other) const noexcept;
-    [[nodiscard]] bool operator!=(const ResourceStateChange& other) const noexcept;
+    [[nodiscard]] friend bool operator< (const ResourceStateChange& left, const ResourceStateChange& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        return std::tie(left.m_before, left.m_after) < std::tie(right.m_before, right.m_after);
+    }
+
+    [[nodiscard]] friend bool operator==(const ResourceStateChange& left, const ResourceStateChange& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        return std::tie(left.m_before, left.m_after) == std::tie(right.m_before, right.m_after);
+    }
+
+    [[nodiscard]] friend bool operator!=(const ResourceStateChange& left, const ResourceStateChange& right) noexcept
+    {
+        return !(left == right);
+    }
 
     [[nodiscard]] ResourceState GetStateBefore() const noexcept { return m_before; }
     [[nodiscard]] ResourceState GetStateAfter() const noexcept  { return m_after; }
@@ -107,9 +139,24 @@ public:
 
     ResourceOwnerChange(QueueFamily queue_family_before, QueueFamily queue_family_after) noexcept;
 
-    [[nodiscard]] bool operator<(const ResourceOwnerChange& other) const noexcept;
-    [[nodiscard]] bool operator==(const ResourceOwnerChange& other) const noexcept;
-    [[nodiscard]] bool operator!=(const ResourceOwnerChange& other) const noexcept;
+    [[nodiscard]] friend bool operator< (const ResourceOwnerChange& left, const ResourceOwnerChange& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        return std::tie(left.m_queue_family_before, left.m_queue_family_after) <
+               std::tie(right.m_queue_family_before, right.m_queue_family_after);
+    }
+
+    [[nodiscard]] friend bool operator==(const ResourceOwnerChange& left, const ResourceOwnerChange& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        return std::tie(left.m_queue_family_before, left.m_queue_family_after) ==
+               std::tie(right.m_queue_family_before, right.m_queue_family_after);
+    }
+
+    [[nodiscard]] friend bool operator!=(const ResourceOwnerChange& left, const ResourceOwnerChange& right) noexcept
+    {
+        return !(left == right);
+    }
 
     [[nodiscard]] QueueFamily GetQueueFamilyBefore() const noexcept { return m_queue_family_before; }
     [[nodiscard]] QueueFamily GetQueueFamilyAfter() const noexcept  { return m_queue_family_after; }
@@ -134,13 +181,58 @@ public:
     ResourceBarrier(const ResourceBarrier&) = default;
 
     ResourceBarrier& operator=(const ResourceBarrier& barrier) noexcept = default;
-    [[nodiscard]] bool operator<(const ResourceBarrier& other) const noexcept;
-    [[nodiscard]] bool operator==(const ResourceBarrier& other) const noexcept;
-    [[nodiscard]] bool operator!=(const ResourceBarrier& other) const noexcept;
-    [[nodiscard]] bool operator==(const StateChange& other) const;
-    [[nodiscard]] bool operator!=(const StateChange& other) const;
-    [[nodiscard]] bool operator==(const OwnerChange& other) const;
-    [[nodiscard]] bool operator!=(const OwnerChange& other) const;
+
+    [[nodiscard]] friend bool operator< (const ResourceBarrier& left, const ResourceBarrier& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        switch(left.m_id.GetType())
+        {
+        case Type::StateTransition: return std::tie(left.m_id, left.m_change.state) < std::tie(right.m_id, right.m_change.state);
+        case Type::OwnerTransition: return std::tie(left.m_id, left.m_change.owner) < std::tie(right.m_id, right.m_change.owner);
+        }
+        return false;
+    }
+
+    [[nodiscard]] friend bool operator==(const ResourceBarrier& left, const ResourceBarrier& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        switch(left.m_id.GetType())
+        {
+        case Type::StateTransition: return std::tie(left.m_id, left.m_change.state) == std::tie(right.m_id, right.m_change.state);
+        case Type::OwnerTransition: return std::tie(left.m_id, left.m_change.owner) == std::tie(right.m_id, right.m_change.owner);
+        }
+        return false;
+    }
+
+    [[nodiscard]] friend bool operator!=(const ResourceBarrier& left, const ResourceBarrier& right) noexcept
+    {
+        return !(left == right);
+    }
+
+    [[nodiscard]] friend bool operator==(const ResourceBarrier& left, const StateChange& right)
+    {
+        META_FUNCTION_TASK();
+        META_CHECK_EQUAL(left.m_id.GetType(), Type::StateTransition);
+        return left.m_change.state == right;
+    }
+
+    [[nodiscard]] friend bool operator!=(const ResourceBarrier& left, const StateChange& right)
+    {
+        return !(left == right);
+    }
+
+    [[nodiscard]] friend bool operator==(const ResourceBarrier& left, const OwnerChange& right)
+    {
+        META_FUNCTION_TASK();
+        META_CHECK_EQUAL(left.m_id.GetType(), Type::OwnerTransition);
+        return left.m_change.owner == right;
+    }
+
+    [[nodiscard]] friend bool operator!=(const ResourceBarrier& left, const OwnerChange& right)
+    {
+        return !(left == right);
+    }
+
     [[nodiscard]] explicit operator std::string() const noexcept;
 
     [[nodiscard]] const Id&          GetId() const noexcept { return m_id; }

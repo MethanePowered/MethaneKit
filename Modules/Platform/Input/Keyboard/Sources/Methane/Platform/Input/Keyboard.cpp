@@ -22,9 +22,7 @@ Platform abstraction of keyboard events.
 ******************************************************************************/
 
 #include <Methane/Platform/Input/Keyboard.h>
-
 #include <Methane/Data/EnumMaskUtil.hpp>
-#include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
 #include <fmt/format.h>
@@ -249,28 +247,11 @@ State::State(std::initializer_list<Key> pressed_keys, ModifierMask modifiers_mas
     }
 }
 
-bool State::operator<(const State& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    if (m_modifiers_mask != other.m_modifiers_mask)
-    {
-        return m_modifiers_mask < other.m_modifiers_mask;
-    }
-    return m_key_states < other.m_key_states;
-}
-
-bool State::operator==(const State& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return m_key_states == other.m_key_states &&
-           m_modifiers_mask == other.m_modifiers_mask;
-}
-
 State::operator bool() const noexcept
 {
     META_FUNCTION_TASK();
     static const State s_empty_state;
-    return operator!=(s_empty_state);
+    return *this != s_empty_state;
 }
 
 State::PropertyMask State::GetDiff(const State& other) const noexcept

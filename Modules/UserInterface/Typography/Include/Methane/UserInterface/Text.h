@@ -71,10 +71,10 @@ struct TextLayout
     TextVerticalAlignment   vertical_alignment   = TextVerticalAlignment::Top;
 
     [[nodiscard]]
-    bool operator==(const TextLayout& other) const noexcept
+    friend bool operator==(const TextLayout& left, const TextLayout& right) noexcept
     {
-        return std::tie(wrap, horizontal_alignment, vertical_alignment) ==
-               std::tie(other.wrap, other.horizontal_alignment, other.vertical_alignment);
+        return std::tie(left.wrap,  left.horizontal_alignment,  left.vertical_alignment) ==
+               std::tie(right.wrap, right.horizontal_alignment, right.vertical_alignment);
     }
 };
 

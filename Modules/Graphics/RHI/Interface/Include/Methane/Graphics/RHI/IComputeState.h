@@ -41,8 +41,16 @@ struct ComputeStateSettings
     Ptr<IProgram>   program_ptr;
     ThreadGroupSize thread_group_size; // Duplicated in HLSL attribute [numthreads(x,y,z)] of compute shader, but Metal does not use it
 
-    [[nodiscard]] bool operator==(const ComputeStateSettings& other) const noexcept;
-    [[nodiscard]] bool operator!=(const ComputeStateSettings& other) const noexcept;
+    [[nodiscard]] friend bool operator==(const ComputeStateSettings& left, const ComputeStateSettings& right) noexcept
+    {
+        return std::tie(left.program_ptr) == std::tie(right.program_ptr);
+    }
+
+    [[nodiscard]] friend bool operator!=(const ComputeStateSettings& left, const ComputeStateSettings& right) noexcept
+    {
+        return std::tie(left.program_ptr) != std::tie(right.program_ptr);
+    }
+
     [[nodiscard]] explicit operator std::string() const;
 };
 

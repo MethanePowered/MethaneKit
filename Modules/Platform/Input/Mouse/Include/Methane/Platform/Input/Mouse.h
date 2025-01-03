@@ -104,10 +104,29 @@ public:
     State() = default;
     State(std::initializer_list<Button> pressed_buttons, const Position& position = Position(), const Scroll& scroll = Scroll(), bool in_window = false);
 
-    [[nodiscard]] bool operator==(const State& other) const;
-    [[nodiscard]] bool operator!=(const State& other) const          { return !operator==(other); }
-    [[nodiscard]] const ButtonState& operator[](Button button) const { return m_button_states[static_cast<size_t>(button)]; }
-    [[nodiscard]] explicit operator std::string() const              { return ToString(); }
+    [[nodiscard]] friend bool operator==(const State& left, const State& right)
+    {
+        return std::tie(left.m_button_states, left.m_position, left.m_scroll, left.m_in_window) ==
+               std::tie(right.m_button_states, right.m_position, right.m_scroll, right.m_in_window);
+    }
+
+    [[nodiscard]] friend bool operator!=(const State& left, const State& right)
+    {
+        return !(left == right);
+    }
+
+    [[nodiscard]] const ButtonState& operator[](Button button) const
+    {
+        return m_button_states[static_cast<size_t>(button)];
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const State& keyboard_state)
+    {
+        os << keyboard_state.ToString();
+        return os;
+    }
+
+    [[nodiscard]] explicit operator std::string() const { return ToString(); }
 
     void SetButton(Button button, ButtonState state) { m_button_states[static_cast<size_t>(button)] = state; }
     void PressButton(Button button)                  { SetButton(button, ButtonState::Pressed); }
@@ -115,7 +134,7 @@ public:
     void SetPosition(const Position& position)       { m_position = position; }
     void SetInWindow(bool in_window)                 { m_in_window = in_window; }
     void AddScrollDelta(const Scroll& delta)         { m_scroll += delta; }
-    void ResetScroll();
+    void ResetScroll()                               { m_scroll = Scroll(); }
 
     [[nodiscard]] const Position&     GetPosition() const                     { return m_position; }
     [[nodiscard]] const Scroll&       GetScroll() const                       { return m_scroll; }
@@ -131,12 +150,6 @@ private:
     Scroll       m_scroll        { };
     bool         m_in_window     = false;
 };
-
-inline std::ostream& operator<<( std::ostream& os, State const& keyboard_state)
-{
-    os << keyboard_state.ToString();
-    return os;
-}
 
 struct StateChange
 {

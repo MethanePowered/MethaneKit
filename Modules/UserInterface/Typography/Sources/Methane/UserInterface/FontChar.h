@@ -110,11 +110,11 @@ public:
     [[nodiscard]] const gfx::FrameSize& GetVisualSize() const noexcept
     { return m_visual_size; }
 
-    [[nodiscard]] bool operator<(const FontChar& other) const noexcept
-    { return m_rect.size.GetPixelsCount() < other.m_rect.size.GetPixelsCount(); }
+    [[nodiscard]] friend bool operator<(const FontChar& left, const FontChar& right) noexcept
+    { return left.m_rect.size.GetPixelsCount() < right.m_rect.size.GetPixelsCount(); }
 
-    [[nodiscard]] bool operator>(const FontChar& other) const noexcept
-    { return m_rect.size.GetPixelsCount() > other.m_rect.size.GetPixelsCount(); }
+    [[nodiscard]] friend bool operator>(const FontChar& left, const FontChar& right) noexcept
+    { return left.m_rect.size.GetPixelsCount() > right.m_rect.size.GetPixelsCount(); }
 
     [[nodiscard]] explicit operator bool() const noexcept
     { return m_code != 0U; }

@@ -24,8 +24,6 @@ Methane resource barriers for manual or automatic resource state synchronization
 #include <Methane/Graphics/RHI/IResourceBarriers.h>
 #include <Methane/Graphics/RHI/IResource.h>
 
-#include <Methane/Instrumentation.h>
-
 #include <magic_enum/magic_enum.hpp>
 
 namespace Methane::Graphics::Rhi
@@ -36,75 +34,15 @@ ResourceBarrierId::ResourceBarrierId(Type type, Rhi::IResource& resource) noexce
     , m_resource_ref(resource)
 { }
 
-bool ResourceBarrierId::operator<(const ResourceBarrierId& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    const Rhi::IResource* this_resource_ptr  = std::addressof(m_resource_ref.get());
-    const Rhi::IResource* other_resource_ptr = std::addressof(other.GetResource());
-    return std::tie(m_type, this_resource_ptr) < std::tie(other.m_type, other_resource_ptr);
-}
-
-bool ResourceBarrierId::operator==(const ResourceBarrierId& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    const Rhi::IResource* this_resource_ptr  = std::addressof(m_resource_ref.get());
-    const Rhi::IResource* other_resource_ptr = std::addressof(other.GetResource());
-    return std::tie(m_type, this_resource_ptr) == std::tie(other.m_type, other_resource_ptr);
-}
-
-bool ResourceBarrierId::operator!=(const ResourceBarrierId& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return !operator==(other);
-}
-
 ResourceStateChange::ResourceStateChange(ResourceState before, ResourceState after) noexcept
     : m_before(before)
     , m_after(after)
 { }
 
-bool ResourceStateChange::operator<(const ResourceStateChange& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(m_before, m_after) < std::tie(other.m_before, other.m_after);
-}
-
-bool ResourceStateChange::operator==(const ResourceStateChange& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(m_before, m_after) == std::tie(other.m_before, other.m_after);
-}
-
-bool ResourceStateChange::operator!=(const ResourceStateChange& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return !operator==(other);
-}
-
 ResourceOwnerChange::ResourceOwnerChange(uint32_t queue_family_before, uint32_t queue_family_after) noexcept
     : m_queue_family_before(queue_family_before)
     , m_queue_family_after(queue_family_after)
 { }
-
-bool ResourceOwnerChange::operator<(const ResourceOwnerChange& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(m_queue_family_before, m_queue_family_after) <
-           std::tie(other.m_queue_family_before, other.m_queue_family_after);
-}
-
-bool ResourceOwnerChange::operator==(const ResourceOwnerChange& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return std::tie(m_queue_family_before, m_queue_family_after) ==
-           std::tie(other.m_queue_family_before, other.m_queue_family_after);
-}
-
-bool ResourceOwnerChange::operator!=(const ResourceOwnerChange& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return !operator==(other);
-}
 
 ResourceBarrier::ResourceBarrier(IResource& resource, const StateChange& state_change)
     : m_id(Type::StateTransition, resource)
@@ -123,58 +61,6 @@ ResourceBarrier::ResourceBarrier(IResource& resource, ResourceState state_before
 ResourceBarrier::ResourceBarrier(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after)
     : ResourceBarrier(resource, OwnerChange(queue_family_before, queue_family_after))
 { }
-
-bool ResourceBarrier::operator<(const ResourceBarrier& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    switch(m_id.GetType())
-    {
-    case Type::StateTransition: return std::tie(m_id, m_change.state) < std::tie(other.m_id, other.m_change.state);
-    case Type::OwnerTransition: return std::tie(m_id, m_change.owner) < std::tie(other.m_id, other.m_change.owner);
-    }
-    return false;
-}
-
-bool ResourceBarrier::operator==(const ResourceBarrier& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    switch(m_id.GetType())
-    {
-    case Type::StateTransition: return std::tie(m_id, m_change.state) == std::tie(other.m_id, other.m_change.state);
-    case Type::OwnerTransition: return std::tie(m_id, m_change.owner) == std::tie(other.m_id, other.m_change.owner);
-    }
-    return false;
-}
-
-bool ResourceBarrier::operator!=(const ResourceBarrier& other) const noexcept
-{
-    META_FUNCTION_TASK();
-    return !operator==(other);
-}
-
-bool ResourceBarrier::operator==(const StateChange& other_state_change) const
-{
-    META_FUNCTION_TASK();
-    META_CHECK_EQUAL(m_id.GetType(), Type::StateTransition);
-    return m_change.state == other_state_change;
-}
-
-bool ResourceBarrier::operator!=(const StateChange& other_state_change) const
-{
-    META_FUNCTION_TASK();
-    return !operator==(other_state_change);
-}
-bool ResourceBarrier::operator==(const OwnerChange& other_owner_change) const
-{
-    META_FUNCTION_TASK();
-    META_CHECK_EQUAL(m_id.GetType(), Type::StateTransition);
-    return m_change.owner == other_owner_change;
-}
-bool ResourceBarrier::operator!=(const OwnerChange& other_owner_change) const
-{
-    META_FUNCTION_TASK();
-    return !operator==(other_owner_change);
-}
 
 ResourceBarrier::operator std::string() const noexcept
 {

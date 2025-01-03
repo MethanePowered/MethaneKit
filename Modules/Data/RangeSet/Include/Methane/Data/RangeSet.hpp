@@ -46,8 +46,15 @@ public:
     RangeSet() = default;
     RangeSet(std::initializer_list<Range<ScalarT>> init) noexcept : m_container(init) { } //NOSONAR - initializer list constructor is not explicit intentionally
 
-    [[nodiscard]] bool operator==(const RangeSet<ScalarT>& other) const noexcept { META_FUNCTION_TASK(); return m_container == other.m_container; }
-    [[nodiscard]] bool operator==(const BaseSet& other) const noexcept           { META_FUNCTION_TASK(); return m_container == other; }
+    [[nodiscard]] friend bool operator==(const RangeSet<ScalarT>& left, const RangeSet<ScalarT>& right) noexcept
+    {
+        return left.m_container == right.m_container;
+    }
+
+    [[nodiscard]] friend bool operator==(const RangeSet<ScalarT>& left, const BaseSet& right) noexcept
+    {
+        return left.m_container == right;
+    }
 
     RangeSet<ScalarT>& operator=(std::initializer_list<Range<ScalarT>> init) noexcept
     {

@@ -50,8 +50,20 @@ public:
     FrameTiming& operator=(const FrameTiming& other) noexcept = default;
     FrameTiming& operator+=(const FrameTiming& other) noexcept;
     FrameTiming& operator-=(const FrameTiming& other) noexcept;
-    FrameTiming  operator/(double divisor) const noexcept;
-    FrameTiming  operator*(double multiplier) const noexcept;
+
+    friend FrameTiming operator/(const FrameTiming& timing, double divisor) noexcept
+    {
+        return FrameTiming(timing.m_total_time_sec    / divisor,
+                           timing.m_present_time_sec  / divisor,
+                           timing.m_gpu_wait_time_sec / divisor);
+    }
+
+    friend FrameTiming operator*(const FrameTiming& timing, double multiplier) noexcept
+    {
+        return FrameTiming(timing.m_total_time_sec    * multiplier,
+                           timing.m_present_time_sec  * multiplier,
+                           timing.m_gpu_wait_time_sec * multiplier);
+    }
 
 private:
     double m_total_time_sec    { 0.0 };

@@ -74,21 +74,22 @@ public:
 
     constexpr M GetValue() const noexcept { return m_value; }
 
-    constexpr bool operator==(const EnumMask& other) const noexcept { return m_value == other.m_value; }
-    constexpr bool operator!=(const EnumMask& other) const noexcept { return m_value != other.m_value; }
-    constexpr bool operator<(const EnumMask& other) const noexcept  { return m_value <  other.m_value; }
-    constexpr bool operator<=(const EnumMask& other) const noexcept { return m_value <= other.m_value; }
-    constexpr bool operator>(const EnumMask& other) const noexcept  { return m_value >  other.m_value; }
-    constexpr bool operator>=(const EnumMask& other) const noexcept { return m_value >= other.m_value; }
-    constexpr bool operator!() const noexcept                       { return !m_value; }
+    constexpr friend bool operator==(const EnumMask& left, const EnumMask& right) noexcept { return left.m_value == right.m_value; }
+    constexpr friend bool operator!=(const EnumMask& left, const EnumMask& right) noexcept { return left.m_value != right.m_value; }
+    constexpr friend bool operator<(const EnumMask& left, const EnumMask& right) noexcept  { return left.m_value <  right.m_value; }
+    constexpr friend bool operator<=(const EnumMask& left, const EnumMask& right) noexcept { return left.m_value <= right.m_value; }
+    constexpr friend bool operator>(const EnumMask& left, const EnumMask& right) noexcept  { return left.m_value >  right.m_value; }
+    constexpr friend bool operator>=(const EnumMask& left, const EnumMask& right) noexcept { return left.m_value >= right.m_value; }
 
-    constexpr EnumMask operator|(Bit bit) const noexcept        { return EnumMask(m_value | bit.GetValue());  }
-    constexpr EnumMask operator|(EnumMask mask) const noexcept  { return EnumMask(m_value | mask.GetValue()); }
-    constexpr EnumMask operator&(Bit bit) const noexcept        { return EnumMask(m_value & bit.GetValue());  }
-    constexpr EnumMask operator&(EnumMask mask) const noexcept  { return EnumMask(m_value & mask.GetValue()); }
-    constexpr EnumMask operator^(Bit bit) const noexcept        { return EnumMask(m_value ^ bit.GetValue());  }
-    constexpr EnumMask operator^(EnumMask mask) const noexcept  { return EnumMask(m_value ^ mask.GetValue()); }
-    constexpr EnumMask operator~() const noexcept               { return EnumMask(~m_value); }
+    constexpr friend EnumMask operator|(const EnumMask& mask, Bit bit) noexcept         { return EnumMask(mask.m_value | bit.GetValue());   }
+    constexpr friend EnumMask operator|(const EnumMask& left, EnumMask right) noexcept  { return EnumMask(left.m_value | right.GetValue()); }
+    constexpr friend EnumMask operator&(const EnumMask& mask, Bit bit) noexcept         { return EnumMask(mask.m_value & bit.GetValue());   }
+    constexpr friend EnumMask operator&(const EnumMask& left, EnumMask right) noexcept  { return EnumMask(left.m_value & right.GetValue()); }
+    constexpr friend EnumMask operator^(const EnumMask& mask, Bit bit) noexcept         { return EnumMask(mask.m_value ^ bit.GetValue());   }
+    constexpr friend EnumMask operator^(const EnumMask& left, EnumMask right) noexcept  { return EnumMask(left.m_value ^ right.GetValue()); }
+
+    constexpr bool     operator!() const noexcept  { return !m_value; }
+    constexpr EnumMask operator~() const noexcept  { return EnumMask(~m_value); }
 
     constexpr EnumMask& operator|=(Bit bit) noexcept        { m_value |= bit.GetValue();  return *this; }
     constexpr EnumMask& operator|=(EnumMask mask) noexcept  { m_value |= mask.GetValue(); return *this; }

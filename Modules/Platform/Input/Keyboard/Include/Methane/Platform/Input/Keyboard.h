@@ -39,6 +39,7 @@ Platform abstraction of keyboard events.
 
 #include <Methane/Data/EnumMask.hpp>
 #include <Methane/Memory.hpp>
+#include <Methane/Instrumentation.h>
 
 #include <array>
 #include <set>
@@ -180,9 +181,34 @@ public:
     State(std::initializer_list<Key> pressed_keys, ModifierMask modifiers_mask = {});
     virtual ~State() = default;
 
-    [[nodiscard]] bool operator<(const State& other) const noexcept;
-    [[nodiscard]] bool operator==(const State& other) const noexcept;
-    [[nodiscard]] bool operator!=(const State& other) const noexcept  { return !operator==(other); }
+    [[nodiscard]] friend bool operator< (const State& left, const State& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        if (left.m_modifiers_mask != right.m_modifiers_mask)
+        {
+            return left.m_modifiers_mask < right.m_modifiers_mask;
+        }
+        return left.m_key_states < right.m_key_states;
+    }
+
+    [[nodiscard]] friend bool operator==(const State& left, const State& right) noexcept
+    {
+        META_FUNCTION_TASK();
+        return std::tie(left.m_key_states,  left.m_modifiers_mask) ==
+               std::tie(right.m_key_states, right.m_modifiers_mask);
+    }
+
+    [[nodiscard]] friend bool operator!=(const State& left, const State& right) noexcept
+    {
+        return !(left == right);
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const State& keyboard_state)
+    {
+        os << keyboard_state.ToString();
+        return os;
+    }
+
     [[nodiscard]] const  KeyState& operator[](Key key) const noexcept { return m_key_states[static_cast<size_t>(key)]; }
     [[nodiscard]] explicit operator std::string() const               { return ToString(); }
     [[nodiscard]] explicit operator bool() const noexcept;
@@ -195,7 +221,7 @@ public:
 
     [[nodiscard]] Keys             GetPressedKeys() const noexcept;
     [[nodiscard]] const KeyStates& GetKeyStates() const noexcept     { return m_key_states; }
-    [[nodiscard]] ModifierMask        GetModifiersMask() const noexcept { return m_modifiers_mask; }
+    [[nodiscard]] ModifierMask     GetModifiersMask() const noexcept { return m_modifiers_mask; }
     [[nodiscard]] PropertyMask     GetDiff(const State& other) const noexcept;
     [[nodiscard]] std::string      ToString() const;
 
@@ -206,12 +232,6 @@ private:
     KeyStates    m_key_states{};
     ModifierMask m_modifiers_mask;
 };
-
-inline std::ostream& operator<<(std::ostream& os, State const& keyboard_state)
-{
-    os << keyboard_state.ToString();
-    return os;
-}
 
 // State tracks only active modifiers, but not exactly modifier keys
 // This state extension tracks exactly what modifier keys are pressed

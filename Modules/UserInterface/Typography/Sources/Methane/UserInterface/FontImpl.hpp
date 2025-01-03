@@ -272,7 +272,7 @@ public:
     void AddChars(const std::string& utf8_characters)
     {
         META_FUNCTION_TASK();
-        ResetChars(ConvertUtf8To32(utf8_characters));
+        ResetChars(utf8_characters);
     }
 
     void AddChars(const std::u32string& utf32_characters)

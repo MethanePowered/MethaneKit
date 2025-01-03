@@ -43,8 +43,16 @@ struct RenderPassSettings
     TextureViews attachments;
     FrameSize    frame_size;
 
-    [[nodiscard]] bool operator==(const RenderPassSettings& other) const;
-    [[nodiscard]] bool operator!=(const RenderPassSettings& other) const;
+    [[nodiscard]] friend bool operator==(const RenderPassSettings& left, const RenderPassSettings& right)
+    {
+        return std::tie(left.attachments, left.frame_size) ==
+               std::tie(right.attachments, right.frame_size);
+    }
+
+    [[nodiscard]] friend bool operator!=(const RenderPassSettings& left, const RenderPassSettings& right)
+    {
+        return !(left == right);
+    }
 };
 
 struct IRenderPass

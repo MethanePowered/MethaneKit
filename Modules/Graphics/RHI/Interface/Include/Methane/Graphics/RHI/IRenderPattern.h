@@ -73,8 +73,17 @@ struct RenderPassAttachment
                          StoreAction store_action = StoreAction::DontCare);
     virtual ~RenderPassAttachment() = default;
 
-    [[nodiscard]] bool operator==(const RenderPassAttachment& other) const;
-    [[nodiscard]] bool operator!=(const RenderPassAttachment& other) const;
+    [[nodiscard]] friend bool operator==(const RenderPassAttachment& left, const RenderPassAttachment& right)
+    {
+        return std::tie(left.attachment_index, left.format, left.samples_count, left.load_action, left.store_action) ==
+               std::tie(right.attachment_index, right.format, right.samples_count, right.load_action, right.store_action);
+    }
+
+    [[nodiscard]] friend bool operator!=(const RenderPassAttachment& left, const RenderPassAttachment& right)
+    {
+        return !(left == right);
+    }
+
     [[nodiscard]] virtual explicit operator std::string() const;
     [[nodiscard]] virtual Type GetType() const noexcept = 0;
 };
@@ -90,8 +99,17 @@ struct RenderPassColorAttachment : RenderPassAttachment
                               StoreAction    store_action = StoreAction::DontCare,
                               const Color4F& clear_color  = Color4F());
 
-    [[nodiscard]] bool operator==(const RenderPassColorAttachment& other) const;
-    [[nodiscard]] bool operator!=(const RenderPassColorAttachment& other) const;
+    [[nodiscard]] friend bool operator==(const RenderPassColorAttachment& left, const RenderPassColorAttachment& right)
+    {
+        return static_cast<const RenderPassAttachment&>(left) == static_cast<const RenderPassAttachment&>(right) &&
+               left.clear_color == right.clear_color;
+    }
+
+    [[nodiscard]] friend bool operator!=(const RenderPassColorAttachment& left, const RenderPassColorAttachment& right)
+    {
+        return !(left == right);
+    }
+
     [[nodiscard]] explicit operator std::string() const override;
 
     [[nodiscard]] Type GetType() const noexcept override { return Type::Color; }
@@ -111,8 +129,17 @@ struct RenderPassDepthAttachment final : RenderPassAttachment
                               StoreAction store_action = StoreAction::DontCare,
                               Depth       clear_value  = 1.F);
 
-    [[nodiscard]] bool operator==(const RenderPassDepthAttachment& other) const;
-    [[nodiscard]] bool operator!=(const RenderPassDepthAttachment& other) const;
+    [[nodiscard]] friend bool operator==(const RenderPassDepthAttachment& left, const RenderPassDepthAttachment& right)
+    {
+        return static_cast<const RenderPassAttachment&>(left) == static_cast<const RenderPassAttachment&>(right) &&
+               left.clear_value == right.clear_value;
+    }
+
+    [[nodiscard]] friend bool operator!=(const RenderPassDepthAttachment& left, const RenderPassDepthAttachment& right)
+    {
+        return !(left == right);
+    }
+
     [[nodiscard]] explicit operator std::string() const override;
 
     [[nodiscard]] Type GetType() const noexcept override { return Type::Depth; }
@@ -130,8 +157,17 @@ struct RenderPassStencilAttachment final : RenderPassAttachment
                                 StoreAction store_action = StoreAction::DontCare,
                                 Stencil     clear_value  = 0U);
 
-    [[nodiscard]] bool operator==(const RenderPassStencilAttachment& other) const;
-    [[nodiscard]] bool operator!=(const RenderPassStencilAttachment& other) const;
+    [[nodiscard]] friend bool operator==(const RenderPassStencilAttachment& left, const RenderPassStencilAttachment& right)
+    {
+        return static_cast<const RenderPassAttachment&>(left) == static_cast<const RenderPassAttachment&>(right) &&
+               left.clear_value == right.clear_value;
+    }
+
+    [[nodiscard]] friend bool operator!=(const RenderPassStencilAttachment& left, const RenderPassStencilAttachment& right)
+    {
+        return !(left == right);
+    }
+
     [[nodiscard]] explicit operator std::string() const override;
 
     [[nodiscard]] Type GetType() const noexcept override { return Type::Stencil; }
@@ -155,8 +191,17 @@ struct RenderPatternSettings
     RenderPassAccessMask             shader_access;
     bool                             is_final_pass = true;
 
-    [[nodiscard]] bool operator==(const RenderPatternSettings& other) const;
-    [[nodiscard]] bool operator!=(const RenderPatternSettings& other) const;
+    [[nodiscard]] friend bool operator==(const RenderPatternSettings& left, const RenderPatternSettings& right)
+    {
+        return std::tie(left.color_attachments, left.depth_attachment, left.stencil_attachment, left.shader_access, left.is_final_pass) ==
+               std::tie(right.color_attachments, right.depth_attachment, right.stencil_attachment, right.shader_access, right.is_final_pass);
+    }
+
+    [[nodiscard]] friend bool operator!=(const RenderPatternSettings& left, const RenderPatternSettings& right)
+    {
+        return !(left == right);
+    }
+
     [[nodiscard]] explicit operator std::string() const;
 };
 

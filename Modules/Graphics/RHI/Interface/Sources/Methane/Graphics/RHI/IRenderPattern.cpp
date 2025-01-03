@@ -53,20 +53,6 @@ RenderPassAttachment::RenderPassAttachment(Data::Index attachment_index, PixelFo
     , store_action(store_action)
 { }
 
-bool RenderPassAttachment::operator==(const RenderPassAttachment& other) const
-{
-    META_FUNCTION_TASK();
-    return std::tie(attachment_index, format, samples_count, load_action, store_action) ==
-           std::tie(other.attachment_index, format, samples_count, other.load_action, other.store_action);
-}
-
-bool RenderPassAttachment::operator!=(const RenderPassAttachment& other) const
-{
-    META_FUNCTION_TASK();
-    return std::tie(attachment_index, format, samples_count, load_action, store_action) !=
-           std::tie(other.attachment_index, format, samples_count, other.load_action, other.store_action);
-}
-
 RenderPassAttachment::operator std::string() const
 {
     META_FUNCTION_TASK();
@@ -84,18 +70,6 @@ RenderPassColorAttachment::RenderPassColorAttachment(Data::Index attachment_inde
     , clear_color(clear_color)
 { }
 
-bool RenderPassColorAttachment::operator==(const RenderPassColorAttachment& other) const
-{
-    META_FUNCTION_TASK();
-    return RenderPassAttachment::operator==(other) && clear_color == other.clear_color;
-}
-
-bool RenderPassColorAttachment::operator!=(const RenderPassColorAttachment& other) const
-{
-    META_FUNCTION_TASK();
-    return RenderPassAttachment::operator!=(other) || clear_color != other.clear_color;
-}
-
 RenderPassColorAttachment::operator std::string() const
 {
     META_FUNCTION_TASK();
@@ -109,18 +83,6 @@ RenderPassDepthAttachment::RenderPassDepthAttachment(Data::Index attachment_inde
     : RenderPassAttachment(attachment_index, format, samples_count, load_action, store_action)
     , clear_value(clear_value)
 { }
-
-bool RenderPassDepthAttachment::operator==(const RenderPassDepthAttachment& other) const
-{
-    META_FUNCTION_TASK();
-    return RenderPassAttachment::operator==(other) && clear_value == other.clear_value;
-}
-
-bool RenderPassDepthAttachment::operator!=(const RenderPassDepthAttachment& other) const
-{
-    META_FUNCTION_TASK();
-    return RenderPassAttachment::operator!=(other) || clear_value != other.clear_value;
-}
 
 RenderPassDepthAttachment::operator std::string() const
 {
@@ -136,38 +98,12 @@ RenderPassStencilAttachment::RenderPassStencilAttachment(Data::Index attachment_
     , clear_value(clear_value)
 { }
 
-bool RenderPassStencilAttachment::operator==(const RenderPassStencilAttachment& other) const
-{
-    META_FUNCTION_TASK();
-    return RenderPassAttachment::operator==(other) && clear_value == other.clear_value;
-}
-
-bool RenderPassStencilAttachment::operator!=(const RenderPassStencilAttachment& other) const
-{
-    META_FUNCTION_TASK();
-    return RenderPassAttachment::operator!=(other) || clear_value != other.clear_value;
-}
-
 RenderPassStencilAttachment::operator std::string() const
 {
     META_FUNCTION_TASK();
     return fmt::format("  - Stencil {}, clear_value={}",
                        RenderPassAttachment::operator std::string(),
                        clear_value);
-}
-
-bool RenderPatternSettings::operator==(const RenderPatternSettings& other) const
-{
-    META_FUNCTION_TASK();
-    return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access, is_final_pass) ==
-           std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access, other.is_final_pass);
-}
-
-bool RenderPatternSettings::operator!=(const RenderPatternSettings& other) const
-{
-    META_FUNCTION_TASK();
-    return std::tie(color_attachments, depth_attachment, stencil_attachment, shader_access, is_final_pass) !=
-           std::tie(other.color_attachments, other.depth_attachment, other.stencil_attachment, other.shader_access, other.is_final_pass);
 }
 
 RenderPatternSettings::operator std::string() const
