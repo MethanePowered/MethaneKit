@@ -98,7 +98,7 @@ jobs:
             sonar_project_key: "methane-powered-kit-linux"
             tests_coverage_reports: "Build/Output/Ninja-Lin-VK-Scan/Build/MethaneTestCoverage.info"
 
-          - os: macos-13 # macos-latest is using M1 h/w, which is not supported by sonar scanner yet (see SonarSource/sonarcloud-github-c-cpp/pull/55)
+          - os: macos-latest
             name: "MacOS_MTL_SonarScan"
             named_logo: Apple
             config_preset: "Ninja-Mac-MTL-Scan"
@@ -147,7 +147,7 @@ jobs:
           dotnet-version: 6.0.400
 
       - name: Install Sonar-Scanner
-        uses: sonarsource/sonarcloud-github-c-cpp@v2
+        uses: sonarsource/sonarcloud-github-c-cpp@v3
 
       # Ninja build is required to generate compile commands file used by Sonar-Scanner
       - name: Install Ninja
