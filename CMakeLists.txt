@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21.0)
 # Methane version, build & product info
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
 set(METHANE_VERSION_MINOR 8 CACHE STRING "Methane minor version")
-set(METHANE_VERSION_PATCH 0 CACHE STRING "Methane patch version")
+set(METHANE_VERSION_PATCH 1 CACHE STRING "Methane patch version")
 set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 
 # Define CMake languages list
