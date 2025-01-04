@@ -327,8 +327,8 @@ const QueueFamilyReservation& Device::GetQueueFamilyReservation(Rhi::CommandList
     META_FUNCTION_TASK();
     const QueueFamilyReservation* queue_family_reservation_ptr = GetQueueFamilyReservationPtr(cmd_list_type);
     META_CHECK_NOT_NULL_DESCR(queue_family_reservation_ptr,
-                              fmt::format("queue family was not reserved for {} command list type",
-                                          magic_enum::enum_name(cmd_list_type)));
+                              "queue family was not reserved for {} command list type",
+                              magic_enum::enum_name(cmd_list_type));
     return *queue_family_reservation_ptr;
 }
 

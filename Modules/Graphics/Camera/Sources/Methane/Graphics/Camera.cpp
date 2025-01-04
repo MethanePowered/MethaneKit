@@ -193,4 +193,10 @@ std::string Camera::GetOrientationString() const
                        m_current_orientation.eye, m_current_orientation.aim, m_current_orientation.up);
 }
 
+void Camera::LogOrientation() const
+{
+    META_LOG("Camera orientation:\n  - eye: {}\n  - aim: {}\n  - up:  {}",
+             m_current_orientation.eye, m_current_orientation.aim, m_current_orientation.up);
+}
+
 } // namespace Methane::Graphics

@@ -157,7 +157,7 @@ void ActionCamera::Move(const hlslpp::float3& move_vector) noexcept
     META_FUNCTION_TASK();
     SetOrientationAim(GetOrientation().aim + move_vector);
     SetOrientationEye(GetOrientation().eye + move_vector);
-    META_LOG(GetOrientationString());
+    Camera::LogOrientation();
 }
 
 void ActionCamera::Zoom(float zoom_factor) noexcept
@@ -166,7 +166,7 @@ void ActionCamera::Zoom(float zoom_factor) noexcept
     const hlslpp::float3 look_dir   = GetLookDirection(GetOrientation());
     const float zoom_distance = std::min(std::max(static_cast<float>(hlslpp::length(look_dir)) * zoom_factor, m_zoom_distance_range.first), m_zoom_distance_range.second);
     ApplyLookDirection(hlslpp::normalize(look_dir) * zoom_distance);
-    META_LOG(GetOrientationString());
+    Camera::LogOrientation();
 }
 
 void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const hlslpp::float3& rotation_axis_in_view, double duration_sec)

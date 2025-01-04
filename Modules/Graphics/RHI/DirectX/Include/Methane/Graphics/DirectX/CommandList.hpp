@@ -70,10 +70,10 @@ public:
         ThrowIfFailed(device_cptr->CreateCommandList(0, command_list_type, m_command_allocator_cptr.Get(), nullptr, IID_PPV_ARGS(&m_command_list_cptr)), device_cptr.Get());
         m_command_list_cptr.As(&m_command_list_4_cptr);
 
-        InitializeTimestampQueries();
+        CommandListBaseT::InitializeTimestampQueries();
         BeginGpuZoneDx();
 
-        SetCommandListState(Rhi::CommandListState::Encoding);
+        CommandListBaseT::SetCommandListState(Rhi::CommandListState::Encoding);
     }
 
     // Rhi::ICommandList interface
@@ -108,14 +108,16 @@ public:
     void SetResourceBarriers(const Rhi::IResourceBarriers& resource_barriers) final
     {
         META_FUNCTION_TASK();
-        VerifyEncodingState();
+        CommandListBaseT::VerifyEncodingState();
         
         const auto lock_guard = static_cast<const Base::ResourceBarriers&>(resource_barriers).Lock();
         if (resource_barriers.IsEmpty())
             return;
 
         META_LOG("{} Command list '{}' SET RESOURCE BARRIERS:\n{}",
-                 magic_enum::enum_name(GetType()), GetName(), static_cast<std::string>(resource_barriers));
+                 magic_enum::enum_name(CommandListBaseT::GetType()),
+                 CommandListBaseT::GetName(),
+                 static_cast<std::string>(resource_barriers));
         META_CHECK_NOT_NULL(m_command_list_cptr);
 
         const auto& dx_resource_barriers = static_cast<const IResource::Barriers&>(resource_barriers);
@@ -162,7 +164,7 @@ public:
 
     // DirectX::ICommandList interface
 
-    CommandQueue&              GetDirectCommandQueue() final      { return static_cast<CommandQueue&>(GetBaseCommandQueue()); }
+    CommandQueue&              GetDirectCommandQueue() final      { return static_cast<CommandQueue&>(CommandListBaseT::GetBaseCommandQueue()); }
     Rhi::CommandListType       GetCommandListType() const final   { return Base::CommandList::GetType(); }
     ID3D12GraphicsCommandList& GetNativeCommandList() const final
     {

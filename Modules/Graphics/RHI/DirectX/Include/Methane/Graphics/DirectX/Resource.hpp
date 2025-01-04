@@ -37,6 +37,7 @@ DirectX 12 implementation of the resource interface.
 
 #include <wrl.h>
 #include <directx/d3d12.h>
+#include <directx/d3dx12_core.h>
 #include <cassert>
 
 namespace Methane::Graphics::DirectX

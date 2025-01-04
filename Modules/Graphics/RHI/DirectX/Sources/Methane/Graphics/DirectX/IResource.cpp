@@ -23,21 +23,10 @@ DirectX 12 specialization of the resource interface.
 
 #include <Methane/Graphics/DirectX/IResource.h>
 #include <Methane/Graphics/RHI/ITexture.h>
-#include <Methane/Data/EnumMaskUtil.hpp>
+#include <Methane/Graphics/RHI/TypeFormatters.hpp>
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
-
-template<>
-struct fmt::formatter<Methane::Graphics::Rhi::ResourceUsage>
-{
-    template<typename FormatContext>
-    [[nodiscard]] auto format(const Methane::Graphics::Rhi::ResourceUsage& rl, FormatContext& ctx) const
-    { return format_to(ctx.out(), "{}", fmt::join(rl.GetBitNames(), "|")); }
-
-    [[nodiscard]] constexpr auto parse(const format_parse_context& ctx) const
-    { return ctx.end(); }
-};
 
 namespace Methane::Graphics::DirectX
 {

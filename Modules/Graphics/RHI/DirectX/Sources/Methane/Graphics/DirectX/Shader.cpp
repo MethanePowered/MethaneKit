@@ -271,7 +271,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
 #endif
     }
 
-    META_LOG(log_ss.str());
+    META_LOG("{}", log_ss.str());
     return argument_bindings;
 }
 
@@ -339,7 +339,7 @@ std::vector<D3D12_INPUT_ELEMENT_DESC> Shader::GetNativeProgramInputLayout(const 
         buffer_byte_offset += element_byte_size;
     }
 
-    META_LOG(log_ss.str().c_str());
+    META_LOG("{}", log_ss.str());
     return dx_input_layout;
 }
 

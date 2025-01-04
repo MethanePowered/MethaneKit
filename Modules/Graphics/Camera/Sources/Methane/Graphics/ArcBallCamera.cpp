@@ -141,7 +141,7 @@ void ArcBallCamera::ApplyLookDirection(const hlslpp::float3& look_dir)
     case Pivot::Eye: SetOrientationAim(GetOrientation().eye + look_dir); break;
     default:         META_UNEXPECTED(m_pivot);
     }
-    META_LOG(GetOrientationString());
+    Camera::LogOrientation();
 }
 
 void ArcBallCamera::RotateInView(const hlslpp::float3& view_axis, float angle_rad, const Orientation& base_orientation)

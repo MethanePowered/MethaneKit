@@ -90,6 +90,8 @@ public:
     std::string GetOrientationString() const;
 
 protected:
+    void LogOrientation() const;
+
     float GetFovAngleY() const noexcept;
 
     static inline hlslpp::float3 GetLookDirection(const Orientation& orientation) noexcept   { return orientation.aim - orientation.eye; }
