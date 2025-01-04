@@ -33,7 +33,6 @@ namespace Methane::Platform::Input::Keyboard
 {
 
 static const std::string g_keys_separator       = "+";
-static const std::string g_properties_separator = "+";
 
 static ModifierMask GetModifierMask(Opt<Modifier> modifier_opt)
 {

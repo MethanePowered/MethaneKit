@@ -32,7 +32,6 @@ namespace Methane::Platform::Input::Mouse
 {
 
 static const std::string g_buttons_separator    = "+";
-static const std::string g_properties_separator = "+";
 
 std::string_view ButtonConverter::ToString() const
 {

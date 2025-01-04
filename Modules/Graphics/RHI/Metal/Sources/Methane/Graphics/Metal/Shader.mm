@@ -202,7 +202,7 @@ static std::string GetShaderArgumentInfo(const std::string& argument_name,
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
-    ss << "  - " << magic_enum::enum_name(resource_type) << " \"" << argument_name << "\"";
+    ss << magic_enum::enum_name(resource_type) << " \"" << argument_name << "\"";
     if (array_length > 1)
     {
         ss << " array of size " << array_length;
@@ -344,7 +344,7 @@ Ptrs<Base::ProgramArgumentBinding> Shader::GetArgumentBindings(const Rhi::Progra
                 }
             ));
 
-        META_LOG(GetShaderArgumentInfo(argument_name, resource_type, array_length, argument_index, argument_buffer_offset_opt));
+        META_LOG("  - {}", GetShaderArgumentInfo(argument_name, resource_type, array_length, argument_index, argument_buffer_offset_opt));
     };
 
     for(id<MTLBinding> mtl_binding in m_mtl_bindings)
