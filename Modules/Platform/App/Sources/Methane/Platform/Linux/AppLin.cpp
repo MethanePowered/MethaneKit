@@ -30,10 +30,19 @@ Linux application implementation.
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_STATIC
+#define STBI_NO_STDIO
+#include <stb_image.h>
+
+#pragma GCC diagnostic pop
+
 #include <string_view>
 #include <optional>
 
-#include <stb_image.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
