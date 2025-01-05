@@ -107,6 +107,39 @@ HlslVector<T, size> CreateHlslVector(const std::array<T, size>& components) noex
         return HlslVector<T, 4>(components[0], components[1], components[2], components[3]);
 }
 
+// Define the spaceship operator manually using existing comparison operators
+template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+[[nodiscard]] auto operator<=>(const Methane::Data::HlslVector<T, size>& left,
+                               const Methane::Data::HlslVector<T, size>& right) noexcept
+{
+    if (hlslpp::all(left == right))
+        return std::partial_ordering::equivalent;
+
+    if (hlslpp::all(left < right))
+        return std::partial_ordering::less;
+
+    if (hlslpp::all(left > right))
+        return std::partial_ordering::greater;
+
+    return std::partial_ordering::unordered;
+}
+
+// Override <= operator for vectors, since it can not be handled by <=>
+template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+[[nodiscard]] bool operator<=(const Methane::Data::HlslVector<T, size>& left,
+                              const Methane::Data::HlslVector<T, size>& right) noexcept
+{
+    return hlslpp::all(left <= right);
+}
+
+// Override >= operator for vectors, since it can not be handled by <=>
+template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+[[nodiscard]] bool operator>=(const Methane::Data::HlslVector<T, size>& left,
+                              const Methane::Data::HlslVector<T, size>& right) noexcept
+{
+    return hlslpp::all(left >= right);
+}
+
 template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
 class RawVector // NOSONAR - class has more than 35 methods
 {
@@ -141,16 +174,23 @@ public:
 
     template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>>
     RawVector(const RawVector<V, 3>& other, V w) noexcept
-        : m_components{ RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(other.GetZ()), RoundCast<T>(w) } { }
+        : m_components{ RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(other.GetZ()), RoundCast<T>(w) }
+    { }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 2>>
-    explicit RawVector(const HlslVector<T, 2>& vec) noexcept: m_components{ vec.x, vec.y } { }
+    explicit RawVector(const HlslVector<T, 2>& vec) noexcept
+        : m_components{ vec.x, vec.y }
+    { }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 3>>
-    explicit RawVector(const HlslVector<T, 3>& vec) noexcept : m_components{ vec.x, vec.y, vec.z } { }
+    explicit RawVector(const HlslVector<T, 3>& vec) noexcept
+        : m_components{ vec.x, vec.y, vec.z }
+    { }
 
     template<size_t sz = size, typename = std::enable_if_t<sz == 4>>
-    explicit RawVector(const HlslVector<T, 4>& vec) noexcept : m_components{ vec.x, vec.y, vec.z, vec.w } { }
+    explicit RawVector(const HlslVector<T, 4>& vec) noexcept
+        : m_components{ vec.x, vec.y, vec.z, vec.w }
+    { }
 
     template<typename V, typename = std::enable_if_t<!std::is_same_v<T, V>>>
     explicit operator RawVector<V, size>() const noexcept

@@ -46,7 +46,7 @@ class CommandKit // NOSONAR - constructors and assignment operators are required
 {
 public:
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandKit);
-    META_PIMPL_METHODS_COMPARE_DECLARE(CommandKit);
+    META_PIMPL_METHODS_COMPARE_INLINE(CommandKit);
 
     META_PIMPL_API explicit CommandKit(const Ptr<ICommandKit>& interface_ptr);
     META_PIMPL_API explicit CommandKit(ICommandKit& interface_ref);

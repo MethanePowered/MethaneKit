@@ -49,7 +49,7 @@ public:
     using ICallback   = ICommandListCallback;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ComputeCommandList);
-    META_PIMPL_METHODS_COMPARE_DECLARE(ComputeCommandList);
+    META_PIMPL_METHODS_COMPARE_INLINE(ComputeCommandList);
 
     META_PIMPL_API explicit ComputeCommandList(const Ptr<IComputeCommandList>& interface_ptr);
     META_PIMPL_API explicit ComputeCommandList(IComputeCommandList& interface_ref);

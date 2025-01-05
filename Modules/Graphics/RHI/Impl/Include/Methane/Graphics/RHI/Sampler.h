@@ -55,7 +55,7 @@ public:
     using DescriptorByViewId = std::map<ResourceView::Id, Descriptor>;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Sampler);
-    META_PIMPL_METHODS_COMPARE_DECLARE(Sampler);
+    META_PIMPL_METHODS_COMPARE_INLINE(Sampler);
 
     META_PIMPL_API explicit Sampler(const Ptr<ISampler>& interface_ptr);
     META_PIMPL_API explicit Sampler(ISampler& interface_ref);

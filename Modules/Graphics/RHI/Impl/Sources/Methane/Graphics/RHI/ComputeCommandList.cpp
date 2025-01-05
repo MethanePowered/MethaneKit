@@ -39,7 +39,6 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ComputeCommandList);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(ComputeCommandList);
 
 ComputeCommandList::ComputeCommandList(const Ptr<IComputeCommandList>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))

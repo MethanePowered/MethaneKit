@@ -67,7 +67,7 @@ public:
     using IncompatibleException = ContextIncompatibleException;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ComputeContext);
-    META_PIMPL_METHODS_COMPARE_DECLARE(ComputeContext);
+    META_PIMPL_METHODS_COMPARE_INLINE(ComputeContext);
 
     META_PIMPL_API explicit ComputeContext(const Ptr<IComputeContext>& render_context_ptr);
     META_PIMPL_API explicit ComputeContext(IComputeContext& render_context);

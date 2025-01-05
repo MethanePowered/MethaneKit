@@ -53,7 +53,7 @@ public:
     using Settings = ComputeStateSettingsImpl;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ComputeState);
-    META_PIMPL_METHODS_COMPARE_DECLARE(ComputeState);
+    META_PIMPL_METHODS_COMPARE_INLINE(ComputeState);
 
     META_PIMPL_API explicit ComputeState(const Ptr<IComputeState>& interface_ptr);
     META_PIMPL_API explicit ComputeState(IComputeState& interface_ref);

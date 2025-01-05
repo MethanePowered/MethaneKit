@@ -42,7 +42,6 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ParallelRenderCommandList);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(ParallelRenderCommandList);
 
 ParallelRenderCommandList::ParallelRenderCommandList(const Ptr<IParallelRenderCommandList>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))

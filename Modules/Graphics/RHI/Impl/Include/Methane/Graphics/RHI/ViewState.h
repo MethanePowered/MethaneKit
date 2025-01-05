@@ -41,7 +41,7 @@ public:
     using Settings = ViewSettings;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ViewState);
-    META_PIMPL_METHODS_COMPARE_DECLARE(ViewState);
+    META_PIMPL_METHODS_COMPARE_INLINE(ViewState);
 
     META_PIMPL_API explicit ViewState(const Ptr<IViewState>& interface_ptr);
     META_PIMPL_API explicit ViewState(IViewState& interface_ref);

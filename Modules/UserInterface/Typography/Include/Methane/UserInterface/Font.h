@@ -101,9 +101,11 @@ public:
     [[nodiscard]] static std::u32string GetAlphabetFromText(const std::u32string& text);
 
     META_PIMPL_METHODS_DECLARE_NO_INLINE(Font);
-    META_PIMPL_METHODS_COMPARE_DECLARE_NO_INLINE(Font);
+    META_PIMPL_METHODS_COMPARE_DEFAULT(Font);
 
     Font(const Library& font_lib, const Data::IProvider& data_provider, const Settings& settings);
+
+    [[nodiscard]] friend auto operator<=>(const Font& left, const Font& right) noexcept = default;
 
     [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
 

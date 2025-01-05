@@ -45,7 +45,7 @@ public:
     using Buffers = std::vector<Buffer>;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(BufferSet);
-    META_PIMPL_METHODS_COMPARE_DECLARE(BufferSet);
+    META_PIMPL_METHODS_COMPARE_INLINE(BufferSet);
 
     META_PIMPL_API explicit BufferSet(const Ptr<IBufferSet>& interface_ptr);
     META_PIMPL_API explicit BufferSet(IBufferSet& interface_ref);

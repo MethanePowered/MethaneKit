@@ -59,7 +59,7 @@ public:
     using DescriptorByViewId = std::map<ResourceView::Id, Descriptor>;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Buffer);
-    META_PIMPL_METHODS_COMPARE_DECLARE(Buffer);
+    META_PIMPL_METHODS_COMPARE_INLINE(Buffer);
 
     META_PIMPL_API explicit Buffer(const Ptr<IBuffer>& interface_ptr);
     META_PIMPL_API explicit Buffer(IBuffer& interface_ref);

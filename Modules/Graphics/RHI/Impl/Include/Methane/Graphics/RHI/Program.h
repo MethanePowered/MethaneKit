@@ -66,7 +66,7 @@ public:
     using BindingValueByArgument = ProgramBindingValueByArgument;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Program);
-    META_PIMPL_METHODS_COMPARE_DECLARE(Program);
+    META_PIMPL_METHODS_COMPARE_INLINE(Program);
 
     META_PIMPL_API explicit Program(const Ptr<IProgram>& interface_ptr);
     META_PIMPL_API explicit Program(IProgram& interface_ref);

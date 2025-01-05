@@ -36,7 +36,6 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ResourceBarriers);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(ResourceBarriers);
 
 ResourceBarriers::ResourceBarriers(const Ptr<IResourceBarriers>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))

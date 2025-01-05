@@ -53,7 +53,7 @@ public:
     using Settings          = RenderPatternSettings;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderPattern);
-    META_PIMPL_METHODS_COMPARE_DECLARE(RenderPattern);
+    META_PIMPL_METHODS_COMPARE_INLINE(RenderPattern);
 
     META_PIMPL_API explicit RenderPattern(const Ptr<IRenderPattern>& interface_ptr);
     META_PIMPL_API explicit RenderPattern(IRenderPattern& interface_ref);

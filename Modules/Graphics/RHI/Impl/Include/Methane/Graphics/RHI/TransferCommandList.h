@@ -47,7 +47,7 @@ public:
     using ICallback   = ICommandListCallback;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(TransferCommandList);
-    META_PIMPL_METHODS_COMPARE_DECLARE(TransferCommandList);
+    META_PIMPL_METHODS_COMPARE_INLINE(TransferCommandList);
 
     META_PIMPL_API explicit TransferCommandList(const Ptr<ITransferCommandList>& interface_ptr);
     META_PIMPL_API explicit TransferCommandList(ITransferCommandList& interface_ref);

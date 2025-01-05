@@ -71,7 +71,7 @@ public:
     using IncompatibleException = ContextIncompatibleException;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderContext);
-    META_PIMPL_METHODS_COMPARE_DECLARE(RenderContext);
+    META_PIMPL_METHODS_COMPARE_INLINE(RenderContext);
 
     META_PIMPL_API explicit RenderContext(const Ptr<IRenderContext>& render_context_ptr);
     META_PIMPL_API explicit RenderContext(IRenderContext& render_context);

@@ -62,18 +62,7 @@ public:
     [[nodiscard]] std::string_view GetName() const noexcept       { return m_name; }
     [[nodiscard]] size_t           GetHash() const noexcept       { return m_hash; }
 
-    [[nodiscard]] friend bool operator==(const ProgramArgument& left, const ProgramArgument& right) noexcept
-    {
-        return std::tie(left.m_hash, left.m_shader_type, left.m_name)
-            == std::tie(right.m_hash, right.m_shader_type, right.m_name);
-    }
-
-    [[nodiscard]] friend bool operator<(const ProgramArgument& left, const ProgramArgument& right) noexcept
-    {
-        return std::tie(left.m_hash, left.m_shader_type, left.m_name)
-             < std::tie(right.m_hash, right.m_shader_type, right.m_name);
-    }
-
+    [[nodiscard]] friend auto operator<=>(const ProgramArgument& left, const ProgramArgument& right) noexcept = default;
     [[nodiscard]] virtual explicit operator std::string() const noexcept;
 
     void MergeShaderTypes(ShaderType shader_type);

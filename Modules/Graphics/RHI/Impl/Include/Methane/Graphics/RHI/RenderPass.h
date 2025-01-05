@@ -52,7 +52,7 @@ public:
     using ICallback         = IRenderPassCallback;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderPass);
-    META_PIMPL_METHODS_COMPARE_DECLARE(RenderPass);
+    META_PIMPL_METHODS_COMPARE_INLINE(RenderPass);
 
     META_PIMPL_API explicit RenderPass(const Ptr<IRenderPass>& interface_ptr);
     META_PIMPL_API explicit RenderPass(IRenderPass& interface_ref);

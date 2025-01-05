@@ -96,23 +96,24 @@ public:
         m_depth = depth;
     }
 
-    friend bool operator==(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) == right && left.m_depth == right.m_depth; }
+    [[nodiscard]] friend auto operator<=>(const VolumeSize& left, const VolumeSize& right) noexcept
+    {
+        const auto rectCmp  = static_cast<const RectSize<D>&>(left) <=> static_cast<const RectSize<D>&>(right);
+        const auto depthCmp = left.m_depth <=> right.m_depth;
+        if (rectCmp == depthCmp ||
+            rectCmp == std::strong_ordering::equivalent)
+            return static_cast<std::partial_ordering>(depthCmp);
 
-    friend bool operator!=(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) != right || left.m_depth != right.m_depth; }
+        if (depthCmp == std::strong_ordering::equivalent)
+            return static_cast<std::partial_ordering>(rectCmp);
 
-    friend bool operator<=(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) <= right && left.m_depth <= right.m_depth; }
+        return std::partial_ordering::unordered;
+    }
 
-    friend bool operator<(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) < right && left.m_depth < right.m_depth; }
-
-    friend bool operator>=(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) >= right && left.m_depth >= right.m_depth; }
-
-    friend bool operator>(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) > right && left.m_depth > right.m_depth; }
+    [[nodiscard]] friend bool operator==(const VolumeSize& left, const VolumeSize& right) noexcept
+    {
+        return std::is_eq(left <=> right);
+    }
 
     friend VolumeSize operator+(const VolumeSize& left, const VolumeSize& right) noexcept
     { return VolumeSize(static_cast<const RectSize<D>&>(left) + right, left.m_depth + right.m_depth); }
@@ -135,7 +136,8 @@ public:
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(const VolumeSize& sz, M multiplier) noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize>
+    operator*(const VolumeSize& sz, M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
@@ -146,7 +148,8 @@ public:
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(const VolumeSize& sz, M divisor) noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize>
+    operator/(const VolumeSize& sz, M divisor) noexcept(std::is_unsigned_v<M>)
     {
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
@@ -157,7 +160,8 @@ public:
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator*=(M multiplier) noexcept(std::is_unsigned_v<M>)
+    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&>
+    operator*=(M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             m_depth = Data::RoundCast<D>(static_cast<M>(m_depth) * multiplier);
@@ -168,7 +172,8 @@ public:
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator/=(M divisor) noexcept(std::is_unsigned_v<M>)
+    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&>
+    operator/=(M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             m_depth = Data::RoundCast<D>(static_cast<M>(m_depth) / divisor);
@@ -179,7 +184,8 @@ public:
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(const VolumeSize& sz, const Point3T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize>
+    operator*(const VolumeSize& sz, const Point3T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -194,7 +200,8 @@ public:
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(const VolumeSize& sz, const Point3T<M>& divisor) noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize>
+    operator/(const VolumeSize& sz, const Point3T<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -209,7 +216,8 @@ public:
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator*=(const Point3T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
+    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&>
+    operator*=(const Point3T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -224,7 +232,8 @@ public:
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator/=(const Point3T<M>& divisor) noexcept(std::is_unsigned_v<M>)
+    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&>
+    operator/=(const Point3T<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -239,7 +248,8 @@ public:
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(const VolumeSize& sz, const VolumeSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize>
+    operator*(const VolumeSize& sz, const VolumeSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -254,7 +264,8 @@ public:
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(const VolumeSize& sz, const VolumeSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
+    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize>
+    operator/(const VolumeSize& sz, const VolumeSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -269,7 +280,8 @@ public:
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator*=(const VolumeSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
+    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&>
+    operator*=(const VolumeSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -284,7 +296,8 @@ public:
     }
 
     template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator/=(const VolumeSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
+    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&>
+    operator/=(const VolumeSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -343,20 +356,7 @@ struct Volume // NOSONAR - class has more than 35 methods
     T GetNear() const noexcept   { return origin.GetZ(); }
     T GetFar() const noexcept    { return origin.GetZ() + Data::RoundCast<T>(size.GetDepth()); }
 
-    friend bool operator==(const Volume& left, const Volume& right) noexcept
-    {
-        return std::tie(left.origin, left.size) == std::tie(right.origin, right.size);
-    }
-
-    friend bool operator!=(const Volume& left, const Volume& right) noexcept
-    {
-        return std::tie(left.origin, left.size) != std::tie(right.origin, right.size);
-    }
-
-    friend bool operator<(const Volume& left, const Volume& right) noexcept
-    {
-        return std::tie(left.origin, left.size) < std::tie(right.origin, right.size);
-    }
+    [[nodiscard]] friend auto operator<=>(const Volume& left, const Volume& right) noexcept = default;
 
     template<typename M>
     friend std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator*(const Volume& v, M multiplier) noexcept(std::is_unsigned_v<M>)

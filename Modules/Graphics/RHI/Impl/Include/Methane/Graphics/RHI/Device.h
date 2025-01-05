@@ -48,7 +48,7 @@ public:
     using Capabilities = DeviceCaps;
 
     META_PIMPL_METHODS_DECLARE(Device);
-    META_PIMPL_METHODS_COMPARE_DECLARE(Device);
+    META_PIMPL_METHODS_COMPARE_INLINE(Device);
 
     META_PIMPL_API explicit Device(const Ptr<IDevice>& interface_ptr);
     META_PIMPL_API explicit Device(IDevice& interface_ref);

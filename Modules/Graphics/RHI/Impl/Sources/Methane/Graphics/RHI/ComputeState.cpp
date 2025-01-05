@@ -46,7 +46,6 @@ ComputeStateSettings ComputeStateSettingsImpl::Convert(const ComputeStateSetting
 }
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ComputeState);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(ComputeState);
 
 ComputeState::ComputeState(const Ptr<IComputeState>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))

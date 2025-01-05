@@ -49,7 +49,7 @@ public:
     using EntryFunction    = ShaderEntryFunction;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Shader);
-    META_PIMPL_METHODS_COMPARE_DECLARE(Shader);
+    META_PIMPL_METHODS_COMPARE_INLINE(Shader);
 
     META_PIMPL_API explicit Shader(const Ptr<IShader>& interface_ptr);
     META_PIMPL_API explicit Shader(IShader& interface_ref);

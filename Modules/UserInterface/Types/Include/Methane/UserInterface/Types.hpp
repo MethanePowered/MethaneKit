@@ -99,34 +99,15 @@ public:
 
     Units GetUnits() const noexcept { return m_units; }
 
-    friend bool operator==(const UnitType& left, const UnitType& right) noexcept
-    { return left == static_cast<const BaseType&>(right) && left.m_units == right.GetUnits(); }
-
-    friend bool operator!=(const UnitType& left, const UnitType& right) noexcept
-    { return left != static_cast<const BaseType&>(right) || left.m_units != right.GetUnits(); }
-
-    friend bool operator<=(const UnitType& left, const UnitType& right)
+    [[nodiscard]] friend auto operator<=>(const UnitType& left, const UnitType& right)
     {
         META_CHECK_EQUAL(right.GetUnits(), left.m_units);
-        return static_cast<const BaseType&>(left) <= right;
+        return static_cast<const BaseType&>(left) <=> static_cast<const BaseType&>(right);
     }
 
-    friend bool operator<(const UnitType& left, const UnitType& right)
+    friend bool operator==(const UnitType& left, const UnitType& right)
     {
-        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
-        return static_cast<const BaseType&>(left) < right;
-    }
-
-    friend bool operator>=(const UnitType& left, const UnitType& right)
-    {
-        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
-        return static_cast<const BaseType&>(left) >= right;
-    }
-
-    friend bool operator>(const UnitType& left, const UnitType& right)
-    {
-        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
-        return static_cast<const BaseType&>(left) > right;
+        return std::is_eq(left <=> right);
     }
 
     friend UnitType operator+(const UnitType& left, const UnitType& right)

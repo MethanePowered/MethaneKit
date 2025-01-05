@@ -48,7 +48,7 @@ public:
     using AddResult = IResourceBarriers::AddResult;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ResourceBarriers);
-    META_PIMPL_METHODS_COMPARE_DECLARE(ResourceBarriers);
+    META_PIMPL_METHODS_COMPARE_INLINE(ResourceBarriers);
 
     META_PIMPL_API explicit ResourceBarriers(const Ptr<IResourceBarriers>& interface_ptr);
     META_PIMPL_API explicit ResourceBarriers(IResourceBarriers& interface_ref);

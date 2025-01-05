@@ -46,7 +46,6 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderContext);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderContext);
 
 RenderContext::RenderContext(const Ptr<IRenderContext>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
