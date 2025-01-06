@@ -105,8 +105,6 @@ public:
 
     Font(const Library& font_lib, const Data::IProvider& data_provider, const Settings& settings);
 
-    [[nodiscard]] friend auto operator<=>(const Font& left, const Font& right) noexcept = default;
-
     [[nodiscard]] const Settings& GetSettings() const META_PIMPL_NOEXCEPT;
 
     void Connect(Data::Receiver<IFontCallback>& receiver) const;

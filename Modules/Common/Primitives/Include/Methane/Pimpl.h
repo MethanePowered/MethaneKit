@@ -67,10 +67,8 @@ Methane PIMPL common header.
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Class) META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_MACRO(Class, META_PIMPL_API)
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_NO_INLINE(Class) META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_MACRO(Class, META_PIMPL_NO_INLINE)
 
-#define META_PIMPL_METHODS_COMPARE_DEFAULT_MACRO(Class, API_MACRO) \
-    API_MACRO [[nodiscard]] friend auto operator<=>(const Class& left, const Class& right) noexcept = default;
-
-#define META_PIMPL_METHODS_COMPARE_DEFAULT(Class) META_PIMPL_METHODS_COMPARE_DEFAULT_MACRO(Class, META_PIMPL_API)
+#define META_PIMPL_METHODS_COMPARE_DEFAULT(Class) \
+    [[nodiscard]] friend auto operator<=>(const Class& left, const Class& right) noexcept = default;
 
 #define META_PIMPL_METHODS_IMPLEMENT(Class) \
     Class::~Class() = default; \
