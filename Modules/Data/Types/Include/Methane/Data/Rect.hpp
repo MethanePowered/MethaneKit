@@ -94,22 +94,13 @@ public:
     D GetPixelsCount() const noexcept { return m_width * m_height; }
     D GetLongestSide() const noexcept { return std::max(m_width, m_height); }
 
-    [[nodiscard]] friend bool operator==(const RectSize& left, const RectSize& right) noexcept
-    { return std::tie(left.m_width, left.m_height) == std::tie(right.m_width, right.m_height); }
+    [[nodiscard]] bool ContainedIn(const RectSize& other) const noexcept
+    { return m_width < other.m_width && m_height < other.m_height; }
 
-    // <= check if left rectangle can fit fully inside right rectangle
-    [[nodiscard]] friend bool operator<=(const RectSize& left, const RectSize& right) noexcept
-    { return left.m_width <= right.m_width && left.m_height <= right.m_height; }
+    [[nodiscard]] bool ContainedInOrEqual(const RectSize& other) const noexcept
+    { return m_width <= other.m_width && m_height <= other.m_height; }
 
-    [[nodiscard]] friend bool operator<(const RectSize& left, const RectSize& right) noexcept
-    { return left.m_width < right.m_width && left.m_height < right.m_height; }
-
-    // >= check if left rectangle can not fit inside right rectangle
-    [[nodiscard]] friend bool operator>=(const RectSize& left, const RectSize& right) noexcept
-    { return left.m_width >= right.m_width || left.m_height >= right.m_height; }
-
-    [[nodiscard]] friend bool operator>(const RectSize& left, const RectSize& right) noexcept
-    { return left.m_width > right.m_width || left.m_height > right.m_height; }
+    [[nodiscard]] friend auto operator<=>(const RectSize& left, const RectSize& right) noexcept = default;
 
     [[nodiscard]] friend RectSize operator+(const RectSize& left, const RectSize& right) noexcept
     { return RectSize(left.m_width + right.m_width, left.m_height + right.m_height); }
@@ -386,10 +377,7 @@ struct Rect
     T GetTop() const noexcept    { return origin.GetY(); }
     T GetBottom() const noexcept { return origin.GetY() + RoundCast<T>(size.GetHeight()); }
 
-    [[nodiscard]] friend bool operator==(const Rect& left, const Rect& right) noexcept
-    {
-        return std::tie(left.origin, left.size) == std::tie(right.origin, right.size);
-    }
+    [[nodiscard]] friend auto operator<=>(const Rect& left, const Rect& right) noexcept = default;
 
     template<typename M>
     friend std::enable_if_t<std::is_arithmetic_v<M>, Rect<T, D>> operator*(const Rect& rect, M multiplier) noexcept(std::is_unsigned_v<M>)

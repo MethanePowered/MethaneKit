@@ -96,27 +96,13 @@ public:
         m_depth = depth;
     }
 
-    [[nodiscard]] friend bool operator==(const VolumeSize& left, const VolumeSize& right) noexcept
-    {
-        if (static_cast<const RectSize<D>&>(left) != static_cast<const RectSize<D>&>(right))
-            return false;
+    [[nodiscard]] bool ContainedIn(const VolumeSize& other) const noexcept
+    { return RectSize<D>::ContainedIn(other) && m_depth < other.m_depth; }
 
-        return left.m_depth == right.m_depth;
-    }
+    [[nodiscard]] bool ContainedInOrEqual(const VolumeSize& other) const noexcept
+    { return RectSize<D>::ContainedInOrEqual(other) && m_depth <= other.m_depth; }
 
-    // <= check if left volume can fit fully inside right volume
-    [[nodiscard]] friend bool operator<=(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) <= right && left.m_depth <= right.m_depth; }
-
-    [[nodiscard]] friend bool operator<(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) < right && left.m_depth < right.m_depth; }
-
-    // >= check if left volume can not fit inside right volume
-    [[nodiscard]] friend bool operator>=(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) >= right || left.m_depth >= right.m_depth; }
-
-    [[nodiscard]] friend bool operator>(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) > right || left.m_depth > right.m_depth; }
+    [[nodiscard]] friend auto operator<=>(const VolumeSize& left, const VolumeSize& right) noexcept = default;
 
     [[nodiscard]] friend VolumeSize operator+(const VolumeSize& left, const VolumeSize& right) noexcept
     { return VolumeSize(static_cast<const RectSize<D>&>(left) + right, left.m_depth + right.m_depth); }
@@ -359,10 +345,7 @@ struct Volume // NOSONAR - class has more than 35 methods
     T GetNear() const noexcept   { return origin.GetZ(); }
     T GetFar() const noexcept    { return origin.GetZ() + Data::RoundCast<T>(size.GetDepth()); }
 
-    [[nodiscard]] friend bool operator==(const Volume& left, const Volume& right) noexcept
-    {
-        return std::tie(left.origin, left.size) == std::tie(right.origin, right.size);
-    }
+    [[nodiscard]] friend auto operator<=>(const Volume& left, const Volume& right) = default;
 
     template<typename M>
     [[nodiscard]] friend std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>>

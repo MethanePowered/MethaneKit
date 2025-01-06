@@ -54,8 +54,8 @@ public:
 
         META_CHECK_GREATER_OR_EQUAL(rect.GetLeft(), 0);
         META_CHECK_GREATER_OR_EQUAL(rect.GetTop(), 0);
-        META_CHECK_LESS(rect.GetRight(), m_root_bin.GetRect().size.GetWidth() + 1);
-        META_CHECK_LESS(rect.GetBottom(), m_root_bin.GetRect().size.GetHeight() + 1);
+        META_CHECK_LESS_OR_EQUAL(rect.GetRight(), m_root_bin.GetRect().size.GetWidth());
+        META_CHECK_LESS_OR_EQUAL(rect.GetBottom(), m_root_bin.GetRect().size.GetHeight());
         return true;
     }
 
@@ -77,7 +77,7 @@ private:
             if (IsEmpty())
             {
                 const TSize char_size_with_margins = rect.size + char_margins;
-                if (char_size_with_margins > m_rect.size)
+                if (!char_size_with_margins.ContainedIn(m_rect.size))
                     return false;
 
                 // Split node rectangle either vertically or horizontally,

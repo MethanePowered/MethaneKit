@@ -239,7 +239,7 @@ TEMPLATE_TEST_CASE("Volume Size Comparison", "[volume][size][compare]", VOLUME_S
     SECTION("Less")
     {
         CHECK_FALSE(small_size < VolumeSize<TestType>(small_width, small_height, small_depth));
-        CHECK_FALSE(small_size < VolumeSize<TestType>(big_width, big_height, small_depth));
+        CHECK(small_size < VolumeSize<TestType>(big_width, big_height, small_depth));
         CHECK(small_size < VolumeSize<TestType>(big_width, big_height, big_depth));
     }
 
@@ -264,6 +264,20 @@ TEMPLATE_TEST_CASE("Volume Size Comparison", "[volume][size][compare]", VOLUME_S
         CHECK(VolumeSize<TestType>(small_width, small_height, big_depth) >= small_size);
         CHECK(VolumeSize<TestType>(big_width, big_height, small_depth) >= small_size);
         CHECK_FALSE(small_size >= VolumeSize<TestType>(big_width, big_height, big_depth));
+    }
+
+    SECTION("Contained In")
+    {
+        CHECK_FALSE(small_size.ContainedIn(VolumeSize<TestType>(small_width, small_height, small_depth)));
+        CHECK_FALSE(small_size.ContainedIn(VolumeSize<TestType>(big_width, big_height, small_depth)));
+        CHECK(small_size.ContainedIn(VolumeSize<TestType>(big_width, big_height, big_depth)));
+    }
+
+    SECTION("Contained In or Equal")
+    {
+        CHECK(small_size.ContainedInOrEqual(VolumeSize<TestType>(small_width, small_height, small_depth)));
+        CHECK(small_size.ContainedInOrEqual(VolumeSize<TestType>(big_width, big_height, small_depth)));
+        CHECK_FALSE(VolumeSize<TestType>(big_width, big_height, big_depth).ContainedInOrEqual(small_size));
     }
 }
 

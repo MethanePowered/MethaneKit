@@ -109,8 +109,8 @@ void FontChar::DrawToAtlas(Data::Bytes& atlas_bitmap, uint32_t atlas_row_stride)
     META_CHECK_NOT_NULL_DESCR(m_glyph_ptr, "Font character glyph is not initialized");
     META_CHECK_GREATER_OR_EQUAL(m_rect.GetLeft(), 0);
     META_CHECK_GREATER_OR_EQUAL(m_rect.GetTop(),  0);
-    META_CHECK_LESS(m_rect.GetRight(), atlas_row_stride + 1);
-    META_CHECK_LESS(m_rect.GetBottom(), atlas_bitmap.size() / atlas_row_stride + 1);
+    META_CHECK_LESS_OR_EQUAL(m_rect.GetRight(), atlas_row_stride);
+    META_CHECK_LESS_OR_EQUAL(m_rect.GetBottom(), atlas_bitmap.size() / atlas_row_stride);
 
     // Draw glyph to bitmap
     FT_Glyph ft_glyph = m_glyph_ptr->GetFreeTypeGlyph();
