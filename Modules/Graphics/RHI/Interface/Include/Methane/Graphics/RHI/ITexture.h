@@ -88,11 +88,6 @@ struct TextureSettings
                         right.array_length, right.mipmapped, right.frame_index_opt, right.depth_stencil_clear_opt);
     }
 
-    friend bool operator!=(const TextureSettings& left, const TextureSettings& right)
-    {
-        return !(left == right);
-    }
-
     [[nodiscard]] static TextureSettings ForImage(const Dimensions& dimensions, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped,
                                                   ResourceUsageMask usage = { ResourceUsage::ShaderRead });
     [[nodiscard]] static TextureSettings ForCubeImage(uint32_t dimension_size, const Opt<uint32_t>& array_length_opt, PixelFormat pixel_format, bool mipmapped,

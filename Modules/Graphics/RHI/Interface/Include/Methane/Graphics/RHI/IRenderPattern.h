@@ -79,11 +79,6 @@ struct RenderPassAttachment
                std::tie(right.attachment_index, right.format, right.samples_count, right.load_action, right.store_action);
     }
 
-    [[nodiscard]] friend bool operator!=(const RenderPassAttachment& left, const RenderPassAttachment& right)
-    {
-        return !(left == right);
-    }
-
     [[nodiscard]] virtual explicit operator std::string() const;
     [[nodiscard]] virtual Type GetType() const noexcept = 0;
 };
@@ -103,11 +98,6 @@ struct RenderPassColorAttachment : RenderPassAttachment
     {
         return static_cast<const RenderPassAttachment&>(left) == static_cast<const RenderPassAttachment&>(right) &&
                left.clear_color == right.clear_color;
-    }
-
-    [[nodiscard]] friend bool operator!=(const RenderPassColorAttachment& left, const RenderPassColorAttachment& right)
-    {
-        return !(left == right);
     }
 
     [[nodiscard]] explicit operator std::string() const override;
@@ -135,11 +125,6 @@ struct RenderPassDepthAttachment final : RenderPassAttachment
                left.clear_value == right.clear_value;
     }
 
-    [[nodiscard]] friend bool operator!=(const RenderPassDepthAttachment& left, const RenderPassDepthAttachment& right)
-    {
-        return !(left == right);
-    }
-
     [[nodiscard]] explicit operator std::string() const override;
 
     [[nodiscard]] Type GetType() const noexcept override { return Type::Depth; }
@@ -161,11 +146,6 @@ struct RenderPassStencilAttachment final : RenderPassAttachment
     {
         return static_cast<const RenderPassAttachment&>(left) == static_cast<const RenderPassAttachment&>(right) &&
                left.clear_value == right.clear_value;
-    }
-
-    [[nodiscard]] friend bool operator!=(const RenderPassStencilAttachment& left, const RenderPassStencilAttachment& right)
-    {
-        return !(left == right);
     }
 
     [[nodiscard]] explicit operator std::string() const override;
@@ -195,11 +175,6 @@ struct RenderPatternSettings
     {
         return std::tie(left.color_attachments, left.depth_attachment, left.stencil_attachment, left.shader_access, left.is_final_pass) ==
                std::tie(right.color_attachments, right.depth_attachment, right.stencil_attachment, right.shader_access, right.is_final_pass);
-    }
-
-    [[nodiscard]] friend bool operator!=(const RenderPatternSettings& left, const RenderPatternSettings& right)
-    {
-        return !(left == right);
     }
 
     [[nodiscard]] explicit operator std::string() const;

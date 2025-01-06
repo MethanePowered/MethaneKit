@@ -81,11 +81,6 @@ public:
         return hlslpp::all(left.m_components == right.m_components);
     }
 
-    [[nodiscard]] friend bool operator!=(const Color& left, const Color& right) noexcept
-    {
-        return !(left == right);
-    }
-
     [[nodiscard]] size_t GetSize() const noexcept { return Size; }
 
     template<typename V = T>

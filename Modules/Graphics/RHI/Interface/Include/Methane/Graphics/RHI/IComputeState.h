@@ -46,11 +46,6 @@ struct ComputeStateSettings
         return std::tie(left.program_ptr) == std::tie(right.program_ptr);
     }
 
-    [[nodiscard]] friend bool operator!=(const ComputeStateSettings& left, const ComputeStateSettings& right) noexcept
-    {
-        return std::tie(left.program_ptr) != std::tie(right.program_ptr);
-    }
-
     [[nodiscard]] explicit operator std::string() const;
 };
 

@@ -64,11 +64,6 @@ struct BufferSettings
         return std::tie(left.type, left.usage_mask, left.size, left.item_stride_size, left.data_format, left.storage_mode)
             == std::tie(right.type, right.usage_mask, right.size, right.item_stride_size, right.data_format, right.storage_mode);
     }
-
-    friend bool operator!=(const BufferSettings& left, const BufferSettings& right)
-    {
-        return !(left == right);
-    }
 };
 
 struct IBuffer

@@ -62,11 +62,6 @@ struct ShaderMacroDefinition
         return std::tie(left.name, left.value) == std::tie(right.name, right.value);
     }
 
-    friend bool operator!=(const ShaderMacroDefinition& left, const ShaderMacroDefinition& right) noexcept
-    {
-        return !(left == right);
-    }
-
     [[nodiscard]] static std::string ToString(const std::vector<ShaderMacroDefinition>& macro_definitions,
                                               std::string_view splitter = ", ") noexcept;
 };
@@ -82,11 +77,6 @@ struct ShaderEntryFunction
     {
         return std::tie(left.file_name, left.function_name)
             == std::tie(right.file_name, right.function_name);
-    }
-
-    friend bool operator!=(const ShaderEntryFunction& left, const ShaderEntryFunction& right) noexcept
-    {
-        return !(left == right);
     }
 };
 
@@ -107,11 +97,6 @@ struct ShaderSettings
 
         return std::tie(left.entry_function, left.compile_definitions, left.source_file_path, left.source_compile_target)
             == std::tie(right.entry_function, right.compile_definitions, right.source_file_path, right.source_compile_target);
-    }
-
-    friend bool operator!=(const ShaderSettings& left, const ShaderSettings& right) noexcept
-    {
-        return !(left == right);
     }
 };
 

@@ -110,11 +110,6 @@ public:
                std::tie(right.m_button_states, right.m_position, right.m_scroll, right.m_in_window);
     }
 
-    [[nodiscard]] friend bool operator!=(const State& left, const State& right)
-    {
-        return !(left == right);
-    }
-
     [[nodiscard]] const ButtonState& operator[](Button button) const
     {
         return m_button_states[static_cast<size_t>(button)];

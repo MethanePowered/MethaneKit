@@ -51,7 +51,6 @@ public:
     { }
 
     [[nodiscard]] friend bool operator==(const Range& left, const Range& right) noexcept { return left.m_start == right.m_start && left.m_end == right.m_end; }
-    [[nodiscard]] friend bool operator!=(const Range& left, const Range& right) noexcept { return !(left == right); }
     [[nodiscard]] friend bool operator< (const Range& left, const Range& right) noexcept { return left.m_end  <= right.m_start; }
     [[nodiscard]] friend bool operator> (const Range& left, const Range& right) noexcept { return left.m_start > right.m_end; }
 

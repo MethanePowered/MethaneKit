@@ -46,11 +46,6 @@ struct ComputeContextSettings
     {
         return left.options == right.options;
     }
-
-    friend bool operator!=(const ComputeContextSettings& left, const ComputeContextSettings& right) noexcept
-    {
-        return left.options != right.options;
-    }
 };
 
 struct IComputeContext
