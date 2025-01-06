@@ -60,7 +60,7 @@ public:
 
     void operator+=(const SubResourceIndex& other) noexcept;
 
-    [[nodiscard]] friend bool operator<=>(const SubResourceCount& left, const SubResourceCount& right) noexcept = default;
+    [[nodiscard]] friend auto operator<=>(const SubResourceCount& left, const SubResourceCount& right) noexcept = default;
 
     [[nodiscard]] explicit operator SubResourceIndex() const noexcept;
     [[nodiscard]] explicit operator std::string() const noexcept;
