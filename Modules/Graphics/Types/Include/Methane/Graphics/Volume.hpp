@@ -96,23 +96,22 @@ public:
         m_depth = depth;
     }
 
-    [[nodiscard]] friend auto operator<=>(const VolumeSize& left, const VolumeSize& right) noexcept
+    [[nodiscard]] friend std::partial_ordering operator<=>(const VolumeSize& left, const VolumeSize& right) noexcept
     {
+        // See implementation description of RectSize<D>::operator<=>, also applicable here
         const auto rectCmp  = static_cast<const RectSize<D>&>(left) <=> static_cast<const RectSize<D>&>(right);
+        if (rectCmp == std::partial_ordering::equivalent)
+            return std::partial_ordering::equivalent;
+
         const auto depthCmp = left.m_depth <=> right.m_depth;
-        if (rectCmp == depthCmp ||
-            rectCmp == std::strong_ordering::equivalent)
-            return static_cast<std::partial_ordering>(depthCmp);
-
-        if (depthCmp == std::strong_ordering::equivalent)
-            return static_cast<std::partial_ordering>(rectCmp);
-
-        return std::partial_ordering::unordered;
+        return rectCmp == depthCmp || depthCmp == std::strong_ordering::equal
+             ? depthCmp : std::partial_ordering::unordered;
     }
 
     [[nodiscard]] friend bool operator==(const VolumeSize& left, const VolumeSize& right) noexcept
     {
-        return std::is_eq(left <=> right);
+        return static_cast<const RectSize<D>&>(left) == static_cast<const RectSize<D>&>(right) &&
+               left.m_depth == right.m_depth;
     }
 
     friend VolumeSize operator+(const VolumeSize& left, const VolumeSize& right) noexcept
@@ -359,7 +358,7 @@ struct Volume // NOSONAR - class has more than 35 methods
     [[nodiscard]] friend auto operator<=>(const Volume& left, const Volume& right) noexcept = default;
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator*(const Volume& v, M multiplier) noexcept(std::is_unsigned_v<M>)
+    [[nodiscard]] friend std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator*(const Volume& v, M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "volume multiplier can not be less than zero");
@@ -367,7 +366,7 @@ struct Volume // NOSONAR - class has more than 35 methods
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator/(const Volume& v, M divisor) noexcept(std::is_unsigned_v<M>)
+    [[nodiscard]] friend std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator/(const Volume& v, M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_GREATER_OR_EQUAL_DESCR(divisor, 0, "volume divisor can not be less than zero");

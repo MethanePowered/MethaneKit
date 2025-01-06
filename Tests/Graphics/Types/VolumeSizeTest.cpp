@@ -29,6 +29,15 @@ Unit-tests of the VolumeSize data type
 
 using namespace Methane::Graphics;
 
+template<typename D>
+struct Catch::StringMaker<VolumeSize<D>>
+{
+    static std::string convert(const VolumeSize<D>& v)
+    {
+        return static_cast<std::string>(v);
+    }
+};
+
 #define VOLUME_SIZE_TYPES int32_t, uint32_t, float, double
 
 TEMPLATE_TEST_CASE("Volume Size Initialization", "[volume][size][init]", VOLUME_SIZE_TYPES)

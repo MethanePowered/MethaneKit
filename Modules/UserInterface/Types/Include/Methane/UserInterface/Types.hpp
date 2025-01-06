@@ -105,9 +105,10 @@ public:
         return static_cast<const BaseType&>(left) <=> static_cast<const BaseType&>(right);
     }
 
-    friend bool operator==(const UnitType& left, const UnitType& right)
+    friend bool operator==(const UnitType& left, const UnitType& right) noexcept
     {
-        return std::is_eq(left <=> right);
+        return left.m_units == right.GetUnits() &&
+               static_cast<const BaseType&>(left) == static_cast<const BaseType&>(right);
     }
 
     friend UnitType operator+(const UnitType& left, const UnitType& right)

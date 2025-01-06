@@ -25,6 +25,7 @@ Rectangle type based on point and size
 
 #include "Point.hpp"
 
+#include <compare>
 #include <fmt/format.h>
 
 namespace Methane::Data
@@ -93,12 +94,30 @@ public:
     D GetPixelsCount() const noexcept { return m_width * m_height; }
     D GetLongestSide() const noexcept { return std::max(m_width, m_height); }
 
-    friend auto operator<=>(const RectSize& left, const RectSize& right) noexcept = default;
+    [[nodiscard]] friend std::partial_ordering operator<=>(const RectSize& left, const RectSize& right) noexcept
+    {
+        // Operator <=> returns equality if at least width or height of two sizes are equal,
+        // or inequality (less or greater) if it is the same both for width and height:
+        // which is required for correct work of generated comparison operators <, <=, >, >=
+        const auto width_cmp = left.m_width <=> right.m_width;
+        if (width_cmp == std::strong_ordering::equal)
+            return std::strong_ordering::equal;
 
-    friend RectSize operator+(const RectSize& left, const RectSize& right) noexcept
+        const auto height_cmp = left.m_height <=> right.m_height;
+        return width_cmp == height_cmp || height_cmp == std::strong_ordering::equal
+             ? height_cmp : std::partial_ordering::unordered;
+    }
+
+    [[nodiscard]] friend bool operator==(const RectSize& left, const RectSize& right) noexcept
+    {
+        return left.m_width  == right.m_width &&
+               left.m_height == right.m_height;
+    }
+
+    [[nodiscard]] friend RectSize operator+(const RectSize& left, const RectSize& right) noexcept
     { return RectSize(left.m_width + right.m_width, left.m_height + right.m_height); }
 
-    friend RectSize operator-(const RectSize& left, const RectSize& right) noexcept
+    [[nodiscard]] friend RectSize operator-(const RectSize& left, const RectSize& right) noexcept
     { return RectSize(left.m_width - right.m_width, left.m_height - right.m_height); }
 
     RectSize& operator+=(const RectSize& other) noexcept
@@ -108,7 +127,7 @@ public:
     { m_width -= other.m_width; m_height -= other.m_height; return *this; }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const RectSize& sz, M multiplier) noexcept(std::is_unsigned_v<M>)
+    [[nodiscard]] friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const RectSize& sz, M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -121,7 +140,7 @@ public:
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const RectSize& sz, M divisor) noexcept(std::is_unsigned_v<M>)
+    [[nodiscard]] friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const RectSize& sz, M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -174,7 +193,7 @@ public:
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const RectSize& sz, const Point2T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
+    [[nodiscard]] friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const RectSize& sz, const Point2T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -190,7 +209,7 @@ public:
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const RectSize& sz, const Point2T<M>& divisor) noexcept(std::is_unsigned_v<M>)
+    [[nodiscard]] friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const RectSize& sz, const Point2T<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -248,7 +267,7 @@ public:
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const RectSize& sz, const RectSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
+    [[nodiscard]] friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator*(const RectSize& sz, const RectSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -264,7 +283,7 @@ public:
     }
 
     template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const RectSize& sz, const RectSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
+    [[nodiscard]] friend std::enable_if_t<std::is_arithmetic_v<M>, RectSize> operator/(const RectSize& sz, const RectSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
