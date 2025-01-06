@@ -203,7 +203,7 @@ TEMPLATE_TEST_CASE("Rectangle Size Comparison", "[rect][size][compare]", RECT_SI
     SECTION("Greater")
     {
         CHECK_FALSE(RectSize<TestType>(small_width, small_height) > small_size);
-        CHECK_FALSE(RectSize<TestType>(small_width, big_height) > small_size);
+        CHECK(RectSize<TestType>(small_width, big_height) > small_size);
         CHECK(RectSize<TestType>(big_width, big_height) > small_size);
     }
 

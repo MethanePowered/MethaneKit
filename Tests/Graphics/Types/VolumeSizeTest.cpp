@@ -253,13 +253,15 @@ TEMPLATE_TEST_CASE("Volume Size Comparison", "[volume][size][compare]", VOLUME_S
     SECTION("Greater")
     {
         CHECK_FALSE(VolumeSize<TestType>(small_width, small_height, small_depth) > small_size);
-        CHECK_FALSE(VolumeSize<TestType>(big_width, big_height, small_depth) > small_size);
+        CHECK(VolumeSize<TestType>(small_width, small_height, big_depth) > small_size);
+        CHECK(VolumeSize<TestType>(big_width, big_height, small_depth) > small_size);
         CHECK(VolumeSize<TestType>(big_width, big_height, big_depth) > small_size);
     }
 
     SECTION("Greater or equal")
     {
         CHECK(VolumeSize<TestType>(small_width, small_height, small_depth) >= small_size);
+        CHECK(VolumeSize<TestType>(small_width, small_height, big_depth) >= small_size);
         CHECK(VolumeSize<TestType>(big_width, big_height, small_depth) >= small_size);
         CHECK_FALSE(small_size >= VolumeSize<TestType>(big_width, big_height, big_depth));
     }

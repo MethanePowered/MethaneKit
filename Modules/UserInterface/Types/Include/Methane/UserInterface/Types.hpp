@@ -99,36 +99,56 @@ public:
 
     Units GetUnits() const noexcept { return m_units; }
 
-    [[nodiscard]] friend auto operator<=>(const UnitType& left, const UnitType& right)
+    [[nodiscard]] friend bool operator==(const UnitType& left, const UnitType& right) noexcept
     {
-        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
-        return static_cast<const BaseType&>(left) <=> static_cast<const BaseType&>(right);
-    }
-
-    friend bool operator==(const UnitType& left, const UnitType& right) noexcept
-    {
-        return left.m_units == right.GetUnits() &&
+        return left.m_units == right.m_units &&
                static_cast<const BaseType&>(left) == static_cast<const BaseType&>(right);
     }
 
-    friend UnitType operator+(const UnitType& left, const UnitType& right)
+    [[nodiscard]] friend bool operator<=(const UnitType& left, const UnitType& right)
+    {
+        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
+        return static_cast<const BaseType&>(left) <= static_cast<const BaseType&>(right);
+    }
+
+    [[nodiscard]] friend bool operator<(const UnitType& left, const UnitType& right)
+    {
+        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
+        return static_cast<const BaseType&>(left) < static_cast<const BaseType&>(right);
+    }
+
+    [[nodiscard]] friend bool operator>=(const UnitType& left, const UnitType& right)
+    {
+        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
+        return static_cast<const BaseType&>(left) >= static_cast<const BaseType&>(right);
+    }
+
+    [[nodiscard]] friend bool operator>(const UnitType& left, const UnitType& right)
+    {
+        META_CHECK_EQUAL(right.GetUnits(), left.m_units);
+        return static_cast<const BaseType&>(left) > static_cast<const BaseType&>(right);
+    }
+
+    [[nodiscard]] friend UnitType operator+(const UnitType& left, const UnitType& right)
     {
         META_CHECK_EQUAL(right.GetUnits(), left.m_units);
         return UnitType<BaseType>(left.m_units, static_cast<const BaseType&>(left) + right);
     }
 
-    friend UnitType operator-(const UnitType& left, const UnitType& right)
+    [[nodiscard]] friend UnitType operator-(const UnitType& left, const UnitType& right)
     {
         META_CHECK_EQUAL(right.GetUnits(), left.m_units);
         return UnitType<BaseType>(left.m_units, static_cast<const BaseType&>(left) - right);
     }
 
-    template<typename T> friend UnitType operator*(const UnitType& p, T&& multiplier) noexcept
+    template<typename T>
+    [[nodiscard]] friend UnitType operator*(const UnitType& p, T&& multiplier) noexcept
     {
         return UnitType<BaseType>(p.m_units, static_cast<const BaseType&>(p) * std::forward<T>(multiplier));
     }
 
-    template<typename T> friend UnitType operator/(const UnitType& p, T&& divisor) noexcept
+    template<typename T>
+    [[nodiscard]] friend UnitType operator/(const UnitType& p, T&& divisor) noexcept
     {
         return UnitType<BaseType>(p.m_units, static_cast<const BaseType&>(p) / std::forward<T>(divisor));
     }
