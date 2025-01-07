@@ -29,6 +29,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <Methane/Data/TimeAnimation.h>
 
 #include <cmath>
+#include <numbers>
 
 namespace Methane::Tutorials
 {
@@ -58,7 +59,7 @@ CubeMapArrayApp::CubeMapArrayApp()
         }(),
         GetUserInterfaceTutorialAppSettings(AppOptions::GetDefaultWithColorDepthAndAnim()),
         "Methane tutorial of cube-map array texturing")
-    , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(g_model_scale), hlslpp::float4x4::rotation_z(gfx::ConstFloat::Pi))) // NOSONAR
+    , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(g_model_scale), hlslpp::float4x4::rotation_z(std::numbers::pi))) // NOSONAR
 {
     // NOTE: Near and Far values are swapped in camera parameters (1st value is near = max depth, 2nd value is far = min depth)
     // for Reversed-Z buffer values range [ near: 1, far 0], instead of [ near 0, far 1]
@@ -201,8 +202,8 @@ bool CubeMapArrayApp::Animate(double, double delta_seconds)
 {
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.0 / 16.0));
     m_model_matrix = hlslpp::mul(m_model_matrix,
-                                 hlslpp::mul(hlslpp::float4x4::rotation_z(static_cast<float>(delta_seconds * gfx::ConstDouble::Pi / 2.0)),
-                                             hlslpp::float4x4::rotation_y(static_cast<float>(delta_seconds * gfx::ConstDouble::Pi / 4.0))));
+                                 hlslpp::mul(hlslpp::float4x4::rotation_z(static_cast<float>(delta_seconds * std::numbers::pi / 2.0)),
+                                             hlslpp::float4x4::rotation_y(static_cast<float>(delta_seconds * std::numbers::pi / 4.0))));
     return true;
 }
 

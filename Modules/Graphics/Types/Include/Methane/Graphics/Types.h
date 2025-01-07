@@ -24,7 +24,6 @@ Methane primitive graphics types.
 #pragma once
 
 #include <Methane/Data/Types.h>
-#include <Methane/Data/Constants.hpp>
 
 #include <string>
 #include <cstdint>
@@ -53,11 +52,6 @@ using RawVector = Data::RawVector<T, size>;
 using RawVector2F = Data::RawVector2F;
 using RawVector3F = Data::RawVector3F;
 using RawVector4F = Data::RawVector4F;
-
-template<typename T>
-using Constants   = Data::Constants<T>;
-using ConstFloat  = Data::ConstFloat;
-using ConstDouble = Data::ConstDouble;
 
 enum class PixelFormat : uint32_t
 {

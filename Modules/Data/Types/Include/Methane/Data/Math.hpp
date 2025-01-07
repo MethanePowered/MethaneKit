@@ -26,6 +26,7 @@ Math primitive functions.
 #include <type_traits>
 #include <cstdlib>
 #include <cmath>
+#include <numbers>
 
 #include <Methane/Checks.hpp>
 
@@ -84,6 +85,18 @@ constexpr T DivCeil(T numerator, T denominator) noexcept
     {
         return numerator > 0 ? (1 + (numerator - 1) / denominator) : 0;
     }
+}
+
+template<std::floating_point T>
+[[nodiscard]] constexpr T DegreeToRadians(T degrees) noexcept
+{
+    return degrees * std::numbers::pi_v<T> / T(180.);
+}
+
+template<std::floating_point T>
+[[nodiscard]] constexpr T RadiansToDegrees(T degrees) noexcept
+{
+    return degrees * T(180.) / std::numbers::pi_v<T>;
 }
 
 } // namespace Methane::Data

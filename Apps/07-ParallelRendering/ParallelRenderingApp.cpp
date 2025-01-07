@@ -35,6 +35,7 @@ Tutorial demonstrating parallel rendering with Methane graphics API
 #include <cmath>
 #include <random>
 #include <algorithm>
+#include <numbers>
 
 namespace Methane::Tutorials
 {
@@ -369,7 +370,7 @@ bool ParallelRenderingApp::Animate(double, double delta_seconds)
     META_FUNCTION_TASK();
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.0 / 16.0));
 
-    const double delta_angle_rad = delta_seconds * gfx::ConstDouble::Pi;
+    const double delta_angle_rad = delta_seconds * std::numbers::pi;
     tf::Taskflow task_flow;
     task_flow.for_each(m_cube_array_parameters.begin(), m_cube_array_parameters.end(),
         [delta_angle_rad](CubeParameters& cube_params)

@@ -23,6 +23,7 @@ Arc-Ball camera unit tests
 
 #include <Methane/Graphics/ArcBallCamera.h>
 #include <Methane/Data/Types.h>
+#include <Methane/Data/Math.hpp>
 #include <Methane/Checks.hpp>
 #include <Methane/HlslCatchHelpers.hpp>
 
@@ -101,7 +102,7 @@ inline void TestDependentCameraRotation(ArcBallCamera::Pivot view_pivot,
 
 inline Camera::Orientation RotateOrientation(const Camera::Orientation& orientation, const ArcBallCamera::Pivot pivot, const hlslpp::float3& axis, float angle_degrees)
 {
-    hlslpp::float3x3 rotation_matrix = hlslpp::float3x3::rotation_axis(hlslpp::normalize(axis), angle_degrees * ConstFloat::RadPerDeg);
+    hlslpp::float3x3 rotation_matrix = hlslpp::float3x3::rotation_axis(hlslpp::normalize(axis), Data::DegreeToRadians(angle_degrees));
     const hlslpp::float3 look_dir    = hlslpp::mul(orientation.aim - orientation.eye, rotation_matrix);
     const hlslpp::float3 up_dir      = hlslpp::mul(orientation.up, rotation_matrix);
 
@@ -149,7 +150,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot < 90 degrees", "[camer
         // Lower equality precision because of integer screen-space coordinates use
         const float test_equality_epsilon = 0.1F;
         const float test_angle_deg = 45.f;
-        const float test_angle_rad = test_angle_deg * ConstFloat::RadPerDeg;
+        const float test_angle_rad = Data::DegreeToRadians(test_angle_deg);
 
         SECTION("Around X axis")
         {
@@ -213,7 +214,7 @@ TEST_CASE("View arc-ball camera rotation around Aim pivot > 90 degrees", "[camer
         // Lower equality precision because of integer screen-space coordinates use
         const float test_equality_epsilon = 0.1F;
         const float test_angle_deg = 135.f;
-        const float test_angle_rad = test_angle_deg * ConstFloat::RadPerDeg;
+        const float test_angle_rad = Data::DegreeToRadians(test_angle_deg);
 
         SECTION("Around X axis")
         {
@@ -277,7 +278,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot < 90 degrees", "[camer
         // Lower equality precision because of integer screen-space coordinates use
         const float test_equality_epsilon = 0.1F;
         const float test_angle_deg = 45.f;
-        const float test_angle_rad = test_angle_deg * ConstFloat::RadPerDeg;
+        const float test_angle_rad = Data::DegreeToRadians(test_angle_deg);
 
         SECTION("Around X axis")
         {
@@ -341,7 +342,7 @@ TEST_CASE("View arc-ball camera rotation around Eye pivot > 90 degrees", "[camer
         // Lower equality precision because of integer screen-space coordinates use
         const float test_equality_epsilon = 0.1F;
         const float test_angle_deg = 135.f;
-        const float test_angle_rad = test_angle_deg * ConstFloat::RadPerDeg;
+        const float test_angle_rad = Data::DegreeToRadians(test_angle_deg);
 
         SECTION("Around X axis")
         {
@@ -407,7 +408,7 @@ TEST_CASE("Dependent arc-ball camera rotation around Aim pivot < 90 degrees", "[
         // Lower equality precision because of integer screen-space coordinates use
         const float test_equality_epsilon = 0.1F;
         const float test_angle_deg = 45.f;
-        const float test_angle_rad = test_angle_deg * ConstFloat::RadPerDeg;
+        const float test_angle_rad = Data::DegreeToRadians(test_angle_deg);
 
         SECTION("Around X axis")
         {

@@ -25,8 +25,6 @@ Sphere mesh generator with customizable vertex type
 
 #include "BaseMesh.hpp"
 
-#include <Methane/Data/Constants.hpp>
-
 namespace Methane::Graphics
 {
 
