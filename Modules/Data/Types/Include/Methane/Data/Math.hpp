@@ -32,7 +32,7 @@ Math primitive functions.
 namespace Methane::Data
 {
 
-template<typename T, typename V, typename = std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<V>>>
+template<typename T, typename V> requires std::is_arithmetic_v<T> && std::is_arithmetic_v<V>
 constexpr T RoundCast(V value) noexcept
 {
     if constexpr (std::is_same_v<T, V>)
@@ -47,25 +47,29 @@ constexpr T RoundCast(V value) noexcept
 }
 
 template<typename T>
+requires(std::is_arithmetic_v<T>)
 constexpr bool IsPowerOfTwo(T value) noexcept
 {
     return value > 0 && (value & (value - 1)) == 0;
 }
 
 template<typename T>
-constexpr std::enable_if_t<std::is_arithmetic_v<T>, T> AlignUp(T value, T alignment)
+requires(std::is_arithmetic_v<T>)
+constexpr T AlignUp(T value, T alignment)
 {
     META_CHECK_TRUE_DESCR(IsPowerOfTwo(alignment), "alignment {} must be a power of two", alignment);
     return (value + alignment - 1) & ~(alignment - 1);
 }
 
 template<typename T>
-constexpr std::enable_if_t<std::is_arithmetic_v<T>, T> AbsSubtract(T a, T b) noexcept
+requires(std::is_arithmetic_v<T>)
+constexpr T AbsSubtract(T a, T b) noexcept
 {
     return a >= b ? a - b : b - a;
 }
 
 template<typename T>
+requires(std::is_arithmetic_v<T>)
 constexpr T DivCeil(T numerator, T denominator) noexcept
 {
     if constexpr (std::is_signed_v<T>)

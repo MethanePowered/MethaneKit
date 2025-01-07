@@ -128,14 +128,14 @@ public:
         }
     }
 
-    template<typename ScalarType>
-    [[nodiscard]] std::enable_if_t<std::is_arithmetic_v<ScalarType>, ScalarType> ConvertPixelsToDots(ScalarType pixels) const noexcept
+    template<typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+    [[nodiscard]] ScalarType ConvertPixelsToDots(ScalarType pixels) const noexcept
     {
         return Data::RoundCast<ScalarType>(static_cast<decltype(m_dots_to_pixels_factor)>(pixels) / m_dots_to_pixels_factor);
     }
 
-    template<typename ScalarType>
-    [[nodiscard]] std::enable_if_t<std::is_arithmetic_v<ScalarType>, ScalarType> ConvertDotsToPixels(ScalarType dots) const noexcept
+    template<typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+    [[nodiscard]] ScalarType ConvertDotsToPixels(ScalarType dots) const noexcept
     {
         return Data::RoundCast<ScalarType>(static_cast<decltype(m_dots_to_pixels_factor)>(dots) * m_dots_to_pixels_factor);
     }

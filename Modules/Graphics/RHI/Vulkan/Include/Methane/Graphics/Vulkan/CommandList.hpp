@@ -51,15 +51,15 @@ namespace Methane::Graphics::Vulkan
 class ParallelRenderCommandList;
 
 template<class CommandListBaseT, vk::PipelineBindPoint pipeline_bind_point, uint32_t command_buffers_count = 1U,
-         CommandBufferType default_command_buffer_type = CommandBufferType::Primary,
-         typename = std::enable_if_t<std::is_base_of_v<Base::CommandList, CommandListBaseT> && command_buffers_count != 0U>>
+         CommandBufferType default_command_buffer_type = CommandBufferType::Primary>
+requires(std::is_base_of_v<Base::CommandList, CommandListBaseT> && command_buffers_count != 0U)
 class CommandList
     : public CommandListBaseT
     , public ICommandList
 {
 public:
-    template<typename... ConstructArgs, uint32_t buffers_count = command_buffers_count,
-             typename = std::enable_if_t< buffers_count != 1>>
+    template<typename... ConstructArgs, uint32_t buffers_count = command_buffers_count>
+    requires(buffers_count != 1)
     CommandList(const vk::CommandBufferInheritanceInfo& secondary_render_buffer_inherit_info, ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetVulkanCommandQueue().GetVulkanContext().GetVulkanDevice().GetNativeDevice()) // NOSONAR
@@ -109,8 +109,8 @@ public:
         CommandListBaseT::SetCommandListState(Rhi::CommandListState::Encoding);
     }
 
-    template<typename... ConstructArgs, uint32_t buffers_count = command_buffers_count,
-             typename = std::enable_if_t<buffers_count == 1>>
+    template<typename... ConstructArgs, uint32_t buffers_count = command_buffers_count>
+    requires(buffers_count == 1)
     CommandList(const vk::CommandBufferLevel& vk_buffer_level, const vk::CommandBufferBeginInfo& vk_begin_info, ConstructArgs&&... construct_args)
         : CommandListBaseT(std::forward<ConstructArgs>(construct_args)...)
         , m_vk_device(GetVulkanCommandQueue().GetVulkanContext().GetVulkanDevice().GetNativeDevice()) // NOSONAR

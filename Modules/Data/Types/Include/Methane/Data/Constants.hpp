@@ -29,7 +29,7 @@ Floating point math constants
 namespace Methane::Data
 {
 
-template<typename T, typename = std::enable_if_t<std::is_floating_point_v<T>>>
+template<typename T> requires std::is_floating_point_v<T>
 struct Constants
 {
     static constexpr T Sqrt2     = static_cast<T>(1.41421356237309504880168872420969808);

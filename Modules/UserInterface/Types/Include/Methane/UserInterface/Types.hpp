@@ -68,12 +68,6 @@ constexpr std::string_view GetUnitsName(Units units) noexcept
 template<typename BaseType>
 class UnitType : public BaseType
 {
-    template<typename T, typename V, typename R>
-    using EnableReturnTypeIf = std::enable_if_t<std::is_same_v<V, T>, R>;
-
-    template<typename T, typename R>
-    using EnableReturnType = EnableReturnTypeIf<T, std::decay_t<R>, R>;
-
 public:
     using Base = BaseType;
 
@@ -92,7 +86,7 @@ public:
         , m_units(units)
     { }
 
-    template<typename T = BaseType, typename = std::enable_if_t<std::is_same_v<FramePoint, T>>>
+    template<typename T = BaseType> requires std::is_same_v<FramePoint, T>
     explicit UnitType(const UnitType<FrameSize>& size) noexcept
         : UnitType<FramePoint>(size.GetUnits(), size.GetWidth(), size.GetHeight())
     { }
@@ -165,13 +159,15 @@ public:
     const BaseType& AsBase() const noexcept   { return static_cast<const BaseType&>(*this); }
 
     template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
-    EnableReturnTypeIf<T, Data::Rect<C, D>, UnitType<Data::Point2T<C>>> GetUnitOrigin() const noexcept
+    requires std::is_same_v<T, Data::Rect<C, D>>
+    UnitType<Data::Point2T<C>> GetUnitOrigin() const noexcept
     {
         return UnitType<Data::Point2T<C>>(m_units, BaseType::origin);
     }
 
     template<typename T = BaseType, typename C = typename T::CoordinateType, typename D = typename T::DimensionType>
-    EnableReturnTypeIf<T, Data::Rect<C, D>, UnitType<Data::RectSize<D>>>  GetUnitSize() const noexcept
+    requires std::is_same_v<T, Data::Rect<C, D>>
+    UnitType<Data::RectSize<D>> GetUnitSize() const noexcept
     {
         return UnitType<Data::RectSize<D>>(m_units, BaseType::size);
     }

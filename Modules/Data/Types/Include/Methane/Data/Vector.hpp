@@ -47,7 +47,7 @@ namespace Methane::Data
 namespace Internal
 {
 
-template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 1 <= size && size <= 4>>
+template<typename T, size_t size> requires(std::is_arithmetic_v<T> && 1 <= size && size <= 4)
 struct HlslVectorMap
 {
     using Type = void;
@@ -77,10 +77,10 @@ template<> struct HlslVectorMap<double, 4> { using Type = hlslpp::double4; };
 
 } // namespace Internal
 
-template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 1 <= size && size <= 4>>
+template<typename T, size_t size> requires(std::is_arithmetic_v<T> && 1 <= size && size <= 4)
 using HlslVector = typename Internal::HlslVectorMap<T, size>::Type;
 
-template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 1 <= size && size <= 4>>
+template<typename T, size_t size> requires(std::is_arithmetic_v<T> && 1 <= size && size <= 4)
 T GetHlslVectorComponent(const HlslVector<T, size>& vec, size_t index)
 {
     META_FUNCTION_TASK();
@@ -95,7 +95,7 @@ T GetHlslVectorComponent(const HlslVector<T, size>& vec, size_t index)
     }
 }
 
-template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+template<typename T, size_t size> requires(std::is_arithmetic_v<T> && 2 <= size && size <= 4)
 HlslVector<T, size> CreateHlslVector(const std::array<T, size>& components) noexcept
 {
     META_FUNCTION_TASK();
@@ -108,7 +108,7 @@ HlslVector<T, size> CreateHlslVector(const std::array<T, size>& components) noex
 }
 
 // Define the spaceship operator manually using existing comparison operators
-template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+template<typename T, size_t size> requires(std::is_arithmetic_v<T> && 2 <= size && size <= 4)
 [[nodiscard]] auto operator<=>(const Methane::Data::HlslVector<T, size>& left,
                                const Methane::Data::HlslVector<T, size>& right) noexcept
 {
@@ -125,7 +125,7 @@ template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic
 }
 
 // Override <= operator for vectors, since it can not be handled by <=>
-template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+template<typename T, size_t size> requires(std::is_arithmetic_v<T> && 2 <= size && size <= 4)
 [[nodiscard]] bool operator<=(const Methane::Data::HlslVector<T, size>& left,
                               const Methane::Data::HlslVector<T, size>& right) noexcept
 {
@@ -133,14 +133,14 @@ template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic
 }
 
 // Override >= operator for vectors, since it can not be handled by <=>
-template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+template<typename T, size_t size> requires(std::is_arithmetic_v<T> && 2 <= size && size <= 4)
 [[nodiscard]] bool operator>=(const Methane::Data::HlslVector<T, size>& left,
                               const Methane::Data::HlslVector<T, size>& right) noexcept
 {
     return hlslpp::all(left >= right);
 }
 
-template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+template<typename T, size_t size> requires(std::is_arithmetic_v<T> && 2 <= size && size <= 4)
 class RawVector // NOSONAR - class has more than 35 methods
 {
 public:
@@ -152,47 +152,47 @@ public:
 
     RawVector() = default;
 
-    template<typename V, typename = std::enable_if_t<std::is_arithmetic_v<V>>>
+    template<typename V> requires std::is_arithmetic_v<V>
     RawVector(V) = delete;
 
-    template<typename ...TArgs, typename = std::enable_if_t<std::conjunction_v<std::is_arithmetic<TArgs>...>>>
+    template<typename ...TArgs> requires std::conjunction_v<std::is_arithmetic<TArgs>...>
     RawVector(TArgs... args) noexcept : m_components{ RoundCast<T>(args)... } { } // NOSONAR - do not use explicit
 
     explicit RawVector(const std::array<T, size>& components) : m_components(components) { }
     explicit RawVector(std::array<T, size>&& components) : m_components(std::move(components)) { }
     explicit RawVector(const T* components_ptr) { std::copy_n(components_ptr, size, m_components.data()); }
 
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 3>>
+    template<typename V, size_t sz = size> requires(sz == 3)
     RawVector(const RawVector<V, 2>& other, V z) noexcept
         : m_components{ RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(z) }
     { }
 
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    template<typename V, size_t sz = size> requires(sz == 4)
     RawVector(const RawVector<V, 2>& other, V z, V w) noexcept
         : m_components{ RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(z), RoundCast<T>(w) }
     { }
 
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    template<typename V, size_t sz = size> requires(sz == 4)
     RawVector(const RawVector<V, 3>& other, V w) noexcept
         : m_components{ RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(other.GetZ()), RoundCast<T>(w) }
     { }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz == 2>>
+    template<size_t sz = size> requires(sz == 2)
     explicit RawVector(const HlslVector<T, 2>& vec) noexcept
         : m_components{ vec.x, vec.y }
     { }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz == 3>>
+    template<size_t sz = size> requires(sz == 3)
     explicit RawVector(const HlslVector<T, 3>& vec) noexcept
         : m_components{ vec.x, vec.y, vec.z }
     { }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    template<size_t sz = size> requires(sz == 4)
     explicit RawVector(const HlslVector<T, 4>& vec) noexcept
         : m_components{ vec.x, vec.y, vec.z, vec.w }
     { }
 
-    template<typename V, typename = std::enable_if_t<!std::is_same_v<T, V>>>
+    template<typename V> requires(!std::is_same_v<T, V>)
     explicit operator RawVector<V, size>() const noexcept
     {
         if constexpr (size == 2)
@@ -213,13 +213,13 @@ public:
             return fmt::format("V({}, {}, {}, {})", GetX(), GetY(), GetZ(), GetW());
     }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz == 2>>
+    template<size_t sz = size> requires(sz == 2)
     [[nodiscard]] HlslVector<T, 2> AsHlsl() const noexcept { return HlslVector<T, 2>(GetX(), GetY()); }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz == 3>>
+    template<size_t sz = size> requires(sz == 3)
     [[nodiscard]] HlslVector<T, 3> AsHlsl() const noexcept { return HlslVector<T, 3>(GetX(), GetY(), GetZ()); }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    template<size_t sz = size> requires(sz == 4)
     [[nodiscard]] HlslVector<T, 4> AsHlsl() const noexcept { return HlslVector<T, 4>(GetX(), GetY(), GetZ(), GetW()); }
 
     [[nodiscard]] friend bool operator==(const RawVectorType& left, const RawVectorType& right) noexcept
@@ -304,10 +304,10 @@ public:
     [[nodiscard]] T GetX() const noexcept { return m_components[0]; }
     [[nodiscard]] T GetY() const noexcept { return m_components[1]; }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz >= 3>>
+    template<size_t sz = size> requires(sz >= 3)
     [[nodiscard]] T GetZ() const noexcept { return m_components[2]; }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz >= 4>>
+    template<size_t sz = size> requires(sz >= 4)
     [[nodiscard]] T GetW() const noexcept { return m_components[3]; }
 
     RawVectorType& Set(size_t index, T c) { META_CHECK_LESS(index, size); m_components[index] = c; return *this; }
@@ -315,10 +315,10 @@ public:
     RawVectorType& SetX(T x) noexcept { m_components[0] = x; return *this; }
     RawVectorType& SetY(T y) noexcept { m_components[1] = y; return *this; }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz >= 3>>
+    template<size_t sz = size> requires(sz >= 3)
     RawVectorType& SetZ(T z) noexcept { m_components[2] = z; return *this; }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz >= 4>>
+    template<size_t sz = size> requires(sz >= 4)
     RawVectorType& SetW(T w) noexcept { m_components[3] = w; return *this; }
 
 private:

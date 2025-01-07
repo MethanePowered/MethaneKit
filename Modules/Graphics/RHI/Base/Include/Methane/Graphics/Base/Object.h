@@ -69,16 +69,15 @@ public:
     Object& operator=(Object&&) noexcept = default;
 
     // IObject interface
-    bool               SetName(std::string_view name) override;
-    std::string_view   GetName() const noexcept override { return m_name; }
-    Ptr<Rhi::IObject>  GetPtr() override;
+    bool                             SetName(std::string_view name) override;
+    [[nodiscard]] std::string_view   GetName() const noexcept override { return m_name; }
+    [[nodiscard]] Ptr<Rhi::IObject>  GetPtr() override;
 
-    Ptr<Object>        GetBasePtr()                { return shared_from_this(); }
-    const std::string& GetNameRef() const noexcept { return m_name; }
+    [[nodiscard]] Ptr<Object>        GetBasePtr()                { return shared_from_this(); }
+    [[nodiscard]] const std::string& GetNameRef() const noexcept { return m_name; }
 
-    template<typename T>
-    std::enable_if_t<std::is_base_of_v<Object, T>, Ptr<T>> GetPtr()
-    { return std::static_pointer_cast<T>(GetBasePtr()); }
+    template<typename T> requires std::is_base_of_v<Object, T>
+    [[nodiscard]] Ptr<T> GetPtr() { return std::static_pointer_cast<T>(GetBasePtr()); }
 
 private:
     std::string m_name;

@@ -51,8 +51,8 @@ constexpr bool is_defined_v = false;
 template<typename T>
 constexpr bool is_defined_v<T, std::void_t<decltype(sizeof(T))>> = true;
 
-template<typename ResourceBaseType, typename NativeResourceType, bool is_unique_resource,
-         typename = std::enable_if_t<std::is_base_of_v<Base::Resource, ResourceBaseType>, void>>
+template<typename ResourceBaseType, typename NativeResourceType, bool is_unique_resource>
+requires std::is_base_of_v<Base::Resource, ResourceBaseType>
 class Resource // NOSONAR - destructor in use
     : public ResourceBaseType
     , public IResource

@@ -52,7 +52,7 @@ namespace Methane::Graphics::DirectX
 
 namespace wrl = Microsoft::WRL;
 
-template<class ContextBaseT, typename = std::enable_if_t<std::is_base_of_v<Base::Context, ContextBaseT>>>
+template<class ContextBaseT> requires std::is_base_of_v<Base::Context, ContextBaseT>
 class Context
     : public ContextBaseT
     , public IContext

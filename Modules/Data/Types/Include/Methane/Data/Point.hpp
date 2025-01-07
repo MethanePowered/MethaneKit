@@ -34,7 +34,7 @@ Point type wrapper around HLSL++ vector type
 namespace Methane::Data
 {
 
-template<typename T, size_t size, typename = std::enable_if_t<std::is_arithmetic_v<T> && 2 <= size && size <= 4>>
+template<typename T, size_t size> requires(std::is_arithmetic_v<T> && 2 <= size && size <= 4)
 class Point // NOSONAR - class has more than 35 methods
 {
 public:
@@ -46,7 +46,7 @@ public:
 
     Point() = default;
 
-    template<typename ...TArgs, typename = std::enable_if_t<std::conjunction_v<std::is_arithmetic<TArgs>...>>>
+    template<typename ...TArgs> requires std::conjunction_v<std::is_arithmetic<TArgs>...>
     Point(TArgs... args) noexcept : m_vector(RoundCast<T>(args)...) { } // NOSONAR - do not use explicit
 
     explicit Point(const std::array<T, size>& components) : m_vector(RawVector<T, size>(components).AsHlsl()) { }
@@ -55,17 +55,17 @@ public:
     explicit Point(const VectorType& vector) noexcept : m_vector(vector) { }
     explicit Point(VectorType&& vector) noexcept : m_vector(std::move(vector)) { }
 
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 2 && !std::is_same_v<T,V>>>
+    template<typename V, size_t sz = size> requires(sz == 2 && !std::is_same_v<T,V>)
     explicit Point(const Point<V, 2>& other) noexcept
         : m_vector(RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()))
     { }
 
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 3 && !std::is_same_v<T,V>>>
+    template<typename V, size_t sz = size> requires(sz == 3 && !std::is_same_v<T,V>)
     explicit Point(const Point<V, 3>& other) noexcept
         : m_vector(RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(other.GetZ()))
     { }
 
-    template<typename V, size_t sz = size, typename = std::enable_if_t<sz == 4 && !std::is_same_v<T,V>>>
+    template<typename V, size_t sz = size> requires(sz == 4 && !std::is_same_v<T,V>)
     explicit Point(const Point<V, 4>& other) noexcept
         : m_vector(RoundCast<T>(other.GetX()), RoundCast<T>(other.GetY()), RoundCast<T>(other.GetZ()), RoundCast<T>(other.GetW()))
     { }
@@ -86,20 +86,20 @@ public:
     T GetX() const noexcept { return m_vector.x; }
     T GetY() const noexcept { return m_vector.y; }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz >= 3, void>>
+    template<size_t sz = size> requires(sz >= 3)
     T GetZ() const noexcept { return m_vector.z; }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz >= 4, void>>
+    template<size_t sz = size> requires(sz >= 4)
     T GetW() const noexcept { return m_vector.w; }
 
     PointType& SetX(T x) noexcept { m_vector.x = x; return *this; }
     PointType& SetY(T y) noexcept { m_vector.y = y; return *this; }
 
-    template<size_t sz = size>
-    std::enable_if_t<sz >= 3, PointType&> SetZ(T z) noexcept { m_vector.z = z; return *this; }
+    template<size_t sz = size> requires(sz >= 3)
+    PointType& SetZ(T z) noexcept { m_vector.z = z; return *this; }
 
-    template<size_t sz = size>
-    std::enable_if_t<sz >= 4, PointType&> SetW(T w) noexcept { m_vector.w = w; return *this; }
+    template<size_t sz = size> requires(sz >= 4)
+    PointType& SetW(T w) noexcept { m_vector.w = w; return *this; }
 
     T GetLength() const noexcept { return static_cast<T>(hlslpp::length(m_vector)); }
     T GetLengthSquared() const noexcept
@@ -176,9 +176,8 @@ public:
         return *this;
     }
 
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, PointType>
-    operator*(const PointType& point, M multiplier) noexcept
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend PointType operator*(const PointType& point, M multiplier) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             return PointType(point.m_vector * multiplier);
@@ -191,9 +190,8 @@ public:
         }
     }
 
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, PointType>
-    operator/(const PointType& point, M divisor) noexcept
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend PointType operator/(const PointType& point, M divisor) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             return PointType(point.m_vector / divisor);
@@ -206,9 +204,8 @@ public:
         }
     }
 
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, PointType>
-    operator*(const PointType& point, const Point<M, size>& multiplier) noexcept
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend PointType operator*(const PointType& point, const Point<M, size>& multiplier) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             return PointType(point.m_vector * multiplier.AsVector());
@@ -223,9 +220,8 @@ public:
         }
     }
 
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, PointType>
-    operator/(const PointType& point, const Point<M, size>& divisor) noexcept
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend PointType operator/(const PointType& point, const Point<M, size>& divisor) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             return PointType(point.m_vector / divisor.AsVector());
@@ -238,9 +234,8 @@ public:
         }
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, PointType&>
-    operator*=(M multiplier) noexcept
+    template<typename M> requires std::is_arithmetic_v<M>
+    PointType& operator*=(M multiplier) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             m_vector *= multiplier;
@@ -254,9 +249,8 @@ public:
         return *this;
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, PointType&>
-    operator/=(M divisor) noexcept
+    template<typename M> requires std::is_arithmetic_v<M>
+    PointType& operator/=(M divisor) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             m_vector /= divisor;
@@ -270,9 +264,8 @@ public:
         return *this;
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, PointType&>
-    operator*=(const Point<M, size>& multiplier) noexcept
+    template<typename M> requires std::is_arithmetic_v<M>
+    PointType& operator*=(const Point<M, size>& multiplier) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             m_vector *= multiplier.AsVector();
@@ -286,9 +279,8 @@ public:
         return *this;
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, PointType&>
-    operator/=(const Point<M, size>& divisor) noexcept
+    template<typename M> requires std::is_arithmetic_v<M>
+    PointType& operator/=(const Point<M, size>& divisor) noexcept
     {
         if constexpr (std::is_same_v<T, M>)
             m_vector /= divisor.AsVector();
@@ -302,7 +294,7 @@ public:
         return *this;
     }
 
-    template<typename U, typename = std::enable_if_t<!std::is_same_v<T, U>>>
+    template<typename U> requires(!std::is_same_v<T, U>)
     explicit operator Point<U, size>() const noexcept
     {
         if constexpr (size == 2)

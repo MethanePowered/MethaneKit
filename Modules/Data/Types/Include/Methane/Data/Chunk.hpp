@@ -25,7 +25,7 @@ Data chunk representing owning or non-owning memory container
 
 #include "Types.h"
 
-#include <type_traits>
+#include <concepts>
 
 namespace Methane::Data
 {
@@ -45,15 +45,13 @@ public:
         , m_data_size(static_cast<Size>(m_data_storage.size()))
     { }
 
-    template<typename T,
-             typename = std::enable_if_t<!std::is_base_of_v<Chunk, std::remove_cv_t<std::remove_reference_t<T>>>>>
+    template<typename T> requires(!std::derived_from<T, Chunk>)
     explicit Chunk(T& value)
         : m_data_ptr(GetByteAddress(value))
         , m_data_size(static_cast<Size>(sizeof(T)))
     { }
 
-    template<typename T,
-             typename = std::enable_if_t<!std::is_base_of_v<Chunk, std::remove_cv_t<std::remove_reference_t<T>>>>>
+    template<typename T> requires(!std::derived_from<T, Chunk>)
     explicit Chunk(T&& value)
         : m_data_storage(GetByteAddress(std::forward<T>(value)),
                          GetByteAddress(std::forward<T>(value)) + sizeof(T))
