@@ -124,11 +124,7 @@ struct SamplerSettings
                     SamplerBorderColor border_color = SamplerBorderColor::TransparentBlack,
                     Compare compare_function = Compare::Never);
 
-    [[nodiscard]] friend bool operator==(const SamplerSettings& left, const SamplerSettings& right)
-    {
-        return std::tie(left.filter, left.address, left.lod, left.max_anisotropy, left.border_color, left.compare_function) ==
-               std::tie(right.filter, right.address, right.lod, right.max_anisotropy, right.border_color, right.compare_function);
-    }
+    [[nodiscard]] friend bool operator==(const SamplerSettings& left, const SamplerSettings& right) = default;
 
     SamplerFilter        filter;
     SamplerAddress       address;

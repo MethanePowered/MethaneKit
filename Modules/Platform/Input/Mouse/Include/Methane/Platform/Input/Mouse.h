@@ -104,11 +104,7 @@ public:
     State() = default;
     State(std::initializer_list<Button> pressed_buttons, const Position& position = Position(), const Scroll& scroll = Scroll(), bool in_window = false);
 
-    [[nodiscard]] friend bool operator==(const State& left, const State& right)
-    {
-        return std::tie(left.m_button_states, left.m_position, left.m_scroll, left.m_in_window) ==
-               std::tie(right.m_button_states, right.m_position, right.m_scroll, right.m_in_window);
-    }
+    [[nodiscard]] friend bool operator==(const State& left, const State& right) = default;
 
     [[nodiscard]] const ButtonState& operator[](Button button) const
     {

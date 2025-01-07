@@ -201,12 +201,7 @@ public:
                  const SubResource::Count& subresource_count = {},
                  Opt<TextureDimensionType> texture_dimension_type_opt = std::nullopt);
 
-    [[nodiscard]] friend bool operator==(const ResourceView& left, const ResourceView& right) noexcept
-    {
-        return std::tie(left.m_resource_ptr, left.m_settings)
-            == std::tie(right.m_resource_ptr, right.m_settings);
-    }
-
+    [[nodiscard]] friend bool operator==(const ResourceView& left, const ResourceView& right) noexcept = default;
     [[nodiscard]] explicit operator std::string() const;
 
     [[nodiscard]] const Ptr<IResource>&     GetResourcePtr() const noexcept      { return m_resource_ptr; }

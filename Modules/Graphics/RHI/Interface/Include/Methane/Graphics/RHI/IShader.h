@@ -57,10 +57,7 @@ struct ShaderMacroDefinition
     explicit ShaderMacroDefinition(std::string name);
     ShaderMacroDefinition(std::string name, std::string value);
 
-    friend bool operator==(const ShaderMacroDefinition& left, const ShaderMacroDefinition& right) noexcept
-    {
-        return std::tie(left.name, left.value) == std::tie(right.name, right.value);
-    }
+    friend bool operator==(const ShaderMacroDefinition& left, const ShaderMacroDefinition& right) noexcept = default;
 
     [[nodiscard]] static std::string ToString(const std::vector<ShaderMacroDefinition>& macro_definitions,
                                               std::string_view splitter = ", ") noexcept;
@@ -73,11 +70,7 @@ struct ShaderEntryFunction
     std::string file_name;
     std::string function_name;
 
-    friend bool operator==(const ShaderEntryFunction& left, const ShaderEntryFunction& right) noexcept
-    {
-        return std::tie(left.file_name, left.function_name)
-            == std::tie(right.file_name, right.function_name);
-    }
+    friend bool operator==(const ShaderEntryFunction& left, const ShaderEntryFunction& right) noexcept = default;
 };
 
 struct ShaderSettings

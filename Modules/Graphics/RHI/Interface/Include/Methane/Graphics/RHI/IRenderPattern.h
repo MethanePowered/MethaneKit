@@ -73,12 +73,7 @@ struct RenderPassAttachment
                          StoreAction store_action = StoreAction::DontCare);
     virtual ~RenderPassAttachment() = default;
 
-    [[nodiscard]] friend bool operator==(const RenderPassAttachment& left, const RenderPassAttachment& right)
-    {
-        return std::tie(left.attachment_index, left.format, left.samples_count, left.load_action, left.store_action) ==
-               std::tie(right.attachment_index, right.format, right.samples_count, right.load_action, right.store_action);
-    }
-
+    [[nodiscard]] friend bool operator==(const RenderPassAttachment& left, const RenderPassAttachment& right) = default;
     [[nodiscard]] virtual explicit operator std::string() const;
     [[nodiscard]] virtual Type GetType() const noexcept = 0;
 };
@@ -171,12 +166,7 @@ struct RenderPatternSettings
     RenderPassAccessMask             shader_access;
     bool                             is_final_pass = true;
 
-    [[nodiscard]] friend bool operator==(const RenderPatternSettings& left, const RenderPatternSettings& right)
-    {
-        return std::tie(left.color_attachments, left.depth_attachment, left.stencil_attachment, left.shader_access, left.is_final_pass) ==
-               std::tie(right.color_attachments, right.depth_attachment, right.stencil_attachment, right.shader_access, right.is_final_pass);
-    }
-
+    [[nodiscard]] friend bool operator==(const RenderPatternSettings& left, const RenderPatternSettings& right) = default;
     [[nodiscard]] explicit operator std::string() const;
 };
 

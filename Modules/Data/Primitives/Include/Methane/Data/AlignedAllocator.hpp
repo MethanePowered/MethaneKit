@@ -99,11 +99,7 @@ public:
         return size_type(-1) / sizeof(value_type);
     }
 
-    friend bool operator==(const AlignedAllocator&,
-                           const AlignedAllocator&)
-    {
-        return true;
-    }
+    friend bool operator==(const AlignedAllocator&, const AlignedAllocator&) noexcept = default;
 };
 
 } // namespace Methane::Data

@@ -134,7 +134,7 @@ public:
         }
     }
 
-    [[nodiscard]] friend auto operator<=>(const PointType& left, const PointType& right) noexcept
+    [[nodiscard]] friend auto operator<=>(const PointType& left, const PointType& right) noexcept // NOSONAR - can not remove ==, <=, >= implementations
     {
         return operator<=><T, size>(left.m_vector, right.m_vector);
     }

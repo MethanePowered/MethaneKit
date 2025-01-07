@@ -42,10 +42,7 @@ struct ComputeContextSettings
 {
     ContextOptionMask options{ };
 
-    friend bool operator==(const ComputeContextSettings& left, const ComputeContextSettings& right) noexcept
-    {
-        return left.options == right.options;
-    }
+    [[nodiscard]] friend bool operator==(const ComputeContextSettings& left, const ComputeContextSettings& right) noexcept = default;
 };
 
 struct IComputeContext
