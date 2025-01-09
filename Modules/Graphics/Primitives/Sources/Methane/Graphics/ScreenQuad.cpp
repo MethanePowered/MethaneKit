@@ -103,6 +103,8 @@ public:
         , m_texture(texture)
     {
         META_FUNCTION_TASK();
+        using enum Rhi::ShaderType;
+
         if (m_settings.texture_mode != TextureMode::Disabled)
         {
             META_CHECK_TRUE_DESCR(m_texture.IsInitialized(), "screen-quad texture can not be empty when quad texturing is enabled");
@@ -129,8 +131,8 @@ public:
                     {
                         Rhi::Program::ShaderSet
                         {
-                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } } },
-                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions } },
+                            { Vertex, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } } },
+                            { Pixel,  { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions } },
                         },
                         Rhi::ProgramInputBufferLayouts
                         {
@@ -141,7 +143,7 @@ public:
                         },
                         Rhi::ProgramArgumentAccessors
                         {
-                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(Rhi::ShaderType::Pixel, "g_constants")
+                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(Pixel, "g_constants")
                         },
                         render_pattern.GetAttachmentFormats(),
                     }),
@@ -236,8 +238,8 @@ public:
         if (m_settings.texture_mode != TextureMode::Disabled)
         {
             program_binding_resource_views = {
-                { { Rhi::ShaderType::Pixel, "g_texture" }, m_texture.GetResourceView() },
-                { { Rhi::ShaderType::Pixel, "g_sampler" }, m_texture_sampler.GetResourceView() }
+                { { Pixel, "g_texture" }, m_texture.GetResourceView() },
+                { { Pixel, "g_sampler" }, m_texture_sampler.GetResourceView() }
             };
         }
 

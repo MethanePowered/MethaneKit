@@ -90,6 +90,8 @@ private:
         , m_mesh_buffers(render_cmd_queue, mesh, "Sky-Box")
     {
         META_FUNCTION_TASK();
+        using enum Rhi::ShaderType;
+
         META_CHECK_EQUAL(cube_map_texture.GetSettings().dimension_type, Rhi::TextureDimensionType::Cube);
         m_mesh_buffers.SetTexture(cube_map_texture);
 
@@ -98,8 +100,8 @@ private:
             {
                 Rhi::Program::ShaderSet
                 {
-                    { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } } },
-                    { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } } },
+                    { Vertex, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } } },
+                    { Pixel,  { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } } },
                 },
                 Rhi::ProgramInputBufferLayouts
                 {
@@ -110,7 +112,7 @@ private:
                 },
                 Rhi::ProgramArgumentAccessors
                 {
-                    META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_skybox_uniforms")
+                    META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Vertex, "g_skybox_uniforms")
                 },
                 render_pattern.GetAttachmentFormats()
             });
@@ -145,11 +147,12 @@ public:
     SkyBox::ProgramBindingsAndUniformArgumentBinding CreateProgramBindings(Data::Index frame_index) const
     {
         META_FUNCTION_TASK();
+        using enum Rhi::ShaderType;
         Rhi::ProgramBindings program_bindings(m_program, {
-            { { Rhi::ShaderType::Pixel,  "g_skybox_texture"  }, m_mesh_buffers.GetTexture().GetResourceView() },
-            { { Rhi::ShaderType::Pixel,  "g_texture_sampler" }, m_texture_sampler.GetResourceView() },
+            { { Pixel,  "g_skybox_texture"  }, m_mesh_buffers.GetTexture().GetResourceView() },
+            { { Pixel,  "g_texture_sampler" }, m_texture_sampler.GetResourceView() },
         }, frame_index);
-        Rhi::IProgramArgumentBinding& uniforms_arg_binding = program_bindings.Get({ Rhi::ShaderType::Vertex, "g_skybox_uniforms" });
+        Rhi::IProgramArgumentBinding& uniforms_arg_binding = program_bindings.Get({ Vertex, "g_skybox_uniforms" });
         return ProgramBindingsAndUniformArgumentBinding(std::move(program_bindings), &uniforms_arg_binding);
     }
 

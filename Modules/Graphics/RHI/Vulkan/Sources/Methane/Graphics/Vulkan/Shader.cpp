@@ -403,11 +403,13 @@ vk::ShaderStageFlagBits Shader::ConvertTypeToStageFlagBits(Rhi::ShaderType shade
     META_FUNCTION_TASK();
     switch(shader_type)
     {
-    case Rhi::ShaderType::All:     return vk::ShaderStageFlagBits::eAll;
-    case Rhi::ShaderType::Vertex:  return vk::ShaderStageFlagBits::eVertex;
-    case Rhi::ShaderType::Pixel:   return vk::ShaderStageFlagBits::eFragment;
-    case Rhi::ShaderType::Compute: return vk::ShaderStageFlagBits::eCompute;
-    default: META_UNEXPECTED_RETURN(shader_type, vk::ShaderStageFlagBits::eAll);
+    using enum Rhi::ShaderType;
+    using enum vk::ShaderStageFlagBits;
+    case All:     return eAll;
+    case Vertex:  return eVertex;
+    case Pixel:   return eFragment;
+    case Compute: return eCompute;
+    default: META_UNEXPECTED_RETURN(shader_type, eAll);
     }
 }
 

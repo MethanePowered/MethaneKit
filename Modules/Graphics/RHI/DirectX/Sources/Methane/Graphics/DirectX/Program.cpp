@@ -87,10 +87,11 @@ static D3D12_SHADER_VISIBILITY GetShaderVisibilityByType(Rhi::ShaderType shader_
     META_FUNCTION_TASK();
     switch (shader_type)
     {
-    case Rhi::ShaderType::All:     return D3D12_SHADER_VISIBILITY_ALL;
-    case Rhi::ShaderType::Vertex:  return D3D12_SHADER_VISIBILITY_VERTEX;
-    case Rhi::ShaderType::Pixel:   return D3D12_SHADER_VISIBILITY_PIXEL;
-    case Rhi::ShaderType::Compute: return D3D12_SHADER_VISIBILITY_ALL;
+    using enum Rhi::ShaderType;
+    case All:     return D3D12_SHADER_VISIBILITY_ALL;
+    case Vertex:  return D3D12_SHADER_VISIBILITY_VERTEX;
+    case Pixel:   return D3D12_SHADER_VISIBILITY_PIXEL;
+    case Compute: return D3D12_SHADER_VISIBILITY_ALL;
     default:                       META_UNEXPECTED_RETURN(shader_type, D3D12_SHADER_VISIBILITY_ALL);
     }
 };

@@ -48,9 +48,10 @@ Program::Program(Base::Context& context, const Settings& settings)
     : Base::Program(context, settings)
 {
     META_FUNCTION_TASK();
-    if (HasShader(Rhi::ShaderType::Vertex))
+    using enum Rhi::ShaderType;
+    if (HasShader(Vertex))
         ReflectRenderPipelineArguments();
-    else if (HasShader(Rhi::ShaderType::Compute))
+    else if (HasShader(Compute))
         ReflectComputePipelineArguments();
 
     InitArgumentRangeSizesAndConstantRanges();

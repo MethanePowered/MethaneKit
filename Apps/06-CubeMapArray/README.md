@@ -60,10 +60,10 @@ void CubeMapArrayApp::Init()
     {
         // Configure program resource bindings
         frame.cube.program_bindings = m_render_state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::Pixel,  "g_texture_array" }, m_cube_buffers_ptr->GetTexture().GetResourceView() },
-            { { rhi::ShaderType::Pixel,  "g_sampler"       }, m_texture_sampler.GetResourceView()                },
+            { { Pixel,  "g_texture_array" }, m_cube_buffers_ptr->GetTexture().GetResourceView() },
+            { { Pixel,  "g_sampler"       }, m_texture_sampler.GetResourceView()                },
         }, frame.index);
-        frame.cube.uniforms_argument_binding_ptr = &frame.cube.program_bindings.Get({ rhi::ShaderType::Vertex, "g_uniforms" });
+        frame.cube.uniforms_argument_binding_ptr = &frame.cube.program_bindings.Get({ Vertex, "g_uniforms" });
         ...
     }
     

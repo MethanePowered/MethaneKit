@@ -62,15 +62,16 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
 
     const Rhi::Program compute_program = [&compute_context]()
     {
-        const Rhi::ProgramArgumentAccessor texture_accessor{ Rhi::ShaderType::Compute, "InTexture", Rhi::ProgramArgumentAccessType::Constant };
-        const Rhi::ProgramArgumentAccessor sampler_accessor{ Rhi::ShaderType::Compute, "InSampler", Rhi::ProgramArgumentAccessType::Constant };
-        const Rhi::ProgramArgumentAccessor buffer_accessor { Rhi::ShaderType::Compute, "OutBuffer", Rhi::ProgramArgumentAccessType::Mutable };
+        using enum Rhi::ShaderType;
+        const Rhi::ProgramArgumentAccessor texture_accessor{ Compute, "InTexture", Rhi::ProgramArgumentAccessType::Constant };
+        const Rhi::ProgramArgumentAccessor sampler_accessor{ Compute, "InSampler", Rhi::ProgramArgumentAccessType::Constant };
+        const Rhi::ProgramArgumentAccessor buffer_accessor { Compute, "OutBuffer", Rhi::ProgramArgumentAccessType::Mutable };
         Rhi::Program compute_program = compute_context.CreateProgram(
             Rhi::ProgramSettingsImpl
             {
                 Rhi::ProgramSettingsImpl::ShaderSet
                 {
-                    { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Compute", "Main" } } }
+                    { Compute, { Data::ShaderProvider::Get(), { "Compute", "Main" } } }
                 },
                 Rhi::ProgramInputBufferLayouts{ },
                 Rhi::ProgramArgumentAccessors
@@ -207,10 +208,11 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
             return buffer;
         }();
 
+        using enum Rhi::ShaderType;
         const Rhi::ProgramBindings compute_program_bindings = compute_program.CreateBindings({
-            { { Rhi::ShaderType::Compute, "InTexture" }, texture.GetResourceView() },
-            { { Rhi::ShaderType::Compute, "InSampler" }, sampler.GetResourceView() },
-            { { Rhi::ShaderType::Compute, "OutBuffer" }, buffer.GetResourceView()  },
+            { { Compute, "InTexture" }, texture.GetResourceView() },
+            { { Compute, "InSampler" }, sampler.GetResourceView() },
+            { { Compute, "OutBuffer" }, buffer.GetResourceView()  },
         });
 
         REQUIRE_NOTHROW(cmd_list.ResetWithState(compute_state));

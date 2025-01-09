@@ -276,14 +276,15 @@ public:
         META_CHECK_TRUE(atlas_sampler.IsInitialized());
         META_CHECK_TRUE(m_atlas_texture.IsInitialized());
 
+        using enum rhi::ShaderType;
         m_program_bindings = state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::Pixel,  "g_texture" },   m_atlas_texture.GetResourceView() },
-            { { rhi::ShaderType::Pixel,  "g_sampler" },   atlas_sampler.GetResourceView() },
+            { { Pixel,  "g_texture" },   m_atlas_texture.GetResourceView() },
+            { { Pixel,  "g_sampler" },   atlas_sampler.GetResourceView() },
         });
         m_program_bindings.SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
 
-        m_uniforms_argument_binding_ptr  = &m_program_bindings.Get({ rhi::ShaderType::Vertex, "g_uniforms" });
-        m_constants_argument_binding_ptr = &m_program_bindings.Get({ rhi::ShaderType::Pixel, "g_constants" });
+        m_uniforms_argument_binding_ptr  = &m_program_bindings.Get({ Vertex, "g_uniforms" });
+        m_constants_argument_binding_ptr = &m_program_bindings.Get({ Pixel, "g_constants" });
     }
 };
 
@@ -330,6 +331,7 @@ public:
         }
         else
         {
+            using enum rhi::ShaderType;
             rhi::RenderState::Settings state_settings
             {
                 rhi::Program(
@@ -338,8 +340,8 @@ public:
                     {
                         rhi::Program::ShaderSet
                         {
-                            { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, {} } },
-                            { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Text", "TextPS" }, {} } },
+                            { Vertex, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, {} } },
+                            { Pixel,  { Data::ShaderProvider::Get(), { "Text", "TextPS" }, {} } },
                         },
                         rhi::ProgramInputBufferLayouts
                         {
@@ -349,8 +351,8 @@ public:
                             }
                         },
                         rhi::ProgramArgumentAccessors{
-                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Pixel, "g_constants"),
-                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Vertex, "g_uniforms")
+                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(Pixel, "g_constants"),
+                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(Vertex, "g_uniforms")
                         },
                         render_pattern.GetAttachmentFormats()
                     }),

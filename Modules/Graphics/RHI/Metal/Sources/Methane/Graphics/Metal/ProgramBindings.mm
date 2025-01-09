@@ -123,13 +123,14 @@ void SetMetalResource<CommandType::Render>(Rhi::ShaderType shader_type,
     META_FUNCTION_TASK();
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexBuffer: mtl_buffer
                                       offset: buffer_offset
                                      atIndex: arg_index];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentBuffer: mtl_buffer
                                         offset: buffer_offset
                                        atIndex: arg_index];
@@ -151,13 +152,14 @@ void SetMetalResources<CommandType::Render>(Rhi::ShaderType shader_type,
     const NSRange args_range = NSMakeRange(arg_index, mtl_buffers.size());
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexBuffers: mtl_buffers.data()
                                       offsets: buffer_offsets.data()
                                     withRange: args_range];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentBuffers: mtl_buffers.data()
                                         offsets: buffer_offsets.data()
                                       withRange: args_range];
@@ -177,12 +179,13 @@ void SetMetalResource<CommandType::Render>(Rhi::ShaderType shader_type,
     META_FUNCTION_TASK();
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexTexture: mtl_texture
                                       atIndex: arg_index];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentTexture: mtl_texture
                                         atIndex: arg_index];
             break;
@@ -203,12 +206,13 @@ void SetMetalResources<CommandType::Render>(Rhi::ShaderType shader_type,
     const NSRange args_range = NSMakeRange(arg_index, mtl_textures.size());
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexTextures: mtl_textures.data()
                                      withRange: args_range];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentTextures: mtl_textures.data()
                                        withRange: args_range];
             break;
@@ -227,12 +231,13 @@ void SetMetalResource<CommandType::Render>(Rhi::ShaderType shader_type,
     META_FUNCTION_TASK();
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexSamplerState: mtl_sampler
                                            atIndex: arg_index];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentSamplerState: mtl_sampler
                                              atIndex: arg_index];
             break;
@@ -253,12 +258,13 @@ void SetMetalResources<CommandType::Render>(Rhi::ShaderType shader_type,
     const NSRange args_range = NSMakeRange(arg_index, mtl_samplers.size());
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexSamplerStates: mtl_samplers.data()
                                           withRange: args_range];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentSamplerStates: mtl_samplers.data()
                                             withRange: args_range];
             break;
@@ -278,13 +284,14 @@ void SetMetalResource<CommandType::Render>(Rhi::ShaderType shader_type,
     META_CHECK_NOT_NULL(root_constant_accessor_ptr);
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexBytes: root_constant_accessor_ptr->GetDataPtr()
                                      length: root_constant_accessor_ptr->GetDataSize()
                                     atIndex: arg_index];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentBytes: root_constant_accessor_ptr->GetDataPtr()
                                        length: root_constant_accessor_ptr->GetDataSize()
                                       atIndex: arg_index];
@@ -772,13 +779,14 @@ void ProgramBindings::SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_
         {
             switch (arg_layout.shader_type)
             {
-                case Rhi::ShaderType::Vertex:
+                using enum Rhi::ShaderType;
+                case Vertex:
                     [mtl_cmd_encoder setVertexBuffer:mtl_argument_buffer
                                               offset:arg_buffer_offset
                                              atIndex:arg_buffer_index];
                     break;
 
-                case Rhi::ShaderType::Pixel:
+                case Pixel:
                     [mtl_cmd_encoder setFragmentBuffer:mtl_argument_buffer
                                                 offset:arg_buffer_offset
                                                atIndex:arg_buffer_index];

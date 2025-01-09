@@ -62,11 +62,12 @@ static MTLRenderStages ConvertShaderTypeToMetalRenderStages(Rhi::ShaderType shad
     MTLRenderStages mtl_render_stages{};
     switch(shader_type)
     {
-        case Rhi::ShaderType::All:    mtl_render_stages |= MTLRenderStageVertex
-                                                        |  MTLRenderStageFragment; break;
-        case Rhi::ShaderType::Vertex: mtl_render_stages |= MTLRenderStageVertex; break;
-        case Rhi::ShaderType::Pixel:  mtl_render_stages |= MTLRenderStageFragment; break;
-        case Rhi::ShaderType::Compute: /* Compute is not Render stage */ break;
+        using enum Rhi::ShaderType;
+        case All:    mtl_render_stages |= MTLRenderStageVertex
+                                       |  MTLRenderStageFragment; break;
+        case Vertex: mtl_render_stages |= MTLRenderStageVertex; break;
+        case Pixel:  mtl_render_stages |= MTLRenderStageFragment; break;
+        case Compute: /* Compute is not Render stage */ break;
         default: META_UNEXPECTED(shader_type);
     }
     return mtl_render_stages;
