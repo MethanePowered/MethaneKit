@@ -22,7 +22,7 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 ******************************************************************************/
 
 #include <Methane/Graphics/ActionCamera.h>
-#include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/TimeAnimation.hpp>
 #include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
@@ -178,12 +178,12 @@ void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const hlslpp:
     
     const float angle_rad_per_second = Methane::Data::DegreeToRadians(m_rotate_angle_per_second);
     m_animations.push_back(
-        std::make_shared<Data::TimeAnimation>([this, angle_rad_per_second, rotation_axis_in_view](double elapsed_seconds, double delta_seconds)
-            {
-                RotateInView(rotation_axis_in_view, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
-                return true;
-            },
-            duration_sec));
+        Data::MakeTimeAnimationPtr([this, angle_rad_per_second, rotation_axis_in_view](double elapsed_seconds, double delta_seconds)
+        {
+            RotateInView(rotation_axis_in_view, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
+            return true;
+        }, duration_sec)
+    );
 
     const bool animation_added = m_keyboard_action_animations.try_emplace(rotate_action, m_animations.back()).second;
     META_CHECK_TRUE(animation_added);
@@ -194,15 +194,14 @@ void ActionCamera::StartMoveAction(KeyboardAction move_action, const hlslpp::flo
     META_FUNCTION_TASK();
     if (StartKeyboardAction(move_action, duration_sec))
         return;
-    
+
     m_animations.push_back(
-        std::make_shared<Data::TimeAnimation>([this, move_direction_in_view](double elapsed_seconds, double delta_seconds)
-            {
-                const hlslpp::float3 move_per_second = hlslpp::normalize(TransformViewToWorld(move_direction_in_view)) * m_move_distance_per_second;
-                Move(move_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
-                return true;
-            },
-            duration_sec)
+        Data::MakeTimeAnimationPtr([this, move_direction_in_view](double elapsed_seconds, double delta_seconds)
+        {
+            const hlslpp::float3 move_per_second = hlslpp::normalize(TransformViewToWorld(move_direction_in_view)) * m_move_distance_per_second;
+            Move(move_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
+            return true;
+        }, duration_sec)
     );
 
     const bool animation_added = m_keyboard_action_animations.try_emplace(move_action, m_animations.back()).second;
@@ -214,14 +213,13 @@ void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor
     META_FUNCTION_TASK();
     if (StartKeyboardAction(zoom_action, duration_sec))
         return;
-    
+
     m_animations.push_back(
-        std::make_shared<Data::TimeAnimation>([this, zoom_factor_per_second](double elapsed_seconds, double delta_seconds)
-            {
-                Zoom(1.F - static_cast<float>((1.F - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
-                return true;
-            },
-            duration_sec)
+        Data::MakeTimeAnimationPtr([this, zoom_factor_per_second](double elapsed_seconds, double delta_seconds)
+        {
+            Zoom(1.F - static_cast<float>((1.F - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
+            return true;
+        }, duration_sec)
     );
 
     const bool animation_added = m_keyboard_action_animations.try_emplace(zoom_action, m_animations.back()).second;

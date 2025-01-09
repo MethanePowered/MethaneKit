@@ -26,7 +26,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <Methane/Tutorials/TextureLabeler.h>
 #include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Graphics/CubeMesh.hpp>
-#include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/TimeAnimation.hpp>
 
 #include <cmath>
 #include <numbers>
@@ -69,7 +69,10 @@ CubeMapArrayApp::CubeMapArrayApp()
     m_camera.SetParameters({ 600.F /* near = max depth */, 0.01F /*far = min depth*/, 90.F /* FOV */ });
 
     // Setup animations
-    GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&CubeMapArrayApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+    GetAnimations().emplace_back(Data::MakeTimeAnimationPtr([this](double elapsed_seconds, double delta_seconds)
+    {
+        return Animate(elapsed_seconds, delta_seconds);
+    }));
 }
 
 CubeMapArrayApp::~CubeMapArrayApp()

@@ -25,7 +25,7 @@ Tutorial demonstrating dynamic text rendering and fonts management with Methane 
 #include "TypographyAppController.h"
 
 #include <Methane/Tutorials/AppSettings.h>
-#include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/TimeAnimation.hpp>
 
 #include <magic_enum/magic_enum.hpp>
 #include <array>
@@ -144,9 +144,10 @@ TypographyApp::TypographyApp()
     });
 
     // Setup animations
-    GetAnimations().push_back(
-        std::make_shared<Data::TimeAnimation>(std::bind(&TypographyApp::Animate, this, std::placeholders::_1, std::placeholders::_2))
-    );
+    GetAnimations().push_back(Data::MakeTimeAnimationPtr([this](double elapsed_seconds, double delta_seconds)
+    {
+        return Animate(elapsed_seconds, delta_seconds);
+    }));
 
     ShowParameters();
 }

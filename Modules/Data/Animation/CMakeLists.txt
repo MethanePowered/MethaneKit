@@ -7,14 +7,13 @@ get_module_dirs("Methane/Data")
 set(HEADERS
     ${INCLUDE_DIR}/Animation.h
     ${INCLUDE_DIR}/AnimationsPool.h
-    ${INCLUDE_DIR}/TimeAnimation.h
+    ${INCLUDE_DIR}/TimeAnimation.hpp
     ${INCLUDE_DIR}/ValueAnimation.hpp
 )
 
 set(SOURCES
     ${SOURCES_DIR}/Animation.cpp
     ${SOURCES_DIR}/AnimationsPool.cpp
-    ${SOURCES_DIR}/TimeAnimation.cpp
 )
 
 add_library(${TARGET} STATIC

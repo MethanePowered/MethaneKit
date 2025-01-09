@@ -26,7 +26,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Graphics/TypeConverters.hpp>
-#include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/TimeAnimation.hpp>
 
 namespace Methane::Tutorials
 {
@@ -66,7 +66,10 @@ TexturedCubeApp::TexturedCubeApp()
     m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
     // Setup animations
-    GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+    GetAnimations().emplace_back(Data::MakeTimeAnimationPtr([this](double elapsed_seconds, double delta_seconds)
+    {
+        return Animate(elapsed_seconds, delta_seconds);
+    }));
 }
 
 TexturedCubeApp::~TexturedCubeApp()

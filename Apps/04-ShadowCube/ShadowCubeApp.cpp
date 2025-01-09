@@ -25,7 +25,7 @@ Tutorial demonstrating shadow-pass rendering with Methane graphics API
 
 #include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Graphics/CubeMesh.hpp>
-#include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/TimeAnimation.hpp>
 
 namespace Methane::Tutorials
 {
@@ -69,7 +69,10 @@ ShadowCubeApp::ShadowCubeApp()
     m_light_camera.Resize(Data::FloatSize(80.F, 80.F));
 
     // Setup animations
-    GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&ShadowCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+    GetAnimations().emplace_back(Data::MakeTimeAnimationPtr([this](double elapsed_seconds, double delta_seconds)
+    {
+        return Animate(elapsed_seconds, delta_seconds);
+    }));
 }
 
 ShadowCubeApp::~ShadowCubeApp()
