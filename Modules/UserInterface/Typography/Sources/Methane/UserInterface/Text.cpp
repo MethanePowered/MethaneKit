@@ -126,12 +126,8 @@ public:
     [[nodiscard]] bool IsDirty() const noexcept
     {
         META_FUNCTION_TASK();
-        return m_dirty_mask.HasAnyBits({
-            DirtyResource::Mesh,
-            DirtyResource::Uniforms,
-            DirtyResource::Constants,
-            DirtyResource::Atlas
-        });
+        using enum DirtyResource;
+        return m_dirty_mask.HasAnyBits({Mesh, Uniforms, Constants, Atlas});
     }
 
     [[nodiscard]] bool IsInitialized() const noexcept
@@ -806,21 +802,23 @@ private:
         {
             switch (m_settings.layout.horizontal_alignment)
             {
-            case HorizontalAlignment::Justify:
-            case HorizontalAlignment::Left:   break;
-            case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth())); break;
-            case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth()) / 2); break;
-            default:                          META_UNEXPECTED(m_settings.layout.horizontal_alignment);
+            using enum HorizontalAlignment;
+            case Justify:
+            case Left:   break;
+            case Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth())); break;
+            case Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth()) / 2); break;
+            default:     META_UNEXPECTED(m_settings.layout.horizontal_alignment);
             }
         }
         if (content_size.GetHeight() != m_frame_rect.size.GetHeight())
         {
             switch (m_settings.layout.vertical_alignment)
             {
-            case VerticalAlignment::Top:      break;
-            case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight())); break;
-            case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight()) / 2); break;
-            default:                          META_UNEXPECTED(m_settings.layout.vertical_alignment);
+            using enum VerticalAlignment;
+            case Top:    break;
+            case Bottom: viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight())); break;
+            case Center: viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight()) / 2); break;
+            default:     META_UNEXPECTED(m_settings.layout.vertical_alignment);
             }
         }
 

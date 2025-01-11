@@ -59,7 +59,7 @@ CubeMapArrayApp::CubeMapArrayApp()
         }(),
         GetUserInterfaceTutorialAppSettings(AppOptions::GetDefaultWithColorDepthAndAnim()),
         "Methane tutorial of cube-map array texturing")
-    , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(g_model_scale),
+    , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(g_model_scale), // NOSONAR - do not use in-class initializer
                                  hlslpp::float4x4::rotation_z(std::numbers::pi_v<float>)))
 {
     // NOTE: Near and Far values are swapped in camera parameters (1st value is near = max depth, 2nd value is far = min depth)

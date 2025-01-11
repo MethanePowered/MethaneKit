@@ -79,13 +79,14 @@ using Scroll = Data::Point2F;
 using MouseButtonAndDelta = std::pair<Mouse::Button, float>;
 [[nodiscard]] inline MouseButtonAndDelta GetScrollButtonAndDelta(const Scroll& scroll_delta)
 {
+    using enum Button;
     constexpr float min_scroll_delta = 0.00001F;
     if (std::fabs(scroll_delta.GetY()) > min_scroll_delta)
-        return MouseButtonAndDelta(Button::VScroll, scroll_delta.GetY());
+        return MouseButtonAndDelta(VScroll, scroll_delta.GetY());
 
     return std::fabs(scroll_delta.GetX()) > min_scroll_delta
-         ? MouseButtonAndDelta(Button::HScroll, scroll_delta.GetX())
-         : MouseButtonAndDelta(Button::Unknown, 0.F);
+         ? MouseButtonAndDelta(HScroll, scroll_delta.GetX())
+         : MouseButtonAndDelta(Unknown, 0.F);
 }
 
 class State

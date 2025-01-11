@@ -104,17 +104,18 @@ bool ResourceBarriers::RemoveOwnerTransition(Rhi::IResource& resource)
 ResourceBarriers::AddResult ResourceBarriers::Add(const Barrier::Id& id, const Barrier& barrier)
 {
     META_FUNCTION_TASK();
+    using enum AddResult;
     std::scoped_lock lock_guard(m_barriers_mutex);
 
     const auto [ barrier_id_and_state_change_it, barrier_added ] = m_barriers_map.try_emplace(id, barrier);
     if (barrier_added)
-        return AddResult::Added;
+        return Added;
 
     if (barrier_id_and_state_change_it->second == barrier)
-        return AddResult::Existing;
+        return Existing;
 
     barrier_id_and_state_change_it->second = barrier;
-    return AddResult::Updated;
+    return Updated;
 }
 
 bool ResourceBarriers::Remove(const Barrier::Id& id)

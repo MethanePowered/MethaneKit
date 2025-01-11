@@ -338,14 +338,15 @@ private:
 
         switch(texture_mode)
         {
-        case TextureMode::Disabled:
+        using enum TextureMode;
+        case Disabled:
             macro_definitions.emplace_back("TEXTURE_DISABLED", "");
             break;
 
-        case TextureMode::RgbaFloat:
+        case RgbaFloat:
             break;
 
-        case TextureMode::RFloatToAlpha:
+        case RFloatToAlpha:
             macro_definitions.emplace_back("TTEXEL", "float");
             macro_definitions.emplace_back("RMASK", "r");
             macro_definitions.emplace_back("WMASK", "a");
