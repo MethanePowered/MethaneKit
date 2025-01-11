@@ -124,8 +124,6 @@ ParallelRenderingApp::~ParallelRenderingApp()
 void ParallelRenderingApp::Init()
 {
     META_FUNCTION_TASK();
-    using enum rhi::ShaderType;
-
     UserInterfaceApp::Init();
 
     const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
@@ -142,8 +140,8 @@ void ParallelRenderingApp::Init()
             {
                 rhi::Program::ShaderSet
                 {
-                    { Vertex, { Data::ShaderProvider::Get(), { "ParallelRendering", "CubeVS" } } },
-                    { Pixel,  { Data::ShaderProvider::Get(), { "ParallelRendering", "CubePS" } } },
+                    { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "ParallelRendering", "CubeVS" } } },
+                    { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "ParallelRendering", "CubePS" } } },
                 },
                 rhi::ProgramInputBufferLayouts
                 {
@@ -156,9 +154,9 @@ void ParallelRenderingApp::Init()
                 {
                     // Addressable argument is manually defined
 #ifdef ROOT_CONSTANTS_ENABLED
-                    META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(All, "g_uniforms")
+                    META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::All, "g_uniforms")
 #else
-                    META_PROGRAM_ARG_BUFFER_ADDRESS_MUTABLE(All, "g_uniforms")
+                    META_PROGRAM_ARG_BUFFER_ADDRESS_MUTABLE(rhi::ShaderType::All, "g_uniforms")
 #endif
                     // Other arguments are defined in shader register spaces
                 },
@@ -212,22 +210,22 @@ void ParallelRenderingApp::Init()
         frame.cubes_program_bindings.resize(cubes_count);
         frame.cubes_uniform_argument_binding_ptrs.resize(cubes_count);
         frame.cubes_program_bindings[0] = render_state_settings.program.CreateBindings({
-            { { Pixel, "g_texture_array" }, m_texture_array.GetResourceView()   },
-            { { Pixel, "g_sampler"       }, m_texture_sampler.GetResourceView() },
+            { { rhi::ShaderType::Pixel, "g_texture_array" }, m_texture_array.GetResourceView()   },
+            { { rhi::ShaderType::Pixel, "g_sampler"       }, m_texture_sampler.GetResourceView() },
         }, frame.index);
-        frame.cubes_uniform_argument_binding_ptrs[0] = &frame.cubes_program_bindings[0].Get({ All, "g_uniforms" });
+        frame.cubes_uniform_argument_binding_ptrs[0] = &frame.cubes_program_bindings[0].Get({ rhi::ShaderType::All, "g_uniforms" });
         frame.cubes_program_bindings[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 #else
         static const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
         frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
         frame.cubes_array.program_bindings_per_instance[0] = render_state_settings.program.CreateBindings({
             {
-                { All,   "g_uniforms"      },
+                { rhi::ShaderType::All,   "g_uniforms"      },
                 frame.cubes_array.uniforms_buffer.GetBufferView(
                     m_cube_array_buffers_ptr->GetUniformsBufferOffset(0U), uniform_data_size)
             },
-            { { Pixel, "g_texture_array" }, m_texture_array.GetResourceView()   },
-            { { Pixel, "g_sampler"       }, m_texture_sampler.GetResourceView() },
+            { { rhi::ShaderType::Pixel, "g_texture_array" }, m_texture_array.GetResourceView()   },
+            { { rhi::ShaderType::Pixel, "g_sampler"       }, m_texture_sampler.GetResourceView() },
         }, frame.index);
         frame.cubes_array.program_bindings_per_instance[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 
@@ -240,7 +238,7 @@ void ParallelRenderingApp::Init()
             {
                 rhi::ProgramBindings& cube_program_bindings = frame.cubes_program_bindings[cube_index];
                 cube_program_bindings = rhi::ProgramBindings(frame.cubes_program_bindings[0], {}, frame.index);
-                frame.cubes_uniform_argument_binding_ptrs[cube_index] = &cube_program_bindings.Get({ All, "g_uniforms" });
+                frame.cubes_uniform_argument_binding_ptrs[cube_index] = &cube_program_bindings.Get({ rhi::ShaderType::All, "g_uniforms" });
                 cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
             }
 #else
@@ -249,7 +247,7 @@ void ParallelRenderingApp::Init()
                 rhi::ProgramBindings& cube_program_bindings = frame.cubes_array.program_bindings_per_instance[cube_index];
                 cube_program_bindings = rhi::ProgramBindings(frame.cubes_array.program_bindings_per_instance[0], {
                     {
-                        { All, "g_uniforms" },
+                        { rhi::ShaderType::All, "g_uniforms" },
                         frame.cubes_array.uniforms_buffer.GetBufferView(
                             cube_array_buffers.GetUniformsBufferOffset(cube_index),
                             uniform_data_size)

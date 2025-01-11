@@ -122,8 +122,8 @@ public:
                     {
                         Rhi::Program::ShaderSet
                         {
-                            { Vertex, { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } } },
-                            { Pixel,  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } } },
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } } },
+                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } } },
                         },
                         Rhi::ProgramInputBufferLayouts{ },
                         Rhi::ProgramArgumentAccessors{ },

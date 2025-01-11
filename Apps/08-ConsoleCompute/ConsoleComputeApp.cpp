@@ -144,8 +144,6 @@ uint32_t ConsoleComputeApp::GetVisibleCellsCount() const
 void ConsoleComputeApp::Init()
 {
     META_FUNCTION_TASK();
-    using enum rhi::ShaderType;
-
     const rhi::Device* device_ptr = GetComputeDevice();
     m_compute_context = device_ptr->CreateComputeContext(m_parallel_executor, {});
     m_compute_context.SetName("Game of Life");
@@ -153,12 +151,12 @@ void ConsoleComputeApp::Init()
     m_compute_state = m_compute_context.CreateComputeState({
             m_compute_context.CreateProgram({
                 rhi::Program::ShaderSet {
-                    { Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } }
+                    { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } }
                 },
                 rhi::ProgramInputBufferLayouts{ /* not applicable for compute pipeline */},
                 rhi::ProgramArgumentAccessors
                 {
-                    META_PROGRAM_ARG_ROOT_VALUE_CONSTANT(Compute, "g_constants")
+                    META_PROGRAM_ARG_ROOT_VALUE_CONSTANT(rhi::ShaderType::Compute, "g_constants")
                 },
         }),
         rhi::ThreadGroupSize(16U, 16U, 1U)
@@ -184,8 +182,8 @@ void ConsoleComputeApp::Init()
 
     const Constants game_constants{ static_cast<uint>(GetGameRuleIndex()) };
     m_compute_bindings = m_compute_state.GetProgram().CreateBindings({
-        { { Compute, "g_constants"     }, rhi::RootConstant(game_constants) },
-        { { Compute, "g_frame_texture" }, m_frame_texture.GetResourceView() }
+        { { rhi::ShaderType::Compute, "g_constants"     }, rhi::RootConstant(game_constants) },
+        { { rhi::ShaderType::Compute, "g_frame_texture" }, m_frame_texture.GetResourceView() }
     });
     m_compute_bindings.SetName("Game of Life Compute Bindings");
 

@@ -100,11 +100,12 @@ HelloCubeApp()
     m_camera.ResetOrientation({ { 13.0F, 13.0F, 13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
     // Setup camera rotation animation
-    GetAnimations().emplace_back(Data::MakeTimeAnimationPtr([this](double, double delta_seconds)
-    {
-        m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
-        return true;
-    }));
+    GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(
+        [this](double, double delta_seconds)
+        {
+            m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
+            return true;
+        }));
 }
 
 ```
@@ -139,8 +140,6 @@ public:
 
     void Init() override
     {
-        using enum rhi::ShaderType;
-    
         GraphicsApp::Init();
 
         m_camera.Resize(GetRenderContext().GetSettings().frame_size);
@@ -154,8 +153,8 @@ public:
                     {
                         Rhi::Program::ShaderSet
                         {
-                            { Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" } } },
-                            { Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" } } },
+                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
                         },
                         Rhi::ProgramInputBufferLayouts
                         {
@@ -497,13 +496,13 @@ class HelloCubeApp final : public GraphicsApp
                     {
                         Rhi::Program::ShaderSet
                         {
-                            { Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions } },
-                            { Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions } },
+                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
                         },
                         ...
                         Rhi::ProgramArgumentAccessors
                         {
-                            META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Vertex, "g_uniforms")
+                            META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_uniforms")
                         },
                         ...
                     }
@@ -544,7 +543,7 @@ class HelloCubeApp final : public GraphicsApp
         for(HelloCubeFrame& frame : GetFrames())
         {
             frame.program_bindings = m_render_state.GetProgram().CreateBindings({ }, frame.index);
-            frame.uniforms_binding_ptr = &frame.program_bindings.Get({ Vertex, "g_uniforms" });
+            frame.uniforms_binding_ptr = &frame.program_bindings.Get({ Rhi::ShaderType::Vertex, "g_uniforms" });
             
             ...
         }

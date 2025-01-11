@@ -83,8 +83,6 @@ CubeMapArrayApp::~CubeMapArrayApp()
 
 void CubeMapArrayApp::Init()
 {
-    using enum rhi::ShaderType;
-
     UserInterfaceApp::Init();
 
     const rhi::CommandQueue render_cmd_queue = GetRenderContext().GetRenderCommandKit().GetQueue();
@@ -101,8 +99,8 @@ void CubeMapArrayApp::Init()
             {
                 rhi::Program::ShaderSet
                 {
-                    { Vertex, { Data::ShaderProvider::Get(), { "CubeMapArray", "CubeVS" } } },
-                    { Pixel,  { Data::ShaderProvider::Get(), { "CubeMapArray", "CubePS" } } },
+                    { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "CubeMapArray", "CubeVS" } } },
+                    { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "CubeMapArray", "CubePS" } } },
                 },
                 rhi::ProgramInputBufferLayouts
                 {
@@ -113,7 +111,7 @@ void CubeMapArrayApp::Init()
                 },
                 rhi::ProgramArgumentAccessors
                 {
-                    META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Vertex, "g_uniforms")
+                    META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::Vertex, "g_uniforms")
                 },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }),
@@ -174,10 +172,10 @@ void CubeMapArrayApp::Init()
     {
         // Configure program resource bindings
         frame.cube.program_bindings = m_render_state.GetProgram().CreateBindings({
-            { { Pixel,  "g_texture_array" }, m_cube_buffers_ptr->GetTexture().GetResourceView() },
-            { { Pixel,  "g_sampler"       }, m_texture_sampler.GetResourceView()                },
+            { { rhi::ShaderType::Pixel,  "g_texture_array" }, m_cube_buffers_ptr->GetTexture().GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_sampler"       }, m_texture_sampler.GetResourceView()                },
         }, frame.index);
-        frame.cube.uniforms_argument_binding_ptr = &frame.cube.program_bindings.Get({ Vertex, "g_uniforms" });
+        frame.cube.uniforms_argument_binding_ptr = &frame.cube.program_bindings.Get({ rhi::ShaderType::Vertex, "g_uniforms" });
         frame.cube.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
 
         // Resource bindings for Sky-Box rendering

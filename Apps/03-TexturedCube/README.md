@@ -194,10 +194,7 @@ TexturedCubeApp::TexturedCubeApp()
     m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
     // Setup animations
-    GetAnimations().emplace_back(Data::MakeTimeAnimationPtr([this](double elapsed_seconds, double delta_seconds)
-    {
-        return Animate(elapsed_seconds, delta_seconds);
-    }));
+    GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
 }
 ```
 
@@ -325,8 +322,8 @@ void TexturedCubeApp::Init()
                 {
                     rhi::Program::ShaderSet
                     {
-                        { Vertex, { Data::ShaderProvider::Get(), { "TexturedCube", "CubeVS" } } },
-                        { Pixel,  { Data::ShaderProvider::Get(), { "TexturedCube", "CubePS" } } },
+                        { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "TexturedCube", "CubeVS" } } },
+                        { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "TexturedCube", "CubePS" } } },
                     },
                     rhi::ProgramInputBufferLayouts
                     {
@@ -337,8 +334,8 @@ void TexturedCubeApp::Init()
                     },
                     rhi::ProgramArgumentAccessors
                     {
-                        META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(Pixel, "g_constants"),
-                        META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(All, "g_uniforms")
+                        META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
+                        META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::All, "g_uniforms")
                     },
                     GetScreenRenderPattern().GetAttachmentFormats()
                 }
@@ -372,11 +369,11 @@ void TexturedCubeApp::Init()
     {
         // Configure program resource bindings
         frame.program_bindings = m_render_state.GetProgram().CreateBindings({
-            { { Pixel, "g_constants" }, rhi::RootConstant(g_shader_constants) },
-            { { Pixel, "g_texture"   }, m_cube_texture.GetResourceView() },
-            { { Pixel, "g_sampler"   }, m_texture_sampler.GetResourceView() }
+            { { rhi::ShaderType::Pixel, "g_constants" }, rhi::RootConstant(g_shader_constants) },
+            { { rhi::ShaderType::Pixel, "g_texture"   }, m_cube_texture.GetResourceView() },
+            { { rhi::ShaderType::Pixel, "g_sampler"   }, m_texture_sampler.GetResourceView() }
         }, frame.index);
-        frame.uniforms_binding_ptr = &frame.program_bindings.Get({ All, "g_uniforms" });
+        frame.uniforms_binding_ptr = &frame.program_bindings.Get({ rhi::ShaderType::All, "g_uniforms" });
 
         // Create command list for rendering
         frame.render_cmd_list = render_cmd_queue.CreateRenderCommandList(frame.screen_pass);

@@ -62,7 +62,6 @@ public:
     {
         GraphicsApp::Init();
 
-        using enum Rhi::ShaderType;
         m_render_state = GetRenderContext().CreateRenderState(
             Rhi::RenderState::Settings
             {
@@ -71,8 +70,8 @@ public:
                     {
                         Rhi::Program::ShaderSet
                         {
-                            { Vertex, { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } } },
-                            { Pixel,  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } } },
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } } },
+                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } } },
                         },
                         Rhi::ProgramInputBufferLayouts{ },
                         Rhi::ProgramArgumentAccessors{ },

@@ -203,8 +203,8 @@ description here.
             {
                 rhi::Program::ShaderSet
                 {
-                    { Vertex, { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions } },
-                    { Pixel,  { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions } },
+                    { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), vs_main, textured_shadows_definitions } },
+                    { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), ps_main, textured_shadows_definitions } },
                 },
                 rhi::ProgramInputBufferLayouts
                 {
@@ -215,9 +215,9 @@ description here.
                 },
                 rhi::ProgramArgumentAccessors
                 {
-                    META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(Pixel, "g_constants"),
-                    META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Pixel, "g_scene_uniforms"),
-                    META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(Vertex, "g_mesh_uniforms")
+                    META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
+                    META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::Pixel, "g_scene_uniforms"),
+                    META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Vertex, "g_mesh_uniforms")
                 },
                 GetScreenRenderPattern().GetAttachmentFormats()
             }
@@ -268,12 +268,12 @@ includes only the Vertex shader since it will be used for rendering to the depth
             {
                 rhi::Program::ShaderSet
                 {
-                    { Vertex, { Data::ShaderProvider::Get(), vs_main, textured_definitions } },
+                    { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), vs_main, textured_definitions } },
                 },
                 final_state_settings.program.GetSettings().input_buffer_layouts,
                 rhi::ProgramArgumentAccessors
                 {
-                    META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(Vertex, "g_mesh_uniforms")
+                    META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Vertex, "g_mesh_uniforms")
                 },
                 m_shadow_pass_pattern.GetAttachmentFormats()
             }
@@ -341,12 +341,12 @@ the next render pass. The render command list is created and bound to the shadow
         // Shadow-pass resource bindings for cube rendering
         ShadowCubeFrame::PassResources::ProgramBindings& shadow_cube_binds = frame.shadow_pass.cube_bindings;
         shadow_cube_binds.program_bindings = shadow_state_settings.program.CreateBindings({ }, frame.index);
-        shadow_cube_binds.mesh_uniforms_binding_ptr = &shadow_cube_binds.program_bindings.Get({ Vertex, "g_mesh_uniforms" });
+        shadow_cube_binds.mesh_uniforms_binding_ptr = &shadow_cube_binds.program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms" });
 
         // Shadow-pass resource bindings for floor rendering
         ShadowCubeFrame::PassResources::ProgramBindings& shadow_floor_binds = frame.shadow_pass.floor_bindings;
         shadow_floor_binds.program_bindings = shadow_state_settings.program.CreateBindings({ }, frame.index);
-        shadow_floor_binds.mesh_uniforms_binding_ptr = &shadow_floor_binds.program_bindings.Get({ Vertex, "g_mesh_uniforms" });
+        shadow_floor_binds.mesh_uniforms_binding_ptr = &shadow_floor_binds.program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms" });
 
         // Create depth texture for shadow map rendering
         frame.shadow_pass.rt_texture = render_context.CreateTexture(shadow_texture_settings);
@@ -375,22 +375,22 @@ pass is also bound to the screen render pass for the current frame, which is cre
         // Final-pass resource bindings for cube rendering
         ShadowCubeFrame::PassResources::ProgramBindings& final_cube_binds = frame.final_pass.cube_bindings;
         final_cube_binds.program_bindings = final_state_settings.program.CreateBindings({
-            { { Pixel,  "g_constants"      }, rhi::RootConstant(g_scene_constants)               },
-            { { Pixel,  "g_shadow_map"     }, frame.shadow_pass.rt_texture.GetResourceView()     },
-            { { Pixel,  "g_shadow_sampler" }, m_shadow_sampler.GetResourceView()                 },
-            { { Pixel,  "g_texture"        }, m_cube_buffers_ptr->GetTexture().GetResourceView() },
-            { { Pixel,  "g_texture_sampler"}, m_texture_sampler.GetResourceView()                },
+            { { rhi::ShaderType::Pixel,  "g_constants"      }, rhi::RootConstant(g_scene_constants)               },
+            { { rhi::ShaderType::Pixel,  "g_shadow_map"     }, frame.shadow_pass.rt_texture.GetResourceView()     },
+            { { rhi::ShaderType::Pixel,  "g_shadow_sampler" }, m_shadow_sampler.GetResourceView()                 },
+            { { rhi::ShaderType::Pixel,  "g_texture"        }, m_cube_buffers_ptr->GetTexture().GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_texture_sampler"}, m_texture_sampler.GetResourceView()                },
         }, frame.index);
-        final_cube_binds.scene_uniforms_binding_ptr = &final_cube_binds.program_bindings.Get({ Pixel, "g_scene_uniforms" });
-        final_cube_binds.mesh_uniforms_binding_ptr  = &final_cube_binds.program_bindings.Get({ Vertex, "g_mesh_uniforms" });
+        final_cube_binds.scene_uniforms_binding_ptr = &final_cube_binds.program_bindings.Get({ rhi::ShaderType::Pixel, "g_scene_uniforms" });
+        final_cube_binds.mesh_uniforms_binding_ptr  = &final_cube_binds.program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms" });
 
         // Final-pass resource bindings for floor rendering - patched a copy of cube bindings
         ShadowCubeFrame::PassResources::ProgramBindings& final_floor_binds = frame.final_pass.floor_bindings;
         final_floor_binds.program_bindings = rhi::ProgramBindings(frame.final_pass.cube_bindings.program_bindings, {
-            { { Pixel,  "g_texture" }, m_floor_buffers_ptr->GetTexture().GetResourceView() },
+            { { rhi::ShaderType::Pixel,  "g_texture" }, m_floor_buffers_ptr->GetTexture().GetResourceView() },
         }, frame.index);
-        final_floor_binds.scene_uniforms_binding_ptr = &final_floor_binds.program_bindings.Get({ Pixel,  "g_scene_uniforms" });
-        final_floor_binds.mesh_uniforms_binding_ptr  = &final_floor_binds.program_bindings.Get({ Vertex, "g_mesh_uniforms"  });
+        final_floor_binds.scene_uniforms_binding_ptr = &final_floor_binds.program_bindings.Get({ rhi::ShaderType::Pixel,  "g_scene_uniforms" });
+        final_floor_binds.mesh_uniforms_binding_ptr  = &final_floor_binds.program_bindings.Get({ rhi::ShaderType::Vertex, "g_mesh_uniforms"  });
 
         // Bind final pass RT texture and pass to the frame buffer texture and final pass.
         frame.final_pass.rt_texture  = frame.screen_texture;
@@ -443,10 +443,7 @@ in opposite directions.
 ShadowCubeApp::ShadowCubeApp()
 {
     ...
-    GetAnimations().emplace_back(Data::MakeTimeAnimationPtr([this](double elapsed_seconds, double delta_seconds)
-    {
-        return Animate(elapsed_seconds, delta_seconds);
-    }));
+    GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&ShadowCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
 }
 
 bool ShadowCubeApp::Animate(double, double delta_seconds)

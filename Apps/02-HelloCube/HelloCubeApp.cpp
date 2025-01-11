@@ -123,8 +123,6 @@ public:
 
     void Init() override
     {
-        using enum rhi::ShaderType;
-
         GraphicsApp::Init();
 
         m_camera.Resize(GetRenderContext().GetSettings().frame_size);
@@ -144,8 +142,8 @@ public:
                     {
                         Rhi::Program::ShaderSet
                         {
-                            { Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions } },
-                            { Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions } },
+                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
                         },
                         Rhi::ProgramInputBufferLayouts
                         {
@@ -157,7 +155,7 @@ public:
                         Rhi::ProgramArgumentAccessors
                         {
 #ifdef UNIFORMS_ENABLED
-                            META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Vertex, "g_uniforms")
+                            META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_uniforms")
 #endif
                         },
                         GetScreenRenderPattern().GetAttachmentFormats()
@@ -197,7 +195,7 @@ public:
             // Configure program resource bindings
             frame.program_bindings = m_render_state.GetProgram().CreateBindings({ }, frame.index);
             frame.program_bindings.SetName(fmt::format("Cube Bindings {}", frame.index));
-            frame.uniforms_binding_ptr = &frame.program_bindings.Get({ Vertex, "g_uniforms" });
+            frame.uniforms_binding_ptr = &frame.program_bindings.Get({ Rhi::ShaderType::Vertex, "g_uniforms" });
 #else
             // Create vertex buffers for each frame
             Rhi::Buffer vertex_buffer = GetRenderContext().CreateBuffer(Rhi::BufferSettings::ForVertexBuffer(m_cube_mesh.GetVertexDataSize(), m_cube_mesh.GetVertexSize(), true));
