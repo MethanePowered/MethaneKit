@@ -77,7 +77,7 @@ private:
             if (IsEmpty())
             {
                 const TSize char_size_with_margins = rect.size + char_margins;
-                if (!char_size_with_margins.ContainedIn(m_rect.size))
+                if (!char_size_with_margins.ContainedInOrEqual(m_rect.size))
                     return false;
 
                 // Split node rectangle either vertically or horizontally,
