@@ -72,6 +72,7 @@ struct IProgramArgumentBinding
     // IProgramArgumentBinding interface
     [[nodiscard]] virtual const Settings&      GetSettings() const noexcept = 0;
     [[nodiscard]] virtual const ResourceViews& GetResourceViews() const noexcept = 0;
+    virtual bool                               SetResourceViews(ResourceViewSpan resource_views) = 0;
     virtual bool                               SetResourceViews(const ResourceViews& resource_views) = 0;
     virtual bool                               SetResourceView(const ResourceView& resource_view) = 0;
     [[nodiscard]] virtual RootConstant         GetRootConstant() const = 0;

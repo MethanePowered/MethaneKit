@@ -26,9 +26,8 @@ Methane shader interface: defines programmable stage of the graphics pipeline.
 #include <Methane/Memory.hpp>
 
 #include <string>
-#include <string_view>
 #include <set>
-#include <map>
+#include <span>
 
 namespace Methane::Data
 {
@@ -59,7 +58,7 @@ struct ShaderMacroDefinition
 
     friend bool operator==(const ShaderMacroDefinition& left, const ShaderMacroDefinition& right) noexcept = default;
 
-    [[nodiscard]] static std::string ToString(const std::vector<ShaderMacroDefinition>& macro_definitions,
+    [[nodiscard]] static std::string ToString(std::span<const ShaderMacroDefinition> macro_definitions,
                                               std::string_view splitter = ", ") noexcept;
 };
 

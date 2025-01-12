@@ -72,7 +72,7 @@ public:
 
     // IArgumentBinding interface
     const Settings& GetSettings() const noexcept override { return m_settings_vk; }
-    bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
+    bool SetResourceViews(Rhi::ResourceViewSpan resource_views) override;
 
     void UpdateDescriptorSetsOnGpu();
 
@@ -81,7 +81,7 @@ protected:
     bool UpdateRootConstantResourceViews() override;
 
 private:
-    void SetDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views);
+    void SetDescriptorsForResourceViews(Rhi::ResourceViewSpan resource_views);
 
     Settings                              m_settings_vk;
     vk::DescriptorSet                     m_vk_descriptor_set;

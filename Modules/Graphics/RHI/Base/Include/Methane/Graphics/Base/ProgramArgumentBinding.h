@@ -54,8 +54,9 @@ public:
     // IArgumentBinding interface
     const Settings&           GetSettings() const noexcept override     { return m_settings; }
     const Rhi::ResourceViews& GetResourceViews() const noexcept final   { return m_resource_views; }
-    bool                      SetResourceViews(const Rhi::ResourceViews& resource_views) override;
-    bool                      SetResourceView(const Rhi::ResourceView& resource_view) override;
+    bool                      SetResourceViews(Rhi::ResourceViewSpan resource_views) override;
+    bool                      SetResourceViews(const Rhi::ResourceViews& resource_views) final;
+    bool                      SetResourceView(const Rhi::ResourceView& resource_view) final;
     Rhi::RootConstant         GetRootConstant() const final;
     bool                      SetRootConstant(const Rhi::RootConstant& root_constant) override;
     explicit operator std::string() const final;

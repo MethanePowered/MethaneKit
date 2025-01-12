@@ -62,7 +62,7 @@ public:
     void MergeSettings(const Base::ProgramArgumentBinding& other) override;
 
     // IArgumentBinding interface
-    bool SetResourceViews(const Rhi::ResourceViews& resource_views) override;
+    bool SetResourceViews(Rhi::ResourceViewSpan resource_views) override;
 
     void UpdateArgumentBufferOffsets(const Program& program);
 
@@ -81,7 +81,7 @@ protected:
     bool UpdateRootConstantResourceViews() override;
 
 private:
-    void SetMetalResourcesForViews(const Rhi::ResourceViews& resource_views);
+    void SetMetalResourcesForViews(Rhi::ResourceViewSpan resource_views);
 
     Settings            m_settings_mt;
     MTLResourceUsage    m_mtl_resource_usage = MTLResourceUsageRead;

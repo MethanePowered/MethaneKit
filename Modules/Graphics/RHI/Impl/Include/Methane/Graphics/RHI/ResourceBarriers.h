@@ -53,6 +53,9 @@ public:
     META_PIMPL_API explicit ResourceBarriers(const Ptr<IResourceBarriers>& interface_ptr);
     META_PIMPL_API explicit ResourceBarriers(IResourceBarriers& interface_ref);
     META_PIMPL_API explicit ResourceBarriers(const Set& barriers);
+    META_PIMPL_API ResourceBarriers(RefSpan<IResource> resources,
+                                    const Opt<Barrier::StateChange>& state_change,
+                                    const Opt<Barrier::OwnerChange>& owner_change);
     META_PIMPL_API ResourceBarriers(const Refs<IResource>& resources,
                                     const Opt<Barrier::StateChange>& state_change,
                                     const Opt<Barrier::OwnerChange>& owner_change);

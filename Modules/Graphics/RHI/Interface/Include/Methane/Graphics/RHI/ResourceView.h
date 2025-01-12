@@ -31,6 +31,8 @@ and resource view used in program bindings.
 #include <Methane/Checks.hpp>
 
 #include <optional>
+#include <vector>
+#include <span>
 #include <ranges>
 
 namespace Methane::Graphics::Rhi
@@ -136,6 +138,7 @@ private:
 };
 
 using SubResources = std::vector<SubResource>;
+using SubResourceSpan = std::span<const SubResource>;
 
 struct IResource;
 
@@ -220,9 +223,10 @@ private:
 };
 
 using ResourceViews = std::vector<ResourceView>;
+using ResourceViewSpan = std::span<const ResourceView>;
 
 template<typename IResourceType>
-static ResourceViews CreateResourceViews(const Ptrs<IResourceType>& resource_ptrs)
+ResourceViews CreateResourceViews(PtrSpan<IResourceType> resource_ptrs)
 {
     META_FUNCTION_TASK();
     ResourceViews resource_views;
@@ -236,7 +240,7 @@ static ResourceViews CreateResourceViews(const Ptrs<IResourceType>& resource_ptr
 }
 
 template<typename IResourceType>
-static ResourceViews CreateResourceViews(const Ptr<IResourceType>& resource_ptr)
+ResourceViews CreateResourceViews(const Ptr<IResourceType>& resource_ptr)
 {
     META_FUNCTION_TASK();
     META_CHECK_NOT_NULL(resource_ptr);
@@ -244,7 +248,7 @@ static ResourceViews CreateResourceViews(const Ptr<IResourceType>& resource_ptr)
 }
 
 template<typename ResourceType>
-static ResourceViews CreateResourceViews(const std::vector<ResourceType>& resources)
+ResourceViews CreateResourceViews(std::span<const ResourceType> resources)
 {
     META_FUNCTION_TASK();
     ResourceViews resource_views;
@@ -255,7 +259,7 @@ static ResourceViews CreateResourceViews(const std::vector<ResourceType>& resour
 }
 
 template<typename ResourceType>
-static ResourceViews CreateResourceViews(const ResourceType& resource)
+ResourceViews CreateResourceViews(const ResourceType& resource)
 {
     META_FUNCTION_TASK();
     return { ResourceView(resource.GetInterface()) };

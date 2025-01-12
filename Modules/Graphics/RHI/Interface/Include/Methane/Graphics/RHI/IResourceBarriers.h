@@ -207,6 +207,9 @@ struct IResourceBarriers
     };
 
     [[nodiscard]] static Ptr<IResourceBarriers> Create(const Set& barriers = {});
+    [[nodiscard]] static Ptr<IResourceBarriers> CreateTransitions(RefSpan<IResource> resources,
+                                                                  const Opt<Barrier::StateChange>& state_change,
+                                                                  const Opt<Barrier::OwnerChange>& owner_change);
     [[nodiscard]] static Ptr<IResourceBarriers> CreateTransitions(const Refs<IResource>& resources,
                                                                   const Opt<Barrier::StateChange>& state_change,
                                                                   const Opt<Barrier::OwnerChange>& owner_change);

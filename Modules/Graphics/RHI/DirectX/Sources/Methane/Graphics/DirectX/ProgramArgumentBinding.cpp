@@ -89,7 +89,7 @@ DescriptorHeapType ProgramArgumentBinding::GetDescriptorHeapType() const
            : DescriptorHeapType::ShaderResources;
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
+bool ProgramArgumentBinding::SetResourceViews(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
     if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))

@@ -27,6 +27,9 @@ Methane memory handling smart pointers and references.
 #include <optional>
 #include <functional>
 #include <vector>
+#include <span>
+
+#define META_UNUSED(var) (void)var
 
 namespace Methane
 {
@@ -38,10 +41,16 @@ template<class T>
 using Ptrs = std::vector<Ptr<T>>;
 
 template<class T>
+using PtrSpan = std::span<const Ptr<T>>;
+
+template<class T>
 using WeakPtr = std::weak_ptr<T>;
 
 template<class T>
 using WeakPtrs = std::vector<WeakPtr<T>>;
+
+template<class T>
+using WeakPtrSpan = std::span<const WeakPtr<T>>;
 
 template<class T>
 using UniquePtr = std::unique_ptr<T>;
@@ -50,10 +59,16 @@ template<class T>
 using UniquePtrs = std::vector<UniquePtr<T>>;
 
 template<class T>
+using UniquePtrSpan = std::span<const UniquePtr<T>>;
+
+template<class T>
 using RawPtr = T*;
 
 template<class T>
 using RawPtrs = std::vector<RawPtr<T>>;
+
+template<class T>
+using RawPtrSpan = std::span<const RawPtr<T>>;
 
 template<class T>
 using Ref = std::reference_wrapper<T>;
@@ -62,11 +77,15 @@ template<class T>
 using Refs = std::vector<Ref<T>>;
 
 template<class T>
+using RefSpan = std::span<const Ref<T>>;
+
+template<class T>
 using Opt = std::optional<T>;
 
 template<class T>
 using Opts = std::vector<Opt<T>>;
 
-#define META_UNUSED(var) (void)var
+template<class T>
+using OptSpan = std::span<const Opt<T>>;
 
 } // namespace Methane

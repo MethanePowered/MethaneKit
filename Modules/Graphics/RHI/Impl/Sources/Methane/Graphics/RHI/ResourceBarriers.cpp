@@ -52,6 +52,13 @@ ResourceBarriers::ResourceBarriers(const Set& barriers)
 {
 }
 
+ResourceBarriers::ResourceBarriers(RefSpan<IResource> resources,
+                                   const Opt<Barrier::StateChange>& state_change,
+                                   const Opt<Barrier::OwnerChange>& owner_change)
+    : ResourceBarriers(IResourceBarriers::CreateTransitions(resources, state_change, owner_change))
+{
+}
+
 ResourceBarriers::ResourceBarriers(const Refs<IResource>& resources,
                                    const Opt<Barrier::StateChange>& state_change,
                                    const Opt<Barrier::OwnerChange>& owner_change)

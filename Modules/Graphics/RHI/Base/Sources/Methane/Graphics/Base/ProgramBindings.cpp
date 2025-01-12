@@ -274,7 +274,7 @@ void ProgramBindings::SetResourcesForArguments(const BindingValueByArgument& bin
                         argument_binding.SetRootConstant(value);
                 }
                 else if constexpr (std::is_same_v<T, Rhi::ResourceView>)
-                    argument_binding.SetResourceViews({ value });
+                    argument_binding.SetResourceView(value);
                 else if constexpr (std::is_same_v<T, Rhi::ResourceViews>)
                     argument_binding.SetResourceViews(value);
                 else

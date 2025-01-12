@@ -115,7 +115,7 @@ bool AddDescriptor(std::vector<VkDescriptorType>& descriptors, size_t total_desc
     return true;
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
+bool ProgramArgumentBinding::SetResourceViews(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
     if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
@@ -157,7 +157,7 @@ bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
     return true;
 }
 
-void ProgramArgumentBinding::SetDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views)
+void ProgramArgumentBinding::SetDescriptorsForResourceViews(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
     META_CHECK_TRUE_DESCR(!!m_vk_descriptor_set, "program argument binding descriptor set was not initialized!");

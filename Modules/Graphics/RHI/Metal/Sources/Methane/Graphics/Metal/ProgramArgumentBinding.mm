@@ -104,7 +104,7 @@ void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& o
     }
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
+bool ProgramArgumentBinding::SetResourceViews(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
     CallbackBlocker callback_blocker(*this);
@@ -161,7 +161,7 @@ bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
     return true;
 }
 
-void ProgramArgumentBinding::SetMetalResourcesForViews(const Rhi::ResourceViews& resource_views)
+void ProgramArgumentBinding::SetMetalResourcesForViews(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
 

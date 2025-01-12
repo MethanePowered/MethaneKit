@@ -88,7 +88,7 @@ struct IResource
     using SubResources       = Rhi::SubResources;
 
     template<typename TResource>
-    static Views CreateViews(const Ptrs<TResource>& resources) { return CreateResourceViews(resources); }
+    static Views CreateViews(PtrSpan<TResource> resources) { return CreateResourceViews(resources); }
 
     // IResource interface
     virtual bool SetState(State state) = 0;

@@ -45,7 +45,7 @@ Ptr<IShader> IShader::Create(Type type, const IContext& context, const Settings&
     return context.CreateShader(type, settings);
 }
 
-std::string ShaderMacroDefinition::ToString(const std::vector<ShaderMacroDefinition>& macro_definitions, std::string_view splitter) noexcept
+std::string ShaderMacroDefinition::ToString(std::span<const ShaderMacroDefinition> macro_definitions, std::string_view splitter) noexcept
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
