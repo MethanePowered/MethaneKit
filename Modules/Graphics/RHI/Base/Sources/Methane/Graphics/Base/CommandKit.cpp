@@ -51,9 +51,10 @@ static std::string GetCommandListNameById(Rhi::CommandListId id)
     META_FUNCTION_TASK();
     switch(static_cast<Rhi::CommandListPurpose>(id))
     {
-    case Rhi::CommandListPurpose::Default:        return "Default";
-    case Rhi::CommandListPurpose::PreUploadSync:  return "PreUploadSync";
-    case Rhi::CommandListPurpose::PostUploadSync: return "PostUploadSync";
+    using enum Rhi::CommandListPurpose;
+    case Default:        return "Default";
+    case PreUploadSync:  return "PreUploadSync";
+    case PostUploadSync: return "PostUploadSync";
     }
     return std::to_string(id);
 }
@@ -181,7 +182,7 @@ Rhi::ICommandList& CommandKit::GetListForEncoding(Rhi::CommandListId cmd_list_id
     return cmd_list;
 }
 
-Rhi::ICommandListSet& CommandKit::GetListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+Rhi::ICommandListSet& CommandKit::GetListSet(Rhi::CommandListIdSpan cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     META_FUNCTION_TASK();
     META_CHECK_NOT_EMPTY(cmd_list_ids);
@@ -218,13 +219,13 @@ Rhi::IFence& CommandKit::GetFence(Rhi::CommandListId fence_id) const
     return *fence_ptr;
 }
 
-void CommandKit::ExecuteListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+void CommandKit::ExecuteListSet(Rhi::CommandListIdSpan cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     META_FUNCTION_TASK();
     GetQueue().Execute(GetListSet(cmd_list_ids, frame_index_opt));
 }
 
-void CommandKit::ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+void CommandKit::ExecuteListSetAndWaitForCompletion(Rhi::CommandListIdSpan cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     META_FUNCTION_TASK();
     std::mutex                  execution_wait_mutex;
@@ -249,7 +250,7 @@ CommandKit::CommandListIndex CommandKit::GetCommandListIndexById(Rhi::CommandLis
     return it->second;
 }
 
-CommandKit::CommandListSetId CommandKit::GetCommandListSetId(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+CommandKit::CommandListSetId CommandKit::GetCommandListSetId(Rhi::CommandListIdSpan cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     META_FUNCTION_TASK();
     META_CHECK_LESS_DESCR(cmd_list_ids.size(), g_max_cmd_lists_count, "too many command lists in a set");

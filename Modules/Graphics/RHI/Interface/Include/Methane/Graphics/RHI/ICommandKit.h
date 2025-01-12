@@ -28,8 +28,8 @@ and synchronization within a stored command queue.
 #include "ICommandList.h"
 
 #include <limits>
-#include <vector>
-#include <string_view>
+#include <array>
+#include <span>
 
 namespace Methane::Graphics::Rhi
 {
@@ -40,6 +40,8 @@ struct ICommandListSet;
 struct IFence;
 
 using CommandListId = uint32_t;
+using CommandListIdSpan = std::span<const CommandListId>;
+constexpr std::array<CommandListId, 1U> g_default_command_list_ids {{ 0U }};
 
 enum class CommandListPurpose : CommandListId // NOSONAR - multiple values initialized
 {
@@ -63,10 +65,13 @@ struct ICommandKit
     [[nodiscard]] virtual bool             HasListWithState(CommandListState cmd_list_state, CommandListId cmd_list_id = 0U) const noexcept = 0;
     [[nodiscard]] virtual ICommandList&    GetList(CommandListId cmd_list_id = 0U) const = 0;
     [[nodiscard]] virtual ICommandList&    GetListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const = 0;
-    [[nodiscard]] virtual ICommandListSet& GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const = 0;
+    [[nodiscard]] virtual ICommandListSet& GetListSet(CommandListIdSpan cmd_list_ids = g_default_command_list_ids,
+                                                      Opt<Data::Index> frame_index_opt = {}) const = 0;
     [[nodiscard]] virtual IFence&          GetFence(CommandListId fence_id = 0U) const = 0;
-    virtual void ExecuteListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const = 0;
-    virtual void ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const = 0;
+    virtual void ExecuteListSet(CommandListIdSpan cmd_list_ids = g_default_command_list_ids,
+                                Opt<Data::Index> frame_index_opt = {}) const = 0;
+    virtual void ExecuteListSetAndWaitForCompletion(Rhi::CommandListIdSpan cmd_list_ids = g_default_command_list_ids,
+                                                    Opt<Data::Index> frame_index_opt = {}) const = 0;
 };
 
 } // namespace Methane::Graphics::Rhi

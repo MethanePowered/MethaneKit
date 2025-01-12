@@ -44,7 +44,7 @@ static tf::Executor g_parallel_executor;
 
 TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
 {
-    const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
+    const auto              compute_context   = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
     const Rhi::CommandQueue compute_cmd_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Compute);
 
     SECTION("Command Kit Construction")
@@ -170,10 +170,12 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
         CHECK_FALSE(compute_cmd_kit.HasListWithState(Rhi::CommandListState::Encoding, cmd_list_id));
     }
 
+    constexpr std::array<Rhi::CommandListId, 2U> g_command_list_ids_0_1 = { 0U, 1U };
+
     SECTION("Get Command List Set of Compute Command Kit")
     {
         Rhi::CommandListSet cmd_list_set;
-        REQUIRE_NOTHROW(cmd_list_set = compute_cmd_kit.GetListSet({ 0U, 1U }, 2U));
+        REQUIRE_NOTHROW(cmd_list_set = compute_cmd_kit.GetListSet(g_command_list_ids_0_1, 2U));
         REQUIRE(cmd_list_set.IsInitialized());
         REQUIRE(cmd_list_set.GetCount() == 2);
         CHECK(cmd_list_set.GetFrameIndex() == 2U);
@@ -186,15 +188,16 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
     SECTION("Get Fences of Compute Command Kit")
     {
         Rhi::CommandListSet cmd_list_set;
-        REQUIRE_NOTHROW(cmd_list_set = compute_cmd_kit.GetListSet({ 0U, 1U }, 0U));
+        REQUIRE_NOTHROW(cmd_list_set = compute_cmd_kit.GetListSet(g_command_list_ids_0_1, 0U));
         CHECK_NOTHROW(compute_cmd_kit.GetFence(0U));
         CHECK_NOTHROW(compute_cmd_kit.GetFence(1U));
     }
 
     SECTION("Can Execute Non-Existing List Set")
     {
-        CHECK_THROWS(compute_cmd_kit.ExecuteListSet({ 1U, 2U }), 0U);
-        CHECK_THROWS(compute_cmd_kit.ExecuteListSetAndWaitForCompletion({ 1U, 2U }), 0U);
+        constexpr std::array<Rhi::CommandListId, 2U> g_command_list_ids_1_2 = { 1U, 2U };
+        CHECK_THROWS(compute_cmd_kit.ExecuteListSet(g_command_list_ids_1_2), 0U);
+        CHECK_THROWS(compute_cmd_kit.ExecuteListSetAndWaitForCompletion(g_command_list_ids_1_2), 0U);
     }
 
     SECTION("Can not Execute Non-Committed List Set")
@@ -204,8 +207,8 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
         Rhi::CommandListSet cmd_list_set;
         REQUIRE_NOTHROW(primary_cmd_list = compute_cmd_kit.GetComputeListForEncoding(0U));
         REQUIRE_NOTHROW(secondary_cmd_list = compute_cmd_kit.GetComputeListForEncoding(1U));
-        CHECK_THROWS(compute_cmd_kit.ExecuteListSet({ 0U, 1U }), 2U);
-        CHECK_THROWS(compute_cmd_kit.ExecuteListSetAndWaitForCompletion({ 0U, 1U }), 2U);
+        CHECK_THROWS(compute_cmd_kit.ExecuteListSet(g_command_list_ids_0_1), 2U);
+        CHECK_THROWS(compute_cmd_kit.ExecuteListSetAndWaitForCompletion(g_command_list_ids_0_1), 2U);
     }
 
     SECTION("Can Execute Committed List Set")
@@ -217,7 +220,7 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
         REQUIRE_NOTHROW(primary_cmd_list.Commit());
         REQUIRE_NOTHROW(secondary_cmd_list = compute_cmd_kit.GetComputeListForEncoding(1U));
         REQUIRE_NOTHROW(secondary_cmd_list.Commit());
-        CHECK_NOTHROW(compute_cmd_kit.ExecuteListSet({ 0U, 1U }), 2U);
+        CHECK_NOTHROW(compute_cmd_kit.ExecuteListSet(g_command_list_ids_0_1), 2U);
     }
 
 #if 0 // FIXME: fix this test
