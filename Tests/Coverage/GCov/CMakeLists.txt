@@ -14,7 +14,6 @@ list(APPEND TEST_TARGETS
 list(APPEND EXCLUDE_DIRS
     /usr/include/*
     /usr/lib/*
-    Externals/*
     Build/*
 )
 
@@ -29,4 +28,5 @@ setup_target_for_coverage_lcov(
     EXECUTABLE ctest -j 4 || true # Suppress error on test failures
     DEPENDENCIES ${TEST_TARGETS}
     EXCLUDE ${EXCLUDE_DIRS}
+    LCOV_ARGS --ignore-errors=mismatch,unused # disable specific LCov 2.0 errors
 )

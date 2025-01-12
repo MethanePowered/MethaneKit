@@ -171,6 +171,8 @@ else() # Clang or GCC on Linux/MacOS
         target_compile_options(MethaneBuildOptions INTERFACE
             # Disable useless GCC warnings
             -Wno-ignored-qualifiers
+            # Options requires for code coverage
+            $<$<BOOL:${METHANE_CODE_COVERAGE_ENABLED}>:-fprofile-update=atomic>
         )
 
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
