@@ -77,19 +77,19 @@ void ParallelRenderingApp::Init()
     // Create render state with program
     rhi::RenderState::Settings render_state_settings
     {
-        GetRenderContext().CreateProgram(
+        .program = GetRenderContext().CreateProgram(
             rhi::Program::Settings
             {
                 ...
-                rhi::ProgramArgumentAccessors
+                .argument_accessors = rhi::ProgramArgumentAccessors
                 {
                     // Override argument binding: use root constant buffer for uniforms
                     META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::All, "g_uniforms")
                 },
-                GetScreenRenderPattern().GetAttachmentFormats()
+                .attachment_formats = GetScreenRenderPattern().GetAttachmentFormats()
             }
         ),
-        GetScreenRenderPattern()
+        .render_pattern = GetScreenRenderPattern()
     };
     render_state_settings.depth.enabled = true;
     m_render_state = GetRenderContext().CreateRenderState( render_state_settings);
@@ -140,19 +140,19 @@ void ParallelRenderingApp::Init()
     // Create render state with program
     rhi::RenderState::Settings render_state_settings
     {
-        GetRenderContext().CreateProgram(
+        .program = GetRenderContext().CreateProgram(
             rhi::Program::Settings
             {
                 ...
-                rhi::ProgramArgumentAccessors
+                .argument_accessors = rhi::ProgramArgumentAccessors
                 {
                     // Override argument binding: use uniform buffer address
                     META_PROGRAM_ARG_BUFFER_ADDRESS_MUTABLE(rhi::ShaderType::All, "g_uniforms")
                 },
-                GetScreenRenderPattern().GetAttachmentFormats()
+                .attachment_formats = GetScreenRenderPattern().GetAttachmentFormats()
             }
         ),
-        GetScreenRenderPattern()
+        .render_pattern = GetScreenRenderPattern()
     };
     render_state_settings.depth.enabled = true;
     m_render_state = GetRenderContext().CreateRenderState( render_state_settings);

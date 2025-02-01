@@ -117,20 +117,18 @@ public:
         m_render_state = GetRenderContext().CreateRenderState(
             Rhi::RenderState::Settings
             {
-                GetRenderContext().CreateProgram(
+                .program = GetRenderContext().CreateProgram(
                     Rhi::Program::Settings
                     {
-                        Rhi::Program::ShaderSet
+                        .shader_set = Rhi::Program::ShaderSet
                         {
                             { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloTriangle", "TriangleVS" } } },
                             { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloTriangle", "TrianglePS" } } },
                         },
-                        Rhi::ProgramInputBufferLayouts{ },
-                        Rhi::ProgramArgumentAccessors{ },
-                        GetScreenRenderPattern().GetAttachmentFormats()
+                        .attachment_formats = GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
-                GetScreenRenderPattern()
+                .render_pattern = GetScreenRenderPattern()
             }
         );
         m_render_state.SetName("Triangle Render State");
@@ -149,8 +147,6 @@ public:
     ...
 };
 ```
-
-## Frame Rendering Cycle
 
 ## Frame Rendering Cycle
 

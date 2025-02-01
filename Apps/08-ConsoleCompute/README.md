@@ -52,10 +52,16 @@ void ConsoleComputeApp::Init()
     m_compute_context.SetName("Game of Life");
 
     m_compute_state = m_compute_context.CreateComputeState({
-            m_compute_context.CreateProgram({
-                rhi::Program::ShaderSet { { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } } }
-            }),
-        rhi::ThreadGroupSize(16U, 16U, 1U)
+        .program = m_compute_context.CreateProgram({
+            .shader_set = rhi::Program::ShaderSet {
+                { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } }
+            },
+            .argument_accessors = rhi::ProgramArgumentAccessors
+            {
+                META_PROGRAM_ARG_ROOT_VALUE_CONSTANT(rhi::ShaderType::Compute, "g_constants")
+            },
+        }),
+        .thread_group_size = rhi::ThreadGroupSize(16U, 16U, 1U)
     });
     m_compute_state.GetProgram().SetName("Game of Life Program");
     m_compute_state.SetName("Game of Life Compute State");

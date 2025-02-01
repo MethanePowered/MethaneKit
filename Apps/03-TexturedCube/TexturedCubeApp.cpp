@@ -111,30 +111,30 @@ void TexturedCubeApp::Init()
     m_render_state = GetRenderContext().CreateRenderState(
         rhi::RenderState::Settings
         {
-            GetRenderContext().CreateProgram(
+            .program = GetRenderContext().CreateProgram(
                 rhi::Program::Settings
                 {
-                    rhi::Program::ShaderSet
+                    .shader_set = rhi::Program::ShaderSet
                     {
                         { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "TexturedCube", "CubeVS" } } },
                         { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "TexturedCube", "CubePS" } } },
                     },
-                    rhi::ProgramInputBufferLayouts
+                    .input_buffer_layouts = rhi::ProgramInputBufferLayouts
                     {
                         rhi::Program::InputBufferLayout
                         {
                             rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                         }
                     },
-                    rhi::ProgramArgumentAccessors
+                    .argument_accessors = rhi::ProgramArgumentAccessors
                     {
                         META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
                         META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::All, "g_uniforms")
                     },
-                    GetScreenRenderPattern().GetAttachmentFormats()
+                    .attachment_formats = GetScreenRenderPattern().GetAttachmentFormats()
                 }
             ),
-            GetScreenRenderPattern()
+            .render_pattern = GetScreenRenderPattern()
         }
     );
     m_render_state.GetSettings().program_ptr->SetName("Textured Phong Lighting");
@@ -199,7 +199,8 @@ bool TexturedCubeApp::Update()
         return false;
 
     // Update Model, View, Projection matrices based on camera location
-    m_shader_uniforms.mvp_matrix   = hlslpp::transpose(hlslpp::mul(m_shader_uniforms.model_matrix, m_camera.GetViewProjMatrix()));
+    m_shader_uniforms.mvp_matrix   = hlslpp::transpose(hlslpp::mul(m_shader_uniforms.model_matrix,
+                                                                   m_camera.GetViewProjMatrix()));
     m_shader_uniforms.eye_position = m_camera.GetOrientation().eye;
 
     GetCurrentFrame().uniforms_binding_ptr->SetRootConstant(rhi::RootConstant(m_shader_uniforms));

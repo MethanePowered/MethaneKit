@@ -319,9 +319,9 @@ Data::FrameSize AppLin::InitWindow()
     m_state_hidden_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_HIDDEN");
     m_state_fullscreen_atom = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_FULLSCREEN");
 
-    if (settings.icon_provider)
+    if (settings.icon_provider_ptr)
     {
-        SetWindowIcon(*settings.icon_provider);
+        SetWindowIcon(*settings.icon_provider_ptr);
     }
 
     xcb_map_window(m_env.connection, m_env.window);

@@ -135,22 +135,22 @@ void ParallelRenderingApp::Init()
     // Create render state with program
     rhi::RenderState::Settings render_state_settings
     {
-        GetRenderContext().CreateProgram(
+        .program = GetRenderContext().CreateProgram(
             rhi::Program::Settings
             {
-                rhi::Program::ShaderSet
+                .shader_set = rhi::Program::ShaderSet
                 {
                     { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "ParallelRendering", "CubeVS" } } },
                     { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "ParallelRendering", "CubePS" } } },
                 },
-                rhi::ProgramInputBufferLayouts
+                .input_buffer_layouts = rhi::ProgramInputBufferLayouts
                 {
                     rhi::Program::InputBufferLayout
                     {
                         rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                rhi::ProgramArgumentAccessors
+                .argument_accessors = rhi::ProgramArgumentAccessors
                 {
                     // Addressable argument is manually defined
 #ifdef ROOT_CONSTANTS_ENABLED
@@ -160,10 +160,10 @@ void ParallelRenderingApp::Init()
 #endif
                     // Other arguments are defined in shader register spaces
                 },
-                GetScreenRenderPattern().GetAttachmentFormats()
+                .attachment_formats = GetScreenRenderPattern().GetAttachmentFormats()
             }
         ),
-        GetScreenRenderPattern()
+        .render_pattern = GetScreenRenderPattern()
     };
     render_state_settings.program.SetName("Render Pipeline State");
     render_state_settings.depth.enabled = true;
@@ -203,7 +203,7 @@ void ParallelRenderingApp::Init()
         frame.cubes_array.uniforms_buffer = GetRenderContext().CreateBuffer(
             rhi::BufferSettings::ForConstantBuffer(m_cube_array_buffers_ptr->GetUniformsBufferSize(), true, true));
         frame.cubes_array.uniforms_buffer.SetName(fmt::format("Uniforms Buffer {}", frame.index));
-#endif
+#endif // ROOT_CONSTANTS_ENABLED
 
         // Configure program resource bindings
 #ifdef ROOT_CONSTANTS_ENABLED
@@ -215,7 +215,7 @@ void ParallelRenderingApp::Init()
         }, frame.index);
         frame.cubes_uniform_argument_binding_ptrs[0] = &frame.cubes_program_bindings[0].Get({ rhi::ShaderType::All, "g_uniforms" });
         frame.cubes_program_bindings[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
-#else
+#else // ROOT_CONSTANTS_ENABLED
         static const Data::Size uniform_data_size = MeshBuffers::GetUniformSize();
         frame.cubes_array.program_bindings_per_instance.resize(cubes_count);
         frame.cubes_array.program_bindings_per_instance[0] = render_state_settings.program.CreateBindings({
@@ -230,7 +230,7 @@ void ParallelRenderingApp::Init()
         frame.cubes_array.program_bindings_per_instance[0].SetName(fmt::format("Cube 0 Bindings {}", frame.index));
 
         const MeshBuffers& cube_array_buffers = *m_cube_array_buffers_ptr;
-#endif
+#endif // ROOT_CONSTANTS_ENABLED
 
         program_bindings_task_flow.for_each_index(1U, cubes_count, 1U,
 #ifdef ROOT_CONSTANTS_ENABLED
@@ -241,7 +241,7 @@ void ParallelRenderingApp::Init()
                 frame.cubes_uniform_argument_binding_ptrs[cube_index] = &cube_program_bindings.Get({ rhi::ShaderType::All, "g_uniforms" });
                 cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
             }
-#else
+#else // ROOT_CONSTANTS_ENABLED
             [&frame, &cube_array_buffers](const uint32_t cube_index)
             {
                 rhi::ProgramBindings& cube_program_bindings = frame.cubes_array.program_bindings_per_instance[cube_index];
@@ -255,7 +255,7 @@ void ParallelRenderingApp::Init()
                 }, frame.index);
                 cube_program_bindings.SetName(fmt::format("Cube {} Bindings {}", cube_index, frame.index));
             }
-#endif
+#endif // ROOT_CONSTANTS_ENABLED
         );
 
         if (m_settings.parallel_rendering_enabled)
@@ -378,8 +378,10 @@ bool ParallelRenderingApp::Animate(double, double delta_seconds)
     task_flow.for_each(m_cube_array_parameters.begin(), m_cube_array_parameters.end(),
         [delta_angle_rad](CubeParameters& cube_params)
         {
-            const hlslpp::float4x4 rotate_matrix = hlslpp::mul(hlslpp::float4x4::rotation_z(static_cast<float>(delta_angle_rad * cube_params.rotation_speed_z)),
-                                                               hlslpp::float4x4::rotation_y(static_cast<float>(delta_angle_rad * cube_params.rotation_speed_y)));
+            const hlslpp::float4x4 rotate_matrix = hlslpp::mul(
+                hlslpp::float4x4::rotation_z(static_cast<float>(delta_angle_rad * cube_params.rotation_speed_z)),
+                hlslpp::float4x4::rotation_y(static_cast<float>(delta_angle_rad * cube_params.rotation_speed_y))
+            );
             cube_params.model_matrix = hlslpp::mul(rotate_matrix, cube_params.model_matrix);
         });
 
@@ -419,10 +421,10 @@ bool ParallelRenderingApp::Update()
 
 #ifdef ROOT_CONSTANTS_ENABLED
             frame.cubes_uniform_argument_binding_ptrs[cube_index]->SetRootConstant(rhi::RootConstant(uniforms));
-#else
+#else // ROOT_CONSTANTS_ENABLED
             META_UNUSED(frame);
             m_cube_array_buffers_ptr->SetFinalPassUniforms(std::move(uniforms), cube_index);
-#endif
+#endif // ROOT_CONSTANTS_ENABLED
         });
 
     GetRenderContext().GetParallelExecutor().run(task_flow).get();
@@ -440,11 +442,11 @@ bool ParallelRenderingApp::Render()
 
 #ifdef ROOT_CONSTANTS_ENABLED
     const auto& cubes_program_bindings = frame.cubes_program_bindings;
-#else
+#else // ROOT_CONSTANTS_ENABLED
     // Update uniforms buffer related to current frame
     frame.cubes_array.uniforms_buffer.SetData(render_cmd_queue, m_cube_array_buffers_ptr->GetFinalPassUniformsSubresource());
     const auto& cubes_program_bindings = frame.cubes_array.program_bindings_per_instance;
-#endif
+#endif // ROOT_CONSTANTS_ENABLED
 
     // Render cube instances of 'CUBE_MAP_ARRAY_SIZE' count
     if (m_settings.parallel_rendering_enabled)
@@ -470,10 +472,10 @@ bool ParallelRenderingApp::Render()
 
         // Execute rendering in multiple threads
         GetRenderContext().GetParallelExecutor().run(render_task_flow).get();
-#else
+#else // EXPLICIT_PARALLEL_RENDERING_ENABLED
         // The same parallel rendering is done inside MeshBuffers::DrawParallel helper function
         m_cube_array_buffers_ptr->DrawParallel(frame.parallel_render_cmd_list, cubes_program_bindings);
-#endif
+#endif // EXPLICIT_PARALLEL_RENDERING_ENABLED
 
         RenderOverlay(frame.parallel_render_cmd_list.GetParallelCommandLists().back());
         frame.parallel_render_cmd_list.Commit();
@@ -486,9 +488,9 @@ bool ParallelRenderingApp::Render()
 
 #ifdef EXPLICIT_PARALLEL_RENDERING_ENABLED
         RenderCubesRange(frame.serial_render_cmd_list, cubes_program_bindings, 0U, m_cube_array_buffers_ptr->GetInstanceCount());
-#else
+#else // EXPLICIT_PARALLEL_RENDERING_ENABLED
         m_cube_array_buffers_ptr->Draw(frame.serial_render_cmd_list, cubes_program_bindings);
-#endif
+#endif // EXPLICIT_PARALLEL_RENDERING_ENABLED
 
         RenderOverlay(frame.serial_render_cmd_list);
         frame.serial_render_cmd_list.Commit();

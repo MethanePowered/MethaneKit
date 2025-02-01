@@ -40,7 +40,7 @@ struct AppSettings
     Data::FloatSize  size     { 0.8F, 0.8F};   // if dimension < 1.0 use as ratio of desktop size; else use as exact size in pixels/dots
     Data::FrameSize  min_size { 640U, 480U };
     bool             is_full_screen = false;
-    Data::IProvider* icon_provider  = nullptr;
+    Data::IProvider* icon_provider_ptr  = nullptr;
 
     AppSettings& SetName(std::string&& new_name) noexcept;
     AppSettings& SetSize(Data::FloatSize&& new_size) noexcept;

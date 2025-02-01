@@ -94,28 +94,28 @@ void CubeMapArrayApp::Init()
     // Create render state with program
     rhi::RenderState::Settings render_state_settings
     {
-        GetRenderContext().CreateProgram(
+        .program = GetRenderContext().CreateProgram(
             rhi::Program::Settings
             {
-                rhi::Program::ShaderSet
+                .shader_set = rhi::Program::ShaderSet
                 {
                     { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "CubeMapArray", "CubeVS" } } },
                     { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "CubeMapArray", "CubePS" } } },
                 },
-                rhi::ProgramInputBufferLayouts
+                .input_buffer_layouts = rhi::ProgramInputBufferLayouts
                 {
                     rhi::IProgram::InputBufferLayout
                     {
                         rhi::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                rhi::ProgramArgumentAccessors
+                .argument_accessors = rhi::ProgramArgumentAccessors
                 {
                     META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::Vertex, "g_uniforms")
                 },
-                GetScreenRenderPattern().GetAttachmentFormats()
+                .attachment_formats = GetScreenRenderPattern().GetAttachmentFormats()
             }),
-        GetScreenRenderPattern()
+        .render_pattern = GetScreenRenderPattern()
     };
     render_state_settings.program.SetName("Render Pipeline State");
     render_state_settings.depth.enabled = true;
@@ -162,9 +162,9 @@ void CubeMapArrayApp::Init()
     m_sky_box = gfx::SkyBox(render_cmd_queue, GetScreenRenderPattern(), sky_box_texture,
         gfx::SkyBox::Settings
         {
-            m_camera,
-            g_model_scale * 100.F,
-            gfx::SkyBox::OptionMask({ gfx::SkyBox::Option::DepthEnabled, gfx::SkyBox::Option::DepthReversed })
+            .view_camera = m_camera,
+            .scale = g_model_scale * 100.F,
+            .render_options = gfx::SkyBox::OptionMask({ gfx::SkyBox::Option::DepthEnabled, gfx::SkyBox::Option::DepthReversed })
         });
 
     // Create frame buffer resources

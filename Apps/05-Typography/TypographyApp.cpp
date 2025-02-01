@@ -181,9 +181,9 @@ void TypographyApp::Init()
             m_font_context.GetFont(
                 gui::Font::Settings
                 {
-                    font_settings.desc,
-                    GetUIContext().GetFontResolutionDpi(),
-                    gui::Font::GetAlphabetFromText(displayed_text_block)
+                    .description    = font_settings.desc,
+                    .resolution_dpi = GetUIContext().GetFontResolutionDpi(),
+                    .characters     = gui::Font::GetAlphabetFromText(displayed_text_block)
                 }
             )
         );
@@ -193,17 +193,17 @@ void TypographyApp::Init()
             std::make_shared<gui::TextItem>(GetUIContext(), m_fonts.back(),
                 gui::Text::SettingsUtf32
                 {
-                    font_settings.desc.name,
-                    displayed_text_block,
-                    gui::UnitRect
+                    .name = font_settings.desc.name,
+                    .text = displayed_text_block,
+                    .rect = gui::UnitRect
                     {
                         gui::Units::Dots,
                         gfx::Point2I { g_margin_size_in_dots, vertical_text_pos_in_dots },
                         gfx::FrameSize { frame_width_without_margins, 0U /* calculated height */ }
                     },
-                    m_settings.text_layout,
-                    gfx::Color4F(font_settings.color, 1.F),
-                    m_settings.is_incremental_text_update
+                    .layout = m_settings.text_layout,
+                    .color  = gfx::Color4F(font_settings.color, 1.F),
+                    .incremental_update = m_settings.is_incremental_text_update
                 }
             )
         );
@@ -234,12 +234,12 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const
         GetUIContext(), atlas_texture,
         gui::Badge::Settings
         {
-            font.GetSettings().description.name + " Font Atlas",
-            gui::Badge::FrameCorner::BottomLeft,
-            gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture.GetSettings().dimensions)),
-            gui::UnitSize(gui::Units::Dots, 16U, 16U),
-            gui::Color4F(font_color, 0.5F),
-            gui::Badge::TextureMode::RFloatToAlpha,
+            .name         = font.GetSettings().description.name + " Font Atlas",
+            .corner       = gui::Badge::FrameCorner::BottomLeft,
+            .size         = gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture.GetSettings().dimensions)),
+            .margins      = gui::UnitSize(gui::Units::Dots, 16U, 16U),
+            .blend_color  = gui::Color4F(font_color, 0.5F),
+            .texture_mode = gui::Badge::TextureMode::RFloatToAlpha,
         }
     );
 }
