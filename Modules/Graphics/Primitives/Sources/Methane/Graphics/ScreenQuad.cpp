@@ -103,7 +103,6 @@ public:
         , m_texture(texture)
     {
         META_FUNCTION_TASK();
-        using enum Rhi::ShaderType;
 
         if (m_settings.texture_mode != TextureMode::Disabled)
         {
@@ -126,40 +125,55 @@ public:
         {
             Rhi::RenderState::Settings state_settings
             {
-                Rhi::Program(render_context,
+                .program = Rhi::Program(render_context,
                     Rhi::Program::Settings
                     {
-                        Rhi::Program::ShaderSet
+                        .shader_set = Rhi::Program::ShaderSet
                         {
-                            { Vertex, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } } },
-                            { Pixel,  { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions } },
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadVS" }, { } } },
+                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "ScreenQuad", "QuadPS" }, ps_macro_definitions } },
                         },
-                        Rhi::ProgramInputBufferLayouts
+                        .input_buffer_layouts = Rhi::ProgramInputBufferLayouts
                         {
                             Rhi::IProgram::InputBufferLayout
                             {
                                 Rhi::IProgram::InputBufferLayout::ArgumentSemantics { s_quad_mesh.GetVertexLayout().GetSemantics() }
                             }
                         },
-                        Rhi::ProgramArgumentAccessors
+                        .argument_accessors = Rhi::ProgramArgumentAccessors
                         {
-                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(Pixel, "g_constants")
+                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(Rhi::ShaderType::Pixel, "g_constants")
                         },
-                        render_pattern.GetAttachmentFormats(),
+                        .attachment_formats = render_pattern.GetAttachmentFormats(),
                     }),
-                render_pattern
+                .render_pattern = render_pattern,
+                .rasterizer = Rhi::RasterizerSettings
+                {
+                    .is_front_counter_clockwise = true
+                },
+                .depth = Rhi::DepthSettings
+                {
+                    .enabled       = false,
+                    .write_enabled = false
+                },
+                .blending = Rhi::BlendingSettings
+                {
+                    .render_targets = Rhi::BlendingSettings::RenderTargets
+                    {{
+                        Rhi::RenderTargetSettings
+                        {
+                            .blend_enabled             = m_settings.alpha_blending_enabled,
+                            .source_rgb_blend_factor   = Rhi::BlendingFactor::SourceAlpha,
+                            .source_alpha_blend_factor = Rhi::BlendingFactor::Zero,
+                            .dest_rgb_blend_factor     = Rhi::BlendingFactor::OneMinusSourceAlpha,
+                            .dest_alpha_blend_factor   = Rhi::BlendingFactor::Zero
+                        }
+                    }}
+                }
             };
             state_settings.program.SetName(fmt::format("{} Shading", quad_name));
-            state_settings.depth.enabled                                        = false;
-            state_settings.depth.write_enabled                                  = false;
-            state_settings.rasterizer.is_front_counter_clockwise                = true;
-            state_settings.blending.render_targets[0].blend_enabled             = m_settings.alpha_blending_enabled;
-            state_settings.blending.render_targets[0].source_rgb_blend_factor   = Rhi::IRenderState::Blending::Factor::SourceAlpha;
-            state_settings.blending.render_targets[0].dest_rgb_blend_factor     = Rhi::IRenderState::Blending::Factor::OneMinusSourceAlpha;
-            state_settings.blending.render_targets[0].source_alpha_blend_factor = Rhi::IRenderState::Blending::Factor::Zero;
-            state_settings.blending.render_targets[0].dest_alpha_blend_factor   = Rhi::IRenderState::Blending::Factor::Zero;
 
-            m_render_state = render_context.CreateRenderState( state_settings);
+            m_render_state = render_context.CreateRenderState(state_settings);
             m_render_state.SetName(state_name);
 
             render_context.GetObjectRegistry().AddGraphicsObject(m_render_state.GetInterface());
@@ -238,8 +252,8 @@ public:
         if (m_settings.texture_mode != TextureMode::Disabled)
         {
             program_binding_resource_views = {
-                { { Pixel, "g_texture" }, m_texture.GetResourceView() },
-                { { Pixel, "g_sampler" }, m_texture_sampler.GetResourceView() }
+                { { Rhi::ShaderType::Pixel, "g_texture" }, m_texture.GetResourceView() },
+                { { Rhi::ShaderType::Pixel, "g_sampler" }, m_texture_sampler.GetResourceView() }
             };
         }
 

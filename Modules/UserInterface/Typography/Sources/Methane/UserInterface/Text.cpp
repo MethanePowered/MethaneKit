@@ -327,42 +327,56 @@ public:
         }
         else
         {
-            using enum rhi::ShaderType;
             rhi::RenderState::Settings state_settings
             {
-                rhi::Program(
+                .program = rhi::Program(
                     m_ui_context.GetRenderContext(),
                     rhi::Program::Settings
                     {
-                        rhi::Program::ShaderSet
+                        .shader_set = rhi::Program::ShaderSet
                         {
-                            { Vertex, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, {} } },
-                            { Pixel,  { Data::ShaderProvider::Get(), { "Text", "TextPS" }, {} } },
+                            { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, {} } },
+                            { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Text", "TextPS" }, {} } },
                         },
-                        rhi::ProgramInputBufferLayouts
+                        .input_buffer_layouts = rhi::ProgramInputBufferLayouts
                         {
                             rhi::Program::InputBufferLayout
                             {
                                 rhi::Program::InputBufferLayout::ArgumentSemantics{ "POSITION", "TEXCOORD" }
                             }
                         },
-                        rhi::ProgramArgumentAccessors{
-                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(Pixel, "g_constants"),
-                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(Vertex, "g_uniforms")
+                        .argument_accessors = rhi::ProgramArgumentAccessors{
+                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Pixel, "g_constants"),
+                            META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Vertex, "g_uniforms")
                         },
-                        render_pattern.GetAttachmentFormats()
+                        .attachment_formats = render_pattern.GetAttachmentFormats()
                     }),
-                render_pattern
+                .render_pattern = render_pattern,
+                .rasterizer = rhi::RasterizerSettings
+                {
+                    .is_front_counter_clockwise = true
+                },
+                .depth = rhi::DepthSettings
+                {
+                    .enabled       = false,
+                    .write_enabled = false
+                },
+                .blending = rhi::BlendingSettings
+                {
+                    .render_targets = rhi::BlendingSettings::RenderTargets
+                    {{
+                        rhi::RenderTargetSettings
+                        {
+                            .blend_enabled             = true,
+                            .source_rgb_blend_factor   = Graphics::Rhi::BlendingFactor::SourceAlpha,
+                            .source_alpha_blend_factor = Graphics::Rhi::BlendingFactor::Zero,
+                            .dest_rgb_blend_factor     = Graphics::Rhi::BlendingFactor::OneMinusSourceAlpha,
+                            .dest_alpha_blend_factor   = Graphics::Rhi::BlendingFactor::Zero
+                        }
+                    }}
+                }
             };
             state_settings.program.SetName("Text Shading");
-            state_settings.depth.enabled                                        = false;
-            state_settings.depth.write_enabled                                  = false;
-            state_settings.rasterizer.is_front_counter_clockwise                = true;
-            state_settings.blending.render_targets[0].blend_enabled             = true;
-            state_settings.blending.render_targets[0].source_rgb_blend_factor   = rhi::IRenderState::Blending::Factor::SourceAlpha;
-            state_settings.blending.render_targets[0].dest_rgb_blend_factor     = rhi::IRenderState::Blending::Factor::OneMinusSourceAlpha;
-            state_settings.blending.render_targets[0].source_alpha_blend_factor = rhi::IRenderState::Blending::Factor::Zero;
-            state_settings.blending.render_targets[0].dest_alpha_blend_factor   = rhi::IRenderState::Blending::Factor::Zero;
 
             m_render_state = m_ui_context.GetRenderContext().CreateRenderState(state_settings);
             m_render_state.SetName(m_settings.state_name);
@@ -581,7 +595,6 @@ public:
         {
             frame_resources.UpdateAtlasTexture(m_font.GetAtlasTexture(m_ui_context.GetRenderContext()));
         }
-
         if (m_render_state.IsInitialized())
         {
             frame_resources.InitializeProgramBindings(m_render_state, m_atlas_sampler, m_settings.name);
