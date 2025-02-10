@@ -31,7 +31,6 @@ CREDIT: This implementation is based on https://github.com/brevzin/span_ext
 
 namespace Methane::Data::SpanComparable
 {
-
     template<typename T>
     concept StrictComparable = requires(const T& t, const T& u)
     {
@@ -63,24 +62,23 @@ namespace Methane::Data::SpanComparable
 
 } // namespace Methane::Data::SpanComparable
 
-namespace std
+namespace std // NOSONAR - namespace is required to extend std
 {
-
-    using namespace Methane::Data::SpanComparable;
-
-    template <equality_comparable T, size_t E, ContinousRangeOf<T> R>
+    template <equality_comparable T, size_t E,
+              Methane::Data::SpanComparable::ContinousRangeOf<T> R>
     constexpr bool operator==(span<T, E> lhs, R const& rhs)
     {
         return ranges::equal(lhs, rhs);
     }
 
-    template <TreeWayCompareInvocable T, size_t E, ContinousRangeOf<T> R>
+    template <Methane::Data::SpanComparable::TreeWayCompareInvocable T, size_t E,
+              Methane::Data::SpanComparable::ContinousRangeOf<T> R>
     constexpr auto operator<=>(span<T, E> lhs, R const& rhs)
     {
         return lexicographical_compare_three_way(
             lhs.begin(), lhs.end(),
             ranges::begin(rhs), ranges::end(rhs),
-            TreeWayCompare);
+            Methane::Data::SpanComparable::TreeWayCompare);
     }
 
 } // namespace std

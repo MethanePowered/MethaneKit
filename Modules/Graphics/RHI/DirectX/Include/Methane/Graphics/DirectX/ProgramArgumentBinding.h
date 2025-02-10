@@ -84,7 +84,7 @@ public:
     [[nodiscard]] Ptr<Base::ProgramArgumentBinding> CreateCopy() const override;
 
     // IArgumentBinding interface
-    bool SetResourceViews(Rhi::ResourceViewSpan resource_views) override;
+    bool SetResourceViewSpan(Rhi::ResourceViewSpan resource_views) override;
 
     const Settings&        GetDirectSettings() const noexcept      { return m_settings_dx; }
     uint32_t               GetRootParameterIndex() const noexcept  { return m_root_parameter_index; }

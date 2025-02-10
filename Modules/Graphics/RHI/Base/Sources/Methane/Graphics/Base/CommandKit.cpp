@@ -146,9 +146,10 @@ Rhi::ICommandList& CommandKit::GetList(Rhi::CommandListId cmd_list_id = 0U) cons
 
     switch (m_cmd_list_type)
     {
-    case Rhi::CommandListType::Transfer: cmd_list_ptr = GetQueue().CreateTransferCommandList(); break;
-    case Rhi::CommandListType::Render:   cmd_list_ptr = RenderCommandList::CreateForSynchronization(GetQueue()); break;
-    case Rhi::CommandListType::Compute:  cmd_list_ptr = GetQueue().CreateComputeCommandList(); break;
+    using enum Rhi::CommandListType;
+    case Transfer: cmd_list_ptr = GetQueue().CreateTransferCommandList(); break;
+    case Render:   cmd_list_ptr = RenderCommandList::CreateForSynchronization(GetQueue()); break;
+    case Compute:  cmd_list_ptr = GetQueue().CreateComputeCommandList(); break;
     default: META_UNEXPECTED(m_cmd_list_type);
     }
 

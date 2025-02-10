@@ -38,10 +38,11 @@ static MTLStoreAction GetLStoreAction(Rhi::RenderPassAttachment::StoreAction sto
     META_FUNCTION_TASK();
     switch(store_action)
     {
-        case Rhi::RenderPassAttachment::StoreAction::DontCare: return MTLStoreActionDontCare;
-        case Rhi::RenderPassAttachment::StoreAction::Store:    return MTLStoreActionStore;
-        case Rhi::RenderPassAttachment::StoreAction::Resolve:  return MTLStoreActionMultisampleResolve;
-        default: META_UNEXPECTED_RETURN(store_action, MTLStoreActionUnknown);
+        using enum Rhi::RenderPassAttachment::StoreAction;
+        case DontCare: return MTLStoreActionDontCare;
+        case Store:    return MTLStoreActionStore;
+        case Resolve:  return MTLStoreActionMultisampleResolve;
+        default:       META_UNEXPECTED_RETURN(store_action, MTLStoreActionUnknown);
     }
 }
 
@@ -50,10 +51,11 @@ static MTLLoadAction GetLLoadAction(Rhi::RenderPassAttachment::LoadAction load_a
     META_FUNCTION_TASK();
     switch(load_action)
     {
-        case Rhi::RenderPassAttachment::LoadAction::DontCare: return MTLLoadActionDontCare;
-        case Rhi::RenderPassAttachment::LoadAction::Load:     return MTLLoadActionLoad;
-        case Rhi::RenderPassAttachment::LoadAction::Clear:    return MTLLoadActionClear;
-        default: META_UNEXPECTED_RETURN(load_action, MTLLoadActionDontCare);
+        using enum Rhi::RenderPassAttachment::LoadAction;
+        case DontCare: return MTLLoadActionDontCare;
+        case Load:     return MTLLoadActionLoad;
+        case Clear:    return MTLLoadActionClear;
+        default:       META_UNEXPECTED_RETURN(load_action, MTLLoadActionDontCare);
     }
 }
 
@@ -70,10 +72,10 @@ static void ConvertRenderPassAttachmentToMetal(const Base::RenderPass& render_pa
     }
     
     META_CHECK_NOT_NULL(mtl_attachment_desc);
-    mtl_attachment_desc.texture       = static_cast<const Texture&>(texture_location.GetTexture()).GetNativeTexture();
-    mtl_attachment_desc.level         = sub_resource_index.GetMipLevel();
-    mtl_attachment_desc.loadAction    = GetLLoadAction(attachment.load_action);
-    mtl_attachment_desc.storeAction   = GetLStoreAction(attachment.store_action);
+    mtl_attachment_desc.texture     = static_cast<const Texture&>(texture_location.GetTexture()).GetNativeTexture();
+    mtl_attachment_desc.level       = sub_resource_index.GetMipLevel();
+    mtl_attachment_desc.loadAction  = GetLLoadAction(attachment.load_action);
+    mtl_attachment_desc.storeAction = GetLStoreAction(attachment.store_action);
     
     if (mtl_attachment_desc.texture.textureType == MTLTextureTypeCube ||
         mtl_attachment_desc.texture.textureType == MTLTextureTypeCubeArray)

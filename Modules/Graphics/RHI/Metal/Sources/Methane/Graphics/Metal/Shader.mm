@@ -45,21 +45,20 @@ Metal implementation of the shader interface.
 namespace Methane::Graphics::Metal
 {
 
-using StepType = Base::Program::InputBufferLayout::StepType;
-
 // Equals size of array MTLVertexBufferLayoutDescriptorArray
 constexpr uint32_t g_max_vertex_shader_input_buffers_count = 31U;
 
 [[nodiscard]]
-static MTLVertexStepFunction GetVertexStepFunction(StepType step_type)
+static MTLVertexStepFunction GetVertexStepFunction(Rhi::ProgramInputBufferLayout::StepType step_type)
 {
     META_FUNCTION_TASK();
     switch(step_type)
     {
-        case StepType::Undefined:   return MTLVertexStepFunctionConstant;
-        case StepType::PerVertex:   return MTLVertexStepFunctionPerVertex;
-        case StepType::PerInstance: return MTLVertexStepFunctionPerInstance;
-        default:                    META_UNEXPECTED_RETURN(step_type, MTLVertexStepFunctionPerVertex);
+        using enum Rhi::ProgramInputBufferLayout::StepType;
+        case Undefined:   return MTLVertexStepFunctionConstant;
+        case PerVertex:   return MTLVertexStepFunctionPerVertex;
+        case PerInstance: return MTLVertexStepFunctionPerInstance;
+        default:          META_UNEXPECTED_RETURN(step_type, MTLVertexStepFunctionPerVertex);
     }
 }
 
@@ -117,11 +116,8 @@ static Rhi::ResourceType GetResourceTypeOfMetalStructMember(MTLStructMember* mtl
     META_FUNCTION_TASK();
     switch(mtl_struct_member.dataType)
     {
-    case MTLDataTypeArray:
-        return GetResourceTypeByMetalDataType(mtl_struct_member.arrayType.elementType);
-
-    default:
-        return GetResourceTypeByMetalDataType(mtl_struct_member.dataType);
+    case MTLDataTypeArray: return GetResourceTypeByMetalDataType(mtl_struct_member.arrayType.elementType);
+    default:               return GetResourceTypeByMetalDataType(mtl_struct_member.dataType);
     }
 }
 
@@ -287,7 +283,7 @@ static std::string GetAttributeName(NSString* ns_reflect_attrib_name)
     attrib_name = std::regex_replace(attrib_name, s_attr_prefix_regex, "");
     attrib_name = std::regex_replace(attrib_name, s_attr_suffix_regex, "");
 
-    std::transform(attrib_name.begin(), attrib_name.end(), attrib_name.begin(), ::toupper);
+    std::ranges::transform(attrib_name, attrib_name.begin(), ::toupper);
     return attrib_name;
 }
 

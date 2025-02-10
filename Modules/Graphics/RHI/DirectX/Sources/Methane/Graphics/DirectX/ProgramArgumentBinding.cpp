@@ -89,10 +89,10 @@ DescriptorHeapType ProgramArgumentBinding::GetDescriptorHeapType() const
            : DescriptorHeapType::ShaderResources;
 }
 
-bool ProgramArgumentBinding::SetResourceViews(Rhi::ResourceViewSpan resource_views)
+bool ProgramArgumentBinding::SetResourceViewSpan(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
-    if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
+    if (!Base::ProgramArgumentBinding::SetResourceViewSpan(resource_views))
         return false;
 
     if (m_settings_dx.type == Type::DescriptorTable)

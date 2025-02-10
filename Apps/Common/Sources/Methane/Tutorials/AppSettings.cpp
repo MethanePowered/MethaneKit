@@ -71,36 +71,37 @@ Graphics::CombinedAppSettings GetGraphicsTutorialAppSettings(const std::string& 
     const DepthStencilValues         default_clear_depth_stencil(1.F, Graphics::Stencil(0));
     const Color4F                    default_clear_color(0.0F, 0.2F, 0.4F, 1.0F);
 
+    using enum AppOptions::Bit;
     return Graphics::CombinedAppSettings
     {
         .platform_app = Platform::AppSettings {
             .name = app_name,
             .size = { 0.8, 0.8 },
             .min_size = { 640U, 480U },
-            .is_full_screen = app_options.HasBit(AppOptions::Bit::FullScreen),
+            .is_full_screen = app_options.HasBit(FullScreen),
             .icon_provider_ptr = &Data::IconProvider::Get(),
         },
         .graphics_app = Graphics::AppSettings {
             .screen_pass_access = default_screen_pass_access,
-            .animations_enabled = app_options.HasBit(AppOptions::Bit::Animations),
-            .show_hud_in_window_title = !app_options.HasBit(AppOptions::Bit::HudVisible),
+            .animations_enabled = app_options.HasBit(Animations),
+            .show_hud_in_window_title = !app_options.HasBit(HudVisible),
             .default_device_index = 0
         },
         .render_context = rhi::RenderContextSettings {
             .frame_size = Graphics::FrameSize(),
             .color_format = Graphics::PixelFormat::BGRA8Unorm,
-            .depth_stencil_format = app_options.HasBit(AppOptions::Bit::DepthBuffer)
+            .depth_stencil_format = app_options.HasBit(DepthBuffer)
                 ? Graphics::PixelFormat::Depth32Float
                 : Graphics::PixelFormat::Unknown,
-            .clear_color = app_options.HasBit(AppOptions::Bit::ClearColor)
+            .clear_color = app_options.HasBit(ClearColor)
                 ? Opt<Color4F>(default_clear_color)
                 : Opt<Color4F>(),
-            .clear_depth_stencil = app_options.HasBits({ AppOptions::Bit::DepthBuffer, AppOptions::Bit::ClearDepth })
+            .clear_depth_stencil = app_options.HasBits({ DepthBuffer, ClearDepth })
                 ? Opt<DepthStencilValues>(default_clear_depth_stencil)
                 : Opt<DepthStencilValues>(),
             .frame_buffers_count = 3U,
-            .vsync_enabled = app_options.HasBit(AppOptions::Bit::VSync),
-            .is_full_screen = app_options.HasBit(AppOptions::Bit::FullScreen),
+            .vsync_enabled = app_options.HasBit(VSync),
+            .is_full_screen = app_options.HasBit(FullScreen),
             .options_mask = default_context_options,
             .unsync_max_fps = 1000U, // MacOS only
         }

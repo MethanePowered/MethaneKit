@@ -147,7 +147,7 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
     for(const Rhi::IResource::View& old_resource_view : old_resource_views)
     {
         if (old_resource_view.GetResource().GetResourceType() == Rhi::IResource::Type::Sampler ||
-            processed_resources.count(old_resource_view.GetResourcePtr().get()))
+            processed_resources.contains(old_resource_view.GetResourcePtr().get()))
             continue;
 
         // Check if resource is still used in new resource locations
@@ -203,7 +203,7 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
     {
         META_CHECK_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
         m_arguments.insert(program_argument);
-        if (m_binding_by_argument.count(program_argument))
+        if (m_binding_by_argument.contains(program_argument))
             continue;
 
         Ptr<ArgumentBinding> new_argument_binding_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
@@ -238,7 +238,7 @@ Rhi::IProgramBindings::BindingValueByArgument ProgramBindings::ReplaceBindingVal
         // constant resource bindings are reusing single binding-object for the whole program,
         // so there's no need in setting its value, since it was already set by the original resource binding
         if (argument_settings.argument.IsConstant() ||
-            binding_value_by_argument.count(program_argument))
+            binding_value_by_argument.contains(program_argument))
             continue;
 
         if (argument_settings.argument.IsRootConstant())
@@ -265,17 +265,17 @@ void ProgramBindings::SetResourcesForArguments(const BindingValueByArgument& bin
         auto& argument_binding = dynamic_cast<ArgumentBinding&>(Get(program_argument));
         argument_binding.SetEmitCallbackEnabled(false); // do not emit callback during initialization
         std::visit(
-            [&argument_binding](auto& value)
+            [&argument_binding]<typename T>(T& value)
             {
-                using T = std::decay_t<decltype(value)>;
-                if constexpr (std::is_same_v<T, Rhi::RootConstant>)
+                using ValueType = std::decay_t<T>;
+                if constexpr (std::is_same_v<ValueType, Rhi::RootConstant>)
                 {
                     if (!value.IsEmptyOrNull())
                         argument_binding.SetRootConstant(value);
                 }
-                else if constexpr (std::is_same_v<T, Rhi::ResourceView>)
+                else if constexpr (std::is_same_v<ValueType, Rhi::ResourceView>)
                     argument_binding.SetResourceView(value);
-                else if constexpr (std::is_same_v<T, Rhi::ResourceViews>)
+                else if constexpr (std::is_same_v<ValueType, Rhi::ResourceViews>)
                     argument_binding.SetResourceViews(value);
                 else
                     static_assert(AlwaysFalse<T>, "Argument binding value type is not supported!");

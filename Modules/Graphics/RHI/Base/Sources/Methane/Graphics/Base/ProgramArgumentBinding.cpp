@@ -62,7 +62,7 @@ void ProgramArgumentBinding::MergeSettings(const ProgramArgumentBinding& other)
     m_settings.argument.MergeShaderTypes(settings.argument.GetShaderType());
 }
 
-bool ProgramArgumentBinding::SetResourceViews(Rhi::ResourceViewSpan resource_views)
+bool ProgramArgumentBinding::SetResourceViewSpan(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
     META_CHECK_FALSE_DESCR(m_settings.argument.IsRootConstant(),
@@ -111,12 +111,12 @@ bool ProgramArgumentBinding::SetResourceViews(Rhi::ResourceViewSpan resource_vie
 
 bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
 {
-    return SetResourceViews(Rhi::ResourceViewSpan(resource_views));
+    return SetResourceViewSpan(Rhi::ResourceViewSpan(resource_views));
 }
 
 bool ProgramArgumentBinding::SetResourceView(const Rhi::ResourceView& resource_view)
 {
-    return SetResourceViews(Rhi::ResourceViewSpan(&resource_view, 1U));
+    return SetResourceViewSpan(Rhi::ResourceViewSpan(&resource_view, 1U));
 }
 
 Rhi::RootConstant ProgramArgumentBinding::GetRootConstant() const

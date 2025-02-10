@@ -35,9 +35,8 @@ namespace Methane::Graphics::Base
 ResourceBarriers::ResourceBarriers(const Set& barriers)
 {
     META_FUNCTION_TASK();
-    std::transform(barriers.begin(), barriers.end(), std::inserter(m_barriers_map, m_barriers_map.begin()),
-                   [](const Barrier& barrier)
-                   { return std::pair<Barrier::Id, Barrier>(barrier.GetId(), barrier); });
+    std::ranges::transform(barriers, std::inserter(m_barriers_map, m_barriers_map.begin()),
+                           [](const Barrier& barrier) { return std::pair(barrier.GetId(), barrier); });
 }
 
 ResourceBarriers::Set ResourceBarriers::GetSet() const noexcept
@@ -45,8 +44,8 @@ ResourceBarriers::Set ResourceBarriers::GetSet() const noexcept
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_barriers_mutex);
     Set barriers;
-    std::transform(m_barriers_map.begin(), m_barriers_map.end(), std::inserter(barriers, barriers.begin()),
-                   [](const auto& barrier_pair) { return barrier_pair.second; });
+    std::ranges::transform(m_barriers_map, std::inserter(barriers, barriers.begin()),
+                           [](const auto& barrier_pair) { return barrier_pair.second; });
     return barriers;
 }
 

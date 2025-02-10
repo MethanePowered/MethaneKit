@@ -37,29 +37,27 @@ Metal implementation of the render state interface.
 namespace Methane::Graphics::Metal
 {
 
-static MTLCullMode ConvertRasterizerCullModeToMetal(Rhi::IRenderState::Rasterizer::CullMode cull_mode) noexcept
+static MTLCullMode ConvertRasterizerCullModeToMetal(Rhi::RasterizerCullMode cull_mode) noexcept
 {
     META_FUNCTION_TASK();
-    using RasterizerCullMode = Rhi::IRenderState::Rasterizer::CullMode;
-
     switch(cull_mode)
     {
-        case RasterizerCullMode::None:  return MTLCullModeNone;
-        case RasterizerCullMode::Back:  return MTLCullModeBack;
-        case RasterizerCullMode::Front: return MTLCullModeFront;
+        using enum Rhi::RasterizerCullMode;
+        case None:  return MTLCullModeNone;
+        case Back:  return MTLCullModeBack;
+        case Front: return MTLCullModeFront;
         default: META_UNEXPECTED_RETURN(cull_mode, MTLCullModeNone);
     }
 }
 
-static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(Rhi::IRenderState::Rasterizer::FillMode fill_mode) noexcept
+static MTLTriangleFillMode ConvertRasterizerFillModeToMetal(Rhi::RasterizerFillMode fill_mode) noexcept
 {
     META_FUNCTION_TASK();
-    using RasterizerFillMode = Rhi::IRenderState::Rasterizer::FillMode;
-
     switch(fill_mode)
     {
-        case RasterizerFillMode::Solid:     return MTLTriangleFillModeFill;
-        case RasterizerFillMode::Wireframe: return MTLTriangleFillModeLines;
+        using enum Rhi::RasterizerFillMode;
+        case Solid:     return MTLTriangleFillModeFill;
+        case Wireframe: return MTLTriangleFillModeLines;
         default: META_UNEXPECTED_RETURN(fill_mode, MTLTriangleFillModeFill);
     }
 }
@@ -69,63 +67,62 @@ static MTLColorWriteMask ConvertRenderTargetColorWriteMaskToMetal(Rhi::BlendingC
     META_FUNCTION_TASK();
     MTLColorWriteMask mtl_color_write_mask = 0U;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Red))
+    using enum Rhi::BlendingColorChannel;
+    if (color_channels.HasAnyBit(Red))
         mtl_color_write_mask |= MTLColorWriteMaskRed;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Green))
+    if (color_channels.HasAnyBit(Green))
         mtl_color_write_mask |= MTLColorWriteMaskGreen;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Blue))
+    if (color_channels.HasAnyBit(Blue))
         mtl_color_write_mask |= MTLColorWriteMaskBlue;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Alpha))
+    if (color_channels.HasAnyBit(Alpha))
         mtl_color_write_mask |= MTLColorWriteMaskAlpha;
 
     return mtl_color_write_mask;
 };
 
-static MTLBlendOperation ConvertBlendingOperationToMetal(Rhi::IRenderState::Blending::Operation blend_operation)
+static MTLBlendOperation ConvertBlendingOperationToMetal(Rhi::BlendingOperation blend_operation)
 {
     META_FUNCTION_TASK();
-    using BlendOp = Rhi::IRenderState::Blending::Operation;
-
     switch(blend_operation)
     {
-    case BlendOp::Add:              return MTLBlendOperationAdd;
-    case BlendOp::Subtract:         return MTLBlendOperationSubtract;
-    case BlendOp::ReverseSubtract:  return MTLBlendOperationReverseSubtract;
-    case BlendOp::Minimum:          return MTLBlendOperationMin;
-    case BlendOp::Maximum:          return MTLBlendOperationMax;
+    using enum Rhi::BlendingOperation;
+    case Add:              return MTLBlendOperationAdd;
+    case Subtract:         return MTLBlendOperationSubtract;
+    case ReverseSubtract:  return MTLBlendOperationReverseSubtract;
+    case Minimum:          return MTLBlendOperationMin;
+    case Maximum:          return MTLBlendOperationMax;
     default: META_UNEXPECTED_RETURN(blend_operation, MTLBlendOperationAdd);
     }
 }
 
-static MTLBlendFactor ConvertBlendingFactorToMetal(Rhi::IRenderState::Blending::Factor blend_factor)
+static MTLBlendFactor ConvertBlendingFactorToMetal(Rhi::BlendingFactor blend_factor)
 {
     META_FUNCTION_TASK();
-    using BlendFactor = Rhi::IRenderState::Blending::Factor;
-    
     switch (blend_factor)
     {
-    case BlendFactor::Zero:                     return MTLBlendFactorZero;
-    case BlendFactor::One:                      return MTLBlendFactorOne;
-    case BlendFactor::SourceColor:              return MTLBlendFactorSourceColor;
-    case BlendFactor::OneMinusSourceColor:      return MTLBlendFactorOneMinusSourceColor;
-    case BlendFactor::SourceAlpha:              return MTLBlendFactorSourceAlpha;
-    case BlendFactor::OneMinusSourceAlpha:      return MTLBlendFactorOneMinusSourceAlpha;
-    case BlendFactor::DestinationColor:         return MTLBlendFactorDestinationColor;
-    case BlendFactor::OneMinusDestinationColor: return MTLBlendFactorOneMinusDestinationColor;
-    case BlendFactor::DestinationAlpha:         return MTLBlendFactorDestinationAlpha;
-    case BlendFactor::OneMinusDestinationAlpha: return MTLBlendFactorOneMinusDestinationAlpha;
-    case BlendFactor::SourceAlphaSaturated:     return MTLBlendFactorSourceAlphaSaturated;
-    case BlendFactor::BlendColor:               return MTLBlendFactorBlendColor;
-    case BlendFactor::OneMinusBlendColor:       return MTLBlendFactorOneMinusBlendColor;
-    case BlendFactor::BlendAlpha:               return MTLBlendFactorBlendAlpha;
-    case BlendFactor::OneMinusBlendAlpha:       return MTLBlendFactorOneMinusBlendAlpha;
-    case BlendFactor::Source1Color:             return MTLBlendFactorSource1Color;
-    case BlendFactor::OneMinusSource1Color:     return MTLBlendFactorOneMinusSource1Color;
-    case BlendFactor::Source1Alpha:             return MTLBlendFactorSource1Alpha;
-    case BlendFactor::OneMinusSource1Alpha:     return MTLBlendFactorOneMinusSource1Alpha;
+    using enum Rhi::BlendingFactor;
+    case Zero:                     return MTLBlendFactorZero;
+    case One:                      return MTLBlendFactorOne;
+    case SourceColor:              return MTLBlendFactorSourceColor;
+    case OneMinusSourceColor:      return MTLBlendFactorOneMinusSourceColor;
+    case SourceAlpha:              return MTLBlendFactorSourceAlpha;
+    case OneMinusSourceAlpha:      return MTLBlendFactorOneMinusSourceAlpha;
+    case DestinationColor:         return MTLBlendFactorDestinationColor;
+    case OneMinusDestinationColor: return MTLBlendFactorOneMinusDestinationColor;
+    case DestinationAlpha:         return MTLBlendFactorDestinationAlpha;
+    case OneMinusDestinationAlpha: return MTLBlendFactorOneMinusDestinationAlpha;
+    case SourceAlphaSaturated:     return MTLBlendFactorSourceAlphaSaturated;
+    case BlendColor:               return MTLBlendFactorBlendColor;
+    case OneMinusBlendColor:       return MTLBlendFactorOneMinusBlendColor;
+    case BlendAlpha:               return MTLBlendFactorBlendAlpha;
+    case OneMinusBlendAlpha:       return MTLBlendFactorOneMinusBlendAlpha;
+    case Source1Color:             return MTLBlendFactorSource1Color;
+    case OneMinusSource1Color:     return MTLBlendFactorOneMinusSource1Color;
+    case Source1Alpha:             return MTLBlendFactorSource1Alpha;
+    case OneMinusSource1Alpha:     return MTLBlendFactorOneMinusSource1Alpha;
     default: META_UNEXPECTED_RETURN(blend_factor, MTLBlendFactorZero);
     }
 }
@@ -135,14 +132,15 @@ static MTLStencilOperation ConvertStencilOperationToMetal(Rhi::FaceOperation ope
     META_FUNCTION_TASK();
     switch(operation)
     {
-        case Rhi::FaceOperation::Keep:            return MTLStencilOperationKeep;
-        case Rhi::FaceOperation::Zero:            return MTLStencilOperationZero;
-        case Rhi::FaceOperation::Replace:         return MTLStencilOperationReplace;
-        case Rhi::FaceOperation::Invert:          return MTLStencilOperationInvert;
-        case Rhi::FaceOperation::IncrementClamp:  return MTLStencilOperationIncrementClamp;
-        case Rhi::FaceOperation::DecrementClamp:  return MTLStencilOperationDecrementClamp;
-        case Rhi::FaceOperation::IncrementWrap:   return MTLStencilOperationIncrementWrap;
-        case Rhi::FaceOperation::DecrementWrap:   return MTLStencilOperationDecrementWrap;
+        using enum Rhi::FaceOperation;
+        case Keep:            return MTLStencilOperationKeep;
+        case Zero:            return MTLStencilOperationZero;
+        case Replace:         return MTLStencilOperationReplace;
+        case Invert:          return MTLStencilOperationInvert;
+        case IncrementClamp:  return MTLStencilOperationIncrementClamp;
+        case DecrementClamp:  return MTLStencilOperationDecrementClamp;
+        case IncrementWrap:   return MTLStencilOperationIncrementWrap;
+        case DecrementWrap:   return MTLStencilOperationDecrementWrap;
         default: META_UNEXPECTED_RETURN(operation, MTLStencilOperationKeep);
     }
 }

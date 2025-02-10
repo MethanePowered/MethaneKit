@@ -254,9 +254,8 @@ void TypographyApp::UpdateFontAtlasBadges()
     {
         META_CHECK_NOT_NULL(*badge_it);
         if (const gui::Badge& badge = **badge_it;
-            std::any_of(fonts.begin(), fonts.end(),
-                [&badge, &context](const gui::Font& font)
-                { return badge.GetTexture() == font.GetAtlasTexture(context); }))
+            std::ranges::any_of(fonts, [&badge, &context](const gui::Font& font)
+                                       { return badge.GetTexture() == font.GetAtlasTexture(context); }))
         {
             ++badge_it;
             continue;
@@ -270,11 +269,9 @@ void TypographyApp::UpdateFontAtlasBadges()
     {
         const rhi::Texture& font_atlas_texture = font.GetAtlasTexture(context);
         if (!font_atlas_texture.IsInitialized() ||
-            std::any_of(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-                        [&font_atlas_texture](const Ptr<gui::Badge>& font_atlas_badge_ptr)
-                        {
-                            return font_atlas_badge_ptr->GetTexture() == font_atlas_texture;
-                        }))
+            std::ranges::any_of(m_font_atlas_badges,
+                               [&font_atlas_texture](const Ptr<gui::Badge>& font_atlas_badge_ptr)
+                               { return font_atlas_badge_ptr->GetTexture() == font_atlas_texture; }))
             continue;
 
         m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, font_atlas_texture));
@@ -286,12 +283,12 @@ void TypographyApp::UpdateFontAtlasBadges()
 void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
 {
     // Sort atlas badges by size so that largest are displayed first
-    std::sort(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-              [](const Ptr<gui::Badge>& left_ptr, const Ptr<gui::Badge>& right_ptr)
-              {
-                  return left_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount() >
-                         right_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount();
-              }
+    std::ranges::sort(m_font_atlas_badges,
+                      [](const Ptr<gui::Badge>& left_ptr, const Ptr<gui::Badge>& right_ptr)
+                      {
+                          return left_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount() >
+                                 right_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount();
+                      }
     );
 
     // Layout badges in a row one after another with a margin spacing
@@ -542,9 +539,9 @@ void TypographyApp::OnFontAdded(gui::Font& font)
 void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const rhi::Texture* old_atlas_texture_ptr, const rhi::Texture* new_atlas_texture_ptr)
 {
     const auto font_atlas_badge_ptr_it = old_atlas_texture_ptr
-        ? std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-                       [&old_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
-                       { return font_atlas_badge_ptr->GetTexture() == *old_atlas_texture_ptr; })
+        ? std::ranges::find_if(m_font_atlas_badges,
+                               [&old_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
+                               { return font_atlas_badge_ptr->GetTexture() == *old_atlas_texture_ptr; })
         : m_font_atlas_badges.end();
 
     if (new_atlas_texture_ptr)

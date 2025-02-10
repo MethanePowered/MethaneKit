@@ -39,9 +39,10 @@ MTLIndexType TypeConverter::DataFormatToMetalIndexType(PixelFormat data_format)
 
     switch (data_format)
     {
-        case PixelFormat::R32Uint:       return MTLIndexTypeUInt32;
-        case PixelFormat::R16Uint:       return MTLIndexTypeUInt16;
-        default:                         META_UNEXPECTED_RETURN(data_format, MTLIndexTypeUInt32);
+        using enum PixelFormat;
+        case R32Uint: return MTLIndexTypeUInt32;
+        case R16Uint: return MTLIndexTypeUInt16;
+        default:      META_UNEXPECTED_RETURN(data_format, MTLIndexTypeUInt32);
     }
 }
 
@@ -51,26 +52,27 @@ MTLPixelFormat TypeConverter::DataFormatToMetalPixelType(PixelFormat data_format
 
     switch (data_format)
     {
-    case PixelFormat::Unknown:          return MTLPixelFormatInvalid;
-    case PixelFormat::RGBA8:            return MTLPixelFormatRGBA8Uint;
-    case PixelFormat::RGBA8Unorm:       return MTLPixelFormatRGBA8Unorm;
-    case PixelFormat::RGBA8Unorm_sRGB:  return MTLPixelFormatRGBA8Unorm_sRGB;
-    case PixelFormat::BGRA8Unorm:       return MTLPixelFormatBGRA8Unorm;
-    case PixelFormat::BGRA8Unorm_sRGB:  return MTLPixelFormatBGRA8Unorm_sRGB;
-    case PixelFormat::R32Float:         return MTLPixelFormatR32Float;
-    case PixelFormat::R32Uint:          return MTLPixelFormatR32Uint;
-    case PixelFormat::R32Sint:          return MTLPixelFormatR32Sint;
-    case PixelFormat::R16Float:         return MTLPixelFormatR16Float;
-    case PixelFormat::R16Uint:          return MTLPixelFormatR16Uint;
-    case PixelFormat::R16Sint:          return MTLPixelFormatR16Sint;
-    case PixelFormat::R16Unorm:         return MTLPixelFormatR16Unorm;
-    case PixelFormat::R16Snorm:         return MTLPixelFormatR16Snorm;
-    case PixelFormat::R8Uint:           return MTLPixelFormatR8Uint;
-    case PixelFormat::R8Sint:           return MTLPixelFormatR8Sint;
-    case PixelFormat::R8Unorm:          return MTLPixelFormatR8Unorm;
-    case PixelFormat::R8Snorm:          return MTLPixelFormatR8Snorm;
-    case PixelFormat::A8Unorm:          return MTLPixelFormatA8Unorm;
-    case PixelFormat::Depth32Float:     return MTLPixelFormatDepth32Float;
+    using enum PixelFormat;
+    case Unknown:          return MTLPixelFormatInvalid;
+    case RGBA8:            return MTLPixelFormatRGBA8Uint;
+    case RGBA8Unorm:       return MTLPixelFormatRGBA8Unorm;
+    case RGBA8Unorm_sRGB:  return MTLPixelFormatRGBA8Unorm_sRGB;
+    case BGRA8Unorm:       return MTLPixelFormatBGRA8Unorm;
+    case BGRA8Unorm_sRGB:  return MTLPixelFormatBGRA8Unorm_sRGB;
+    case R32Float:         return MTLPixelFormatR32Float;
+    case R32Uint:          return MTLPixelFormatR32Uint;
+    case R32Sint:          return MTLPixelFormatR32Sint;
+    case R16Float:         return MTLPixelFormatR16Float;
+    case R16Uint:          return MTLPixelFormatR16Uint;
+    case R16Sint:          return MTLPixelFormatR16Sint;
+    case R16Unorm:         return MTLPixelFormatR16Unorm;
+    case R16Snorm:         return MTLPixelFormatR16Snorm;
+    case R8Uint:           return MTLPixelFormatR8Uint;
+    case R8Sint:           return MTLPixelFormatR8Sint;
+    case R8Unorm:          return MTLPixelFormatR8Unorm;
+    case R8Snorm:          return MTLPixelFormatR8Snorm;
+    case A8Unorm:          return MTLPixelFormatA8Unorm;
+    case Depth32Float:     return MTLPixelFormatDepth32Float;
     // MTLPixelFormatRG8Unorm;
     // MTLPixelFormatRG8Snorm;
     // MTLPixelFormatRG8Uint;
@@ -435,15 +437,16 @@ MTLCompareFunction TypeConverter::CompareFunctionToMetal(Compare compare_func)
     META_FUNCTION_TASK();
     switch(compare_func)
     {
-        case Compare::Never:        return MTLCompareFunctionNever;
-        case Compare::Always:       return MTLCompareFunctionAlways;
-        case Compare::Less:         return MTLCompareFunctionLess;
-        case Compare::LessEqual:    return MTLCompareFunctionLessEqual;
-        case Compare::Greater:      return MTLCompareFunctionGreater;
-        case Compare::GreaterEqual: return MTLCompareFunctionGreaterEqual;
-        case Compare::Equal:        return MTLCompareFunctionEqual;
-        case Compare::NotEqual:     return MTLCompareFunctionNotEqual;
-        default:                    META_UNEXPECTED_RETURN(compare_func, MTLCompareFunctionNever);
+        using enum Compare;
+        case Never:        return MTLCompareFunctionNever;
+        case Always:       return MTLCompareFunctionAlways;
+        case Less:         return MTLCompareFunctionLess;
+        case LessEqual:    return MTLCompareFunctionLessEqual;
+        case Greater:      return MTLCompareFunctionGreater;
+        case GreaterEqual: return MTLCompareFunctionGreaterEqual;
+        case Equal:        return MTLCompareFunctionEqual;
+        case NotEqual:     return MTLCompareFunctionNotEqual;
+        default:           META_UNEXPECTED_RETURN(compare_func, MTLCompareFunctionNever);
     }
 }
 

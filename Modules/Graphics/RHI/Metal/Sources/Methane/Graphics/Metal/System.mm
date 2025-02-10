@@ -124,13 +124,13 @@ const Ptr<Rhi::IDevice>& System::FindMetalDevice(const id<MTLDevice>& mtl_device
 {
     META_FUNCTION_TASK();
     const Ptrs<Rhi::IDevice>& devices = GetGpuDevices();
-    const auto device_it = std::find_if(devices.begin(), devices.end(),
-                                        [&mtl_device](const Ptr<Rhi::IDevice>& device_ptr)
-                                        {
-                                            META_CHECK_NOT_NULL(device_ptr);
-                                            Device& metal_device = static_cast<Device&>(*device_ptr);
-                                            return metal_device.GetNativeDevice() == mtl_device;
-                                        });
+    const auto device_it = std::ranges::find_if(devices,
+                                                [&mtl_device](const Ptr<Rhi::IDevice>& device_ptr)
+                                                {
+                                                    META_CHECK_NOT_NULL(device_ptr);
+                                                    Device& metal_device = static_cast<Device&>(*device_ptr);
+                                                    return metal_device.GetNativeDevice() == mtl_device;
+                                                });
     
     static const Ptr<Rhi::IDevice> s_empty_device_ptr;
     return device_it != devices.end() ? *device_it : s_empty_device_ptr;

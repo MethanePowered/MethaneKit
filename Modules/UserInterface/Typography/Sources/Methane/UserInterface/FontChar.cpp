@@ -41,10 +41,8 @@ inline void ThrowFreeTypeError(FT_Error error)
 bool FontChar::BinPack::TryPack(const Refs<FontChar>& font_chars)
 {
     META_FUNCTION_TASK();
-    return std::all_of(font_chars.begin(), font_chars.end(),
-                       [this](const Ref<FontChar>& font_char)
-                       { return TryPack(font_char.get()); }
-    );
+    return std::ranges::all_of(font_chars,
+                               [this](const Ref<FontChar>& font_char) { return TryPack(font_char.get()); });
 }
 
 bool FontChar::BinPack::TryPack(FontChar& font_char)

@@ -37,11 +37,9 @@ static const Device& GetMetalDeviceFromContext(const Rhi::IContext& context)
     META_FUNCTION_TASK();
     switch (context.GetType())
     {
-    case Rhi::ContextType::Render:
-        return dynamic_cast<const RenderContext&>(context).GetMetalDevice();
-
-    case Rhi::ContextType::Compute:
-        return dynamic_cast<const ComputeContext&>(context).GetMetalDevice();
+    using enum Rhi::ContextType;
+    case Render:  return dynamic_cast<const RenderContext&>(context).GetMetalDevice();
+    case Compute: return dynamic_cast<const ComputeContext&>(context).GetMetalDevice();
     }
     return dynamic_cast<const RenderContext&>(context).GetMetalDevice();
 }

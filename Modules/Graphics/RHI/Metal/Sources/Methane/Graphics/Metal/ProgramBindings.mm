@@ -495,15 +495,17 @@ static void WriteArgumentBindingResourceIds(const ProgramArgumentBinding& arg_bi
     Rhi::ResourceType resource_type = arg_binding.GetSettings().resource_type;
     switch(resource_type)
     {
-        case Rhi::ResourceType::Buffer:
+        using enum Rhi::ResourceType;
+
+        case Buffer:
             WriteNativeBufferAddresses(arg_binding.GetNativeBuffers(), arg_binding.GetBufferOffsets(), buffer_ptr);
             break;
 
-        case Rhi::ResourceType::Texture:
+        case Texture:
             WriteNativeTextureIds(arg_binding.GetNativeTextures(), buffer_ptr);
             break;
 
-        case Rhi::ResourceType::Sampler:
+        case Sampler:
             WriteNativeSamplerIds(arg_binding.GetNativeSamplerStates(), buffer_ptr);
             break;
 
@@ -549,11 +551,13 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
     switch (const Rhi::CommandListType command_list_type = command_list.GetType();
             command_list_type)
     {
-        case Rhi::CommandListType::Render:
+        using enum Rhi::CommandListType;
+
+        case Render:
             Apply<CommandType::Render>(static_cast<RenderCommandList&>(command_list), apply_behavior);
             break;
 
-        case Rhi::CommandListType::Compute:
+        case Compute:
             Apply<CommandType::Compute>(static_cast<ComputeCommandList&>(command_list), apply_behavior);
             break;
 
@@ -625,17 +629,11 @@ const ProgramBindings::ArgumentsRange& ProgramBindings::GetArgumentsRange(Rhi::P
     META_FUNCTION_TASK();
     switch(access_type)
     {
-        case Rhi::ProgramArgumentAccessType::Constant:
-            return GetMetalProgram().GetConstantArgumentBufferRange();
-
-        case Rhi::ProgramArgumentAccessType::FrameConstant:
-            return GetMetalProgram().GetFrameConstantArgumentBufferRange(GetFrameIndex());
-
-        case Rhi::ProgramArgumentAccessType::Mutable:
-            return m_mutable_argument_buffer_range;
-
-        default:
-            META_UNEXPECTED(access_type);
+        using enum Rhi::ProgramArgumentAccessType;
+        case Constant:      return GetMetalProgram().GetConstantArgumentBufferRange();
+        case FrameConstant: return GetMetalProgram().GetFrameConstantArgumentBufferRange(GetFrameIndex());
+        case Mutable:       return m_mutable_argument_buffer_range;
+        default:            META_UNEXPECTED(access_type);
     }
 }
 
@@ -647,7 +645,7 @@ void ProgramBindings::SetMutableArgumentsRange(const ArgumentsRange& mutable_arg
 
 bool ProgramBindings::IsUsingNativeResource(__unsafe_unretained id<MTLResource> mtl_resource) const
 {
-    return m_mtl_used_resources.count(mtl_resource);
+    return m_mtl_used_resources.contains(mtl_resource);
 }
 
 Program& ProgramBindings::GetMetalProgram() const
@@ -708,7 +706,8 @@ void ProgramBindings::SetMetalResources(const CommandEncoderType& mtl_cmd_encode
             {
                 switch (settings.resource_type)
                 {
-                    case Rhi::ResourceType::Buffer:
+                    using enum Rhi::ResourceType;
+                    case Buffer:
                         SetMetalResourcesForAll<command_type>(settings.argument.GetShaderType(),
                                                               program, mtl_cmd_encoder,
                                                               argument_binding.GetNativeBuffers(),
@@ -716,14 +715,14 @@ void ProgramBindings::SetMetalResources(const CommandEncoderType& mtl_cmd_encode
                                                               argument_binding.GetBufferOffsets());
                         break;
 
-                    case Rhi::ResourceType::Texture:
+                    case Texture:
                         SetMetalResourcesForAll<command_type>(settings.argument.GetShaderType(),
                                                               program, mtl_cmd_encoder,
                                                               argument_binding.GetNativeTextures(),
                                                               settings.argument_index);
                         break;
 
-                    case Rhi::ResourceType::Sampler:
+                    case Sampler:
                         SetMetalResourcesForAll<command_type>(settings.argument.GetShaderType(), program, mtl_cmd_encoder,
                                                               argument_binding.GetNativeSamplerStates(),
                                                               settings.argument_index);

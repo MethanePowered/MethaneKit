@@ -143,8 +143,9 @@ void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action) noexcept
     switch(keyboard_action)
     {
         using enum KeyboardAction;
+        using enum Pivot;
         case Reset:       ResetOrientation(); break;
-        case ChangePivot: SetPivot(GetPivot() == Pivot::Aim ? Pivot::Eye : Pivot::Aim); break;
+        case ChangePivot: SetPivot(GetPivot() == Aim ? Eye : Aim); break;
         default:          return;
     }
 }
