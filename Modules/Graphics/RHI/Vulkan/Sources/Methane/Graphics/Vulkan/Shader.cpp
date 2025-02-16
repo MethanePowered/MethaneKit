@@ -121,20 +121,21 @@ static Rhi::IResource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorTy
     switch(vk_descriptor_type)
     {
     using enum vk::DescriptorType;
+    using enum Rhi::ResourceType;
     case eUniformBuffer:
     case eStorageBuffer:
     case eInlineUniformBlock:
-        return Rhi::IResource::Type::Buffer;
+        return Buffer;
 
     case eStorageImage:
     case eSampledImage:
-        return Rhi::IResource::Type::Texture;
+        return Texture;
 
     case eSampler:
-        return Rhi::IResource::Type::Sampler;
+        return Sampler;
 
     default:
-        META_UNEXPECTED_RETURN(vk_descriptor_type, Rhi::IResource::Type::Buffer);
+        META_UNEXPECTED_RETURN(vk_descriptor_type, Buffer);
     }
 }
 

@@ -151,10 +151,10 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
             continue;
 
         // Check if resource is still used in new resource locations
-        if (std::find_if(new_resource_views.begin(), new_resource_views.end(),
-                         [&old_resource_view](const Rhi::IResource::View& new_resource_view)
-                         { return new_resource_view.GetResourcePtr() == old_resource_view.GetResourcePtr(); }
-                         ) != new_resource_views.end())
+        if (std::ranges::find_if(new_resource_views,
+                                 [&old_resource_view](const Rhi::IResource::View& new_resource_view)
+                                 { return new_resource_view.GetResourcePtr() == old_resource_view.GetResourcePtr(); }
+                                 ) != new_resource_views.end())
         {
             processed_resources.insert(old_resource_view.GetResourcePtr().get());
             continue;
@@ -309,7 +309,7 @@ ProgramBindings::operator std::string() const
     }
 
     // Arguments are stored in unordered_set, so to get reliable output we need to sort them
-    std::sort(argument_binding_strings.begin(), argument_binding_strings.end());
+    std::ranges::sort(argument_binding_strings);
 
     std::stringstream ss;
     for(const std::string& argument_binding_str : argument_binding_strings)
@@ -389,9 +389,9 @@ void ProgramBindings::RemoveTransitionResourceStates(const Rhi::IProgramArgument
 
     const Rhi::IProgramArgumentBinding::Settings& argument_binding_settings  = argument_binding.GetSettings();
     ResourceStates                                    & transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
-    const auto transition_resource_state_it = std::find_if(transition_resource_states.begin(), transition_resource_states.end(),
-                                                           [&resource](const ResourceAndState& resource_state)
-                                                           { return resource_state.resource_ptr.get() == &resource; });
+    const auto transition_resource_state_it = std::ranges::find_if(transition_resource_states,
+                                                                   [&resource](const ResourceAndState& resource_state)
+                                                                   { return resource_state.resource_ptr.get() == &resource; });
     if (transition_resource_state_it != transition_resource_states.end())
         transition_resource_states.erase(transition_resource_state_it);
 }
@@ -469,8 +469,8 @@ void ProgramBindings::InitResourceRefsByAccess()
         const std::set<Rhi::IResource*>& unique_resources = unique_resources_by_access[access_index];
         Refs<Rhi::IResource>& resource_refs = m_resource_refs_by_access[access_index];
         resource_refs.clear();
-        std::transform(unique_resources.begin(), unique_resources.end(), std::back_inserter(resource_refs),
-                       [](Rhi::IResource* resource_ptr) { return Ref<Rhi::IResource>(*resource_ptr); });
+        std::ranges::transform(unique_resources, std::back_inserter(resource_refs),
+                               [](Rhi::IResource* resource_ptr) { return Ref<Rhi::IResource>(*resource_ptr); });
     }
 }
 
