@@ -23,3 +23,7 @@ graph TD;
     Animation;
     Events;
 ```
+
+## Unit Tests Coverage
+
+See [Data Tests description](/Tests/Data/README.md) for details on unit tests coverage.

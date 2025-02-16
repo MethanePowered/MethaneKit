@@ -66,3 +66,7 @@ flowchart TD;
     ui_typo-->ui_widget
     ui_widget-->ui_app
 ```
+
+## Unit Tests Coverage
+
+See [User Interface Tests description](/Tests/UserInterface/README.md) for details on unit tests coverage.

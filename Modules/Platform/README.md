@@ -55,3 +55,7 @@ graph TD;
     data_prov-.->pal_app
     data_type-.->pal_app
 ```
+
+## Unit Tests Coverage
+
+See [Platform Tests description](/Tests/Platform/README.md) for details on unit tests coverage.
