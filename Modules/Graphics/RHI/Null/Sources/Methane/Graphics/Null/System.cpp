@@ -55,7 +55,7 @@ const Ptrs<Rhi::IDevice>& System::UpdateGpuDevices(const Rhi::DeviceCaps& requir
     ClearDevices();
 
     AddDevice(std::make_shared<Device>("Test GPU 1", false, required_device_caps));
-    AddDevice(std::make_shared<Device>("Test GPU 1", false, Rhi::DeviceCaps()));
+    AddDevice(std::make_shared<Device>("Test GPU 2", false, required_device_caps));
     AddDevice(std::make_shared<Device>("Test WARP",  true,  required_device_caps));
 
     return GetGpuDevices();

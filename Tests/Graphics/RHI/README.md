@@ -24,7 +24,7 @@
 | [Rhi::ResourceBarriers](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ResourceBarriers.h)                   | :warning: not covered yet                                                     |
 | [Rhi::Sampler](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/Sampler.h)                                     | :white_check_mark: [SamplerTest](SamplerTest.cpp)                             |
 | [Rhi::Shader](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/Shader.h)                                       | :white_check_mark: [ShaderTest](ShaderTest.cpp)                               |
-| [Rhi::System](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/System.h)                                       | :warning: not covered yet                                                     |
+| [Rhi::System](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/System.h)                                       | :white_check_mark: [SystemTest](SystemTest.cpp)                               |
 | [Rhi::Texture](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/Texture.h)                                     | :white_check_mark: [TextureTest](TextureTest.cpp)                             |
 | [Rhi::TransferCommandList](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/TransferCommandList.h)             | :white_check_mark: [TransferCommandListTest](TransferCommandListTest.cpp)     |
 | [Rhi::ViewState](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ViewState.h)                                 | :white_check_mark: [ViewStateTest](ViewStateTest.cpp)                         |

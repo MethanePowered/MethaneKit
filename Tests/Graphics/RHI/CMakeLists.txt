@@ -18,6 +18,7 @@ add_executable(${TARGET}
     BufferSetTest.cpp
     SamplerTest.cpp
     TextureTest.cpp
+    SystemTest.cpp
 )
 
 target_link_libraries(${TARGET}

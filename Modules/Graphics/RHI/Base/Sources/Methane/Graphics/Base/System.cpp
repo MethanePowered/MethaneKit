@@ -94,11 +94,16 @@ std::string System::ToString() const
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
-    ss << "Available graphics devices:" << std::endl;
+    ss << "System graphics devices:";
+    if (m_devices.empty())
+    {
+        ss << " none";
+        return ss.str();
+    }
     for(const Ptr<Rhi::IDevice>& device_ptr : m_devices)
     {
         META_CHECK_NOT_NULL(device_ptr);
-        ss << "  - " << device_ptr->ToString() << ";" << std::endl;
+        ss << std::endl << "  - " << device_ptr->ToString() << ";";
     }
     return ss.str();
 }
