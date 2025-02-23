@@ -38,6 +38,9 @@ public:
     void CheckForChanges() override;
     const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Methane::Platform::AppEnvironment& app_env, const Rhi::DeviceCaps& required_device_caps) override;
     const Ptrs<Rhi::IDevice>& UpdateGpuDevices(const Rhi::DeviceCaps& required_device_caps) override;
+
+    using Base::System::RequestRemoveDevice;
+    using Base::System::RemoveDevice;
 };
 
 } // namespace Methane::Graphics::Null

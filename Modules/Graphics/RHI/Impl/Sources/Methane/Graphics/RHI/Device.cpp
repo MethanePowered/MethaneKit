@@ -71,6 +71,16 @@ std::string_view Device::GetName() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetName();
 }
 
+void Device::Connect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Connect(receiver);
+}
+
+void Device::Disconnect(Data::Receiver<IObjectCallback>& receiver) const
+{
+    GetImpl(m_impl_ptr).Data::Emitter<IObjectCallback>::Disconnect(receiver);
+}
+
 RenderContext Device::CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) const
 {
     return RenderContext(GetImpl(m_impl_ptr).CreateRenderContext(env, parallel_executor, settings));

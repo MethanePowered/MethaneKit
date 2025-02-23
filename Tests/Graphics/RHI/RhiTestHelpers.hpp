@@ -20,9 +20,9 @@ FILE: Tests/Graphics/RHI/RhiTestHelpers.hpp
 RHI Test helper classes
 
 ******************************************************************************/
-
-#include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/IObject.h>
+#include <Methane/Graphics/RHI/IDevice.h>
+#include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Graphics/RHI/IResource.h>
 #include <Methane/Graphics/RHI/System.h>
@@ -97,6 +97,50 @@ private:
     bool m_is_object_name_changed = false;
     std::string m_old_name;
     std::string m_cur_name;
+};
+
+class DeviceCallbackTester final
+    : private Data::Receiver<rhi::IDeviceCallback>
+{
+public:
+    DeviceCallbackTester(rhi::IDevice& device)
+        : m_device(device)
+    {
+        dynamic_cast<Data::IEmitter<rhi::IDeviceCallback>&>(device).Connect(*this);
+    }
+
+    bool IsDeviceRemovalRequested() const noexcept
+    {
+        return m_is_device_removal_requested;
+    }
+
+    bool IsDeviceRemoved() const noexcept
+    {
+        return m_is_device_removed;
+    }
+
+    void Reset()
+    {
+        m_is_device_removal_requested = false;
+        m_is_device_removed = false;
+    }
+
+private:
+    void OnDeviceRemovalRequested(rhi::IDevice& device) override
+    {
+        CHECK(std::addressof(m_device) == std::addressof(device));
+        m_is_device_removal_requested = true;
+    }
+
+    void OnDeviceRemoved(rhi::IDevice& device) override
+    {
+        CHECK(std::addressof(m_device) == std::addressof(device));
+        m_is_device_removed = true;
+    }
+
+    rhi::IDevice& m_device;
+    bool m_is_device_removal_requested = false;
+    bool m_is_device_removed = false;
 };
 
 class ContextCallbackTester final

@@ -61,6 +61,10 @@ public:
     META_PIMPL_API bool SetName(std::string_view name) const;
     META_PIMPL_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
 
+    // Data::IEmitter<IObjectCallback> interface methods
+    META_PIMPL_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
+
     // IDevice interface methods
     [[nodiscard]] META_PIMPL_API RenderContext       CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) const;
     [[nodiscard]] META_PIMPL_API ComputeContext      CreateComputeContext(tf::Executor& parallel_executor, const ComputeContextSettings& settings) const;

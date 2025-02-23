@@ -19,6 +19,7 @@ add_executable(${TARGET}
     SamplerTest.cpp
     TextureTest.cpp
     SystemTest.cpp
+    DeviceTest.cpp
 )
 
 target_link_libraries(${TARGET}

@@ -11,7 +11,7 @@
 | [Rhi::ComputeCommandList](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ComputeCommandList.h)               | :white_check_mark: [ComputeCommandListTest](ComputeCommandListTest.cpp)       |
 | [Rhi::ComputeContext](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ComputeContext.h)                       | :white_check_mark: [ComputeContextTest](ComputeContextTest.cpp)               |
 | [Rhi::ComputeState](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ComputeState.h)                           | :white_check_mark: [ComputeStateTest](ComputeStateTest.cpp)                   |
-| [Rhi::Device](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/Device.h)                                       | :warning: not covered yet                                                     |
+| [Rhi::Device](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/Device.h)                                       | :white_check_mark: [DeviceTest](DeviceTest.cpp)                               |
 | [Rhi::Fence](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/Fence.h)                                         | :white_check_mark: [FenceTest](FenceTest.cpp)                                 |
 | [Rhi::ParallelRenderCommandList](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ParallelRenderCommandList.h) | :warning: not covered yet                                                     |
 | [Rhi::Program](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/Program.h)                                     | :white_check_mark: [ProgramTest](ProgramTest.cpp)                             |
