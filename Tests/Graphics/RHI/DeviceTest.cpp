@@ -28,7 +28,7 @@ Unit-tests of the RHI Device
 #include <Methane/Graphics/RHI/System.h>
 #include <Methane/Graphics/Null/System.h>
 
-#include <Catch2/catch_test_macros.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 using namespace Methane;
 using namespace Methane::Graphics;
@@ -117,5 +117,4 @@ TEST_CASE("RHI Device Functions", "[device][rhi]")
         CHECK_NOTHROW(dynamic_cast<Null::System&>(Rhi::System::Get().GetInterface()).RemoveDevice(device.GetInterface()));
         CHECK(device_callback_tester.IsDeviceRemoved());
     }
-
 }
