@@ -6,7 +6,7 @@
 | [Rhi::BufferSet](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/BufferSet.h)                                 | :white_check_mark: [BufferSetTest](BufferSetTest.cpp)                         |
 | [Rhi::CommandKit](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/CommandKit.h)                               | :white_check_mark: [CommandKitTest](CommandKitTest.cpp)                       |
 | [Rhi::CommandListDebugGroup](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/CommandListDebugGroup.h)         | :white_check_mark: [CommandListDebugGroupTest](CommandListDebugGroupTest.cpp) |
-| [Rhi::CommandListSet](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/CommandListSet.h)                       | :warning: not covered yet                                                     |
+| [Rhi::CommandListSet](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/CommandListSet.h)                       | :white_check_mark: [CommandListSetTest](CommandListSetTest.cpp)               |
 | [Rhi::CommandQueue](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/CommandQueue.h)                           | :white_check_mark: [CommandQueueTest](CommandQueueTest.cpp)                   |
 | [Rhi::ComputeCommandList](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ComputeCommandList.h)               | :white_check_mark: [ComputeCommandListTest](ComputeCommandListTest.cpp)       |
 | [Rhi::ComputeContext](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ComputeContext.h)                       | :white_check_mark: [ComputeContextTest](ComputeContextTest.cpp)               |
