@@ -24,13 +24,16 @@ Unit-tests of the RHI Command List Set
 #include "RhiTestHelpers.hpp"
 
 #include <Methane/Graphics/RHI/CommandListSet.h>
+#include <Methane/Graphics/Null/CommandListSet.h>
 #include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/ComputeCommandList.h>
 #include <Methane/Graphics/RHI/Device.h>
 
+#include <ranges>
 #include <taskflow/taskflow.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers.hpp>
 
 using namespace Methane;
 using namespace Methane::Graphics;
@@ -41,54 +44,102 @@ TEST_CASE("RHI Command List Set Functions", "[rhi][list][set]")
 {
     const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
     const Rhi::CommandQueue compute_cmd_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Compute);
-    const Rhi::ComputeCommandList command_list_one = compute_cmd_queue.CreateComputeCommandList();
-    const Rhi::ComputeCommandList command_list_two = compute_cmd_queue.CreateComputeCommandList();
-    const Rhi::ComputeCommandList command_list_three = compute_cmd_queue.CreateComputeCommandList();
-    const Refs<Rhi::ICommandList> command_list_refs = {
-        command_list_one.GetInterface(),
-        command_list_two.GetInterface(),
-        command_list_three.GetInterface()
+    const Rhi::ComputeCommandList cmd_list_one = compute_cmd_queue.CreateComputeCommandList();
+    const Rhi::ComputeCommandList cmd_list_two = compute_cmd_queue.CreateComputeCommandList();
+    const Rhi::ComputeCommandList cmd_list_three = compute_cmd_queue.CreateComputeCommandList();
+    const Refs<Rhi::ICommandList> cmd_list_refs = {
+        cmd_list_one.GetInterface(),
+        cmd_list_two.GetInterface(),
+        cmd_list_three.GetInterface()
     };
 
-    SECTION("Command List Set Construction")
+    SECTION("Can Construct Command List Set with Three Lists from one Queue")
     {
-        Rhi::CommandListSet command_list_set;
-        REQUIRE_NOTHROW(command_list_set = Rhi::CommandListSet(command_list_refs));
-        REQUIRE(command_list_set.IsInitialized());
-        CHECK(command_list_set.GetCount() == command_list_refs.size());
-        CHECK(command_list_set.GetFrameIndex() == std::nullopt);
+        Rhi::CommandListSet cmd_list_set;
+        REQUIRE_NOTHROW(cmd_list_set = Rhi::CommandListSet(cmd_list_refs));
+        REQUIRE(cmd_list_set.IsInitialized());
+        CHECK(cmd_list_set.GetCount() == cmd_list_refs.size());
+        CHECK(cmd_list_set.GetFrameIndex() == std::nullopt);
     }
 
-    const Data::Index command_frame_index = 2U;
-    const Rhi::CommandListSet command_list_set = Rhi::CommandListSet(command_list_refs, command_frame_index);
+    SECTION("Can not Construct Command List Set with Lists from Distinct Queues")
+    {
+        const Rhi::CommandQueue other_cmd_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Compute);
+        const Rhi::ComputeCommandList other_cmd_list = other_cmd_queue.CreateComputeCommandList();
+        const Refs<Rhi::ICommandList> other_cmd_list_refs = {
+            cmd_list_one.GetInterface(),
+            cmd_list_two.GetInterface(),
+            other_cmd_list.GetInterface()
+        };
+        CHECK_THROWS_AS(Rhi::CommandListSet(other_cmd_list_refs), Methane::ArgumentException);
+    }
+
+    SECTION("Can not Construct Command List Set with Empty Lists")
+    {
+        const Refs<Rhi::ICommandList> empty_cmd_list_refs;
+        CHECK_THROWS_AS(Rhi::CommandListSet(empty_cmd_list_refs), Methane::ArgumentException);
+    }
+
+    const Data::Index cmd_frame_index = 2U;
+    const Rhi::CommandListSet cmd_list_set = Rhi::CommandListSet(cmd_list_refs, cmd_frame_index);
 
     SECTION("Get Frame Index")
     {
-        CHECK(command_list_set.GetFrameIndex() == command_frame_index);
+        CHECK(cmd_list_set.GetFrameIndex() == cmd_frame_index);
     }
 
     SECTION("Get Command Lists Count")
     {
-        CHECK(command_list_set.GetCount() == command_list_refs.size());
+        CHECK(cmd_list_set.GetCount() == cmd_list_refs.size());
     }
 
     SECTION("Get Command List References")
     {
-        Data::Index command_list_index = 0;
-        for(const Ref<Rhi::ICommandList> command_list_ref : command_list_set.GetRefs())
+        Data::Index cmd_list_index = 0;
+        for(const Ref<Rhi::ICommandList> cmd_list_ref : cmd_list_set.GetRefs())
         {
-            CHECK(std::addressof(command_list_ref.get()) ==
-                  std::addressof(command_list_refs[command_list_index].get()));
-            command_list_index++;
+            CHECK(std::addressof(cmd_list_ref.get()) ==
+                  std::addressof(cmd_list_refs[cmd_list_index].get()));
+            cmd_list_index++;
         }
     }
 
     SECTION("Indexed access operator")
     {
-        for(Data::Index command_list_index = 0; command_list_index < command_list_refs.size(); ++command_list_index)
+        for(Data::Index cmd_list_index = 0; cmd_list_index < cmd_list_refs.size(); ++cmd_list_index)
         {
-            CHECK(std::addressof(command_list_set[command_list_index]) ==
-                  std::addressof(command_list_refs[command_list_index].get()));
+            CHECK(std::addressof(cmd_list_set[cmd_list_index]) ==
+                  std::addressof(cmd_list_refs[cmd_list_index].get()));
         }
+    }
+
+    SECTION("Can be Executed by Command Queue")
+    {
+        for(const Ref<Rhi::ICommandList>& cmd_list_ref : cmd_list_set.GetRefs())
+        {
+            REQUIRE_NOTHROW(cmd_list_ref.get().Reset());
+            REQUIRE_NOTHROW(cmd_list_ref.get().Commit());
+            CHECK(cmd_list_ref.get().GetState() == Rhi::CommandListState::Committed);
+        }
+
+        uint32_t completed_cmd_list_count = 0U;
+        REQUIRE_NOTHROW(compute_cmd_queue.Execute(cmd_list_set,
+            [&cmd_list_refs, &completed_cmd_list_count](Rhi::ICommandList& completed_cmd_list)
+            {
+                const auto cmd_list_ref_it = std::ranges::find_if(cmd_list_refs,
+                    [&completed_cmd_list](const Ref<Rhi::ICommandList>& cmd_list_ref)
+                    { return std::addressof(cmd_list_ref.get()) == std::addressof(completed_cmd_list); });
+                CHECK(cmd_list_ref_it != cmd_list_refs.end());
+                CHECK(completed_cmd_list.GetState() == Rhi::CommandListState::Pending);
+                completed_cmd_list_count++;
+            }));
+
+        for(const Ref<Rhi::ICommandList>& cmd_list_ref : cmd_list_set.GetRefs())
+        {
+            CHECK(cmd_list_ref.get().GetState() == Rhi::CommandListState::Executing);
+        }
+
+        dynamic_cast<Null::CommandListSet&>(cmd_list_set.GetInterface()).Complete();
+        CHECK(completed_cmd_list_count == cmd_list_refs.size());
     }
 }
