@@ -21,6 +21,8 @@ add_executable(${TARGET}
     TextureTest.cpp
     SystemTest.cpp
     DeviceTest.cpp
+    RenderStateSettings.hpp
+    RenderContextTest.cpp
 )
 
 target_link_libraries(${TARGET}

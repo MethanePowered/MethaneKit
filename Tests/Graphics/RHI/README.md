@@ -17,7 +17,7 @@
 | [Rhi::Program](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/Program.h)                                     | :white_check_mark: [ProgramTest](ProgramTest.cpp)                             |
 | [Rhi::ProgramBindings](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ProgramBindings.h)                     | :white_check_mark: [ProgramBindingsTest](ProgramBindingsTest.cpp)             |
 | [Rhi::RenderCommandList](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderCommandList.h)                 | :warning: not covered yet                                                     |
-| [Rhi::RenderContext](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderContext.h)                         | :warning: not covered yet                                                     |
+| [Rhi::RenderContext](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderContext.h)                         | :white_check_mark: [RenderContextTest](RenderContextTest.cpp)                 |
 | [Rhi::RenderPass](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderPass.h)                               | :warning: not covered yet                                                     |
 | [Rhi::RenderPattern](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderPattern.h)                         | :warning: not covered yet                                                     |
 | [Rhi::RenderState](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderState.h)                             | :warning: not covered yet                                                     |

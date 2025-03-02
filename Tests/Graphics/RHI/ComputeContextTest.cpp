@@ -171,7 +171,7 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
         CHECK_NOTHROW(compute_context.RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources));
         CHECK_NOTHROW(compute_context.WaitForGpu(Rhi::ContextWaitFor::ComputeComplete));
         CHECK(context_callback_tester.IsContextUploadingResources());
-        //FIXME: CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Executing);
+        CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Executing);
     }
 
     SECTION("Context Complete Initialization")
@@ -189,7 +189,7 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
         CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Encoding);
         CHECK_NOTHROW(compute_context.RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization));
         CHECK_NOTHROW(compute_context.WaitForGpu(Rhi::ContextWaitFor::ComputeComplete));
-        //FIXME: CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Executing);
+        CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Executing);
     }
 }
 
