@@ -285,7 +285,7 @@ TEST_CASE("RHI Render Context Rendering Functions", "[rhi][render][context]")
         for(size_t i = 0; i < 60; ++i)
         {
             render_context.Present();
-            std::this_thread::sleep_for(std::chrono::milliseconds(16));
+            std::this_thread::sleep_for(std::chrono::milliseconds(17));
         }
 
         Data::FrameTiming avg_frame_timing;
