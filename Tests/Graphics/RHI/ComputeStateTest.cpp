@@ -54,8 +54,7 @@ TEST_CASE("RHI Compute State Functions", "[rhi][compute][state]")
         REQUIRE_NOTHROW(compute_state = compute_context.CreateComputeState(compute_state_settings));
         REQUIRE(compute_state.IsInitialized());
         CHECK(compute_state.GetInterfacePtr());
-        CHECK(compute_state.GetSettings().thread_group_size == compute_state_settings.thread_group_size);
-        CHECK(compute_state.GetProgram().GetInterfacePtr().get() == compute_state_settings.program.GetInterfacePtr().get());
+        CHECK(compute_state.GetSettings() == Rhi::ComputeStateSettingsImpl::Convert(compute_state_settings));
     }
 
     SECTION("Object Destroyed Callback")

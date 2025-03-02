@@ -37,7 +37,7 @@ namespace Methane::Graphics::Rhi
 
 RenderStateSettings RenderStateSettingsImpl::Convert(const RenderStateSettingsImpl& settings)
 {
-    return IRenderState::Settings
+    return RenderStateSettings
     {
         settings.program.GetInterfacePtr(),
         settings.render_pattern.GetInterfacePtr(),

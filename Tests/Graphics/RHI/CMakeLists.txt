@@ -2,6 +2,7 @@ set(TARGET MethaneGraphicsRhiTest)
 
 add_executable(${TARGET}
     RhiTestHelpers.hpp
+    RhiSettings.hpp
     ShaderTest.cpp
     ProgramTest.cpp
     ProgramBindingsTest.cpp
@@ -21,8 +22,8 @@ add_executable(${TARGET}
     TextureTest.cpp
     SystemTest.cpp
     DeviceTest.cpp
-    RenderStateSettings.hpp
     RenderContextTest.cpp
+    RenderStateTest.cpp
 )
 
 target_link_libraries(${TARGET}

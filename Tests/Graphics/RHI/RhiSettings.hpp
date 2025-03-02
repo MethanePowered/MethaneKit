@@ -28,6 +28,23 @@ Test settings of the RHI RenderStateSettings
 namespace Methane::Graphics::Test
 {
 
+inline Rhi::RenderContextSettings GetRenderContextSettings()
+{
+    return Rhi::RenderContextSettings
+    {
+        .frame_size           = { 1920U, 1080U },
+        .color_format         = PixelFormat::BGRA8Unorm,
+        .depth_stencil_format = PixelFormat::Depth32Float,
+        .clear_color          = Color4F{ 0.f, 0.f, 1.f, 1.f },
+        .clear_depth_stencil  = DepthStencilValues{ 0.f, 0.f },
+        .frame_buffers_count  = 2U,
+        .vsync_enabled        = false,
+        .is_full_screen       = true,
+        .options_mask         = Rhi::ContextOptionMask{ Rhi::ContextOption::DeferredProgramBindingsInitialization },
+        .unsync_max_fps       = 1234U
+    };
+}
+
 inline Rhi::RenderPatternSettings GetRenderPatternSettings()
 {
     return Rhi::RenderPatternSettings
