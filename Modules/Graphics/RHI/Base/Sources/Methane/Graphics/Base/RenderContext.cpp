@@ -39,7 +39,8 @@ RenderContext::RenderContext(Device& device, UniquePtr<Rhi::IDescriptorManager>&
 {
     META_FUNCTION_TASK();
     META_CHECK_DESCR(m_settings.color_format, !IsSrgbColorSpace(m_settings.color_format),
-                         "render context can not use color formats with sRGB gamma correction due to modern swap-chain flip model limitations");
+                     "render context can not use color formats with sRGB gamma correction " \
+                     "due to modern swap-chain flip model limitations");
 }
 
 void RenderContext::WaitForGpu(WaitFor wait_for)

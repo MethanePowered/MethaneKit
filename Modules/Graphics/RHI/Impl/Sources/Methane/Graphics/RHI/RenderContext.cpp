@@ -222,6 +222,11 @@ CommandKit RenderContext::GetRenderCommandKit() const
     return CommandKit(GetImpl(m_impl_ptr).GetRenderCommandKit());
 }
 
+CommandKit RenderContext::GetComputeCommandKit() const
+{
+    return CommandKit(GetImpl(m_impl_ptr).GetComputeCommandKit());
+}
+
 void RenderContext::Connect(Data::Receiver<IContextCallback>& receiver) const
 {
     GetImpl(m_impl_ptr).Data::Emitter<IContextCallback>::Connect(receiver);

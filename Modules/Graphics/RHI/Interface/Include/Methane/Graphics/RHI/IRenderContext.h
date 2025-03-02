@@ -52,6 +52,9 @@ struct RenderContextSettings
     ContextOptionMask       options_mask         { ContextOption::DeferredProgramBindingsInitialization };
     uint32_t                unsync_max_fps       = 1000U; // MacOS only
 
+    [[nodiscard]] friend bool operator==(const RenderContextSettings& left, const RenderContextSettings& right) noexcept = default;
+    [[nodiscard]] friend bool operator!=(const RenderContextSettings& left, const RenderContextSettings& right) noexcept = default;
+
     RenderContextSettings& SetFrameSize(FrameSize&& new_frame_size) noexcept;
     RenderContextSettings& SetColorFormat(PixelFormat new_color_format) noexcept;
     RenderContextSettings& SetDepthStencilFormat(PixelFormat new_ds_format) noexcept;
@@ -96,6 +99,7 @@ struct IRenderContext
     virtual bool SetFullScreen(bool is_full_screen) = 0;
 
     [[nodiscard]] ICommandKit& GetRenderCommandKit() const;
+    [[nodiscard]] ICommandKit& GetComputeCommandKit() const;
 };
 
 } // namespace Methane::Graphics::Rhi

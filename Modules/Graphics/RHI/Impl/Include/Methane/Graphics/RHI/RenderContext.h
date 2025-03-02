@@ -115,6 +115,7 @@ public:
     [[nodiscard]] META_PIMPL_API CommandKit GetDefaultCommandKit(const CommandQueue& cmd_queue) const;
     [[nodiscard]] META_PIMPL_API CommandKit GetUploadCommandKit() const;
     [[nodiscard]] META_PIMPL_API CommandKit GetRenderCommandKit() const;
+    [[nodiscard]] META_PIMPL_API CommandKit GetComputeCommandKit() const;
 
     // Data::IEmitter<IContextCallback> interface methods
     META_PIMPL_API void Connect(Data::Receiver<IContextCallback>& receiver) const;

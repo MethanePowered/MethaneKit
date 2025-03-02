@@ -112,4 +112,9 @@ ICommandKit& IRenderContext::GetRenderCommandKit() const
     return GetDefaultCommandKit(CommandListType::Render);
 }
 
+ICommandKit& IRenderContext::GetComputeCommandKit() const
+{
+    return GetDefaultCommandKit(CommandListType::Compute);
+}
+
 } // namespace Methane::Graphics::Rhi
