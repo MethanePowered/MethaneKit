@@ -39,14 +39,14 @@ using namespace Methane::Graphics;
 
 static tf::Executor g_parallel_executor;
 
-const Platform::AppEnvironment test_app_env;
-const Rhi::RenderContextSettings render_context_settings = Test::GetRenderContextSettings();
-const Rhi::RenderPatternSettings render_pattern_settings = Test::GetRenderPatternSettings();
+static const Platform::AppEnvironment test_app_env{ nullptr };
+static const Rhi::RenderContextSettings render_context_settings = Test::GetRenderContextSettings();
+static const Rhi::RenderPatternSettings render_pattern_settings = Test::GetRenderPatternSettings();
 
-const Rhi::RenderContext render_context(test_app_env, GetTestDevice(), g_parallel_executor, render_context_settings);
-const Rhi::RenderPattern render_pattern(render_context, render_pattern_settings);
+static const Rhi::RenderContext render_context(test_app_env, GetTestDevice(), g_parallel_executor, render_context_settings);
+static const Rhi::RenderPattern render_pattern(render_context, render_pattern_settings);
 
-const Rhi::RenderStateSettingsImpl render_state_settings = Test::GetRenderStateSettings(render_context, render_pattern);
+static const Rhi::RenderStateSettingsImpl render_state_settings = Test::GetRenderStateSettings(render_context, render_pattern);
 
 TEST_CASE("RHI Render State Functions", "[rhi][render][state]")
 {

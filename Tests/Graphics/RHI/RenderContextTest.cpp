@@ -48,8 +48,8 @@ using namespace Methane::Graphics;
 
 static tf::Executor g_parallel_executor;
 
-const Platform::AppEnvironment test_app_env;
-const Rhi::RenderContextSettings render_context_settings = Test::GetRenderContextSettings();
+static const Platform::AppEnvironment test_app_env{ nullptr };
+static const Rhi::RenderContextSettings render_context_settings = Test::GetRenderContextSettings();
 
 TEST_CASE("RHI Render Context Basic Functions", "[rhi][basic][context]")
 {
