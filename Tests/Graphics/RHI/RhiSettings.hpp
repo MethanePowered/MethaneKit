@@ -82,18 +82,18 @@ struct RenderPassResources
 inline RenderPassResources GetRenderPassResources(const Rhi::RenderPattern& render_pattern)
 {
     RenderPassResources resources;
-    const Rhi::RenderContextSettings& render_context_settings = render_pattern.GetRenderContext().GetSettings();
+    const FrameSize frame_size = render_pattern.GetRenderContext().GetSettings().frame_size;
     resources.frame_buffer_texture = render_pattern.GetRenderContext().CreateTexture(
                                         Rhi::TextureSettings::ForFrameBuffer(
-                                            Dimensions(render_context_settings.frame_size),
+                                            Dimensions(frame_size),
                                             render_pattern.GetSettings().color_attachments.front().format, 0U));
     resources.depth_stencil_texture = render_pattern.GetRenderContext().CreateTexture(
                                         Rhi::TextureSettings::ForDepthStencil(
-                                            Dimensions(render_context_settings.frame_size),
+                                            Dimensions(frame_size),
                                             render_pattern.GetSettings().depth_attachment->format,
                                             DepthStencilValues(0.f, 0.f),
                                             rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget })));
-    resources.render_pass_settings.frame_size = render_context_settings.frame_size;
+    resources.render_pass_settings.frame_size = frame_size;
     resources.render_pass_settings.attachments.push_back(resources.frame_buffer_texture.GetTextureView());
     resources.render_pass_settings.attachments.push_back(resources.depth_stencil_texture.GetTextureView());
     return resources;
