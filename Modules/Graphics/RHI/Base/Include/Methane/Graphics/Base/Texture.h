@@ -43,7 +43,7 @@ public:
     [[nodiscard]] Data::Size         GetDataSize(Data::MemoryState size_type = Data::MemoryState::Reserved) const noexcept override;
     [[nodiscard]] SubResource::Count GetSubresourceCount() const noexcept final { return m_sub_resource_count; }
     [[nodiscard]] Data::Size         GetSubResourceDataSize(const SubResource::Index& subresource_index) const final;
-    [[nodiscard]] Rhi::ResourceView  GetTextureView(const SubResource::Index& subresource_index,
+    [[nodiscard]] Rhi::TextureView   GetTextureView(const SubResource::Index& subresource_index,
                                                     const SubResource::Count& subresource_count = {},
                                                     Opt<Rhi::TextureDimensionType> texture_dimension_type_opt = std::nullopt) final;
     void SetData(Rhi::ICommandQueue&, const SubResources& sub_resources) override;

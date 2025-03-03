@@ -129,7 +129,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
             TextureLabeler::Slice& slice = m_slices.back();
 
             slice.render_pass = m_texture_face_render_pattern.CreateRenderPass({
-                { rhi::TextureView(rt_texture.GetInterface(), rhi::SubResource::Index(depth_index, array_index), {}, rhi::TextureDimensionType::Tex2D) },
+                { rt_texture.GetTextureView(rhi::SubResource::Index(depth_index, array_index), {}, rhi::TextureDimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
             slice.render_pass.SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));

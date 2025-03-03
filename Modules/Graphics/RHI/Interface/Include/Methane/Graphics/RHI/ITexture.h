@@ -112,7 +112,7 @@ struct ITexture
     [[nodiscard]] virtual const Settings&    GetSettings() const = 0;
     [[nodiscard]] virtual Data::Size         GetSubResourceDataSize(const SubResource::Index& sub_resource_index = {}) const = 0;
     [[nodiscard]] virtual SubResource::Count GetSubresourceCount() const noexcept = 0;
-    [[nodiscard]] virtual ResourceView       GetTextureView(const SubResource::Index& subresource_index,
+    [[nodiscard]] virtual TextureView        GetTextureView(const SubResource::Index& subresource_index = {},
                                                             const SubResource::Count& subresource_count = {},
                                                             Opt<TextureDimensionType> texture_dimension_type_opt = std::nullopt) = 0;
     [[nodiscard]] virtual SubResource        GetData(ICommandQueue& target_cmd_queue,

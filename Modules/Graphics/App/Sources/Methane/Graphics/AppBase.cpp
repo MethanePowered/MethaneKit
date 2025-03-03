@@ -303,9 +303,7 @@ void AppBase::SetShowHudInWindowTitle(bool show_hud_in_window_title)
 Rhi::TextureViews AppBase::GetScreenPassAttachments(const Rhi::Texture& frame_buffer_texture) const
 {
     META_FUNCTION_TASK();
-    Rhi::TextureViews attachments{
-        Rhi::TextureView(frame_buffer_texture.GetInterface())
-    };
+    Rhi::TextureViews attachments{ frame_buffer_texture.GetTextureView() };
 
     if (m_depth_texture.IsInitialized())
         attachments.emplace_back(m_depth_texture.GetInterface());

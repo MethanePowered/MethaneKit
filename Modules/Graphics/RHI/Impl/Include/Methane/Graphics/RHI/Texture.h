@@ -95,7 +95,7 @@ public:
     [[nodiscard]] META_PIMPL_API const DescriptorByViewId& GetDescriptorByViewId() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const IContext&           GetContext() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const Opt<uint32_t>&      GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API Rhi::ResourceView         GetTextureView(const SubResource::Index& subresource_index,
+    [[nodiscard]] META_PIMPL_API Rhi::TextureView          GetTextureView(const SubResource::Index& subresource_index = {},
                                                                           const SubResource::Count& subresource_count = {},
                                                                           Opt<Rhi::TextureDimensionType> texture_dimension_type_opt = std::nullopt) const;
     [[nodiscard]] META_PIMPL_API Rhi::ResourceView         GetResourceView() const;
