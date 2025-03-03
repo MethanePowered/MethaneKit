@@ -24,6 +24,9 @@ Test settings of the RHI RenderStateSettings
 #include <Methane/Data/AppShadersProvider.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/RenderState.h>
+#include <Methane/Graphics/RHI/RenderPattern.h>
+#include <Methane/Graphics/RHI/RenderPass.h>
+#include <Methane/Graphics/RHI/Texture.h>
 
 namespace Methane::Graphics::Test
 {
@@ -67,6 +70,33 @@ inline Rhi::RenderPatternSettings GetRenderPatternSettings()
         .shader_access = Rhi::RenderPassAccessMask{ Rhi::RenderPassAccess::ShaderResources },
         .is_final_pass = true
     };
+}
+
+struct RenderPassResources
+{
+    Rhi::Texture frame_buffer_texture;
+    Rhi::Texture depth_stencil_texture;
+    Rhi::RenderPassSettings render_pass_settings;
+};
+
+inline RenderPassResources GetRenderPassResources(const Rhi::RenderPattern& render_pattern)
+{
+    RenderPassResources resources;
+    const Rhi::RenderContextSettings& render_context_settings = render_pattern.GetRenderContext().GetSettings();
+    resources.frame_buffer_texture = render_pattern.GetRenderContext().CreateTexture(
+                                        Rhi::TextureSettings::ForFrameBuffer(
+                                            Dimensions(render_context_settings.frame_size),
+                                            render_pattern.GetSettings().color_attachments.front().format, 0U));
+    resources.depth_stencil_texture = render_pattern.GetRenderContext().CreateTexture(
+                                        Rhi::TextureSettings::ForDepthStencil(
+                                            Dimensions(render_context_settings.frame_size),
+                                            render_pattern.GetSettings().depth_attachment->format,
+                                            DepthStencilValues(0.f, 0.f),
+                                            rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget })));
+    resources.render_pass_settings.frame_size = render_context_settings.frame_size;
+    resources.render_pass_settings.attachments.push_back(resources.frame_buffer_texture.GetTextureView());
+    resources.render_pass_settings.attachments.push_back(resources.depth_stencil_texture.GetTextureView());
+    return resources;
 }
 
 inline Rhi::RenderStateSettingsImpl GetRenderStateSettings(const Rhi::RenderContext& render_context,
