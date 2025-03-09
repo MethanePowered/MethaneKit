@@ -18,7 +18,7 @@
 | [Rhi::ProgramBindings](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ProgramBindings.h)                     | :white_check_mark: [ProgramBindingsTest](ProgramBindingsTest.cpp)             |
 | [Rhi::RenderCommandList](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderCommandList.h)                 | :warning: not covered yet                                                     |
 | [Rhi::RenderContext](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderContext.h)                         | :white_check_mark: [RenderContextTest](RenderContextTest.cpp)                 |
-| [Rhi::RenderPass](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderPass.h)                               | :warning: not covered yet                                                     |
+| [Rhi::RenderPass](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderPass.h)                               | :white_check_mark: [RenderPassTest](RenderPassTest.cpp)                       |
 | [Rhi::RenderPattern](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderPattern.h)                         | :white_check_mark: [RenderPatternTest](RenderPatternTest.cpp)                 |
 | [Rhi::RenderState](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderState.h)                             | :white_check_mark: [RenderStateTest](RenderStateTest.cpp)                     |
 | [Rhi::ResourceBarriers](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ResourceBarriers.h)                   | :warning: not covered yet                                                     |

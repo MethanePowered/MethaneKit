@@ -76,7 +76,7 @@ struct RenderPassResources
 {
     Rhi::Texture frame_buffer_texture;
     Rhi::Texture depth_stencil_texture;
-    Rhi::RenderPassSettings render_pass_settings;
+    Rhi::RenderPassSettings settings;
 };
 
 inline RenderPassResources GetRenderPassResources(const Rhi::RenderPattern& render_pattern)
@@ -93,9 +93,9 @@ inline RenderPassResources GetRenderPassResources(const Rhi::RenderPattern& rend
                                             render_pattern.GetSettings().depth_attachment->format,
                                             DepthStencilValues(0.f, 0.f),
                                             rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget })));
-    resources.render_pass_settings.frame_size = frame_size;
-    resources.render_pass_settings.attachments.push_back(resources.frame_buffer_texture.GetTextureView());
-    resources.render_pass_settings.attachments.push_back(resources.depth_stencil_texture.GetTextureView());
+    resources.settings.frame_size = frame_size;
+    resources.settings.attachments.push_back(resources.frame_buffer_texture.GetTextureView());
+    resources.settings.attachments.push_back(resources.depth_stencil_texture.GetTextureView());
     return resources;
 }
 

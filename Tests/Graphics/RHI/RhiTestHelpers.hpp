@@ -25,6 +25,7 @@ RHI Test helper classes
 #include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Graphics/RHI/IResource.h>
+#include <Methane/Graphics/RHI/IRenderPass.h>
 #include <Methane/Graphics/RHI/System.h>
 #include <Methane/Graphics/RHI/Device.h>
 #include <Methane/Data/Receiver.hpp>
@@ -282,6 +283,34 @@ private:
 
     rhi::IResource& m_resource;
     bool m_is_resource_released = false;
+};
+
+class RenderPassCallbackTester final
+    : private Data::Receiver<rhi::IRenderPassCallback>
+{
+public:
+    RenderPassCallbackTester(rhi::IRenderPass& render_pass)
+        : m_render_pass(render_pass)
+    { dynamic_cast<Data::IEmitter<rhi::IRenderPassCallback>&>(render_pass).Connect(*this); }
+
+    template<typename RenderPassType>
+    RenderPassCallbackTester(RenderPassType& render_pass)
+        : m_render_pass(render_pass.GetInterface())
+    { render_pass.Connect(*this); }
+
+    bool IsRenderPassUpdated() const noexcept { return m_is_render_pass_updated; }
+
+    void Reset() { m_is_render_pass_updated = false; }
+
+private:
+    void OnRenderPassUpdated(const rhi::IRenderPass& render_pass) override
+    {
+        CHECK(std::addressof(render_pass) == std::addressof(m_render_pass));
+        m_is_render_pass_updated = true;
+    }
+
+    rhi::IRenderPass& m_render_pass;
+    bool m_is_render_pass_updated = false;
 };
 
 } // namespace Methane

@@ -89,13 +89,6 @@ TEST_CASE("RHI Render Pattern Functions", "[rhi][render][pattern]")
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
     }
 
-    /*
-    [[nodiscard]] META_PIMPL_API RenderContext     GetRenderContext() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API const Settings&   GetSettings() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API Data::Size        GetAttachmentCount() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API AttachmentFormats GetAttachmentFormats() const META_PIMPL_NOEXCEPT;
-    */
-
     SECTION("Get Settings")
     {
         CHECK(render_pattern.GetSettings() == render_pattern_settings);
@@ -142,8 +135,8 @@ TEST_CASE("RHI Render Pattern Factory", "[rhi][render][pattern][factory]")
     {
         Rhi::RenderPass render_pass;
         Test::RenderPassResources resources = Test::GetRenderPassResources(render_pattern);
-        REQUIRE_NOTHROW(render_pass = render_pattern.CreateRenderPass(resources.render_pass_settings));
+        REQUIRE_NOTHROW(render_pass = render_pattern.CreateRenderPass(resources.settings));
         REQUIRE(render_pass.IsInitialized());
-        CHECK(render_pass.GetSettings() == resources.render_pass_settings);
+        CHECK(render_pass.GetSettings() == resources.settings);
     }
 }
