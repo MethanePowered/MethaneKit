@@ -44,7 +44,7 @@ TEST_CASE("RHI View State Functions", "[rhi][view][state]")
         }
     };
 
-    SECTION("Context Construction")
+    SECTION("View State Construction")
     {
         Rhi::ViewState view_state;
         REQUIRE_NOTHROW(view_state = Rhi::ViewState(view_state_settings));

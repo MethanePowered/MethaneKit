@@ -21,7 +21,7 @@
 | [Rhi::RenderPass](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderPass.h)                               | :white_check_mark: [RenderPassTest](RenderPassTest.cpp)                       |
 | [Rhi::RenderPattern](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderPattern.h)                         | :white_check_mark: [RenderPatternTest](RenderPatternTest.cpp)                 |
 | [Rhi::RenderState](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/RenderState.h)                             | :white_check_mark: [RenderStateTest](RenderStateTest.cpp)                     |
-| [Rhi::ResourceBarriers](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ResourceBarriers.h)                   | :warning: not covered yet                                                     |
+| [Rhi::ResourceBarriers](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ResourceBarriers.h)                   | :white_check_mark: [ResourceBarriersTest](ResourceBarriersTest.cpp)           |
 | [Rhi::Sampler](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/Sampler.h)                                     | :white_check_mark: [SamplerTest](SamplerTest.cpp)                             |
 | [Rhi::Shader](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/Shader.h)                                       | :white_check_mark: [ShaderTest](ShaderTest.cpp)                               |
 | [Rhi::System](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/System.h)                                       | :white_check_mark: [SystemTest](SystemTest.cpp)                               |

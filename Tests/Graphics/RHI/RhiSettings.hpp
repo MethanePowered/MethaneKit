@@ -92,7 +92,7 @@ inline RenderPassResources GetRenderPassResources(const Rhi::RenderPattern& rend
                                             Dimensions(frame_size),
                                             render_pattern.GetSettings().depth_attachment->format,
                                             DepthStencilValues(0.f, 0.f),
-                                            rhi::ResourceUsageMask({ rhi::ResourceUsage::RenderTarget })));
+                                            Rhi::ResourceUsageMask({ Rhi::ResourceUsage::RenderTarget })));
     resources.settings.frame_size = frame_size;
     resources.settings.attachments.push_back(resources.frame_buffer_texture.GetTextureView());
     resources.settings.attachments.push_back(resources.depth_stencil_texture.GetTextureView());

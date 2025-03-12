@@ -86,7 +86,7 @@ public:
         return std::is_eq(left <=> right);
     }
 
-    [[nodiscard]] Type      GetType() const noexcept     { return m_type; }
+    [[nodiscard]] Type       GetType() const noexcept     { return m_type; }
     [[nodiscard]] IResource& GetResource() const noexcept { return m_resource_ref.get(); }
 
 private:
