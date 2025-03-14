@@ -96,8 +96,16 @@ TEST_CASE("RHI Resource Barrier ID", "[rhi][resource][barrier][id]")
 
     SECTION("Barrier Id less by resource")
     {
-        CHECK(buffer_one_owner_transition < buffer_two_owner_transition);
-        CHECK(buffer_one_owner_transition <= buffer_two_owner_transition);
+        if (buffer_one.GetInterfacePtr().get() < buffer_two.GetInterfacePtr().get())
+        {
+            CHECK(buffer_one_owner_transition < buffer_two_owner_transition);
+            CHECK(buffer_one_owner_transition <= buffer_two_owner_transition);
+        }
+        else
+        {
+            CHECK(buffer_two_owner_transition <  buffer_one_owner_transition);
+            CHECK(buffer_two_owner_transition <= buffer_one_owner_transition);
+        }
     }
 
     SECTION("Barrier Id greater by type")
@@ -108,8 +116,16 @@ TEST_CASE("RHI Resource Barrier ID", "[rhi][resource][barrier][id]")
 
     SECTION("Barrier Id greater by resource")
     {
-        CHECK(buffer_two_owner_transition > buffer_one_owner_transition);
-        CHECK(buffer_two_owner_transition >= buffer_one_owner_transition);
+        if (buffer_one.GetInterfacePtr().get() < buffer_two.GetInterfacePtr().get())
+        {
+            CHECK(buffer_two_owner_transition >  buffer_one_owner_transition);
+            CHECK(buffer_two_owner_transition >= buffer_one_owner_transition);
+        }
+        else
+        {
+            CHECK(buffer_one_owner_transition >  buffer_two_owner_transition);
+            CHECK(buffer_one_owner_transition >= buffer_two_owner_transition);
+        }
     }
 }
 
