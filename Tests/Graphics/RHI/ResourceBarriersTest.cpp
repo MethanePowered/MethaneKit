@@ -63,68 +63,68 @@ TEST_CASE("RHI Resource Barrier ID", "[rhi][resource][barrier][id]")
         CHECK(std::addressof(resource_barrier_id.GetResource()) == std::addressof(buffer_two.GetInterface()));
     }
 
-    const Rhi::ResourceBarrierId buffer_one_state_transition(Rhi::ResourceBarrierType::StateTransition, buffer_one.GetInterface());
-    const Rhi::ResourceBarrierId buffer_one_owner_transition(Rhi::ResourceBarrierType::OwnerTransition, buffer_one.GetInterface());
-    const Rhi::ResourceBarrierId buffer_two_state_transition(Rhi::ResourceBarrierType::StateTransition, buffer_two.GetInterface());
-    const Rhi::ResourceBarrierId buffer_two_owner_transition(Rhi::ResourceBarrierType::OwnerTransition, buffer_two.GetInterface());
+    const Rhi::ResourceBarrierId buffer_one_state_transition_id(Rhi::ResourceBarrierType::StateTransition, buffer_one.GetInterface());
+    const Rhi::ResourceBarrierId buffer_one_owner_transition_id(Rhi::ResourceBarrierType::OwnerTransition, buffer_one.GetInterface());
+    const Rhi::ResourceBarrierId buffer_two_state_transition_id(Rhi::ResourceBarrierType::StateTransition, buffer_two.GetInterface());
+    const Rhi::ResourceBarrierId buffer_two_owner_transition_id(Rhi::ResourceBarrierType::OwnerTransition, buffer_two.GetInterface());
 
     SECTION("Barrier Id equality")
     {
         Rhi::ResourceBarrierId buffer_one_state_transition_2(Rhi::ResourceBarrierType::StateTransition, buffer_one.GetInterface());
-        CHECK(buffer_one_state_transition == buffer_one_state_transition_2);
-        CHECK(buffer_one_state_transition <= buffer_one_state_transition_2);
-        CHECK(buffer_one_state_transition >= buffer_one_state_transition_2);
+        CHECK(buffer_one_state_transition_id == buffer_one_state_transition_2);
+        CHECK(buffer_one_state_transition_id <= buffer_one_state_transition_2);
+        CHECK(buffer_one_state_transition_id >= buffer_one_state_transition_2);
     }
 
     SECTION("Barrier Id non-equality by type")
     {
-        CHECK(buffer_one_state_transition != buffer_one_owner_transition);
-        CHECK_FALSE(buffer_one_state_transition == buffer_one_owner_transition);
+        CHECK(buffer_one_state_transition_id != buffer_one_owner_transition_id);
+        CHECK_FALSE(buffer_one_state_transition_id == buffer_one_owner_transition_id);
     }
 
     SECTION("Barrier Id non-equality by resource")
     {
-        CHECK(buffer_one_state_transition != buffer_two_state_transition);
-        CHECK_FALSE(buffer_one_state_transition == buffer_two_state_transition);
+        CHECK(buffer_one_state_transition_id != buffer_two_state_transition_id);
+        CHECK_FALSE(buffer_one_state_transition_id == buffer_two_state_transition_id);
     }
 
     SECTION("Barrier Id less by type")
     {
-        CHECK(buffer_one_state_transition < buffer_one_owner_transition);
-        CHECK(buffer_one_state_transition <= buffer_one_owner_transition);
+        CHECK(buffer_one_state_transition_id < buffer_one_owner_transition_id);
+        CHECK(buffer_one_state_transition_id <= buffer_one_owner_transition_id);
     }
 
     SECTION("Barrier Id less by resource")
     {
         if (buffer_one.GetInterfacePtr().get() < buffer_two.GetInterfacePtr().get())
         {
-            CHECK(buffer_one_owner_transition < buffer_two_owner_transition);
-            CHECK(buffer_one_owner_transition <= buffer_two_owner_transition);
+            CHECK(buffer_one_owner_transition_id < buffer_two_owner_transition_id);
+            CHECK(buffer_one_owner_transition_id <= buffer_two_owner_transition_id);
         }
         else
         {
-            CHECK(buffer_two_owner_transition <  buffer_one_owner_transition);
-            CHECK(buffer_two_owner_transition <= buffer_one_owner_transition);
+            CHECK(buffer_two_owner_transition_id <  buffer_one_owner_transition_id);
+            CHECK(buffer_two_owner_transition_id <= buffer_one_owner_transition_id);
         }
     }
 
     SECTION("Barrier Id greater by type")
     {
-        CHECK(buffer_one_owner_transition > buffer_one_state_transition);
-        CHECK(buffer_one_owner_transition >= buffer_one_state_transition);
+        CHECK(buffer_one_owner_transition_id > buffer_one_state_transition_id);
+        CHECK(buffer_one_owner_transition_id >= buffer_one_state_transition_id);
     }
 
     SECTION("Barrier Id greater by resource")
     {
         if (buffer_one.GetInterfacePtr().get() < buffer_two.GetInterfacePtr().get())
         {
-            CHECK(buffer_two_owner_transition >  buffer_one_owner_transition);
-            CHECK(buffer_two_owner_transition >= buffer_one_owner_transition);
+            CHECK(buffer_two_owner_transition_id >  buffer_one_owner_transition_id);
+            CHECK(buffer_two_owner_transition_id >= buffer_one_owner_transition_id);
         }
         else
         {
-            CHECK(buffer_one_owner_transition >  buffer_two_owner_transition);
-            CHECK(buffer_one_owner_transition >= buffer_two_owner_transition);
+            CHECK(buffer_one_owner_transition_id >  buffer_two_owner_transition_id);
+            CHECK(buffer_one_owner_transition_id >= buffer_two_owner_transition_id);
         }
     }
 }
@@ -242,5 +242,105 @@ TEST_CASE("RHI Resource Owner Change", "[rhi][resource][owner]")
     {
         CHECK(queue_change_0_to_2 > queue_change_0_to_1);
         CHECK(queue_change_0_to_2 >= queue_change_0_to_1);
+    }
+}
+
+TEST_CASE("RHI Resource Barrier", "[rhi][resource][barrier]")
+{
+    const Rhi::Buffer buffer = render_context.CreateBuffer(const_buffer_settings);
+    const Rhi::ResourceStateChange state_change(Rhi::ResourceState::CopyDest, Rhi::ResourceState::VertexBuffer);
+    const Rhi::ResourceOwnerChange owner_change(0U, 1U);
+
+    SECTION("State Transition Barrier Construction from States")
+    {
+        const Rhi::ResourceBarrier barrier(buffer.GetInterface(), Rhi::ResourceState::CopyDest, Rhi::ResourceState::VertexBuffer);
+        CHECK(std::addressof(barrier.GetId().GetResource()) == std::addressof(buffer.GetInterface()));
+        CHECK(barrier.GetId().GetType() == Rhi::ResourceBarrierType::StateTransition);
+        CHECK(barrier.GetStateChange().GetStateBefore() == Rhi::ResourceState::CopyDest);
+        CHECK(barrier.GetStateChange().GetStateAfter() == Rhi::ResourceState::VertexBuffer);
+    }
+
+    SECTION("State Transition Barrier Construction from State Change")
+    {
+        const Rhi::ResourceBarrier barrier(buffer.GetInterface(), state_change);
+        CHECK(std::addressof(barrier.GetId().GetResource()) == std::addressof(buffer.GetInterface()));
+        CHECK(barrier.GetStateChange() == state_change);
+    }
+
+    SECTION("Owner Transition Barrier Construction from Owner Change")
+    {
+        const Rhi::ResourceBarrier barrier(buffer.GetInterface(), 0U, 1U);
+        CHECK(std::addressof(barrier.GetId().GetResource()) == std::addressof(buffer.GetInterface()));
+        CHECK(barrier.GetId().GetType() == Rhi::ResourceBarrierType::OwnerTransition);
+        CHECK(barrier.GetOwnerChange().GetQueueFamilyBefore() == 0U);
+        CHECK(barrier.GetOwnerChange().GetQueueFamilyAfter() == 1U);
+    }
+
+    SECTION("Owner Transition Barrier Construction from Owner Change")
+    {
+        const Rhi::ResourceBarrier barrier(buffer.GetInterface(), owner_change);
+        CHECK(std::addressof(barrier.GetId().GetResource()) == std::addressof(buffer.GetInterface()));
+        CHECK(barrier.GetOwnerChange() == owner_change);
+    }
+
+    const Rhi::ResourceBarrier buffer_state_transition(buffer.GetInterface(), state_change);
+    const Rhi::ResourceBarrier buffer_owner_transition(buffer.GetInterface(), owner_change);
+
+    SECTION("Barrier Equality")
+    {
+        const Rhi::ResourceBarrier buffer_state_transition_2(buffer.GetInterface(), state_change);
+        CHECK(buffer_state_transition == buffer_state_transition_2);
+        CHECK(buffer_state_transition <= buffer_state_transition_2);
+        CHECK(buffer_state_transition >= buffer_state_transition_2);
+        CHECK_FALSE(buffer_state_transition != buffer_state_transition_2);
+    }
+
+    SECTION("Barrier Non-Equality by Resource")
+    {
+        const Rhi::Buffer another_buffer = render_context.CreateBuffer(const_buffer_settings);
+        const Rhi::ResourceBarrier another_buffer_state_transition(another_buffer.GetInterface(), state_change);
+        CHECK(buffer_state_transition != another_buffer_state_transition);
+        CHECK_FALSE(buffer_state_transition == another_buffer_state_transition);
+    }
+
+    SECTION("Can Not Compare Barriers of Different Type")
+    {
+        CHECK_THROWS_AS(buffer_state_transition <  buffer_owner_transition, ArgumentException);
+        CHECK_THROWS_AS(buffer_state_transition <= buffer_owner_transition, ArgumentException);
+        CHECK_THROWS_AS(buffer_state_transition == buffer_owner_transition, ArgumentException);
+        CHECK_THROWS_AS(buffer_state_transition >= buffer_owner_transition, ArgumentException);
+        CHECK_THROWS_AS(buffer_state_transition >  buffer_owner_transition, ArgumentException);
+    }
+
+    SECTION("Apply State Transition to Resource from Matching State")
+    {
+        CHECK(buffer.SetState(buffer_state_transition.GetStateChange().GetStateBefore()));
+        buffer_state_transition.ApplyTransition();
+        CHECK(buffer.GetState() == buffer_state_transition.GetStateChange().GetStateAfter());
+    }
+
+    SECTION("Can not Apply State Transition to Resource from Wrong State")
+    {
+        CHECK(buffer.SetState(Rhi::ResourceState::CopySource));
+        CHECK_THROWS_AS(buffer_state_transition.ApplyTransition(), ArgumentException);
+    }
+
+    SECTION("Apply Owner Transition to Resource from Matching Queue Family")
+    {
+        CHECK(buffer.SetOwnerQueueFamily(buffer_owner_transition.GetOwnerChange().GetQueueFamilyBefore()));
+        buffer_owner_transition.ApplyTransition();
+        CHECK(buffer.GetOwnerQueueFamily() == buffer_owner_transition.GetOwnerChange().GetQueueFamilyAfter());
+    }
+
+    SECTION("Can not Apply Owner Transition to Resource from Wrong Queue Family")
+    {
+        CHECK(buffer.SetOwnerQueueFamily(42U));
+        CHECK_THROWS_AS(buffer_state_transition.ApplyTransition(), ArgumentException);
+    }
+
+    SECTION("Can not Apply Owner Transition to Resource from Undefined Queue Family")
+    {
+        CHECK(!buffer.GetOwnerQueueFamily().has_value());
+        CHECK_THROWS_AS(buffer_state_transition.ApplyTransition(), ArgumentException);
     }
 }
