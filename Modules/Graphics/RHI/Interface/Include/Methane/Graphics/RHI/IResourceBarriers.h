@@ -142,7 +142,9 @@ public:
     [[nodiscard]] friend auto operator<=>(const ResourceBarrier& left, const ResourceBarrier& right)
     {
         META_FUNCTION_TASK();
-        META_CHECK_EQUAL(left.m_id.GetType(), right.m_id.GetType());
+        if (left.m_id.GetType() != right.m_id.GetType())
+            return left.m_id.GetType() <=> right.m_id.GetType();
+
         switch(left.m_id.GetType())
         {
         case Type::StateTransition: return std::tie(left.m_id, left.m_change.state) <=> std::tie(right.m_id, right.m_change.state);
@@ -223,15 +225,15 @@ struct IResourceBarriers
     [[nodiscard]] virtual bool  HasOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) = 0;
     [[nodiscard]] virtual explicit operator std::string() const noexcept = 0;
 
+    virtual bool Remove(const Barrier::Id& id) = 0;
     virtual bool Remove(Barrier::Type type, IResource& resource) = 0;
     virtual bool RemoveStateTransition(IResource& resource) = 0;
     virtual bool RemoveOwnerTransition(IResource& resource) = 0;
 
+    // TODO: Remove excessive 'id' argument from 'Add' method, which is already contained in 'barrier'
+    virtual AddResult Add(const Barrier::Id& id, const Barrier& barrier) = 0;
     virtual AddResult AddStateTransition(IResource& resource, State before, State after) = 0;
     virtual AddResult AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) = 0;
-
-    virtual AddResult Add(const Barrier::Id& id, const Barrier& barrier) = 0;
-    virtual bool      Remove(const Barrier::Id& id) = 0;
 
     virtual void ApplyTransitions() const = 0;
 

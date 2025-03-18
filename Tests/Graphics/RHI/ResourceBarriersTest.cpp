@@ -303,13 +303,12 @@ TEST_CASE("RHI Resource Barrier", "[rhi][resource][barrier]")
         CHECK_FALSE(buffer_state_transition == another_buffer_state_transition);
     }
 
-    SECTION("Can Not Compare Barriers of Different Type")
+    SECTION("Compare Barriers of Different Type")
     {
-        CHECK_THROWS_AS(buffer_state_transition <  buffer_owner_transition, ArgumentException);
-        CHECK_THROWS_AS(buffer_state_transition <= buffer_owner_transition, ArgumentException);
-        CHECK_THROWS_AS(buffer_state_transition == buffer_owner_transition, ArgumentException);
-        CHECK_THROWS_AS(buffer_state_transition >= buffer_owner_transition, ArgumentException);
-        CHECK_THROWS_AS(buffer_state_transition >  buffer_owner_transition, ArgumentException);
+        CHECK(buffer_state_transition <  buffer_owner_transition);
+        CHECK(buffer_state_transition <= buffer_owner_transition);
+        CHECK(buffer_owner_transition >= buffer_state_transition);
+        CHECK(buffer_owner_transition >  buffer_state_transition);
     }
 
     SECTION("Apply State Transition to Resource from Matching State")
@@ -342,5 +341,232 @@ TEST_CASE("RHI Resource Barrier", "[rhi][resource][barrier]")
     {
         CHECK(!buffer.GetOwnerQueueFamily().has_value());
         CHECK_THROWS_AS(buffer_state_transition.ApplyTransition(), ArgumentException);
+    }
+
+    SECTION("State Transition Barrier Conversion to String")
+    {
+        CHECK(buffer.SetName("Test Buffer"));
+        CHECK(static_cast<std::string>(buffer_state_transition) ==
+              "Resource 'Test Buffer' state transition barrier from CopyDest to VertexBuffer state");
+    }
+
+    SECTION("Owner Transition Barrier Conversion to String")
+    {
+        CHECK(buffer.SetName("Test Buffer"));
+        CHECK(static_cast<std::string>(buffer_owner_transition) ==
+              "Resource 'Test Buffer' ownership transition barrier from '0' to '1' command queue family");
+    }
+}
+
+TEST_CASE("RHI Resource Barriers Container", "[rhi][resource][barriers]")
+{
+    const std::vector test_buffers = {
+        render_context.CreateBuffer(const_buffer_settings),
+        render_context.CreateBuffer(const_buffer_settings)
+    };
+    const Refs<Rhi::IResource> test_buffer_refs = [&test_buffers]()
+    {
+        Refs<Rhi::IResource> buffer_refs;
+        for (uint32_t i = 0; i < test_buffers.size(); ++i)
+        {
+            buffer_refs.emplace_back(test_buffers[i].GetInterface());
+            buffer_refs.back().get().SetName(fmt::format("Test Buffer {}", i));
+        }
+        return buffer_refs;
+    }();
+    const Rhi::ResourceStateChange state_change(Rhi::ResourceState::CopyDest, Rhi::ResourceState::VertexBuffer);
+    const Rhi::ResourceOwnerChange owner_change(0U, 1U);
+
+    SECTION("Construct State Transition Barriers for Two Buffers")
+    {
+        const Rhi::ResourceBarriers barriers(test_buffer_refs, state_change, std::nullopt);
+        REQUIRE(barriers.IsInitialized());
+        CHECK_FALSE(barriers.IsEmpty());
+        for (const Ref<Rhi::IResource>& buffer_ref : test_buffer_refs)
+        {
+            CHECK(barriers.HasStateTransition(buffer_ref.get(), state_change.GetStateBefore(), state_change.GetStateAfter()));
+        }
+    }
+
+    SECTION("Construct Owner Transition Barriers for Two Buffers")
+    {
+        const Rhi::ResourceBarriers barriers(test_buffer_refs, std::nullopt, owner_change);
+        REQUIRE(barriers.IsInitialized());
+        CHECK_FALSE(barriers.IsEmpty());
+        for (const Ref<Rhi::IResource>& buffer_ref : test_buffer_refs)
+        {
+            CHECK(barriers.HasOwnerTransition(buffer_ref.get(), owner_change.GetQueueFamilyBefore(), owner_change.GetQueueFamilyAfter()));
+        }
+    }
+
+    SECTION("Construct State and Owner Transition Barriers for Two Buffers")
+    {
+        const Rhi::ResourceBarriers barriers(test_buffer_refs, state_change, owner_change);
+        REQUIRE(barriers.IsInitialized());
+        CHECK_FALSE(barriers.IsEmpty());
+        for (const Ref<Rhi::IResource>& buffer_ref : test_buffer_refs)
+        {
+            CHECK(barriers.HasStateTransition(buffer_ref.get(), state_change.GetStateBefore(), state_change.GetStateAfter()));
+            CHECK(barriers.HasOwnerTransition(buffer_ref.get(), owner_change.GetQueueFamilyBefore(), owner_change.GetQueueFamilyAfter()));
+        }
+    }
+
+    const Rhi::ResourceBarriers::Set test_barriers_set = {
+        Rhi::ResourceBarrier(test_buffer_refs[0].get(), Rhi::ResourceState::CopyDest, Rhi::ResourceState::VertexBuffer),
+        Rhi::ResourceBarrier(test_buffer_refs[0].get(), 0U, 1U),
+        Rhi::ResourceBarrier(test_buffer_refs[1].get(), Rhi::ResourceState::Common, Rhi::ResourceState::ConstantBuffer),
+        Rhi::ResourceBarrier(test_buffer_refs[1].get(), 1U, 2U)
+    };
+
+    SECTION("Construct Resource Barriers for Barriers Set")
+    {
+        const Rhi::ResourceBarriers barriers(test_barriers_set);
+        REQUIRE(barriers.IsInitialized());
+        CHECK_FALSE(barriers.IsEmpty());
+        CHECK(barriers.HasStateTransition(test_buffer_refs[0].get(), Rhi::ResourceState::CopyDest, Rhi::ResourceState::VertexBuffer));
+        CHECK(barriers.HasOwnerTransition(test_buffer_refs[0].get(), 0U, 1U));
+        CHECK(barriers.HasStateTransition(test_buffer_refs[1].get(), Rhi::ResourceState::Common, Rhi::ResourceState::ConstantBuffer));
+        CHECK(barriers.HasOwnerTransition(test_buffer_refs[1].get(), 1U, 2U));
+    }
+
+    const Rhi::ResourceBarriers test_barriers(test_barriers_set);
+
+    SECTION("Get Resource Barriers Set")
+    {
+        CHECK(test_barriers.GetSet() == test_barriers_set);
+    }
+
+    SECTION("Get Resource Barriers Map")
+    {
+        const Rhi::ResourceBarriers::Map barriers_map = test_barriers.GetMap();
+        CHECK(barriers_map.size() == test_barriers_set.size());
+        for (const Rhi::ResourceBarrier& barrier : test_barriers_set)
+        {
+            REQUIRE(barriers_map.contains(barrier.GetId()));
+            CHECK(barriers_map.find(barrier.GetId())->second == barrier);
+        }
+    }
+
+    SECTION("Get Resource Barrier By Id")
+    {
+        for (const Rhi::ResourceBarrier& barrier : test_barriers_set)
+        {
+            const Rhi::ResourceBarrier* barrier_ptr = test_barriers.GetBarrier(barrier.GetId());
+            REQUIRE(barrier_ptr);
+            CHECK(*barrier_ptr == barrier);
+        }
+    }
+
+    SECTION("Conversion to String")
+    {
+        CHECK(static_cast<std::string>(test_barriers) ==
+              "  - Resource 'Test Buffer 0' state transition barrier from CopyDest to VertexBuffer state;\n"
+              "  - Resource 'Test Buffer 1' state transition barrier from Common to ConstantBuffer state;\n"
+              "  - Resource 'Test Buffer 0' ownership transition barrier from '0' to '1' command queue family;\n"
+              "  - Resource 'Test Buffer 1' ownership transition barrier from '1' to '2' command queue family.");
+    }
+
+    SECTION("Remove Resource Barrier by Id")
+    {
+        const Rhi::ResourceBarrier& barrier_to_remove = *test_barriers_set.begin();
+        CHECK(test_barriers.Remove(barrier_to_remove.GetId()));
+        CHECK(test_barriers.GetMap().size() == test_barriers_set.size() - 1);
+        CHECK_FALSE(test_barriers.GetMap().contains(barrier_to_remove.GetId()));
+    }
+
+    SECTION("Remove Barrier by Type and Resource")
+    {
+        const Rhi::ResourceBarrier& barrier_to_remove = *test_barriers_set.begin();
+        CHECK(test_barriers.Remove(barrier_to_remove.GetId().GetType(), barrier_to_remove.GetId().GetResource()));
+        CHECK(test_barriers.GetMap().size() == test_barriers_set.size() - 1);
+        CHECK_FALSE(test_barriers.GetMap().contains(barrier_to_remove.GetId()));
+    }
+
+    SECTION("Remove State Transition Barriers for Resource")
+    {
+        Rhi::IResource& resource = test_buffer_refs.front().get();
+        CHECK(test_barriers.RemoveStateTransition(resource));
+        CHECK(test_barriers.GetMap().size() == test_barriers_set.size() - 1);
+        CHECK_FALSE(test_barriers.HasStateTransition(resource, Rhi::ResourceState::CopyDest, Rhi::ResourceState::VertexBuffer));
+    }
+
+    SECTION("Remove Owner Transition Barriers for Resource")
+    {
+        Rhi::IResource& resource = test_buffer_refs.front().get();
+        CHECK(test_barriers.RemoveOwnerTransition(resource));
+        CHECK(test_barriers.GetMap().size() == test_barriers_set.size() - 1);
+        CHECK_FALSE(test_barriers.HasOwnerTransition(resource, 0U, 1U));
+    }
+
+    SECTION("Add New Barrier by Id and Resource")
+    {
+        const Rhi::Buffer new_buffer = render_context.CreateBuffer(const_buffer_settings);
+        const Rhi::ResourceBarrier new_barrier(new_buffer.GetInterface(), Rhi::ResourceState::Common, Rhi::ResourceState::IndexBuffer);
+        CHECK(test_barriers.Add(new_barrier.GetId(), new_barrier) == Rhi::ResourceBarriers::AddResult::Added);
+        CHECK(test_barriers.GetMap().size() == test_barriers_set.size() + 1);
+        REQUIRE(test_barriers.GetMap().contains(new_barrier.GetId()));
+        CHECK(test_barriers.GetMap().find(new_barrier.GetId())->second == new_barrier);
+    }
+
+    SECTION("Add Existing Barrier by Id and Resource")
+    {
+        const Rhi::ResourceBarrier new_barrier(test_buffers[0].GetInterface(), Rhi::ResourceState::CopyDest, Rhi::ResourceState::VertexBuffer);
+        CHECK(test_barriers.GetMap().contains(new_barrier.GetId()));
+        CHECK(test_barriers.Add(new_barrier.GetId(), new_barrier) == Rhi::ResourceBarriers::AddResult::Existing);
+        CHECK(test_barriers.GetMap().size() == test_barriers_set.size());
+    }
+
+    SECTION("Add State Transition Barrier for Resource")
+    {
+        const Rhi::Buffer new_buffer = render_context.CreateBuffer(const_buffer_settings);
+        const Rhi::ResourceStateChange new_state_change(Rhi::ResourceState::Common, Rhi::ResourceState::IndexBuffer);
+        CHECK(test_barriers.AddStateTransition(new_buffer.GetInterface(), new_state_change.GetStateBefore(), new_state_change.GetStateAfter()) == Rhi::ResourceBarriers::AddResult::Added);
+        CHECK(test_barriers.GetMap().size() == test_barriers_set.size() + 1);
+        CHECK(test_barriers.HasStateTransition(new_buffer.GetInterface(), new_state_change.GetStateBefore(), new_state_change.GetStateAfter()));
+    }
+
+    SECTION("Add Owner Transition Barrier for Resource")
+    {
+        const Rhi::Buffer new_buffer = render_context.CreateBuffer(const_buffer_settings);
+        const Rhi::ResourceOwnerChange new_owner_change(1U, 2U);
+        CHECK(test_barriers.AddOwnerTransition(new_buffer.GetInterface(), new_owner_change.GetQueueFamilyBefore(), new_owner_change.GetQueueFamilyAfter()) == Rhi::ResourceBarriers::AddResult::Added);
+        CHECK(test_barriers.GetMap().size() == test_barriers_set.size() + 1);
+        CHECK(test_barriers.HasOwnerTransition(new_buffer.GetInterface(), new_owner_change.GetQueueFamilyBefore(), new_owner_change.GetQueueFamilyAfter()));
+    }
+
+    SECTION("Apply Transitions")
+    {
+        for (const Rhi::ResourceBarrier& barrier : test_barriers_set)
+        {
+            Rhi::IResource& resource = barrier.GetId().GetResource();
+            switch (barrier.GetId().GetType())
+            {
+                case Rhi::ResourceBarrier::Type::StateTransition:
+                    CHECK(resource.SetState(barrier.GetStateChange().GetStateBefore()));
+                    break;
+
+                case Rhi::ResourceBarrier::Type::OwnerTransition:
+                    CHECK(resource.SetOwnerQueueFamily(barrier.GetOwnerChange().GetQueueFamilyBefore()));
+                    break;
+            }
+        }
+
+        test_barriers.ApplyTransitions();
+
+        for (const Rhi::ResourceBarrier& barrier : test_barriers_set)
+        {
+            Rhi::IResource& resource = barrier.GetId().GetResource();
+            switch (barrier.GetId().GetType())
+            {
+            case Rhi::ResourceBarrier::Type::StateTransition:
+                CHECK(resource.GetState() == barrier.GetStateChange().GetStateAfter());
+                break;
+
+            case Rhi::ResourceBarrier::Type::OwnerTransition:
+                REQUIRE(resource.GetOwnerQueueFamily().has_value());
+                CHECK(resource.GetOwnerQueueFamily().value() == barrier.GetOwnerChange().GetQueueFamilyAfter());
+                break;
+            }
+        }
     }
 }

@@ -125,6 +125,7 @@ Ptr<IResourceBarriers> IResourceBarriers::CreateTransitions(RefSpan<IResource> r
                                                             const Opt<ResourceOwnerChange>& owner_change)
 {
     META_FUNCTION_TASK();
+    META_CHECK_TRUE_DESCR(state_change || owner_change, "either state change or owner change has to be set in resource barrier");
     Set resource_barriers;
     for (const Ref<IResource>& resource_ref : resources)
     {

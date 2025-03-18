@@ -73,15 +73,14 @@ public:
     [[nodiscard]] META_PIMPL_API bool  HasOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) const;
     [[nodiscard]] META_PIMPL_API explicit operator std::string() const META_PIMPL_NOEXCEPT;
 
+    META_PIMPL_API bool Remove(const Barrier::Id& id) const;
     META_PIMPL_API bool Remove(Barrier::Type type, IResource& resource) const;
     META_PIMPL_API bool RemoveStateTransition(IResource& resource) const;
     META_PIMPL_API bool RemoveOwnerTransition(IResource& resource) const;
 
+    META_PIMPL_API AddResult Add(const Barrier::Id& id, const Barrier& barrier) const;
     META_PIMPL_API AddResult AddStateTransition(IResource& resource, State before, State after) const;
     META_PIMPL_API AddResult AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) const;
-
-    META_PIMPL_API AddResult Add(const Barrier::Id& id, const Barrier& barrier) const;
-    META_PIMPL_API bool      Remove(const Barrier::Id& id) const;
 
     META_PIMPL_API void ApplyTransitions() const;
 
