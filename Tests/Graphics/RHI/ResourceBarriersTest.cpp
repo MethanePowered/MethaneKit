@@ -364,6 +364,7 @@ TEST_CASE("RHI Resource Barriers Container", "[rhi][resource][barriers]")
         render_context.CreateBuffer(const_buffer_settings),
         render_context.CreateBuffer(const_buffer_settings)
     };
+
     const Refs<Rhi::IResource> test_buffer_refs = [&test_buffers]()
     {
         Refs<Rhi::IResource> buffer_refs;
@@ -374,8 +375,14 @@ TEST_CASE("RHI Resource Barriers Container", "[rhi][resource][barriers]")
         }
         return buffer_refs;
     }();
+
     const Rhi::ResourceStateChange state_change(Rhi::ResourceState::CopyDest, Rhi::ResourceState::VertexBuffer);
     const Rhi::ResourceOwnerChange owner_change(0U, 1U);
+
+#define BUFFER_0_STATE_TRANSITION_STR "  - Resource 'Test Buffer 0' state transition barrier from CopyDest to VertexBuffer state"
+#define BUFFER_1_STATE_TRANSITION_STR "  - Resource 'Test Buffer 1' state transition barrier from Common to ConstantBuffer state"
+#define BUFFER_0_OWNER_TRANSITION_STR "  - Resource 'Test Buffer 0' ownership transition barrier from '0' to '1' command queue family"
+#define BUFFER_1_OWNER_TRANSITION_STR "  - Resource 'Test Buffer 1' ownership transition barrier from '1' to '2' command queue family"
 
     SECTION("Construct State Transition Barriers for Two Buffers")
     {
@@ -459,11 +466,12 @@ TEST_CASE("RHI Resource Barriers Container", "[rhi][resource][barriers]")
 
     SECTION("Conversion to String")
     {
-        CHECK(static_cast<std::string>(test_barriers) ==
-              "  - Resource 'Test Buffer 0' state transition barrier from CopyDest to VertexBuffer state;\n"
-              "  - Resource 'Test Buffer 1' state transition barrier from Common to ConstantBuffer state;\n"
-              "  - Resource 'Test Buffer 0' ownership transition barrier from '0' to '1' command queue family;\n"
-              "  - Resource 'Test Buffer 1' ownership transition barrier from '1' to '2' command queue family.");
+        const std::string test_barriers_string = test_buffers[0].GetInterfacePtr().get() < test_buffers[1].GetInterfacePtr().get()
+            ? BUFFER_0_STATE_TRANSITION_STR ";\n" BUFFER_1_STATE_TRANSITION_STR ";\n"
+              BUFFER_0_OWNER_TRANSITION_STR ";\n" BUFFER_1_OWNER_TRANSITION_STR "."
+            : BUFFER_1_STATE_TRANSITION_STR ";\n" BUFFER_0_STATE_TRANSITION_STR ";\n"
+              BUFFER_1_OWNER_TRANSITION_STR ";\n" BUFFER_0_OWNER_TRANSITION_STR ".";
+        CHECK(static_cast<std::string>(test_barriers) == test_barriers_string);
     }
 
     SECTION("Remove Resource Barrier by Id")
