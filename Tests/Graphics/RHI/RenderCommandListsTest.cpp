@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright 2023 Evgeny Gorodetskiy
+Copyright 2025 Evgeny Gorodetskiy
 
 Licensed under the Apache License, Version 2.0 (the "License"),
 you may not use this file except in compliance with the License.
@@ -16,18 +16,19 @@ limitations under the License.
 
 *******************************************************************************
 
-FILE: Tests/Graphics/RHI/ComputeCommandListTest.cpp
-Unit-tests of the RHI Compute Command List
+FILE: Tests/Graphics/RHI/RenderCommandListTest.cpp
+Unit-tests of the RHI Render Command List
 
 ******************************************************************************/
 
 #include "RhiTestHelpers.hpp"
+#include "RhiSettings.hpp"
 
 #include <Methane/Data/AppShadersProvider.h>
-#include <Methane/Graphics/RHI/ComputeContext.h>
+#include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
-#include <Methane/Graphics/RHI/ComputeCommandList.h>
-#include <Methane/Graphics/RHI/ComputeState.h>
+#include <Methane/Graphics/RHI/RenderCommandList.h>
+#include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/Program.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
@@ -37,9 +38,9 @@ Unit-tests of the RHI Compute Command List
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/Null/CommandListSet.h>
-#include <Methane/Graphics/Null/ComputeCommandList.h>
+#include <Methane/Graphics/Null/RenderCommandList.h>
 #include <Methane/Graphics/Null/Program.h>
-#include <Methane/Graphics/Null/ComputeState.h>
+#include <Methane/Graphics/Null/RenderState.h>
 #include <Methane/Graphics/Null/CommandListDebugGroup.h>
 #include <Methane/Graphics/Null/ProgramBindings.h>
 
@@ -55,65 +56,79 @@ using namespace Methane::Graphics;
 
 static tf::Executor g_parallel_executor;
 
-TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
-{
-    const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
-    const Rhi::CommandQueue compute_cmd_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Compute);
+static const Platform::AppEnvironment test_app_env{ nullptr };
+static const Rhi::RenderContextSettings render_context_settings = Test::GetRenderContextSettings();
+static const Rhi::RenderPatternSettings render_pattern_settings = Test::GetRenderPatternSettings();
 
-    const Rhi::Program compute_program = [&compute_context]()
+TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
+{
+    const Rhi::RenderContext render_context   = Rhi::RenderContext(test_app_env, GetTestDevice(), g_parallel_executor, render_context_settings);
+    const Rhi::CommandQueue  render_cmd_queue = render_context.CreateCommandQueue(Rhi::CommandListType::Render);
+    const Rhi::RenderPattern render_pattern = render_context.CreateRenderPattern(render_pattern_settings);
+    const Rhi::Program render_program = [&render_context, &render_pattern]()
     {
         using enum Rhi::ShaderType;
-        const Rhi::ProgramArgumentAccessor texture_accessor{ Compute, "InTexture", Rhi::ProgramArgumentAccessType::Constant };
-        const Rhi::ProgramArgumentAccessor sampler_accessor{ Compute, "InSampler", Rhi::ProgramArgumentAccessType::Constant };
-        const Rhi::ProgramArgumentAccessor buffer_accessor { Compute, "OutBuffer", Rhi::ProgramArgumentAccessType::Mutable };
-        Rhi::Program compute_program = compute_context.CreateProgram(
+        const Rhi::ProgramArgumentAccessor texture_accessor{ Pixel, "InTexture", Rhi::ProgramArgumentAccessType::Constant };
+        const Rhi::ProgramArgumentAccessor sampler_accessor{ Pixel, "InSampler", Rhi::ProgramArgumentAccessType::Constant };
+        const Rhi::ProgramArgumentAccessor buffer_accessor { Vertex, "OutBuffer", Rhi::ProgramArgumentAccessType::Mutable };
+        Rhi::Program render_program = render_context.CreateProgram(
             Rhi::ProgramSettingsImpl
             {
-                Rhi::ProgramSettingsImpl::ShaderSet
+                .shader_set = Rhi::ProgramSettingsImpl::ShaderSet
                 {
-                    { Compute, { Data::ShaderProvider::Get(), { "Compute", "Main" } } }
+                    { Vertex, { Data::ShaderProvider::Get(), { "Render", "MainVS" } } },
+                    { Pixel,  { Data::ShaderProvider::Get(), { "Render", "MainPS" } } }
                 },
-                Rhi::ProgramInputBufferLayouts{ },
-                Rhi::ProgramArgumentAccessors
+                .input_buffer_layouts = Rhi::ProgramInputBufferLayouts
+                {
+                    Rhi::ProgramInputBufferLayout
+                    {
+                        .argument_semantics = Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION" , "COLOR" },
+                        .step_type = Rhi::ProgramInputBufferLayout::StepType::PerVertex,
+                        .step_rate = 1U
+                    }
+                },
+                .argument_accessors = Rhi::ProgramArgumentAccessors
                 {
                     texture_accessor,
                     sampler_accessor,
                     buffer_accessor
-                }
+                },
+                .attachment_formats = render_pattern.GetAttachmentFormats()
             });
-        dynamic_cast<Null::Program&>(compute_program.GetInterface()).SetArgumentBindings({
+        dynamic_cast<Null::Program&>(render_program.GetInterface()).SetArgumentBindings({
             { texture_accessor, { Rhi::ResourceType::Texture, 1U } },
             { sampler_accessor, { Rhi::ResourceType::Sampler, 1U } },
             { buffer_accessor,  { Rhi::ResourceType::Buffer,  1U } },
         });
-        return compute_program;
+        return render_program;
     }();
 
-    const Rhi::ComputeState compute_state = compute_context.CreateComputeState({
-        compute_program,
-        Rhi::ThreadGroupSize(16, 16, 1)
-    });
+    const Test::RenderPassResources render_pass_resources = Test::GetRenderPassResources(render_pattern);
+    const Rhi::RenderPass render_pass = render_pattern.CreateRenderPass(render_pass_resources.settings);
+    const Rhi::RenderStateSettingsImpl render_state_settings = Test::GetRenderStateSettings(render_context, render_pattern);
+    const Rhi::RenderState render_state = render_context.CreateRenderState(render_state_settings);
 
-    SECTION("Compute Command List Construction")
+    SECTION("Render Command List Construction")
     {
-        Rhi::ComputeCommandList cmd_list;
-        REQUIRE_NOTHROW(cmd_list = compute_cmd_queue.CreateComputeCommandList());
+        Rhi::RenderCommandList cmd_list;
+        REQUIRE_NOTHROW(cmd_list = render_cmd_queue.CreateRenderCommandList(render_pass));
         REQUIRE(cmd_list.IsInitialized());
         CHECK(cmd_list.GetInterfacePtr());
-        CHECK(cmd_list.GetCommandQueue().GetInterfacePtr().get() == compute_cmd_queue.GetInterfacePtr().get());
+        CHECK(cmd_list.GetCommandQueue().GetInterfacePtr().get() == render_cmd_queue.GetInterfacePtr().get());
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Pending);
     }
 
     SECTION("Object Destroyed Callback")
     {
-        auto cmd_list_ptr = std::make_unique<Rhi::ComputeCommandList>(compute_cmd_queue);
+        auto cmd_list_ptr = std::make_unique<Rhi::RenderCommandList>(render_cmd_queue, render_pass);
         ObjectCallbackTester object_callback_tester(*cmd_list_ptr);
         CHECK_FALSE(object_callback_tester.IsObjectDestroyed());
         cmd_list_ptr.reset();
         CHECK(object_callback_tester.IsObjectDestroyed());
     }
 
-    const Rhi::ComputeCommandList cmd_list = compute_cmd_queue.CreateComputeCommandList();
+    const Rhi::RenderCommandList cmd_list = render_cmd_queue.CreateRenderCommandList(render_pass);
 
     SECTION("Object Name Setup")
     {
@@ -157,7 +172,7 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         const Rhi::CommandListDebugGroup debug_group("Test");
         REQUIRE_NOTHROW(cmd_list.Reset(&debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        CHECK(dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
+        CHECK(dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Reset Command List Once with Debug Group")
@@ -166,7 +181,7 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         REQUIRE_NOTHROW(cmd_list.ResetOnce(&debug_group));
         REQUIRE_NOTHROW(cmd_list.ResetOnce(&debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        CHECK(dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
+        CHECK(dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Push and Pop Debug Group")
@@ -184,16 +199,16 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
 
     SECTION("Set Program Bindings")
     {
-        const Rhi::Texture texture = [&compute_context]()
+        const Rhi::Texture texture = [&render_context]()
         {
-            Rhi::Texture texture = compute_context.CreateTexture(Rhi::TextureSettings::ForImage(Dimensions(640, 480), {}, PixelFormat::RGBA8, false));
+            Rhi::Texture texture = render_context.CreateTexture(Rhi::TextureSettings::ForImage(Dimensions(640, 480), {}, PixelFormat::RGBA8, false));
             texture.SetName("T");
             return texture;
         }();
 
-        const Rhi::Sampler sampler = [&compute_context]()
+        const Rhi::Sampler sampler = [&render_context]()
         {
-            const Rhi::Sampler sampler = compute_context.CreateSampler({
+            const Rhi::Sampler sampler = render_context.CreateSampler({
                 rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
                 rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
             });
@@ -201,24 +216,24 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
             return sampler;
         }();
 
-        const Rhi::Buffer buffer = [&compute_context]()
+        const Rhi::Buffer buffer = [&render_context]()
         {
-            const Rhi::Buffer buffer = compute_context.CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(42000, false, true));
+            const Rhi::Buffer buffer = render_context.CreateBuffer(Rhi::BufferSettings::ForConstantBuffer(42000, false, true));
             buffer.SetName("B");
             return buffer;
         }();
 
         using enum Rhi::ShaderType;
-        const Rhi::ProgramBindings compute_program_bindings = compute_program.CreateBindings({
-            { { Compute, "InTexture" }, texture.GetResourceView() },
-            { { Compute, "InSampler" }, sampler.GetResourceView() },
-            { { Compute, "OutBuffer" }, buffer.GetResourceView()  },
+        const Rhi::ProgramBindings render_program_bindings = render_program.CreateBindings({
+            { { Pixel,  "InTexture" }, texture.GetResourceView() },
+            { { Pixel,  "InSampler" }, sampler.GetResourceView() },
+            { { Vertex, "OutBuffer" }, buffer.GetResourceView()  },
         });
 
-        REQUIRE_NOTHROW(cmd_list.ResetWithState(compute_state));
-        REQUIRE_NOTHROW(cmd_list.SetProgramBindings(compute_program_bindings));
+        REQUIRE_NOTHROW(cmd_list.ResetWithState(render_state));
+        REQUIRE_NOTHROW(cmd_list.SetProgramBindings(render_program_bindings));
         REQUIRE_NOTHROW(cmd_list.Commit());
-        CHECK(dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface()).GetProgramBindingsPtr() == compute_program_bindings.GetInterfacePtr().get());
+        CHECK(dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface()).GetProgramBindingsPtr() == render_program_bindings.GetInterfacePtr().get());
     }
 
     SECTION("Set Resource Barriers")
@@ -257,7 +272,7 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         cmd_list_callback_tester.Reset();
 
         Rhi::ICommandList* completed_command_list_ptr = nullptr;
-        REQUIRE_NOTHROW(compute_cmd_queue.Execute(cmd_list_set,
+        REQUIRE_NOTHROW(render_cmd_queue.Execute(cmd_list_set,
             [&completed_command_list_ptr](Rhi::ICommandList& command_list) {
                 completed_command_list_ptr = &command_list;
             }));
@@ -282,7 +297,7 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         const Rhi::CommandListSet cmd_list_set({ cmd_list.GetInterface() });
         REQUIRE_NOTHROW(cmd_list.Reset());
         REQUIRE_NOTHROW(cmd_list.Commit());
-        REQUIRE_NOTHROW(compute_cmd_queue.Execute(cmd_list_set));
+        REQUIRE_NOTHROW(render_cmd_queue.Execute(cmd_list_set));
 
         auto async_complete = std::async(std::launch::async, [&cmd_list_set]()
         {
@@ -302,61 +317,53 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         CHECK_NOTHROW(cmd_list.GetGpuTimeRange(false) == Data::TimeRange{});
     }
 
-    SECTION("Reset Command List with Compute State")
+    SECTION("Reset Command List with Render State")
     {
-        REQUIRE_NOTHROW(cmd_list.ResetWithState(compute_state));
+        REQUIRE_NOTHROW(cmd_list.ResetWithState(render_state));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        CHECK(&dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface()).GetComputeState() == compute_state.GetInterfacePtr().get());
+        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
+        CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
     }
 
-    SECTION("Reset Command List Once with Compute State")
+    SECTION("Reset Command List Once with Render State")
     {
-        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(compute_state));
-        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(compute_state));
+        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(render_state));
+        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(render_state));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        CHECK(&dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface()).GetComputeState() == compute_state.GetInterfacePtr().get());
+        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
+        CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
     }
 
-    SECTION("Reset Command List with Compute State and Debug Group")
-    {
-        const Rhi::CommandListDebugGroup debug_group("Test");
-        REQUIRE_NOTHROW(cmd_list.ResetWithState(compute_state, &debug_group));
-        CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-
-        auto& null_cmd_list = dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface());
-        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
-        CHECK(&null_cmd_list.GetComputeState() == compute_state.GetInterfacePtr().get());
-    }
-
-    SECTION("Reset Command List Once with Compute State and Debug Group")
+    SECTION("Reset Command List with Render State and Debug Group")
     {
         const Rhi::CommandListDebugGroup debug_group("Test");
-        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(compute_state, &debug_group));
-        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(compute_state, &debug_group));
+        REQUIRE_NOTHROW(cmd_list.ResetWithState(render_state, &debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
 
-        auto& null_cmd_list = dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface());
+        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
         CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
-        CHECK(&null_cmd_list.GetComputeState() == compute_state.GetInterfacePtr().get());
+        CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
     }
 
-    SECTION("Set Command List Compute State")
+    SECTION("Reset Command List Once with Render State and Debug Group")
+    {
+        const Rhi::CommandListDebugGroup debug_group("Test");
+        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(render_state, &debug_group));
+        REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(render_state, &debug_group));
+        CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
+
+        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
+        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
+        CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
+    }
+
+    SECTION("Set Command List Render State")
     {
         REQUIRE_NOTHROW(cmd_list.Reset());
-        REQUIRE_NOTHROW(cmd_list.SetComputeState(compute_state));
+        REQUIRE_NOTHROW(cmd_list.SetRenderState(render_state));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
 
-        auto& null_cmd_list = dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface());
-        CHECK(&null_cmd_list.GetComputeState() == compute_state.GetInterfacePtr().get());
-    }
-
-    SECTION("Dispatch thread groups in Compute Command List")
-    {
-        const Rhi::CommandListSet cmd_list_set({ cmd_list.GetInterface() });
-        REQUIRE_NOTHROW(cmd_list.ResetWithState(compute_state));
-        REQUIRE_NOTHROW(cmd_list.Dispatch(Rhi::ThreadGroupsCount(4U, 4U, 1U)));
-        REQUIRE_NOTHROW(cmd_list.Commit());
-        REQUIRE_NOTHROW(compute_cmd_queue.Execute(cmd_list_set));
-        dynamic_cast<Null::CommandListSet&>(cmd_list_set.GetInterface()).Complete();
+        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
+        CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
     }
 }

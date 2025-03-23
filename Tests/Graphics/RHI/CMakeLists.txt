@@ -27,6 +27,7 @@ add_executable(${TARGET}
     RenderPatternTest.cpp
     RenderPassTest.cpp
     ResourceBarriersTest.cpp
+    RenderCommandListsTest.cpp
 )
 
 target_link_libraries(${TARGET}
