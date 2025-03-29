@@ -28,6 +28,7 @@ RHI Test helper classes
 #include <Methane/Graphics/RHI/IRenderPass.h>
 #include <Methane/Graphics/RHI/System.h>
 #include <Methane/Graphics/RHI/Device.h>
+#include <Methane/Graphics/Base/Object.h>
 #include <Methane/Data/Receiver.hpp>
 #include <Methane/Data/Emitter.hpp>
 
@@ -48,6 +49,15 @@ static rhi::Device GetTestDevice()
         throw std::logic_error("No RHI devices available");
 
     return devices[0];
+}
+
+template<typename BaseCommandListType, typename BufferSetPimplType, typename CommandListPimplType>
+bool IsResourceRetainedByCommandList(BufferSetPimplType& buffer_set, const CommandListPimplType& cmd_list)
+{
+    const auto& null_cmd_list = dynamic_cast<const BaseCommandListType&>(cmd_list.GetInterface());
+    const Ptrs<Graphics::Base::Object>& retained_resources = null_cmd_list.GetCommandState().retained_resources;
+    return std::ranges::find(retained_resources, dynamic_cast<Graphics::Base::Object&>(buffer_set.GetInterface()).GetBasePtr())
+        != retained_resources.end();
 }
 
 class ObjectCallbackTester final

@@ -26,6 +26,7 @@ Test settings of the RHI RenderStateSettings
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/RenderPattern.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
+#include <Methane/Graphics/RHI/ViewState.h>
 #include <Methane/Graphics/RHI/Texture.h>
 
 namespace Methane::Graphics::Test
@@ -100,25 +101,37 @@ inline RenderPassResources GetRenderPassResources(const Rhi::RenderPattern& rend
 }
 
 inline Rhi::RenderStateSettingsImpl GetRenderStateSettings(const Rhi::RenderContext& render_context,
-                                                           const Rhi::RenderPattern& render_pattern)
+                                                           const Rhi::RenderPattern& render_pattern,
+                                                           const Rhi::Program* program_ptr = nullptr)
 {
     return Rhi::RenderStateSettingsImpl
     {
-        .program = render_context.CreateProgram(
-            Rhi::Program::Settings
-            {
-                .shader_set = Rhi::Program::ShaderSet
-                {
-                    { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Shader", "MainVS" } } },
-                    { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Shader", "MainPS" } } }
-                },
-                .attachment_formats = AttachmentFormats
-                {
-                    .colors  = { PixelFormat::RGBA8Unorm_sRGB },
-                    .depth   = PixelFormat::Depth32Float,
-                    .stencil = PixelFormat::Unknown
-                }
-            }),
+        .program = program_ptr
+                 ? *program_ptr
+                 : render_context.CreateProgram(
+                    Rhi::Program::Settings
+                    {
+                        .shader_set = Rhi::Program::ShaderSet
+                        {
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Shader", "MainVS" } } },
+                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Shader", "MainPS" } } }
+                        },
+                        .input_buffer_layouts = Rhi::ProgramInputBufferLayouts
+                        {
+                            Rhi::ProgramInputBufferLayout
+                            {
+                                .argument_semantics = Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION" , "COLOR" },
+                                .step_type = Rhi::ProgramInputBufferLayout::StepType::PerVertex,
+                                .step_rate = 1U
+                            }
+                        },
+                        .attachment_formats = AttachmentFormats
+                        {
+                            .colors  = { PixelFormat::RGBA8Unorm_sRGB },
+                            .depth   = PixelFormat::Depth32Float,
+                            .stencil = PixelFormat::Unknown
+                        }
+                    }),
         .render_pattern = render_pattern,
         .rasterizer = Rhi::RasterizerSettings
         {
@@ -174,6 +187,19 @@ inline Rhi::RenderStateSettingsImpl GetRenderStateSettings(const Rhi::RenderCont
             }
         },
         .blending_color = Color4F{ 1.f, 1.f, 1.f, 1.f }
+    };
+}
+
+inline Rhi::ViewSettings GetViewStateSettings()
+{
+    return Rhi::ViewSettings
+    {
+        .viewports = {
+            Viewport(10.0, 10.0, 0.0, 1900.0, 1060.0, 1.0)
+        },
+        .scissor_rects = {
+            ScissorRect(20U, 20U, 1890U, 1050U)
+        }
     };
 }
 

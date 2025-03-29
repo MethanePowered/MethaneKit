@@ -73,6 +73,8 @@ public:
 
     void RestoreDescriptorViews(const DescriptorByViewId&) final
     { /* Intentionally unimplemented */ }
+
+    using Base::Resource::SetInitializedDataSize;
 };
 
 } // namespace Methane::Graphics::Null
