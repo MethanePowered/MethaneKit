@@ -102,91 +102,99 @@ inline RenderPassResources GetRenderPassResources(const Rhi::RenderPattern& rend
 
 inline Rhi::RenderStateSettingsImpl GetRenderStateSettings(const Rhi::RenderContext& render_context,
                                                            const Rhi::RenderPattern& render_pattern,
-                                                           const Rhi::Program* program_ptr = nullptr)
+                                                           const Opt<Rhi::Program> program_opt = std::nullopt,
+                                                           const Opt<Rhi::RasterizerSettings>& rasterizer_settings_opt = std::nullopt,
+                                                           const Opt<Rhi::DepthSettings>& depth_settings_opt = std::nullopt,
+                                                           const Opt<Rhi::StencilSettings>& stencil_settings_opt = std::nullopt,
+                                                           const Opt<Rhi::BlendingSettings>& blending_settings_opt = std::nullopt,
+                                                           const Opt<Color4F>& blending_color_opt = std::nullopt)
 {
     return Rhi::RenderStateSettingsImpl
     {
-        .program = program_ptr
-                 ? *program_ptr
-                 : render_context.CreateProgram(
-                    Rhi::Program::Settings
-                    {
-                        .shader_set = Rhi::Program::ShaderSet
-                        {
-                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Shader", "MainVS" } } },
-                            { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Shader", "MainPS" } } }
-                        },
-                        .input_buffer_layouts = Rhi::ProgramInputBufferLayouts
-                        {
-                            Rhi::ProgramInputBufferLayout
-                            {
-                                .argument_semantics = Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION" , "COLOR" },
-                                .step_type = Rhi::ProgramInputBufferLayout::StepType::PerVertex,
-                                .step_rate = 1U
-                            }
-                        },
-                        .attachment_formats = AttachmentFormats
-                        {
-                            .colors  = { PixelFormat::RGBA8Unorm_sRGB },
-                            .depth   = PixelFormat::Depth32Float,
-                            .stencil = PixelFormat::Unknown
-                        }
-                    }),
-        .render_pattern = render_pattern,
-        .rasterizer = Rhi::RasterizerSettings
-        {
-            .is_front_counter_clockwise = true,
-            .cull_mode                  = Rhi::RasterizerCullMode::Front,
-            .fill_mode                  = Rhi::RasterizerFillMode::Solid,
-            .sample_count               = 1,
-            .alpha_to_coverage_enabled  = false
-        },
-        .depth = Rhi::DepthSettings
-        {
-            .enabled       = true,
-            .write_enabled = true,
-            .compare       = Compare::LessEqual,
-        },
-        .stencil = Rhi::StencilSettings
-        {
-            .enabled    = false,
-            .read_mask  = static_cast<uint8_t>(~0x0),
-            .write_mask = static_cast<uint8_t>(~0x0),
-            .front_face = Rhi::FaceOperations
-            {
-                .stencil_failure    = Rhi::FaceOperation::Keep,
-                .stencil_pass       = Rhi::FaceOperation::Keep,
-                .depth_failure      = Rhi::FaceOperation::Keep,
-                .depth_stencil_pass = Rhi::FaceOperation::Keep,
-                .compare            = Compare::Always,
-            },
-            .back_face = Rhi::FaceOperations
-            {
-                .stencil_failure    = Rhi::FaceOperation::Keep,
-                .stencil_pass       = Rhi::FaceOperation::Keep,
-                .depth_failure      = Rhi::FaceOperation::Keep,
-                .depth_stencil_pass = Rhi::FaceOperation::Keep,
-                .compare            = Compare::Always,
-            }
-        },
-        .blending = Rhi::BlendingSettings
-        {
-            .is_independent = false,
-            .render_targets = {
-                Rhi::RenderTargetSettings
+        .program = program_opt.value_or(
+            render_context.CreateProgram(
+                Rhi::Program::Settings
                 {
-                    .blend_enabled             = false,
-                    .color_write               = Rhi::BlendingColorChannelMask{ ~0U },
-                    .rgb_blend_op              = Rhi::BlendingOperation::Add,
-                    .alpha_blend_op            = Rhi::BlendingOperation::Add,
-                    .source_rgb_blend_factor   = Rhi::BlendingFactor::One,
-                    .source_alpha_blend_factor = Rhi::BlendingFactor::One,
-                    .dest_rgb_blend_factor     = Rhi::BlendingFactor::Zero,
-                    .dest_alpha_blend_factor   = Rhi::BlendingFactor::Zero
+                    .shader_set = Rhi::Program::ShaderSet
+                    {
+                        { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Shader", "MainVS" } } },
+                        { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Shader", "MainPS" } } }
+                    },
+                    .input_buffer_layouts = Rhi::ProgramInputBufferLayouts
+                    {
+                        Rhi::ProgramInputBufferLayout
+                        {
+                            .argument_semantics = Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION" , "COLOR" },
+                            .step_type = Rhi::ProgramInputBufferLayout::StepType::PerVertex,
+                            .step_rate = 1U
+                        }
+                    },
+                    .attachment_formats = AttachmentFormats
+                    {
+                        .colors  = { PixelFormat::RGBA8Unorm_sRGB },
+                        .depth   = PixelFormat::Depth32Float,
+                        .stencil = PixelFormat::Unknown
+                    }
+                })),
+        .render_pattern = render_pattern,
+        .rasterizer = rasterizer_settings_opt.value_or(
+            Rhi::RasterizerSettings
+            {
+                .is_front_counter_clockwise = true,
+                .cull_mode                  = Rhi::RasterizerCullMode::Front,
+                .fill_mode                  = Rhi::RasterizerFillMode::Solid,
+                .sample_count               = 1,
+                .alpha_to_coverage_enabled  = false
+            }),
+        .depth = depth_settings_opt.value_or(
+            Rhi::DepthSettings
+            {
+                .enabled       = true,
+                .write_enabled = true,
+                .compare       = Compare::LessEqual,
+            }),
+        .stencil = stencil_settings_opt.value_or(
+            Rhi::StencilSettings
+            {
+                .enabled    = false,
+                .read_mask  = static_cast<uint8_t>(~0x0),
+                .write_mask = static_cast<uint8_t>(~0x0),
+                .front_face = Rhi::FaceOperations
+                {
+                    .stencil_failure    = Rhi::FaceOperation::Keep,
+                    .stencil_pass       = Rhi::FaceOperation::Keep,
+                    .depth_failure      = Rhi::FaceOperation::Keep,
+                    .depth_stencil_pass = Rhi::FaceOperation::Keep,
+                    .compare            = Compare::Always,
+                },
+                .back_face = Rhi::FaceOperations
+                {
+                    .stencil_failure    = Rhi::FaceOperation::Keep,
+                    .stencil_pass       = Rhi::FaceOperation::Keep,
+                    .depth_failure      = Rhi::FaceOperation::Keep,
+                    .depth_stencil_pass = Rhi::FaceOperation::Keep,
+                    .compare            = Compare::Always,
                 }
-            }
-        },
-        .blending_color = Color4F{ 1.f, 1.f, 1.f, 1.f }
+            }),
+        .blending = blending_settings_opt.value_or(
+            Rhi::BlendingSettings
+            {
+                .is_independent = false,
+                .render_targets = {
+                    Rhi::RenderTargetSettings
+                    {
+                        .blend_enabled             = false,
+                        .color_write               = Rhi::BlendingColorChannelMask{ ~0U },
+                        .rgb_blend_op              = Rhi::BlendingOperation::Add,
+                        .alpha_blend_op            = Rhi::BlendingOperation::Add,
+                        .source_rgb_blend_factor   = Rhi::BlendingFactor::One,
+                        .source_alpha_blend_factor = Rhi::BlendingFactor::One,
+                        .dest_rgb_blend_factor     = Rhi::BlendingFactor::Zero,
+                        .dest_alpha_blend_factor   = Rhi::BlendingFactor::Zero
+                    }
+                }
+            }),
+        .blending_color = blending_color_opt.value_or(Color4F{ 1.f, 1.f, 1.f, 1.f })
     };
 }
 

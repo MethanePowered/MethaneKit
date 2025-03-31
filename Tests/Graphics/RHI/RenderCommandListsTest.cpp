@@ -24,6 +24,7 @@ Unit-tests of the RHI Render Command List
 #include "RhiTestHelpers.hpp"
 #include "RhiSettings.hpp"
 
+#include <Methane/Data/EnumMaskUtil.hpp>
 #include <Methane/Data/AppShadersProvider.h>
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
@@ -48,6 +49,7 @@ Unit-tests of the RHI Render Command List
 #include <Methane/Graphics/Null/RenderState.h>
 #include <Methane/Graphics/Null/CommandListDebugGroup.h>
 #include <Methane/Graphics/Null/ProgramBindings.h>
+#include <Methane/Graphics/Null/Buffer.h>
 
 #include <chrono>
 #include <future>
@@ -56,10 +58,17 @@ Unit-tests of the RHI Render Command List
 #include <catch2/catch_test_macros.hpp>
 #include <thread>
 
-#include "Methane/Graphics/Null/Buffer.h"
-
 using namespace Methane;
 using namespace Methane::Graphics;
+
+template<typename E, typename M>
+struct Catch::StringMaker<Data::EnumMask<E, M>>
+{
+    static std::string convert(const Data::EnumMask<E, M>& mask)
+    {
+        return Data::GetEnumMaskName(mask);
+    }
+};
 
 static tf::Executor g_parallel_executor;
 
@@ -141,6 +150,7 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
     }
 
     const Rhi::RenderCommandList cmd_list = render_cmd_queue.CreateRenderCommandList(render_pass);
+    const auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
 
     SECTION("Object Name Setup")
     {
@@ -335,14 +345,14 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         CHECK_FALSE(cmd_list.IsValidationEnabled());
     }
 
-    const Rhi::RenderStateSettingsImpl render_state_settings = Test::GetRenderStateSettings(render_context, render_pattern, &render_program);
+    const Rhi::RenderStateSettingsImpl render_state_settings = Test::GetRenderStateSettings(render_context, render_pattern, render_program);
     const Rhi::RenderState render_state = render_context.CreateRenderState(render_state_settings);
+    const auto& null_render_state = dynamic_cast<Null::RenderState&>(render_state.GetInterface());
 
     SECTION("Reset Command List with Render State")
     {
         REQUIRE_NOTHROW(cmd_list.ResetWithState(render_state));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
         CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
     }
 
@@ -351,8 +361,8 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(render_state));
         REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(render_state));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
         CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
+        CHECK(null_render_state.GetAppliedStateGroups().GetValue() == ~0U);
     }
 
     SECTION("Reset Command List with Render State and Debug Group")
@@ -360,10 +370,9 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         const Rhi::CommandListDebugGroup debug_group("Test");
         REQUIRE_NOTHROW(cmd_list.ResetWithState(render_state, &debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-
-        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
         CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
         CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
+        CHECK(null_render_state.GetAppliedStateGroups().GetValue() == ~0U);
     }
 
     SECTION("Reset Command List Once with Render State and Debug Group")
@@ -374,19 +383,57 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         const Rhi::CommandListDebugGroup debug_group2("Test2");
         REQUIRE_NOTHROW(cmd_list.ResetWithStateOnce(render_state, &debug_group2));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-
-        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
         CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test1");
         CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
     }
 
-    SECTION("Set Command List Render State after Reset")
+    SECTION("Set Command List Render State after Stateless Reset")
     {
+        const Rhi::RenderStateGroupMask state_groups{
+            Rhi::RenderStateGroup::Rasterizer,
+            Rhi::RenderStateGroup::Blending,
+            Rhi::RenderStateGroup::DepthStencil
+        };
         REQUIRE_NOTHROW(cmd_list.Reset());
-        REQUIRE_NOTHROW(cmd_list.SetRenderState(render_state));
-
-        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
+        REQUIRE_NOTHROW(cmd_list.SetRenderState(render_state, state_groups));
         CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
+        CHECK(null_cmd_list.GetDrawingState().render_state_groups == state_groups);
+        CHECK(null_render_state.GetAppliedStateGroups() == state_groups);
+    }
+
+    SECTION("Change Command List Render State after Stateful Reset, Only Changed State Groups are Applied")
+    {
+        const Rhi::RenderStateSettingsImpl other_render_state_settings = Test::GetRenderStateSettings(render_context, render_pattern, render_program,
+            Rhi::RasterizerSettings
+            {
+                .is_front_counter_clockwise = false,
+                .cull_mode                  = Rhi::RasterizerCullMode::None,
+                .fill_mode                  = Rhi::RasterizerFillMode::Wireframe
+            },
+            Rhi::DepthSettings
+            {
+                .enabled       = false,
+                .write_enabled = false
+            },
+            Rhi::StencilSettings
+            {
+                .enabled = false
+            });
+        const Rhi::RenderState other_render_state = render_context.CreateRenderState(other_render_state_settings);
+        const auto& other_null_render_state = dynamic_cast<Null::RenderState&>(other_render_state.GetInterface());
+
+        REQUIRE_NOTHROW(cmd_list.ResetWithState(render_state));
+        CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
+        CHECK(null_cmd_list.GetDrawingState().render_state_groups.GetValue() == ~0U);
+        CHECK(null_render_state.GetAppliedStateGroups().GetValue() == ~0U);
+
+        REQUIRE_NOTHROW(cmd_list.SetRenderState(other_render_state));
+        CHECK(null_cmd_list.GetDrawingState().render_state_ptr.get() == other_render_state.GetInterfacePtr().get());
+        CHECK(null_cmd_list.GetDrawingState().render_state_groups.GetValue() == ~0U);
+        CHECK(other_null_render_state.GetAppliedStateGroups() == Rhi::RenderStateGroupMask{
+            Rhi::RenderStateGroup::Rasterizer,
+            Rhi::RenderStateGroup::DepthStencil
+        });
     }
 
     const Rhi::ViewState view_state(Test::GetViewStateSettings());
@@ -395,8 +442,19 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
     {
         REQUIRE_NOTHROW(cmd_list.Reset());
         REQUIRE_NOTHROW(cmd_list.SetViewState(view_state));
+        CHECK(null_cmd_list.GetDrawingState().view_state_ptr == &view_state.GetInterface());
+        CHECK(null_cmd_list.GetDrawingState().changes.HasAnyBit(Base::RenderDrawingState::Change::ViewState));
+    }
 
-        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
+    SECTION("Set Other View State with Same Settings is Ignored")
+    {
+        REQUIRE_NOTHROW(cmd_list.Reset());
+        REQUIRE_NOTHROW(cmd_list.SetViewState(view_state));
+        CHECK(null_cmd_list.GetDrawingState().view_state_ptr == &view_state.GetInterface());
+        CHECK(null_cmd_list.GetDrawingState().changes.HasAnyBit(Base::RenderDrawingState::Change::ViewState));
+
+        const Rhi::ViewState other_view_state(Test::GetViewStateSettings());
+        REQUIRE_NOTHROW(cmd_list.SetViewState(other_view_state));
         CHECK(null_cmd_list.GetDrawingState().view_state_ptr == &view_state.GetInterface());
         CHECK(null_cmd_list.GetDrawingState().changes.HasAnyBit(Base::RenderDrawingState::Change::ViewState));
     }
@@ -421,8 +479,6 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
     {
         REQUIRE_NOTHROW(cmd_list.Reset());
         CHECK(cmd_list.SetVertexBuffers(vertex_buffer_set));
-
-        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
         CHECK(null_cmd_list.GetDrawingState().vertex_buffer_set_ptr.get() == vertex_buffer_set.GetInterfacePtr().get());
         CHECK(IsResourceRetainedByCommandList<Null::RenderCommandList>(vertex_buffer_set, cmd_list));
     }
@@ -433,8 +489,6 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         REQUIRE_NOTHROW(cmd_list.Reset());
         CHECK(cmd_list.SetVertexBuffers(vertex_buffer_set));
         CHECK(cmd_list.SetVertexBuffers(other_vertex_buffer_set));
-
-        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
         CHECK(null_cmd_list.GetDrawingState().vertex_buffer_set_ptr.get() == other_vertex_buffer_set.GetInterfacePtr().get());
         CHECK(IsResourceRetainedByCommandList<Null::RenderCommandList>(vertex_buffer_set, cmd_list));
         CHECK(IsResourceRetainedByCommandList<Null::RenderCommandList>(other_vertex_buffer_set, cmd_list));
@@ -455,8 +509,6 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         CHECK_THROWS_AS(cmd_list.SetVertexBuffers(constant_buffer_set), ArgumentException);
     }
 
-    //Rhi::Buffer index_buffer_one = render_context.CreateBuffer(Rhi::BufferSettings::ForIndexBuffer(543, PixelFormat::R16Uint));
-
     Rhi::Buffer index_buffer_one = [&render_context]()
     {
         Rhi::Buffer index_buffer = render_context.CreateBuffer(Rhi::BufferSettings::ForIndexBuffer(543, PixelFormat::R16Uint));
@@ -469,8 +521,6 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
     {
         REQUIRE_NOTHROW(cmd_list.Reset());
         CHECK(cmd_list.SetIndexBuffer(index_buffer_one));
-
-        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
         CHECK(dynamic_cast<const Rhi::IBuffer*>(null_cmd_list.GetDrawingState().index_buffer_ptr.get()) == index_buffer_one.GetInterfacePtr().get());
         CHECK(IsResourceRetainedByCommandList<Null::RenderCommandList>(index_buffer_one, cmd_list));
     }
@@ -481,8 +531,6 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         REQUIRE_NOTHROW(cmd_list.Reset());
         CHECK(cmd_list.SetIndexBuffer(index_buffer_one));
         CHECK(cmd_list.SetIndexBuffer(index_buffer_two));
-
-        auto& null_cmd_list = dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface());
         CHECK(dynamic_cast<const Rhi::IBuffer*>(null_cmd_list.GetDrawingState().index_buffer_ptr.get()) == index_buffer_two.GetInterfacePtr().get());
         CHECK(IsResourceRetainedByCommandList<Null::RenderCommandList>(index_buffer_one, cmd_list));
         CHECK(IsResourceRetainedByCommandList<Null::RenderCommandList>(index_buffer_two, cmd_list));
@@ -506,7 +554,9 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         REQUIRE_NOTHROW(cmd_list.ResetWithState(render_state));
         REQUIRE_NOTHROW(cmd_list.SetViewState(view_state));
         REQUIRE(cmd_list.SetVertexBuffers(vertex_buffer_set));
-        CHECK_NOTHROW(cmd_list.Draw(Rhi::RenderPrimitive::Triangle, 100U, 10U, 12U, 3U));
+        CHECK_FALSE(null_cmd_list.GetDrawingState().primitive_type_opt.has_value());
+        REQUIRE_NOTHROW(cmd_list.Draw(Rhi::RenderPrimitive::Triangle, 100U, 10U, 12U, 3U));
+        CHECK(null_cmd_list.GetDrawingState().primitive_type_opt == Rhi::RenderPrimitive::Triangle);
     }
 
     SECTION("Can Not Draw Triangles from Uninitialized Vertex Buffers")
@@ -559,7 +609,9 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         REQUIRE_NOTHROW(cmd_list.SetViewState(view_state));
         REQUIRE(cmd_list.SetVertexBuffers(vertex_buffer_set));
         REQUIRE(cmd_list.SetIndexBuffer(index_buffer_one));
-        CHECK_NOTHROW(cmd_list.DrawIndexed(Rhi::RenderPrimitive::Triangle, indices_count - 10U, 10U, 42U, 12U, 3U));
+        CHECK_FALSE(null_cmd_list.GetDrawingState().primitive_type_opt.has_value());
+        REQUIRE_NOTHROW(cmd_list.DrawIndexed(Rhi::RenderPrimitive::Triangle, indices_count - 10U, 10U, 42U, 12U, 3U));
+        CHECK(null_cmd_list.GetDrawingState().primitive_type_opt == Rhi::RenderPrimitive::Triangle);
     }
 
     SECTION("Can Not Draw Indexed Triangles from Uninitialized Vertex Buffers")

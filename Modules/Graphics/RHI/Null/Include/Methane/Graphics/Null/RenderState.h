@@ -35,7 +35,25 @@ public:
     using Base::RenderState::RenderState;
 
     // Base::RenderState interface
-    void Apply(Base::RenderCommandList&, Groups) override { /* Intentionally unimplemented */ }
+    void Apply(Base::RenderCommandList&, Groups apply_groups) override
+    {
+        m_applied_state_groups |= apply_groups;
+    }
+
+    // IRenderState overrides
+    void Reset(const Settings& settings) override
+    {
+        Base::RenderState::Reset(settings);
+        m_applied_state_groups = {};
+    }
+
+    const Groups& GetAppliedStateGroups() const noexcept
+    {
+        return m_applied_state_groups;
+    }
+
+private:
+    Groups m_applied_state_groups;
 };
 
 } // namespace Methane::Graphics::Null

@@ -100,17 +100,13 @@ void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::Ren
     VerifyEncodingState();
 
     const bool render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
-    Rhi::RenderStateGroupMask changed_states;
-    if (!m_drawing_state.render_state_ptr)
-        changed_states = Rhi::RenderStateGroupMask(~0U);
-
+    Rhi::RenderStateGroupMask changed_states{ m_drawing_state.render_state_ptr ? 0U : ~0U };
     if (m_drawing_state.render_state_ptr && render_state_changed)
     {
         changed_states = Rhi::RenderStateSettings::Compare(render_state.GetSettings(),
                                                            m_drawing_state.render_state_ptr->GetSettings(),
                                                            m_drawing_state.render_state_groups);
     }
-    changed_states |= ~m_drawing_state.render_state_groups;
 
     auto& render_state_base = static_cast<RenderState&>(render_state);
     if (!render_state_base.IsDeferred())
