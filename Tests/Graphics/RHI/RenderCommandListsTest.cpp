@@ -194,7 +194,8 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         const Rhi::CommandListDebugGroup debug_group("Test");
         REQUIRE_NOTHROW(cmd_list.Reset(&debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        CHECK(dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
+        REQUIRE(null_cmd_list.GetTopOpenDebugGroup() != nullptr);
+        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Reset Command List Once with Debug Group")
@@ -203,7 +204,8 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         REQUIRE_NOTHROW(cmd_list.ResetOnce(&debug_group));
         REQUIRE_NOTHROW(cmd_list.ResetOnce(&debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        CHECK(dynamic_cast<Null::RenderCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
+        REQUIRE(null_cmd_list.GetTopOpenDebugGroup() != nullptr);
+        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Push and Pop Debug Group")
@@ -211,6 +213,7 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
         REQUIRE_NOTHROW(cmd_list.Reset());
         CHECK_NOTHROW(cmd_list.PushDebugGroup(Rhi::CommandListDebugGroup("Test")));
         CHECK_NOTHROW(cmd_list.PopDebugGroup());
+        REQUIRE(null_cmd_list.GetTopOpenDebugGroup() == nullptr);
     }
 
     SECTION("Can not Pop Missing Debug Group")

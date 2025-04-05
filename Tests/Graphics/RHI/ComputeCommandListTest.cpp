@@ -324,8 +324,9 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
 
         auto& null_cmd_list = dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface());
-        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
         CHECK(&null_cmd_list.GetComputeState() == compute_state.GetInterfacePtr().get());
+        REQUIRE(null_cmd_list.GetTopOpenDebugGroup() != nullptr);
+        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Reset Command List Once with Compute State and Debug Group")
@@ -336,8 +337,9 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
 
         auto& null_cmd_list = dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface());
-        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
         CHECK(&null_cmd_list.GetComputeState() == compute_state.GetInterfacePtr().get());
+        REQUIRE(null_cmd_list.GetTopOpenDebugGroup() != nullptr);
+        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Set Command List Compute State")
