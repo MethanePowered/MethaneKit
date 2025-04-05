@@ -85,9 +85,9 @@ public:
     using CommandList::Reset;
 
     // IRenderCommandList interface
-    bool IsValidationEnabled() const noexcept final             { return m_is_validation_enabled; }
-    void SetValidationEnabled(bool is_validation_enabled) final { m_is_validation_enabled = is_validation_enabled; }
-    Rhi::IRenderPass& GetRenderPass() const final;
+    [[nodiscard]] bool IsValidationEnabled() const noexcept final { return m_is_validation_enabled; }
+    void SetValidationEnabled(bool is_validation_enabled) final   { m_is_validation_enabled = is_validation_enabled; }
+    [[nodiscard]] Rhi::IRenderPass& GetRenderPass() const final;
     void Reset(IDebugGroup* debug_group_ptr = nullptr) override;
     void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) override;
     void ResetWithStateOnce(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) final;
