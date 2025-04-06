@@ -340,8 +340,8 @@ TEST_CASE("RHI Parallel Render Command List Functions", "[rhi][list][render]")
         REQUIRE_NOTHROW(cmd_list.ResetWithState(render_state, &debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
 
-        const std::vector<Rhi::RenderCommandList> thread_cmd_lists = cmd_list.GetParallelCommandLists();
         uint32_t thread_index = 0U;
+        const std::vector<Rhi::RenderCommandList> thread_cmd_lists = cmd_list.GetParallelCommandLists();
         for (const Rhi::RenderCommandList& thread_cmd_list : cmd_list.GetParallelCommandLists())
         {
             CHECK(thread_cmd_list.GetState() == Rhi::CommandListState::Encoding);
@@ -352,6 +352,7 @@ TEST_CASE("RHI Parallel Render Command List Functions", "[rhi][list][render]")
             CHECK(thread_debug_group_opt.has_value());
             CHECK(null_thread_cmd_list.GetTopOpenDebugGroup());
             CHECK(null_thread_cmd_list.GetTopOpenDebugGroup()->GetName() == thread_debug_group_opt->GetName());
+            CHECK(thread_debug_group_opt->GetName() == fmt::format("Test - Thread {}", thread_index));
             thread_index++;
         }
     }
@@ -364,14 +365,12 @@ TEST_CASE("RHI Parallel Render Command List Functions", "[rhi][list][render]")
         REQUIRE_NOTHROW(cmd_list.SetViewState(view_state));
 
         const std::vector<Rhi::RenderCommandList> thread_cmd_lists = cmd_list.GetParallelCommandLists();
-        uint32_t thread_index = 0U;
         for (const Rhi::RenderCommandList& thread_cmd_list : cmd_list.GetParallelCommandLists())
         {
             CHECK(thread_cmd_list.GetState() == Rhi::CommandListState::Encoding);
             const auto& null_thread_cmd_list = dynamic_cast<Null::RenderCommandList&>(thread_cmd_list.GetInterface());
             CHECK(null_thread_cmd_list.GetDrawingState().view_state_ptr == &view_state.GetInterface());
             CHECK(null_thread_cmd_list.GetDrawingState().changes.HasAnyBit(Base::RenderDrawingState::Change::ViewState));
-            thread_index++;
         }
     }
 
