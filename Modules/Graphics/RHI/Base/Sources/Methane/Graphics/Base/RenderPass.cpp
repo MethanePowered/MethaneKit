@@ -165,6 +165,7 @@ const Rhi::ITexture::View& RenderPass::GetAttachmentTextureView(const Rhi::Rende
 const Refs<Texture>& RenderPass::GetColorAttachmentTextures() const
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_mutex);
     if (!m_color_attachment_textures.empty())
         return m_color_attachment_textures;
 
@@ -180,6 +181,7 @@ const Refs<Texture>& RenderPass::GetColorAttachmentTextures() const
 Texture* RenderPass::GetDepthAttachmentTexture() const
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_mutex);
     if (m_depth_attachment_texture_ptr)
         return m_depth_attachment_texture_ptr;
 
@@ -194,6 +196,7 @@ Texture* RenderPass::GetDepthAttachmentTexture() const
 Texture* RenderPass::GetStencilAttachmentTexture() const
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_mutex);
     if (m_stencil_attachment_texture_ptr)
         return m_stencil_attachment_texture_ptr;
 
@@ -208,6 +211,7 @@ Texture* RenderPass::GetStencilAttachmentTexture() const
 const Ptrs<Texture>& RenderPass::GetNonFrameBufferAttachmentTextures() const
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_mutex);
     if (!m_non_frame_buffer_attachment_textures.empty())
         return m_non_frame_buffer_attachment_textures;
 

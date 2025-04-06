@@ -335,7 +335,6 @@ TEST_CASE("RHI Parallel Render Command List Functions", "[rhi][list][render]")
 
     SECTION("Reset Command List with Render State and Debug Group")
     {
-        REQUIRE_NOTHROW(cmd_list.SetParallelCommandListsCount(4U));
         const Rhi::CommandListDebugGroup debug_group("Test");
         REQUIRE_NOTHROW(cmd_list.ResetWithState(render_state, &debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);

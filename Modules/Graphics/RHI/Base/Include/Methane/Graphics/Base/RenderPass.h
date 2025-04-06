@@ -25,9 +25,11 @@ Base implementation of the render pass interface.
 
 #include "RenderPattern.h"
 #include "Object.h"
-#include "Resource.h"
 
 #include <Methane/Graphics/RHI/IRenderPass.h>
+#include <Methane/Instrumentation.h>
+
+#include <mutex>
 
 namespace Methane::Graphics::Base
 {
@@ -84,6 +86,7 @@ private:
     mutable Ptrs<Texture> m_non_frame_buffer_attachment_textures;
     mutable Texture*      m_depth_attachment_texture_ptr = nullptr;
     mutable Texture*      m_stencil_attachment_texture_ptr = nullptr;
+    mutable TracyLockable(std::recursive_mutex, m_mutex);
 };
 
 } // namespace Methane::Graphics::Base
