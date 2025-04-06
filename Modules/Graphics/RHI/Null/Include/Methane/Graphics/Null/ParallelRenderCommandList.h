@@ -39,12 +39,18 @@ public:
     using Base::ParallelRenderCommandList::ParallelRenderCommandList;
 
     // IParallelRenderCommandList interface
-    void SetBeginningResourceBarriers(const Rhi::IResourceBarriers&) override { /* Intentionally unimplemented */ }
-    void SetEndingResourceBarriers(const Rhi::IResourceBarriers&) override    { /* Intentionally unimplemented */ }
+    void SetBeginningResourceBarriers(const Rhi::IResourceBarriers& barriers) override;
+    void SetEndingResourceBarriers(const Rhi::IResourceBarriers& barriers) override;
+
+    const Rhi::IResourceBarriers* GetBeginningResourceBarriers() const noexcept { return m_beginning_barriers_ptr; }
+    const Rhi::IResourceBarriers* GetEndingResourceBarriers() const noexcept    { return m_ending_barriers_ptr; }
 
 private:
     // ParallelRenderCommandListBase interface
     [[nodiscard]] Ptr<Rhi::IRenderCommandList> CreateCommandList(bool is_beginning_list) override;
+
+    const Rhi::IResourceBarriers* m_beginning_barriers_ptr = nullptr;
+    const Rhi::IResourceBarriers* m_ending_barriers_ptr = nullptr;
 };
 
 } // namespace Methane::Graphics::Null

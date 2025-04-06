@@ -38,13 +38,12 @@ Unit-tests of the RHI Parallel Render Command List
 #include <Methane/Graphics/RHI/ProgramBindings.h>
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Buffer.h>
-#include <Methane/Graphics/RHI/BufferSet.h>
 #include <Methane/Graphics/RHI/Sampler.h>
 #include <Methane/Graphics/Base/ViewState.h>
-#include <Methane/Graphics/Base/BufferSet.h>
 #include <Methane/Graphics/Base/Buffer.h>
 #include <Methane/Graphics/Null/CommandListSet.h>
 #include <Methane/Graphics/Null/ParallelRenderCommandList.h>
+#include <Methane/Graphics/Null/RenderCommandList.h>
 #include <Methane/Graphics/Null/Program.h>
 #include <Methane/Graphics/Null/RenderState.h>
 #include <Methane/Graphics/Null/CommandListDebugGroup.h>
@@ -71,8 +70,8 @@ TEST_CASE("RHI Parallel Render Command List Functions", "[rhi][list][render]")
 {
     const Rhi::RenderContext render_context   = Rhi::RenderContext(test_app_env, GetTestDevice(), g_parallel_executor, render_context_settings);
     const Rhi::CommandQueue  render_cmd_queue = render_context.CreateCommandQueue(Rhi::CommandListType::Render);
-    const Rhi::RenderPattern render_pattern = render_context.CreateRenderPattern(render_pattern_settings);
-    const Rhi::Program render_program = [&render_context, &render_pattern]()
+    const Rhi::RenderPattern render_pattern   = render_context.CreateRenderPattern(render_pattern_settings);
+    const Rhi::Program       render_program   = [&render_context, &render_pattern]()
     {
         using enum Rhi::ShaderType;
         const Rhi::ProgramArgumentAccessor texture_accessor{ Pixel, "InTexture", Rhi::ProgramArgumentAccessType::Constant };
@@ -141,7 +140,7 @@ TEST_CASE("RHI Parallel Render Command List Functions", "[rhi][list][render]")
     }
 
     const Rhi::ParallelRenderCommandList cmd_list = render_cmd_queue.CreateParallelRenderCommandList(render_pass);
-    //const auto& null_cmd_list = dynamic_cast<Null::ParallelRenderCommandList&>(cmd_list.GetInterface());
+    const auto& null_cmd_list = dynamic_cast<Null::ParallelRenderCommandList&>(cmd_list.GetInterface());
 
     SECTION("Object Name Setup")
     {
@@ -296,5 +295,99 @@ TEST_CASE("RHI Parallel Render Command List Functions", "[rhi][list][render]")
         CHECK(cmd_list.IsValidationEnabled());
         REQUIRE_NOTHROW(cmd_list.SetValidationEnabled(false));
         CHECK_FALSE(cmd_list.IsValidationEnabled());
+    }
+
+    SECTION("Set Parallel Render Command Lists Count")
+    {
+        CHECK(cmd_list.GetParallelCommandLists().size() == 0U);
+        CHECK(cmd_list.SetName("Test"));
+        REQUIRE_NOTHROW(cmd_list.SetParallelCommandListsCount(4U));
+
+        const std::vector<Rhi::RenderCommandList> thread_cmd_lists = cmd_list.GetParallelCommandLists();
+        REQUIRE(thread_cmd_lists.size() == 4U);
+
+        uint32_t thread_index = 0U;
+        for (const Rhi::RenderCommandList& thread_cmd_list : cmd_list.GetParallelCommandLists())
+        {
+            CHECK(thread_cmd_list.GetName() == fmt::format("Test - Thread {}", thread_index));
+            thread_index++;
+        }
+    }
+
+    REQUIRE_NOTHROW(cmd_list.SetParallelCommandListsCount(4U));
+    const Rhi::RenderStateSettingsImpl render_state_settings = Test::GetRenderStateSettings(render_context, render_pattern, render_program);
+    const Rhi::RenderState render_state = render_context.CreateRenderState(render_state_settings);
+
+    SECTION("Reset Command List with Render State")
+    {
+        REQUIRE_NOTHROW(cmd_list.ResetWithState(render_state));
+        CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
+
+        const std::vector<Rhi::RenderCommandList> thread_cmd_lists = cmd_list.GetParallelCommandLists();
+        REQUIRE(thread_cmd_lists.size() == 4U);
+        for (const Rhi::RenderCommandList& thread_cmd_list : cmd_list.GetParallelCommandLists())
+        {
+            CHECK(thread_cmd_list.GetState() == Rhi::CommandListState::Encoding);
+            const auto& null_thread_cmd_list = dynamic_cast<Null::RenderCommandList&>(thread_cmd_list.GetInterface());
+            CHECK(null_thread_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
+        }
+    }
+
+    SECTION("Reset Command List with Render State and Debug Group")
+    {
+        REQUIRE_NOTHROW(cmd_list.SetParallelCommandListsCount(4U));
+        const Rhi::CommandListDebugGroup debug_group("Test");
+        REQUIRE_NOTHROW(cmd_list.ResetWithState(render_state, &debug_group));
+        CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
+
+        const std::vector<Rhi::RenderCommandList> thread_cmd_lists = cmd_list.GetParallelCommandLists();
+        uint32_t thread_index = 0U;
+        for (const Rhi::RenderCommandList& thread_cmd_list : cmd_list.GetParallelCommandLists())
+        {
+            CHECK(thread_cmd_list.GetState() == Rhi::CommandListState::Encoding);
+            const auto& null_thread_cmd_list = dynamic_cast<Null::RenderCommandList&>(thread_cmd_list.GetInterface());
+            CHECK(null_thread_cmd_list.GetDrawingState().render_state_ptr.get() == render_state.GetInterfacePtr().get());
+
+            const Opt<Rhi::CommandListDebugGroup> thread_debug_group_opt = debug_group.GetSubGroup(thread_index);
+            CHECK(thread_debug_group_opt.has_value());
+            CHECK(null_thread_cmd_list.GetTopOpenDebugGroup());
+            CHECK(null_thread_cmd_list.GetTopOpenDebugGroup()->GetName() == thread_debug_group_opt->GetName());
+            thread_index++;
+        }
+    }
+
+    const Rhi::ViewState view_state(Test::GetViewStateSettings());
+
+    SECTION("Set View State")
+    {
+        REQUIRE_NOTHROW(cmd_list.Reset());
+        REQUIRE_NOTHROW(cmd_list.SetViewState(view_state));
+
+        const std::vector<Rhi::RenderCommandList> thread_cmd_lists = cmd_list.GetParallelCommandLists();
+        uint32_t thread_index = 0U;
+        for (const Rhi::RenderCommandList& thread_cmd_list : cmd_list.GetParallelCommandLists())
+        {
+            CHECK(thread_cmd_list.GetState() == Rhi::CommandListState::Encoding);
+            const auto& null_thread_cmd_list = dynamic_cast<Null::RenderCommandList&>(thread_cmd_list.GetInterface());
+            CHECK(null_thread_cmd_list.GetDrawingState().view_state_ptr == &view_state.GetInterface());
+            CHECK(null_thread_cmd_list.GetDrawingState().changes.HasAnyBit(Base::RenderDrawingState::Change::ViewState));
+            thread_index++;
+        }
+    }
+
+    const Rhi::ResourceBarriers barriers(Rhi::IResourceBarriers::Set{});
+
+    SECTION("Set Beginning Resource Barriers")
+    {
+        CHECK_FALSE(null_cmd_list.GetBeginningResourceBarriers());
+        REQUIRE_NOTHROW(cmd_list.SetBeginningResourceBarriers(barriers));
+        CHECK(null_cmd_list.GetBeginningResourceBarriers() == &barriers.GetInterface());
+    }
+
+    SECTION("Set Ending Resource Barriers")
+    {
+        CHECK_FALSE(null_cmd_list.GetEndingResourceBarriers());
+        REQUIRE_NOTHROW(cmd_list.SetEndingResourceBarriers(barriers));
+        CHECK(null_cmd_list.GetEndingResourceBarriers() == &barriers.GetInterface());
     }
 }
