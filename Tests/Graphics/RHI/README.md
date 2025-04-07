@@ -2,6 +2,7 @@
 
 | RHI PIMPL Class                                                                                                       | RHI Unit Test                                                                         |
 |-----------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| [Rhi::ObjectRegistry](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/ObjectRegistry.h)                       | :white_check_mark: [ObjectRegistry](ObjectRegistryTest.cpp)                           |
 | [Rhi::Buffer](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/Buffer.h)                                       | :white_check_mark: [BufferTest](BufferTest.cpp)                                       |
 | [Rhi::BufferSet](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/BufferSet.h)                                 | :white_check_mark: [BufferSetTest](BufferSetTest.cpp)                                 |
 | [Rhi::CommandKit](/Modules/Graphics/RHI/Impl/Include/Methane/Graphics/RHI/CommandKit.h)                               | :white_check_mark: [CommandKitTest](CommandKitTest.cpp)                               |

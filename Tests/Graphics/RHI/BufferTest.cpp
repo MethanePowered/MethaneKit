@@ -28,6 +28,7 @@ Unit-tests of the RHI Buffer
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <memory>
 #include <taskflow/taskflow.hpp>
@@ -97,6 +98,16 @@ TEST_CASE("RHI Buffer Functions", "[rhi][buffer][resource]")
         ObjectCallbackTester object_callback_tester(buffer);
         CHECK_FALSE(buffer.SetName("My Buffer"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        buffer.SetName("Constant Buffer");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(buffer);
+        const auto registered_buffer = registry.GetGraphicsObject<Rhi::Buffer>("Constant Buffer");
+        REQUIRE(registered_buffer.IsInitialized());
+        CHECK(&registered_buffer.GetInterface() == &buffer.GetInterface());
     }
 
     SECTION("Set State")

@@ -29,6 +29,7 @@ Unit-tests of the RHI RenderState
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/Program.h>
 #include <Methane/Graphics/RHI/Shader.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <memory>
 #include <taskflow/taskflow.hpp>
@@ -92,6 +93,16 @@ TEST_CASE("RHI Render State Functions", "[rhi][render][state]")
         ObjectCallbackTester object_callback_tester(render_state);
         CHECK_FALSE(render_state.SetName("My Render State"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        render_state.SetName("Render State");
+        Rhi::ObjectRegistry registry = render_context.GetObjectRegistry();
+        registry.AddGraphicsObject(render_state);
+        const auto registered_state = registry.GetGraphicsObject<Rhi::RenderState>("Render State");
+        REQUIRE(registered_state.IsInitialized());
+        CHECK(&registered_state.GetInterface() == &render_state.GetInterface());
     }
 
     SECTION("Reset with Settings Impl")

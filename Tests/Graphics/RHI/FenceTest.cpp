@@ -27,6 +27,7 @@ Unit-tests of the RHI Fence
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/Fence.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/Null/Fence.h>
 
 #include <memory>
@@ -88,6 +89,16 @@ TEST_CASE("RHI Fence Functions", "[rhi][fence]")
         ObjectCallbackTester object_callback_tester(fence);
         CHECK_FALSE(fence.SetName("My Fence"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        fence.SetName("Compute Fence");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(fence);
+        const auto registered_compute_state = registry.GetGraphicsObject<Rhi::Fence>("Compute Fence");
+        REQUIRE(registered_compute_state.IsInitialized());
+        CHECK(&registered_compute_state.GetInterface() == &fence.GetInterface());
     }
 
     SECTION("Signal Fence")

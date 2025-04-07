@@ -41,6 +41,7 @@ class CommandListDebugGroup;
 class TransferCommandList // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface   = ITransferCommandList;
     using Type        = CommandListType;
     using State       = CommandListState;
     using DebugGroup  = CommandListDebugGroup;

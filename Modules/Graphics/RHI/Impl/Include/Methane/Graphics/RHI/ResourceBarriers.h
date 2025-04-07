@@ -41,6 +41,7 @@ class RenderPass;
 class ResourceBarriers // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface = IResourceBarriers;
     using State     = IResourceBarriers::State;
     using Barrier   = IResourceBarriers::Barrier;
     using Map       = IResourceBarriers::Map;

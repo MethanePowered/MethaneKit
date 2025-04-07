@@ -45,6 +45,8 @@ class CommandListSet;
 class CommandKit // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface = ICommandKit;
+
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandKit);
     META_PIMPL_METHODS_COMPARE_INLINE(CommandKit);
 

@@ -33,6 +33,7 @@ Methane RenderContext PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/RenderPattern.h>
 #include <Methane/Graphics/RHI/ComputeState.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -157,9 +158,9 @@ tf::Executor& RenderContext::GetParallelExecutor() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetParallelExecutor();
 }
 
-IObjectRegistry& RenderContext::GetObjectRegistry() const META_PIMPL_NOEXCEPT
+ObjectRegistry RenderContext::GetObjectRegistry() const META_PIMPL_NOEXCEPT
 {
-    return GetImpl(m_impl_ptr).GetObjectRegistry();
+    return ObjectRegistry(GetImpl(m_impl_ptr).GetObjectRegistry());
 }
 
 bool RenderContext::UploadResources() const META_PIMPL_NOEXCEPT

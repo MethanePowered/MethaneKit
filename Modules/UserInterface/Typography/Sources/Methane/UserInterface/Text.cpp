@@ -40,6 +40,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/Program.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/EnumMask.hpp>
 #include <Methane/Data/Emitter.hpp>
@@ -316,14 +317,13 @@ public:
         m_font.Connect(*this);
         m_frame_rect = m_ui_context.ConvertTo<Units::Pixels>(m_settings.rect);
 
-        rhi::IObjectRegistry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectRegistry();
-        if (const auto render_state_ptr = std::dynamic_pointer_cast<rhi::IRenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
-            render_state_ptr)
+        rhi::ObjectRegistry gfx_objects_registry = ui_context.GetRenderContext().GetObjectRegistry();
+        m_render_state = gfx_objects_registry.GetGraphicsObject<rhi::RenderState>(m_settings.state_name);
+        if (m_render_state.IsInitialized())
         {
-            META_CHECK_EQUAL_DESCR(render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
+            META_CHECK_EQUAL_DESCR(m_render_state.GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
                                    "Text '{}' render state '{}' from cache has incompatible render pattern settings", m_settings.name,
                                    m_settings.state_name);
-            m_render_state = rhi::RenderState(render_state_ptr);
         }
         else
         {
@@ -381,7 +381,7 @@ public:
             m_render_state = m_ui_context.GetRenderContext().CreateRenderState(state_settings);
             m_render_state.SetName(m_settings.state_name);
 
-            gfx_objects_registry.AddGraphicsObject(m_render_state.GetInterface());
+            gfx_objects_registry.AddGraphicsObject(m_render_state);
         }
 
         UpdateTextMesh();
@@ -392,13 +392,9 @@ public:
             { gfx::GetFrameScissorRect(viewport_rect) }
         });
 
-        static const std::string s_sampler_name    = "Font Atlas Sampler";
-        if (const auto atlas_sampler_ptr = std::dynamic_pointer_cast<rhi::ISampler>(gfx_objects_registry.GetGraphicsObject(s_sampler_name));
-            atlas_sampler_ptr)
-        {
-            m_atlas_sampler = rhi::Sampler(atlas_sampler_ptr);
-        }
-        else
+        static const std::string s_sampler_name = "Font Atlas Sampler";
+        m_atlas_sampler = gfx_objects_registry.GetGraphicsObject<rhi::Sampler>(s_sampler_name);
+        if (!m_atlas_sampler.IsInitialized())
         {
             m_atlas_sampler = m_ui_context.GetRenderContext().CreateSampler({
                 rhi::ISampler::Filter(rhi::ISampler::Filter::MinMag::Linear),
@@ -406,7 +402,7 @@ public:
             });
             m_atlas_sampler.SetName(s_sampler_name);
 
-            gfx_objects_registry.AddGraphicsObject(m_atlas_sampler.GetInterface());
+            gfx_objects_registry.AddGraphicsObject(m_atlas_sampler);
         }
     }
 

@@ -43,6 +43,7 @@ class Device // NOSONAR - constructors and assignment operators are required to 
     friend class System;
 
 public:
+    using Interface    = IDevice;
     using FeatureMask  = DeviceFeatureMask;
     using Feature      = DeviceFeature;
     using Capabilities = DeviceCaps;

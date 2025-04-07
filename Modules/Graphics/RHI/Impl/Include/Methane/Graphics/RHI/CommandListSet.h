@@ -38,6 +38,8 @@ namespace Methane::Graphics::Rhi
 class CommandListSet // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface = ICommandListSet;
+
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandListSet);
     META_PIMPL_METHODS_COMPARE_INLINE(CommandListSet);
 

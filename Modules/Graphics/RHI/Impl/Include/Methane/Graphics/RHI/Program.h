@@ -55,6 +55,7 @@ class ProgramBindings;
 class Program // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface              = IProgram;
     using Settings               = ProgramSettingsImpl;
     using ShaderSet              = ProgramSettingsImpl::ShaderSet;
     using InputBufferLayout      = ProgramInputBufferLayout;

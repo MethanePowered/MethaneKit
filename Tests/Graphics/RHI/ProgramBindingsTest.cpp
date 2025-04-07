@@ -30,6 +30,7 @@ Unit-tests of the RHI Program Bindings
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Sampler.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/Null/Program.h>
 
 #include <memory>
@@ -245,6 +246,16 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
         ObjectCallbackTester object_callback_tester(program_bindings);
         CHECK_FALSE(program_bindings.SetName("My Program Bindings"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        program_bindings.SetName("Program Bindings");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(program_bindings);
+        const auto registered_program_bindings = registry.GetGraphicsObject<Rhi::ProgramBindings>("Program Bindings");
+        REQUIRE(registered_program_bindings.IsInitialized());
+        CHECK(&registered_program_bindings.GetInterface() == &program_bindings.GetInterface());
     }
 
     SECTION("Can Get Program Binding Arguments")

@@ -45,6 +45,7 @@ class ComputeContext;
 class Buffer // NOSONAR - class has more than 35 methods, constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface       = IBuffer;
     using AllocationError = ResourceAllocationError;
     using State           = ResourceState;
     using View            = ResourceView;

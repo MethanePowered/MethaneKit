@@ -27,6 +27,7 @@ Unit-tests of the RHI RenderPass
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/RenderPattern.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <memory>
 #include <taskflow/taskflow.hpp>
@@ -88,6 +89,16 @@ TEST_CASE("RHI Render Pass Functions", "[rhi][render][pass]")
         ObjectCallbackTester object_callback_tester(render_pass);
         CHECK_FALSE(render_pass.SetName("My Render Pass"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        render_pass.SetName("Render Pass");
+        Rhi::ObjectRegistry registry = render_context.GetObjectRegistry();
+        registry.AddGraphicsObject(render_pass);
+        const auto registered_pass = registry.GetGraphicsObject<Rhi::RenderPass>("Render Pass");
+        REQUIRE(registered_pass.IsInitialized());
+        CHECK(&registered_pass.GetInterface() == &render_pass.GetInterface());
     }
 
     SECTION("Get Settings")

@@ -48,6 +48,7 @@ class ProgramBindings;
 class RenderCommandList // NOSONAR - class has more than 35 methods, constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface   = IRenderCommandList;
     using Primitive   = RenderPrimitive;
     using Type        = CommandListType;
     using State       = CommandListState;

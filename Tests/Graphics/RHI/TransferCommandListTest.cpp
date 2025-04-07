@@ -29,6 +29,7 @@ Unit-tests of the RHI Transfer Command List
 #include <Methane/Graphics/RHI/TransferCommandList.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/Null/CommandListSet.h>
 #include <Methane/Graphics/Null/CommandListDebugGroup.h>
@@ -95,6 +96,16 @@ TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
         ObjectCallbackTester object_callback_tester(cmd_list);
         CHECK_FALSE(cmd_list.SetName("My Fence"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        cmd_list.SetName("Transfer Command List");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(cmd_list);
+        const auto registered_cmd_list = registry.GetGraphicsObject<Rhi::TransferCommandList>("Transfer Command List");
+        REQUIRE(registered_cmd_list.IsInitialized());
+        CHECK(&registered_cmd_list.GetInterface() == &cmd_list.GetInterface());
     }
 
     SECTION("Reset Command List")

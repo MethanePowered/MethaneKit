@@ -42,7 +42,8 @@ class Buffer;
 class BufferSet // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
-    using Buffers = std::vector<Buffer>;
+    using Interface = IBufferSet;
+    using Buffers   = std::vector<Buffer>;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(BufferSet);
     META_PIMPL_METHODS_COMPARE_INLINE(BufferSet);

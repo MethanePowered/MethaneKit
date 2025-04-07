@@ -45,6 +45,7 @@ class CommandQueue;
 class Texture // NOSONAR - class has more than 35 methods, constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface        = ITexture;
     using AllocationError  = ResourceAllocationError;
     using State            = ResourceState;
     using Barrier          = ResourceBarrier;

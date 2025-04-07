@@ -39,6 +39,7 @@ Unit-tests of the RHI Parallel Render Command List
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/Sampler.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/Base/ViewState.h>
 #include <Methane/Graphics/Base/Buffer.h>
 #include <Methane/Graphics/Null/CommandListSet.h>
@@ -160,10 +161,20 @@ TEST_CASE("RHI Parallel Render Command List Functions", "[rhi][list][render]")
 
     SECTION("Object Name Set Unchanged")
     {
-        CHECK(cmd_list.SetName("My Fence"));
+        CHECK(cmd_list.SetName("My Command List"));
         ObjectCallbackTester object_callback_tester(cmd_list);
-        CHECK_FALSE(cmd_list.SetName("My Fence"));
+        CHECK_FALSE(cmd_list.SetName("My Command List"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        cmd_list.SetName("Parallel Render Command List");
+        Rhi::ObjectRegistry registry = render_context.GetObjectRegistry();
+        registry.AddGraphicsObject(cmd_list);
+        const auto registered_cmd_list = registry.GetGraphicsObject<Rhi::ParallelRenderCommandList>("Parallel Render Command List");
+        REQUIRE(registered_cmd_list.IsInitialized());
+        CHECK(&registered_cmd_list.GetInterface() == &cmd_list.GetInterface());
     }
 
     SECTION("Reset Command List")

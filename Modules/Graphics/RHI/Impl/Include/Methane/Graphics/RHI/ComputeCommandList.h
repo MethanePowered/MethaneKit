@@ -44,6 +44,7 @@ class ResourceBarriers;
 class ComputeCommandList // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface   = IComputeCommandList;
     using Type        = CommandListType;
     using State       = CommandListState;
     using DebugGroup  = CommandListDebugGroup;

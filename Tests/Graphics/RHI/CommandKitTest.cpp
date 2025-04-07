@@ -31,6 +31,7 @@ Unit-tests of the RHI CommandKit
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/RHI/Fence.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <Methane/Graphics/Base/CommandList.h>
 
@@ -88,6 +89,16 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
         ObjectCallbackTester object_callback_tester(compute_cmd_kit);
         CHECK_FALSE(compute_cmd_kit.SetName("My Command Kit"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        compute_cmd_kit.SetName("Compute Command Kit");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(compute_cmd_kit);
+        const auto registered_cmd_kit = registry.GetGraphicsObject<Rhi::CommandKit>("Compute Command Kit");
+        REQUIRE(registered_cmd_kit.IsInitialized());
+        CHECK(&registered_cmd_kit.GetInterface() == &compute_cmd_kit.GetInterface());
     }
 
     SECTION("Get Context of Compute Command Kit")

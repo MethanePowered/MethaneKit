@@ -40,6 +40,7 @@ class RenderPattern;
 class RenderPass // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface         = IRenderPass;
     using Pattern           = RenderPattern;
     using Attachment        = RenderPassAttachment;
     using ColorAttachment   = RenderPassColorAttachment;

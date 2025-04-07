@@ -41,6 +41,7 @@ class ComputeContext;
 class Shader // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface        = IShader;
     using Type             = ShaderType;
     using Types            = ShaderTypes;
     using MacroDefinition  = ShaderMacroDefinition;

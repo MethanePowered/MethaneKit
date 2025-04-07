@@ -38,6 +38,7 @@ Unit-tests of the RHI RenderContext
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Sampler.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <taskflow/taskflow.hpp>
 #include <magic_enum/magic_enum.hpp>
@@ -101,6 +102,16 @@ TEST_CASE("RHI Render Context Basic Functions", "[rhi][basic][context]")
         ObjectCallbackTester object_callback_tester(render_context);
         CHECK_FALSE(render_context.SetName("My Render Context"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        render_context.SetName("Render Context");
+        Rhi::ObjectRegistry registry = render_context.GetObjectRegistry();
+        registry.AddGraphicsObject(render_context);
+        const auto registered_context = registry.GetGraphicsObject<Rhi::RenderContext>("Render Context");
+        REQUIRE(registered_context.IsInitialized());
+        CHECK(&registered_context.GetInterface() == &render_context.GetInterface());
     }
 
     SECTION("Context Reset")
@@ -444,10 +455,7 @@ TEST_CASE("RHI Render Context Factory", "[rhi][render][context][factory]")
 
     SECTION("Can Get Object Registry")
     {
-        Rhi::IObjectRegistry* registry_ptr = nullptr;
-        REQUIRE_NOTHROW(registry_ptr = &render_context.GetObjectRegistry());
-        REQUIRE(registry_ptr);
-        CHECK_FALSE(registry_ptr->HasGraphicsObject("Something"));
+        CHECK_FALSE(render_context.GetObjectRegistry().HasGraphicsObject("Something"));
     }
 
     SECTION("Can Get Parallel Executor")

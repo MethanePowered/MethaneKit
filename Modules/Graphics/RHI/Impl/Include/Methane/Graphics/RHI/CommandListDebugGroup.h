@@ -41,6 +41,8 @@ class RenderPass;
 class CommandListDebugGroup // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface = ICommandListDebugGroup;
+
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandListDebugGroup);
     META_PIMPL_METHODS_COMPARE_INLINE(CommandListDebugGroup);
 

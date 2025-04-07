@@ -40,6 +40,7 @@ class Program;
 class ProgramBindings // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface                 = IProgramBindings;
     using IArgumentBindingCallback  = IProgramArgumentBindingCallback;
     using IArgumentBinding          = IProgramArgumentBinding;
     using ApplyBehavior             = ProgramBindingsApplyBehavior;

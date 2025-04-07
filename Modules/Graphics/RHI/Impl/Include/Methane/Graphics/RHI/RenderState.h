@@ -56,6 +56,7 @@ class RenderContext;
 class RenderState // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface  = IRenderState;
     using Settings   = RenderStateSettingsImpl;
     using Rasterizer = RasterizerSettings;
     using Blending   = BlendingSettings;

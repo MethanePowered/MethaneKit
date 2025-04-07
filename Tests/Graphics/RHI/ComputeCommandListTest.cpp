@@ -36,6 +36,7 @@ Unit-tests of the RHI Compute Command List
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/Sampler.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/Null/CommandListSet.h>
 #include <Methane/Graphics/Null/ComputeCommandList.h>
 #include <Methane/Graphics/Null/Program.h>
@@ -133,10 +134,20 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
 
     SECTION("Object Name Set Unchanged")
     {
-        CHECK(cmd_list.SetName("My Fence"));
+        CHECK(cmd_list.SetName("My Command List"));
         ObjectCallbackTester object_callback_tester(cmd_list);
-        CHECK_FALSE(cmd_list.SetName("My Fence"));
+        CHECK_FALSE(cmd_list.SetName("My Command List"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        cmd_list.SetName("Compute Command List");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(cmd_list);
+        const auto registered_cmd_list = registry.GetGraphicsObject<Rhi::ComputeCommandList>("Compute Command List");
+        REQUIRE(registered_cmd_list.IsInitialized());
+        CHECK(&registered_cmd_list.GetInterface() == &cmd_list.GetInterface());
     }
 
     SECTION("Reset Command List")

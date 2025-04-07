@@ -42,6 +42,7 @@ class ResourceBarriers;
 class Sampler // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface     = ISampler;
     using Filter        = SamplerFilter;
     using Address       = SamplerAddress;
     using LevelOfDetail = SamplerLevelOfDetail;

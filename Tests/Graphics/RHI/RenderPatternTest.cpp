@@ -28,6 +28,7 @@ Unit-tests of the RHI RenderPattern
 #include <Methane/Graphics/RHI/RenderContext.h>
 #include <Methane/Graphics/RHI/RenderPattern.h>
 #include <Methane/Graphics/RHI/RenderPass.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <memory>
 #include <taskflow/taskflow.hpp>
@@ -87,6 +88,16 @@ TEST_CASE("RHI Render Pattern Functions", "[rhi][render][pattern]")
         ObjectCallbackTester object_callback_tester(render_pattern);
         CHECK_FALSE(render_pattern.SetName("My Render Pattern"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        render_pattern.SetName("Render Pattern");
+        Rhi::ObjectRegistry registry = render_context.GetObjectRegistry();
+        registry.AddGraphicsObject(render_pattern);
+        const auto registered_pattern = registry.GetGraphicsObject<Rhi::RenderPattern>("Render Pattern");
+        REQUIRE(registered_pattern.IsInitialized());
+        CHECK(&registered_pattern.GetInterface() == &render_pattern.GetInterface());
     }
 
     SECTION("Get Settings")

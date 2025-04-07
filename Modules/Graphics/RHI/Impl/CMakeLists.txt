@@ -6,6 +6,7 @@ get_module_dirs("Methane/Graphics/RHI")
 
 list(APPEND HEADERS
     ${INCLUDE_DIR}/Implementations.h
+    ${INCLUDE_DIR}/ObjectRegistry.h
     ${INCLUDE_DIR}/Device.h
     ${INCLUDE_DIR}/System.h
     ${INCLUDE_DIR}/CommandListSet.h
@@ -35,6 +36,7 @@ list(APPEND HEADERS
 )
 
 list(APPEND SOURCES
+    ${SOURCES_DIR}/ObjectRegistry.cpp
     ${SOURCES_DIR}/Device.cpp
     ${SOURCES_DIR}/System.cpp
     ${SOURCES_DIR}/CommandListSet.cpp

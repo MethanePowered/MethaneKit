@@ -38,7 +38,8 @@ namespace Methane::Graphics::Rhi
 class ViewState // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
-    using Settings = ViewSettings;
+    using Interface = IViewState;
+    using Settings  = ViewSettings;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ViewState);
     META_PIMPL_METHODS_COMPARE_INLINE(ViewState);
