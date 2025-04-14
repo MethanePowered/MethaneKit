@@ -231,10 +231,10 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
         REQUIRE_NOTHROW(primary_cmd_list.Commit());
         REQUIRE_NOTHROW(secondary_cmd_list = compute_cmd_kit.GetComputeListForEncoding(1U));
         REQUIRE_NOTHROW(secondary_cmd_list.Commit());
-        CHECK_NOTHROW(compute_cmd_kit.ExecuteListSet(g_command_list_ids_0_1), 2U);
+        REQUIRE_NOTHROW(compute_cmd_kit.ExecuteListSet(g_command_list_ids_0_1), 2U);
+        CHECK(primary_cmd_list.GetState() == Rhi::CommandListState::Executing);
+        CHECK(secondary_cmd_list.GetState() == Rhi::CommandListState::Executing);
     }
-
-#if 0 // FIXME: fix this test
 
     SECTION("Can Execute Committed List Set And Wait For Completion")
     {
@@ -245,12 +245,16 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
         REQUIRE_NOTHROW(primary_cmd_list.Commit());
         REQUIRE_NOTHROW(secondary_cmd_list = compute_cmd_kit.GetComputeListForEncoding(1U));
         REQUIRE_NOTHROW(secondary_cmd_list.Commit());
-        auto wait_async = g_parallel_executor.async([&compute_cmd_kit]()
+        auto wait_async = g_parallel_executor.async([&compute_cmd_kit, &g_command_list_ids_0_1]()
         {
-            CHECK_NOTHROW(compute_cmd_kit.ExecuteListSetAndWaitForCompletion({ 0U, 1U }), 2U);
+            REQUIRE_NOTHROW(compute_cmd_kit.ExecuteListSetAndWaitForCompletion(g_command_list_ids_0_1), 2U);
+            for(Rhi::CommandListId cmd_list_id : g_command_list_ids_0_1)
+            {
+                CHECK(compute_cmd_kit.GetComputeList(cmd_list_id).GetState() == Rhi::CommandListState::Pending);
+            }
         });
 
-        std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         REQUIRE(primary_cmd_list.GetState() == Rhi::CommandListState::Executing);
         dynamic_cast<Base::CommandList&>(primary_cmd_list.GetInterface()).Complete();
@@ -258,10 +262,8 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
 
         REQUIRE(secondary_cmd_list.GetState() == Rhi::CommandListState::Executing);
         dynamic_cast<Base::CommandList&>(secondary_cmd_list.GetInterface()).Complete();
-        CHECK(primary_cmd_list.GetState() == Rhi::CommandListState::Pending);
+        CHECK(secondary_cmd_list.GetState() == Rhi::CommandListState::Pending);
 
         wait_async.wait();
     }
-
-#endif
 }
