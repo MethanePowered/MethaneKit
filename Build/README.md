@@ -20,7 +20,7 @@
   - [Git](https://git-scm.com/downloads) (is required to fetch external dependent repositories using CPM)
 - **Windows**
   - Windows 10 RS5 (build 1809) or later
-  - Visual Studio 2019/22 with MSVC v142 or later
+  - Visual Studio 2022 with MSVC v143 or later
   - Windows 10 SDK (latest)
   - Visual C++ ATL Support (required by DXC)
 - **Linux**
@@ -71,12 +71,11 @@ git pull
 ### <img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Images/Platforms/Windows.png" width=24 valign="middle"> Windows Build with Visual Studio
 
 Start Command Prompt, go to `MethaneKit` root directory and either start auxiliary build script
- or build with CMake command line
-to generate Visual Studio 2019/22 solution:
+or build with CMake command line to generate Visual Studio 2022 solution:
 
 ```console
 set OUTPUT_DIR=Build\Output\VisualStudio\Win64-DX
-cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\%OUTPUT_DIR%\Install"
+cmake -S . -B %OUTPUT_DIR%\Build -G "Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX="%cd%\%OUTPUT_DIR%\Install"
 cmake --build %OUTPUT_DIR%\Build --config Release --target install
 ```
 
@@ -85,7 +84,7 @@ Vulkan graphics API can be used instead by adding cmake generator option `-DMETH
 Auxiliary build script [Build/Windows/Build.bat](/Build/Windows/Build.bat) can make it more simple for you:
 
 ```console
-./Build/Windows/Build.bat [--vs2022] [--win32] [--debug] [--vulkan] [--graphviz] [--analyze SONAR_TOKEN]
+./Build/Windows/Build.bat [--vs2019] [--win32] [--debug] [--vulkan] [--graphviz] [--tracy] [--itt] [--cpu_profile] [--gpu_profile] [--logs] [--analyze SONAR_TOKEN]
 ```
 
 Alternatively root [CMakeLists.txt](/CMakeLists.txt) can be opened directly in Visual Studio or 
@@ -229,22 +228,22 @@ cmake --build --preset [BuildPresetName] --target install
 
 Configure preset names `[ConfigPresetName]` can be listed with `cmake --list-presets` and are constructed according to the next schema using compatible kets according to preset matrix:
 ```console
-[ConfigPresetName] = [VS2019|Xcode|Make|Ninja]-[Win64|Win32|Win|Lin|Mac|iOS|tvOS]-[Sim]-[DX|VK|MTL]-[Default|Profile|Scan]
+[ConfigPresetName] = [VS2022|Xcode|Make|Ninja]-[Win64|Win32|Win|Lin|Mac|iOS|tvOS]-[Sim]-[DX|VK|MTL]-[Default|Profile|Scan]
 ```
 
-| Presets Matrix | VS2019    | Xcode     | Make      | Ninja   |   
-|----------------|-----------|-----------|-----------|---------|
-| Win64          | DX / VK   | -         | -         | -       |
-| Win32          | DX / VK   | -         | -         | -       |
-| Win            | -         | -         | -         | DX / VK |
-| Lin            | -         | -         | VK        | VK      |
-| Mac            | -         | MTL       | -         | MTL     |
-| iOS [-Sim]     | -         | MTL       | -         | -       |
-| tvOS [-Sim]    | -         | MTL       | -         | -       |
+| Presets Matrix | VS2022  | Xcode     | Make      | Ninja   |   
+|----------------|---------|-----------|-----------|---------|
+| Win64          | DX / VK | -         | -         | -       |
+| Win32          | DX / VK | -         | -         | -       |
+| Win            | -       | -         | -         | DX / VK |
+| Lin            | -       | -         | VK        | VK      |
+| Mac            | -       | MTL       | -         | MTL     |
+| iOS [-Sim]     | -       | MTL       | -         | -       |
+| tvOS [-Sim]    | -       | MTL       | -         | -       |
 
 Build preset names `[BuildPresetName]` can be listed with `cmake --list-presets build` and are constructed according to the same schema, but `Default` suffix should be replaced with `Debug` or `Release` configuration name. Only compatible configure and build presets can be used together either with the same name, or with `Debug` or `Release` instead of `Default`. `Ninja` presets should be used from 
-"x64/x86 Native Tools Command Prompt for VS2019" command line environment on Windows or directly from Visual Studio.
+"x64/x86 Native Tools Command Prompt for VS2022" command line environment on Windows or directly from Visual Studio.
 
 [GitHub Actions](https://github.com/MethanePowered/MethaneKit/actions) CI builds are configured with these CMake presets.
-CMake presets can be also used in [VS2019 and VS Code](https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/)
+CMake presets can be also used in [VS2022 and VS Code](https://devblogs.microsoft.com/cppblog/cmake-presets-integration-in-visual-studio-and-visual-studio-code/)
 to reproduce CI builds on the development system with a few configuration options in IDE UI.

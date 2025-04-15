@@ -149,18 +149,14 @@ For detailed features description and development plans please refer to [Modules
 
 ### Development Environments
 
-<a href="https://www.jetbrains.com/?from=MethaneKit" target="_blank"><img src="https://github.com/MethanePowered/MethaneKit/blob/master/Docs/Partners/JetBrains.png" width=200 align="right" valign="bottom"/></a>
-- Microsoft Visual Studio 2019
+- Jet Brains CLion (pre-configured with [.idea](/.idea))
+- Microsoft VS Code and [GitPod](https://gitpod.io/#https://github.com/MethanePowered/MethaneKit) (pre-configured with [CMakePresets.json](/CMakePresets.json) and [.vscode/settings.json](/.vscode/settings.json))
+- Microsoft Visual Studio 2022
   - Solutions and projects build (generate with [Build/Windows/Build.bat](/Build/Windows/Build.bat))
   - CMake native build support (pre-configured with [CMakePresets.json](/CMakePresets.json))
 - Apple XCode
   - XCode workspace and projects (generate with [Build/Unix/Build.sh](/Build/Unix/Build.sh))
-- Microsoft VS Code and [GitPod](https://gitpod.io/#https://github.com/MethanePowered/MethaneKit) (pre-configured with [CMakePresets.json](/CMakePresets.json) and [.vscode/settings.json](/.vscode/settings.json))
-- Jet Brains CLion (pre-configured with [.idea](/.idea))
 - Qt Creator with CMake native support
-
-Methane Kit is being developed with support of [Jet Brains](https://www.jetbrains.com/?from=MethaneKit) development tools.
-Open source project development license is provided free of charge to all key contributors of Methane Kit project.
 
 ### Static Code Analysis
 

@@ -349,17 +349,16 @@
         },
 
         {
-            "name": "VS2019-Win64-DX-Default",
-            "displayName": "Default - VS2019 - Windows x64 (DirectX)",
-            "description": "Default configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
-            "generator": "Visual Studio 16 2019",
+            "name": "VS2022-Win64",
+            "hidden": true,
+            "generator": "Visual Studio 17 2022",
             "architecture": {
                 "value": "x64",
                 "strategy": "set"
             },
             "vendor": {
                 "jetbrains.com/clion": {
-                    "toolchain": "Visual Studio 2019 x64"
+                    "toolchain": "Visual Studio 2022 x64"
                 }
             },
             "inherits": [
@@ -367,155 +366,21 @@
             ]
         },
         {
-            "name": "VS2019-Win32-DX-Default",
-            "displayName": "Default - VS2019 - Windows x86 (DirectX)",
-            "description": "Default configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
-            "generator": "Visual Studio 16 2019",
+            "name": "VS2022-Win32",
+            "hidden": true,
+            "generator": "Visual Studio 17 2022",
             "architecture": {
                 "value": "Win32",
                 "strategy": "set"
             },
             "vendor": {
                 "jetbrains.com/clion": {
-                    "toolchain": "Visual Studio 2019 x86"
+                    "toolchain": "Visual Studio 2022 x86"
                 }
             },
             "inherits": [
                 "Ninja-Win-Default"
             ]
-        },
-        {
-            "name": "VS2019-Win64-VK-Default",
-            "displayName": "Default - VS2019 - Windows x64 (Vulkan)",
-            "description": "Default configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "Ninja-Default-Vulkan",
-                "VS2019-Win64-DX-Default"
-            ]
-        },
-        {
-            "name": "VS2019-Win32-VK-Default",
-            "displayName": "Default - VS2019 - Windows x86 (Vulkan)",
-            "description": "Default configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "Ninja-Default-Vulkan",
-                "VS2019-Win32-DX-Default"
-            ]
-        },
-
-        {
-            "name": "VS2019-Win64-DX-Profile",
-            "displayName": "Profile - VS2019 - Windows x64 (DirectX)",
-            "description": "Profiling configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "Ninja-Profile",
-                "VS2019-Win64-DX-Default"
-            ]
-        },
-        {
-            "name": "VS2019-Win32-DX-Profile",
-            "displayName": "Profile - VS2019 - Windows x86 (DirectX)",
-            "description": "Profiling configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "Ninja-Profile",
-                "VS2019-Win32-DX-Default"
-            ]
-        },
-        {
-            "name": "VS2019-Win64-VK-Profile",
-            "displayName": "Profile - VS2019 - Windows x64 (Vulkan)",
-            "description": "Profiling configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "Ninja-Profile-Vulkan",
-                "VS2019-Win64-DX-Profile"
-            ]
-        },
-        {
-            "name": "VS2019-Win32-VK-Profile",
-            "displayName": "Profile - VS2019 - Windows x86 (Vulkan)",
-            "description": "Profiling configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "Ninja-Profile-Vulkan",
-                "VS2019-Win32-DX-Profile"
-            ]
-        },
-
-        {
-            "name": "VS2019-Win64-DX-Scan",
-            "displayName": "Scan - VS2019 - Windows x64 (DirectX)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "Ninja-Scan",
-                "VS2019-Win64-DX-Default"
-            ]
-        },
-        {
-            "name": "VS2019-Win32-DX-Scan",
-            "displayName": "Scan - VS2019 - Windows x86 (DirectX)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "Ninja-Scan",
-                "VS2019-Win32-DX-Default"
-            ]
-        },
-        {
-            "name": "VS2019-Win64-VK-Scan",
-            "displayName": "Scan - VS2019 - Windows x64 (Vulkan)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "VS2019-Win64-DX-Scan"
-            ],
-            "cacheVariables": {
-                "METHANE_GFX_VULKAN_ENABLED": {
-                    "type": "BOOL",
-                    "value": "ON"
-                }
-            }
-        },
-        {
-            "name": "VS2019-Win32-VK-Scan",
-            "displayName": "Scan - VS2019 - Windows x86 (Vulkan)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
-            "generator": "Visual Studio 16 2019",
-            "inherits": [
-                "VS2019-Win32-DX-Scan"
-            ],
-            "cacheVariables": {
-                "METHANE_GFX_VULKAN_ENABLED": {
-                    "type": "BOOL",
-                    "value": "ON"
-                }
-            }
-        },
-
-        {
-            "name": "VS2022-Win64",
-            "hidden": true,
-            "generator": "Visual Studio 17 2022",
-            "vendor": {
-                "jetbrains.com/clion": {
-                    "toolchain": "Visual Studio 2022 x64"
-                }
-            }
-        },
-        {
-            "name": "VS2022-Win32",
-            "hidden": true,
-            "generator": "Visual Studio 17 2022",
-            "vendor": {
-                "jetbrains.com/clion": {
-                    "toolchain": "Visual Studio 2022 x86"
-                }
-            }
         },
 
         {
@@ -523,8 +388,7 @@
             "displayName": "Default - VS2022 - Windows x64 (DirectX)",
             "description": "Default configuration using Visual Studio 2022 generator for Windows x64 (DirectX)",
             "inherits": [
-                "VS2022-Win64",
-                "VS2019-Win64-DX-Default"
+                "VS2022-Win64"
             ]
         },
         {
@@ -532,26 +396,27 @@
             "displayName": "Default - VS2022 - Windows x86 (DirectX)",
             "description": "Default configuration using Visual Studio 2022 generator for Windows x86 (DirectX)",
             "inherits": [
-                "VS2022-Win32",
-                "VS2019-Win32-DX-Default"
+                "VS2022-Win32"
             ]
         },
         {
             "name": "VS2022-Win64-VK-Default",
             "displayName": "Default - VS2022 - Windows x64 (Vulkan)",
             "description": "Default configuration using Visual Studio 2022 generator for Windows x64 (Vulkan)",
+            "generator": "Visual Studio 17 2022",
             "inherits": [
-                "VS2022-Win64",
-                "VS2019-Win64-VK-Default"
+                "Ninja-Default-Vulkan",
+                "VS2022-Win64"
             ]
         },
         {
             "name": "VS2022-Win32-VK-Default",
             "displayName": "Default - VS2022 - Windows x86 (Vulkan)",
             "description": "Default configuration using Visual Studio 2022 generator for Windows x86 (Vulkan)",
+            "generator": "Visual Studio 17 2022",
             "inherits": [
-                "VS2022-Win32",
-                "VS2019-Win32-VK-Default"
+                "Ninja-Default-Vulkan",
+                "VS2022-Win32"
             ]
         },
 
@@ -559,43 +424,47 @@
             "name": "VS2022-Win64-DX-Profile",
             "displayName": "Profile - VS2022 - Windows x64 (DirectX)",
             "description": "Profile configuration using Visual Studio 2022 generator for Windows x64 (DirectX)",
+            "generator": "Visual Studio 17 2022",
             "inherits": [
-                "VS2022-Win64",
-                "VS2019-Win64-DX-Profile"
+                "VS2022-Win64-VK-Default",
+                "Ninja-Profile"
             ]
         },
         {
             "name": "VS2022-Win32-DX-Profile",
             "displayName": "Profile - VS2022 - Windows x86 (DirectX)",
             "description": "Profile configuration using Visual Studio 2022 generator for Windows x86 (DirectX)",
+            "generator": "Visual Studio 17 2022",
             "inherits": [
-                "VS2022-Win32",
-                "VS2019-Win32-DX-Profile"
+                "VS2022-Win32-VK-Default",
+                "Ninja-Profile"
             ]
         },
         {
             "name": "VS2022-Win64-VK-Profile",
             "displayName": "Profile - VS2022 - Windows x64 (Vulkan)",
             "description": "Profile configuration using Visual Studio 2022 generator for Windows x64 (Vulkan)",
+            "generator": "Visual Studio 17 2022",
             "inherits": [
-                "VS2022-Win64",
-                "VS2019-Win64-VK-Profile"
+                "Ninja-Profile",
+                "VS2022-Win64-VK-Default"
             ]
         },
         {
             "name": "VS2022-Win32-VK-Profile",
             "displayName": "Profile - VS2022 - Windows x86 (Vulkan)",
             "description": "Profile configuration using Visual Studio 2022 generator for Windows x86 (Vulkan)",
+            "generator": "Visual Studio 17 2022",
             "inherits": [
-                "VS2022-Win32",
-                "VS2019-Win32-VK-Profile"
+                "Ninja-Profile",
+                "VS2022-Win32-VK-Default"
             ]
         },
 
         {
             "name": "VS2022-Win64-DX-Scan",
             "displayName": "Scan - VS2022 - Windows x64 (DirectX)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (DirectX)",
+            "description": "Scanning configuration using Visual Studio 2022 generator for Windows x64 (DirectX)",
             "generator": "Visual Studio 17 2022",
             "inherits": [
                 "Ninja-Scan",
@@ -605,7 +474,7 @@
         {
             "name": "VS2022-Win32-DX-Scan",
             "displayName": "Scan - VS2022 - Windows x86 (DirectX)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (DirectX)",
+            "description": "Scanning configuration using Visual Studio 2022 generator for Windows x86 (DirectX)",
             "generator": "Visual Studio 17 2022",
             "inherits": [
                 "Ninja-Scan",
@@ -615,7 +484,7 @@
         {
             "name": "VS2022-Win64-VK-Scan",
             "displayName": "Scan - VS2022 - Windows x64 (Vulkan)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x64 (Vulkan)",
+            "description": "Scanning configuration using Visual Studio 2022 generator for Windows x64 (Vulkan)",
             "generator": "Visual Studio 17 2022",
             "inherits": [
                 "VS2022-Win64-DX-Scan"
@@ -630,7 +499,7 @@
         {
             "name": "VS2022-Win32-VK-Scan",
             "displayName": "Scan - VS2022 - Windows x86 (Vulkan)",
-            "description": "Scanning configuration using Visual Studio 2019 generator for Windows x86 (Vulkan)",
+            "description": "Scanning configuration using Visual Studio 2022 generator for Windows x86 (Vulkan)",
             "generator": "Visual Studio 17 2022",
             "inherits": [
                 "VS2022-Win32-DX-Scan"
@@ -960,188 +829,6 @@
             "description": "Scanning build with Ninja Multi-Config for Windows (DirectX)",
             "inherits": [ "Windows-Build" ],
             "configurePreset": "Ninja-Win-DX-Scan",
-            "configuration": "Debug"
-        },
-
-        {
-            "name": "Ninja-Win-VK-Debug",
-            "displayName": "Debug - Ninja Multi-Config - Windows (Vulkan)",
-            "description": "Debug build with Ninja Multi-Config for Windows (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Win-VK-Default",
-            "configuration": "Debug"
-        },
-        {
-            "name": "Ninja-Win-VK-Release",
-            "displayName": "Release - Ninja Multi-Config - Windows (Vulkan)",
-            "description": "Release build with Ninja Multi-Config for Windows (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Win-VK-Default",
-            "configuration": "Release"
-        },
-        {
-            "name": "Ninja-Win-VK-Profile",
-            "displayName": "Profile - Ninja Multi-Config - Windows (Vulkan)",
-            "description": "Profiling build with Ninja Multi-Config for Windows (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Win-VK-Profile",
-            "configuration": "RelWithDebInfo"
-        },
-        {
-            "name": "Ninja-Win-VK-Scan",
-            "displayName": "Scan - Ninja Multi-Config - Windows (Vulkan)",
-            "description": "Scanning build with Ninja Multi-Config for Windows (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "Ninja-Win-VK-Scan",
-            "configuration": "Debug"
-        },
-
-        {
-            "name": "VS2019-Win64-DX-Debug",
-            "displayName": "Debug - VS2019 - Windows x64 (DirectX)",
-            "description": "Debug build with Visual Studio 2019 for Windows x64 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win64-DX-Default",
-            "configuration": "Debug"
-        },
-        {
-            "name": "VS2019-Win32-DX-Debug",
-            "displayName": "Debug - VS2019 - Windows x86 (DirectX)",
-            "description": "Debug build with Visual Studio 2019 for Windows x86 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win32-DX-Default",
-            "configuration": "Debug"
-        },
-        {
-            "name": "VS2019-Win64-DX-Release",
-            "displayName": "Release - VS2019 - Windows x64 (DirectX)",
-            "description": "Release build with Visual Studio 2019 for Windows x64 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win64-DX-Default",
-            "configuration": "Release"
-        },
-        {
-            "name": "VS2019-Win32-DX-Release",
-            "displayName": "Release - VS2019 - Windows x86 (DirectX)",
-            "description": "Release build with Visual Studio 2019 for Windows x86 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win32-DX-Default",
-            "configuration": "Release"
-        },
-        {
-            "name": "VS2019-Win64-DX-Profile",
-            "displayName": "Profile - VS2019 - Windows x64 (DirectX)",
-            "description": "Profiling build with Visual Studio 2019 for Windows x64 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win64-DX-Profile",
-            "configuration": "RelWithDebInfo"
-        },
-        {
-            "name": "VS2019-Win32-DX-Profile",
-            "displayName": "Profile - VS2019 - Windows x86 (DirectX)",
-            "description": "Profiling build with Visual Studio 2019 for Windows x86 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win32-DX-Profile",
-            "configuration": "RelWithDebInfo"
-        },
-
-        {
-            "name": "VS2019-Win64-DX-Scan",
-            "displayName": "Scan - VS2019 - Windows x64 (DirectX)",
-            "description": "Scanning build with Visual Studio 2019 for Windows x64 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win64-DX-Scan",
-            "configuration": "Debug"
-        },
-        {
-            "name": "VS2019-Win32-DX-Scan",
-            "displayName": "Scan - VS2019 - Windows x86 (DirectX)",
-            "description": "Scanning build with Visual Studio 2019 for Windows x86 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win32-DX-Scan",
-            "configuration": "Debug"
-        },
-
-        {
-            "name": "VS2022-Win64-DX-Scan",
-            "displayName": "Scan - VS2022 - Windows x64 (DirectX)",
-            "description": "Scanning build with Visual Studio 2022 for Windows x64 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2022-Win64-DX-Scan",
-            "configuration": "Debug"
-        },
-        {
-            "name": "VS2022-Win32-DX-Scan",
-            "displayName": "Scan - VS2022 - Windows x86 (DirectX)",
-            "description": "Scanning build with Visual Studio 2022 for Windows x86 (DirectX)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2022-Win32-DX-Scan",
-            "configuration": "Debug"
-        },
-
-        {
-            "name": "VS2019-Win64-VK-Debug",
-            "displayName": "Debug - VS2019 - Windows x64 (Vulkan)",
-            "description": "Debug build with Visual Studio 2019 for Windows x64 (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win64-VK-Default",
-            "configuration": "Debug"
-        },
-        {
-            "name": "VS2019-Win32-VK-Debug",
-            "displayName": "Debug - VS2019 - Windows x86 (Vulkan)",
-            "description": "Debug build with Visual Studio 2019 for Windows x86 (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win32-VK-Default",
-            "configuration": "Debug"
-        },
-        {
-            "name": "VS2019-Win64-VK-Release",
-            "displayName": "Release - VS2019 - Windows x64 (Vulkan)",
-            "description": "Release build with Visual Studio 2019 for Windows x64 (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win64-VK-Default",
-            "configuration": "Release"
-        },
-        {
-            "name": "VS2019-Win32-VK-Release",
-            "displayName": "Release - VS2019 - Windows x86 (Vulkan)",
-            "description": "Release build with Visual Studio 2019 for Windows x86 (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win32-VK-Default",
-            "configuration": "Release"
-        },
-        {
-            "name": "VS2019-Win64-VK-Profile",
-            "displayName": "Profile - VS2019 - Windows x64 (Vulkan)",
-            "description": "Profiling build with Visual Studio 2019 for Windows x64 (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win64-VK-Profile",
-            "configuration": "RelWithDebInfo"
-        },
-        {
-            "name": "VS2019-Win32-VK-Profile",
-            "displayName": "Profile - VS2019 - Windows x86 (Vulkan)",
-            "description": "Profiling build with Visual Studio 2019 for Windows x86 (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win32-VK-Profile",
-            "configuration": "RelWithDebInfo"
-        },
-
-        {
-            "name": "VS2019-Win64-VK-Scan",
-            "displayName": "Scan - VS2019 - Windows x64 (Vulkan)",
-            "description": "Scanning build with Visual Studio 2019 for Windows x64 (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win64-VK-Scan",
-            "configuration": "Debug"
-        },
-        {
-            "name": "VS2019-Win32-VK-Scan",
-            "displayName": "Scan - VS2019 - Windows x86 (Vulkan)",
-            "description": "Scanning build with Visual Studio 2019 for Windows x86 (Vulkan)",
-            "inherits": [ "Windows-Build" ],
-            "configurePreset": "VS2019-Win32-VK-Scan",
             "configuration": "Debug"
         },
 
