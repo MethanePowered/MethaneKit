@@ -66,20 +66,21 @@ void Texture::ValidateDimensions(DimensionType dimension_type, const Dimensions&
 
     switch (dimension_type)
     {
-    case DimensionType::Cube:
-    case DimensionType::CubeArray:
+    using enum DimensionType;
+    case Cube:
+    case CubeArray:
         META_CHECK_DESCR(dimensions, dimensions.GetWidth() == dimensions.GetHeight() && dimensions.GetDepth() == 6, "cube texture must have equal width and height dimensions and depth equal to 6");
         [[fallthrough]];
-    case DimensionType::Tex3D:
+    case Tex3D:
         META_CHECK_DESCR(dimensions.GetDepth(), !mipmapped || !(dimensions.GetDepth() % 2), "all dimensions of the mip-mapped texture should be a power of 2, but depth is not");
         [[fallthrough]];
-    case DimensionType::Tex2D:
-    case DimensionType::Tex2DArray:
-    case DimensionType::Tex2DMultisample:
+    case Tex2D:
+    case Tex2DArray:
+    case Tex2DMultisample:
         META_CHECK_DESCR(dimensions.GetHeight(), !mipmapped || !(dimensions.GetHeight() % 2), "all dimensions of the mip-mapped texture should be a power of 2, but height is not");
         [[fallthrough]];
-    case DimensionType::Tex1D:
-    case DimensionType::Tex1DArray:
+    case Tex1D:
+    case Tex1DArray:
         META_CHECK_DESCR(dimensions.GetWidth(), !mipmapped || !(dimensions.GetWidth() % 2), "all dimensions of the mip-mapped texture should be a power of 2, but width is not");
         break;
     default:

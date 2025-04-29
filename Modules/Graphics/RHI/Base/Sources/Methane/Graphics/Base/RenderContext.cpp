@@ -50,9 +50,10 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
 
     switch (wait_for)
     {
-    case WaitFor::RenderComplete: WaitForGpuRenderComplete(); break;
-    case WaitFor::FramePresented: WaitForGpuFramePresented(); break;
-    case WaitFor::ResourcesUploaded: break; // Handled in Context::WaitForGpu
+    using enum WaitFor;
+    case RenderComplete: WaitForGpuRenderComplete(); break;
+    case FramePresented: WaitForGpuFramePresented(); break;
+    case ResourcesUploaded: break; // Handled in Context::WaitForGpu
     default: META_UNEXPECTED(wait_for);
     }
 }

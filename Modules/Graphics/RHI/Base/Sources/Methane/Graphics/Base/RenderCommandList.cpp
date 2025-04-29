@@ -285,18 +285,19 @@ void RenderCommandList::ResetCommandState()
 void RenderCommandList::UpdateDrawingState(Primitive primitive_type)
 {
     META_FUNCTION_TASK();
+    using enum RenderDrawingState::Change;
     DrawingState& drawing_state = GetDrawingState();
     if (!drawing_state.primitive_type_opt || *drawing_state.primitive_type_opt == primitive_type)
     {
-        drawing_state.changes |= DrawingState::Change::PrimitiveType;
+        drawing_state.changes |= PrimitiveType;
         drawing_state.primitive_type_opt = primitive_type;
     }
 
     if (m_drawing_state.render_state_ptr &&
         m_drawing_state.render_state_ptr->IsDeferred() &&
         (static_cast<bool>(m_drawing_state.render_state_groups) ||
-         drawing_state.changes.HasAnyBit(DrawingState::Change::PrimitiveType) ||
-         drawing_state.changes.HasAnyBit(DrawingState::Change::ViewState)))
+         drawing_state.changes.HasAnyBit(PrimitiveType) ||
+         drawing_state.changes.HasAnyBit(ViewState)))
     {
         // Apply render state in deferred mode right before the Draw call,
         // only in case when any render state groups or view state or primitive type has changed
@@ -304,8 +305,8 @@ void RenderCommandList::UpdateDrawingState(Primitive primitive_type)
         RetainResource(m_drawing_state.render_state_ptr);
 
         m_drawing_state.render_state_groups = {};
-        drawing_state.changes.SetBitOff(DrawingState::Change::PrimitiveType);
-        drawing_state.changes.SetBitOff(DrawingState::Change::ViewState);
+        drawing_state.changes.SetBitOff(PrimitiveType);
+        drawing_state.changes.SetBitOff(ViewState);
     }
 }
 

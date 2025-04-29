@@ -91,12 +91,13 @@ void RenderPass::End(RenderCommandList&)
 void RenderPass::InitAttachmentStates() const
 {
     META_FUNCTION_TASK();
-    const bool             is_final_pass          = GetPattern().GetSettings().is_final_pass;
-    const Rhi::ResourceState color_attachment_state = is_final_pass ? Rhi::ResourceState::Present : Rhi::ResourceState::RenderTarget;
+    using enum Rhi::ResourceState;
+    const bool               is_final_pass          = GetPattern().GetSettings().is_final_pass;
+    const Rhi::ResourceState color_attachment_state = is_final_pass ? Present : RenderTarget;
     for (const Ref<Texture>& color_texture_ref : GetColorAttachmentTextures())
     {
-        if (color_texture_ref.get().GetState() == Rhi::ResourceState::Common ||
-            color_texture_ref.get().GetState() == Rhi::ResourceState::Undefined)
+        if (color_texture_ref.get().GetState() == Common ||
+            color_texture_ref.get().GetState() == Undefined)
             color_texture_ref.get().SetState(color_attachment_state);
     }
 }

@@ -53,7 +53,6 @@ struct RenderContextSettings
     uint32_t                unsync_max_fps       = 1000U; // MacOS only
 
     [[nodiscard]] friend bool operator==(const RenderContextSettings& left, const RenderContextSettings& right) noexcept = default;
-    [[nodiscard]] friend bool operator!=(const RenderContextSettings& left, const RenderContextSettings& right) noexcept = default;
 
     RenderContextSettings& SetFrameSize(FrameSize&& new_frame_size) noexcept;
     RenderContextSettings& SetColorFormat(PixelFormat new_color_format) noexcept;
