@@ -141,9 +141,9 @@ ResourceBarriers::AddResult ResourceBarriers::AddOwnerTransition(IResource& reso
     return GetImpl(m_impl_ptr).AddOwnerTransition(resource, queue_family_before, queue_family_after);
 }
 
-ResourceBarriers::AddResult ResourceBarriers::Add(const Barrier::Id& id, const Barrier& barrier) const
+ResourceBarriers::AddResult ResourceBarriers::Add(const Barrier& barrier) const
 {
-    return GetImpl(m_impl_ptr).Add(id, barrier);
+    return GetImpl(m_impl_ptr).Add(barrier);
 }
 
 bool ResourceBarriers::Remove(const Barrier::Id& id) const

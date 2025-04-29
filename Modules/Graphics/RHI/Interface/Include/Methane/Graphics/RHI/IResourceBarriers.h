@@ -230,8 +230,7 @@ struct IResourceBarriers
     virtual bool RemoveStateTransition(IResource& resource) = 0;
     virtual bool RemoveOwnerTransition(IResource& resource) = 0;
 
-    // TODO: Remove excessive 'id' argument from 'Add' method, which is already contained in 'barrier'
-    virtual AddResult Add(const Barrier::Id& id, const Barrier& barrier) = 0;
+    virtual AddResult Add(const Barrier& barrier) = 0;
     virtual AddResult AddStateTransition(IResource& resource, State before, State after) = 0;
     virtual AddResult AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) = 0;
 

@@ -111,19 +111,19 @@ ResourceBarriers::ResourceBarriers(const Set& barriers)
     }
 }
 
-Base::ResourceBarriers::AddResult ResourceBarriers::Add(const Barrier::Id& id, const Barrier& barrier)
+Base::ResourceBarriers::AddResult ResourceBarriers::Add(const Barrier& barrier)
 {
     META_FUNCTION_TASK();
     const auto lock_guard  = Base::ResourceBarriers::Lock();
-    const AddResult result = Base::ResourceBarriers::Add(id, barrier);
+    const AddResult result = Base::ResourceBarriers::Add(barrier);
 
-    if (id.GetType() != Barrier::Type::StateTransition)
+    if (barrier.GetId().GetType() != Barrier::Type::StateTransition)
         return result;
 
     switch (result)
     {
-    case AddResult::Added:    AddNativeResourceBarrier(id, barrier.GetStateChange()); break;
-    case AddResult::Updated:  UpdateNativeResourceBarrier(id, barrier.GetStateChange()); break;
+    case AddResult::Added:    AddNativeResourceBarrier(barrier.GetId(), barrier.GetStateChange()); break;
+    case AddResult::Updated:  UpdateNativeResourceBarrier(barrier.GetId(), barrier.GetStateChange()); break;
     case AddResult::Existing: break;
     default: META_UNEXPECTED_RETURN(result, result);
     }

@@ -510,7 +510,7 @@ TEST_CASE("RHI Resource Barriers Container", "[rhi][resource][barriers]")
     {
         const Rhi::Buffer new_buffer = render_context.CreateBuffer(const_buffer_settings);
         const Rhi::ResourceBarrier new_barrier(new_buffer.GetInterface(), Rhi::ResourceState::Common, Rhi::ResourceState::IndexBuffer);
-        CHECK(test_barriers.Add(new_barrier.GetId(), new_barrier) == Rhi::ResourceBarriers::AddResult::Added);
+        CHECK(test_barriers.Add(new_barrier) == Rhi::ResourceBarriers::AddResult::Added);
         CHECK(test_barriers.GetMap().size() == test_barriers_set.size() + 1);
         REQUIRE(test_barriers.GetMap().contains(new_barrier.GetId()));
         CHECK(test_barriers.GetMap().find(new_barrier.GetId())->second == new_barrier);
@@ -520,7 +520,7 @@ TEST_CASE("RHI Resource Barriers Container", "[rhi][resource][barriers]")
     {
         const Rhi::ResourceBarrier new_barrier(test_buffers[0].GetInterface(), Rhi::ResourceState::CopyDest, Rhi::ResourceState::VertexBuffer);
         CHECK(test_barriers.GetMap().contains(new_barrier.GetId()));
-        CHECK(test_barriers.Add(new_barrier.GetId(), new_barrier) == Rhi::ResourceBarriers::AddResult::Existing);
+        CHECK(test_barriers.Add(new_barrier) == Rhi::ResourceBarriers::AddResult::Existing);
         CHECK(test_barriers.GetMap().size() == test_barriers_set.size());
     }
 

@@ -82,20 +82,20 @@ ResourceBarriers::ResourceBarriers(const Set& barriers)
     META_FUNCTION_TASK();
     for (const Rhi::ResourceBarrier barrier: barriers)
     {
-        SetResourceBarrier(barrier.GetId(), barrier, true);
+        SetResourceBarrier(barrier, true);
     }
 }
 
-Base::ResourceBarriers::AddResult ResourceBarriers::Add(const Rhi::ResourceBarrier::Id& id, const Rhi::ResourceBarrier& barrier)
+Base::ResourceBarriers::AddResult ResourceBarriers::Add(const Rhi::ResourceBarrier& barrier)
 {
     META_FUNCTION_TASK();
     const auto      lock_guard = Base::ResourceBarriers::Lock();
-    const AddResult result     = Base::ResourceBarriers::Add(id, barrier);
+    const AddResult result     = Base::ResourceBarriers::Add(barrier);
 
     switch (result)
     {
-    case AddResult::Added:   SetResourceBarrier(id, barrier, true); break;
-    case AddResult::Updated: SetResourceBarrier(id, barrier, false); break;
+    case AddResult::Added:   SetResourceBarrier(barrier, true); break;
+    case AddResult::Updated: SetResourceBarrier(barrier, false); break;
     case AddResult::Existing: break;
     default: META_UNEXPECTED_RETURN(result, result);
     }
@@ -169,10 +169,10 @@ void ResourceBarriers::OnResourceReleased(Rhi::IResource& resource)
     RemoveStateTransition(resource);
 }
 
-void ResourceBarriers::SetResourceBarrier(const Rhi::ResourceBarrier::Id& id, const Rhi::ResourceBarrier& barrier, bool is_new_barrier)
+void ResourceBarriers::SetResourceBarrier(const Rhi::ResourceBarrier& barrier, bool is_new_barrier)
 {
     META_FUNCTION_TASK();
-    const Rhi::IResource& resource = id.GetResource();
+    const Rhi::IResource& resource = barrier.GetId().GetResource();
     switch (const Rhi::IResource::Type resource_type = resource.GetResourceType();
             resource_type)
     {
@@ -183,7 +183,7 @@ void ResourceBarriers::SetResourceBarrier(const Rhi::ResourceBarrier::Id& id, co
 
     if (is_new_barrier)
     {
-        static_cast<Data::IEmitter<IResourceCallback>&>(id.GetResource()).Connect(*this);
+        static_cast<Data::IEmitter<IResourceCallback>&>(barrier.GetId().GetResource()).Connect(*this);
         UpdateStageMasks(barrier);
     }
     else

@@ -77,12 +77,12 @@ bool ResourceBarriers::HasOwnerTransition(Rhi::IResource& resource, uint32_t que
 
 ResourceBarriers::AddResult ResourceBarriers::AddStateTransition(Rhi::IResource& resource, State before, State after)
 {
-    return Add(Barrier::Id(Barrier::Type::StateTransition, resource), Barrier(resource, before, after));
+    return Add(Barrier(resource, before, after));
 }
 
 ResourceBarriers::AddResult ResourceBarriers::AddOwnerTransition(Rhi::IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after)
 {
-    return Add(Barrier::Id(Barrier::Type::OwnerTransition, resource), Barrier(resource, queue_family_before, queue_family_after));
+    return Add(Barrier(resource, queue_family_before, queue_family_after));
 }
 
 bool ResourceBarriers::Remove(Barrier::Type type, Rhi::IResource& resource)
@@ -100,13 +100,13 @@ bool ResourceBarriers::RemoveOwnerTransition(Rhi::IResource& resource)
     return Remove(Barrier::Id(Barrier::Type::OwnerTransition, resource));
 }
 
-ResourceBarriers::AddResult ResourceBarriers::Add(const Barrier::Id& id, const Barrier& barrier)
+ResourceBarriers::AddResult ResourceBarriers::Add(const Barrier& barrier)
 {
     META_FUNCTION_TASK();
     using enum AddResult;
     std::scoped_lock lock_guard(m_barriers_mutex);
 
-    const auto [ barrier_id_and_state_change_it, barrier_added ] = m_barriers_map.try_emplace(id, barrier);
+    const auto [ barrier_id_and_state_change_it, barrier_added ] = m_barriers_map.try_emplace(barrier.GetId(), barrier);
     if (barrier_added)
         return Added;
 
