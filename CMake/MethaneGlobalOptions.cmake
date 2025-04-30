@@ -48,7 +48,7 @@ elseif(APPLE)
     if (DEPLOYMENT_TARGET)
         set(CMAKE_OSX_DEPLOYMENT_TARGET "${DEPLOYMENT_TARGET}")
     else()
-        set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0")
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "13.3")
     endif()
 
     message(STATUS "METHANE OSX Minimum Deployment Target............ ${CMAKE_OSX_DEPLOYMENT_TARGET}")

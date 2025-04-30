@@ -699,7 +699,7 @@
                 },
                 "DEPLOYMENT_TARGET": {
                     "type": "STRING",
-                    "value": "16.0"
+                    "value": "17.0"
                 },
                 "ENABLE_ARC": {
                     "type": "BOOL",
