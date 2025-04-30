@@ -833,6 +833,23 @@
         },
 
         {
+            "name": "VS2022-Win64-DX-Scan",
+            "displayName": "Scan - VS2022 - Windows x64 (DirectX)",
+            "description": "Scanning build with Visual Studio 2022 for Windows x64 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win64-DX-Scan",
+            "configuration": "Debug"
+        },
+        {
+            "name": "VS2022-Win32-DX-Scan",
+            "displayName": "Scan - VS2022 - Windows x86 (DirectX)",
+            "description": "Scanning build with Visual Studio 2022 for Windows x86 (DirectX)",
+            "inherits": [ "Windows-Build" ],
+            "configurePreset": "VS2022-Win32-DX-Scan",
+            "configuration": "Debug"
+        },
+
+        {
             "name": "VS2022-Win64-DX-Debug",
             "displayName": "Debug - VS2022 - Windows x64 (DirectX)",
             "description": "Debug build with Visual Studio 2022 for Windows x64 (DirectX)",
