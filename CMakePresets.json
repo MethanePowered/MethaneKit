@@ -3,7 +3,7 @@
     
     "cmakeMinimumRequired": {
         "major": 3,
-        "minor": 18,
+        "minor": 24,
         "patch": 0
     },
 
