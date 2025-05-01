@@ -41,6 +41,7 @@ DirectX 12 implementation of the texture interface.
 
 #include <fmt/format.h>
 #include <fmt/ranges.h>
+#include <span>
 
 namespace Methane::Graphics::DirectX
 {
@@ -439,9 +440,9 @@ Rhi::SubResource Texture::GetData(Rhi::ICommandQueue& target_cmd_queue, const Su
 
     META_CHECK_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
 
-    stdext::checked_array_iterator source_data_it(sub_resource_data_ptr, data_end);
-    Data::Bytes                    sub_resource_data(data_length, {});
-    std::copy(source_data_it + data_start, source_data_it + data_end, sub_resource_data.begin());
+    std::span   source_data_span(sub_resource_data_ptr, data_end);
+    Data::Bytes sub_resource_data(data_length, {});
+    std::copy(source_data_span.begin() + data_start, source_data_span.end(), sub_resource_data.begin());
 
     const CD3DX12_RANGE zero_write_range(0, 0);
     m_read_back_resource_cptr->Unmap(sub_resource_raw_index, &zero_write_range);

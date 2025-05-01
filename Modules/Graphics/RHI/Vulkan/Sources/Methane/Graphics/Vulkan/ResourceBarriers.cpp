@@ -33,7 +33,7 @@ Vulkan implementation of the resource interface.
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IResourceBarriers> Rhi::IResourceBarriers::Create(const Set& barriers)
+Ptr<IResourceBarriers> IResourceBarriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::ResourceBarriers>(barriers);
