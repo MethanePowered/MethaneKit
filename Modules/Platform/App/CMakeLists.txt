@@ -65,8 +65,7 @@ else(LINUX)
         ${SOURCES_PLATFORM_OS_DIR}/XcbUtils.cpp
     )
 
-    # TODO: replace "xcb-randr" with "X11::xcb_randr" when supported by CMake 3.24
-    set(PLATFORM_LIBRARIES X11::X11 X11::X11_xcb X11::xcb xcb-randr xcb-sync STB)
+    set(PLATFORM_LIBRARIES X11::X11 X11::X11_xcb X11::xcb X11::xcb_randr X11::xcb_sync STB)
 
 endif()
 
