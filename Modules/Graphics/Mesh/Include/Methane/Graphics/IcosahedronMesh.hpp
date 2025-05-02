@@ -25,6 +25,7 @@ Icosahedron mesh generator with customizable vertex type
 
 #include "BaseMesh.hpp"
 
+#include <numbers>
 #include <cassert>
 
 namespace Methane::Graphics
@@ -84,36 +85,36 @@ public:
                 Mesh::TexCoord& vertex_texcoord = BaseMeshT::template GetVertexField<Mesh::TexCoord>(vertex, Mesh::VertexField::TexCoord);
                 const Mesh::Position vertex_direction(hlslpp::normalize(vertex_position.AsHlsl()));
 
-                vertex_texcoord.SetX(std::atan2(vertex_direction.GetZ(), vertex_direction.GetX()) / ConstFloat::TwoPi + 0.5F);
+                vertex_texcoord.SetX(std::atan2(vertex_direction.GetZ(), vertex_direction.GetX()) / (std::numbers::pi * 2.f) + 0.5F);
                 assert(0.F <= vertex_texcoord.GetX() && vertex_texcoord.GetX() <= 1.F);
 
-                vertex_texcoord.SetY(std::asin(vertex_direction.GetY()) / ConstFloat::Pi + 0.5F);
+                vertex_texcoord.SetY(std::asin(vertex_direction.GetY()) / std::numbers::pi + 0.5F);
                 assert(0.F <= vertex_texcoord.GetY() && vertex_texcoord.GetY() <= 1.F);
             }
         }
 
         Mesh::SetIndices({
-                             5, 0, 11,
-                             1, 0, 5,
-                             7, 0, 1,
-                             10, 0, 7,
-                             11, 0, 10,
-                             9, 1, 5,
-                             4, 5, 11,
-                             2, 11, 10,
-                             6, 10, 7,
-                             8, 7, 1,
-                             4, 3, 9,
-                             2, 3, 4,
-                             6, 3, 2,
-                             8, 3, 6,
-                             9, 3, 8,
-                             5, 4, 9,
-                             11, 2, 4,
-                             10, 6, 2,
-                             7, 8, 6,
-                             1, 9, 8,
-                         });
+            5, 0, 11,
+            1, 0, 5,
+            7, 0, 1,
+            10, 0, 7,
+            11, 0, 10,
+            9, 1, 5,
+            4, 5, 11,
+            2, 11, 10,
+            6, 10, 7,
+            8, 7, 1,
+            4, 3, 9,
+            2, 3, 4,
+            6, 3, 2,
+            8, 3, 6,
+            9, 3, 8,
+            5, 4, 9,
+            11, 2, 4,
+            10, 6, 2,
+            7, 8, 6,
+            1, 9, 8,
+        });
 
         for(uint32_t subdivision = 0; subdivision < subdivisions_count; ++subdivision)
         {

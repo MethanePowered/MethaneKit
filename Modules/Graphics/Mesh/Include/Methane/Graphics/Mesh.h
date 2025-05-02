@@ -26,6 +26,7 @@ Abstract mesh class
 #include <Methane/Data/Types.h>
 #include <Methane/Data/Vector.hpp>
 
+#include <magic_enum/magic_enum.hpp>
 #include <vector>
 #include <array>
 #include <string_view>
@@ -49,8 +50,8 @@ public:
     {
         Unknown,
         Uber,
-        Rect,
-        Box,
+        Quad,
+        Cube,
         Sphere,
         Icosahedron,
     };
@@ -82,9 +83,7 @@ public:
         Position,
         Normal,
         TexCoord,
-        Color,
-
-        Count
+        Color
     };
 
     class VertexLayout : public std::vector<VertexField>
@@ -135,13 +134,13 @@ protected:
     {
         const Mesh::Index first_index;
         const Mesh::Index second_index;
-        
+
         Edge(Mesh::Index v1_index, Mesh::Index v2_index);
 
         [[nodiscard]] friend auto operator<=>(const Edge& left, const Edge& right) = default;
     };
-    
-    using VertexFieldOffsets = std::array<int32_t, static_cast<size_t>(VertexField::Count)>;
+
+    using VertexFieldOffsets = std::array<int32_t, magic_enum::enum_count<VertexField>()>;
 
     void CheckLayoutHasVertexField(VertexField field) const;
     [[nodiscard]] bool HasVertexField(VertexField field) const noexcept;

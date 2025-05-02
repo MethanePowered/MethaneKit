@@ -172,7 +172,7 @@ void ParallelRenderingApp::Init()
     // Create cube mesh buffer resources
     const uint32_t cubes_count = m_settings.GetTotalCubesCount();
     const gfx::Mesh::Subsets mesh_subsets(cubes_count,
-                                          gfx::Mesh::Subset(gfx::Mesh::Type::Box,
+                                          gfx::Mesh::Subset(gfx::Mesh::Type::Cube,
                                                             gfx::Mesh::Subset::Slice(0U, cube_mesh.GetVertexCount()),
                                                             gfx::Mesh::Subset::Slice(0U, cube_mesh.GetIndexCount()),
                                                             false));

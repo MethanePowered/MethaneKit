@@ -28,22 +28,23 @@ Quad mesh generator with customizable vertex type
 namespace Methane::Graphics
 {
 
+enum class QuadFaceType
+{
+    XY,
+    XZ,
+    YZ,
+};
+
 template<typename VType>
 class QuadMesh : public BaseMesh<VType>
 {
 public:
     using BaseMeshT = BaseMesh<VType>;
-
-    enum class FaceType
-    {
-        XY,
-        XZ,
-        YZ,
-    };
+    using FaceType = QuadFaceType;
 
     explicit QuadMesh(const Mesh::VertexLayout& vertex_layout,
                       float width = 1.F, float height = 1.F, float depth_pos = 0.F, size_t color_index = 0,
-                      FaceType face_type = FaceType::XY, Mesh::Type type = Mesh::Type::Rect)
+                      FaceType face_type = FaceType::XY, Mesh::Type type = Mesh::Type::Quad)
         : BaseMeshT(type, vertex_layout)
         , m_width(width)
         , m_height(height)

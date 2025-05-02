@@ -37,7 +37,7 @@ class CubeMesh : public QuadMesh<VType>
 
 public:
     explicit CubeMesh(const Mesh::VertexLayout& vertex_layout, float width = 1.F, float height = 1.F, float depth = 1.F)
-        : QuadMeshT(vertex_layout, width, height, depth / 2.F, 0, QuadMeshT::FaceType::XY, Mesh::Type::Box)
+        : QuadMeshT(vertex_layout, width, height, depth / 2.F, 0, QuadMeshT::FaceType::XY, Mesh::Type::Cube)
         , m_depth(depth)
     {
         META_FUNCTION_TASK();

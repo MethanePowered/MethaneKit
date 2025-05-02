@@ -38,10 +38,10 @@ target_link_libraries(${TARGET}
     PUBLIC
         MethaneGraphicsTypes
         MethaneInstrumentation
+        magic_enum
     PRIVATE
         MethaneBuildOptions
         MethaneMathPrecompiledHeaders
-        magic_enum
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${HEADERS} ${SOURCES})

@@ -25,6 +25,8 @@ Sphere mesh generator with customizable vertex type
 
 #include "BaseMesh.hpp"
 
+#include <numbers>
+
 namespace Methane::Graphics
 {
 
@@ -59,12 +61,6 @@ private:
         return Mesh::HasVertexField(Mesh::VertexField::TexCoord)
              ? m_long_lines_count + 1
              : m_long_lines_count;
-    }
-    Mesh::Index GetSphereFacesCount() const noexcept
-    {
-        return (Mesh::HasVertexField(Mesh::VertexField::TexCoord)
-             ? m_lat_lines_count
-             : m_lat_lines_count - 2) * m_long_lines_count * 2;
     }
 
     void GenerateSphereVertices()
@@ -119,9 +115,9 @@ private:
                 VType& vertex = BaseMeshT::GetMutableVertex(vertex_index);
 
                 Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
-                vertex_position.SetX(std::sin(ConstFloat::Pi * lat_ratio) * std::cos(ConstFloat::TwoPi * long_ratio));
-                vertex_position.SetZ(std::sin(ConstFloat::Pi * lat_ratio) * std::sin(ConstFloat::TwoPi * long_ratio));
-                vertex_position.SetY(std::cos(ConstFloat::Pi * lat_ratio));
+                vertex_position.SetX(std::sin(std::numbers::pi * lat_ratio) * std::cos(2.f * std::numbers::pi * long_ratio));
+                vertex_position.SetZ(std::sin(std::numbers::pi * lat_ratio) * std::sin(2.f * std::numbers::pi * long_ratio));
+                vertex_position.SetY(std::cos(std::numbers::pi * lat_ratio));
 
                 if (has_normals)
                 {
@@ -146,11 +142,15 @@ private:
         META_FUNCTION_TASK();
         const bool        has_texcoord            = BaseMeshT::HasVertexField(Mesh::VertexField::TexCoord);
         const Mesh::Index actual_long_lines_count = GetActualLongLinesCount();
-        const Mesh::Index sphere_faces_count      = GetSphereFacesCount();
-        Data::Index       index_offset            = 0;
+        const Mesh::Index index_lat_lines_count   = has_texcoord ? m_lat_lines_count - 1 : m_lat_lines_count - 3;
+        const Mesh::Index index_long_lines_count  = has_texcoord ? m_long_lines_count    : m_long_lines_count - 1;
+        const Mesh::Index sphere_triangles_count  = (index_lat_lines_count + (has_texcoord ? 0 : 1))
+                                                  * index_long_lines_count * 2U
+                                                  + (has_texcoord ? 0 : (index_long_lines_count + 1));
 
-        Mesh::ResizeIndices(sphere_faces_count * 3);
+        Mesh::ResizeIndices(sphere_triangles_count * 3U);
 
+        Data::Index index_offset = 0;
         if (!has_texcoord)
         {
             // Top cap triangles reuse single pole vertex
@@ -172,8 +172,6 @@ private:
         }
 
         const auto        vertices_count         = static_cast<Mesh::Index>(BaseMeshT::GetVertexCount());
-        const Mesh::Index index_lat_lines_count  = has_texcoord ? m_lat_lines_count - 1 : m_lat_lines_count - 3;
-        const Mesh::Index index_long_lines_count = has_texcoord ? m_long_lines_count    : m_long_lines_count - 1;
         const Mesh::Index first_vertex_index     = has_texcoord ? 0 : 1;
 
         for (Mesh::Index lat_line_index = 0; lat_line_index < index_lat_lines_count; ++lat_line_index)
@@ -225,8 +223,8 @@ private:
     }
 
     const float       m_radius;
-    const Mesh::Index m_lat_lines_count;
-    const Mesh::Index m_long_lines_count;
+    const Mesh::Index m_lat_lines_count;  // horizontal lines on sphere
+    const Mesh::Index m_long_lines_count; // vertical lines on sphere
 };
 
 } // namespace Methane::Graphics
