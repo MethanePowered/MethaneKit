@@ -26,7 +26,7 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Graphics/TypeConverters.hpp>
-#include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/TimeAnimation.hpp>
 
 namespace Methane::Tutorials
 {
@@ -66,7 +66,10 @@ TexturedCubeApp::TexturedCubeApp()
     m_camera.ResetOrientation({ { 13.0F, 13.0F, -13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
     // Setup animations
-    GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&TexturedCubeApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+    GetAnimations().emplace_back(Data::MakeTimeAnimationPtr([this](double elapsed_seconds, double delta_seconds)
+    {
+        return Animate(elapsed_seconds, delta_seconds);
+    }));
 }
 
 TexturedCubeApp::~TexturedCubeApp()
@@ -108,30 +111,30 @@ void TexturedCubeApp::Init()
     m_render_state = GetRenderContext().CreateRenderState(
         rhi::RenderState::Settings
         {
-            GetRenderContext().CreateProgram(
+            .program = GetRenderContext().CreateProgram(
                 rhi::Program::Settings
                 {
-                    rhi::Program::ShaderSet
+                    .shader_set = rhi::Program::ShaderSet
                     {
                         { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "TexturedCube", "CubeVS" } } },
                         { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "TexturedCube", "CubePS" } } },
                     },
-                    rhi::ProgramInputBufferLayouts
+                    .input_buffer_layouts = rhi::ProgramInputBufferLayouts
                     {
                         rhi::Program::InputBufferLayout
                         {
                             rhi::Program::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                         }
                     },
-                    rhi::ProgramArgumentAccessors
+                    .argument_accessors = rhi::ProgramArgumentAccessors
                     {
                         META_PROGRAM_ARG_ROOT_BUFFER_CONSTANT(rhi::ShaderType::Pixel, "g_constants"),
                         META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::All, "g_uniforms")
                     },
-                    GetScreenRenderPattern().GetAttachmentFormats()
+                    .attachment_formats = GetScreenRenderPattern().GetAttachmentFormats()
                 }
             ),
-            GetScreenRenderPattern()
+            .render_pattern = GetScreenRenderPattern()
         }
     );
     m_render_state.GetSettings().program_ptr->SetName("Textured Phong Lighting");
@@ -173,7 +176,7 @@ void TexturedCubeApp::Init()
 
 bool TexturedCubeApp::Animate(double, double delta_seconds)
 {
-    const float rotation_angle_rad = static_cast<float>(delta_seconds * 360.F / 4.F) * gfx::ConstFloat::RadPerDeg;
+    const float rotation_angle_rad = Methane::Data::DegreeToRadians(static_cast<float>(delta_seconds * 360.F / 4.F));
     const hlslpp::float3x3 light_rotate_matrix = hlslpp::float3x3::rotation_axis(m_camera.GetOrientation().up, rotation_angle_rad);
     m_shader_uniforms.light_position = hlslpp::mul(m_shader_uniforms.light_position, light_rotate_matrix);
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
@@ -196,7 +199,8 @@ bool TexturedCubeApp::Update()
         return false;
 
     // Update Model, View, Projection matrices based on camera location
-    m_shader_uniforms.mvp_matrix   = hlslpp::transpose(hlslpp::mul(m_shader_uniforms.model_matrix, m_camera.GetViewProjMatrix()));
+    m_shader_uniforms.mvp_matrix   = hlslpp::transpose(hlslpp::mul(m_shader_uniforms.model_matrix,
+                                                                   m_camera.GetViewProjMatrix()));
     m_shader_uniforms.eye_position = m_camera.GetOrientation().eye;
 
     GetCurrentFrame().uniforms_binding_ptr->SetRootConstant(rhi::RootConstant(m_shader_uniforms));

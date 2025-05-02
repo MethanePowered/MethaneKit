@@ -47,7 +47,7 @@ public:
     explicit ResourceBarriers(const Set& barriers);
 
     // IResourceBarriers overrides
-    AddResult Add(const Barrier::Id& id, const Barrier& barrier) override;
+    AddResult Add(const Barrier& barrier) override;
     bool Remove(const Barrier::Id& id) override;
 
     [[nodiscard]] const std::vector<D3D12_RESOURCE_BARRIER>& GetNativeResourceBarriers() const

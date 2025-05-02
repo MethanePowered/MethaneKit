@@ -52,7 +52,7 @@ namespace Methane::Graphics::DirectX
 
 namespace wrl = Microsoft::WRL;
 
-template<class CommandListBaseT, typename = std::enable_if_t<std::is_base_of_v<Base::CommandList, CommandListBaseT>>>
+template<class CommandListBaseT> requires std::is_base_of_v<Base::CommandList, CommandListBaseT>
 class CommandList
     : public CommandListBaseT
     , public ICommandList

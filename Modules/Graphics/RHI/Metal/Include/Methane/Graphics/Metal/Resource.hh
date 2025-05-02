@@ -36,7 +36,7 @@ namespace Methane::Graphics::Metal
 
 struct IContext;
 
-template<typename ReourceBaseType, typename = std::enable_if_t<std::is_base_of_v<Base::Resource, ReourceBaseType>, void>>
+template<typename ReourceBaseType> requires std::is_base_of_v<Base::Resource, ReourceBaseType>
 class Resource : public ReourceBaseType
 {
 public:

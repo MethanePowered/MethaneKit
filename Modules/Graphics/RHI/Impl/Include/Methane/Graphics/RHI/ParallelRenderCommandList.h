@@ -47,13 +47,14 @@ class RenderCommandList;
 class ParallelRenderCommandList // NOSONAR - class has more than 35 methods, constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface   = IParallelRenderCommandList;
     using Type        = CommandListType;
     using State       = CommandListState;
     using DebugGroup  = CommandListDebugGroup;
     using ICallback   = ICommandListCallback;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ParallelRenderCommandList);
-    META_PIMPL_METHODS_COMPARE_DECLARE(ParallelRenderCommandList);
+    META_PIMPL_METHODS_COMPARE_INLINE(ParallelRenderCommandList);
 
     META_PIMPL_API explicit ParallelRenderCommandList(const Ptr<IParallelRenderCommandList>& interface_ptr);
     META_PIMPL_API explicit ParallelRenderCommandList(IParallelRenderCommandList& interface_ref);
@@ -76,7 +77,7 @@ public:
     META_PIMPL_API void  PopDebugGroup() const;
     META_PIMPL_API void  Reset(const DebugGroup* debug_group_ptr = nullptr) const;
     META_PIMPL_API void  ResetOnce(const DebugGroup* debug_group_ptr = nullptr) const;
-    META_PIMPL_API void  SetProgramBindings(IProgramBindings& program_bindings,
+    META_PIMPL_API void  SetProgramBindings(const ProgramBindings& program_bindings,
                                             ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
     META_PIMPL_API void  SetResourceBarriers(const ResourceBarriers& resource_barriers) const;
     META_PIMPL_API void  Commit() const;
@@ -92,6 +93,7 @@ public:
     // IParallelRenderCommandList interface methods
     [[nodiscard]] META_PIMPL_API bool IsValidationEnabled() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API void SetValidationEnabled(bool is_validation_enabled) const;
+    [[nodiscard]] META_PIMPL_API RenderPass GetRenderPass() const;
     META_PIMPL_API void ResetWithState(const RenderState& render_state, const DebugGroup* debug_group_ptr = nullptr) const;
     META_PIMPL_API void SetViewState(const ViewState& view_state) const;
     META_PIMPL_API void SetBeginningResourceBarriers(const ResourceBarriers& resource_barriers) const;

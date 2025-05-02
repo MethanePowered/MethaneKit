@@ -29,6 +29,7 @@ Methane ParallelRenderCommandList PIMPL wrappers for direct calls to final imple
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
+#include <Methane/Graphics/RHI/ProgramBindings.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -42,7 +43,6 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ParallelRenderCommandList);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(ParallelRenderCommandList);
 
 ParallelRenderCommandList::ParallelRenderCommandList(const Ptr<IParallelRenderCommandList>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
@@ -114,9 +114,10 @@ void ParallelRenderCommandList::ResetOnce(const DebugGroup* debug_group_ptr) con
     GetImpl(m_impl_ptr).ResetOnce(debug_group_ptr ? debug_group_ptr->GetInterfacePtr().get() : nullptr);
 }
 
-void ParallelRenderCommandList::SetProgramBindings(IProgramBindings& program_bindings, ProgramBindingsApplyBehaviorMask apply_behavior) const
+void ParallelRenderCommandList::SetProgramBindings(const ProgramBindings& program_bindings,
+                                                   ProgramBindingsApplyBehaviorMask apply_behavior) const
 {
-    GetImpl(m_impl_ptr).SetProgramBindings(program_bindings, apply_behavior);
+    GetImpl(m_impl_ptr).SetProgramBindings(program_bindings.GetInterface(), apply_behavior);
 }
 
 void ParallelRenderCommandList::SetResourceBarriers(const ResourceBarriers& resource_barriers) const
@@ -167,6 +168,11 @@ bool ParallelRenderCommandList::IsValidationEnabled() const META_PIMPL_NOEXCEPT
 void ParallelRenderCommandList::SetValidationEnabled(bool is_validation_enabled) const
 {
     GetImpl(m_impl_ptr).SetValidationEnabled(is_validation_enabled);
+}
+
+RenderPass ParallelRenderCommandList::GetRenderPass() const
+{
+    return RenderPass(GetImpl(m_impl_ptr).GetRenderPass());
 }
 
 void ParallelRenderCommandList::ResetWithState(const RenderState& render_state, const DebugGroup* debug_group_ptr) const

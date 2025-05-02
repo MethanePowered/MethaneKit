@@ -40,6 +40,7 @@ class RenderPattern;
 class RenderPass // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface         = IRenderPass;
     using Pattern           = RenderPattern;
     using Attachment        = RenderPassAttachment;
     using ColorAttachment   = RenderPassColorAttachment;
@@ -52,7 +53,7 @@ public:
     using ICallback         = IRenderPassCallback;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderPass);
-    META_PIMPL_METHODS_COMPARE_DECLARE(RenderPass);
+    META_PIMPL_METHODS_COMPARE_INLINE(RenderPass);
 
     META_PIMPL_API explicit RenderPass(const Ptr<IRenderPass>& interface_ptr);
     META_PIMPL_API explicit RenderPass(IRenderPass& interface_ref);

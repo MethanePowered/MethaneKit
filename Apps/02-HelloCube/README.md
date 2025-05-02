@@ -148,32 +148,29 @@ public:
         m_render_state = GetRenderContext().CreateRenderState(
             Rhi::RenderState::Settings
             {
-                GetRenderContext().CreateProgram(
+                .program = GetRenderContext().CreateProgram(
                     Rhi::Program::Settings
                     {
-                        Rhi::Program::ShaderSet
+                        .shader_set = Rhi::Program::ShaderSet
                         {
-                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" } } },
+                            { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions } },
                             { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
                         },
-                        Rhi::ProgramInputBufferLayouts
+                        .input_buffer_layouts = Rhi::ProgramInputBufferLayouts
                         {
                             Rhi::ProgramInputBufferLayout
                             {
-                                Rhi::Program::InputBufferLayout::ArgumentSemantics { "POSITION" , "COLOR" }
+                                Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION" , "COLOR" }
                             }
                         },
-                        Rhi::ProgramArgumentAccessors{ },
-                        GetScreenRenderPattern().GetAttachmentFormats()
+                        .attachment_formats = GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
-                GetScreenRenderPattern()
+                .render_pattern = GetScreenRenderPattern()
             }
         );
-
         ...
     }
-
     ...
 };
 ```
@@ -467,7 +464,6 @@ struct HelloCubeFrame final : AppFrame
 {
     Rhi::ProgramBindings          program_bindings;
     Rhi::IProgramArgumentBinding* uniforms_binding_ptr = nullptr;
-    
     ...
 };
 ```
@@ -491,26 +487,25 @@ class HelloCubeApp final : public GraphicsApp
         m_render_state = GetRenderContext().CreateRenderState(
             Rhi::RenderState::Settings
             {
-                GetRenderContext().CreateProgram(
+                .program = GetRenderContext().CreateProgram(
                     Rhi::Program::Settings
                     {
-                        Rhi::Program::ShaderSet
+                        .shader_set = Rhi::Program::ShaderSet
                         {
                             { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions } },
                             { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
                         },
                         ...
-                        Rhi::ProgramArgumentAccessors
+                        .argument_accessors = Rhi::ProgramArgumentAccessors
                         {
                             META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_uniforms")
                         },
                         ...
                     }
                 ),
-                GetScreenRenderPattern()
+                .render_pattern = GetScreenRenderPattern()
             }
         );
-        
         ...
     }
 };

@@ -123,13 +123,14 @@ void SetMetalResource<CommandType::Render>(Rhi::ShaderType shader_type,
     META_FUNCTION_TASK();
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexBuffer: mtl_buffer
                                       offset: buffer_offset
                                      atIndex: arg_index];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentBuffer: mtl_buffer
                                         offset: buffer_offset
                                        atIndex: arg_index];
@@ -151,13 +152,14 @@ void SetMetalResources<CommandType::Render>(Rhi::ShaderType shader_type,
     const NSRange args_range = NSMakeRange(arg_index, mtl_buffers.size());
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexBuffers: mtl_buffers.data()
                                       offsets: buffer_offsets.data()
                                     withRange: args_range];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentBuffers: mtl_buffers.data()
                                         offsets: buffer_offsets.data()
                                       withRange: args_range];
@@ -177,12 +179,13 @@ void SetMetalResource<CommandType::Render>(Rhi::ShaderType shader_type,
     META_FUNCTION_TASK();
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexTexture: mtl_texture
                                       atIndex: arg_index];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentTexture: mtl_texture
                                         atIndex: arg_index];
             break;
@@ -203,12 +206,13 @@ void SetMetalResources<CommandType::Render>(Rhi::ShaderType shader_type,
     const NSRange args_range = NSMakeRange(arg_index, mtl_textures.size());
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexTextures: mtl_textures.data()
                                      withRange: args_range];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentTextures: mtl_textures.data()
                                        withRange: args_range];
             break;
@@ -227,12 +231,13 @@ void SetMetalResource<CommandType::Render>(Rhi::ShaderType shader_type,
     META_FUNCTION_TASK();
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexSamplerState: mtl_sampler
                                            atIndex: arg_index];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentSamplerState: mtl_sampler
                                              atIndex: arg_index];
             break;
@@ -253,12 +258,13 @@ void SetMetalResources<CommandType::Render>(Rhi::ShaderType shader_type,
     const NSRange args_range = NSMakeRange(arg_index, mtl_samplers.size());
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexSamplerStates: mtl_samplers.data()
                                           withRange: args_range];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentSamplerStates: mtl_samplers.data()
                                             withRange: args_range];
             break;
@@ -278,13 +284,14 @@ void SetMetalResource<CommandType::Render>(Rhi::ShaderType shader_type,
     META_CHECK_NOT_NULL(root_constant_accessor_ptr);
     switch (shader_type)
     {
-        case Rhi::ShaderType::Vertex:
+        using enum Rhi::ShaderType;
+        case Vertex:
             [mtl_cmd_encoder setVertexBytes: root_constant_accessor_ptr->GetDataPtr()
                                      length: root_constant_accessor_ptr->GetDataSize()
                                     atIndex: arg_index];
             break;
 
-        case Rhi::ShaderType::Pixel:
+        case Pixel:
             [mtl_cmd_encoder setFragmentBytes: root_constant_accessor_ptr->GetDataPtr()
                                        length: root_constant_accessor_ptr->GetDataSize()
                                       atIndex: arg_index];
@@ -488,15 +495,17 @@ static void WriteArgumentBindingResourceIds(const ProgramArgumentBinding& arg_bi
     Rhi::ResourceType resource_type = arg_binding.GetSettings().resource_type;
     switch(resource_type)
     {
-        case Rhi::ResourceType::Buffer:
+        using enum Rhi::ResourceType;
+
+        case Buffer:
             WriteNativeBufferAddresses(arg_binding.GetNativeBuffers(), arg_binding.GetBufferOffsets(), buffer_ptr);
             break;
 
-        case Rhi::ResourceType::Texture:
+        case Texture:
             WriteNativeTextureIds(arg_binding.GetNativeTextures(), buffer_ptr);
             break;
 
-        case Rhi::ResourceType::Sampler:
+        case Sampler:
             WriteNativeSamplerIds(arg_binding.GetNativeSamplerStates(), buffer_ptr);
             break;
 
@@ -542,11 +551,13 @@ void ProgramBindings::Apply(Base::CommandList& command_list, ApplyBehaviorMask a
     switch (const Rhi::CommandListType command_list_type = command_list.GetType();
             command_list_type)
     {
-        case Rhi::CommandListType::Render:
+        using enum Rhi::CommandListType;
+
+        case Render:
             Apply<CommandType::Render>(static_cast<RenderCommandList&>(command_list), apply_behavior);
             break;
 
-        case Rhi::CommandListType::Compute:
+        case Compute:
             Apply<CommandType::Compute>(static_cast<ComputeCommandList&>(command_list), apply_behavior);
             break;
 
@@ -618,17 +629,11 @@ const ProgramBindings::ArgumentsRange& ProgramBindings::GetArgumentsRange(Rhi::P
     META_FUNCTION_TASK();
     switch(access_type)
     {
-        case Rhi::ProgramArgumentAccessType::Constant:
-            return GetMetalProgram().GetConstantArgumentBufferRange();
-
-        case Rhi::ProgramArgumentAccessType::FrameConstant:
-            return GetMetalProgram().GetFrameConstantArgumentBufferRange(GetFrameIndex());
-
-        case Rhi::ProgramArgumentAccessType::Mutable:
-            return m_mutable_argument_buffer_range;
-
-        default:
-            META_UNEXPECTED(access_type);
+        using enum Rhi::ProgramArgumentAccessType;
+        case Constant:      return GetMetalProgram().GetConstantArgumentBufferRange();
+        case FrameConstant: return GetMetalProgram().GetFrameConstantArgumentBufferRange(GetFrameIndex());
+        case Mutable:       return m_mutable_argument_buffer_range;
+        default:            META_UNEXPECTED(access_type);
     }
 }
 
@@ -640,7 +645,7 @@ void ProgramBindings::SetMutableArgumentsRange(const ArgumentsRange& mutable_arg
 
 bool ProgramBindings::IsUsingNativeResource(__unsafe_unretained id<MTLResource> mtl_resource) const
 {
-    return m_mtl_used_resources.count(mtl_resource);
+    return m_mtl_used_resources.contains(mtl_resource);
 }
 
 Program& ProgramBindings::GetMetalProgram() const
@@ -701,7 +706,8 @@ void ProgramBindings::SetMetalResources(const CommandEncoderType& mtl_cmd_encode
             {
                 switch (settings.resource_type)
                 {
-                    case Rhi::ResourceType::Buffer:
+                    using enum Rhi::ResourceType;
+                    case Buffer:
                         SetMetalResourcesForAll<command_type>(settings.argument.GetShaderType(),
                                                               program, mtl_cmd_encoder,
                                                               argument_binding.GetNativeBuffers(),
@@ -709,14 +715,14 @@ void ProgramBindings::SetMetalResources(const CommandEncoderType& mtl_cmd_encode
                                                               argument_binding.GetBufferOffsets());
                         break;
 
-                    case Rhi::ResourceType::Texture:
+                    case Texture:
                         SetMetalResourcesForAll<command_type>(settings.argument.GetShaderType(),
                                                               program, mtl_cmd_encoder,
                                                               argument_binding.GetNativeTextures(),
                                                               settings.argument_index);
                         break;
 
-                    case Rhi::ResourceType::Sampler:
+                    case Sampler:
                         SetMetalResourcesForAll<command_type>(settings.argument.GetShaderType(), program, mtl_cmd_encoder,
                                                               argument_binding.GetNativeSamplerStates(),
                                                               settings.argument_index);
@@ -772,13 +778,14 @@ void ProgramBindings::SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_
         {
             switch (arg_layout.shader_type)
             {
-                case Rhi::ShaderType::Vertex:
+                using enum Rhi::ShaderType;
+                case Vertex:
                     [mtl_cmd_encoder setVertexBuffer:mtl_argument_buffer
                                               offset:arg_buffer_offset
                                              atIndex:arg_buffer_index];
                     break;
 
-                case Rhi::ShaderType::Pixel:
+                case Pixel:
                     [mtl_cmd_encoder setFragmentBuffer:mtl_argument_buffer
                                                 offset:arg_buffer_offset
                                                atIndex:arg_buffer_index];

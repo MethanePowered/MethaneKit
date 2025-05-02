@@ -37,7 +37,7 @@ using Catch::Approx;
     (uint32_t, 3), (uint32_t, 4), \
     (int32_t,  3), (int32_t,  4)
 
-template<typename T, size_t size, typename V = T, typename = std::enable_if_t<3 <= size && size <= 4>>
+template<typename T, size_t size, typename V = T> requires(3 <= size && size <= 4)
 void CheckColor(const Color<T, size>& color, const std::array<V, size>& components, float epsilon = std::numeric_limits<float>::epsilon() * 100.f)
 {
     CHECK(color.template GetRed<V>()   == Approx(components[0]).epsilon(epsilon));

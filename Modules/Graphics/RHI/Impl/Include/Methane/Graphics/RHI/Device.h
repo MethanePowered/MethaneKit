@@ -43,12 +43,13 @@ class Device // NOSONAR - constructors and assignment operators are required to 
     friend class System;
 
 public:
+    using Interface    = IDevice;
     using FeatureMask  = DeviceFeatureMask;
     using Feature      = DeviceFeature;
     using Capabilities = DeviceCaps;
 
     META_PIMPL_METHODS_DECLARE(Device);
-    META_PIMPL_METHODS_COMPARE_DECLARE(Device);
+    META_PIMPL_METHODS_COMPARE_INLINE(Device);
 
     META_PIMPL_API explicit Device(const Ptr<IDevice>& interface_ptr);
     META_PIMPL_API explicit Device(IDevice& interface_ref);
@@ -60,6 +61,10 @@ public:
     // IObject interface methods
     META_PIMPL_API bool SetName(std::string_view name) const;
     META_PIMPL_API std::string_view GetName() const META_PIMPL_NOEXCEPT;
+
+    // Data::IEmitter<IObjectCallback> interface methods
+    META_PIMPL_API void Connect(Data::Receiver<IObjectCallback>& receiver) const;
+    META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IDevice interface methods
     [[nodiscard]] META_PIMPL_API RenderContext       CreateRenderContext(const Platform::AppEnvironment& env, tf::Executor& parallel_executor, const RenderContextSettings& settings) const;

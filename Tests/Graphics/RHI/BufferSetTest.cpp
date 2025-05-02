@@ -26,6 +26,7 @@ Unit-tests of the RHI BufferSet
 #include <Methane/Graphics/RHI/ComputeContext.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/BufferSet.h>
 #include <Methane/Graphics/Null/BufferSet.h>
@@ -58,8 +59,7 @@ TEST_CASE("RHI Buffer-Set Functions", "[rhi][buffer-set]")
 
     SECTION("Inconsistent Buffer-Set Construction Failure")
     {
-        Rhi::BufferSet buffer_set;
-        REQUIRE_THROWS(buffer_set = Rhi::BufferSet(Rhi::BufferType::Constant, { constant_buffer_one, constant_buffer_two, vertex_buffer }));
+        REQUIRE_THROWS(Rhi::BufferSet(Rhi::BufferType::Constant, { constant_buffer_one, constant_buffer_two, vertex_buffer }));
     }
 
     SECTION("Object Destroyed Callback")
@@ -95,6 +95,16 @@ TEST_CASE("RHI Buffer-Set Functions", "[rhi][buffer-set]")
         ObjectCallbackTester object_callback_tester(constant_buffer_set);
         CHECK_FALSE(constant_buffer_set.SetName("My Buffer-Set"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        constant_buffer_set.SetName("Constant Buffer Set");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(constant_buffer_set);
+        const auto registered_buffer_set = registry.GetGraphicsObject<Rhi::BufferSet>("Constant Buffer Set");
+        REQUIRE(registered_buffer_set.IsInitialized());
+        CHECK(&registered_buffer_set.GetInterface() == &constant_buffer_set.GetInterface());
     }
 
     SECTION("Get Type of Buffer-Set")

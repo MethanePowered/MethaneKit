@@ -29,6 +29,7 @@ Unit-tests of the RHI Sampler
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <memory>
 #include <taskflow/taskflow.hpp>
@@ -103,6 +104,16 @@ TEST_CASE("RHI Sampler Functions", "[rhi][sampler][resource]")
         ObjectCallbackTester object_callback_tester(sampler);
         CHECK_FALSE(sampler.SetName("My Sampler"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        sampler.SetName("Texture Sampler");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(sampler);
+        const auto registered_sampler = registry.GetGraphicsObject<Rhi::Sampler>("Texture Sampler");
+        REQUIRE(registered_sampler.IsInitialized());
+        CHECK(&registered_sampler.GetInterface() == &sampler.GetInterface());
     }
 
     SECTION("Set State")

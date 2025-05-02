@@ -40,6 +40,7 @@ class Program;
 class ProgramBindings // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface                 = IProgramBindings;
     using IArgumentBindingCallback  = IProgramArgumentBindingCallback;
     using IArgumentBinding          = IProgramArgumentBinding;
     using ApplyBehavior             = ProgramBindingsApplyBehavior;
@@ -48,7 +49,7 @@ public:
     using BindingValueByArgument    = IProgramBindings::BindingValueByArgument;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ProgramBindings);
-    META_PIMPL_METHODS_COMPARE_DECLARE(ProgramBindings);
+    META_PIMPL_METHODS_COMPARE_INLINE(ProgramBindings);
 
     META_PIMPL_API explicit ProgramBindings(const Ptr<IProgramBindings>& interface_ptr);
     META_PIMPL_API explicit ProgramBindings(IProgramBindings& interface_ref);

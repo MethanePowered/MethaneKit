@@ -28,7 +28,6 @@ Base implementation of the parallel render command list interface.
 
 #include <Methane/Graphics/RHI/IParallelRenderCommandList.h>
 
-#include <optional>
 #include <string>
 #include <string_view>
 
@@ -52,28 +51,31 @@ public:
     using CommandList::Reset;
 
     // IParallelRenderCommandList interface
-    bool IsValidationEnabled() const noexcept override { return m_is_validation_enabled; }
+    [[nodiscard]] bool IsValidationEnabled() const noexcept final { return m_is_validation_enabled; }
     void SetValidationEnabled(bool is_validation_enabled) override;
+    [[nodiscard]] Rhi::IRenderPass& GetRenderPass() const final;
     void Reset(IDebugGroup* debug_group_ptr = nullptr) override;
     void ResetWithState(Rhi::IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) override;
     void SetViewState(Rhi::IViewState& view_state) override;
     void SetParallelCommandListsCount(uint32_t count) override;
-    const Refs<Rhi::IRenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists_refs; }
+    [[nodiscard]] const Refs<Rhi::IRenderCommandList>& GetParallelCommandLists() const override { return m_parallel_command_lists_refs; }
+
+    // CommandList interface, which throw NotImplementedException (i.e. can not be used)
+    void SetProgramBindings(Rhi::IProgramBindings&, Rhi::ProgramBindingsApplyBehaviorMask) override;
+    void SetResourceBarriers(const Rhi::IResourceBarriers&) override;
+    void PushDebugGroup(IDebugGroup&) override;
+    void PopDebugGroup() override;
 
     // CommandList interface
-    void SetResourceBarriers(const Rhi::IResourceBarriers&) override { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not set resource barriers on parallel render command list."); }
     void Execute(const ICommandList::CompletedCallback& completed_callback) override;
     void Complete() override;
-
-    // ICommandList interface
-    void PushDebugGroup(IDebugGroup&) override  { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list."); }
-    void PopDebugGroup() override               { META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list."); }
     void Commit() override;
 
     // IObject interface
     bool SetName(std::string_view name) override;
 
-    RenderPass& GetRenderPass() const;
+    [[nodiscard]] RenderPass& GetBaseRenderPass() const;
+    [[nodiscard]] const Ptr<RenderPass>& GetBaseRenderPassPtr() const noexcept { return m_render_pass_ptr;}
 
 protected:
     static std::string GetParallelCommandListDebugName(std::string_view base_name, std::string_view suffix);

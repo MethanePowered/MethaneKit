@@ -55,7 +55,7 @@ public:
 
     void ReleaseAllKeys();
 
-    template<typename ControllerT, typename = std::enable_if_t<std::is_base_of_v<Controller, ControllerT>>>
+    template<typename ControllerT> requires std::is_base_of_v<Controller, ControllerT>
     [[nodiscard]] Refs<ControllerT> GetControllersOfType() const
     {
         Refs<ControllerT> controllers;

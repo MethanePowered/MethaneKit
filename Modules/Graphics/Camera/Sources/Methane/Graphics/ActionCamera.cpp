@@ -22,7 +22,8 @@ Interactive action-camera for rotating, moving and zooming with mouse and keyboa
 ******************************************************************************/
 
 #include <Methane/Graphics/ActionCamera.h>
-#include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/TimeAnimation.hpp>
+#include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -87,13 +88,13 @@ void ActionCamera::OnMouseReleased(const Data::Point2I&) noexcept
 void ActionCamera::OnMouseScrolled(float scroll_delta)
 {
     META_FUNCTION_TASK();
-    const KeyboardAction zoom_action = scroll_delta > 0.F
-                                     ? KeyboardAction::ZoomIn : KeyboardAction::ZoomOut;
+    using enum KeyboardAction;
+    const KeyboardAction zoom_action = scroll_delta > 0.F ? ZoomIn : ZoomOut;
     const float          zoom_factor = scroll_delta > 0.F
                                      ? 1.F - scroll_delta / static_cast<float>(m_zoom_steps_count)
                                      : 1.F / (1.F + scroll_delta / static_cast<float>(m_zoom_steps_count));
     
-    StopKeyboardAction(zoom_action == KeyboardAction::ZoomIn ? KeyboardAction::ZoomOut : KeyboardAction::ZoomIn, 0.0);
+    StopKeyboardAction(zoom_action == ZoomIn ? ZoomOut : ZoomIn, 0.0);
     StartZoomAction(zoom_action, zoom_factor, m_keyboard_action_duration_sec);
 }
 
@@ -104,25 +105,27 @@ void ActionCamera::OnKeyPressed(KeyboardAction keyboard_action)
 
     switch(keyboard_action)
     {
+        using enum KeyboardAction;
+
         // Move
-        case KeyboardAction::MoveLeft:      StartMoveAction(keyboard_action,   hlslpp::float3(-1.F,  0.F,  0.F)); break;
-        case KeyboardAction::MoveRight:     StartMoveAction(keyboard_action,   hlslpp::float3( 1.F,  0.F,  0.F)); break;
-        case KeyboardAction::MoveForward:   StartMoveAction(keyboard_action,   hlslpp::float3( 0.F,  0.F,  1.F)); break;
-        case KeyboardAction::MoveBack:      StartMoveAction(keyboard_action,   hlslpp::float3( 0.F,  0.F, -1.F)); break;
-        case KeyboardAction::MoveUp:        StartMoveAction(keyboard_action,   hlslpp::float3( 0.F,  1.F,  0.F)); break;
-        case KeyboardAction::MoveDown:      StartMoveAction(keyboard_action,   hlslpp::float3( 0.F, -1.F,  0.F)); break;
+        case MoveLeft:    StartMoveAction(keyboard_action,   hlslpp::float3(-1.F,  0.F,  0.F)); break;
+        case MoveRight:   StartMoveAction(keyboard_action,   hlslpp::float3( 1.F,  0.F,  0.F)); break;
+        case MoveForward: StartMoveAction(keyboard_action,   hlslpp::float3( 0.F,  0.F,  1.F)); break;
+        case MoveBack:    StartMoveAction(keyboard_action,   hlslpp::float3( 0.F,  0.F, -1.F)); break;
+        case MoveUp:      StartMoveAction(keyboard_action,   hlslpp::float3( 0.F,  1.F,  0.F)); break;
+        case MoveDown:    StartMoveAction(keyboard_action,   hlslpp::float3( 0.F, -1.F,  0.F)); break;
             
         // Rotate
-        case KeyboardAction::YawLeft:       StartRotateAction(keyboard_action, hlslpp::float3( 0.F, -1.F,  0.F) * rotation_axis_sign); break;
-        case KeyboardAction::YawRight:      StartRotateAction(keyboard_action, hlslpp::float3( 0.F,  1.F,  0.F) * rotation_axis_sign); break;
-        case KeyboardAction::RollLeft:      StartRotateAction(keyboard_action, hlslpp::float3( 0.F,  0.F,  1.F) * rotation_axis_sign); break;
-        case KeyboardAction::RollRight:     StartRotateAction(keyboard_action, hlslpp::float3( 0.F,  0.F, -1.F) * rotation_axis_sign); break;
-        case KeyboardAction::PitchUp:       StartRotateAction(keyboard_action, hlslpp::float3(-1.F,  0.F,  0.F) * rotation_axis_sign); break;
-        case KeyboardAction::PitchDown:     StartRotateAction(keyboard_action, hlslpp::float3( 1.F,  0.F,  0.F) * rotation_axis_sign); break;
+        case YawLeft:     StartRotateAction(keyboard_action, hlslpp::float3( 0.F, -1.F,  0.F) * rotation_axis_sign); break;
+        case YawRight:    StartRotateAction(keyboard_action, hlslpp::float3( 0.F,  1.F,  0.F) * rotation_axis_sign); break;
+        case RollLeft:    StartRotateAction(keyboard_action, hlslpp::float3( 0.F,  0.F,  1.F) * rotation_axis_sign); break;
+        case RollRight:   StartRotateAction(keyboard_action, hlslpp::float3( 0.F,  0.F, -1.F) * rotation_axis_sign); break;
+        case PitchUp:     StartRotateAction(keyboard_action, hlslpp::float3(-1.F,  0.F,  0.F) * rotation_axis_sign); break;
+        case PitchDown:   StartRotateAction(keyboard_action, hlslpp::float3( 1.F,  0.F,  0.F) * rotation_axis_sign); break;
             
         // Zoom
-        case KeyboardAction::ZoomIn:        StartZoomAction(keyboard_action, 0.9F); break;
-        case KeyboardAction::ZoomOut:       StartZoomAction(keyboard_action, 1.1F); break;
+        case ZoomIn:      StartZoomAction(keyboard_action, 0.9F); break;
+        case ZoomOut:     StartZoomAction(keyboard_action, 1.1F); break;
             
         default: return;
     }
@@ -139,16 +142,11 @@ void ActionCamera::DoKeyboardAction(KeyboardAction keyboard_action) noexcept
     META_FUNCTION_TASK();
     switch(keyboard_action)
     {
-        case KeyboardAction::Reset:
-            ResetOrientation();
-            break;
-
-        case KeyboardAction::ChangePivot:
-            SetPivot(GetPivot() == Pivot::Aim ? Pivot::Eye : Pivot::Aim);
-            break;
-        
-        default:
-            return;
+        using enum KeyboardAction;
+        using enum Pivot;
+        case Reset:       ResetOrientation(); break;
+        case ChangePivot: SetPivot(GetPivot() == Aim ? Eye : Aim); break;
+        default:          return;
     }
 }
 
@@ -175,14 +173,14 @@ void ActionCamera::StartRotateAction(KeyboardAction rotate_action, const hlslpp:
     if (StartKeyboardAction(rotate_action, duration_sec))
         return;
     
-    const float angle_rad_per_second = m_rotate_angle_per_second * ConstFloat::RadPerDeg;
+    const float angle_rad_per_second = Methane::Data::DegreeToRadians(m_rotate_angle_per_second);
     m_animations.push_back(
-        std::make_shared<Data::TimeAnimation>([this, angle_rad_per_second, rotation_axis_in_view](double elapsed_seconds, double delta_seconds)
-            {
-                RotateInView(rotation_axis_in_view, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
-                return true;
-            },
-            duration_sec));
+        Data::MakeTimeAnimationPtr([this, angle_rad_per_second, rotation_axis_in_view](double elapsed_seconds, double delta_seconds)
+        {
+            RotateInView(rotation_axis_in_view, static_cast<float>(angle_rad_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
+            return true;
+        }, duration_sec)
+    );
 
     const bool animation_added = m_keyboard_action_animations.try_emplace(rotate_action, m_animations.back()).second;
     META_CHECK_TRUE(animation_added);
@@ -193,15 +191,14 @@ void ActionCamera::StartMoveAction(KeyboardAction move_action, const hlslpp::flo
     META_FUNCTION_TASK();
     if (StartKeyboardAction(move_action, duration_sec))
         return;
-    
+
     m_animations.push_back(
-        std::make_shared<Data::TimeAnimation>([this, move_direction_in_view](double elapsed_seconds, double delta_seconds)
-            {
-                const hlslpp::float3 move_per_second = hlslpp::normalize(TransformViewToWorld(move_direction_in_view)) * m_move_distance_per_second;
-                Move(move_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
-                return true;
-            },
-            duration_sec)
+        Data::MakeTimeAnimationPtr([this, move_direction_in_view](double elapsed_seconds, double delta_seconds)
+        {
+            const hlslpp::float3 move_per_second = hlslpp::normalize(TransformViewToWorld(move_direction_in_view)) * m_move_distance_per_second;
+            Move(move_per_second * delta_seconds * GetAccelerationFactor(elapsed_seconds));
+            return true;
+        }, duration_sec)
     );
 
     const bool animation_added = m_keyboard_action_animations.try_emplace(move_action, m_animations.back()).second;
@@ -213,14 +210,13 @@ void ActionCamera::StartZoomAction(KeyboardAction zoom_action, float zoom_factor
     META_FUNCTION_TASK();
     if (StartKeyboardAction(zoom_action, duration_sec))
         return;
-    
+
     m_animations.push_back(
-        std::make_shared<Data::TimeAnimation>([this, zoom_factor_per_second](double elapsed_seconds, double delta_seconds)
-            {
-                Zoom(1.F - static_cast<float>((1.F - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
-                return true;
-            },
-            duration_sec)
+        Data::MakeTimeAnimationPtr([this, zoom_factor_per_second](double elapsed_seconds, double delta_seconds)
+        {
+            Zoom(1.F - static_cast<float>((1.F - zoom_factor_per_second) * delta_seconds * GetAccelerationFactor(elapsed_seconds)));
+            return true;
+        }, duration_sec)
     );
 
     const bool animation_added = m_keyboard_action_animations.try_emplace(zoom_action, m_animations.back()).second;
@@ -288,32 +284,34 @@ std::string ActionCamera::GetActionName(KeyboardAction keyboard_action)
     META_FUNCTION_TASK();
     switch (keyboard_action)
     {
+    using enum KeyboardAction;
+
     // Move
-    case KeyboardAction::MoveLeft:      return "move left";
-    case KeyboardAction::MoveRight:     return "move right";
-    case KeyboardAction::MoveForward:   return "move forward";
-    case KeyboardAction::MoveBack:      return "move backward";
-    case KeyboardAction::MoveUp:        return "move up";
-    case KeyboardAction::MoveDown:      return "move down";
+    case MoveLeft:    return "move left";
+    case MoveRight:   return "move right";
+    case MoveForward: return "move forward";
+    case MoveBack:    return "move backward";
+    case MoveUp:      return "move up";
+    case MoveDown:    return "move down";
 
     // Rotate
-    case KeyboardAction::YawLeft:       return "yaw left";
-    case KeyboardAction::YawRight:      return "yaw right";
-    case KeyboardAction::RollLeft:      return "roll left";
-    case KeyboardAction::RollRight:     return "roll right";
-    case KeyboardAction::PitchUp:       return "pitch up";
-    case KeyboardAction::PitchDown:     return "pitch down";
+    case YawLeft:     return "yaw left";
+    case YawRight:    return "yaw right";
+    case RollLeft:    return "roll left";
+    case RollRight:   return "roll right";
+    case PitchUp:     return "pitch up";
+    case PitchDown:   return "pitch down";
 
     // Zoom
-    case KeyboardAction::ZoomIn:        return "zoom in";
-    case KeyboardAction::ZoomOut:       return "zoom out";
+    case ZoomIn:      return "zoom in";
+    case ZoomOut:     return "zoom out";
 
     // Other
-    case KeyboardAction::Reset:         return "reset orientation";
-    case KeyboardAction::ChangePivot:   return "change pivot";
+    case Reset:       return "reset orientation";
+    case ChangePivot: return "change pivot";
 
-    case KeyboardAction::None:          return "none";
-    default:                            META_UNEXPECTED_RETURN(keyboard_action, "");
+    case None:        return "none";
+    default:          META_UNEXPECTED_RETURN(keyboard_action, "");
     }
 }
 

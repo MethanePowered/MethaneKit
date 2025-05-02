@@ -26,6 +26,7 @@ Methane ComputeCommandList PIMPL wrappers for direct calls to final implementati
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
 #include <Methane/Graphics/RHI/ProgramBindings.h>
+#include <Methane/Graphics/RHI/ResourceBarriers.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -39,7 +40,6 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ComputeCommandList);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(ComputeCommandList);
 
 ComputeCommandList::ComputeCommandList(const Ptr<IComputeCommandList>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
@@ -116,9 +116,9 @@ void ComputeCommandList::SetProgramBindings(const ProgramBindings& program_bindi
     GetImpl(m_impl_ptr).SetProgramBindings(program_bindings.GetInterface(), apply_behavior);
 }
 
-void ComputeCommandList::SetResourceBarriers(const IResourceBarriers& resource_barriers) const
+void ComputeCommandList::SetResourceBarriers(const ResourceBarriers& resource_barriers) const
 {
-    GetImpl(m_impl_ptr).SetResourceBarriers(resource_barriers);
+    GetImpl(m_impl_ptr).SetResourceBarriers(resource_barriers.GetInterface());
 }
 
 void ComputeCommandList::Commit() const

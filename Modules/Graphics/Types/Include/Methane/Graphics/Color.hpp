@@ -34,7 +34,7 @@ Color wrapper type based on HLSL++ vector.
 namespace Methane::Graphics
 {
 
-template<typename T, size_t size, typename = std::enable_if_t<3 <= size && size <= 4>>
+template<typename T, size_t size> requires(3 <= size && size <= 4)
 class Color
 {
 public:
@@ -44,14 +44,14 @@ public:
 
     Color() = default;
 
-    template<typename... Args, typename = std::enable_if_t<std::conjunction_v<std::is_arithmetic<Args>...>>>
+    template<typename... Args> requires std::conjunction_v<std::is_arithmetic<Args>...>
     Color(Args... args) // NOSONAR - do not use explicit
         : m_components(ComponentCast<T>(args)...)
     {
         CheckComponentsRange();
     }
 
-    template<size_t sz = size, typename = std::enable_if_t<sz < size>>
+    template<size_t sz = size> requires(sz < size)
     Color(const Color<T, sz>& color, T a)
         : m_components(color.AsVector(), a)
     {
@@ -81,11 +81,6 @@ public:
         return hlslpp::all(left.m_components == right.m_components);
     }
 
-    [[nodiscard]] friend bool operator!=(const Color& left, const Color& right) noexcept
-    {
-        return !(left == right);
-    }
-
     [[nodiscard]] size_t GetSize() const noexcept { return Size; }
 
     template<typename V = T>
@@ -97,7 +92,7 @@ public:
     template<typename V = T>
     [[nodiscard]] V GetBlue() const noexcept  { return ComponentCast<V, T>(m_components.b); }
 
-    template<typename V = T, size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    template<typename V = T, size_t sz = size> requires(sz == 4)
     [[nodiscard]] V GetAlpha() const noexcept { return ComponentCast<V, T>(m_components.a); }
 
     template<typename V = T>
@@ -124,7 +119,7 @@ public:
         return *this;
     }
 
-    template<typename V = T, size_t sz = size, typename = std::enable_if_t<sz == 4>>
+    template<typename V = T, size_t sz = size> requires(sz == 4)
     Color& SetAlpha(V a)
     {
         CheckComponentRange(a, "Alpha");

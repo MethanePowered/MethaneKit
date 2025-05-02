@@ -69,9 +69,8 @@ struct IObject
     [[nodiscard]] virtual std::string_view GetName() const noexcept = 0;
     [[nodiscard]] virtual Ptr<IObject>     GetPtr() = 0;
 
-    template<typename T>
-    std::enable_if_t<std::is_base_of_v<IObject, T>, Ptr<T>> GetDerivedPtr()
-    { return std::dynamic_pointer_cast<T>(GetPtr()); }
+    template<typename T> requires std::is_base_of_v<IObject, T>
+    [[nodiscard]] Ptr<T> GetDerivedPtr() { return std::dynamic_pointer_cast<T>(GetPtr()); }
 };
 
 } // namespace Methane::Graphics::Rhi

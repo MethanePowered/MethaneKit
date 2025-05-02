@@ -40,6 +40,7 @@ Methane text rendering primitive.
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/Program.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/Types.h>
 #include <Methane/Data/EnumMask.hpp>
 #include <Methane/Data/Emitter.hpp>
@@ -126,12 +127,8 @@ public:
     [[nodiscard]] bool IsDirty() const noexcept
     {
         META_FUNCTION_TASK();
-        return m_dirty_mask.HasAnyBits({
-            DirtyResource::Mesh,
-            DirtyResource::Uniforms,
-            DirtyResource::Constants,
-            DirtyResource::Atlas
-        });
+        using enum DirtyResource;
+        return m_dirty_mask.HasAnyBits({Mesh, Uniforms, Constants, Atlas});
     }
 
     [[nodiscard]] bool IsInitialized() const noexcept
@@ -276,14 +273,15 @@ public:
         META_CHECK_TRUE(atlas_sampler.IsInitialized());
         META_CHECK_TRUE(m_atlas_texture.IsInitialized());
 
+        using enum rhi::ShaderType;
         m_program_bindings = state.GetProgram().CreateBindings({
-            { { rhi::ShaderType::Pixel,  "g_texture" },   m_atlas_texture.GetResourceView() },
-            { { rhi::ShaderType::Pixel,  "g_sampler" },   atlas_sampler.GetResourceView() },
+            { { Pixel,  "g_texture" },   m_atlas_texture.GetResourceView() },
+            { { Pixel,  "g_sampler" },   atlas_sampler.GetResourceView() },
         });
         m_program_bindings.SetName(fmt::format("{} Text Bindings {}", text_name, m_frame_index));
 
-        m_uniforms_argument_binding_ptr  = &m_program_bindings.Get({ rhi::ShaderType::Vertex, "g_uniforms" });
-        m_constants_argument_binding_ptr = &m_program_bindings.Get({ rhi::ShaderType::Pixel, "g_constants" });
+        m_uniforms_argument_binding_ptr  = &m_program_bindings.Get({ Vertex, "g_uniforms" });
+        m_constants_argument_binding_ptr = &m_program_bindings.Get({ Pixel, "g_constants" });
     }
 };
 
@@ -319,57 +317,71 @@ public:
         m_font.Connect(*this);
         m_frame_rect = m_ui_context.ConvertTo<Units::Pixels>(m_settings.rect);
 
-        rhi::IObjectRegistry& gfx_objects_registry = ui_context.GetRenderContext().GetObjectRegistry();
-        if (const auto render_state_ptr = std::dynamic_pointer_cast<rhi::IRenderState>(gfx_objects_registry.GetGraphicsObject(m_settings.state_name));
-            render_state_ptr)
+        rhi::ObjectRegistry gfx_objects_registry = ui_context.GetRenderContext().GetObjectRegistry();
+        m_render_state = gfx_objects_registry.GetGraphicsObject<rhi::RenderState>(m_settings.state_name);
+        if (m_render_state.IsInitialized())
         {
-            META_CHECK_EQUAL_DESCR(render_state_ptr->GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
+            META_CHECK_EQUAL_DESCR(m_render_state.GetSettings().render_pattern_ptr->GetSettings(), render_pattern.GetSettings(),
                                    "Text '{}' render state '{}' from cache has incompatible render pattern settings", m_settings.name,
                                    m_settings.state_name);
-            m_render_state = rhi::RenderState(render_state_ptr);
         }
         else
         {
             rhi::RenderState::Settings state_settings
             {
-                rhi::Program(
+                .program = rhi::Program(
                     m_ui_context.GetRenderContext(),
                     rhi::Program::Settings
                     {
-                        rhi::Program::ShaderSet
+                        .shader_set = rhi::Program::ShaderSet
                         {
                             { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "Text", "TextVS" }, {} } },
                             { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "Text", "TextPS" }, {} } },
                         },
-                        rhi::ProgramInputBufferLayouts
+                        .input_buffer_layouts = rhi::ProgramInputBufferLayouts
                         {
                             rhi::Program::InputBufferLayout
                             {
                                 rhi::Program::InputBufferLayout::ArgumentSemantics{ "POSITION", "TEXCOORD" }
                             }
                         },
-                        rhi::ProgramArgumentAccessors{
+                        .argument_accessors = rhi::ProgramArgumentAccessors{
                             META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Pixel, "g_constants"),
                             META_PROGRAM_ARG_ROOT_BUFFER_MUTABLE(rhi::ShaderType::Vertex, "g_uniforms")
                         },
-                        render_pattern.GetAttachmentFormats()
+                        .attachment_formats = render_pattern.GetAttachmentFormats()
                     }),
-                render_pattern
+                .render_pattern = render_pattern,
+                .rasterizer = rhi::RasterizerSettings
+                {
+                    .is_front_counter_clockwise = true
+                },
+                .depth = rhi::DepthSettings
+                {
+                    .enabled       = false,
+                    .write_enabled = false
+                },
+                .blending = rhi::BlendingSettings
+                {
+                    .render_targets = rhi::BlendingSettings::RenderTargets
+                    {{
+                        rhi::RenderTargetSettings
+                        {
+                            .blend_enabled             = true,
+                            .source_rgb_blend_factor   = Graphics::Rhi::BlendingFactor::SourceAlpha,
+                            .source_alpha_blend_factor = Graphics::Rhi::BlendingFactor::Zero,
+                            .dest_rgb_blend_factor     = Graphics::Rhi::BlendingFactor::OneMinusSourceAlpha,
+                            .dest_alpha_blend_factor   = Graphics::Rhi::BlendingFactor::Zero
+                        }
+                    }}
+                }
             };
             state_settings.program.SetName("Text Shading");
-            state_settings.depth.enabled                                        = false;
-            state_settings.depth.write_enabled                                  = false;
-            state_settings.rasterizer.is_front_counter_clockwise                = true;
-            state_settings.blending.render_targets[0].blend_enabled             = true;
-            state_settings.blending.render_targets[0].source_rgb_blend_factor   = rhi::IRenderState::Blending::Factor::SourceAlpha;
-            state_settings.blending.render_targets[0].dest_rgb_blend_factor     = rhi::IRenderState::Blending::Factor::OneMinusSourceAlpha;
-            state_settings.blending.render_targets[0].source_alpha_blend_factor = rhi::IRenderState::Blending::Factor::Zero;
-            state_settings.blending.render_targets[0].dest_alpha_blend_factor   = rhi::IRenderState::Blending::Factor::Zero;
 
             m_render_state = m_ui_context.GetRenderContext().CreateRenderState(state_settings);
             m_render_state.SetName(m_settings.state_name);
 
-            gfx_objects_registry.AddGraphicsObject(m_render_state.GetInterface());
+            gfx_objects_registry.AddGraphicsObject(m_render_state);
         }
 
         UpdateTextMesh();
@@ -380,13 +392,9 @@ public:
             { gfx::GetFrameScissorRect(viewport_rect) }
         });
 
-        static const std::string s_sampler_name    = "Font Atlas Sampler";
-        if (const auto atlas_sampler_ptr = std::dynamic_pointer_cast<rhi::ISampler>(gfx_objects_registry.GetGraphicsObject(s_sampler_name));
-            atlas_sampler_ptr)
-        {
-            m_atlas_sampler = rhi::Sampler(atlas_sampler_ptr);
-        }
-        else
+        static const std::string s_sampler_name = "Font Atlas Sampler";
+        m_atlas_sampler = gfx_objects_registry.GetGraphicsObject<rhi::Sampler>(s_sampler_name);
+        if (!m_atlas_sampler.IsInitialized())
         {
             m_atlas_sampler = m_ui_context.GetRenderContext().CreateSampler({
                 rhi::ISampler::Filter(rhi::ISampler::Filter::MinMag::Linear),
@@ -394,7 +402,7 @@ public:
             });
             m_atlas_sampler.SetName(s_sampler_name);
 
-            gfx_objects_registry.AddGraphicsObject(m_atlas_sampler.GetInterface());
+            gfx_objects_registry.AddGraphicsObject(m_atlas_sampler);
         }
     }
 
@@ -583,7 +591,6 @@ public:
         {
             frame_resources.UpdateAtlasTexture(m_font.GetAtlasTexture(m_ui_context.GetRenderContext()));
         }
-
         if (m_render_state.IsInitialized())
         {
             frame_resources.InitializeProgramBindings(m_render_state, m_atlas_sampler, m_settings.name);
@@ -804,21 +811,23 @@ private:
         {
             switch (m_settings.layout.horizontal_alignment)
             {
-            case HorizontalAlignment::Justify:
-            case HorizontalAlignment::Left:   break;
-            case HorizontalAlignment::Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth())); break;
-            case HorizontalAlignment::Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth()) / 2); break;
-            default:                          META_UNEXPECTED(m_settings.layout.horizontal_alignment);
+            using enum HorizontalAlignment;
+            case Justify:
+            case Left:   break;
+            case Right:  viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth())); break;
+            case Center: viewport_rect.origin.SetX(viewport_rect.origin.GetX() + static_cast<int32_t>(m_frame_rect.size.GetWidth() - content_size.GetWidth()) / 2); break;
+            default:     META_UNEXPECTED(m_settings.layout.horizontal_alignment);
             }
         }
         if (content_size.GetHeight() != m_frame_rect.size.GetHeight())
         {
             switch (m_settings.layout.vertical_alignment)
             {
-            case VerticalAlignment::Top:      break;
-            case VerticalAlignment::Bottom:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight())); break;
-            case VerticalAlignment::Center:   viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight()) / 2); break;
-            default:                          META_UNEXPECTED(m_settings.layout.vertical_alignment);
+            using enum VerticalAlignment;
+            case Top:    break;
+            case Bottom: viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight())); break;
+            case Center: viewport_rect.origin.SetY(viewport_rect.origin.GetY() + static_cast<int32_t>(m_frame_rect.size.GetHeight() - content_size.GetHeight()) / 2); break;
+            default:     META_UNEXPECTED(m_settings.layout.vertical_alignment);
             }
         }
 

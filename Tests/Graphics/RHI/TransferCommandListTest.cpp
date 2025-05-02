@@ -29,6 +29,7 @@ Unit-tests of the RHI Transfer Command List
 #include <Methane/Graphics/RHI/TransferCommandList.h>
 #include <Methane/Graphics/RHI/CommandListDebugGroup.h>
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/Null/CommandListSet.h>
 #include <Methane/Graphics/Null/CommandListDebugGroup.h>
@@ -71,6 +72,7 @@ TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
     }
 
     const Rhi::TransferCommandList cmd_list = compute_cmd_queue.CreateTransferCommandList();
+    auto& null_cmd_list = dynamic_cast<Null::TransferCommandList&>(cmd_list.GetInterface());
 
     SECTION("Object Name Setup")
     {
@@ -96,6 +98,16 @@ TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
     }
 
+    SECTION("Add to Objects Registry")
+    {
+        cmd_list.SetName("Transfer Command List");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(cmd_list);
+        const auto registered_cmd_list = registry.GetGraphicsObject<Rhi::TransferCommandList>("Transfer Command List");
+        REQUIRE(registered_cmd_list.IsInitialized());
+        CHECK(&registered_cmd_list.GetInterface() == &cmd_list.GetInterface());
+    }
+
     SECTION("Reset Command List")
     {
         REQUIRE_NOTHROW(cmd_list.Reset());
@@ -114,7 +126,8 @@ TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
         const Rhi::CommandListDebugGroup debug_group("Test");
         REQUIRE_NOTHROW(cmd_list.Reset(&debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        CHECK(dynamic_cast<Null::TransferCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
+        REQUIRE(null_cmd_list.GetTopOpenDebugGroup() != nullptr);
+        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Reset Command List Once with Debug Group")
@@ -123,7 +136,8 @@ TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
         REQUIRE_NOTHROW(cmd_list.ResetOnce(&debug_group));
         REQUIRE_NOTHROW(cmd_list.ResetOnce(&debug_group));
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
-        CHECK(dynamic_cast<Null::TransferCommandList&>(cmd_list.GetInterface()).GetTopOpenDebugGroup()->GetName() == "Test");
+        REQUIRE(null_cmd_list.GetTopOpenDebugGroup() != nullptr);
+        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Push and Pop Debug Group")
@@ -131,6 +145,7 @@ TEST_CASE("RHI Transfer Command List Functions", "[rhi][list][transfer]")
         REQUIRE_NOTHROW(cmd_list.Reset());
         CHECK_NOTHROW(cmd_list.PushDebugGroup(Rhi::CommandListDebugGroup("Test")));
         CHECK_NOTHROW(cmd_list.PopDebugGroup());
+        REQUIRE(null_cmd_list.GetTopOpenDebugGroup() == nullptr);
     }
 
     SECTION("Can not Pop Missing Debug Group")

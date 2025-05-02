@@ -41,7 +41,7 @@ struct Catch::StringMaker<Point<T, size>>
     }
 };
 
-template<typename T, size_t size, typename = std::enable_if_t<2 <= size && size <= 4>>
+template<typename T, size_t size> requires(2 <= size && size <= 4)
 void CheckPoint(const Point<T, size>& point, const std::array<T, size>& components)
 {
     CHECK(point.GetX() == Approx(components[0]));

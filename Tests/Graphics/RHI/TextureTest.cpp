@@ -30,6 +30,7 @@ Unit-tests of the RHI Texture
 #include <Methane/Graphics/RHI/ResourceBarriers.h>
 #include <Methane/Graphics/RHI/CommandKit.h>
 #include <Methane/Graphics/RHI/CommandQueue.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <memory>
 #include <taskflow/taskflow.hpp>
@@ -99,6 +100,16 @@ TEST_CASE("RHI Texture Functions", "[rhi][texture][resource]")
         ObjectCallbackTester object_callback_tester(texture);
         CHECK_FALSE(texture.SetName("My Texture"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        texture.SetName("My Texture");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(texture);
+        const auto registered_texture = registry.GetGraphicsObject<Rhi::Texture>("My Texture");
+        REQUIRE(registered_texture.IsInitialized());
+        CHECK(&registered_texture.GetInterface() == &texture.GetInterface());
     }
 
     SECTION("Set State")

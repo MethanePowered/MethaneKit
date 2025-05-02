@@ -6,7 +6,6 @@ get_module_dirs("Methane/Data")
 
 set(HEADERS
     ${INCLUDE_DIR}/Types.h
-    ${INCLUDE_DIR}/Constants.hpp
     ${INCLUDE_DIR}/Math.hpp
     ${INCLUDE_DIR}/Vector.hpp
     ${INCLUDE_DIR}/Point.hpp

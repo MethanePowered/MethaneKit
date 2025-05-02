@@ -36,6 +36,7 @@ Unit-tests of the RHI ComputeContext
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Sampler.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <taskflow/taskflow.hpp>
 #include <magic_enum/magic_enum.hpp>
@@ -98,6 +99,16 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
         ObjectCallbackTester object_callback_tester(compute_context);
         CHECK_FALSE(compute_context.SetName("My Compute Context"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        compute_context.SetName("Compute Context");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(compute_context);
+        const auto registered_compute_context = registry.GetGraphicsObject<Rhi::ComputeContext>("Compute Context");
+        REQUIRE(registered_compute_context.IsInitialized());
+        CHECK(&registered_compute_context.GetInterface() == &compute_context.GetInterface());
     }
 
     SECTION("Context Reset")
@@ -171,7 +182,7 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
         CHECK_NOTHROW(compute_context.RequestDeferredAction(Rhi::ContextDeferredAction::UploadResources));
         CHECK_NOTHROW(compute_context.WaitForGpu(Rhi::ContextWaitFor::ComputeComplete));
         CHECK(context_callback_tester.IsContextUploadingResources());
-        //FIXME: CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Executing);
+        CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Executing);
     }
 
     SECTION("Context Complete Initialization")
@@ -189,7 +200,7 @@ TEST_CASE("RHI Compute Context Functions", "[rhi][compute][context]")
         CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Encoding);
         CHECK_NOTHROW(compute_context.RequestDeferredAction(Rhi::ContextDeferredAction::CompleteInitialization));
         CHECK_NOTHROW(compute_context.WaitForGpu(Rhi::ContextWaitFor::ComputeComplete));
-        //FIXME: CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Executing);
+        CHECK(transfer_cmd_list.GetState() == Rhi::CommandListState::Executing);
     }
 }
 
@@ -319,10 +330,7 @@ TEST_CASE("RHI Compute Context Factory", "[rhi][compute][context][factory]")
 
     SECTION("Can Get Object Registry")
     {
-        Rhi::IObjectRegistry* registry_ptr = nullptr;
-        REQUIRE_NOTHROW(registry_ptr = &compute_context.GetObjectRegistry());
-        REQUIRE(registry_ptr);
-        CHECK_FALSE(registry_ptr->HasGraphicsObject("Something"));
+        CHECK_FALSE(compute_context.GetObjectRegistry().HasGraphicsObject("Something"));
     }
 
     SECTION("Can Get Parallel Executor")

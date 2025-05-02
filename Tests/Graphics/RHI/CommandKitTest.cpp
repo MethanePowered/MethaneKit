@@ -31,6 +31,7 @@ Unit-tests of the RHI CommandKit
 #include <Methane/Graphics/RHI/RenderCommandList.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/RHI/Fence.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <Methane/Graphics/Base/CommandList.h>
 
@@ -44,7 +45,7 @@ static tf::Executor g_parallel_executor;
 
 TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
 {
-    const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
+    const auto              compute_context   = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
     const Rhi::CommandQueue compute_cmd_queue = compute_context.CreateCommandQueue(Rhi::CommandListType::Compute);
 
     SECTION("Command Kit Construction")
@@ -88,6 +89,16 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
         ObjectCallbackTester object_callback_tester(compute_cmd_kit);
         CHECK_FALSE(compute_cmd_kit.SetName("My Command Kit"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        compute_cmd_kit.SetName("Compute Command Kit");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(compute_cmd_kit);
+        const auto registered_cmd_kit = registry.GetGraphicsObject<Rhi::CommandKit>("Compute Command Kit");
+        REQUIRE(registered_cmd_kit.IsInitialized());
+        CHECK(&registered_cmd_kit.GetInterface() == &compute_cmd_kit.GetInterface());
     }
 
     SECTION("Get Context of Compute Command Kit")
@@ -170,10 +181,12 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
         CHECK_FALSE(compute_cmd_kit.HasListWithState(Rhi::CommandListState::Encoding, cmd_list_id));
     }
 
+    constexpr std::array<Rhi::CommandListId, 2U> g_command_list_ids_0_1 = { 0U, 1U };
+
     SECTION("Get Command List Set of Compute Command Kit")
     {
         Rhi::CommandListSet cmd_list_set;
-        REQUIRE_NOTHROW(cmd_list_set = compute_cmd_kit.GetListSet({ 0U, 1U }, 2U));
+        REQUIRE_NOTHROW(cmd_list_set = compute_cmd_kit.GetListSet(g_command_list_ids_0_1, 2U));
         REQUIRE(cmd_list_set.IsInitialized());
         REQUIRE(cmd_list_set.GetCount() == 2);
         CHECK(cmd_list_set.GetFrameIndex() == 2U);
@@ -186,15 +199,16 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
     SECTION("Get Fences of Compute Command Kit")
     {
         Rhi::CommandListSet cmd_list_set;
-        REQUIRE_NOTHROW(cmd_list_set = compute_cmd_kit.GetListSet({ 0U, 1U }, 0U));
+        REQUIRE_NOTHROW(cmd_list_set = compute_cmd_kit.GetListSet(g_command_list_ids_0_1, 0U));
         CHECK_NOTHROW(compute_cmd_kit.GetFence(0U));
         CHECK_NOTHROW(compute_cmd_kit.GetFence(1U));
     }
 
     SECTION("Can Execute Non-Existing List Set")
     {
-        CHECK_THROWS(compute_cmd_kit.ExecuteListSet({ 1U, 2U }), 0U);
-        CHECK_THROWS(compute_cmd_kit.ExecuteListSetAndWaitForCompletion({ 1U, 2U }), 0U);
+        constexpr std::array<Rhi::CommandListId, 2U> g_command_list_ids_1_2 = { 1U, 2U };
+        CHECK_THROWS(compute_cmd_kit.ExecuteListSet(g_command_list_ids_1_2), 0U);
+        CHECK_THROWS(compute_cmd_kit.ExecuteListSetAndWaitForCompletion(g_command_list_ids_1_2), 0U);
     }
 
     SECTION("Can not Execute Non-Committed List Set")
@@ -204,8 +218,8 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
         Rhi::CommandListSet cmd_list_set;
         REQUIRE_NOTHROW(primary_cmd_list = compute_cmd_kit.GetComputeListForEncoding(0U));
         REQUIRE_NOTHROW(secondary_cmd_list = compute_cmd_kit.GetComputeListForEncoding(1U));
-        CHECK_THROWS(compute_cmd_kit.ExecuteListSet({ 0U, 1U }), 2U);
-        CHECK_THROWS(compute_cmd_kit.ExecuteListSetAndWaitForCompletion({ 0U, 1U }), 2U);
+        CHECK_THROWS(compute_cmd_kit.ExecuteListSet(g_command_list_ids_0_1), 2U);
+        CHECK_THROWS(compute_cmd_kit.ExecuteListSetAndWaitForCompletion(g_command_list_ids_0_1), 2U);
     }
 
     SECTION("Can Execute Committed List Set")
@@ -217,10 +231,10 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
         REQUIRE_NOTHROW(primary_cmd_list.Commit());
         REQUIRE_NOTHROW(secondary_cmd_list = compute_cmd_kit.GetComputeListForEncoding(1U));
         REQUIRE_NOTHROW(secondary_cmd_list.Commit());
-        CHECK_NOTHROW(compute_cmd_kit.ExecuteListSet({ 0U, 1U }), 2U);
+        REQUIRE_NOTHROW(compute_cmd_kit.ExecuteListSet(g_command_list_ids_0_1), 2U);
+        CHECK(primary_cmd_list.GetState() == Rhi::CommandListState::Executing);
+        CHECK(secondary_cmd_list.GetState() == Rhi::CommandListState::Executing);
     }
-
-#if 0 // FIXME: fix this test
 
     SECTION("Can Execute Committed List Set And Wait For Completion")
     {
@@ -231,12 +245,16 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
         REQUIRE_NOTHROW(primary_cmd_list.Commit());
         REQUIRE_NOTHROW(secondary_cmd_list = compute_cmd_kit.GetComputeListForEncoding(1U));
         REQUIRE_NOTHROW(secondary_cmd_list.Commit());
-        auto wait_async = g_parallel_executor.async([&compute_cmd_kit]()
+        auto wait_async = g_parallel_executor.async([&compute_cmd_kit, &g_command_list_ids_0_1]()
         {
-            CHECK_NOTHROW(compute_cmd_kit.ExecuteListSetAndWaitForCompletion({ 0U, 1U }), 2U);
+            REQUIRE_NOTHROW(compute_cmd_kit.ExecuteListSetAndWaitForCompletion(g_command_list_ids_0_1), 2U);
+            for(Rhi::CommandListId cmd_list_id : g_command_list_ids_0_1)
+            {
+                CHECK(compute_cmd_kit.GetComputeList(cmd_list_id).GetState() == Rhi::CommandListState::Pending);
+            }
         });
 
-        std::this_thread::sleep_for(std::chrono::nanoseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         REQUIRE(primary_cmd_list.GetState() == Rhi::CommandListState::Executing);
         dynamic_cast<Base::CommandList&>(primary_cmd_list.GetInterface()).Complete();
@@ -244,10 +262,8 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
 
         REQUIRE(secondary_cmd_list.GetState() == Rhi::CommandListState::Executing);
         dynamic_cast<Base::CommandList&>(secondary_cmd_list.GetInterface()).Complete();
-        CHECK(primary_cmd_list.GetState() == Rhi::CommandListState::Pending);
+        CHECK(secondary_cmd_list.GetState() == Rhi::CommandListState::Pending);
 
         wait_async.wait();
     }
-
-#endif
 }

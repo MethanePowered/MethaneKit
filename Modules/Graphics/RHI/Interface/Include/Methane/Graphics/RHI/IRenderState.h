@@ -59,17 +59,7 @@ struct RasterizerSettings
     uint32_t sample_count               = 1;
     bool     alpha_to_coverage_enabled  = false;
 
-    [[nodiscard]] friend bool operator==(const RasterizerSettings& left, const RasterizerSettings& right) noexcept
-    {
-        return std::tie(left.is_front_counter_clockwise, left.cull_mode, left.fill_mode, left.sample_count, left.alpha_to_coverage_enabled) ==
-               std::tie(right.is_front_counter_clockwise, right.cull_mode, right.fill_mode, right.sample_count, right.alpha_to_coverage_enabled);
-    }
-
-    [[nodiscard]] friend bool operator!=(const RasterizerSettings& left, const RasterizerSettings& right) noexcept
-    {
-        return !(left == right);
-    }
-
+    [[nodiscard]] friend bool operator==(const RasterizerSettings& left, const RasterizerSettings& right) noexcept = default;
     [[nodiscard]] explicit operator std::string() const;
 };
 
@@ -131,21 +121,7 @@ struct RenderTargetSettings
     Factor           dest_rgb_blend_factor     = Factor::Zero;
     Factor           dest_alpha_blend_factor   = Factor::Zero;
 
-    [[nodiscard]] friend bool operator==(const RenderTargetSettings& left, const RenderTargetSettings& right) noexcept
-    {
-        return std::tie(left.blend_enabled, left.color_write, left.rgb_blend_op, left.alpha_blend_op,
-                        left.source_rgb_blend_factor, left.source_alpha_blend_factor,
-                        left.dest_rgb_blend_factor, left.dest_alpha_blend_factor) ==
-               std::tie(right.blend_enabled, right.color_write, right.rgb_blend_op, right.alpha_blend_op,
-                        right.source_rgb_blend_factor, right.source_alpha_blend_factor,
-                        right.dest_rgb_blend_factor, right.dest_alpha_blend_factor);
-    }
-
-    [[nodiscard]] friend bool operator!=(const RenderTargetSettings& left, const RenderTargetSettings& right) noexcept
-    {
-        return !(left == right);
-    }
-
+    [[nodiscard]] friend bool operator==(const RenderTargetSettings& left, const RenderTargetSettings& right) noexcept = default;
     [[nodiscard]] explicit operator std::string() const;
 };
 
@@ -162,17 +138,7 @@ struct BlendingSettings
     bool          is_independent = false;
     RenderTargets render_targets;
 
-    [[nodiscard]] friend bool operator==(const BlendingSettings& left, const BlendingSettings& right) noexcept
-    {
-        return std::tie(left.is_independent, left.render_targets) ==
-               std::tie(right.is_independent, right.render_targets);
-    }
-
-    [[nodiscard]] friend bool operator!=(const BlendingSettings& left, const BlendingSettings& right) noexcept
-    {
-        return !(left == right);
-    }
-
+    [[nodiscard]] friend bool operator==(const BlendingSettings& left, const BlendingSettings& right) noexcept = default;
     [[nodiscard]] explicit operator std::string() const;
 };
 
@@ -182,17 +148,7 @@ struct DepthSettings
     bool    write_enabled   = true;
     Compare compare         = Compare::Less;
 
-    [[nodiscard]] friend bool operator==(const DepthSettings& left, const DepthSettings& right) noexcept
-    {
-        return std::tie(left.enabled, left.write_enabled, left.compare) ==
-               std::tie(right.enabled, right.write_enabled, right.compare);
-    }
-
-    [[nodiscard]] friend bool operator!=(const DepthSettings& left, const DepthSettings& right) noexcept
-    {
-        return !(left == right);
-    }
-
+    [[nodiscard]] friend bool operator==(const DepthSettings& left, const DepthSettings& right) noexcept = default;
     [[nodiscard]] explicit operator std::string() const;
 };
 
@@ -218,17 +174,7 @@ struct FaceOperations
     Operation  depth_stencil_pass = Operation::Keep; // Metal only
     Compare    compare            = Compare::Always;
 
-    [[nodiscard]] friend bool operator==(const FaceOperations& left, const FaceOperations& right) noexcept
-    {
-        return std::tie(left.stencil_failure, left.stencil_pass, left.depth_failure, left.depth_stencil_pass, left.compare) ==
-               std::tie(right.stencil_failure, right.stencil_pass, right.depth_failure, right.depth_stencil_pass, right.compare);
-    }
-
-    [[nodiscard]] friend bool operator!=(const FaceOperations& left, const FaceOperations& right) noexcept
-    {
-        return !(left == right);
-    }
-
+    [[nodiscard]] friend bool operator==(const FaceOperations& left, const FaceOperations& right) noexcept = default;
     [[nodiscard]] explicit operator std::string() const;
 };
 
@@ -240,17 +186,7 @@ struct StencilSettings
     FaceOperations front_face;
     FaceOperations back_face;
 
-    [[nodiscard]] friend bool operator==(const StencilSettings& left, const StencilSettings& right) noexcept
-    {
-        return std::tie(left.enabled, left.read_mask, left.write_mask, left.front_face, left.back_face) ==
-               std::tie(right.enabled, right.read_mask, right.write_mask, right.front_face, right.back_face);
-    }
-
-    [[nodiscard]] friend bool operator!=(const StencilSettings& left, const StencilSettings& right) noexcept
-    {
-        return !(left == right);
-    }
-
+    [[nodiscard]] friend bool operator==(const StencilSettings& left, const StencilSettings& right) noexcept = default;
     [[nodiscard]] explicit operator std::string() const;
 };
 
@@ -291,11 +227,6 @@ struct RenderStateSettings
     {
         return std::tie(left.program_ptr, left.rasterizer, left.depth, left.stencil, left.blending, left.blending_color) ==
                std::tie(right.program_ptr, right.rasterizer, right.depth, right.stencil, right.blending, right.blending_color);
-    }
-
-    [[nodiscard]] friend bool operator!=(const RenderStateSettings& left, const RenderStateSettings& right) noexcept
-    {
-        return !(left == right);
     }
 
     [[nodiscard]] explicit operator std::string() const;

@@ -79,3 +79,8 @@ graph TD;
     data_range-.->gfx_rhi
     pal_util-.->gfx_rhi
 ```
+
+## Unit Tests Coverage
+
+See [Graphics Tests description](/Tests/Graphics/README.md) for details on unit tests coverage.
+

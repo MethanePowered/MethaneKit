@@ -43,10 +43,10 @@ static const rhi::Devices& GetComputeDevices()
     static const rhi::Devices& s_compute_devices = []()
     {
         rhi::System::Get().UpdateGpuDevices(rhi::DeviceCaps{
-            rhi::DeviceFeatureMask{},
-            0U, // render_queues_count
-            1U, // transfer_queues_count
-            1U  // compute_queues_count
+            .features = rhi::DeviceFeatureMask{},
+            .render_queues_count   = 0U,
+            .transfer_queues_count = 1U,
+            .compute_queues_count  = 1U
         });
         return rhi::System::Get().GetGpuDevices();
     }();
@@ -149,17 +149,16 @@ void ConsoleComputeApp::Init()
     m_compute_context.SetName("Game of Life");
 
     m_compute_state = m_compute_context.CreateComputeState({
-            m_compute_context.CreateProgram({
-                rhi::Program::ShaderSet {
-                    { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } }
-                },
-                rhi::ProgramInputBufferLayouts{ /* not applicable for compute pipeline */},
-                rhi::ProgramArgumentAccessors
-                {
-                    META_PROGRAM_ARG_ROOT_VALUE_CONSTANT(rhi::ShaderType::Compute, "g_constants")
-                },
+        .program = m_compute_context.CreateProgram({
+            .shader_set = rhi::Program::ShaderSet {
+                { rhi::ShaderType::Compute, { data::ShaderProvider::Get(), { "GameOfLife", "MainCS" } } }
+            },
+            .argument_accessors = rhi::ProgramArgumentAccessors
+            {
+                META_PROGRAM_ARG_ROOT_VALUE_CONSTANT(rhi::ShaderType::Compute, "g_constants")
+            },
         }),
-        rhi::ThreadGroupSize(16U, 16U, 1U)
+        .thread_group_size = rhi::ThreadGroupSize(16U, 16U, 1U)
     });
     m_compute_state.GetProgram().SetName("Game of Life Program");
     m_compute_state.SetName("Game of Life Compute State");

@@ -61,12 +61,6 @@ struct SamplerFilter
                std::tie(right.min, right.mag, right.mip);
     }
 
-    [[nodiscard]] friend bool operator!=(const SamplerFilter& left, const SamplerFilter& right)
-    {
-        return !(left == right);
-    }
-
-
     MinMag min = MinMag::Nearest;
     MinMag mag = MinMag::Nearest;
     Mip    mip = Mip::NotMipmapped;
@@ -93,11 +87,6 @@ struct SamplerAddress
                std::tie(right.s, right.t, right.r);
     }
 
-    [[nodiscard]] friend bool operator!=(const SamplerAddress& left, const SamplerAddress& right)
-    {
-        return !(left == right);
-    }
-
     Mode s = Mode::ClampToEdge; // width
     Mode t = Mode::ClampToEdge; // height
     Mode r = Mode::ClampToEdge; // depth
@@ -112,11 +101,6 @@ struct SamplerLevelOfDetail
         META_FUNCTION_TASK();
         return std::tie(left.min, left.max, left.bias) ==
                std::tie(right.min, right.max, right.bias);
-    }
-
-    [[nodiscard]] friend bool operator!=(const SamplerLevelOfDetail& left, const SamplerLevelOfDetail& right)
-    {
-        return !(left == right);
     }
 
     float min  = 0.F;
@@ -140,16 +124,7 @@ struct SamplerSettings
                     SamplerBorderColor border_color = SamplerBorderColor::TransparentBlack,
                     Compare compare_function = Compare::Never);
 
-    [[nodiscard]] friend bool operator==(const SamplerSettings& left, const SamplerSettings& right)
-    {
-        return std::tie(left.filter, left.address, left.lod, left.max_anisotropy, left.border_color, left.compare_function) ==
-               std::tie(right.filter, right.address, right.lod, right.max_anisotropy, right.border_color, right.compare_function);
-    }
-
-    [[nodiscard]] friend bool operator!=(const SamplerSettings& left, const SamplerSettings& right)
-    {
-        return !(left == right);
-    }
+    [[nodiscard]] friend bool operator==(const SamplerSettings& left, const SamplerSettings& right) = default;
 
     SamplerFilter        filter;
     SamplerAddress       address;

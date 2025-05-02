@@ -31,6 +31,7 @@ Methane ComputeContext PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Sampler.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -44,7 +45,6 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ComputeContext);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(ComputeContext);
 
 ComputeContext::ComputeContext(const Ptr<IComputeContext>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
@@ -146,9 +146,9 @@ tf::Executor& ComputeContext::GetParallelExecutor() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetParallelExecutor();
 }
 
-IObjectRegistry& ComputeContext::GetObjectRegistry() const META_PIMPL_NOEXCEPT
+ObjectRegistry ComputeContext::GetObjectRegistry() const META_PIMPL_NOEXCEPT
 {
-    return GetImpl(m_impl_ptr).GetObjectRegistry();
+    return ObjectRegistry(GetImpl(m_impl_ptr).GetObjectRegistry());
 }
 
 bool ComputeContext::UploadResources() const META_PIMPL_NOEXCEPT

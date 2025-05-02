@@ -91,12 +91,13 @@ void RenderPass::End(RenderCommandList&)
 void RenderPass::InitAttachmentStates() const
 {
     META_FUNCTION_TASK();
-    const bool             is_final_pass          = GetPattern().GetSettings().is_final_pass;
-    const Rhi::ResourceState color_attachment_state = is_final_pass ? Rhi::ResourceState::Present : Rhi::ResourceState::RenderTarget;
+    using enum Rhi::ResourceState;
+    const bool               is_final_pass          = GetPattern().GetSettings().is_final_pass;
+    const Rhi::ResourceState color_attachment_state = is_final_pass ? Present : RenderTarget;
     for (const Ref<Texture>& color_texture_ref : GetColorAttachmentTextures())
     {
-        if (color_texture_ref.get().GetState() == Rhi::ResourceState::Common ||
-            color_texture_ref.get().GetState() == Rhi::ResourceState::Undefined)
+        if (color_texture_ref.get().GetState() == Common ||
+            color_texture_ref.get().GetState() == Undefined)
             color_texture_ref.get().SetState(color_attachment_state);
     }
 }
@@ -165,6 +166,7 @@ const Rhi::ITexture::View& RenderPass::GetAttachmentTextureView(const Rhi::Rende
 const Refs<Texture>& RenderPass::GetColorAttachmentTextures() const
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_mutex);
     if (!m_color_attachment_textures.empty())
         return m_color_attachment_textures;
 
@@ -180,6 +182,7 @@ const Refs<Texture>& RenderPass::GetColorAttachmentTextures() const
 Texture* RenderPass::GetDepthAttachmentTexture() const
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_mutex);
     if (m_depth_attachment_texture_ptr)
         return m_depth_attachment_texture_ptr;
 
@@ -194,6 +197,7 @@ Texture* RenderPass::GetDepthAttachmentTexture() const
 Texture* RenderPass::GetStencilAttachmentTexture() const
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_mutex);
     if (m_stencil_attachment_texture_ptr)
         return m_stencil_attachment_texture_ptr;
 
@@ -208,6 +212,7 @@ Texture* RenderPass::GetStencilAttachmentTexture() const
 const Ptrs<Texture>& RenderPass::GetNonFrameBufferAttachmentTextures() const
 {
     META_FUNCTION_TASK();
+    std::scoped_lock lock_guard(m_mutex);
     if (!m_non_frame_buffer_attachment_textures.empty())
         return m_non_frame_buffer_attachment_textures;
 

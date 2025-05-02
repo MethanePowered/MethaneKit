@@ -50,10 +50,11 @@ class ComputeContext;
 class ComputeState // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
-    using Settings = ComputeStateSettingsImpl;
+    using Interface = IComputeState;
+    using Settings  = ComputeStateSettingsImpl;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ComputeState);
-    META_PIMPL_METHODS_COMPARE_DECLARE(ComputeState);
+    META_PIMPL_METHODS_COMPARE_INLINE(ComputeState);
 
     META_PIMPL_API explicit ComputeState(const Ptr<IComputeState>& interface_ptr);
     META_PIMPL_API explicit ComputeState(IComputeState& interface_ref);

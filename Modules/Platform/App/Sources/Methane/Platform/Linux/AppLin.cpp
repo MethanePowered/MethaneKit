@@ -30,10 +30,19 @@ Linux application implementation.
 #include <Methane/Checks.hpp>
 #include <Methane/Instrumentation.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_STATIC
+#define STBI_NO_STDIO
+#include <stb_image.h>
+
+#pragma GCC diagnostic pop
+
 #include <string_view>
 #include <optional>
 
-#include <stb_image.h>
 #include <X11/Xlib-xcb.h>
 #include <X11/Xutil.h>
 #include <X11/Xresource.h>
@@ -310,9 +319,9 @@ Data::FrameSize AppLin::InitWindow()
     m_state_hidden_atom     = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_HIDDEN");
     m_state_fullscreen_atom = Linux::GetXcbInternAtom(m_env.connection, "_NET_WM_STATE_FULLSCREEN");
 
-    if (settings.icon_provider)
+    if (settings.icon_provider_ptr)
     {
-        SetWindowIcon(*settings.icon_provider);
+        SetWindowIcon(*settings.icon_provider_ptr);
     }
 
     xcb_map_window(m_env.connection, m_env.window);
@@ -571,20 +580,22 @@ void AppLin::OnKeyboardMappingChanged(const xcb_mapping_notify_event_t& mapping_
 void AppLin::OnMouseButtonChanged(const xcb_button_press_event_t& button_press_event, Input::Mouse::ButtonState button_state)
 {
     META_FUNCTION_TASK();
-    Input::Mouse::Button button = Input::Mouse::Button::Unknown;
+    using enum Input::Mouse::Button;
+    Input::Mouse::Button button = Unknown;
     int delta_sign = -1;
     std::tie(button, delta_sign) = Linux::ConvertXcbMouseButton(button_press_event.detail);
 
     ProcessInputWithErrorHandling(&Input::IActionController::OnMouseButtonChanged, button, button_state);
 
-    if ((button == Input::Mouse::Button::HScroll || button == Input::Mouse::Button::VScroll) && button_state == Input::Mouse::ButtonState::Released)
+    if ((button == HScroll || button == VScroll) &&
+        button_state == Input::Mouse::ButtonState::Released)
     {
         const float scroll_value = button_press_event.state
                                  ? static_cast<float>(delta_sign * button_press_event.state / 1024)
                                  : static_cast<float>(delta_sign);
         const Input::Mouse::Scroll mouse_scroll(
-            button == Input::Mouse::Button::HScroll ? scroll_value : 0.F,
-            button == Input::Mouse::Button::VScroll ? scroll_value : 0.F
+            button == HScroll ? scroll_value : 0.F,
+            button == VScroll ? scroll_value : 0.F
         );
         ProcessInputWithErrorHandling(&Input::IActionController::OnMouseScrollChanged, mouse_scroll);
     }

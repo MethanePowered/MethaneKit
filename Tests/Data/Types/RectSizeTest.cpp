@@ -188,7 +188,7 @@ TEMPLATE_TEST_CASE("Rectangle Size Comparison", "[rect][size][compare]", RECT_SI
     SECTION("Less")
     {
         CHECK_FALSE(small_size < RectSize<TestType>(small_width, small_height));
-        CHECK_FALSE(small_size < RectSize<TestType>(small_width, big_height));
+        CHECK(small_size < RectSize<TestType>(small_width, big_height));
         CHECK(small_size < RectSize<TestType>(big_width, big_height));
     }
 
@@ -203,7 +203,7 @@ TEMPLATE_TEST_CASE("Rectangle Size Comparison", "[rect][size][compare]", RECT_SI
     SECTION("Greater")
     {
         CHECK_FALSE(RectSize<TestType>(small_width, small_height) > small_size);
-        CHECK_FALSE(RectSize<TestType>(small_width, big_height) > small_size);
+        CHECK(RectSize<TestType>(small_width, big_height) > small_size);
         CHECK(RectSize<TestType>(big_width, big_height) > small_size);
     }
 
@@ -213,6 +213,20 @@ TEMPLATE_TEST_CASE("Rectangle Size Comparison", "[rect][size][compare]", RECT_SI
         CHECK(RectSize<TestType>(small_width, big_height) >= small_size);
         CHECK(RectSize<TestType>(big_width, big_height) >= small_size);
         CHECK_FALSE(small_size >= RectSize<TestType>(big_width, big_height));
+    }
+
+    SECTION("Contained In")
+    {
+        CHECK_FALSE(small_size.ContainedIn(RectSize<TestType>(small_width, small_height)));
+        CHECK_FALSE(small_size.ContainedIn(RectSize<TestType>(small_width, big_height)));
+        CHECK(small_size.ContainedIn(RectSize<TestType>(big_width, big_height)));
+    }
+
+    SECTION("Contained In or Equal")
+    {
+        CHECK(small_size.ContainedInOrEqual(RectSize<TestType>(small_width, small_height)));
+        CHECK(small_size.ContainedInOrEqual(RectSize<TestType>(small_width, big_height)));
+        CHECK(small_size.ContainedInOrEqual(RectSize<TestType>(big_width, big_height)));
     }
 }
 

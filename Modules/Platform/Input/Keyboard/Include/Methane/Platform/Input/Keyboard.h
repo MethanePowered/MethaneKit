@@ -181,27 +181,7 @@ public:
     State(std::initializer_list<Key> pressed_keys, ModifierMask modifiers_mask = {});
     virtual ~State() = default;
 
-    [[nodiscard]] friend bool operator< (const State& left, const State& right) noexcept
-    {
-        META_FUNCTION_TASK();
-        if (left.m_modifiers_mask != right.m_modifiers_mask)
-        {
-            return left.m_modifiers_mask < right.m_modifiers_mask;
-        }
-        return left.m_key_states < right.m_key_states;
-    }
-
-    [[nodiscard]] friend bool operator==(const State& left, const State& right) noexcept
-    {
-        META_FUNCTION_TASK();
-        return std::tie(left.m_key_states,  left.m_modifiers_mask) ==
-               std::tie(right.m_key_states, right.m_modifiers_mask);
-    }
-
-    [[nodiscard]] friend bool operator!=(const State& left, const State& right) noexcept
-    {
-        return !(left == right);
-    }
+    [[nodiscard]] friend auto operator<=> (const State& left, const State& right) noexcept = default;
 
     friend std::ostream& operator<<(std::ostream& os, const State& keyboard_state)
     {
@@ -229,8 +209,8 @@ private:
     KeyType SetKeyImpl(Key key, KeyState key_state);
     void UpdateModifiersMask(ModifierMask modifier_value, bool add_modifier) noexcept;
 
-    KeyStates    m_key_states{};
     ModifierMask m_modifiers_mask;
+    KeyStates    m_key_states{};
 };
 
 // State tracks only active modifiers, but not exactly modifier keys

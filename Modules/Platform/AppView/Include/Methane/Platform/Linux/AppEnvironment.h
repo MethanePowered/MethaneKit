@@ -35,10 +35,10 @@ using xcb_window_t = uint32_t;
 
 struct ScreenRect
 {
-    int32_t x;
-    int32_t y;
-    int32_t width;
-    int32_t height;
+    int32_t x = 0;
+    int32_t y = 0;
+    int32_t width = 0;
+    int32_t height = 0;
 };
 
 namespace Methane::Platform
@@ -46,10 +46,10 @@ namespace Methane::Platform
 
 struct AppEnvironment
 {
-    xcb_connection_t* connection;
-    xcb_window_t window;
-    _XDisplay* display;
-    xcb_screen_t* screen;
+    xcb_connection_t* connection = nullptr;
+    xcb_window_t window {};
+    _XDisplay* display = nullptr;
+    xcb_screen_t* screen = nullptr;
     ScreenRect primary_screen_rect;
 };
 

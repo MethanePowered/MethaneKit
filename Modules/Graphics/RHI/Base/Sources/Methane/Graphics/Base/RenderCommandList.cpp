@@ -51,7 +51,7 @@ RenderCommandList::RenderCommandList(CommandQueue& command_queue, RenderPass& pa
 RenderCommandList::RenderCommandList(ParallelRenderCommandList& parallel_render_command_list)
     : CommandList(static_cast<CommandQueue&>(parallel_render_command_list.GetCommandQueue()), Type::Render)
     , m_is_parallel(true)
-    , m_render_pass_ptr(parallel_render_command_list.GetRenderPass().GetPtr<RenderPass>())
+    , m_render_pass_ptr(parallel_render_command_list.GetBaseRenderPassPtr())
 { }
 
 Rhi::IRenderPass& RenderCommandList::GetRenderPass() const
@@ -100,17 +100,13 @@ void RenderCommandList::SetRenderState(Rhi::IRenderState& render_state, Rhi::Ren
     VerifyEncodingState();
 
     const bool render_state_changed = m_drawing_state.render_state_ptr.get() != std::addressof(render_state);
-    Rhi::RenderStateGroupMask changed_states;
-    if (!m_drawing_state.render_state_ptr)
-        changed_states = Rhi::RenderStateGroupMask(~0U);
-
+    Rhi::RenderStateGroupMask changed_states{ m_drawing_state.render_state_ptr ? 0U : ~0U };
     if (m_drawing_state.render_state_ptr && render_state_changed)
     {
         changed_states = Rhi::RenderStateSettings::Compare(render_state.GetSettings(),
                                                            m_drawing_state.render_state_ptr->GetSettings(),
                                                            m_drawing_state.render_state_groups);
     }
-    changed_states |= ~m_drawing_state.render_state_groups;
 
     auto& render_state_base = static_cast<RenderState&>(render_state);
     if (!render_state_base.IsDeferred())
@@ -215,6 +211,8 @@ void RenderCommandList::DrawIndexed(Primitive primitive_type, uint32_t index_cou
     if (m_is_validation_enabled)
     {
         const DrawingState& drawing_state = GetDrawingState();
+        META_CHECK_NOT_NULL_DESCR(drawing_state.render_state_ptr, "render state must be set before indexed draw call");
+        META_CHECK_NOT_NULL_DESCR(drawing_state.view_state_ptr, "view state must be set before indexed draw call");
         META_CHECK_NOT_NULL_DESCR(drawing_state.index_buffer_ptr, "index buffer must be set before indexed draw call");
         META_CHECK_NOT_NULL_DESCR(drawing_state.vertex_buffer_set_ptr, "vertex buffers must be set before draw call");
 
@@ -222,7 +220,8 @@ void RenderCommandList::DrawIndexed(Primitive primitive_type, uint32_t index_cou
         META_CHECK_NOT_ZERO_DESCR(formatted_items_count, "can not draw with index buffer which contains no formatted vertices");
         META_CHECK_NOT_ZERO_DESCR(index_count, "can not draw zero index/vertex count");
         META_CHECK_NOT_ZERO_DESCR(instance_count, "can not draw zero instances");
-        META_CHECK_LESS_DESCR(start_index, formatted_items_count - index_count + 1U, "ending index is out of buffer bounds");
+        META_CHECK_LESS_OR_EQUAL_DESCR(index_count, formatted_items_count, "can not draw more indices than available in the index buffer");
+        META_CHECK_LESS_OR_EQUAL_DESCR(start_index, formatted_items_count - index_count, "ending index is out of buffer bounds");
 
         ValidateDrawVertexBuffers(start_vertex);
     }
@@ -245,6 +244,7 @@ void RenderCommandList::Draw(Primitive primitive_type, uint32_t vertex_count, ui
     {
         const DrawingState& drawing_state = GetDrawingState();
         META_CHECK_NOT_NULL_DESCR(drawing_state.render_state_ptr, "render state must be set before draw call");
+        META_CHECK_NOT_NULL_DESCR(drawing_state.view_state_ptr, "view state must be set before draw call");
         const size_t input_buffers_count = drawing_state.render_state_ptr->GetSettings().program_ptr->GetSettings().input_buffer_layouts.size();
         META_CHECK_TRUE_DESCR(!input_buffers_count || drawing_state.vertex_buffer_set_ptr,
                               "vertex buffers must be set when program has non empty input buffer layouts");
@@ -285,18 +285,19 @@ void RenderCommandList::ResetCommandState()
 void RenderCommandList::UpdateDrawingState(Primitive primitive_type)
 {
     META_FUNCTION_TASK();
+    using enum RenderDrawingState::Change;
     DrawingState& drawing_state = GetDrawingState();
     if (!drawing_state.primitive_type_opt || *drawing_state.primitive_type_opt == primitive_type)
     {
-        drawing_state.changes |= DrawingState::Change::PrimitiveType;
+        drawing_state.changes |= PrimitiveType;
         drawing_state.primitive_type_opt = primitive_type;
     }
 
     if (m_drawing_state.render_state_ptr &&
         m_drawing_state.render_state_ptr->IsDeferred() &&
         (static_cast<bool>(m_drawing_state.render_state_groups) ||
-         drawing_state.changes.HasAnyBit(DrawingState::Change::PrimitiveType) ||
-         drawing_state.changes.HasAnyBit(DrawingState::Change::ViewState)))
+         drawing_state.changes.HasAnyBit(PrimitiveType) ||
+         drawing_state.changes.HasAnyBit(ViewState)))
     {
         // Apply render state in deferred mode right before the Draw call,
         // only in case when any render state groups or view state or primitive type has changed
@@ -304,8 +305,8 @@ void RenderCommandList::UpdateDrawingState(Primitive primitive_type)
         RetainResource(m_drawing_state.render_state_ptr);
 
         m_drawing_state.render_state_groups = {};
-        drawing_state.changes.SetBitOff(DrawingState::Change::PrimitiveType);
-        drawing_state.changes.SetBitOff(DrawingState::Change::ViewState);
+        drawing_state.changes.SetBitOff(PrimitiveType);
+        drawing_state.changes.SetBitOff(ViewState);
     }
 }
 
@@ -322,10 +323,13 @@ void RenderCommandList::ValidateDrawVertexBuffers(uint32_t draw_start_vertex, ui
         const Rhi::IBuffer&  vertex_buffer = (*m_drawing_state.vertex_buffer_set_ptr)[vertex_buffer_index];
         const uint32_t vertex_count  = vertex_buffer.GetFormattedItemsCount();
         META_UNUSED(vertex_count);
-        META_CHECK_LESS_DESCR(draw_start_vertex, vertex_count - draw_vertex_count + 1U,
-                              "can not draw starting from vertex {}{} which is out of bounds for vertex buffer '{}' with vertex count {}",
-                              draw_start_vertex, draw_vertex_count ? fmt::format(" with {} vertex count", draw_vertex_count) : "",
-                              vertex_buffer.GetName(), vertex_count);
+        META_CHECK_LESS_OR_EQUAL_DESCR(draw_vertex_count, vertex_count,
+                                       "vertex count to draw is out of bounds of initialized vertex size for buffer '{}'",
+                                       vertex_buffer.GetName());
+        META_CHECK_LESS_OR_EQUAL_DESCR(draw_start_vertex, vertex_count - draw_vertex_count,
+                                       "can not draw starting from vertex {}{} which is out of bounds for vertex buffer '{}' with vertex count {}",
+                                       draw_start_vertex, draw_vertex_count ? fmt::format(" with {} vertex count", draw_vertex_count) : "",
+                                       vertex_buffer.GetName(), vertex_count);
     }
 }
 

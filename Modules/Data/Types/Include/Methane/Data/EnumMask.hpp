@@ -27,6 +27,7 @@ Enum-based mask data type with common mask operations.
 #include <cmath>
 #include <initializer_list>
 #include <type_traits>
+#include <compare>
 
 namespace Methane::Data
 {
@@ -74,12 +75,7 @@ public:
 
     constexpr M GetValue() const noexcept { return m_value; }
 
-    constexpr friend bool operator==(const EnumMask& left, const EnumMask& right) noexcept { return left.m_value == right.m_value; }
-    constexpr friend bool operator!=(const EnumMask& left, const EnumMask& right) noexcept { return left.m_value != right.m_value; }
-    constexpr friend bool operator<(const EnumMask& left, const EnumMask& right) noexcept  { return left.m_value <  right.m_value; }
-    constexpr friend bool operator<=(const EnumMask& left, const EnumMask& right) noexcept { return left.m_value <= right.m_value; }
-    constexpr friend bool operator>(const EnumMask& left, const EnumMask& right) noexcept  { return left.m_value >  right.m_value; }
-    constexpr friend bool operator>=(const EnumMask& left, const EnumMask& right) noexcept { return left.m_value >= right.m_value; }
+    constexpr friend auto operator<=>(const EnumMask& left, const EnumMask& right) noexcept = default;
 
     constexpr friend EnumMask operator|(const EnumMask& mask, Bit bit) noexcept         { return EnumMask(mask.m_value | bit.GetValue());   }
     constexpr friend EnumMask operator|(const EnumMask& left, EnumMask right) noexcept  { return EnumMask(left.m_value | right.GetValue()); }

@@ -23,6 +23,7 @@ Camera helper implementation allowing to generate view and projection matrices.
 
 #include <Methane/Graphics/Camera.h>
 #include <Methane/Graphics/TypeFormatters.hpp>
+#include <Methane/Data/Math.hpp>
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
@@ -84,7 +85,7 @@ void Camera::UpdateProjectionSettings()
 void Camera::Rotate(const hlslpp::float3& axis, float angle_deg) noexcept
 {
     META_FUNCTION_TASK();
-    const hlslpp::float3x3 rotation_matrix = hlslpp::float3x3::rotation_axis(axis, angle_deg * ConstFloat::RadPerDeg);
+    const hlslpp::float3x3 rotation_matrix = hlslpp::float3x3::rotation_axis(axis, Data::DegreeToRadians(angle_deg));
     const hlslpp::float3   new_look_dir    = hlslpp::mul(GetLookDirection(), rotation_matrix);
     SetOrientationEye(GetOrientation().aim - new_look_dir);
 }
@@ -179,7 +180,7 @@ hlslpp::float4 Camera::TransformViewToWorld(const hlslpp::float4& view_pos, cons
 float Camera::GetFovAngleY() const noexcept
 {
     META_FUNCTION_TASK();
-    float fov_angle_y = m_parameters.fov_deg * ConstFloat::RadPerDeg;
+    float fov_angle_y = Data::DegreeToRadians(m_parameters.fov_deg);
     if (m_aspect_ratio != 0.F && m_aspect_ratio < 1.0F)
     {
         fov_angle_y /= (0.5F + m_aspect_ratio / 2.F);

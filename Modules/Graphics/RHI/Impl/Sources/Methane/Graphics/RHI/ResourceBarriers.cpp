@@ -36,7 +36,6 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(ResourceBarriers);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(ResourceBarriers);
 
 ResourceBarriers::ResourceBarriers(const Ptr<IResourceBarriers>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
@@ -50,6 +49,13 @@ ResourceBarriers::ResourceBarriers(IResourceBarriers& interface_ref)
 
 ResourceBarriers::ResourceBarriers(const Set& barriers)
     : ResourceBarriers(IResourceBarriers::Create(barriers))
+{
+}
+
+ResourceBarriers::ResourceBarriers(RefSpan<IResource> resources,
+                                   const Opt<Barrier::StateChange>& state_change,
+                                   const Opt<Barrier::OwnerChange>& owner_change)
+    : ResourceBarriers(IResourceBarriers::CreateTransitions(resources, state_change, owner_change))
 {
 }
 
@@ -135,9 +141,9 @@ ResourceBarriers::AddResult ResourceBarriers::AddOwnerTransition(IResource& reso
     return GetImpl(m_impl_ptr).AddOwnerTransition(resource, queue_family_before, queue_family_after);
 }
 
-ResourceBarriers::AddResult ResourceBarriers::Add(const Barrier::Id& id, const Barrier& barrier) const
+ResourceBarriers::AddResult ResourceBarriers::Add(const Barrier& barrier) const
 {
-    return GetImpl(m_impl_ptr).Add(id, barrier);
+    return GetImpl(m_impl_ptr).Add(barrier);
 }
 
 bool ResourceBarriers::Remove(const Barrier::Id& id) const

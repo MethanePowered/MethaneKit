@@ -40,8 +40,10 @@ class CommandQueue;
 class Fence // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface = IFence;
+
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Fence);
-    META_PIMPL_METHODS_COMPARE_DECLARE(Fence);
+    META_PIMPL_METHODS_COMPARE_INLINE(Fence);
 
     META_PIMPL_API explicit Fence(const Ptr<IFence>& interface_ptr);
     META_PIMPL_API explicit Fence(IFence& interface_ref);

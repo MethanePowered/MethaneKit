@@ -53,7 +53,7 @@ public:
     explicit ResourceBarriers(const Set& barriers);
 
     // IResourceBarriers overrides
-    AddResult Add(const Barrier::Id& id, const Barrier& barrier) override;
+    AddResult Add(const Barrier& barrier) override;
     bool Remove(const Barrier::Id& id) override;
 
     const NativePipelineBarrier& GetNativePipelineBarrierData(const CommandQueue& target_cmd_queue) const;
@@ -62,7 +62,7 @@ private:
     // IResourceCallback
     void OnResourceReleased(Rhi::IResource& resource) override;
 
-    void SetResourceBarrier(const Barrier::Id& id, const Barrier& barrier, bool is_new_barrier);
+    void SetResourceBarrier(const Barrier& barrier, bool is_new_barrier);
     void SetBufferMemoryBarrier(const Buffer& buffer, const Barrier& barrier);
     void SetImageMemoryBarrier(const Texture& texture, const Barrier& barrier);
 

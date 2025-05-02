@@ -26,7 +26,7 @@ Tutorial demonstrating colored cube rendering with Methane graphics API
 #include <Methane/Graphics/CubeMesh.hpp>
 #include <Methane/Graphics/TypeConverters.hpp>
 #include <Methane/Tutorials/AppSettings.h>
-#include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/TimeAnimation.hpp>
 
 #ifdef UNIFORMS_ENABLED
 namespace hlslpp // NOSONAR
@@ -108,12 +108,11 @@ public:
         m_camera.ResetOrientation({ { 13.0F, 13.0F, 13.0F }, { 0.0F, 0.0F, 0.0F }, { 0.0F, 1.0F, 0.0F } });
 
         // Setup camera rotation animation
-        GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(
-            [this](double, double delta_seconds)
-            {
-                m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
-                return true;
-            }));
+        GetAnimations().emplace_back(Data::MakeTimeAnimationPtr([this](double, double delta_seconds)
+        {
+            m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.F / 8.F));
+            return true;
+        }));
     }
 
     ~HelloCubeApp() override
@@ -138,31 +137,31 @@ public:
         m_render_state = GetRenderContext().CreateRenderState(
             Rhi::RenderState::Settings
             {
-                GetRenderContext().CreateProgram(
+                .program = GetRenderContext().CreateProgram(
                     Rhi::Program::Settings
                     {
-                        Rhi::Program::ShaderSet
+                        .shader_set = Rhi::Program::ShaderSet
                         {
                             { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "HelloCube", "CubeVS" }, vertex_shader_definitions } },
                             { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "HelloCube", "CubePS" } } },
                         },
-                        Rhi::ProgramInputBufferLayouts
+                        .input_buffer_layouts = Rhi::ProgramInputBufferLayouts
                         {
                             Rhi::ProgramInputBufferLayout
                             {
                                 Rhi::ProgramInputBufferLayout::ArgumentSemantics{ "POSITION" , "COLOR" }
                             }
                         },
-                        Rhi::ProgramArgumentAccessors
-                        {
 #ifdef UNIFORMS_ENABLED
+                        .argument_accessors = Rhi::ProgramArgumentAccessors
+                        {
                             META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_uniforms")
-#endif
                         },
-                        GetScreenRenderPattern().GetAttachmentFormats()
+#endif
+                        .attachment_formats = GetScreenRenderPattern().GetAttachmentFormats()
                     }
                 ),
-                GetScreenRenderPattern()
+                .render_pattern = GetScreenRenderPattern()
             }
         );
         m_render_state.GetSettings().program_ptr->SetName("Colored Cube Shading");

@@ -26,9 +26,8 @@ Methane shader interface: defines programmable stage of the graphics pipeline.
 #include <Methane/Memory.hpp>
 
 #include <string>
-#include <string_view>
 #include <set>
-#include <map>
+#include <span>
 
 namespace Methane::Data
 {
@@ -57,17 +56,9 @@ struct ShaderMacroDefinition
     explicit ShaderMacroDefinition(std::string name);
     ShaderMacroDefinition(std::string name, std::string value);
 
-    friend bool operator==(const ShaderMacroDefinition& left, const ShaderMacroDefinition& right) noexcept
-    {
-        return std::tie(left.name, left.value) == std::tie(right.name, right.value);
-    }
+    friend bool operator==(const ShaderMacroDefinition& left, const ShaderMacroDefinition& right) noexcept = default;
 
-    friend bool operator!=(const ShaderMacroDefinition& left, const ShaderMacroDefinition& right) noexcept
-    {
-        return !(left == right);
-    }
-
-    [[nodiscard]] static std::string ToString(const std::vector<ShaderMacroDefinition>& macro_definitions,
+    [[nodiscard]] static std::string ToString(std::span<const ShaderMacroDefinition> macro_definitions,
                                               std::string_view splitter = ", ") noexcept;
 };
 
@@ -78,16 +69,7 @@ struct ShaderEntryFunction
     std::string file_name;
     std::string function_name;
 
-    friend bool operator==(const ShaderEntryFunction& left, const ShaderEntryFunction& right) noexcept
-    {
-        return std::tie(left.file_name, left.function_name)
-            == std::tie(right.file_name, right.function_name);
-    }
-
-    friend bool operator!=(const ShaderEntryFunction& left, const ShaderEntryFunction& right) noexcept
-    {
-        return !(left == right);
-    }
+    friend bool operator==(const ShaderEntryFunction& left, const ShaderEntryFunction& right) noexcept = default;
 };
 
 struct ShaderSettings
@@ -107,11 +89,6 @@ struct ShaderSettings
 
         return std::tie(left.entry_function, left.compile_definitions, left.source_file_path, left.source_compile_target)
             == std::tie(right.entry_function, right.compile_definitions, right.source_file_path, right.source_compile_target);
-    }
-
-    friend bool operator!=(const ShaderSettings& left, const ShaderSettings& right) noexcept
-    {
-        return !(left == right);
     }
 };
 

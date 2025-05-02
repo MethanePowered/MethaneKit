@@ -43,8 +43,9 @@ static vk::VertexInputRate ConvertInputBufferLayoutStepTypeToVertexInputRate(Rhi
     using StepType = Rhi::IProgram::InputBufferLayout::StepType;
     switch(step_type)
     {
-    case StepType::PerVertex:   return vk::VertexInputRate::eVertex;
-    case StepType::PerInstance: return vk::VertexInputRate::eInstance;
+    using enum vk::VertexInputRate;
+    case StepType::PerVertex:   return eVertex;
+    case StepType::PerInstance: return eInstance;
     default:                    META_UNEXPECTED_RETURN(step_type, vk::VertexInputRate::eVertex);
     }
 }
@@ -54,11 +55,12 @@ static vk::Format GetFloatVectorFormat(uint32_t vector_size)
     META_FUNCTION_TASK();
     switch (vector_size)
     {
-    case 1: return vk::Format::eR32Sfloat;
-    case 2: return vk::Format::eR32G32Sfloat;
-    case 3: return vk::Format::eR32G32B32Sfloat;
-    case 4: return vk::Format::eR32G32B32A32Sfloat;
-    default: META_UNEXPECTED_RETURN(vector_size, vk::Format::eUndefined);
+    using enum vk::Format;
+    case 1: return eR32Sfloat;
+    case 2: return eR32G32Sfloat;
+    case 3: return eR32G32B32Sfloat;
+    case 4: return eR32G32B32A32Sfloat;
+    default: META_UNEXPECTED_RETURN(vector_size, eUndefined);
     }
 }
 
@@ -67,11 +69,12 @@ static vk::Format GetSignedIntegerVectorFormat(uint32_t vector_size)
     META_FUNCTION_TASK();
     switch (vector_size)
     {
-    case 1: return vk::Format::eR32Sint;
-    case 2: return vk::Format::eR32G32Sint;
-    case 3: return vk::Format::eR32G32B32Sint;
-    case 4: return vk::Format::eR32G32B32A32Sint;
-    default: META_UNEXPECTED_RETURN(vector_size, vk::Format::eUndefined);
+    using enum vk::Format;
+    case 1: return eR32Sint;
+    case 2: return eR32G32Sint;
+    case 3: return eR32G32B32Sint;
+    case 4: return eR32G32B32A32Sint;
+    default: META_UNEXPECTED_RETURN(vector_size, eUndefined);
     }
 }
 
@@ -80,11 +83,12 @@ static vk::Format GetUnsignedIntegerVectorFormat(uint32_t vector_size)
     META_FUNCTION_TASK();
     switch (vector_size)
     {
-    case 1: return vk::Format::eR32Uint;
-    case 2: return vk::Format::eR32G32Uint;
-    case 3: return vk::Format::eR32G32B32Uint;
-    case 4: return vk::Format::eR32G32B32A32Uint;
-    default: META_UNEXPECTED_RETURN(vector_size, vk::Format::eUndefined);
+    using enum vk::Format;
+    case 1: return eR32Uint;
+    case 2: return eR32G32Uint;
+    case 3: return eR32G32B32Uint;
+    case 4: return eR32G32B32A32Uint;
+    default: META_UNEXPECTED_RETURN(vector_size, eUndefined);
     }
 }
 
@@ -116,20 +120,22 @@ static Rhi::IResource::Type ConvertDescriptorTypeToResourceType(vk::DescriptorTy
     META_FUNCTION_TASK();
     switch(vk_descriptor_type)
     {
-    case vk::DescriptorType::eUniformBuffer:
-    case vk::DescriptorType::eStorageBuffer:
-    case vk::DescriptorType::eInlineUniformBlock:
-        return Rhi::IResource::Type::Buffer;
+    using enum vk::DescriptorType;
+    using enum Rhi::ResourceType;
+    case eUniformBuffer:
+    case eStorageBuffer:
+    case eInlineUniformBlock:
+        return Buffer;
 
-    case vk::DescriptorType::eStorageImage:
-    case vk::DescriptorType::eSampledImage:
-        return Rhi::IResource::Type::Texture;
+    case eStorageImage:
+    case eSampledImage:
+        return Texture;
 
-    case vk::DescriptorType::eSampler:
-        return Rhi::IResource::Type::Sampler;
+    case eSampler:
+        return Sampler;
 
     default:
-        META_UNEXPECTED_RETURN(vk_descriptor_type, Rhi::IResource::Type::Buffer);
+        META_UNEXPECTED_RETURN(vk_descriptor_type, Buffer);
     }
 }
 
@@ -141,8 +147,9 @@ static vk::DescriptorType UpdateDescriptorType(vk::DescriptorType vk_shader_desc
 
     switch(vk_shader_descriptor_type)
     {
-    case vk::DescriptorType::eUniformBuffer: return vk::DescriptorType::eUniformBufferDynamic;
-    case vk::DescriptorType::eStorageBuffer: return vk::DescriptorType::eStorageBufferDynamic;
+    using enum vk::DescriptorType;
+    case eUniformBuffer: return eUniformBufferDynamic;
+    case eStorageBuffer: return eStorageBufferDynamic;
     default: META_UNEXPECTED_RETURN_DESCR(vk_shader_descriptor_type, vk_shader_descriptor_type,
                                           "addressable arguments support only Uniform or Storage buffers");
     }
@@ -403,11 +410,13 @@ vk::ShaderStageFlagBits Shader::ConvertTypeToStageFlagBits(Rhi::ShaderType shade
     META_FUNCTION_TASK();
     switch(shader_type)
     {
-    case Rhi::ShaderType::All:     return vk::ShaderStageFlagBits::eAll;
-    case Rhi::ShaderType::Vertex:  return vk::ShaderStageFlagBits::eVertex;
-    case Rhi::ShaderType::Pixel:   return vk::ShaderStageFlagBits::eFragment;
-    case Rhi::ShaderType::Compute: return vk::ShaderStageFlagBits::eCompute;
-    default: META_UNEXPECTED_RETURN(shader_type, vk::ShaderStageFlagBits::eAll);
+    using enum Rhi::ShaderType;
+    using enum vk::ShaderStageFlagBits;
+    case All:     return eAll;
+    case Vertex:  return eVertex;
+    case Pixel:   return eFragment;
+    case Compute: return eCompute;
+    default: META_UNEXPECTED_RETURN(shader_type, eAll);
     }
 }
 

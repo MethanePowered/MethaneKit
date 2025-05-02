@@ -42,3 +42,7 @@ which make modern graphics programming easy and convenient in a platform and API
 [RHI PIMPL classes](Impl/Methane/Graphics/RHI) are providing the same functionality with more convenience and performance.
 
 ![Graphics RHI Interfaces](../../../Docs/Diagrams/MethaneKit_Graphics_RHI.svg)
+
+## Unit Tests Coverage
+
+See [Graphics RHI Tests description](/Tests/Graphics/RHI/README.md) for details on unit tests coverage.

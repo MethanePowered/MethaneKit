@@ -45,6 +45,7 @@ struct IParallelRenderCommandList
     // IParallelRenderCommandList interface
     [[nodiscard]] virtual bool IsValidationEnabled() const noexcept = 0;
     virtual void SetValidationEnabled(bool is_validation_enabled) = 0;
+    [[nodiscard]] virtual IRenderPass& GetRenderPass() const = 0;
     virtual void ResetWithState(IRenderState& render_state, IDebugGroup* debug_group_ptr = nullptr) = 0;
     virtual void SetViewState(IViewState& view_state) = 0;
     virtual void SetBeginningResourceBarriers(const IResourceBarriers& resource_barriers) = 0;

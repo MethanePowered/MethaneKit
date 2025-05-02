@@ -56,6 +56,7 @@ class RenderContext;
 class RenderState // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface  = IRenderState;
     using Settings   = RenderStateSettingsImpl;
     using Rasterizer = RasterizerSettings;
     using Blending   = BlendingSettings;
@@ -65,7 +66,7 @@ public:
     using Group      = RenderStateGroup;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderState);
-    META_PIMPL_METHODS_COMPARE_DECLARE(RenderState);
+    META_PIMPL_METHODS_COMPARE_INLINE(RenderState);
 
     META_PIMPL_API explicit RenderState(const Ptr<IRenderState>& interface_ptr);
     META_PIMPL_API explicit RenderState(IRenderState& interface_ref);

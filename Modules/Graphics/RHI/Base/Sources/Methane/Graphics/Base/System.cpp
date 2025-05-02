@@ -28,6 +28,7 @@ Base implementation of the device interface.
 #include <Methane/Checks.hpp>
 
 #include <sstream>
+#include <ranges>
 
 namespace Methane::Graphics::Base
 {
@@ -51,7 +52,7 @@ void System::RequestRemoveDevice(Rhi::IDevice& device) const
 void System::RemoveDevice(Rhi::IDevice& device)
 {
     META_FUNCTION_TASK();
-    const auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
+    const auto device_it = std::ranges::find_if(m_devices,
         [&device](const Ptr<Rhi::IDevice>& device_ptr)
         { return std::addressof(device) == std::addressof(*device_ptr); }
     );
@@ -71,9 +72,10 @@ Ptr<Rhi::IDevice> System::GetNextGpuDevice(const Rhi::IDevice& device) const noe
     if (m_devices.empty())
         return next_device_ptr;
     
-    auto device_it = std::find_if(m_devices.begin(), m_devices.end(),
-                                  [&device](const Ptr<Rhi::IDevice>& system_device_ptr)
-                                  { return std::addressof(device) == system_device_ptr.get(); });
+    auto device_it = std::ranges::find_if(m_devices,
+        [&device](const Ptr<Rhi::IDevice>& system_device_ptr)
+        { return std::addressof(device) == system_device_ptr.get(); }
+    );
     if (device_it == m_devices.end())
         return next_device_ptr;
     
@@ -83,10 +85,10 @@ Ptr<Rhi::IDevice> System::GetNextGpuDevice(const Rhi::IDevice& device) const noe
 Ptr<Rhi::IDevice> System::GetSoftwareGpuDevice() const noexcept
 {
     META_FUNCTION_TASK();
-    auto sw_device_it = std::find_if(m_devices.begin(), m_devices.end(),
+    auto sw_device_it = std::ranges::find_if(m_devices,
         [](const Ptr<Rhi::IDevice>& system_device_ptr)
-        { return system_device_ptr && system_device_ptr->IsSoftwareAdapter(); });
-
+        { return system_device_ptr && system_device_ptr->IsSoftwareAdapter(); }
+    );
     return sw_device_it != m_devices.end() ? *sw_device_it : Ptr<Rhi::IDevice>();
 }
 
@@ -94,11 +96,16 @@ std::string System::ToString() const
 {
     META_FUNCTION_TASK();
     std::stringstream ss;
-    ss << "Available graphics devices:" << std::endl;
+    ss << "System graphics devices:";
+    if (m_devices.empty())
+    {
+        ss << " none";
+        return ss.str();
+    }
     for(const Ptr<Rhi::IDevice>& device_ptr : m_devices)
     {
         META_CHECK_NOT_NULL(device_ptr);
-        ss << "  - " << device_ptr->ToString() << ";" << std::endl;
+        ss << std::endl << "  - " << device_ptr->ToString() << ";";
     }
     return ss.str();
 }

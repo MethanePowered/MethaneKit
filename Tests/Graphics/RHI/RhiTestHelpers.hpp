@@ -20,13 +20,15 @@ FILE: Tests/Graphics/RHI/RhiTestHelpers.hpp
 RHI Test helper classes
 
 ******************************************************************************/
-
-#include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/IObject.h>
+#include <Methane/Graphics/RHI/IDevice.h>
+#include <Methane/Graphics/RHI/IContext.h>
 #include <Methane/Graphics/RHI/ICommandList.h>
 #include <Methane/Graphics/RHI/IResource.h>
+#include <Methane/Graphics/RHI/IRenderPass.h>
 #include <Methane/Graphics/RHI/System.h>
 #include <Methane/Graphics/RHI/Device.h>
+#include <Methane/Graphics/Base/Object.h>
 #include <Methane/Data/Receiver.hpp>
 #include <Methane/Data/Emitter.hpp>
 
@@ -47,6 +49,15 @@ static rhi::Device GetTestDevice()
         throw std::logic_error("No RHI devices available");
 
     return devices[0];
+}
+
+template<typename BaseCommandListType, typename BufferSetPimplType, typename CommandListPimplType>
+bool IsResourceRetainedByCommandList(BufferSetPimplType& buffer_set, const CommandListPimplType& cmd_list)
+{
+    const auto& null_cmd_list = dynamic_cast<const BaseCommandListType&>(cmd_list.GetInterface());
+    const Ptrs<Graphics::Base::Object>& retained_resources = null_cmd_list.GetCommandState().retained_resources;
+    return std::ranges::find(retained_resources, dynamic_cast<Graphics::Base::Object&>(buffer_set.GetInterface()).GetBasePtr())
+        != retained_resources.end();
 }
 
 class ObjectCallbackTester final
@@ -97,6 +108,50 @@ private:
     bool m_is_object_name_changed = false;
     std::string m_old_name;
     std::string m_cur_name;
+};
+
+class DeviceCallbackTester final
+    : private Data::Receiver<rhi::IDeviceCallback>
+{
+public:
+    DeviceCallbackTester(rhi::IDevice& device)
+        : m_device(device)
+    {
+        dynamic_cast<Data::IEmitter<rhi::IDeviceCallback>&>(device).Connect(*this);
+    }
+
+    bool IsDeviceRemovalRequested() const noexcept
+    {
+        return m_is_device_removal_requested;
+    }
+
+    bool IsDeviceRemoved() const noexcept
+    {
+        return m_is_device_removed;
+    }
+
+    void Reset()
+    {
+        m_is_device_removal_requested = false;
+        m_is_device_removed = false;
+    }
+
+private:
+    void OnDeviceRemovalRequested(rhi::IDevice& device) override
+    {
+        CHECK(std::addressof(m_device) == std::addressof(device));
+        m_is_device_removal_requested = true;
+    }
+
+    void OnDeviceRemoved(rhi::IDevice& device) override
+    {
+        CHECK(std::addressof(m_device) == std::addressof(device));
+        m_is_device_removed = true;
+    }
+
+    rhi::IDevice& m_device;
+    bool m_is_device_removal_requested = false;
+    bool m_is_device_removed = false;
 };
 
 class ContextCallbackTester final
@@ -238,6 +293,34 @@ private:
 
     rhi::IResource& m_resource;
     bool m_is_resource_released = false;
+};
+
+class RenderPassCallbackTester final
+    : private Data::Receiver<rhi::IRenderPassCallback>
+{
+public:
+    RenderPassCallbackTester(rhi::IRenderPass& render_pass)
+        : m_render_pass(render_pass)
+    { dynamic_cast<Data::IEmitter<rhi::IRenderPassCallback>&>(render_pass).Connect(*this); }
+
+    template<typename RenderPassType>
+    RenderPassCallbackTester(RenderPassType& render_pass)
+        : m_render_pass(render_pass.GetInterface())
+    { render_pass.Connect(*this); }
+
+    bool IsRenderPassUpdated() const noexcept { return m_is_render_pass_updated; }
+
+    void Reset() { m_is_render_pass_updated = false; }
+
+private:
+    void OnRenderPassUpdated(const rhi::IRenderPass& render_pass) override
+    {
+        CHECK(std::addressof(render_pass) == std::addressof(m_render_pass));
+        m_is_render_pass_updated = true;
+    }
+
+    rhi::IRenderPass& m_render_pass;
+    bool m_is_render_pass_updated = false;
 };
 
 } // namespace Methane

@@ -50,10 +50,17 @@ public:
         : Range(*init.begin(), *(init.begin() + 1))
     { }
 
-    [[nodiscard]] friend bool operator==(const Range& left, const Range& right) noexcept { return left.m_start == right.m_start && left.m_end == right.m_end; }
-    [[nodiscard]] friend bool operator!=(const Range& left, const Range& right) noexcept { return !(left == right); }
-    [[nodiscard]] friend bool operator< (const Range& left, const Range& right) noexcept { return left.m_end  <= right.m_start; }
-    [[nodiscard]] friend bool operator> (const Range& left, const Range& right) noexcept { return left.m_start > right.m_end; }
+    [[nodiscard]] friend bool operator==(const Range& left, const Range& right) noexcept = default;
+
+    [[nodiscard]] friend bool operator< (const Range& left, const Range& right) noexcept // NOSONAR - can not define <=>
+    {
+        return left.m_end  <= right.m_start;
+    }
+
+    [[nodiscard]] friend bool operator> (const Range& left, const Range& right) noexcept // NOSONAR - can not define <=>
+    {
+        return left.m_start > right.m_end;
+    }
 
     [[nodiscard]] ScalarT GetStart() const noexcept  { return m_start; }
     [[nodiscard]] ScalarT GetEnd() const noexcept    { return m_end; }

@@ -33,63 +33,59 @@ Metal implementation of the sampler interface.
 namespace Methane::Graphics::Metal
 {
 
-static MTLSamplerAddressMode ConvertAddressModeToMetal(const Base::Sampler::Address::Mode& address_mode)
+static MTLSamplerAddressMode ConvertAddressModeToMetal(const Rhi::SamplerAddress::Mode& address_mode)
 {
     META_FUNCTION_TASK();
-    using AddressMode = Base::Sampler::Address::Mode;
-
     switch(address_mode)
     {
-        case AddressMode::ClampToEdge:          return MTLSamplerAddressModeClampToEdge;
-        case AddressMode::ClampToZero:          return MTLSamplerAddressModeClampToZero;
+        using enum Rhi::SamplerAddress::Mode;
+        case ClampToEdge:        return MTLSamplerAddressModeClampToEdge;
+        case ClampToZero:        return MTLSamplerAddressModeClampToZero;
 #ifndef APPLE_TVOS
-        case AddressMode::ClampToBorderColor:   return MTLSamplerAddressModeClampToBorderColor;
+        case ClampToBorderColor: return MTLSamplerAddressModeClampToBorderColor;
 #endif
-        case AddressMode::Repeat:               return MTLSamplerAddressModeRepeat;
-        case AddressMode::RepeatMirror:         return MTLSamplerAddressModeMirrorRepeat;
-        default:                                META_UNEXPECTED_RETURN(address_mode, MTLSamplerAddressModeClampToEdge);
+        case Repeat:             return MTLSamplerAddressModeRepeat;
+        case RepeatMirror:       return MTLSamplerAddressModeMirrorRepeat;
+        default:                 META_UNEXPECTED_RETURN(address_mode, MTLSamplerAddressModeClampToEdge);
     }
 }
 
-static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const Base::Sampler::Filter::MinMag& min_mag_filter)
+static MTLSamplerMinMagFilter ConvertMinMagFilterToMetal(const Rhi::SamplerFilter::MinMag& min_mag_filter)
 {
     META_FUNCTION_TASK();
-    using MinMagFilter = Base::Sampler::Filter::MinMag;
-
     switch(min_mag_filter)
     {
-        case MinMagFilter::Nearest:             return MTLSamplerMinMagFilterNearest;
-        case MinMagFilter::Linear:              return MTLSamplerMinMagFilterLinear;
-        default:                                META_UNEXPECTED_RETURN(min_mag_filter, MTLSamplerMinMagFilterNearest);
+        using enum Rhi::SamplerFilter::MinMag;
+        case Nearest: return MTLSamplerMinMagFilterNearest;
+        case Linear:  return MTLSamplerMinMagFilterLinear;
+        default:      META_UNEXPECTED_RETURN(min_mag_filter, MTLSamplerMinMagFilterNearest);
     }
 }
 
-static MTLSamplerMipFilter ConvertMipFilterToMetal(const Base::Sampler::Filter::Mip& mip_filter)
+static MTLSamplerMipFilter ConvertMipFilterToMetal(const Rhi::SamplerFilter::Mip& mip_filter)
 {
     META_FUNCTION_TASK();
-    using MipFilter = Base::Sampler::Filter::Mip;
-
     switch(mip_filter)
     {
-        case MipFilter::NotMipmapped:           return MTLSamplerMipFilterNotMipmapped;
-        case MipFilter::Nearest:                return MTLSamplerMipFilterNearest;
-        case MipFilter::Linear:                 return MTLSamplerMipFilterLinear;
-        default:                                META_UNEXPECTED_RETURN(mip_filter, MTLSamplerMipFilterNotMipmapped);
+        using enum Rhi::SamplerFilter::Mip;
+        case NotMipmapped: return MTLSamplerMipFilterNotMipmapped;
+        case Nearest:      return MTLSamplerMipFilterNearest;
+        case Linear:       return MTLSamplerMipFilterLinear;
+        default:           META_UNEXPECTED_RETURN(mip_filter, MTLSamplerMipFilterNotMipmapped);
     }
 }
 
 #ifndef APPLE_TVOS // MTLSamplerBorderColor is not supported on tvOS
-static MTLSamplerBorderColor ConvertBorderColorToMetal(const Base::Sampler::BorderColor& border_color)
+static MTLSamplerBorderColor ConvertBorderColorToMetal(const Rhi::SamplerBorderColor& border_color)
 {
     META_FUNCTION_TASK();
-    using BorderColor = Base::Sampler::BorderColor;
-
     switch(border_color)
     {
-        case BorderColor::TransparentBlack:     return MTLSamplerBorderColorTransparentBlack;
-        case BorderColor::OpaqueBlack:          return MTLSamplerBorderColorOpaqueBlack;
-        case BorderColor::OpaqueWhite:          return MTLSamplerBorderColorOpaqueWhite;
-        default:                                META_UNEXPECTED_RETURN(border_color, MTLSamplerBorderColorTransparentBlack);
+        using enum Rhi::SamplerBorderColor;
+        case TransparentBlack: return MTLSamplerBorderColorTransparentBlack;
+        case OpaqueBlack:      return MTLSamplerBorderColorOpaqueBlack;
+        case OpaqueWhite:      return MTLSamplerBorderColorOpaqueWhite;
+        default:               META_UNEXPECTED_RETURN(border_color, MTLSamplerBorderColorTransparentBlack);
     }
 }
 #endif

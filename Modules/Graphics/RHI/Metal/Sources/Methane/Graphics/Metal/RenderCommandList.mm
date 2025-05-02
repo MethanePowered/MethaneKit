@@ -53,11 +53,12 @@ static MTLPrimitiveType PrimitiveTypeToMetal(Rhi::RenderPrimitive primitive) noe
     META_FUNCTION_TASK();
     switch (primitive)
     {
-        case Rhi::RenderPrimitive::Point:          return MTLPrimitiveTypePoint;
-        case Rhi::RenderPrimitive::Line:           return MTLPrimitiveTypeLine;
-        case Rhi::RenderPrimitive::LineStrip:      return MTLPrimitiveTypeLineStrip;
-        case Rhi::RenderPrimitive::Triangle:       return MTLPrimitiveTypeTriangle;
-        case Rhi::RenderPrimitive::TriangleStrip:  return MTLPrimitiveTypeTriangleStrip;
+        using enum Rhi::RenderPrimitive;
+        case Point:          return MTLPrimitiveTypePoint;
+        case Line:           return MTLPrimitiveTypeLine;
+        case LineStrip:      return MTLPrimitiveTypeLineStrip;
+        case Triangle:       return MTLPrimitiveTypeTriangle;
+        case TriangleStrip:  return MTLPrimitiveTypeTriangleStrip;
     }
     return MTLPrimitiveTypeTriangleStrip;
 }

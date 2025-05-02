@@ -28,10 +28,12 @@ Vulkan implementation of the resource interface.
 
 #include <Methane/Instrumentation.h>
 
+#include <ranges>
+
 namespace Methane::Graphics::Rhi
 {
 
-Ptr<IResourceBarriers> Rhi::IResourceBarriers::Create(const Set& barriers)
+Ptr<IResourceBarriers> IResourceBarriers::Create(const Set& barriers)
 {
     META_FUNCTION_TASK();
     return std::make_shared<Vulkan::ResourceBarriers>(barriers);
@@ -82,21 +84,22 @@ ResourceBarriers::ResourceBarriers(const Set& barriers)
     META_FUNCTION_TASK();
     for (const Rhi::ResourceBarrier barrier: barriers)
     {
-        SetResourceBarrier(barrier.GetId(), barrier, true);
+        SetResourceBarrier(barrier, true);
     }
 }
 
-Base::ResourceBarriers::AddResult ResourceBarriers::Add(const Rhi::ResourceBarrier::Id& id, const Rhi::ResourceBarrier& barrier)
+Base::ResourceBarriers::AddResult ResourceBarriers::Add(const Rhi::ResourceBarrier& barrier)
 {
     META_FUNCTION_TASK();
     const auto      lock_guard = Base::ResourceBarriers::Lock();
-    const AddResult result     = Base::ResourceBarriers::Add(id, barrier);
+    const AddResult result     = Base::ResourceBarriers::Add(barrier);
 
     switch (result)
     {
-    case AddResult::Added:   SetResourceBarrier(id, barrier, true); break;
-    case AddResult::Updated: SetResourceBarrier(id, barrier, false); break;
-    case AddResult::Existing: break;
+    using enum AddResult;
+    case Added:   SetResourceBarrier(barrier, true); break;
+    case Updated: SetResourceBarrier(barrier, false); break;
+    case Existing: break;
     default: META_UNEXPECTED_RETURN(result, result);
     }
 
@@ -169,10 +172,10 @@ void ResourceBarriers::OnResourceReleased(Rhi::IResource& resource)
     RemoveStateTransition(resource);
 }
 
-void ResourceBarriers::SetResourceBarrier(const Rhi::ResourceBarrier::Id& id, const Rhi::ResourceBarrier& barrier, bool is_new_barrier)
+void ResourceBarriers::SetResourceBarrier(const Rhi::ResourceBarrier& barrier, bool is_new_barrier)
 {
     META_FUNCTION_TASK();
-    const Rhi::IResource& resource = id.GetResource();
+    const Rhi::IResource& resource = barrier.GetId().GetResource();
     switch (const Rhi::IResource::Type resource_type = resource.GetResourceType();
             resource_type)
     {
@@ -183,7 +186,7 @@ void ResourceBarriers::SetResourceBarrier(const Rhi::ResourceBarrier::Id& id, co
 
     if (is_new_barrier)
     {
-        static_cast<Data::IEmitter<IResourceCallback>&>(id.GetResource()).Connect(*this);
+        static_cast<Data::IEmitter<IResourceCallback>&>(barrier.GetId().GetResource()).Connect(*this);
         UpdateStageMasks(barrier);
     }
     else
@@ -198,11 +201,10 @@ void ResourceBarriers::SetBufferMemoryBarrier(const Buffer& buffer, const Rhi::R
 {
     META_FUNCTION_TASK();
     const vk::Buffer& vk_buffer = buffer.GetNativeResource();
-    const auto vk_buffer_memory_barrier_it = std::find_if(m_vk_default_barrier.vk_buffer_memory_barriers.begin(),
-                                                          m_vk_default_barrier.vk_buffer_memory_barriers.end(),
-                                                          [&vk_buffer](const vk::BufferMemoryBarrier& vk_buffer_barrier)
-                                                          { return vk_buffer_barrier.buffer == vk_buffer; });
-
+    const auto vk_buffer_memory_barrier_it = std::ranges::find_if(m_vk_default_barrier.vk_buffer_memory_barriers,
+        [&vk_buffer](const vk::BufferMemoryBarrier& vk_buffer_barrier)
+        { return vk_buffer_barrier.buffer == vk_buffer; }
+    );
     if (vk_buffer_memory_barrier_it == m_vk_default_barrier.vk_buffer_memory_barriers.end())
     {
         switch(barrier.GetId().GetType())
@@ -225,11 +227,10 @@ void ResourceBarriers::SetImageMemoryBarrier(const Texture& texture, const Rhi::
 {
     META_FUNCTION_TASK();
     const vk::Image& vk_image = texture.GetNativeImage();
-    const auto vk_image_memory_barrier_it = std::find_if(m_vk_default_barrier.vk_image_memory_barriers.begin(),
-                                                         m_vk_default_barrier.vk_image_memory_barriers.end(),
-                                                         [&vk_image](const vk::ImageMemoryBarrier& vk_image_barrier)
-                                                         { return vk_image_barrier.image == vk_image; });
-
+    const auto vk_image_memory_barrier_it = std::ranges::find_if(m_vk_default_barrier.vk_image_memory_barriers,
+        [&vk_image](const vk::ImageMemoryBarrier& vk_image_barrier)
+        { return vk_image_barrier.image == vk_image; }
+    );
     if (vk_image_memory_barrier_it == m_vk_default_barrier.vk_image_memory_barriers.end())
     {
         switch(barrier.GetId().GetType())
@@ -320,10 +321,10 @@ void ResourceBarriers::AddImageMemoryOwnerChangeBarrier(const Texture& texture, 
 void ResourceBarriers::RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer, Rhi::ResourceBarrier::Type barrier_type)
 {
     META_FUNCTION_TASK();
-    const auto vk_buffer_memory_barrier_it = std::find_if(m_vk_default_barrier.vk_buffer_memory_barriers.begin(),
-                                                          m_vk_default_barrier.vk_buffer_memory_barriers.end(),
-                                                          [&vk_buffer](const vk::BufferMemoryBarrier& vk_buffer_barrier)
-                                                          { return vk_buffer_barrier.buffer == vk_buffer; });
+    const auto vk_buffer_memory_barrier_it = std::ranges::find_if(m_vk_default_barrier.vk_buffer_memory_barriers,
+        [&vk_buffer](const vk::BufferMemoryBarrier& vk_buffer_barrier)
+        { return vk_buffer_barrier.buffer == vk_buffer; }
+    );
     if (vk_buffer_memory_barrier_it == m_vk_default_barrier.vk_buffer_memory_barriers.end())
         return;
 
@@ -341,10 +342,10 @@ void ResourceBarriers::RemoveBufferMemoryBarrier(const vk::Buffer& vk_buffer, Rh
 void ResourceBarriers::RemoveImageMemoryBarrier(const vk::Image& vk_image, Rhi::ResourceBarrier::Type barrier_type)
 {
     META_FUNCTION_TASK();
-    const auto vk_image_memory_barrier_it = std::find_if(m_vk_default_barrier.vk_image_memory_barriers.begin(),
-                                                         m_vk_default_barrier.vk_image_memory_barriers.end(),
-                                                         [&vk_image](const vk::ImageMemoryBarrier& vk_image_barrier)
-                                                         { return vk_image_barrier.image == vk_image; });
+    const auto vk_image_memory_barrier_it = std::ranges::find_if(m_vk_default_barrier.vk_image_memory_barriers,
+        [&vk_image](const vk::ImageMemoryBarrier& vk_image_barrier)
+        { return vk_image_barrier.image == vk_image; }
+    );
     if (vk_image_memory_barrier_it == m_vk_default_barrier.vk_image_memory_barriers.end())
         return;
 

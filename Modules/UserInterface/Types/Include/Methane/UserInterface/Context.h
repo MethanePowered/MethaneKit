@@ -62,10 +62,11 @@ public:
     [[nodiscard]] UnitSize  GetFrameSizeIn() const
     {
         META_FUNCTION_TASK();
-        if constexpr (units == Units::Pixels)
-            return UnitSize(Units::Pixels, GetFrameSize());
+        using enum Units;
+        if constexpr (units == Pixels)
+            return UnitSize(Pixels, GetFrameSize());
         else
-            return UnitSize(Units::Dots, GetFrameSize() / m_dots_to_pixels_factor);
+            return UnitSize(Dots, GetFrameSize() / m_dots_to_pixels_factor);
     }
 
     [[nodiscard]] UnitSize  GetFrameSizeInUnits(Units units) const;
@@ -77,10 +78,11 @@ public:
         if (value.GetUnits() == units)
             return value;
 
-        if constexpr (units == Units::Pixels)
-            return UnitType<BaseType>(Units::Pixels, value * m_dots_to_pixels_factor);
+        using enum Units;
+        if constexpr (units == Pixels)
+            return UnitType<BaseType>(Pixels, value * m_dots_to_pixels_factor);
         else
-            return UnitType<BaseType>(Units::Dots,   value / m_dots_to_pixels_factor);
+            return UnitType<BaseType>(Dots,   value / m_dots_to_pixels_factor);
     }
 
     template<Units units>
@@ -110,10 +112,11 @@ public:
     [[nodiscard]] UnitType<BaseType> ConvertTo(const BaseType& value_px) const noexcept
     {
         META_FUNCTION_TASK();
-        if constexpr (units == Units::Pixels)
-            return UnitType<BaseType>(Units::Pixels, value_px);
+        using enum Units;
+        if constexpr (units == Pixels)
+            return UnitType<BaseType>(Pixels, value_px);
         else
-            return UnitType<BaseType>(Units::Dots, value_px / m_dots_to_pixels_factor);
+            return UnitType<BaseType>(Dots, value_px / m_dots_to_pixels_factor);
     }
 
     template<typename ValueType>
@@ -122,20 +125,21 @@ public:
         META_FUNCTION_TASK();
         switch(units)
         {
-        case Units::Pixels: return ConvertTo<Units::Pixels>(value);
-        case Units::Dots:   return ConvertTo<Units::Dots>(value);
-        default:            return { };
+        using enum Units;
+        case Pixels: return ConvertTo<Pixels>(value);
+        case Dots:   return ConvertTo<Dots>(value);
+        default:     return { };
         }
     }
 
-    template<typename ScalarType>
-    [[nodiscard]] std::enable_if_t<std::is_arithmetic_v<ScalarType>, ScalarType> ConvertPixelsToDots(ScalarType pixels) const noexcept
+    template<typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+    [[nodiscard]] ScalarType ConvertPixelsToDots(ScalarType pixels) const noexcept
     {
         return Data::RoundCast<ScalarType>(static_cast<decltype(m_dots_to_pixels_factor)>(pixels) / m_dots_to_pixels_factor);
     }
 
-    template<typename ScalarType>
-    [[nodiscard]] std::enable_if_t<std::is_arithmetic_v<ScalarType>, ScalarType> ConvertDotsToPixels(ScalarType dots) const noexcept
+    template<typename ScalarType> requires std::is_arithmetic_v<ScalarType>
+    [[nodiscard]] ScalarType ConvertDotsToPixels(ScalarType dots) const noexcept
     {
         return Data::RoundCast<ScalarType>(static_cast<decltype(m_dots_to_pixels_factor)>(dots) * m_dots_to_pixels_factor);
     }

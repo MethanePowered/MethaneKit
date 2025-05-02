@@ -32,7 +32,7 @@ Null implementation of the resource interface.
 namespace Methane::Graphics::Null
 {
 
-template<typename ResourceBaseType, typename = std::enable_if_t<std::is_base_of_v<Base::Resource, ResourceBaseType>, void>>
+template<typename ResourceBaseType> requires std::is_base_of_v<Base::Resource, ResourceBaseType>
 class Resource // NOSONAR - can not comply with rule of Zero: destructor is required
     : public ResourceBaseType
     , public virtual Rhi::IResource // NOSONAR
@@ -73,6 +73,8 @@ public:
 
     void RestoreDescriptorViews(const DescriptorByViewId&) final
     { /* Intentionally unimplemented */ }
+
+    using Base::Resource::SetInitializedDataSize;
 };
 
 } // namespace Methane::Graphics::Null

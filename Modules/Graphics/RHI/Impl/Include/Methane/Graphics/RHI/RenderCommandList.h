@@ -48,6 +48,7 @@ class ProgramBindings;
 class RenderCommandList // NOSONAR - class has more than 35 methods, constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface   = IRenderCommandList;
     using Primitive   = RenderPrimitive;
     using Type        = CommandListType;
     using State       = CommandListState;
@@ -55,7 +56,7 @@ public:
     using ICallback   = ICommandListCallback;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderCommandList);
-    META_PIMPL_METHODS_COMPARE_DECLARE(RenderCommandList);
+    META_PIMPL_METHODS_COMPARE_INLINE(RenderCommandList);
 
     META_PIMPL_API explicit RenderCommandList(const Ptr<IRenderCommandList>& interface_ptr);
     META_PIMPL_API explicit RenderCommandList(IRenderCommandList& interface_ref);

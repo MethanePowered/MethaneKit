@@ -25,6 +25,7 @@ Base implementation of the program argument binding interface.
 #include <Methane/Graphics/Base/ProgramBindings.h>
 #include <Methane/Graphics/Base/Program.h>
 #include <Methane/Graphics/RHI/TypeFormatters.hpp>
+#include <Methane/Data/SpanComparable.hpp>
 #include <Methane/Data/EnumMaskUtil.hpp>
 
 #include <fmt/format.h>
@@ -61,14 +62,14 @@ void ProgramArgumentBinding::MergeSettings(const ProgramArgumentBinding& other)
     m_settings.argument.MergeShaderTypes(settings.argument.GetShaderType());
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
+bool ProgramArgumentBinding::SetResourceViewSpan(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
     META_CHECK_FALSE_DESCR(m_settings.argument.IsRootConstant(),
                            "Can not set resource view for argument which is marked with "
                            "\"ValueType::RootConstant\" in \"ProgramSettings::argument_accessors\".");
 
-    if (m_resource_views == resource_views)
+    if (resource_views == Rhi::ResourceViewSpan(m_resource_views))
         return false;
 
     if (m_settings.argument.IsConstant() && !m_resource_views.empty())
@@ -79,7 +80,7 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     [[maybe_unused]] const bool              is_addressable_binding = m_settings.argument.IsAddressable();
     [[maybe_unused]] const Rhi::IResource::Type bound_resource_type = m_settings.resource_type;
 
-    for (const Rhi::IResource::View& resource_view : resource_views)
+    for (const Rhi::ResourceView& resource_view : resource_views)
     {
         META_CHECK_NAME_DESCR("resource_view", resource_view.GetResource().GetResourceType() == bound_resource_type,
                                   "incompatible resource type '{}' is bound to argument '{}' of type '{}'",
@@ -97,7 +98,7 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     if (m_emit_callback_enabled)
         prev_resource_views = m_resource_views;
 
-    m_resource_views = resource_views;
+    m_resource_views.assign(resource_views.begin(), resource_views.end());
 
     if (m_emit_callback_enabled)
         Data::Emitter<Rhi::IProgramBindings::IArgumentBindingCallback>::Emit(
@@ -108,9 +109,14 @@ bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource
     return true;
 }
 
+bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
+{
+    return SetResourceViewSpan(Rhi::ResourceViewSpan(resource_views));
+}
+
 bool ProgramArgumentBinding::SetResourceView(const Rhi::ResourceView& resource_view)
 {
-    return SetResourceViews(Rhi::ResourceViews{ resource_view });
+    return SetResourceViewSpan(Rhi::ResourceViewSpan(&resource_view, 1U));
 }
 
 Rhi::RootConstant ProgramArgumentBinding::GetRootConstant() const

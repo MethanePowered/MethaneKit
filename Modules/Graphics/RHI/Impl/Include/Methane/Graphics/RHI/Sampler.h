@@ -42,6 +42,7 @@ class ResourceBarriers;
 class Sampler // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface     = ISampler;
     using Filter        = SamplerFilter;
     using Address       = SamplerAddress;
     using LevelOfDetail = SamplerLevelOfDetail;
@@ -55,7 +56,7 @@ public:
     using DescriptorByViewId = std::map<ResourceView::Id, Descriptor>;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Sampler);
-    META_PIMPL_METHODS_COMPARE_DECLARE(Sampler);
+    META_PIMPL_METHODS_COMPARE_INLINE(Sampler);
 
     META_PIMPL_API explicit Sampler(const Ptr<ISampler>& interface_ptr);
     META_PIMPL_API explicit Sampler(ISampler& interface_ref);

@@ -69,6 +69,8 @@ struct DeviceCaps
     DeviceCaps& SetRenderQueuesCount(uint32_t new_render_queues_count) noexcept;
     DeviceCaps& SetTransferQueuesCount(uint32_t new_transfer_queues_count) noexcept;
     DeviceCaps& SetComputeQueuesCount(uint32_t new_compute_queues_count) noexcept;
+
+    [[nodiscard]] friend auto operator<=>(const DeviceCaps& left, const DeviceCaps& right) noexcept = default;
 };
 
 struct IDevice;

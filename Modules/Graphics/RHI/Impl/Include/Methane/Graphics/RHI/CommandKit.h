@@ -45,8 +45,10 @@ class CommandListSet;
 class CommandKit // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface = ICommandKit;
+
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(CommandKit);
-    META_PIMPL_METHODS_COMPARE_DECLARE(CommandKit);
+    META_PIMPL_METHODS_COMPARE_INLINE(CommandKit);
 
     META_PIMPL_API explicit CommandKit(const Ptr<ICommandKit>& interface_ptr);
     META_PIMPL_API explicit CommandKit(ICommandKit& interface_ref);
@@ -77,10 +79,13 @@ public:
     [[nodiscard]] META_PIMPL_API ComputeCommandList  GetComputeListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const;
     [[nodiscard]] META_PIMPL_API TransferCommandList GetTransferList(CommandListId cmd_list_id = 0U) const;
     [[nodiscard]] META_PIMPL_API TransferCommandList GetTransferListForEncoding(CommandListId cmd_list_id = 0U, std::string_view debug_group_name = {}) const;
-    [[nodiscard]] META_PIMPL_API CommandListSet      GetListSet(const std::vector<CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const;
+    [[nodiscard]] META_PIMPL_API CommandListSet      GetListSet(Rhi::CommandListIdSpan cmd_list_ids = g_default_command_list_ids,
+                                                                Opt<Data::Index> frame_index_opt = {}) const;
     [[nodiscard]] META_PIMPL_API IFence&             GetFence(CommandListId fence_id = 0U) const;
-    META_PIMPL_API void ExecuteListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const;
-    META_PIMPL_API void ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::CommandListId>& cmd_list_ids = { 0U }, Opt<Data::Index> frame_index_opt = {}) const;
+    META_PIMPL_API void ExecuteListSet(Rhi::CommandListIdSpan cmd_list_ids = g_default_command_list_ids,
+                                       Opt<Data::Index> frame_index_opt = {}) const;
+    META_PIMPL_API void ExecuteListSetAndWaitForCompletion(Rhi::CommandListIdSpan cmd_list_ids = g_default_command_list_ids,
+                                                           Opt<Data::Index> frame_index_opt = {}) const;
 
 private:
     using Impl = Methane::Graphics::Base::CommandKit;

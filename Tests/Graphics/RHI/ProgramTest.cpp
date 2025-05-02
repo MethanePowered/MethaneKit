@@ -28,6 +28,7 @@ Unit-tests of the RHI Program
 #include <Methane/Graphics/RHI/Program.h>
 #include <Methane/Graphics/RHI/ProgramBindings.h>
 #include <Methane/Graphics/RHI/Shader.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <memory>
 #include <taskflow/taskflow.hpp>
@@ -98,6 +99,16 @@ TEST_CASE("RHI Program Functions", "[rhi][program]")
         ObjectCallbackTester object_callback_tester(compute_program);
         CHECK_FALSE(compute_program.SetName("My Program"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        compute_program.SetName("Compute Program");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(compute_program);
+        const auto registered_program = registry.GetGraphicsObject<Rhi::Program>("Compute Program");
+        REQUIRE(registered_program.IsInitialized());
+        CHECK(&registered_program.GetInterface() == &compute_program.GetInterface());
     }
 
     SECTION("Can Get Shader Types")

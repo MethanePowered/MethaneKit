@@ -46,6 +46,7 @@ class Sampler;
 class RenderState;
 class RenderPattern;
 class ComputeState;
+class ObjectRegistry;
 
 struct ShaderSettings;
 struct ProgramSettingsImpl;
@@ -62,6 +63,7 @@ enum class ShaderType : uint32_t;
 class RenderContext // NOSONAR - class has more than 35 methods, constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface             = IRenderContext;
     using Settings              = RenderContextSettings;
     using Type                  = ContextType;
     using WaitFor               = ContextWaitFor;
@@ -71,7 +73,7 @@ public:
     using IncompatibleException = ContextIncompatibleException;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(RenderContext);
-    META_PIMPL_METHODS_COMPARE_DECLARE(RenderContext);
+    META_PIMPL_METHODS_COMPARE_INLINE(RenderContext);
 
     META_PIMPL_API explicit RenderContext(const Ptr<IRenderContext>& render_context_ptr);
     META_PIMPL_API explicit RenderContext(IRenderContext& render_context);
@@ -90,19 +92,19 @@ public:
     META_PIMPL_API void Disconnect(Data::Receiver<IObjectCallback>& receiver) const;
 
     // IContext interface methods
-    [[nodiscard]] META_PIMPL_API CommandQueue     CreateCommandQueue(CommandListType type) const;
-    [[nodiscard]] META_PIMPL_API CommandKit       CreateCommandKit(CommandListType type) const;
-    [[nodiscard]] META_PIMPL_API Shader           CreateShader(ShaderType type, const ShaderSettings& settings) const;
-    [[nodiscard]] META_PIMPL_API Program          CreateProgram(const ProgramSettingsImpl& settings) const;
-    [[nodiscard]] META_PIMPL_API Buffer           CreateBuffer(const BufferSettings& settings) const;
-    [[nodiscard]] META_PIMPL_API Texture          CreateTexture(const TextureSettings& settings) const;
-    [[nodiscard]] META_PIMPL_API Sampler          CreateSampler(const SamplerSettings& settings) const;
-    [[nodiscard]] META_PIMPL_API RenderState      CreateRenderState(const RenderStateSettingsImpl& settings) const;
-    [[nodiscard]] META_PIMPL_API ComputeState     CreateComputeState(const ComputeStateSettingsImpl& settings) const;
-    [[nodiscard]] META_PIMPL_API RenderPattern    CreateRenderPattern(const RenderPatternSettings& settings) const;
-    [[nodiscard]] META_PIMPL_API OptionMask       GetOptions() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API tf::Executor&    GetParallelExecutor() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API IObjectRegistry& GetObjectRegistry() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API CommandQueue   CreateCommandQueue(CommandListType type) const;
+    [[nodiscard]] META_PIMPL_API CommandKit     CreateCommandKit(CommandListType type) const;
+    [[nodiscard]] META_PIMPL_API Shader         CreateShader(ShaderType type, const ShaderSettings& settings) const;
+    [[nodiscard]] META_PIMPL_API Program        CreateProgram(const ProgramSettingsImpl& settings) const;
+    [[nodiscard]] META_PIMPL_API Buffer         CreateBuffer(const BufferSettings& settings) const;
+    [[nodiscard]] META_PIMPL_API Texture        CreateTexture(const TextureSettings& settings) const;
+    [[nodiscard]] META_PIMPL_API Sampler        CreateSampler(const SamplerSettings& settings) const;
+    [[nodiscard]] META_PIMPL_API RenderState    CreateRenderState(const RenderStateSettingsImpl& settings) const;
+    [[nodiscard]] META_PIMPL_API ComputeState   CreateComputeState(const ComputeStateSettingsImpl& settings) const;
+    [[nodiscard]] META_PIMPL_API RenderPattern  CreateRenderPattern(const RenderPatternSettings& settings) const;
+    [[nodiscard]] META_PIMPL_API OptionMask     GetOptions() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API tf::Executor&  GetParallelExecutor() const META_PIMPL_NOEXCEPT;
+    [[nodiscard]] META_PIMPL_API ObjectRegistry GetObjectRegistry() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API bool UploadResources() const META_PIMPL_NOEXCEPT;
     META_PIMPL_API void RequestDeferredAction(DeferredAction action) const META_PIMPL_NOEXCEPT;
     META_PIMPL_API void CompleteInitialization() const;
@@ -115,6 +117,7 @@ public:
     [[nodiscard]] META_PIMPL_API CommandKit GetDefaultCommandKit(const CommandQueue& cmd_queue) const;
     [[nodiscard]] META_PIMPL_API CommandKit GetUploadCommandKit() const;
     [[nodiscard]] META_PIMPL_API CommandKit GetRenderCommandKit() const;
+    [[nodiscard]] META_PIMPL_API CommandKit GetComputeCommandKit() const;
 
     // Data::IEmitter<IContextCallback> interface methods
     META_PIMPL_API void Connect(Data::Receiver<IContextCallback>& receiver) const;

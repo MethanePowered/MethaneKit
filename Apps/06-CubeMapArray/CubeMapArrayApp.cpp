@@ -26,9 +26,10 @@ Tutorial demonstrating textured cube rendering with Methane graphics API
 #include <Methane/Tutorials/TextureLabeler.h>
 #include <Methane/Tutorials/AppSettings.h>
 #include <Methane/Graphics/CubeMesh.hpp>
-#include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/TimeAnimation.hpp>
 
 #include <cmath>
+#include <numbers>
 
 namespace Methane::Tutorials
 {
@@ -58,7 +59,8 @@ CubeMapArrayApp::CubeMapArrayApp()
         }(),
         GetUserInterfaceTutorialAppSettings(AppOptions::GetDefaultWithColorDepthAndAnim()),
         "Methane tutorial of cube-map array texturing")
-    , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(g_model_scale), hlslpp::float4x4::rotation_z(gfx::ConstFloat::Pi))) // NOSONAR
+    , m_model_matrix(hlslpp::mul(hlslpp::float4x4::scale(g_model_scale), // NOSONAR - do not use in-class initializer
+                                 hlslpp::float4x4::rotation_z(std::numbers::pi_v<float>)))
 {
     // NOTE: Near and Far values are swapped in camera parameters (1st value is near = max depth, 2nd value is far = min depth)
     // for Reversed-Z buffer values range [ near: 1, far 0], instead of [ near 0, far 1]
@@ -66,9 +68,11 @@ CubeMapArrayApp::CubeMapArrayApp()
     m_camera.ResetOrientation({ { 13.F, 13.F, -13.F }, { 0.F, 0.F, 0.F }, { 0.F, 1.F, 0.F } });
     m_camera.SetParameters({ 600.F /* near = max depth */, 0.01F /*far = min depth*/, 90.F /* FOV */ });
 
-
     // Setup animations
-    GetAnimations().emplace_back(std::make_shared<Data::TimeAnimation>(std::bind(&CubeMapArrayApp::Animate, this, std::placeholders::_1, std::placeholders::_2)));
+    GetAnimations().emplace_back(Data::MakeTimeAnimationPtr([this](double elapsed_seconds, double delta_seconds)
+    {
+        return Animate(elapsed_seconds, delta_seconds);
+    }));
 }
 
 CubeMapArrayApp::~CubeMapArrayApp()
@@ -90,28 +94,28 @@ void CubeMapArrayApp::Init()
     // Create render state with program
     rhi::RenderState::Settings render_state_settings
     {
-        GetRenderContext().CreateProgram(
+        .program = GetRenderContext().CreateProgram(
             rhi::Program::Settings
             {
-                rhi::Program::ShaderSet
+                .shader_set = rhi::Program::ShaderSet
                 {
                     { rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "CubeMapArray", "CubeVS" } } },
                     { rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "CubeMapArray", "CubePS" } } },
                 },
-                rhi::ProgramInputBufferLayouts
+                .input_buffer_layouts = rhi::ProgramInputBufferLayouts
                 {
                     rhi::IProgram::InputBufferLayout
                     {
                         rhi::IProgram::InputBufferLayout::ArgumentSemantics { cube_mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                rhi::ProgramArgumentAccessors
+                .argument_accessors = rhi::ProgramArgumentAccessors
                 {
                     META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(rhi::ShaderType::Vertex, "g_uniforms")
                 },
-                GetScreenRenderPattern().GetAttachmentFormats()
+                .attachment_formats = GetScreenRenderPattern().GetAttachmentFormats()
             }),
-        GetScreenRenderPattern()
+        .render_pattern = GetScreenRenderPattern()
     };
     render_state_settings.program.SetName("Render Pipeline State");
     render_state_settings.depth.enabled = true;
@@ -158,9 +162,9 @@ void CubeMapArrayApp::Init()
     m_sky_box = gfx::SkyBox(render_cmd_queue, GetScreenRenderPattern(), sky_box_texture,
         gfx::SkyBox::Settings
         {
-            m_camera,
-            g_model_scale * 100.F,
-            gfx::SkyBox::OptionMask({ gfx::SkyBox::Option::DepthEnabled, gfx::SkyBox::Option::DepthReversed })
+            .view_camera = m_camera,
+            .scale = g_model_scale * 100.F,
+            .render_options = gfx::SkyBox::OptionMask({ gfx::SkyBox::Option::DepthEnabled, gfx::SkyBox::Option::DepthReversed })
         });
 
     // Create frame buffer resources
@@ -201,8 +205,8 @@ bool CubeMapArrayApp::Animate(double, double delta_seconds)
 {
     m_camera.Rotate(m_camera.GetOrientation().up, static_cast<float>(delta_seconds * 360.0 / 16.0));
     m_model_matrix = hlslpp::mul(m_model_matrix,
-                                 hlslpp::mul(hlslpp::float4x4::rotation_z(static_cast<float>(delta_seconds * gfx::ConstDouble::Pi / 2.0)),
-                                             hlslpp::float4x4::rotation_y(static_cast<float>(delta_seconds * gfx::ConstDouble::Pi / 4.0))));
+                                 hlslpp::mul(hlslpp::float4x4::rotation_z(static_cast<float>(delta_seconds * std::numbers::pi / 2.0)),
+                                             hlslpp::float4x4::rotation_y(static_cast<float>(delta_seconds * std::numbers::pi / 4.0))));
     return true;
 }
 

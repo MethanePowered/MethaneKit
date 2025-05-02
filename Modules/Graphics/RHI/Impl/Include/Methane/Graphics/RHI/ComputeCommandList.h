@@ -39,17 +39,19 @@ class CommandQueue;
 class CommandListDebugGroup;
 class ComputeState;
 class ProgramBindings;
+class ResourceBarriers;
 
 class ComputeCommandList // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface   = IComputeCommandList;
     using Type        = CommandListType;
     using State       = CommandListState;
     using DebugGroup  = CommandListDebugGroup;
     using ICallback   = ICommandListCallback;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ComputeCommandList);
-    META_PIMPL_METHODS_COMPARE_DECLARE(ComputeCommandList);
+    META_PIMPL_METHODS_COMPARE_INLINE(ComputeCommandList);
 
     META_PIMPL_API explicit ComputeCommandList(const Ptr<IComputeCommandList>& interface_ptr);
     META_PIMPL_API explicit ComputeCommandList(IComputeCommandList& interface_ref);
@@ -74,7 +76,7 @@ public:
     META_PIMPL_API void  ResetOnce(const DebugGroup* debug_group_ptr = nullptr) const;
     META_PIMPL_API void  SetProgramBindings(const ProgramBindings& program_bindings,
                                             ProgramBindingsApplyBehaviorMask apply_behavior = ProgramBindingsApplyBehaviorMask(~0U)) const;
-    META_PIMPL_API void  SetResourceBarriers(const IResourceBarriers& resource_barriers) const;
+    META_PIMPL_API void  SetResourceBarriers(const ResourceBarriers& resource_barriers) const;
     META_PIMPL_API void  Commit() const;
     META_PIMPL_API void  WaitUntilCompleted(uint32_t timeout_ms = 0U) const;
     [[nodiscard]] META_PIMPL_API Data::TimeRange GetGpuTimeRange(bool in_cpu_nanoseconds) const;

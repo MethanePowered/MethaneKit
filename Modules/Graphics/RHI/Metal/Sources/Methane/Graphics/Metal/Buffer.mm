@@ -44,8 +44,9 @@ static MTLResourceOptions GetNativeResourceOptions(Rhi::BufferStorageMode storag
 {
     switch(storage_mode)
     {
-    case Rhi::BufferStorageMode::Managed: return NativeResourceStorageModeManaged;
-    case Rhi::BufferStorageMode::Private: return MTLResourceStorageModePrivate;
+    using enum Rhi::BufferStorageMode;
+    case Managed: return NativeResourceStorageModeManaged;
+    case Private: return MTLResourceStorageModePrivate;
     default: META_UNEXPECTED_RETURN(storage_mode, MTLResourceStorageModeShared);
     }
 }
@@ -76,8 +77,9 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& su
 
     switch(GetSettings().storage_mode)
     {
-    case IBuffer::StorageMode::Managed: SetDataToManagedBuffer(sub_resource); break;
-    case IBuffer::StorageMode::Private: SetDataToPrivateBuffer(sub_resource); break;
+    using enum IBuffer::StorageMode;
+    case Managed: SetDataToManagedBuffer(sub_resource); break;
+    case Private: SetDataToPrivateBuffer(sub_resource); break;
     default: META_UNEXPECTED(GetSettings().storage_mode);
     }
 }
@@ -94,8 +96,9 @@ Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt& data_
     Data::Bytes data;
     switch(GetSettings().storage_mode)
     {
-    case IBuffer::StorageMode::Managed: data = GetDataFromManagedBuffer(buffer_data_range); break;
-    case IBuffer::StorageMode::Private: data = GetDataFromPrivateBuffer(buffer_data_range); break;
+    using enum IBuffer::StorageMode;
+    case Managed: data = GetDataFromManagedBuffer(buffer_data_range); break;
+    case Private: data = GetDataFromPrivateBuffer(buffer_data_range); break;
     default: META_UNEXPECTED_RETURN(GetSettings().storage_mode, SubResource());
     }
 

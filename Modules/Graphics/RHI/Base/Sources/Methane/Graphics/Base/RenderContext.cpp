@@ -39,7 +39,8 @@ RenderContext::RenderContext(Device& device, UniquePtr<Rhi::IDescriptorManager>&
 {
     META_FUNCTION_TASK();
     META_CHECK_DESCR(m_settings.color_format, !IsSrgbColorSpace(m_settings.color_format),
-                         "render context can not use color formats with sRGB gamma correction due to modern swap-chain flip model limitations");
+                     "render context can not use color formats with sRGB gamma correction " \
+                     "due to modern swap-chain flip model limitations");
 }
 
 void RenderContext::WaitForGpu(WaitFor wait_for)
@@ -49,9 +50,10 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
 
     switch (wait_for)
     {
-    case WaitFor::RenderComplete: WaitForGpuRenderComplete(); break;
-    case WaitFor::FramePresented: WaitForGpuFramePresented(); break;
-    case WaitFor::ResourcesUploaded: break; // Handled in Context::WaitForGpu
+    using enum WaitFor;
+    case RenderComplete: WaitForGpuRenderComplete(); break;
+    case FramePresented: WaitForGpuFramePresented(); break;
+    case ResourcesUploaded: break; // Handled in Context::WaitForGpu
     default: META_UNEXPECTED(wait_for);
     }
 }

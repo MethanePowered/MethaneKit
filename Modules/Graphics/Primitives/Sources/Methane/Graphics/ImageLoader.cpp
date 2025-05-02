@@ -37,13 +37,13 @@ by decoding them from popular image formats.
 #include <OpenImageIO/imagebuf.h>
 #include <OpenImageIO/filesystem.h>
 
-#else
+#else // USE_OPEN_IMAGE_IO
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_STDIO
 #include <stb_image.h>
 
-#endif
+#endif // USE_OPEN_IMAGE_IO
 
 namespace Methane::Graphics
 {

@@ -36,6 +36,7 @@ Unit-tests of the RHI Compute Command List
 #include <Methane/Graphics/RHI/Texture.h>
 #include <Methane/Graphics/RHI/Buffer.h>
 #include <Methane/Graphics/RHI/Sampler.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/Null/CommandListSet.h>
 #include <Methane/Graphics/Null/ComputeCommandList.h>
 #include <Methane/Graphics/Null/Program.h>
@@ -62,15 +63,16 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
 
     const Rhi::Program compute_program = [&compute_context]()
     {
-        const Rhi::ProgramArgumentAccessor texture_accessor{ Rhi::ShaderType::Compute, "InTexture", Rhi::ProgramArgumentAccessType::Constant };
-        const Rhi::ProgramArgumentAccessor sampler_accessor{ Rhi::ShaderType::Compute, "InSampler", Rhi::ProgramArgumentAccessType::Constant };
-        const Rhi::ProgramArgumentAccessor buffer_accessor { Rhi::ShaderType::Compute, "OutBuffer", Rhi::ProgramArgumentAccessType::Mutable };
+        using enum Rhi::ShaderType;
+        const Rhi::ProgramArgumentAccessor texture_accessor{ Compute, "InTexture", Rhi::ProgramArgumentAccessType::Constant };
+        const Rhi::ProgramArgumentAccessor sampler_accessor{ Compute, "InSampler", Rhi::ProgramArgumentAccessType::Constant };
+        const Rhi::ProgramArgumentAccessor buffer_accessor { Compute, "OutBuffer", Rhi::ProgramArgumentAccessType::Mutable };
         Rhi::Program compute_program = compute_context.CreateProgram(
             Rhi::ProgramSettingsImpl
             {
                 Rhi::ProgramSettingsImpl::ShaderSet
                 {
-                    { Rhi::ShaderType::Compute, { Data::ShaderProvider::Get(), { "Compute", "Main" } } }
+                    { Compute, { Data::ShaderProvider::Get(), { "Compute", "Main" } } }
                 },
                 Rhi::ProgramInputBufferLayouts{ },
                 Rhi::ProgramArgumentAccessors
@@ -93,7 +95,7 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         Rhi::ThreadGroupSize(16, 16, 1)
     });
 
-    SECTION("Transfer Command List Construction")
+    SECTION("Compute Command List Construction")
     {
         Rhi::ComputeCommandList cmd_list;
         REQUIRE_NOTHROW(cmd_list = compute_cmd_queue.CreateComputeCommandList());
@@ -132,10 +134,20 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
 
     SECTION("Object Name Set Unchanged")
     {
-        CHECK(cmd_list.SetName("My Fence"));
+        CHECK(cmd_list.SetName("My Command List"));
         ObjectCallbackTester object_callback_tester(cmd_list);
-        CHECK_FALSE(cmd_list.SetName("My Fence"));
+        CHECK_FALSE(cmd_list.SetName("My Command List"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        cmd_list.SetName("Compute Command List");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(cmd_list);
+        const auto registered_cmd_list = registry.GetGraphicsObject<Rhi::ComputeCommandList>("Compute Command List");
+        REQUIRE(registered_cmd_list.IsInitialized());
+        CHECK(&registered_cmd_list.GetInterface() == &cmd_list.GetInterface());
     }
 
     SECTION("Reset Command List")
@@ -207,10 +219,11 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
             return buffer;
         }();
 
+        using enum Rhi::ShaderType;
         const Rhi::ProgramBindings compute_program_bindings = compute_program.CreateBindings({
-            { { Rhi::ShaderType::Compute, "InTexture" }, texture.GetResourceView() },
-            { { Rhi::ShaderType::Compute, "InSampler" }, sampler.GetResourceView() },
-            { { Rhi::ShaderType::Compute, "OutBuffer" }, buffer.GetResourceView()  },
+            { { Compute, "InTexture" }, texture.GetResourceView() },
+            { { Compute, "InSampler" }, sampler.GetResourceView() },
+            { { Compute, "OutBuffer" }, buffer.GetResourceView()  },
         });
 
         REQUIRE_NOTHROW(cmd_list.ResetWithState(compute_state));
@@ -223,7 +236,7 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
     {
         const Rhi::ResourceBarriers barriers(Rhi::IResourceBarriers::Set{});
         REQUIRE_NOTHROW(cmd_list.Reset());
-        REQUIRE_NOTHROW(cmd_list.SetResourceBarriers(barriers.GetInterface()));
+        REQUIRE_NOTHROW(cmd_list.SetResourceBarriers(barriers));
     }
 
     SECTION("Commit Command List")
@@ -322,8 +335,9 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
 
         auto& null_cmd_list = dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface());
-        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
         CHECK(&null_cmd_list.GetComputeState() == compute_state.GetInterfacePtr().get());
+        REQUIRE(null_cmd_list.GetTopOpenDebugGroup() != nullptr);
+        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Reset Command List Once with Compute State and Debug Group")
@@ -334,8 +348,9 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
         CHECK(cmd_list.GetState() == Rhi::CommandListState::Encoding);
 
         auto& null_cmd_list = dynamic_cast<Null::ComputeCommandList&>(cmd_list.GetInterface());
-        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
         CHECK(&null_cmd_list.GetComputeState() == compute_state.GetInterfacePtr().get());
+        REQUIRE(null_cmd_list.GetTopOpenDebugGroup() != nullptr);
+        CHECK(null_cmd_list.GetTopOpenDebugGroup()->GetName() == "Test");
     }
 
     SECTION("Set Command List Compute State")

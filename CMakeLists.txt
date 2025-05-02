@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.21.0)
+cmake_minimum_required(VERSION 3.24.0)
 
 # Methane version, build & product info
 set(METHANE_VERSION_MAJOR 0 CACHE STRING "Methane major version")
 set(METHANE_VERSION_MINOR 8 CACHE STRING "Methane minor version")
-set(METHANE_VERSION_PATCH 0 CACHE STRING "Methane patch version")
+set(METHANE_VERSION_PATCH 1 CACHE STRING "Methane patch version")
 set(METHANE_VERSION_BUILD 0 CACHE STRING "Methane build version")
 
 # Define CMake languages list
@@ -114,7 +114,7 @@ set(METHANE_COPYRIGHT     "Copyright 2019-2023 Evgeny Gorodetskiy")
 set(RESOURCES_DIR         "${CMAKE_CURRENT_SOURCE_DIR}/Resources")
 
 # CMake configuration settings
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CTEST_OUTPUT_ON_FAILURE ON)
 set(PARSE_CATCH_TESTS_VERBOSE OFF)
 set(CMAKE_DISABLE_PRECOMPILE_HEADERS OFF)

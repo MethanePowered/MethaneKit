@@ -100,7 +100,7 @@ public:
     inline void RetainResource(Object& resource)                  { m_command_state.retained_resources.emplace_back(resource.GetBasePtr()); }
     inline void ReleaseRetainedResources()                        { m_command_state.retained_resources.clear(); }
 
-    template<typename T, typename = std::enable_if_t<std::is_base_of_v<Object, T>>>
+    template<typename T> requires std::is_base_of_v<Object, T>
     inline void RetainResources(const Ptrs<T>& resource_ptrs)
     {
         for(const Ptr<T>& resource_ptr : resource_ptrs)

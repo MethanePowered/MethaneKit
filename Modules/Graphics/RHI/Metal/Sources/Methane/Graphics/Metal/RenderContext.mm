@@ -124,10 +124,11 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
     Rhi::CommandListType cl_type = Rhi::CommandListType::Render;
     switch (wait_for)
     {
-    case WaitFor::RenderComplete:
+    using enum WaitFor;
+    case RenderComplete:
         break;
 
-    case WaitFor::FramePresented:
+    case FramePresented:
 #ifdef FRAMES_SYNC_WITH_DISPATCH_SEMAPHORE
         OnGpuWaitStart(wait_for);
         dispatch_semaphore_wait(m_dispatch_semaphore, DISPATCH_TIME_FOREVER);
@@ -137,7 +138,7 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
         frame_buffer_index = GetFrameBufferIndex();
         break;
 
-    case WaitFor::ResourcesUploaded:
+    case ResourcesUploaded:
         cl_type = Rhi::CommandListType::Transfer;
         break;
 

@@ -56,7 +56,7 @@ public:
     AddResult AddStateTransition(Rhi::IResource& resource, State before, State after) final;
     AddResult AddOwnerTransition(Rhi::IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) final;
 
-    AddResult Add(const Barrier::Id& id, const Barrier& barrier) override;
+    AddResult Add(const Barrier& barrier) override;
     bool Remove(const Barrier::Id& id) override;
 
     void ApplyTransitions() const final;

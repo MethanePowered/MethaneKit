@@ -35,6 +35,8 @@ DirectX 12 implementation of the buffer interface.
 #include <magic_enum/magic_enum.hpp>
 #include <directx/d3dx12_core.h>
 
+#include <span>
+
 namespace Methane::Graphics::DirectX
 {
 
@@ -133,8 +135,8 @@ void Buffer::SetData(Rhi::ICommandQueue& target_cmd_queue, const SubResource& su
     );
 
     META_CHECK_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
-    stdext::checked_array_iterator target_data_it(sub_resource_data_ptr, sub_resource.GetDataSize());
-    std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_it);
+    std::span target_data_span(sub_resource_data_ptr, sub_resource.GetDataSize());
+    std::copy(sub_resource.GetDataPtr(), sub_resource.GetDataEndPtr(), target_data_span.begin());
 
     if (sub_resource.HasDataRange())
     {
@@ -175,9 +177,9 @@ Rhi::SubResource Buffer::GetData(Rhi::ICommandQueue&, const BytesRangeOpt& data_
 
     META_CHECK_NOT_NULL_DESCR(sub_resource_data_ptr, "failed to map buffer subresource");
 
-    stdext::checked_array_iterator source_data_it(sub_resource_data_ptr, data_end);
-    Data::Bytes                    sub_resource_data(data_length, {});
-    std::copy(source_data_it + data_start, source_data_it + data_end, sub_resource_data.begin());
+    std::span   source_data_span(sub_resource_data_ptr, data_end);
+    Data::Bytes sub_resource_data(data_length, {});
+    std::copy(source_data_span.begin() + data_start, source_data_span.end(), sub_resource_data.begin());
 
     const CD3DX12_RANGE zero_write_range(0, 0);
     d3d12_resource.Unmap(0U, &zero_write_range);

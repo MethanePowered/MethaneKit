@@ -45,6 +45,7 @@ class CommandQueue;
 class Texture // NOSONAR - class has more than 35 methods, constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface        = ITexture;
     using AllocationError  = ResourceAllocationError;
     using State            = ResourceState;
     using Barrier          = ResourceBarrier;
@@ -59,7 +60,7 @@ public:
     using DescriptorByViewId = std::map<ResourceView::Id, Descriptor>;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Texture);
-    META_PIMPL_METHODS_COMPARE_DECLARE(Texture);
+    META_PIMPL_METHODS_COMPARE_INLINE(Texture);
 
     META_PIMPL_API explicit Texture(const Ptr<ITexture>& interface_ptr);
     META_PIMPL_API explicit Texture(ITexture& interface_ref);
@@ -95,7 +96,7 @@ public:
     [[nodiscard]] META_PIMPL_API const DescriptorByViewId& GetDescriptorByViewId() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const IContext&           GetContext() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API const Opt<uint32_t>&      GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API Rhi::ResourceView         GetTextureView(const SubResource::Index& subresource_index,
+    [[nodiscard]] META_PIMPL_API Rhi::TextureView          GetTextureView(const SubResource::Index& subresource_index = {},
                                                                           const SubResource::Count& subresource_count = {},
                                                                           Opt<Rhi::TextureDimensionType> texture_dimension_type_opt = std::nullopt) const;
     [[nodiscard]] META_PIMPL_API Rhi::ResourceView         GetResourceView() const;

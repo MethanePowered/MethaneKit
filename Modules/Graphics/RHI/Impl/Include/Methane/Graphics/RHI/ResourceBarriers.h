@@ -41,6 +41,7 @@ class RenderPass;
 class ResourceBarriers // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface = IResourceBarriers;
     using State     = IResourceBarriers::State;
     using Barrier   = IResourceBarriers::Barrier;
     using Map       = IResourceBarriers::Map;
@@ -48,11 +49,14 @@ public:
     using AddResult = IResourceBarriers::AddResult;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(ResourceBarriers);
-    META_PIMPL_METHODS_COMPARE_DECLARE(ResourceBarriers);
+    META_PIMPL_METHODS_COMPARE_INLINE(ResourceBarriers);
 
     META_PIMPL_API explicit ResourceBarriers(const Ptr<IResourceBarriers>& interface_ptr);
     META_PIMPL_API explicit ResourceBarriers(IResourceBarriers& interface_ref);
     META_PIMPL_API explicit ResourceBarriers(const Set& barriers);
+    META_PIMPL_API ResourceBarriers(RefSpan<IResource> resources,
+                                    const Opt<Barrier::StateChange>& state_change,
+                                    const Opt<Barrier::OwnerChange>& owner_change);
     META_PIMPL_API ResourceBarriers(const Refs<IResource>& resources,
                                     const Opt<Barrier::StateChange>& state_change,
                                     const Opt<Barrier::OwnerChange>& owner_change);
@@ -70,15 +74,14 @@ public:
     [[nodiscard]] META_PIMPL_API bool  HasOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) const;
     [[nodiscard]] META_PIMPL_API explicit operator std::string() const META_PIMPL_NOEXCEPT;
 
+    META_PIMPL_API bool Remove(const Barrier::Id& id) const;
     META_PIMPL_API bool Remove(Barrier::Type type, IResource& resource) const;
     META_PIMPL_API bool RemoveStateTransition(IResource& resource) const;
     META_PIMPL_API bool RemoveOwnerTransition(IResource& resource) const;
 
+    META_PIMPL_API AddResult Add(const Barrier& barrier) const;
     META_PIMPL_API AddResult AddStateTransition(IResource& resource, State before, State after) const;
     META_PIMPL_API AddResult AddOwnerTransition(IResource& resource, uint32_t queue_family_before, uint32_t queue_family_after) const;
-
-    META_PIMPL_API AddResult Add(const Barrier::Id& id, const Barrier& barrier) const;
-    META_PIMPL_API bool      Remove(const Barrier::Id& id) const;
 
     META_PIMPL_API void ApplyTransitions() const;
 

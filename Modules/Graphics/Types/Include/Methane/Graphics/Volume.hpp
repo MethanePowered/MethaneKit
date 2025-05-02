@@ -46,7 +46,7 @@ public:
 
     VolumeSize() = default;
 
-    template<typename V, typename = std::enable_if_t<std::is_arithmetic_v<V>>>
+    template<typename V> requires std::is_arithmetic_v<V>
     explicit VolumeSize(const RectSize<V>& rect_size, V d = 1) noexcept(std::is_unsigned_v<V>)
         : RectSize<D>(rect_size)
         , m_depth(Data::RoundCast<D>(d))
@@ -57,7 +57,7 @@ public:
         }
     }
 
-    template<typename V, typename = std::enable_if_t<std::is_arithmetic_v<V>>>
+    template<typename V> requires std::is_arithmetic_v<V>
     VolumeSize(V w, V h, V d = 1) noexcept(std::is_unsigned_v<V>)
         : RectSize<D>(w, h)
         , m_depth(Data::RoundCast<D>(d))
@@ -68,7 +68,7 @@ public:
         }
     }
 
-    template<typename V, typename = std::enable_if_t<std::is_arithmetic_v<V>>>
+    template<typename V> requires std::is_arithmetic_v<V>
     explicit VolumeSize(const Point3T<V>& point) noexcept(std::is_unsigned_v<V>)
         : RectSize<D>(point.GetX(), point.GetY())
         , m_depth(Data::RoundCast<D>(point.GetZ()))
@@ -79,7 +79,7 @@ public:
         }
     }
 
-    template<typename V, typename = std::enable_if_t<!std::is_same_v<D, V>>>
+    template<typename V> requires(!std::is_same_v<D, V>)
     explicit VolumeSize(const VolumeSize<V>& other) noexcept
         : RectSize<D>(other)
         , m_depth(Data::RoundCast<D>(other.GetDepth()))
@@ -96,28 +96,18 @@ public:
         m_depth = depth;
     }
 
-    friend bool operator==(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) == right && left.m_depth == right.m_depth; }
+    [[nodiscard]] bool ContainedIn(const VolumeSize& other) const noexcept
+    { return RectSize<D>::ContainedIn(other) && m_depth < other.m_depth; }
 
-    friend bool operator!=(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) != right || left.m_depth != right.m_depth; }
+    [[nodiscard]] bool ContainedInOrEqual(const VolumeSize& other) const noexcept
+    { return RectSize<D>::ContainedInOrEqual(other) && m_depth <= other.m_depth; }
 
-    friend bool operator<=(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) <= right && left.m_depth <= right.m_depth; }
+    [[nodiscard]] friend auto operator<=>(const VolumeSize& left, const VolumeSize& right) noexcept = default;
 
-    friend bool operator<(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) < right && left.m_depth < right.m_depth; }
-
-    friend bool operator>=(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) >= right && left.m_depth >= right.m_depth; }
-
-    friend bool operator>(const VolumeSize& left, const VolumeSize& right) noexcept
-    { return static_cast<const RectSize<D>&>(left) > right && left.m_depth > right.m_depth; }
-
-    friend VolumeSize operator+(const VolumeSize& left, const VolumeSize& right) noexcept
+    [[nodiscard]] friend VolumeSize operator+(const VolumeSize& left, const VolumeSize& right) noexcept
     { return VolumeSize(static_cast<const RectSize<D>&>(left) + right, left.m_depth + right.m_depth); }
 
-    friend VolumeSize operator-(const VolumeSize& left, const VolumeSize& right) noexcept
+    [[nodiscard]] friend VolumeSize operator-(const VolumeSize& left, const VolumeSize& right) noexcept
     { return VolumeSize(static_cast<const RectSize<D>&>(left) - right, left.m_depth - right.m_depth); }
 
     VolumeSize& operator+=(const VolumeSize& other) noexcept
@@ -134,8 +124,8 @@ public:
         return *this;
     }
 
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(const VolumeSize& sz, M multiplier) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend VolumeSize operator*(const VolumeSize& sz, M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
@@ -145,8 +135,8 @@ public:
         return VolumeSize(static_cast<const RectSize<D>&>(sz) * multiplier, depth);
     }
 
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(const VolumeSize& sz, M divisor) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend VolumeSize operator/(const VolumeSize& sz, M divisor) noexcept(std::is_unsigned_v<M>)
     {
         D depth {};
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
@@ -156,8 +146,8 @@ public:
         return VolumeSize(static_cast<const RectSize<D>&>(sz) / divisor, depth);
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator*=(M multiplier) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    VolumeSize& operator*=(M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             m_depth = Data::RoundCast<D>(static_cast<M>(m_depth) * multiplier);
@@ -167,8 +157,8 @@ public:
         return *this;
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator/=(M divisor) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    VolumeSize& operator/=(M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_floating_point_v<M> && std::is_integral_v<D>)
             m_depth = Data::RoundCast<D>(static_cast<M>(m_depth) / divisor);
@@ -178,8 +168,8 @@ public:
         return *this;
     }
 
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(const VolumeSize& sz, const Point3T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend VolumeSize operator*(const VolumeSize& sz, const Point3T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -193,8 +183,8 @@ public:
         return VolumeSize(static_cast<const RectSize<D>&>(sz) * Point2T<M>(multiplier.GetX(), multiplier.GetY()), depth);
     }
 
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(const VolumeSize& sz, const Point3T<M>& divisor) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend VolumeSize operator/(const VolumeSize& sz, const Point3T<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -208,8 +198,8 @@ public:
         return VolumeSize(static_cast<const RectSize<D>&>(sz) / Point2T<M>(divisor.GetX(), divisor.GetY()), depth);
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator*=(const Point3T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    VolumeSize& operator*=(const Point3T<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -223,8 +213,8 @@ public:
         return *this;
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator/=(const Point3T<M>& divisor) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    VolumeSize& operator/=(const Point3T<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -238,8 +228,8 @@ public:
         return *this;
     }
 
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator*(const VolumeSize& sz, const VolumeSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend VolumeSize operator*(const VolumeSize& sz, const VolumeSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -253,8 +243,8 @@ public:
         return VolumeSize(static_cast<const RectSize<D>&>(sz) * multiplier, depth);
     }
 
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize> operator/(const VolumeSize& sz, const VolumeSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend VolumeSize operator/(const VolumeSize& sz, const VolumeSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -268,8 +258,8 @@ public:
         return VolumeSize(static_cast<const RectSize<D>&>(sz) / divisor, depth);
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator*=(const VolumeSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    VolumeSize& operator*=(const VolumeSize<M>& multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -283,8 +273,8 @@ public:
         return *this;
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, VolumeSize&> operator/=(const VolumeSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    VolumeSize& operator/=(const VolumeSize<M>& divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
         {
@@ -306,7 +296,7 @@ public:
 
     explicit operator bool() const noexcept { return RectSize<D>::operator bool() && m_depth; }
 
-    template<typename V, typename = std::enable_if_t<!std::is_same_v<D, V>>>
+    template<typename V> requires(!std::is_same_v<D, V>)
     explicit operator VolumeSize<V>() const noexcept
     {
         return VolumeSize<V>(RectSize<D>::operator RectSize<V>(), Data::RoundCast<D>(m_depth));
@@ -343,39 +333,26 @@ struct Volume // NOSONAR - class has more than 35 methods
     T GetNear() const noexcept   { return origin.GetZ(); }
     T GetFar() const noexcept    { return origin.GetZ() + Data::RoundCast<T>(size.GetDepth()); }
 
-    friend bool operator==(const Volume& left, const Volume& right) noexcept
-    {
-        return std::tie(left.origin, left.size) == std::tie(right.origin, right.size);
-    }
+    [[nodiscard]] friend auto operator<=>(const Volume& left, const Volume& right) = default;
 
-    friend bool operator!=(const Volume& left, const Volume& right) noexcept
-    {
-        return std::tie(left.origin, left.size) != std::tie(right.origin, right.size);
-    }
-
-    friend bool operator<(const Volume& left, const Volume& right) noexcept
-    {
-        return std::tie(left.origin, left.size) < std::tie(right.origin, right.size);
-    }
-
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator*(const Volume& v, M multiplier) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend Volume<T, D> operator*(const Volume& v, M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "volume multiplier can not be less than zero");
         return Volume<T, D>{ v.origin * multiplier, v.size * multiplier };
     }
 
-    template<typename M>
-    friend std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>> operator/(const Volume& v, M divisor) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    [[nodiscard]] friend Volume<T, D> operator/(const Volume& v, M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_GREATER_OR_EQUAL_DESCR(divisor, 0, "volume divisor can not be less than zero");
         return Volume<T, D>{ v.origin / divisor, v.size / divisor };
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>&> operator*=(M multiplier) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    Volume<T, D>& operator*=(M multiplier) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_GREATER_OR_EQUAL_DESCR(multiplier, 0, "volume multiplier can not be less than zero");
@@ -384,8 +361,8 @@ struct Volume // NOSONAR - class has more than 35 methods
         return *this;
     }
 
-    template<typename M>
-    std::enable_if_t<std::is_arithmetic_v<M>, Volume<T, D>&> operator/=(M divisor) noexcept(std::is_unsigned_v<M>)
+    template<typename M> requires std::is_arithmetic_v<M>
+    Volume<T, D>& operator/=(M divisor) noexcept(std::is_unsigned_v<M>)
     {
         if constexpr (std::is_signed_v<M>)
             META_CHECK_GREATER_OR_EQUAL_DESCR(divisor, 0, "volume divisor can not be less than zero");
@@ -394,7 +371,7 @@ struct Volume // NOSONAR - class has more than 35 methods
         return *this;
     }
 
-    template<typename V, typename K, typename = std::enable_if_t<!std::is_same_v<T, V> || !std::is_same_v<D, K>>>
+    template<typename V, typename K> requires(!std::is_same_v<T, V> || !std::is_same_v<D, K>)
     explicit operator Volume<V, K>() const
     {
         return Volume<V, K>(static_cast<Point3T<V>>(origin), static_cast<VolumeSize<K>>(size));

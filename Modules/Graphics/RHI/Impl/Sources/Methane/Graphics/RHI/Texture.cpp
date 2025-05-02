@@ -39,7 +39,6 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Texture);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(Texture);
 
 Texture::Texture(const Ptr<ITexture>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
@@ -193,7 +192,7 @@ const Opt<uint32_t>& Texture::GetOwnerQueueFamily() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetOwnerQueueFamily();
 }
 
-Rhi::ResourceView Texture::GetTextureView(const SubResource::Index& subresource_index,
+Rhi::TextureView Texture::GetTextureView(const SubResource::Index& subresource_index,
                                           const SubResource::Count& subresource_count,
                                           Opt<Rhi::TextureDimensionType> texture_dimension_type_opt) const
 {

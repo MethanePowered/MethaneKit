@@ -41,6 +41,7 @@ class ComputeContext;
 class Shader // NOSONAR - constructors and assignment operators are required to use forward declared Impl and Ptr<Impl> in header
 {
 public:
+    using Interface        = IShader;
     using Type             = ShaderType;
     using Types            = ShaderTypes;
     using MacroDefinition  = ShaderMacroDefinition;
@@ -49,7 +50,7 @@ public:
     using EntryFunction    = ShaderEntryFunction;
 
     META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Shader);
-    META_PIMPL_METHODS_COMPARE_DECLARE(Shader);
+    META_PIMPL_METHODS_COMPARE_INLINE(Shader);
 
     META_PIMPL_API explicit Shader(const Ptr<IShader>& interface_ptr);
     META_PIMPL_API explicit Shader(IShader& interface_ref);

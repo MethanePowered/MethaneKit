@@ -67,13 +67,8 @@ Methane PIMPL common header.
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE(Class) META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_MACRO(Class, META_PIMPL_API)
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_NO_INLINE(Class) META_PIMPL_DEFAULT_CONSTRUCT_METHODS_DECLARE_MACRO(Class, META_PIMPL_NO_INLINE)
 
-#define META_PIMPL_METHODS_COMPARE_DECLARE_MACRO(Class, API_MACRO) \
-    API_MACRO bool operator==(const Class& other) const noexcept; \
-    API_MACRO bool operator!=(const Class& other) const noexcept; \
-    API_MACRO bool operator<(const Class& other) const noexcept
-
-#define META_PIMPL_METHODS_COMPARE_DECLARE(Class) META_PIMPL_METHODS_COMPARE_DECLARE_MACRO(Class, META_PIMPL_API)
-#define META_PIMPL_METHODS_COMPARE_DECLARE_NO_INLINE(Class) META_PIMPL_METHODS_COMPARE_DECLARE_MACRO(Class, META_PIMPL_NO_INLINE)
+#define META_PIMPL_METHODS_COMPARE_DEFAULT(Class) \
+    [[nodiscard]] friend auto operator<=>(const Class& left, const Class& right) noexcept = default;
 
 #define META_PIMPL_METHODS_IMPLEMENT(Class) \
     Class::~Class() = default; \
@@ -82,14 +77,16 @@ Methane PIMPL common header.
     Class& Class::operator=(const Class& other) = default; \
     Class& Class::operator=(Class&& other) noexcept = default
 
-#define META_PIMPL_METHODS_COMPARE_IMPLEMENT(Class) \
-    bool Class::operator==(const Class& other) const noexcept \
-    { return (!IsInitialized() && !other.IsInitialized()) ||   \
-             (IsInitialized() && other.IsInitialized() && std::addressof(GetInterface()) == std::addressof(other.GetInterface())); } \
-    bool Class::operator!=(const Class& other) const noexcept { return !operator==(other); } \
-    bool Class::operator<(const Class& other) const noexcept \
-    { if  (IsInitialized() && other.IsInitialized()) return std::addressof(GetInterface()) < std::addressof(other.GetInterface()); \
-      return !IsInitialized() && other.IsInitialized(); }
+#define META_PIMPL_METHODS_COMPARE_INLINE(Class) \
+    [[nodiscard]] friend auto operator<=>(const Class& left, const Class& right) noexcept \
+    { if (left.IsInitialized() && right.IsInitialized()) \
+          return std::addressof(left.GetInterface()) <=> std::addressof(right.GetInterface()); \
+       if (!left.IsInitialized() && !right.IsInitialized()) \
+           return std::strong_ordering::equal; \
+       return left.IsInitialized() ? std::strong_ordering::greater : std::strong_ordering::less; \
+    } \
+    [[nodiscard]] friend bool operator==(const Class& left, const Class& right) noexcept \
+    { return std::is_eq(left <=> right); }
 
 #define META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(Class) \
     Class::Class() = default; \

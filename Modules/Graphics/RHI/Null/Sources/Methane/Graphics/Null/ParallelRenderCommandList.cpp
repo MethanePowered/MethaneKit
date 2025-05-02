@@ -17,7 +17,7 @@ limitations under the License.
 *******************************************************************************
 
 FILE: Methane/Graphics/Null/ParallelRenderCommandList.cpp
-Null implementation of the render command list interface.
+Null implementation of the parallel render command list interface.
 
 ******************************************************************************/
 
@@ -30,6 +30,16 @@ namespace Methane::Graphics::Null
 Ptr<Rhi::IRenderCommandList> ParallelRenderCommandList::CreateCommandList(bool)
 {
     return std::make_shared<RenderCommandList>(*this);
+}
+
+void ParallelRenderCommandList::SetBeginningResourceBarriers(const Rhi::IResourceBarriers& barriers)
+{
+    m_beginning_barriers_ptr = &barriers;
+}
+
+void ParallelRenderCommandList::SetEndingResourceBarriers(const Rhi::IResourceBarriers& barriers)
+{
+    m_ending_barriers_ptr = &barriers;
 }
 
 } // namespace Methane::Graphics::Null

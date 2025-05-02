@@ -52,6 +52,9 @@ public:
                      uint32_t instance_count, uint32_t start_instance) override;
     void Draw(Primitive primitive, uint32_t vertex_count, uint32_t start_vertex,
               uint32_t instance_count, uint32_t start_instance) override;
+
+    using Base::RenderCommandList::GetDrawingState;
+    using Base::CommandList::GetCommandState;
 };
 
 } // namespace Methane::Graphics::Null

@@ -38,7 +38,6 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(CommandKit);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(CommandKit);
 
 CommandKit::CommandKit(const Ptr<ICommandKit>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
@@ -156,7 +155,7 @@ TransferCommandList CommandKit::GetTransferListForEncoding(CommandListId cmd_lis
     return TransferCommandList(dynamic_cast<ITransferCommandList&>(GetImpl(m_impl_ptr).GetListForEncoding(cmd_list_id, debug_group_name)));
 }
 
-CommandListSet CommandKit::GetListSet(const std::vector<CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+CommandListSet CommandKit::GetListSet(Rhi::CommandListIdSpan cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     return CommandListSet(GetImpl(m_impl_ptr).GetListSet(cmd_list_ids, frame_index_opt));
 }
@@ -166,12 +165,12 @@ IFence& CommandKit::GetFence(CommandListId fence_id) const
     return GetImpl(m_impl_ptr).GetFence(fence_id);
 }
 
-void CommandKit::ExecuteListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+void CommandKit::ExecuteListSet(Rhi::CommandListIdSpan cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     GetImpl(m_impl_ptr).ExecuteListSet(cmd_list_ids, frame_index_opt);
 }
 
-void CommandKit::ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const
+void CommandKit::ExecuteListSetAndWaitForCompletion(Rhi::CommandListIdSpan cmd_list_ids, Opt<Data::Index> frame_index_opt) const
 {
     GetImpl(m_impl_ptr).ExecuteListSetAndWaitForCompletion(cmd_list_ids, frame_index_opt);
 }

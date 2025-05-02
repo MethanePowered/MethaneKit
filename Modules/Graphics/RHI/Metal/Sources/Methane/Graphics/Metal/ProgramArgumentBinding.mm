@@ -62,11 +62,12 @@ static MTLRenderStages ConvertShaderTypeToMetalRenderStages(Rhi::ShaderType shad
     MTLRenderStages mtl_render_stages{};
     switch(shader_type)
     {
-        case Rhi::ShaderType::All:    mtl_render_stages |= MTLRenderStageVertex
-                                                        |  MTLRenderStageFragment; break;
-        case Rhi::ShaderType::Vertex: mtl_render_stages |= MTLRenderStageVertex; break;
-        case Rhi::ShaderType::Pixel:  mtl_render_stages |= MTLRenderStageFragment; break;
-        case Rhi::ShaderType::Compute: /* Compute is not Render stage */ break;
+        using enum Rhi::ShaderType;
+        case All:    mtl_render_stages |= MTLRenderStageVertex
+                                       |  MTLRenderStageFragment; break;
+        case Vertex: mtl_render_stages |= MTLRenderStageVertex; break;
+        case Pixel:  mtl_render_stages |= MTLRenderStageFragment; break;
+        case Compute: /* Compute is not Render stage */ break;
         default: META_UNEXPECTED(shader_type);
     }
     return mtl_render_stages;
@@ -103,13 +104,13 @@ void ProgramArgumentBinding::MergeSettings(const Base::ProgramArgumentBinding& o
     }
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
+bool ProgramArgumentBinding::SetResourceViewSpan(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
     CallbackBlocker callback_blocker(*this);
 
     const Rhi::ResourceViews prev_resource_views = GetResourceViews();
-    if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
+    if (!Base::ProgramArgumentBinding::SetResourceViewSpan(resource_views))
         return false;
 
     SetMetalResourcesForViews(resource_views);
@@ -160,7 +161,7 @@ bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
     return true;
 }
 
-void ProgramArgumentBinding::SetMetalResourcesForViews(const Rhi::ResourceViews& resource_views)
+void ProgramArgumentBinding::SetMetalResourcesForViews(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
 
@@ -175,30 +176,31 @@ void ProgramArgumentBinding::SetMetalResourcesForViews(const Rhi::ResourceViews&
 
     switch(m_settings_mt.resource_type)
     {
-    case Rhi::ResourceType::Sampler:
+    using enum Rhi::ResourceType;
+    case Sampler:
         m_mtl_sampler_states.reserve(resource_views.size());
-        std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_mtl_sampler_states),
-                       [](const Rhi::ResourceView& resource_view)
-                       { return dynamic_cast<const Sampler&>(resource_view.GetResource()).GetNativeSamplerState(); });
+        std::ranges::transform(resource_views, std::back_inserter(m_mtl_sampler_states),
+                               [](const Rhi::ResourceView& resource_view)
+                               { return dynamic_cast<const class Sampler&>(resource_view.GetResource()).GetNativeSamplerState(); });
         break;
 
-    case Rhi::ResourceType::Texture:
+    case Texture:
         m_mtl_textures.reserve(resource_views.size());
         for(const Rhi::ResourceView& resource_view : resource_views)
         {
-            const auto& texture = dynamic_cast<const Texture&>(resource_view.GetResource());
+            const auto& texture = dynamic_cast<const class Texture&>(resource_view.GetResource());
             m_mtl_resource_usage |= texture.GetNativeResourceUsage();
             mtl_resource_set.insert(static_cast<id<MTLResource>>(texture.GetNativeTexture()));
             m_mtl_textures.push_back(texture.GetNativeTexture());
         }
         break;
 
-    case Rhi::ResourceType::Buffer:
+    case Buffer:
         m_mtl_buffers.reserve(resource_views.size());
         m_mtl_buffer_offsets.reserve(resource_views.size());
         for (const Rhi::ResourceView& resource_view : resource_views)
         {
-            const auto& buffer = dynamic_cast<const Buffer&>(resource_view.GetResource());
+            const auto& buffer = dynamic_cast<const class Buffer&>(resource_view.GetResource());
             m_mtl_resource_usage |= buffer.GetNativeResourceUsage();
             mtl_resource_set.insert(static_cast<id<MTLResource>>(buffer.GetNativeBuffer()));
             m_mtl_buffers.push_back(buffer.GetNativeBuffer());

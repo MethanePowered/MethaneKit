@@ -25,7 +25,7 @@ Tutorial demonstrating dynamic text rendering and fonts management with Methane 
 #include "TypographyAppController.h"
 
 #include <Methane/Tutorials/AppSettings.h>
-#include <Methane/Data/TimeAnimation.h>
+#include <Methane/Data/TimeAnimation.hpp>
 
 #include <magic_enum/magic_enum.hpp>
 #include <array>
@@ -144,9 +144,10 @@ TypographyApp::TypographyApp()
     });
 
     // Setup animations
-    GetAnimations().push_back(
-        std::make_shared<Data::TimeAnimation>(std::bind(&TypographyApp::Animate, this, std::placeholders::_1, std::placeholders::_2))
-    );
+    GetAnimations().push_back(Data::MakeTimeAnimationPtr([this](double elapsed_seconds, double delta_seconds)
+    {
+        return Animate(elapsed_seconds, delta_seconds);
+    }));
 
     ShowParameters();
 }
@@ -180,9 +181,9 @@ void TypographyApp::Init()
             m_font_context.GetFont(
                 gui::Font::Settings
                 {
-                    font_settings.desc,
-                    GetUIContext().GetFontResolutionDpi(),
-                    gui::Font::GetAlphabetFromText(displayed_text_block)
+                    .description    = font_settings.desc,
+                    .resolution_dpi = GetUIContext().GetFontResolutionDpi(),
+                    .characters     = gui::Font::GetAlphabetFromText(displayed_text_block)
                 }
             )
         );
@@ -192,17 +193,17 @@ void TypographyApp::Init()
             std::make_shared<gui::TextItem>(GetUIContext(), m_fonts.back(),
                 gui::Text::SettingsUtf32
                 {
-                    font_settings.desc.name,
-                    displayed_text_block,
-                    gui::UnitRect
+                    .name = font_settings.desc.name,
+                    .text = displayed_text_block,
+                    .rect = gui::UnitRect
                     {
                         gui::Units::Dots,
                         gfx::Point2I { g_margin_size_in_dots, vertical_text_pos_in_dots },
                         gfx::FrameSize { frame_width_without_margins, 0U /* calculated height */ }
                     },
-                    m_settings.text_layout,
-                    gfx::Color4F(font_settings.color, 1.F),
-                    m_settings.is_incremental_text_update
+                    .layout = m_settings.text_layout,
+                    .color  = gfx::Color4F(font_settings.color, 1.F),
+                    .incremental_update = m_settings.is_incremental_text_update
                 }
             )
         );
@@ -233,12 +234,12 @@ Ptr<gui::Badge> TypographyApp::CreateFontAtlasBadge(const gui::Font& font, const
         GetUIContext(), atlas_texture,
         gui::Badge::Settings
         {
-            font.GetSettings().description.name + " Font Atlas",
-            gui::Badge::FrameCorner::BottomLeft,
-            gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture.GetSettings().dimensions)),
-            gui::UnitSize(gui::Units::Dots, 16U, 16U),
-            gui::Color4F(font_color, 0.5F),
-            gui::Badge::TextureMode::RFloatToAlpha,
+            .name         = font.GetSettings().description.name + " Font Atlas",
+            .corner       = gui::Badge::FrameCorner::BottomLeft,
+            .size         = gui::UnitSize(gui::Units::Pixels, static_cast<const gfx::FrameSize&>(atlas_texture.GetSettings().dimensions)),
+            .margins      = gui::UnitSize(gui::Units::Dots, 16U, 16U),
+            .blend_color  = gui::Color4F(font_color, 0.5F),
+            .texture_mode = gui::Badge::TextureMode::RFloatToAlpha,
         }
     );
 }
@@ -253,9 +254,8 @@ void TypographyApp::UpdateFontAtlasBadges()
     {
         META_CHECK_NOT_NULL(*badge_it);
         if (const gui::Badge& badge = **badge_it;
-            std::any_of(fonts.begin(), fonts.end(),
-                [&badge, &context](const gui::Font& font)
-                { return badge.GetTexture() == font.GetAtlasTexture(context); }))
+            std::ranges::any_of(fonts, [&badge, &context](const gui::Font& font)
+                                       { return badge.GetTexture() == font.GetAtlasTexture(context); }))
         {
             ++badge_it;
             continue;
@@ -269,11 +269,9 @@ void TypographyApp::UpdateFontAtlasBadges()
     {
         const rhi::Texture& font_atlas_texture = font.GetAtlasTexture(context);
         if (!font_atlas_texture.IsInitialized() ||
-            std::any_of(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-                        [&font_atlas_texture](const Ptr<gui::Badge>& font_atlas_badge_ptr)
-                        {
-                            return font_atlas_badge_ptr->GetTexture() == font_atlas_texture;
-                        }))
+            std::ranges::any_of(m_font_atlas_badges,
+                               [&font_atlas_texture](const Ptr<gui::Badge>& font_atlas_badge_ptr)
+                               { return font_atlas_badge_ptr->GetTexture() == font_atlas_texture; }))
             continue;
 
         m_font_atlas_badges.emplace_back(CreateFontAtlasBadge(font, font_atlas_texture));
@@ -285,12 +283,12 @@ void TypographyApp::UpdateFontAtlasBadges()
 void TypographyApp::LayoutFontAtlasBadges(const gfx::FrameSize& frame_size)
 {
     // Sort atlas badges by size so that largest are displayed first
-    std::sort(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-              [](const Ptr<gui::Badge>& left_ptr, const Ptr<gui::Badge>& right_ptr)
-              {
-                  return left_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount() >
-                         right_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount();
-              }
+    std::ranges::sort(m_font_atlas_badges,
+                      [](const Ptr<gui::Badge>& left_ptr, const Ptr<gui::Badge>& right_ptr)
+                      {
+                          return left_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount() >
+                                 right_ptr->GetQuadSettings().screen_rect.size.GetPixelsCount();
+                      }
     );
 
     // Layout badges in a row one after another with a margin spacing
@@ -541,9 +539,9 @@ void TypographyApp::OnFontAdded(gui::Font& font)
 void TypographyApp::OnFontAtlasTextureReset(gui::Font& font, const rhi::Texture* old_atlas_texture_ptr, const rhi::Texture* new_atlas_texture_ptr)
 {
     const auto font_atlas_badge_ptr_it = old_atlas_texture_ptr
-        ? std::find_if(m_font_atlas_badges.begin(), m_font_atlas_badges.end(),
-                       [&old_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
-                       { return font_atlas_badge_ptr->GetTexture() == *old_atlas_texture_ptr; })
+        ? std::ranges::find_if(m_font_atlas_badges,
+                               [&old_atlas_texture_ptr](const Ptr<gui::Badge>& font_atlas_badge_ptr)
+                               { return font_atlas_badge_ptr->GetTexture() == *old_atlas_texture_ptr; })
         : m_font_atlas_badges.end();
 
     if (new_atlas_texture_ptr)

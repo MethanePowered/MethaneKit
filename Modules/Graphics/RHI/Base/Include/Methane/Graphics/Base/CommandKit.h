@@ -51,10 +51,10 @@ public:
     [[nodiscard]] bool                  HasListWithState(Rhi::CommandListState cmd_list_state, Rhi::CommandListId cmd_list_id) const noexcept override;
     [[nodiscard]] Rhi::ICommandList&    GetList(Rhi::CommandListId cmd_list_id) const override;
     [[nodiscard]] Rhi::ICommandList&    GetListForEncoding(Rhi::CommandListId cmd_list_id, std::string_view debug_group_name) const override;
-    [[nodiscard]] Rhi::ICommandListSet& GetListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
+    [[nodiscard]] Rhi::ICommandListSet& GetListSet(Rhi::CommandListIdSpan cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
     [[nodiscard]] Rhi::IFence&          GetFence(Rhi::CommandListId fence_id) const override;
-    void ExecuteListSet(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
-    void ExecuteListSetAndWaitForCompletion(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
+    void ExecuteListSet(Rhi::CommandListIdSpan cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
+    void ExecuteListSetAndWaitForCompletion(Rhi::CommandListIdSpan cmd_list_ids, Opt<Data::Index> frame_index_opt) const override;
 
 private:
     using CommandListIndex     = uint32_t;
@@ -63,7 +63,7 @@ private:
     using CommandListSetById   = std::map<CommandListSetId, Ptr<Rhi::ICommandListSet>>;
 
     CommandListIndex GetCommandListIndexById(Rhi::CommandListId cmd_list_id) const noexcept;
-    CommandListSetId GetCommandListSetId(const std::vector<Rhi::CommandListId>& cmd_list_ids, Opt<Data::Index> frame_index_opt) const;
+    CommandListSetId GetCommandListSetId(Rhi::CommandListIdSpan cmd_list_ids, Opt<Data::Index> frame_index_opt) const;
 
     const Rhi::IContext&            m_context;
     Rhi::CommandListType            m_cmd_list_type;

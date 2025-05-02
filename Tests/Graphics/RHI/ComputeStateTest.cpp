@@ -28,6 +28,7 @@ Unit-tests of the RHI ComputeState
 #include <Methane/Graphics/RHI/ComputeState.h>
 #include <Methane/Graphics/RHI/Program.h>
 #include <Methane/Graphics/RHI/Shader.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <memory>
 #include <taskflow/taskflow.hpp>
@@ -54,8 +55,7 @@ TEST_CASE("RHI Compute State Functions", "[rhi][compute][state]")
         REQUIRE_NOTHROW(compute_state = compute_context.CreateComputeState(compute_state_settings));
         REQUIRE(compute_state.IsInitialized());
         CHECK(compute_state.GetInterfacePtr());
-        CHECK(compute_state.GetSettings().thread_group_size == compute_state_settings.thread_group_size);
-        CHECK(compute_state.GetProgram().GetInterfacePtr().get() == compute_state_settings.program.GetInterfacePtr().get());
+        CHECK(compute_state.GetSettings() == Rhi::ComputeStateSettingsImpl::Convert(compute_state_settings));
     }
 
     SECTION("Object Destroyed Callback")
@@ -91,6 +91,16 @@ TEST_CASE("RHI Compute State Functions", "[rhi][compute][state]")
         ObjectCallbackTester object_callback_tester(compute_state);
         CHECK_FALSE(compute_state.SetName("My Compute State"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        compute_state.SetName("Compute State");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(compute_state);
+        const auto registered_compute_state = registry.GetGraphicsObject<Rhi::ComputeState>("Compute State");
+        REQUIRE(registered_compute_state.IsInitialized());
+        CHECK(&registered_compute_state.GetInterface() == &compute_state.GetInterface());
     }
 
     SECTION("Reset with Settings Impl")

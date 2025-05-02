@@ -147,14 +147,14 @@ void ProgramBindings::OnProgramArgumentBindingResourceViewsChanged(const IArgume
     for(const Rhi::IResource::View& old_resource_view : old_resource_views)
     {
         if (old_resource_view.GetResource().GetResourceType() == Rhi::IResource::Type::Sampler ||
-            processed_resources.count(old_resource_view.GetResourcePtr().get()))
+            processed_resources.contains(old_resource_view.GetResourcePtr().get()))
             continue;
 
         // Check if resource is still used in new resource locations
-        if (std::find_if(new_resource_views.begin(), new_resource_views.end(),
-                         [&old_resource_view](const Rhi::IResource::View& new_resource_view)
-                         { return new_resource_view.GetResourcePtr() == old_resource_view.GetResourcePtr(); }
-                         ) != new_resource_views.end())
+        if (std::ranges::find_if(new_resource_views,
+                                 [&old_resource_view](const Rhi::IResource::View& new_resource_view)
+                                 { return new_resource_view.GetResourcePtr() == old_resource_view.GetResourcePtr(); }
+                                 ) != new_resource_views.end())
         {
             processed_resources.insert(old_resource_view.GetResourcePtr().get());
             continue;
@@ -203,7 +203,7 @@ void ProgramBindings::InitializeArgumentBindings(const ProgramBindings* other_pr
     {
         META_CHECK_NOT_NULL_DESCR(argument_binding_ptr, "no resource binding is set for program argument '{}'", program_argument.GetName());
         m_arguments.insert(program_argument);
-        if (m_binding_by_argument.count(program_argument))
+        if (m_binding_by_argument.contains(program_argument))
             continue;
 
         Ptr<ArgumentBinding> new_argument_binding_ptr = program.CreateArgumentBindingInstance(argument_binding_ptr, m_frame_index);
@@ -238,7 +238,7 @@ Rhi::IProgramBindings::BindingValueByArgument ProgramBindings::ReplaceBindingVal
         // constant resource bindings are reusing single binding-object for the whole program,
         // so there's no need in setting its value, since it was already set by the original resource binding
         if (argument_settings.argument.IsConstant() ||
-            binding_value_by_argument.count(program_argument))
+            binding_value_by_argument.contains(program_argument))
             continue;
 
         if (argument_settings.argument.IsRootConstant())
@@ -265,17 +265,17 @@ void ProgramBindings::SetResourcesForArguments(const BindingValueByArgument& bin
         auto& argument_binding = dynamic_cast<ArgumentBinding&>(Get(program_argument));
         argument_binding.SetEmitCallbackEnabled(false); // do not emit callback during initialization
         std::visit(
-            [&argument_binding](auto& value)
+            [&argument_binding]<typename T>(T& value)
             {
-                using T = std::decay_t<decltype(value)>;
-                if constexpr (std::is_same_v<T, Rhi::RootConstant>)
+                using ValueType = std::decay_t<T>;
+                if constexpr (std::is_same_v<ValueType, Rhi::RootConstant>)
                 {
                     if (!value.IsEmptyOrNull())
                         argument_binding.SetRootConstant(value);
                 }
-                else if constexpr (std::is_same_v<T, Rhi::ResourceView>)
-                    argument_binding.SetResourceViews({ value });
-                else if constexpr (std::is_same_v<T, Rhi::ResourceViews>)
+                else if constexpr (std::is_same_v<ValueType, Rhi::ResourceView>)
+                    argument_binding.SetResourceView(value);
+                else if constexpr (std::is_same_v<ValueType, Rhi::ResourceViews>)
                     argument_binding.SetResourceViews(value);
                 else
                     static_assert(AlwaysFalse<T>, "Argument binding value type is not supported!");
@@ -309,7 +309,7 @@ ProgramBindings::operator std::string() const
     }
 
     // Arguments are stored in unordered_set, so to get reliable output we need to sort them
-    std::sort(argument_binding_strings.begin(), argument_binding_strings.end());
+    std::ranges::sort(argument_binding_strings);
 
     std::stringstream ss;
     for(const std::string& argument_binding_str : argument_binding_strings)
@@ -389,9 +389,9 @@ void ProgramBindings::RemoveTransitionResourceStates(const Rhi::IProgramArgument
 
     const Rhi::IProgramArgumentBinding::Settings& argument_binding_settings  = argument_binding.GetSettings();
     ResourceStates                                    & transition_resource_states = m_transition_resource_states_by_access[argument_binding_settings.argument.GetAccessorIndex()];
-    const auto transition_resource_state_it = std::find_if(transition_resource_states.begin(), transition_resource_states.end(),
-                                                           [&resource](const ResourceAndState& resource_state)
-                                                           { return resource_state.resource_ptr.get() == &resource; });
+    const auto transition_resource_state_it = std::ranges::find_if(transition_resource_states,
+                                                                   [&resource](const ResourceAndState& resource_state)
+                                                                   { return resource_state.resource_ptr.get() == &resource; });
     if (transition_resource_state_it != transition_resource_states.end())
         transition_resource_states.erase(transition_resource_state_it);
 }
@@ -469,8 +469,8 @@ void ProgramBindings::InitResourceRefsByAccess()
         const std::set<Rhi::IResource*>& unique_resources = unique_resources_by_access[access_index];
         Refs<Rhi::IResource>& resource_refs = m_resource_refs_by_access[access_index];
         resource_refs.clear();
-        std::transform(unique_resources.begin(), unique_resources.end(), std::back_inserter(resource_refs),
-                       [](Rhi::IResource* resource_ptr) { return Ref<Rhi::IResource>(*resource_ptr); });
+        std::ranges::transform(unique_resources, std::back_inserter(resource_refs),
+                               [](Rhi::IResource* resource_ptr) { return Ref<Rhi::IResource>(*resource_ptr); });
     }
 }
 

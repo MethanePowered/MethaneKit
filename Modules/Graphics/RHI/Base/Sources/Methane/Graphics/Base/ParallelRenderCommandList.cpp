@@ -58,6 +58,13 @@ void ParallelRenderCommandList::SetValidationEnabled(bool is_validation_enabled)
     }
 }
 
+Rhi::IRenderPass& ParallelRenderCommandList::GetRenderPass() const
+{
+    META_FUNCTION_TASK();
+    META_CHECK_NOT_NULL(m_render_pass_ptr);
+    return *m_render_pass_ptr;
+}
+
 void ParallelRenderCommandList::Reset(IDebugGroup* debug_group_ptr)
 {
     META_FUNCTION_TASK();
@@ -160,6 +167,26 @@ void ParallelRenderCommandList::SetParallelCommandListsCount(uint32_t count)
     }
 }
 
+void ParallelRenderCommandList::SetProgramBindings(Rhi::IProgramBindings&, Rhi::ProgramBindingsApplyBehaviorMask)
+{
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not set program bindings on parallel render command list.");
+}
+
+void ParallelRenderCommandList::SetResourceBarriers(const Rhi::IResourceBarriers&)
+{
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not set resource barriers on parallel render command list.");
+}
+
+void ParallelRenderCommandList::PushDebugGroup(IDebugGroup&)
+{
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list.");
+}
+
+void ParallelRenderCommandList::PopDebugGroup()
+{
+    META_FUNCTION_NOT_IMPLEMENTED_DESCR("Can not use debug groups on parallel render command list.");
+}
+
 void ParallelRenderCommandList::Execute(const Rhi::ICommandList::CompletedCallback& completed_callback)
 {
     META_FUNCTION_TASK();
@@ -200,7 +227,7 @@ bool ParallelRenderCommandList::SetName(std::string_view name)
     return true;
 }
 
-RenderPass& ParallelRenderCommandList::GetRenderPass() const
+RenderPass& ParallelRenderCommandList::GetBaseRenderPass() const
 {
     META_FUNCTION_TASK();
     META_CHECK_NOT_NULL(m_render_pass_ptr);

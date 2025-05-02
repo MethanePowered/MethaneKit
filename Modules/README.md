@@ -16,3 +16,7 @@ Methane Kit architecture is clearly distributing library modules between 5 layer
 
 Diagram generated with CMake using integrated GraphViz support shows detailed relations between CMake modules.
 ![Modules Relations Diagram](../Docs/Diagrams/MethaneKit_Modules_Relations.png)
+
+## Unit Tests Coverage
+
+See [Tests description](/Tests/README.md) for details on unit tests coverage.

@@ -86,7 +86,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
 
     m_texture_face_render_pattern = m_gui_context.GetRenderContext().CreateRenderPattern(rhi::RenderPattern::Settings
         {
-            rhi::RenderPattern::ColorAttachments
+            .color_attachments = rhi::RenderPattern::ColorAttachments
             {
                 rhi::RenderPattern::ColorAttachment(
                     0U, rt_texture_settings.pixel_format, 1U,
@@ -94,10 +94,8 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
                     rhi::RenderPattern::ColorAttachment::StoreAction::Store,
                     settings.border_color)
             },
-            std::nullopt, // No depth attachment
-            std::nullopt, // No stencil attachment
-            rhi::RenderPassAccessMask({ rhi::RenderPassAccess::ShaderResources, rhi::RenderPassAccess::Samplers }),
-            false // intermediate render pass
+            .shader_access = rhi::RenderPassAccessMask({ rhi::RenderPassAccess::ShaderResources, rhi::RenderPassAccess::Samplers }),
+            .is_final_pass = false
         });
 
     const std::string_view rt_texture_name = m_rt_texture.GetName();
@@ -105,22 +103,20 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
 
     gui::Text::SettingsUtf32 slice_text_settings
     {
-        "",
-        {},
-        gui::UnitRect
+        .rect = gui::UnitRect
         {
             gui::Units::Pixels,
             gfx::Point2I(),
             rt_texture_settings.dimensions.AsRectSize()
         },
-        gui::Text::Layout
+        .layout = gui::Text::Layout
         {
             gui::Text::Wrap::None,
             gui::Text::HorizontalAlignment::Center,
             gui::Text::VerticalAlignment::Center,
         },
-        settings.text_color,
-        false,
+        .color = settings.text_color,
+        .incremental_update = false,
     };
     slice_text_settings.SetStateName(fmt::format("Texture '{}' Face Label Text", rt_texture_name));
 
@@ -133,7 +129,7 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
             TextureLabeler::Slice& slice = m_slices.back();
 
             slice.render_pass = m_texture_face_render_pattern.CreateRenderPass({
-                { rhi::TextureView(rt_texture.GetInterface(), rhi::SubResource::Index(depth_index, array_index), {}, rhi::TextureDimensionType::Tex2D) },
+                { rt_texture.GetTextureView(rhi::SubResource::Index(depth_index, array_index), {}, rhi::TextureDimensionType::Tex2D) },
                 rt_texture_settings.dimensions.AsRectSize()
             });
             slice.render_pass.SetName(fmt::format("Texture '{}' Slice {}:{} Render Pass", rt_texture_name, array_index, depth_index));
@@ -151,13 +147,13 @@ TextureLabeler::TextureLabeler(gui::Context& gui_context, const gui::FontContext
             slice.bg_quad = gfx::ScreenQuad(m_gui_context.GetRenderCommandQueue(), m_texture_face_render_pattern,
                 gfx::ScreenQuad::Settings
                 {
-                    fmt::format("Texture '{}' Slice BG Quad {}:{}", rt_texture_name, array_index, depth_index),
-                    gfx::FrameRect(settings.border_width_px, settings.border_width_px,
-                                   rt_texture_settings.dimensions.GetWidth()  - 2 * settings.border_width_px,
-                                   rt_texture_settings.dimensions.GetHeight() - 2 * settings.border_width_px),
-                    false,
-                    slice.color,
-                    gfx::ScreenQuad::TextureMode::Disabled
+                    .name = fmt::format("Texture '{}' Slice BG Quad {}:{}", rt_texture_name, array_index, depth_index),
+                    .screen_rect = gfx::FrameRect(settings.border_width_px, settings.border_width_px,
+                                                  rt_texture_settings.dimensions.GetWidth()  - 2 * settings.border_width_px,
+                                                  rt_texture_settings.dimensions.GetHeight() - 2 * settings.border_width_px),
+                    .alpha_blending_enabled = false,
+                    .blend_color  = slice.color,
+                    .texture_mode = gfx::ScreenQuad::TextureMode::Disabled
                 });
         }
     }

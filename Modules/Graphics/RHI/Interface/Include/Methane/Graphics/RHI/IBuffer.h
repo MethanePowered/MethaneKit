@@ -59,16 +59,7 @@ struct BufferSettings
     [[nodiscard]] static BufferSettings ForConstantBuffer(Data::Size size, bool addressable = false, bool is_volatile = false);
     [[nodiscard]] static BufferSettings ForReadBackBuffer(Data::Size size);
 
-    friend bool operator==(const BufferSettings& left, const BufferSettings& right)
-    {
-        return std::tie(left.type, left.usage_mask, left.size, left.item_stride_size, left.data_format, left.storage_mode)
-            == std::tie(right.type, right.usage_mask, right.size, right.item_stride_size, right.data_format, right.storage_mode);
-    }
-
-    friend bool operator!=(const BufferSettings& left, const BufferSettings& right)
-    {
-        return !(left == right);
-    }
+    [[nodiscard]] friend bool operator==(const BufferSettings& left, const BufferSettings& right) = default;
 };
 
 struct IBuffer

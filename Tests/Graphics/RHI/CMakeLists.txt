@@ -2,6 +2,7 @@ set(TARGET MethaneGraphicsRhiTest)
 
 add_executable(${TARGET}
     RhiTestHelpers.hpp
+    RhiSettings.hpp
     ShaderTest.cpp
     ProgramTest.cpp
     ProgramBindingsTest.cpp
@@ -13,11 +14,22 @@ add_executable(${TARGET}
     CommandListDebugGroupTest.cpp
     TransferCommandListTest.cpp
     ComputeCommandListTest.cpp
+    CommandListSetTest.cpp
     CommandKitTest.cpp
     BufferTest.cpp
     BufferSetTest.cpp
     SamplerTest.cpp
     TextureTest.cpp
+    SystemTest.cpp
+    DeviceTest.cpp
+    RenderContextTest.cpp
+    RenderStateTest.cpp
+    RenderPatternTest.cpp
+    RenderPassTest.cpp
+    ResourceBarriersTest.cpp
+    RenderCommandListsTest.cpp
+    ParallelRenderCommandListTest.cpp
+    ObjectRegistryTest.cpp
 )
 
 target_link_libraries(${TARGET}

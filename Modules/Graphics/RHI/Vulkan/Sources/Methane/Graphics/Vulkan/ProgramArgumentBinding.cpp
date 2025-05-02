@@ -35,10 +35,12 @@ static Rhi::ResourceUsageMask GetResourceUsageByDescriptorType(vk::DescriptorTyp
 {
     META_FUNCTION_TASK();
     Rhi::ResourceUsageMask resource_usage{ Rhi::ResourceUsage::ShaderRead };
-    if (descriptor_type == vk::DescriptorType::eStorageImage         ||
-        descriptor_type == vk::DescriptorType::eStorageTexelBuffer   ||
-        descriptor_type == vk::DescriptorType::eStorageBuffer        ||
-        descriptor_type == vk::DescriptorType::eStorageBufferDynamic)
+
+    using enum vk::DescriptorType;
+    if (descriptor_type == eStorageImage         ||
+        descriptor_type == eStorageTexelBuffer   ||
+        descriptor_type == eStorageBuffer        ||
+        descriptor_type == eStorageBufferDynamic)
     {
         resource_usage.SetBitOn(Rhi::ResourceUsage::ShaderWrite);
     }
@@ -115,10 +117,10 @@ bool AddDescriptor(std::vector<VkDescriptorType>& descriptors, size_t total_desc
     return true;
 }
 
-bool ProgramArgumentBinding::SetResourceViews(const Rhi::ResourceViews& resource_views)
+bool ProgramArgumentBinding::SetResourceViewSpan(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
-    if (!Base::ProgramArgumentBinding::SetResourceViews(resource_views))
+    if (!Base::ProgramArgumentBinding::SetResourceViewSpan(resource_views))
         return false;
 
     SetDescriptorsForResourceViews(resource_views);
@@ -157,7 +159,7 @@ bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
     return true;
 }
 
-void ProgramArgumentBinding::SetDescriptorsForResourceViews(const Rhi::ResourceViews& resource_views)
+void ProgramArgumentBinding::SetDescriptorsForResourceViews(Rhi::ResourceViewSpan resource_views)
 {
     META_FUNCTION_TASK();
     META_CHECK_TRUE_DESCR(!!m_vk_descriptor_set, "program argument binding descriptor set was not initialized!");

@@ -48,7 +48,7 @@ namespace wrl = Microsoft::WRL;
 struct IContext;
 class DescriptorHeap;
 
-template<typename ResourceBaseType, typename = std::enable_if_t<std::is_base_of_v<Base::Resource, ResourceBaseType>, void>>
+template<typename ResourceBaseType> requires std::is_base_of_v<Base::Resource, ResourceBaseType>
 class Resource // NOSONAR - destructor in use
     : public ResourceBaseType
     , public IResource

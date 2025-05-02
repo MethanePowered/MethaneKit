@@ -46,7 +46,7 @@ struct Catch::StringMaker<RawVector<T, size>>
     }
 };
 
-template<typename T, size_t size, typename = std::enable_if_t<2 <= size && size <= 4>>
+template<typename T, size_t size> requires(2 <= size && size <= 4)
 void CheckRawVector(const RawVector<T, size>& vec, const std::array<T, size>& components)
 {
     CHECK(vec[0] == Approx(components[0]));

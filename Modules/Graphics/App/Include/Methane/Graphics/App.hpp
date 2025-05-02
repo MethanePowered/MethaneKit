@@ -60,7 +60,7 @@ struct AppFrame
     }
 };
 
-template<typename FrameT, typename IAppType = IApp, typename = std::enable_if_t<std::is_base_of_v<AppFrame, FrameT>>>
+template<typename FrameT, typename IAppType = IApp> requires std::is_base_of_v<AppFrame, FrameT>
 class App
     : public Graphics::AppBase
     , public IAppType

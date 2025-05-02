@@ -32,14 +32,13 @@ Abstract value animation based on time with an update lambda-function.
 namespace Methane::Data
 {
 
-template<typename ValueType>
+template<typename ValueType, typename FunctorType>
+requires std::is_invocable_v<FunctorType, ValueType& /*value_to_update*/, const ValueType& /*start_value*/,
+                                          double     /*elapsed_seconds*/, double           /*delta_seconds*/>
 class ValueAnimation : public Animation
 {
 public:
-    using FunctionType = std::function<bool(ValueType& value_to_update, const ValueType& start_value,
-                                            double elapsed_seconds, double delta_seconds)>;
-
-    ValueAnimation(ValueType& value, const FunctionType& update_function,
+    ValueAnimation(ValueType& value, const FunctorType& update_function,
                    double duration_sec = std::numeric_limits<double>::max())
         : Animation(duration_sec)
         , m_value(value)
@@ -81,10 +80,18 @@ public:
     }
 
 private:
-    ValueType&          m_value;
-    ValueType           m_start_value;
-    const FunctionType  m_update_function;
-    double              m_prev_elapsed_seconds = 0.0;
+    ValueType&        m_value;
+    ValueType         m_start_value;
+    const FunctorType m_update_function;
+    double            m_prev_elapsed_seconds = 0.0;
 };
+
+template<typename ValueType, typename FunctorType,
+         typename ValueAnimationType = ValueAnimation<ValueType, FunctorType>>
+Ptr<ValueAnimationType> MakeValueAnimationPtr(ValueType& value, const FunctorType& update_function,
+                                              double duration_sec = std::numeric_limits<double>::max())
+{
+    return std::make_shared<ValueAnimationType>(value, update_function, duration_sec);
+}
 
 } // namespace Methane::Data

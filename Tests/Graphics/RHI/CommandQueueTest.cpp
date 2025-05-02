@@ -30,6 +30,7 @@ Unit-tests of the RHI Command Queue
 #include <Methane/Graphics/RHI/Fence.h>
 #include <Methane/Graphics/RHI/TransferCommandList.h>
 #include <Methane/Graphics/RHI/ComputeCommandList.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 #include <Methane/Graphics/RHI/CommandListSet.h>
 #include <Methane/Graphics/Null/CommandListSet.h>
 
@@ -88,6 +89,16 @@ TEST_CASE("RHI Command Queue Functions", "[rhi][queue]")
         ObjectCallbackTester object_callback_tester(cmd_queue);
         CHECK_FALSE(cmd_queue.SetName("My Compute Command Queue"));
         CHECK_FALSE(object_callback_tester.IsObjectNameChanged());
+    }
+
+    SECTION("Add to Objects Registry")
+    {
+        cmd_queue.SetName("Compute Command Queue");
+        Rhi::ObjectRegistry registry = compute_context.GetObjectRegistry();
+        registry.AddGraphicsObject(cmd_queue);
+        const auto registered_cmd_queue = registry.GetGraphicsObject<Rhi::CommandQueue>("Compute Command Queue");
+        REQUIRE(registered_cmd_queue.IsInitialized());
+        CHECK(&registered_cmd_queue.GetInterface() == &cmd_queue.GetInterface());
     }
 
     SECTION("Execute Command Lists")

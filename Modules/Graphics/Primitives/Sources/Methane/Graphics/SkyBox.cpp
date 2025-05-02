@@ -96,33 +96,44 @@ private:
         m_program = m_context.CreateProgram(
             Rhi::Program::Settings
             {
-                Rhi::Program::ShaderSet
+                .shader_set = Rhi::Program::ShaderSet
                 {
                     { Rhi::ShaderType::Vertex, { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxVS" }, { } } },
                     { Rhi::ShaderType::Pixel,  { Data::ShaderProvider::Get(), { "SkyBox", "SkyboxPS" }, { } } },
                 },
-                Rhi::ProgramInputBufferLayouts
+                .input_buffer_layouts = Rhi::ProgramInputBufferLayouts
                 {
                     Rhi::Program::InputBufferLayout
                     {
                         Rhi::Program::InputBufferLayout::ArgumentSemantics { mesh.GetVertexLayout().GetSemantics() }
                     }
                 },
-                Rhi::ProgramArgumentAccessors
+                .argument_accessors = Rhi::ProgramArgumentAccessors
                 {
                     META_PROGRAM_ARG_ROOT_BUFFER_FRAME_CONSTANT(Rhi::ShaderType::Vertex, "g_skybox_uniforms")
                 },
-                render_pattern.GetAttachmentFormats()
+                .attachment_formats = render_pattern.GetAttachmentFormats()
             });
         m_program.SetName("Sky-box shading");
 
-        Rhi::RenderState::Settings state_settings{ m_program, render_pattern };
-        state_settings.depth.enabled        = m_settings.render_options.HasAnyBit(Option::DepthEnabled);
-        state_settings.depth.write_enabled  = false;
-        state_settings.depth.compare        = m_settings.render_options.HasAnyBit(Option::DepthReversed) ? Compare::GreaterEqual : Compare::Less;
-        state_settings.rasterizer.is_front_counter_clockwise = true;
-
-        m_render_state = m_context.CreateRenderState( state_settings);
+        m_render_state = m_context.CreateRenderState(
+            Rhi::RenderStateSettingsImpl
+            {
+                .program        = m_program,
+                .render_pattern = render_pattern,
+                .rasterizer     = Rhi::RasterizerSettings
+                {
+                    .is_front_counter_clockwise = true
+                },
+                .depth = Rhi::DepthSettings
+                {
+                    .enabled       = m_settings.render_options.HasAnyBit(Option::DepthEnabled),
+                    .write_enabled = false,
+                    .compare       = m_settings.render_options.HasAnyBit(Option::DepthReversed)
+                                   ? Compare::GreaterEqual : Compare::Less
+                },
+            }
+        );
         m_render_state.SetName("Sky-box render state");
 
         m_texture_sampler = m_context.CreateSampler({
@@ -145,11 +156,12 @@ public:
     SkyBox::ProgramBindingsAndUniformArgumentBinding CreateProgramBindings(Data::Index frame_index) const
     {
         META_FUNCTION_TASK();
+        using enum Rhi::ShaderType;
         Rhi::ProgramBindings program_bindings(m_program, {
-            { { Rhi::ShaderType::Pixel,  "g_skybox_texture"  }, m_mesh_buffers.GetTexture().GetResourceView() },
-            { { Rhi::ShaderType::Pixel,  "g_texture_sampler" }, m_texture_sampler.GetResourceView() },
+            { { Pixel,  "g_skybox_texture"  }, m_mesh_buffers.GetTexture().GetResourceView() },
+            { { Pixel,  "g_texture_sampler" }, m_texture_sampler.GetResourceView() },
         }, frame_index);
-        Rhi::IProgramArgumentBinding& uniforms_arg_binding = program_bindings.Get({ Rhi::ShaderType::Vertex, "g_skybox_uniforms" });
+        Rhi::IProgramArgumentBinding& uniforms_arg_binding = program_bindings.Get({ Vertex, "g_skybox_uniforms" });
         return ProgramBindingsAndUniformArgumentBinding(std::move(program_bindings), &uniforms_arg_binding);
     }
 

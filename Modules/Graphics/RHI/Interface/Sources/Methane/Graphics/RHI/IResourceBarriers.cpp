@@ -120,11 +120,12 @@ void ResourceBarrier::ApplyTransition() const
     }
 }
 
-Ptr<IResourceBarriers> Rhi::IResourceBarriers::CreateTransitions(const Refs<IResource>& resources,
-                                                                 const Opt<ResourceStateChange>& state_change,
-                                                                 const Opt<ResourceOwnerChange>& owner_change)
+Ptr<IResourceBarriers> IResourceBarriers::CreateTransitions(RefSpan<IResource> resources,
+                                                            const Opt<ResourceStateChange>& state_change,
+                                                            const Opt<ResourceOwnerChange>& owner_change)
 {
     META_FUNCTION_TASK();
+    META_CHECK_TRUE_DESCR(state_change || owner_change, "either state change or owner change has to be set in resource barrier");
     Set resource_barriers;
     for (const Ref<IResource>& resource_ref : resources)
     {
@@ -134,7 +135,14 @@ Ptr<IResourceBarriers> Rhi::IResourceBarriers::CreateTransitions(const Refs<IRes
         if (state_change.has_value())
             resource_barriers.emplace(resource_ref.get(), *state_change);
     }
-    return Rhi::IResourceBarriers::Create(resource_barriers);
+    return IResourceBarriers::Create(resource_barriers);
+}
+
+Ptr<IResourceBarriers> IResourceBarriers::CreateTransitions(const Refs<IResource>& resources,
+                                                            const Opt<ResourceStateChange>& state_change,
+                                                            const Opt<ResourceOwnerChange>& owner_change)
+{
+    return CreateTransitions(RefSpan<IResource>(resources), state_change, owner_change);
 }
 
 } // namespace Methane::Graphics::Rhi

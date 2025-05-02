@@ -47,7 +47,7 @@ BufferSet::BufferSet(Rhi::BufferType buffers_type, const Refs<Rhi::IBuffer>& buf
     META_FUNCTION_TASK();
     const Refs<Rhi::IBuffer>& refs = GetRefs();
     m_mtl_buffers.reserve(refs.size());
-    std::transform(refs.begin(), refs.end(), std::back_inserter(m_mtl_buffers),
+    std::ranges::transform(refs, std::back_inserter(m_mtl_buffers),
         [](const Ref<Rhi::IBuffer>& buffer_ref)
         {
            const Buffer& metal_buffer = static_cast<const Buffer&>(buffer_ref.get());

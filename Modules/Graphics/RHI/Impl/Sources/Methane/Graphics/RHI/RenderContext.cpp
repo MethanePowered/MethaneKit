@@ -33,6 +33,7 @@ Methane RenderContext PIMPL wrappers for direct calls to final implementation.
 #include <Methane/Graphics/RHI/RenderState.h>
 #include <Methane/Graphics/RHI/RenderPattern.h>
 #include <Methane/Graphics/RHI/ComputeState.h>
+#include <Methane/Graphics/RHI/ObjectRegistry.h>
 
 #include <Methane/Pimpl.hpp>
 
@@ -46,7 +47,6 @@ namespace Methane::Graphics::Rhi
 {
 
 META_PIMPL_DEFAULT_CONSTRUCT_METHODS_IMPLEMENT(RenderContext);
-META_PIMPL_METHODS_COMPARE_IMPLEMENT(RenderContext);
 
 RenderContext::RenderContext(const Ptr<IRenderContext>& interface_ptr)
     : m_impl_ptr(std::dynamic_pointer_cast<Impl>(interface_ptr))
@@ -158,9 +158,9 @@ tf::Executor& RenderContext::GetParallelExecutor() const META_PIMPL_NOEXCEPT
     return GetImpl(m_impl_ptr).GetParallelExecutor();
 }
 
-IObjectRegistry& RenderContext::GetObjectRegistry() const META_PIMPL_NOEXCEPT
+ObjectRegistry RenderContext::GetObjectRegistry() const META_PIMPL_NOEXCEPT
 {
-    return GetImpl(m_impl_ptr).GetObjectRegistry();
+    return ObjectRegistry(GetImpl(m_impl_ptr).GetObjectRegistry());
 }
 
 bool RenderContext::UploadResources() const META_PIMPL_NOEXCEPT
@@ -221,6 +221,11 @@ CommandKit RenderContext::GetUploadCommandKit() const
 CommandKit RenderContext::GetRenderCommandKit() const
 {
     return CommandKit(GetImpl(m_impl_ptr).GetRenderCommandKit());
+}
+
+CommandKit RenderContext::GetComputeCommandKit() const
+{
+    return CommandKit(GetImpl(m_impl_ptr).GetComputeCommandKit());
 }
 
 void RenderContext::Connect(Data::Receiver<IContextCallback>& receiver) const
