@@ -48,7 +48,7 @@ public:
 
     [[nodiscard]] bool  SetState(Rhi::ResourceState state);
     [[nodiscard]] const Ptr<Rhi::IResourceBarriers>& GetSetupTransitionBarriers() const noexcept { return m_setup_transition_barriers; }
-    [[nodiscard]] const RawPtrs<Buffer>& GetRawPtrs() const noexcept { return m_raw_ptrs; }
+    [[nodiscard]] RawPtrSpan<Buffer> GetRawPtrs() const noexcept { return m_raw_ptrs; }
 
 private:
     const Rhi::BufferType       m_buffers_type;

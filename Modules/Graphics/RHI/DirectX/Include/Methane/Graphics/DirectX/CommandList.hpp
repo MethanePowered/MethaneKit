@@ -127,7 +127,7 @@ public:
 
     // Rhi::ICommandList interface
 
-    void Reset(Rhi::ICommandListDebugGroup* debug_group_ptr) override
+    void Reset(Rhi::ICommandListDebugGroup* debug_group_ptr = nullptr) override
     {
         META_FUNCTION_TASK();
         const auto state_lock = Base::CommandList::LockStateMutex();

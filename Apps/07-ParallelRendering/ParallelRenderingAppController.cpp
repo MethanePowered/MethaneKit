@@ -48,23 +48,25 @@ void ParallelRenderingAppController::OnKeyboardStateAction(ParallelRenderingAppA
 
     switch(action)
     {
-    case ParallelRenderingAppAction::SwitchParallelRendering:
+    using enum ParallelRenderingAppAction;
+
+    case SwitchParallelRendering:
         app_settings.parallel_rendering_enabled = !app_settings.parallel_rendering_enabled;
         break;
 
-    case ParallelRenderingAppAction::IncreaseCubesGridSize:
+    case IncreaseCubesGridSize:
         app_settings.cubes_grid_size++;
         break;
 
-    case ParallelRenderingAppAction::DecreaseCubesGridSize:
+    case DecreaseCubesGridSize:
         app_settings.cubes_grid_size = std::max(2U, app_settings.cubes_grid_size - 1U);
         break;
 
-    case ParallelRenderingAppAction::IncreaseRenderThreadsCount:
+    case IncreaseRenderThreadsCount:
         app_settings.render_thread_count++;
         break;
 
-    case ParallelRenderingAppAction::DecreaseRenderThreadsCount:
+    case DecreaseRenderThreadsCount:
         app_settings.render_thread_count = std::min(std::max(2U, app_settings.render_thread_count - 1U), app_settings.GetTotalCubesCount());
         break;
 
@@ -79,11 +81,12 @@ std::string ParallelRenderingAppController::GetKeyboardActionName(ParallelRender
 {
     switch(action)
     {
-    case ParallelRenderingAppAction::SwitchParallelRendering:    return "switch parallel rendering";
-    case ParallelRenderingAppAction::IncreaseCubesGridSize:      return "increase cubes grid size";
-    case ParallelRenderingAppAction::DecreaseCubesGridSize:      return "decrease cubes grid size";
-    case ParallelRenderingAppAction::IncreaseRenderThreadsCount: return "increase render threads count";
-    case ParallelRenderingAppAction::DecreaseRenderThreadsCount: return "decrease render threads count";
+    using enum ParallelRenderingAppAction;
+    case SwitchParallelRendering:    return "switch parallel rendering";
+    case IncreaseCubesGridSize:      return "increase cubes grid size";
+    case DecreaseCubesGridSize:      return "decrease cubes grid size";
+    case IncreaseRenderThreadsCount: return "increase render threads count";
+    case DecreaseRenderThreadsCount: return "decrease render threads count";
     default: META_UNEXPECTED_RETURN(action, "");
     }
 }

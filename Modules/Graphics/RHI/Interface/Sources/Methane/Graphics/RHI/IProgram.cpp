@@ -35,11 +35,11 @@ const ProgramArgumentAccessor* IProgram::FindArgumentAccessor(const ArgumentAcce
     META_FUNCTION_TASK();
     if (const auto arg_access_it = argument_accessors.find(ArgumentAccessor(argument));
         arg_access_it != argument_accessors.end())
-        return &*arg_access_it;
+        return std::to_address(arg_access_it);
 
     const Argument all_shaders_argument(ShaderType::All, argument.GetName());
     const auto arg_access_it = argument_accessors.find(ArgumentAccessor(all_shaders_argument));
-    return arg_access_it == argument_accessors.end() ? nullptr : &*arg_access_it;
+    return arg_access_it == argument_accessors.end() ? nullptr : std::to_address(arg_access_it);
 }
 
 Ptr<IProgram> IProgram::Create(IContext& context, const Settings& settings)

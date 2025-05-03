@@ -64,7 +64,7 @@ public:
 
     // Base::Context interface
 
-    void Initialize(Base::Device& device, bool is_callback_emitted) override
+    void Initialize(Base::Device& device, bool is_callback_emitted = true) override
     {
         META_FUNCTION_TASK();
         ContextBaseT::Initialize(device, false);

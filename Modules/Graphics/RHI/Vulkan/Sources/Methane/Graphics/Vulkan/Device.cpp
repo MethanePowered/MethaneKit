@@ -177,7 +177,8 @@ uint32_t QueueFamilyReservation::ClaimQueueIndex() const
 {
     META_FUNCTION_TASK();
     if (m_free_indices.IsEmpty())
-        throw EmptyArgumentException<Data::RangeSet<uint32_t>>(__FUNCTION_NAME__, "m_free_indices", "device queue family has no free queues in reservation");
+        throw EmptyArgumentException<Data::RangeSet<uint32_t>>(std::source_location::current(), "m_free_indices",
+                                                               "device queue family has no free queues in reservation");
 
     const uint32_t free_queue_index = m_free_indices.begin()->GetStart();
     m_free_indices.Remove({ free_queue_index, free_queue_index + 1});

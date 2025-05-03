@@ -46,11 +46,12 @@ void AppController::OnKeyboardStateAction(AppAction action)
     META_FUNCTION_TASK();
     switch(action)
     {
-    case AppAction::ShowControlsHelp:    m_application.ShowControlsHelp(); break;
-    case AppAction::ShowCommandLineHelp: m_application.ShowCommandLineHelp(); break;
-    case AppAction::ShowParameters:      m_application.ShowParameters(); break;
-    case AppAction::SwitchFullScreen:    m_application.SetFullScreen(!m_application.GetPlatformAppSettings().is_full_screen); break;
-    case AppAction::CloseApp:            m_application.Close(); break;
+    using enum AppAction;
+    case ShowControlsHelp:    m_application.ShowControlsHelp(); break;
+    case ShowCommandLineHelp: m_application.ShowCommandLineHelp(); break;
+    case ShowParameters:      m_application.ShowParameters(); break;
+    case SwitchFullScreen:    m_application.SetFullScreen(!m_application.GetPlatformAppSettings().is_full_screen); break;
+    case CloseApp:            m_application.Close(); break;
     default:                             META_UNEXPECTED(action);
     }
 }
@@ -60,12 +61,13 @@ std::string AppController::GetKeyboardActionName(AppAction action) const
     META_FUNCTION_TASK();
     switch (action)
     {
-    case AppAction::None:                return "none";
-    case AppAction::ShowControlsHelp:    return "show application controls help";
-    case AppAction::ShowCommandLineHelp: return "show application command-line help";
-    case AppAction::ShowParameters:      return "show application parameters";
-    case AppAction::SwitchFullScreen:    return "switch full-screen mode";
-    case AppAction::CloseApp:            return "close the application";
+    using enum AppAction;
+    case None:                return "none";
+    case ShowControlsHelp:    return "show application controls help";
+    case ShowCommandLineHelp: return "show application command-line help";
+    case ShowParameters:      return "show application parameters";
+    case SwitchFullScreen:    return "switch full-screen mode";
+    case CloseApp:            return "close the application";
     default:                             META_UNEXPECTED_RETURN(action, "");
     }
 }

@@ -39,28 +39,20 @@ Methane short check macroses throwing exceptions on negative check result
 
 #include "Exceptions.hpp"
 
-#ifndef __FUNCTION_NAME__
-    #ifdef WIN32
-        #define __FUNCTION_NAME__ __FUNCTION__
-    #else
-        #define __FUNCTION_NAME__ __func__
-    #endif
-#endif
-
 #ifdef METHANE_CHECKS_ENABLED
 
 #define META_INVALID_ARG_DESCR(argument, description, ...) \
-    throw Methane::InvalidArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
+    throw Methane::InvalidArgumentException<std::decay_t<decltype(argument)>>(std::source_location::current(), #argument, argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_DESCR(argument, condition, description, ...) \
     if (!(condition)) \
-        throw Methane::InvalidArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
+        throw Methane::InvalidArgumentException<std::decay_t<decltype(argument)>>(std::source_location::current(), #argument, argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK(argument, condition) META_CHECK_DESCR(argument, condition, #condition)
 
 #define META_CHECK_NAME_DESCR(argument_name, condition, description, ...) \
     if (!(condition)) \
-        throw Methane::InvalidArgumentException<bool>(__FUNCTION_NAME__, argument_name, fmt::format(description, ## __VA_ARGS__))
+        throw Methane::InvalidArgumentException<bool>(std::source_location::current(), argument_name, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_NAME(argument_name, condition) META_CHECK_NAME_DESCR(argument_name, condition, #condition)
 
@@ -76,73 +68,73 @@ Methane short check macroses throwing exceptions on negative check result
 
 #define META_CHECK_RANGE_DESCR(argument, range_begin, range_end, description, ...) \
     if (argument < static_cast<std::decay_t<decltype(argument)>>(range_begin) || argument >= static_cast<std::decay_t<decltype(argument)>>(range_end)) \
-        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(range_begin)>>(__FUNCTION_NAME__, #argument, argument, \
+        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(range_begin)>>(std::source_location::current(), #argument, argument, \
                     { range_begin, static_cast<std::decay_t<decltype(range_begin)>>(range_end) }, false, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_RANGE(argument, range_begin, range_end) META_CHECK_RANGE_DESCR(argument, range_begin, range_end, "")
 
 #define META_CHECK_RANGE_INC_DESCR(argument, range_begin, range_end, description, ...) \
     if (argument < static_cast<std::decay_t<decltype(argument)>>(range_begin) || argument > static_cast<std::decay_t<decltype(argument)>>(range_end)) \
-        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(range_begin)>>(__FUNCTION_NAME__, #argument, argument, \
+        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(range_begin)>>(std::source_location::current(), #argument, argument, \
                     { range_begin, static_cast<std::decay_t<decltype(range_begin)>>(range_end) }, true, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_INC_RANGE(argument, range_begin, range_end) META_CHECK_RANGE_INC_DESCR(argument, range_begin, range_end, "")
 
 #define META_CHECK_LESS_DESCR(argument, upper_limit, description, ...) \
     if (argument >= static_cast<std::decay_t<decltype(argument)>>(upper_limit)) \
-        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(upper_limit)>>(__FUNCTION_NAME__, #argument, argument, \
+        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(upper_limit)>>(std::source_location::current(), #argument, argument, \
                     { std::numeric_limits<std::decay_t<decltype(upper_limit)>>::min(), upper_limit }, false, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_LESS(argument, upper_limit) META_CHECK_LESS_DESCR(argument, upper_limit, "")
 
 #define META_CHECK_LESS_OR_EQUAL_DESCR(argument, upper_limit, description, ...) \
     if (argument > static_cast<std::decay_t<decltype(argument)>>(upper_limit)) \
-        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(upper_limit)>>(__FUNCTION_NAME__, #argument, argument, \
+        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(upper_limit)>>(std::source_location::current(), #argument, argument, \
                     { std::numeric_limits<std::decay_t<decltype(upper_limit)>>::min(), upper_limit }, true, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_LESS_OR_EQUAL(argument, upper_limit) META_CHECK_LESS_OR_EQUAL_DESCR(argument, upper_limit, "")
 
 #define META_CHECK_GREATER_DESCR(argument, min_value, description, ...) \
     if (argument <= static_cast<std::decay_t<decltype(argument)>>(min_value)) \
-        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(min_value)>>(__FUNCTION_NAME__, #argument, argument, \
+        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(min_value)>>(std::source_location::current(), #argument, argument, \
                     { min_value, std::numeric_limits<std::decay_t<decltype(min_value)>>::max() }, false, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_GREATER(argument, upper_limit) META_CHECK_GREATER_DESCR(argument, upper_limit, "")
 
 #define META_CHECK_GREATER_OR_EQUAL_DESCR(argument, min_value, description, ...) \
     if (argument < static_cast<std::decay_t<decltype(argument)>>(min_value)) \
-        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(min_value)>>(__FUNCTION_NAME__, #argument, argument, \
+        throw Methane::OutOfRangeArgumentException<std::decay_t<decltype(argument)>, std::decay_t<decltype(min_value)>>(std::source_location::current(), #argument, argument, \
                     { min_value, std::numeric_limits<std::decay_t<decltype(min_value)>>::max() }, true, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_GREATER_OR_EQUAL(argument, min_value) META_CHECK_GREATER_OR_EQUAL_DESCR(argument, min_value, "")
 
 #define META_CHECK_NOT_EMPTY_DESCR(argument, description, ...) \
     if (argument.empty()) \
-        throw Methane::EmptyArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, fmt::format(description, ## __VA_ARGS__))
+        throw Methane::EmptyArgumentException<std::decay_t<decltype(argument)>>(std::source_location::current(), #argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_NOT_EMPTY(argument) META_CHECK_NOT_EMPTY_DESCR(argument, "")
 
 #define META_CHECK_NOT_NULL_DESCR(argument, description, ...) \
     if (!argument) \
-        throw Methane::NullPointerArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, fmt::format(description, ## __VA_ARGS__))
+        throw Methane::NullPointerArgumentException<std::decay_t<decltype(argument)>>(std::source_location::current(), #argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_NOT_NULL(argument) META_CHECK_NOT_NULL_DESCR(argument, "")
 
 #define META_CHECK_NOT_ZERO_DESCR(argument, description, ...) \
     if (!argument) \
-        throw Methane::ZeroArgumentException<std::decay_t<decltype(argument)>>(__FUNCTION_NAME__, #argument, fmt::format(description, ## __VA_ARGS__))
+        throw Methane::ZeroArgumentException<std::decay_t<decltype(argument)>>(std::source_location::current(), #argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_CHECK_NOT_ZERO(argument) META_CHECK_NOT_ZERO_DESCR(argument, "")
 
 #define META_UNEXPECTED_DESCR(argument, description, ...) \
-    throw Methane::UnexpectedArgumentException<decltype(argument)>(__FUNCTION_NAME__, #argument, argument, fmt::format(description, ## __VA_ARGS__))
+    throw Methane::UnexpectedArgumentException<decltype(argument)>(std::source_location::current(), #argument, argument, fmt::format(description, ## __VA_ARGS__))
 
 #define META_UNEXPECTED(argument) META_UNEXPECTED_DESCR(argument, "")
 #define META_UNEXPECTED_RETURN(argument, return_value) META_UNEXPECTED_DESCR(argument, "")
 #define META_UNEXPECTED_RETURN_DESCR(argument, return_value, description, ...) META_UNEXPECTED_DESCR(argument, description, ## __VA_ARGS__)
 
 #define META_FUNCTION_NOT_IMPLEMENTED_DESCR(description, ...) \
-    throw Methane::NotImplementedException(__FUNCTION_NAME__, fmt::format(description, ## __VA_ARGS__))
+    throw Methane::NotImplementedException(std::source_location::current(), fmt::format(description, ## __VA_ARGS__))
 
 #define META_FUNCTION_NOT_IMPLEMENTED_RETURN_DESCR(return_value, description, ...) META_FUNCTION_NOT_IMPLEMENTED_DESCR(description, ## __VA_ARGS__)
 

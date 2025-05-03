@@ -74,7 +74,7 @@ public:
     [[nodiscard]] bool HasFont(std::string_view font_name) const
     {
         META_FUNCTION_TASK();
-        return m_font_by_name.count(font_name);
+        return m_font_by_name.contains(font_name);
     }
 
     [[nodiscard]] Font& GetFont(std::string_view font_name)

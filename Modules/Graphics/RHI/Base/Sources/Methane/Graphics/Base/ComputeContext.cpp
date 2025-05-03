@@ -47,10 +47,11 @@ void ComputeContext::WaitForGpu(WaitFor wait_for)
 
     switch (wait_for)
     {
-    case WaitFor::RenderComplete:
-    case WaitFor::ComputeComplete:
+    using enum WaitFor;
+    case RenderComplete:
+    case ComputeComplete:
         WaitForGpuComputeComplete(); break;
-    case WaitFor::ResourcesUploaded: break; // Handled in Context::WaitForGpu
+    case ResourcesUploaded: break; // Handled in Context::WaitForGpu
     default: META_UNEXPECTED(wait_for);
     }
 }

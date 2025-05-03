@@ -183,7 +183,8 @@ void RenderContext::Present()
     }
 
     if (present_result != vk::Result::eSuccess && present_result != vk::Result::eSuboptimalKHR)
-        throw InvalidArgumentException<vk::Result>("RenderContext::Present", "present_result", present_result, "failed to present frame image on screen");
+        throw InvalidArgumentException<vk::Result>(std::source_location::current(), "present_result", present_result,
+                                                   "failed to present frame image on screen");
 
     render_command_queue.ResetWaitForFrameExecution(image_index);
 
@@ -276,8 +277,8 @@ uint32_t RenderContext::GetNextFrameBufferIndex()
         ResetNativeSwapchain();
         break;
 
-    default:
-        throw InvalidArgumentException<vk::Result>("RenderContext::GetNextFrameBufferIndex", "image_acquire_result",
+            default:
+        throw InvalidArgumentException<vk::Result>(std::source_location::current(), "image_acquire_result",
                                                    image_acquire_result, "failed to acquire next image");
     }
 

@@ -50,38 +50,40 @@ void TypographyAppController::OnKeyboardStateAction(TypographyAppAction action)
 
     switch(action)
     {
-    case TypographyAppAction::SwitchTextWrapMode:
+    using enum TypographyAppAction;
+
+    case SwitchTextWrapMode:
         text_layout.wrap = magic_enum::enum_value<gui::Text::Wrap>(
             (magic_enum::enum_integer(text_layout.wrap) + 1) % magic_enum::enum_count<gui::Text::Wrap>());
         m_typography_app.SetTextLayout(text_layout);
         break;
 
-    case TypographyAppAction::SwitchTextHorizontalAlignment:
+    case SwitchTextHorizontalAlignment:
         text_layout.horizontal_alignment = magic_enum::enum_value<gui::Text::HorizontalAlignment>(
             (magic_enum::enum_integer(text_layout.horizontal_alignment) + 1) % magic_enum::enum_count<gui::Text::HorizontalAlignment>());
         m_typography_app.SetTextLayout(text_layout);
         break;
 
-    case TypographyAppAction::SwitchTextVerticalAlignment:
+    case SwitchTextVerticalAlignment:
         text_layout.vertical_alignment = magic_enum::enum_value<gui::Text::VerticalAlignment>(
             (magic_enum::enum_integer(text_layout.vertical_alignment) + 1) % magic_enum::enum_count<gui::Text::VerticalAlignment>());
         m_typography_app.SetTextLayout(text_layout);
         break;
 
-    case TypographyAppAction::SwitchIncrementalTextUpdate:
+    case SwitchIncrementalTextUpdate:
         m_typography_app.SetIncrementalTextUpdate(!m_typography_app.GetSettings().is_incremental_text_update);
         break;
 
-    case TypographyAppAction::SwitchTypingDirection:
+    case SwitchTypingDirection:
         m_typography_app.SetForwardTypingDirection(!m_typography_app.GetSettings().is_forward_typing_direction);
         break;
 
-    case TypographyAppAction::SpeedupTyping:
+    case SpeedupTyping:
         m_typography_app.SetTextUpdateInterval(
             std::max(s_text_update_interval_delta, m_typography_app.GetSettings().typing_update_interval_sec - s_text_update_interval_delta));
         break;
 
-    case TypographyAppAction::SlowdownTyping:
+    case SlowdownTyping:
         m_typography_app.SetTextUpdateInterval( m_typography_app.GetSettings().typing_update_interval_sec + s_text_update_interval_delta);
         break;
 
@@ -95,13 +97,14 @@ std::string TypographyAppController::GetKeyboardActionName(TypographyAppAction a
     META_FUNCTION_TASK();
     switch(action)
     {
-    case TypographyAppAction::SwitchTextWrapMode:            return "switch text wrap mode";
-    case TypographyAppAction::SwitchTextHorizontalAlignment: return "switch horizontal text alignment";
-    case TypographyAppAction::SwitchTextVerticalAlignment:   return "switch vertical text alignment";
-    case TypographyAppAction::SwitchIncrementalTextUpdate:   return "switch incremental text update";
-    case TypographyAppAction::SwitchTypingDirection:         return "switch typing direction";
-    case TypographyAppAction::SpeedupTyping:                 return "speedup typing";
-    case TypographyAppAction::SlowdownTyping:                return "slowdown typing";
+    using enum TypographyAppAction;
+    case SwitchTextWrapMode:            return "switch text wrap mode";
+    case SwitchTextHorizontalAlignment: return "switch horizontal text alignment";
+    case SwitchTextVerticalAlignment:   return "switch vertical text alignment";
+    case SwitchIncrementalTextUpdate:   return "switch incremental text update";
+    case SwitchTypingDirection:         return "switch typing direction";
+    case SpeedupTyping:                 return "speedup typing";
+    case SlowdownTyping:                return "slowdown typing";
     default:                                                 META_UNEXPECTED_RETURN(action, "");
     }
 }

@@ -27,6 +27,7 @@
 #include <Methane/Platform/Input/Mouse.h>
 
 #include <magic_enum/magic_enum.hpp>
+#include <ranges>
 #include <map>
 
 namespace Methane::Platform::Input::Mouse
@@ -58,11 +59,10 @@ public:
         help_lines.reserve(m_action_by_mouse_button.size());
         for (const ActionEnum action : magic_enum::enum_values<ActionEnum>())
         {
-            const auto action_by_mouse_button_it = std::find_if(m_action_by_mouse_button.begin(), m_action_by_mouse_button.end(),
-                                                                [action](const std::pair<Button, ActionEnum>& button_and_action)
-                                                                {
-                                                                    return button_and_action.second == action;
-                                                                });
+            const auto action_by_mouse_button_it = std::ranges::find_if(m_action_by_mouse_button,
+                [action](const std::pair<Button, ActionEnum>& button_and_action)
+                { return button_and_action.second == action; }
+            );
             if (action_by_mouse_button_it == m_action_by_mouse_button.end())
                 continue;
             

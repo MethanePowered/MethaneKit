@@ -36,7 +36,7 @@ class ComputeCommandList final // NOSONAR - inheritance hierarchy depth is great
 public:
     explicit ComputeCommandList(Base::CommandQueue& cmd_buffer);
 
-    // IRenderCommandList interface
+    // ICommandList interface
     void Reset(IDebugGroup* debug_group_ptr = nullptr) override;
 
     // IComputeCommandList interface

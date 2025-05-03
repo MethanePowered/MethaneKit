@@ -44,9 +44,10 @@ UnitSize Context::GetFrameSizeInUnits(Units units) const
     META_FUNCTION_TASK();
     switch(units)
     {
-    case Units::Pixels: return GetFrameSizeIn<Units::Pixels>();
-    case Units::Dots:   return GetFrameSizeIn<Units::Dots>();
-    default:            return UnitSize();
+    using enum Units;
+    case Pixels: return GetFrameSizeIn<Pixels>();
+    case Dots:   return GetFrameSizeIn<Dots>();
+    default:     return UnitSize();
     }
 }
 

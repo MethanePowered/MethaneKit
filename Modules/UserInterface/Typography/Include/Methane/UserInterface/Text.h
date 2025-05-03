@@ -70,12 +70,7 @@ struct TextLayout
     TextHorizontalAlignment horizontal_alignment = TextHorizontalAlignment::Left;
     TextVerticalAlignment   vertical_alignment   = TextVerticalAlignment::Top;
 
-    [[nodiscard]]
-    friend bool operator==(const TextLayout& left, const TextLayout& right) noexcept
-    {
-        return std::tie(left.wrap,  left.horizontal_alignment,  left.vertical_alignment) ==
-               std::tie(right.wrap, right.horizontal_alignment, right.vertical_alignment);
-    }
+    [[nodiscard]] friend bool operator==(const TextLayout& left, const TextLayout& right) noexcept = default;
 };
 
 template<typename StringType>

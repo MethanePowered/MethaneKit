@@ -27,7 +27,7 @@ Event emitter base template class implementation.
 
 #include <Methane/Instrumentation.h>
 
-#include <set>
+#include <ranges>
 
 namespace Methane::Data
 {
@@ -99,8 +99,7 @@ public:
         auto& connected_receivers = m_is_emitting ? m_additional_connected_receivers : m_connected_receivers;
         const auto receiver_and_priority = std::make_pair(&receiver, priority);
         connected_receivers.insert(
-           std::upper_bound(connected_receivers.begin(), connected_receivers.end(),
-                            receiver_and_priority, CompareReceiverAndPriority),
+           std::ranges::upper_bound(connected_receivers, receiver_and_priority, CompareReceiverAndPriority),
            receiver_and_priority
         );
 
@@ -117,8 +116,7 @@ public:
         {
             if (m_is_emitting)
             {
-                const auto receiver_it = std::find_if(
-                    m_additional_connected_receivers.begin(), m_additional_connected_receivers.end(),
+                const auto receiver_it = std::ranges::find_if(m_additional_connected_receivers,
                     [&receiver](const ReceiverAndPriority& receiver_and_priority)
                     { return &receiver == receiver_and_priority.first; }
                 );
@@ -169,7 +167,7 @@ protected:
         if (!was_emitting && !m_additional_connected_receivers.empty())
         {
             m_connected_receivers.insert(m_connected_receivers.end(), m_additional_connected_receivers.begin(), m_additional_connected_receivers.end());
-            std::sort(m_connected_receivers.begin(), m_connected_receivers.end(), CompareReceiverAndPriority);
+            std::ranges::sort(m_connected_receivers, CompareReceiverAndPriority);
             m_additional_connected_receivers.clear();
         }
     }
@@ -183,7 +181,7 @@ private:
     [[nodiscard]]
     inline decltype(auto) FindConnectedReceiver(Receiver<EventType>& receiver) noexcept
     {
-        return std::find_if(m_connected_receivers.begin(), m_connected_receivers.end(),
+        return std::ranges::find_if(m_connected_receivers,
             [&receiver](const ReceiverAndPriority& receiver_and_priority)
             {
                 return receiver_and_priority.first && receiver_and_priority.first == std::addressof(receiver);

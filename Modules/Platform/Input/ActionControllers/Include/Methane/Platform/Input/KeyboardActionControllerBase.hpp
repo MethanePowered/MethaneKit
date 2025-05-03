@@ -29,6 +29,7 @@
 #include <Methane/Instrumentation.h>
 
 #include <magic_enum/magic_enum.hpp>
+#include <ranges>
 #include <map>
 
 namespace Methane::Platform::Input::Keyboard
@@ -82,9 +83,9 @@ public:
         help_lines.reserve(m_action_by_keyboard_key.size() + m_action_by_keyboard_state.size());
         for (const ActionEnum action : magic_enum::enum_values<ActionEnum>())
         {
-            if (const auto action_by_keyboard_state_it = std::find_if(m_action_by_keyboard_state.begin(), m_action_by_keyboard_state.end(),
-                                                                      [action](const std::pair<Keyboard::State, ActionEnum>& keys_and_action)
-                                                                      { return keys_and_action.second == action; });
+            if (const auto action_by_keyboard_state_it = std::ranges::find_if(m_action_by_keyboard_state,
+                    [action](const std::pair<Keyboard::State, ActionEnum>& keys_and_action)
+                    { return keys_and_action.second == action; });
                 action_by_keyboard_state_it != m_action_by_keyboard_state.end())
             {
                 help_lines.push_back({
@@ -93,9 +94,9 @@ public:
                 });
             }
             
-            if (const auto action_by_keyboard_key_it = std::find_if(m_action_by_keyboard_key.begin(), m_action_by_keyboard_key.end(),
-                                                                    [action](const std::pair<Keyboard::Key, ActionEnum>& key_and_action)
-                                                                    { return key_and_action.second == action; });
+            if (const auto action_by_keyboard_key_it = std::ranges::find_if(m_action_by_keyboard_key,
+                    [action](const std::pair<Keyboard::Key, ActionEnum>& key_and_action)
+                    { return key_and_action.second == action; });
                 action_by_keyboard_key_it != m_action_by_keyboard_key.end())
             {
                 help_lines.push_back({
@@ -125,8 +126,7 @@ public:
     static const State& GetKeyboardStateByAction(const ActionByKeyboardState& action_by_keyboard_state, ActionEnum action) noexcept
     {
         META_FUNCTION_TASK();
-        const auto action_by_keyboard_state_it = std::find_if(
-            action_by_keyboard_state.begin(), action_by_keyboard_state.end(),
+        const auto action_by_keyboard_state_it = std::ranges::find_if(action_by_keyboard_state,
             [action](const auto& keyboard_state_and_action) { return keyboard_state_and_action.second == action; }
         );
 
@@ -138,8 +138,7 @@ public:
     static Key GetKeyboardKeyByAction(const ActionByKeyboardKey& action_by_key, ActionEnum action) noexcept
     {
         META_FUNCTION_TASK();
-        const auto action_by_key_it = std::find_if(
-            action_by_key.begin(), action_by_key.end(),
+        const auto action_by_key_it = std::ranges::find_if(action_by_key,
             [action](const auto& key_and_action) { return key_and_action.second == action; }
         );
 

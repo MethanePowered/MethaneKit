@@ -34,6 +34,7 @@ Methane common exception types
 
 #include <stdexcept>
 #include <string>
+#include <source_location>
 #include <typeinfo>
 
 namespace Methane
@@ -50,17 +51,17 @@ struct IsStaticCastable<T, C, decltype(static_cast<C>(std::declval<T>()))> : std
 class ArgumentException
 {
 public:
-    ArgumentException(const std::string& function_name, const std::string& argument_name)
-        : m_function_name(function_name)
+    ArgumentException(const std::source_location& source_location, const std::string& argument_name)
+        : m_source_location(source_location)
         , m_argument_name(argument_name)
     { }
 
-    [[nodiscard]] const std::string& GetFunctionName() const noexcept { return m_function_name; }
-    [[nodiscard]] const std::string& GetArgumentName() const noexcept { return m_argument_name; }
+    [[nodiscard]] const std::source_location& GetSourceLocation() const noexcept { return m_source_location; }
+    [[nodiscard]] const std::string&          GetArgumentName() const noexcept { return m_argument_name; }
 
 private:
-    std::string m_function_name;
-    std::string m_argument_name;
+    std::source_location m_source_location;
+    std::string          m_argument_name;
 };
 
 template<typename BaseExceptionType>
@@ -71,9 +72,12 @@ class ArgumentExceptionBase
 public:
     using ArgumentExceptionBaseType = ArgumentExceptionBase<BaseExceptionType>;
 
-    ArgumentExceptionBase(const std::string& function_name, const std::string& argument_name, const std::string& invalid_msg, const std::string& description = "")
-        : BaseExceptionType(fmt::format("Function '{}' argument '{}' value {}.", function_name, argument_name, invalid_msg + (description.empty() ? "" : (": " + description))))
-        , ArgumentException(function_name, argument_name)
+    ArgumentExceptionBase(const std::source_location& source_location, const std::string& argument_name, const std::string& invalid_msg, const std::string& description = "")
+        : BaseExceptionType(fmt::format("Function '{}' in file '{}({}:{})' argument '{}' value {}.",
+                                        source_location.function_name(), source_location.file_name(),
+                                        source_location.line(), source_location.column(),
+                                        argument_name, invalid_msg + (description.empty() ? "" : (": " + description))))
+        , ArgumentException(source_location, argument_name)
     { }
 };
 
@@ -83,12 +87,12 @@ class InvalidArgumentException : public ArgumentExceptionBase<std::invalid_argum
 public:
     using DecayType = typename std::decay_t<T>;
 
-    InvalidArgumentException(const std::string& function_name, const std::string& argument_name, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, "is not valid", description)
+    InvalidArgumentException(const std::source_location& source_location, const std::string& argument_name, const std::string& description = "")
+        : ArgumentExceptionBaseType(source_location, argument_name, "is not valid", description)
     { }
 
-    InvalidArgumentException(const std::string& function_name, const std::string& argument_name, DecayType value, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, GetMessage(value), description)
+    InvalidArgumentException(const std::source_location& source_location, const std::string& argument_name, DecayType value, const std::string& description = "")
+        : ArgumentExceptionBaseType(source_location, argument_name, GetMessage(value), description)
         , m_value(std::move(value))
     { }
 
@@ -121,8 +125,14 @@ class OutOfRangeArgumentException : public ArgumentExceptionBase<std::out_of_ran
 public:
     using DecayType = typename std::decay_t<T>;
 
-    OutOfRangeArgumentException(const std::string& function_name, const std::string& argument_name, DecayType value, RangeType range, bool range_end_inclusive = false, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("{}({}) is out of range [{}, {}{}", typeid(T).name(), value, range.first, range.second, range_end_inclusive ? ']' : ')'), description)
+    OutOfRangeArgumentException(const std::source_location& source_location, const std::string& argument_name,
+                                DecayType value, RangeType range, bool range_end_inclusive = false,
+                                const std::string& description = "")
+        : ArgumentExceptionBaseType(source_location, argument_name,
+                                    fmt::format("{}({}) is out of range [{}, {}{}",
+                                                typeid(T).name(), value, range.first, range.second,
+                                                range_end_inclusive ? ']' : ')'),
+                                    description)
         , m_value(std::move(value))
         , m_range(std::move(range))
     { }
@@ -139,8 +149,8 @@ template<typename T>
 class EmptyArgumentException : public ArgumentExceptionBase<std::invalid_argument>
 {
 public:
-    EmptyArgumentException(const std::string& function_name, const std::string& argument_name, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("is an empty container {}", typeid(T).name()), description)
+    EmptyArgumentException(const std::source_location& source_location, const std::string& argument_name, const std::string& description = "")
+        : ArgumentExceptionBaseType(source_location, argument_name, fmt::format("is an empty container {}", typeid(T).name()), description)
     { }
 };
 
@@ -148,8 +158,8 @@ template<typename T>
 class NullPointerArgumentException : public ArgumentExceptionBase<std::invalid_argument>
 {
 public:
-    NullPointerArgumentException(const std::string& function_name, const std::string& argument_name, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("is null pointer of type {}", typeid(T).name()), description)
+    NullPointerArgumentException(const std::source_location& source_location, const std::string& argument_name, const std::string& description = "")
+        : ArgumentExceptionBaseType(source_location, argument_name, fmt::format("is null pointer of type {}", typeid(T).name()), description)
     { }
 };
 
@@ -157,8 +167,8 @@ template<typename T>
 class ZeroArgumentException : public ArgumentExceptionBase<std::invalid_argument>
 {
 public:
-    ZeroArgumentException(const std::string& function_name, const std::string& argument_name, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, argument_name, fmt::format("is zero of type {}", typeid(T).name()), description)
+    ZeroArgumentException(const std::source_location& source_location, const std::string& argument_name, const std::string& description = "")
+        : ArgumentExceptionBaseType(source_location, argument_name, fmt::format("is zero of type {}", typeid(T).name()), description)
     { }
 };
 
@@ -168,8 +178,8 @@ class UnexpectedArgumentException : public ArgumentExceptionBase<std::invalid_ar
 public:
     using DecayType = typename std::decay_t<T>;
 
-    UnexpectedArgumentException(const std::string& function_name, const std::string& variable_name, DecayType value, const std::string& description = "")
-        : ArgumentExceptionBaseType(function_name, variable_name, GetMessage(value), description)
+    UnexpectedArgumentException(const std::source_location& source_location, const std::string& variable_name, DecayType value, const std::string& description = "")
+        : ArgumentExceptionBaseType(source_location, variable_name, GetMessage(value), description)
         , m_value(std::move(value))
     { }
 
@@ -196,15 +206,18 @@ private:
 class NotImplementedException : public std::logic_error
 {
 public:
-    NotImplementedException(const std::string& function_name, const std::string& description = "")
-        : std::logic_error(fmt::format("Function '{}' is not implemented{}.", function_name, description.empty() ? "" : fmt::format(": {}", description)))
-        , m_function_name(function_name)
+    NotImplementedException(const std::source_location& source_location, const std::string& description = "")
+        : std::logic_error(fmt::format("Function '{}' in file '{}({}:{})' is not implemented{}.",
+                                       source_location.function_name(), source_location.file_name(),
+                                       source_location.line(), source_location.column(),
+                                       description.empty() ? "" : fmt::format(": {}", description)))
+        , m_source_location(source_location)
     { }
 
-    [[nodiscard]] const std::string& GetFunctionName() const noexcept { return m_function_name; }
+    [[nodiscard]] const std::source_location& GetSourceLocation() const noexcept { return m_source_location; }
 
 private:
-    std::string m_function_name;
+    std::source_location m_source_location;
 };
 
 } // namespace Methane

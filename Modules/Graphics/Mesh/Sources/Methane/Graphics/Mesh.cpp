@@ -27,6 +27,7 @@ Abstract mesh class
 
 #include <magic_enum/magic_enum.hpp>
 #include <array>
+#include <algorithm>
 
 namespace Methane::Graphics
 {
@@ -152,7 +153,7 @@ Mesh::VertexFieldOffsets Mesh::GetVertexFieldOffsets(const VertexLayout& vertex_
 
     size_t current_offset = 0;
     VertexFieldOffsets field_offsets{};
-    std::fill(field_offsets.begin(), field_offsets.end(), -1);
+    std::ranges::fill(field_offsets, -1);
     for (VertexField vertex_field : vertex_layout)
     {
         const auto vertex_field_index = static_cast<size_t>(vertex_field);

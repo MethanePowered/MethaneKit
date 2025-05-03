@@ -38,16 +38,17 @@ std::string_view ButtonConverter::ToString() const
     META_FUNCTION_TASK();
     switch(m_button)
     {
-    case Button::Left:    return "LEFT";
-    case Button::Right:   return "RIGHT";
-    case Button::Middle:  return "MIDDLE";
-    case Button::Button4: return "BUTTON_4";
-    case Button::Button5: return "BUTTON_5";
-    case Button::Button6: return "BUTTON_6";
-    case Button::Button7: return "BUTTON_7";
-    case Button::Button8: return "BUTTON_8";
-    case Button::VScroll: return "V_SCROLL";
-    case Button::HScroll: return "H_SCROLL";
+    using enum Button;
+    case Left:    return "LEFT";
+    case Right:   return "RIGHT";
+    case Middle:  return "MIDDLE";
+    case Button4: return "BUTTON_4";
+    case Button5: return "BUTTON_5";
+    case Button6: return "BUTTON_6";
+    case Button7: return "BUTTON_7";
+    case Button8: return "BUTTON_8";
+    case VScroll: return "V_SCROLL";
+    case HScroll: return "H_SCROLL";
     default:
         META_UNEXPECTED_RETURN_DESCR(m_button, "", "unexpected mouse button");
     }
@@ -70,17 +71,18 @@ State::PropertyMask State::GetDiff(const State& other) const
     META_FUNCTION_TASK();
     State::PropertyMask properties_diff_mask;
 
+    using enum Property;
     if (m_button_states != other.m_button_states)
-        properties_diff_mask.SetBitOn(State::Property::Buttons);
+        properties_diff_mask.SetBitOn(Buttons);
     
     if (m_position != other.m_position)
-        properties_diff_mask.SetBitOn(State::Property::Position);
+        properties_diff_mask.SetBitOn(Position);
 
     if (m_scroll != other.m_scroll)
-        properties_diff_mask.SetBitOn(State::Property::Scroll);
+        properties_diff_mask.SetBitOn(Scroll);
 
     if (m_in_window != other.m_in_window)
-        properties_diff_mask.SetBitOn(State::Property::InWindow);
+        properties_diff_mask.SetBitOn(InWindow);
 
     return properties_diff_mask;
 }

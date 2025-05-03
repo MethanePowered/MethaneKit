@@ -49,19 +49,20 @@ void AppContextController::OnKeyboardStateAction(AppContextAction action)
     META_FUNCTION_TASK();
     switch (action)
     {
-    case AppContextAction::SwitchVSync:
+    using enum AppContextAction;
+    case SwitchVSync:
         m_context.SetVSyncEnabled(!m_context.GetSettings().vsync_enabled);
         break;
 
-    case AppContextAction::AddFrameBufferToSwapChain:
+    case AddFrameBufferToSwapChain:
         m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count + 1);
         break;
 
-    case AppContextAction::RemoveFrameBufferFromSwapChain:
+    case RemoveFrameBufferFromSwapChain:
         m_context.SetFrameBuffersCount(m_context.GetSettings().frame_buffers_count - 1);
         break;
 
-    case AppContextAction::SwitchDevice:
+    case SwitchDevice:
         ResetContextWithNextDevice();
         break;
 
@@ -74,12 +75,13 @@ std::string AppContextController::GetKeyboardActionName(AppContextAction action)
     META_FUNCTION_TASK();
     switch (action)
     {
-        case AppContextAction::None:                            return "none";
-        case AppContextAction::SwitchVSync:                     return "switch vertical synchronization";
-        case AppContextAction::SwitchDevice:                    return "switch device used for rendering";
-        case AppContextAction::AddFrameBufferToSwapChain:       return "add frame buffer to swap-chain";
-        case AppContextAction::RemoveFrameBufferFromSwapChain:  return "remove frame buffer from swap-chain";
-        default:                                                META_UNEXPECTED_RETURN(action, "");
+    using enum AppContextAction;
+    case None:                            return "none";
+    case SwitchVSync:                     return "switch vertical synchronization";
+    case SwitchDevice:                    return "switch device used for rendering";
+    case AddFrameBufferToSwapChain:       return "add frame buffer to swap-chain";
+    case RemoveFrameBufferFromSwapChain:  return "remove frame buffer from swap-chain";
+    default:                                                META_UNEXPECTED_RETURN(action, "");
     }
 }
 

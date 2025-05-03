@@ -45,9 +45,10 @@ static UINT ConvertMessageTypeToFlags(AppBase::Message::Type msg_type)
     META_FUNCTION_TASK();
     switch (msg_type)
     {
-    case AppBase::Message::Type::Information:   return MB_ICONINFORMATION | MB_OK;
-    case AppBase::Message::Type::Warning:       return MB_ICONWARNING | MB_OK;
-    case AppBase::Message::Type::Error:         return MB_ICONERROR | MB_OK;
+    using enum AppBase::Message::Type;
+    case Information:   return MB_ICONINFORMATION | MB_OK;
+    case Warning:       return MB_ICONWARNING | MB_OK;
+    case Error:         return MB_ICONERROR | MB_OK;
     default:                                    META_UNEXPECTED_RETURN(msg_type, 0);
     }
 }
@@ -285,14 +286,15 @@ LRESULT AppWin::OnWindowResizing(WPARAM w_param, LPARAM l_param)
 void AppWin::OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param)
 {
     META_FUNCTION_TASK();
+    using enum Input::Keyboard::KeyState;
 
     const Input::Keyboard::Key      key = Input::Keyboard::KeyConverter({ w_param, l_param }).GetKey();
-    const Input::Keyboard::KeyState key_state = ((l_param >> 31) & 1) ? Input::Keyboard::KeyState::Released : Input::Keyboard::KeyState::Pressed;
+    const Input::Keyboard::KeyState key_state = ((l_param >> 31) & 1) ? Released : Pressed;
 
     if (key == Input::Keyboard::Key::Unknown)
         return;
 
-    if (key_state == Input::Keyboard::KeyState::Released && w_param == VK_SHIFT)
+    if (key_state == Released && w_param == VK_SHIFT)
     {
         // HACK: Release both Shift keys on Shift up event, as when both
         //       are pressed the first release does not emit any event
@@ -302,8 +304,8 @@ void AppWin::OnWindowKeyboardEvent(WPARAM w_param, LPARAM l_param)
     else if (w_param == VK_SNAPSHOT)
     {
         // HACK: Key down is not reported for the Print Screen key
-        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, Input::Keyboard::KeyState::Pressed);
-        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, Input::Keyboard::KeyState::Released);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, Pressed);
+        ProcessInputWithErrorHandling(&Input::IActionController::OnKeyboardChanged, key, Released);
     }
     else
     {

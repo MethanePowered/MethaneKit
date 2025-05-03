@@ -54,9 +54,11 @@ MessageButtonStyle GetMessageButtonStyle(IApp::Message::Type message_type)
     META_FUNCTION_TASK();
     switch(message_type)
     {
-    case IApp::Message::Type::Information: return { "OK",       Linux::SystemColor::ButtonBackgroundNormal,  Linux::SystemColor::ButtonBackgroundHovered };
-    case IApp::Message::Type::Warning:     return { "Continue", Linux::SystemColor::ButtonBackgroundWarning, Linux::SystemColor::ButtonBackgroundWarningHovered };
-    case IApp::Message::Type::Error:       return { "Close",    Linux::SystemColor::ButtonBackgroundError,   Linux::SystemColor::ButtonBackgroundErrorHovered };
+    using enum IApp::Message::Type;
+    using enum Linux::SystemColor;
+    case Information: return { "OK",       ButtonBackgroundNormal,  ButtonBackgroundHovered };
+    case Warning:     return { "Continue", ButtonBackgroundWarning, ButtonBackgroundWarningHovered };
+    case Error:       return { "Close",    ButtonBackgroundError,   ButtonBackgroundErrorHovered };
     default:
         META_UNEXPECTED_RETURN(message_type, MessageButtonStyle{});
     }
@@ -334,7 +336,8 @@ void MessageBox::OnKeyboardChanged(const xcb_key_press_event_t& key_press_event,
     const Input::Keyboard::Key key = Linux::ConvertXcbKey(m_app_env.display, m_app_env.window, key_press_event.detail, key_press_event.state);
 
     // Close message box when Enter or Escape key is released
-    if (!is_key_pressed && (key == Input::Keyboard::Key::Enter || key == Input::Keyboard::Key::KeyPadEnter || key == Input::Keyboard::Key::Escape))
+    using enum Input::Keyboard::Key;
+    if (!is_key_pressed && (key == Enter || key == KeyPadEnter || key == Escape))
         m_is_event_processing = false;
 }
 
@@ -356,9 +359,11 @@ void MessageBox::OnMouseButtonChanged(const xcb_button_press_event_t& button_pre
     META_FUNCTION_TASK();
     const bool mouse_was_pressing_ok_button = m_mouse_pressed_ok_button;
 
+    using enum Input::Mouse::ButtonState;
     m_mouse_state.SetButton(Linux::ConvertXcbMouseButton(button_press_event.detail).first,
-                            is_button_pressed ? Input::Mouse::ButtonState::Pressed : Input::Mouse::ButtonState::Released);
-    m_mouse_pressed_ok_button = m_mouse_over_ok_button && m_mouse_state.GetPressedButtons().count(Input::Mouse::Button::Left);
+                            is_button_pressed ? Pressed : Released);
+    m_mouse_pressed_ok_button = m_mouse_over_ok_button &&
+                                m_mouse_state.GetPressedButtons().contains(Input::Mouse::Button::Left);
 
     if (m_mouse_pressed_ok_button != mouse_was_pressing_ok_button)
     {

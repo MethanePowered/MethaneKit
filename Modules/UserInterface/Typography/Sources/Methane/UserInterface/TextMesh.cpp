@@ -88,17 +88,18 @@ void ForEachTextCharacterInRange(const Font::Impl& font, const FontChars& text_c
 
         switch (const CharAction action = process_char_at_position(text_char, char_pos, char_index); action)
         {
-        case CharAction::Continue:
+        using enum CharAction;
+        case Continue:
             char_positions.emplace_back(char_pos.GetX() + text_char.GetAdvance().GetX(), char_pos.GetY());
             prev_text_char_ptr = &text_char;
             break;
 
-        case CharAction::Wrap:
+        case Wrap:
             char_positions.emplace_back(0, char_pos.GetY() + font.GetLineHeight(), true);
             prev_text_char_ptr = nullptr;
             break;
 
-        case CharAction::Stop:
+        case Stop:
             return;
 
         default:

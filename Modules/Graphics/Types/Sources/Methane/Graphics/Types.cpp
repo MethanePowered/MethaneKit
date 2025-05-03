@@ -80,29 +80,30 @@ Data::Size GetPixelSize(PixelFormat pixel_format)
     META_FUNCTION_TASK();
     switch(pixel_format)
     {
-    case PixelFormat::RGBA8:
-    case PixelFormat::RGBA8Unorm:
-    case PixelFormat::RGBA8Unorm_sRGB:
-    case PixelFormat::BGRA8Unorm:
-    case PixelFormat::BGRA8Unorm_sRGB:
-    case PixelFormat::R32Float:
-    case PixelFormat::R32Uint:
-    case PixelFormat::R32Sint:
-    case PixelFormat::Depth32Float:
+    using enum PixelFormat;
+    case RGBA8:
+    case RGBA8Unorm:
+    case RGBA8Unorm_sRGB:
+    case BGRA8Unorm:
+    case BGRA8Unorm_sRGB:
+    case R32Float:
+    case R32Uint:
+    case R32Sint:
+    case Depth32Float:
         return 4;
 
-    case PixelFormat::R16Float:
-    case PixelFormat::R16Uint:
-    case PixelFormat::R16Sint:
-    case PixelFormat::R16Unorm:
-    case PixelFormat::R16Snorm:
+    case R16Float:
+    case R16Uint:
+    case R16Sint:
+    case R16Unorm:
+    case R16Snorm:
         return 2;
 
-    case PixelFormat::R8Uint:
-    case PixelFormat::R8Sint:
-    case PixelFormat::R8Unorm:
-    case PixelFormat::R8Snorm:
-    case PixelFormat::A8Unorm:
+    case R8Uint:
+    case R8Sint:
+    case R8Unorm:
+    case R8Snorm:
+    case A8Unorm:
         return 1;
 
     default:
@@ -115,8 +116,9 @@ bool IsSrgbColorSpace(PixelFormat pixel_format) noexcept
     META_FUNCTION_TASK();
     switch (pixel_format)
     {
-    case PixelFormat::RGBA8Unorm_sRGB:
-    case PixelFormat::BGRA8Unorm_sRGB:
+    using enum PixelFormat;
+    case RGBA8Unorm_sRGB:
+    case BGRA8Unorm_sRGB:
         return true;
 
     default:

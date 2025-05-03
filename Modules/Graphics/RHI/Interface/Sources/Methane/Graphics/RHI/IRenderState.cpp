@@ -110,20 +110,21 @@ RenderStateGroupMask RenderStateSettings::Compare(const RenderStateSettings& lef
     META_FUNCTION_TASK();
     GroupMask changed_state_groups;
 
-    if (compare_groups.HasAnyBit(Group::Program) && left.program_ptr.get() != right.program_ptr.get())
-        changed_state_groups.SetBitOn(Group::Program);
+    using enum Group;
+    if (compare_groups.HasAnyBit(Program) && left.program_ptr.get() != right.program_ptr.get())
+        changed_state_groups.SetBitOn(Program);
 
-    if (compare_groups.HasAnyBit(Group::Rasterizer) && left.rasterizer != right.rasterizer)
-        changed_state_groups.SetBitOn(Group::Rasterizer);
+    if (compare_groups.HasAnyBit(Rasterizer) && left.rasterizer != right.rasterizer)
+        changed_state_groups.SetBitOn(Rasterizer);
 
-    if (compare_groups.HasAnyBit(Group::Blending) && left.blending != right.blending)
-        changed_state_groups.SetBitOn(Group::Blending);
+    if (compare_groups.HasAnyBit(Blending) && left.blending != right.blending)
+        changed_state_groups.SetBitOn(Blending);
 
-    if (compare_groups.HasAnyBit(Group::BlendingColor) && left.blending_color != right.blending_color)
-        changed_state_groups.SetBitOn(Group::BlendingColor);
+    if (compare_groups.HasAnyBit(BlendingColor) && left.blending_color != right.blending_color)
+        changed_state_groups.SetBitOn(BlendingColor);
 
-    if (compare_groups.HasAnyBit(Group::DepthStencil) && (left.depth != right.depth || left.stencil != right.stencil))
-        changed_state_groups.SetBitOn(Group::DepthStencil);
+    if (compare_groups.HasAnyBit(DepthStencil) && (left.depth != right.depth || left.stencil != right.stencil))
+        changed_state_groups.SetBitOn(DepthStencil);
 
     return changed_state_groups;
 }

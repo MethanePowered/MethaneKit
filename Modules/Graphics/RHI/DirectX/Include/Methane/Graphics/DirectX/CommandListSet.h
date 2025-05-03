@@ -29,6 +29,8 @@ DirectX 12 command list accessor interface for template class CommandList<Comman
 
 #include <wrl.h>
 #include <directx/d3d12.h>
+#include <span>
+#include <vector>
 
 namespace Methane::Graphics::DirectX
 {
@@ -47,13 +49,15 @@ public:
     void Execute(const Rhi::ICommandList::CompletedCallback& completed_callback) override;
     void WaitUntilCompleted(uint32_t timeout_ms) override;
 
-    using NativeCommandLists = std::vector<ID3D12CommandList*>;
-    const NativeCommandLists& GetNativeCommandLists() const noexcept { return m_native_command_lists; }
+    using NativeCommandListSpan = std::span<const ID3D12CommandList* const>;
+    NativeCommandListSpan GetNativeCommandLists() const noexcept { return m_native_command_lists; }
 
     CommandQueue&       GetDirectCommandQueue() noexcept;
     const CommandQueue& GetDirectCommandQueue() const noexcept;
 
 private:
+    using NativeCommandLists = std::vector<ID3D12CommandList*>;
+
     NativeCommandLists m_native_command_lists;
     Fence              m_execution_completed_fence;
 };

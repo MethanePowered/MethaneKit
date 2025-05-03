@@ -67,7 +67,7 @@ public:
     void PopDebugGroup() override;
 
     // CommandList interface
-    void Execute(const ICommandList::CompletedCallback& completed_callback) override;
+    void Execute(const ICommandList::CompletedCallback& completed_callback = {}) override;
     void Complete() override;
     void Commit() override;
 

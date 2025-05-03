@@ -227,10 +227,11 @@ RootConstantBuffer& Program::GetRootConstantBuffer(Rhi::ProgramArgumentAccessTyp
     META_FUNCTION_TASK();
     switch(access_type)
     {
-    case Rhi::ProgramArgumentAccessType::Mutable:       return GetRootMutableBuffer();
-    case Rhi::ProgramArgumentAccessType::Constant:      return GetRootConstantBuffer();
-    case Rhi::ProgramArgumentAccessType::FrameConstant: return GetRootFrameConstantBuffer(frame_index);
-    default: META_UNEXPECTED(access_type);
+    using enum Rhi::ProgramArgumentAccessType;
+    case Mutable:       return GetRootMutableBuffer();
+    case Constant:      return GetRootConstantBuffer();
+    case FrameConstant: return GetRootFrameConstantBuffer(frame_index);
+    default:            META_UNEXPECTED(access_type);
     }
 }
 
@@ -250,10 +251,11 @@ Ptr<ProgramBindings::ArgumentBinding> Program::CreateArgumentBindingInstance(con
     const Rhi::ProgramArgumentAccessor& argument_accessor = argument_binding_ptr->GetSettings().argument;
     switch(argument_accessor.GetAccessorType())
     {
-    case ArgumentAccessor::Type::Mutable:       return argument_binding_ptr->CreateCopy();
-    case ArgumentAccessor::Type::Constant:      return argument_binding_ptr;
-    case ArgumentAccessor::Type::FrameConstant: return GetFrameArgumentBinding(frame_index, argument_accessor);
-    default:                                    META_UNEXPECTED_RETURN(argument_accessor.GetAccessorType(), nullptr);
+    using enum ArgumentAccessor::Type;
+    case Mutable:       return argument_binding_ptr->CreateCopy();
+    case Constant:      return argument_binding_ptr;
+    case FrameConstant: return GetFrameArgumentBinding(frame_index, argument_accessor);
+    default:            META_UNEXPECTED_RETURN(argument_accessor.GetAccessorType(), nullptr);
     }
 }
 

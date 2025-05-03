@@ -30,7 +30,7 @@ minimum number of continuous ranges by merging or splitting adjacent ranges in s
 #include <Methane/Instrumentation.h>
 
 #include <fmt/format.h>
-#include <algorithm>
+#include <ranges>
 
 template<typename ScalarT>
 struct fmt::formatter<Methane::Data::Range<ScalarT>>
@@ -49,8 +49,7 @@ namespace Methane::Data
 template<typename ScalarT>
 Range<ScalarT> ReserveRange(RangeSet<ScalarT>& free_ranges, ScalarT reserved_length) noexcept
 {
-    typename RangeSet<ScalarT>::ConstIterator free_range_it = std::find_if(
-        free_ranges.begin(), free_ranges.end(),
+    typename RangeSet<ScalarT>::ConstIterator free_range_it = std::ranges::find_if(free_ranges,
         [reserved_length](const Range<ScalarT>& range)
         {
             return range.GetLength() >= reserved_length;

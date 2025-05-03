@@ -278,17 +278,18 @@ void HeadsUpDisplay::Update(const FrameSize& render_attachment_size)
     const Data::IFpsCounter&          fps_counter      = GetUIContext().GetRenderContext().GetFpsCounter();
     const rhi::RenderContextSettings& context_settings = GetUIContext().GetRenderContext().GetSettings();
 
-    GetTextBlock(TextBlock::Fps).SetText(fmt::format("{:d} FPS", fps_counter.GetFramesPerSecond()));
-    GetTextBlock(TextBlock::FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
-    GetTextBlock(TextBlock::CpuTime).SetText(fmt::format("{:.2f}% cpu", fps_counter.GetAverageFrameTiming().GetCpuTimePercent()));
-    GetTextBlock(TextBlock::GpuName).SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
-    GetTextBlock(TextBlock::FrameBuffersAndApi).SetText(fmt::format("{:d} x {:d}  {:d} FB  {:s}", // NOSONAR - string contains invisible NBSP symbols
-                                                                    context_settings.frame_size.GetWidth(),
-                                                                    context_settings.frame_size.GetHeight(),
-                                                                    context_settings.frame_buffers_count,
-                                                                    magic_enum::enum_name(rhi::ISystem::GetNativeApi())));
-    GetTextBlock(TextBlock::VSync).SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
-    GetTextBlock(TextBlock::VSync).SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
+    using enum TextBlock;
+    GetTextBlock(Fps).SetText(fmt::format("{:d} FPS", fps_counter.GetFramesPerSecond()));
+    GetTextBlock(FrameTime).SetText(fmt::format("{:.2f} ms", fps_counter.GetAverageFrameTiming().GetTotalTimeMSec()));
+    GetTextBlock(CpuTime).SetText(fmt::format("{:.2f}% cpu", fps_counter.GetAverageFrameTiming().GetCpuTimePercent()));
+    GetTextBlock(GpuName).SetText(GetUIContext().GetRenderContext().GetDevice().GetAdapterName());
+    GetTextBlock(FrameBuffersAndApi).SetText(fmt::format("{:d} x {:d}  {:d} FB  {:s}", // NOSONAR - string contains invisible NBSP symbols
+                                                         context_settings.frame_size.GetWidth(),
+                                                         context_settings.frame_size.GetHeight(),
+                                                         context_settings.frame_buffers_count,
+                                                         magic_enum::enum_name(rhi::ISystem::GetNativeApi())));
+    GetTextBlock(VSync).SetText(context_settings.vsync_enabled ? "VSync ON" : "VSync OFF");
+    GetTextBlock(VSync).SetColor(context_settings.vsync_enabled ? m_settings.on_color : m_settings.off_color);
 
     LayoutTextBlocks();
     UpdateAllTextBlocks(render_attachment_size);
@@ -320,41 +321,42 @@ void HeadsUpDisplay::LayoutTextBlocks()
     const UnitSize text_margins_in_dots = GetUIContext().ConvertTo<Units::Dots>(m_settings.text_margins);
 
     // Layout left column text blocks
-    const FrameSize help_size          = GetTextBlock(TextBlock::HelpKey).GetRectInDots().size;
-    const FrameSize frame_time_size    = GetTextBlock(TextBlock::FrameTime).GetRectInDots().size;
-    const FrameSize cpu_time_size      = GetTextBlock(TextBlock::CpuTime).GetRectInDots().size;
-    const FrameSize vsync_size         = GetTextBlock(TextBlock::VSync).GetRectInDots().size;
+    using enum TextBlock;
+    const FrameSize help_size          = GetTextBlock(HelpKey).GetRectInDots().size;
+    const FrameSize frame_time_size    = GetTextBlock(FrameTime).GetRectInDots().size;
+    const FrameSize cpu_time_size      = GetTextBlock(CpuTime).GetRectInDots().size;
+    const FrameSize vsync_size         = GetTextBlock(VSync).GetRectInDots().size;
     const uint32_t  left_column_width  = std::max({ help_size.GetWidth(), frame_time_size.GetWidth(), cpu_time_size.GetWidth(), vsync_size.GetWidth() });
 
     UnitPoint position(Units::Dots, text_margins_in_dots.GetWidth(), text_margins_in_dots.GetHeight());
-    GetTextBlock(TextBlock::HelpKey).SetRelOrigin(position);
+    GetTextBlock(HelpKey).SetRelOrigin(position);
 
     position.SetY(position.GetY() + help_size.GetHeight() + text_margins_in_dots.GetHeight());
-    GetTextBlock(TextBlock::FrameTime).SetRelOrigin(position);
+    GetTextBlock(FrameTime).SetRelOrigin(position);
 
     position.SetY(position.GetY() + frame_time_size.GetHeight() + text_margins_in_dots.GetHeight());
-    GetTextBlock(TextBlock::CpuTime).SetRelOrigin(position);
+    GetTextBlock(CpuTime).SetRelOrigin(position);
 
     position.SetY(position.GetY() + cpu_time_size.GetHeight() + text_margins_in_dots.GetHeight());
-    GetTextBlock(TextBlock::VSync).SetRelOrigin(position);
+    GetTextBlock(VSync).SetRelOrigin(position);
 
     // Layout right column text blocks
-    const FrameSize gpu_name_size      = GetTextBlock(TextBlock::GpuName).GetRectInDots().size;
-    const FrameSize fps_size           = GetTextBlock(TextBlock::Fps).GetRectInDots().size;
-    const FrameSize frame_buffers_size = GetTextBlock(TextBlock::FrameBuffersAndApi).GetRectInDots().size;
+    const FrameSize gpu_name_size      = GetTextBlock(GpuName).GetRectInDots().size;
+    const FrameSize fps_size           = GetTextBlock(Fps).GetRectInDots().size;
+    const FrameSize frame_buffers_size = GetTextBlock(FrameBuffersAndApi).GetRectInDots().size;
     const uint32_t  right_column_width = std::max({ gpu_name_size.GetWidth(), fps_size.GetWidth(), frame_buffers_size.GetWidth() });
 
     position.SetX(left_column_width + 2 * text_margins_in_dots.GetWidth());
-    GetTextBlock(TextBlock::FrameBuffersAndApi).SetRelOrigin(position);
-    GetTextBlock(TextBlock::FrameBuffersAndApi).SetSize(UnitSize(Units::Dots, right_column_width, frame_buffers_size.GetHeight()));
+    GetTextBlock(FrameBuffersAndApi).SetRelOrigin(position);
+    GetTextBlock(FrameBuffersAndApi).SetSize(UnitSize(Units::Dots, right_column_width, frame_buffers_size.GetHeight()));
 
     const UnitPoint right_bottom_position = position;
 
     position.SetY(text_margins_in_dots.GetHeight());
-    GetTextBlock(TextBlock::GpuName).SetRelOrigin(position);
+    GetTextBlock(GpuName).SetRelOrigin(position);
 
     position.SetY(position.GetY() + gpu_name_size.GetHeight() + text_margins_in_dots.GetHeight());
-    GetTextBlock(TextBlock::Fps).SetRelOrigin(position);
+    GetTextBlock(Fps).SetRelOrigin(position);
 
     Panel::SetRect(UnitRect{
         Units::Dots,

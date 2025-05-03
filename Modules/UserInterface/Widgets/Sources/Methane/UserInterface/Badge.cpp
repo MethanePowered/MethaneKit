@@ -167,16 +167,17 @@ UnitRect Badge::GetBadgeRectInFrame(const UnitSize& frame_size, const UnitSize& 
 
     switch(frame_corner)
     {
-    case FrameCorner::TopLeft:
+    using enum FrameCorner;
+    case TopLeft:
         return UnitRect(frame_size.GetUnits(), gfx::FramePoint(badge_margins.GetWidth(), badge_margins.GetHeight()), badge_size);
 
-    case FrameCorner::TopRight:
+    case TopRight:
         return UnitRect(frame_size.GetUnits(), gfx::FramePoint(frame_size.GetWidth() - badge_size.GetWidth() - badge_margins.GetWidth(), badge_margins.GetHeight()), badge_size);
 
-    case FrameCorner::BottomLeft:
+    case BottomLeft:
         return UnitRect(frame_size.GetUnits(), gfx::FramePoint(badge_margins.GetWidth(), frame_size.GetHeight() - badge_size.GetHeight() - badge_margins.GetHeight()), badge_size);
 
-    case FrameCorner::BottomRight:
+    case BottomRight:
         return UnitRect(frame_size.GetUnits(), static_cast<gfx::FramePoint>(frame_size - badge_size - badge_margins), badge_size);
 
     default:

@@ -28,6 +28,8 @@ X11/XCB utility functions.
 #include <X11/Xlib-xcb.h>
 #include <xcb/randr.h>
 
+#include <algorithm>
+
 namespace Methane::Platform::Linux
 {
 
@@ -68,13 +70,14 @@ std::pair<Input::Mouse::Button, int> ConvertXcbMouseButton(xcb_button_t button)
     META_FUNCTION_TASK();
     switch(button)
     {
-    case XCB_BUTTON_INDEX_1:     return { Input::Mouse::Button::Left, 0 };
-    case XCB_BUTTON_INDEX_2:     return { Input::Mouse::Button::Middle, 0 };
-    case XCB_BUTTON_INDEX_3:     return { Input::Mouse::Button::Right, 0 };
-    case XCB_BUTTON_INDEX_4:     return { Input::Mouse::Button::VScroll, 1 };
-    case XCB_BUTTON_INDEX_5:     return { Input::Mouse::Button::VScroll, -1 };
-    case XCB_BUTTON_INDEX_5 + 1: return { Input::Mouse::Button::HScroll, 1 };
-    case XCB_BUTTON_INDEX_5 + 2: return { Input::Mouse::Button::HScroll, -1 };
+    using enum Input::Mouse::Button;
+    case XCB_BUTTON_INDEX_1:     return { Left, 0 };
+    case XCB_BUTTON_INDEX_2:     return { Middle, 0 };
+    case XCB_BUTTON_INDEX_3:     return { Right, 0 };
+    case XCB_BUTTON_INDEX_4:     return { VScroll, 1 };
+    case XCB_BUTTON_INDEX_5:     return { VScroll, -1 };
+    case XCB_BUTTON_INDEX_5 + 1: return { HScroll, 1 };
+    case XCB_BUTTON_INDEX_5 + 2: return { HScroll, -1 };
     default: META_UNEXPECTED_DESCR(button, "XCB mouse button is not supported");
     }
 }
@@ -115,8 +118,8 @@ void XcbMeasureText(xcb_connection_t* connection, xcb_font_t font, std::string_v
     META_FUNCTION_TASK();
     std::vector<xcb_char2b_t> xcb_str;
     xcb_str.reserve(text.length());
-    std::transform(text.begin(), text.end(), std::back_inserter(xcb_str),
-                   [](const char c) { return xcb_char2b_t{ 0, static_cast<uint8_t>(c) }; });
+    std::ranges::transform(text, std::back_inserter(xcb_str),
+                           [](const char c) { return xcb_char2b_t{ 0, static_cast<uint8_t>(c) }; });
 
     const xcb_query_text_extents_cookie_t cookie = xcb_query_text_extents(connection, font, static_cast<uint32_t>(xcb_str.size()), xcb_str.data());
     xcb_query_text_extents_reply_t* reply = xcb_query_text_extents_reply(connection, cookie, nullptr);

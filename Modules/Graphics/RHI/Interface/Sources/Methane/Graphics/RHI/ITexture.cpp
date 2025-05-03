@@ -45,14 +45,16 @@ TextureSettings TextureSettings::ForImage(const Dimensions& dimensions, const Op
                                           bool mipmapped, ResourceUsageMask usage)
 {
     META_FUNCTION_TASK();
-
+    using enum TextureDimensionType;
     TextureSettings settings;
+
     if (dimensions.GetHeight() == 1)
-        settings.dimension_type = array_length_opt ? TextureDimensionType::Tex1DArray : TextureDimensionType::Tex1D;
+        settings.dimension_type = array_length_opt ? Tex1DArray : Tex1D;
     else if (dimensions.GetDepth() == 1)
-        settings.dimension_type = array_length_opt ? TextureDimensionType::Tex2DArray : TextureDimensionType::Tex2D;
+        settings.dimension_type = array_length_opt ? Tex2DArray : Tex2D;
     else
-        settings.dimension_type = TextureDimensionType::Tex3D;
+        settings.dimension_type = Tex3D;
+
     settings.type         = usage.HasAnyBit(ResourceUsage::RenderTarget) ? TextureType::RenderTarget : TextureType::Image;
     settings.dimensions   = dimensions;
     settings.array_length = array_length_opt.value_or(1U);

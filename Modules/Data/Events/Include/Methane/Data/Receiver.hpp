@@ -120,7 +120,7 @@ private:
     [[nodiscard]]
     inline decltype(auto) FindConnectedEmitter(IEmitter<EventType>& emitter) noexcept
     {
-        return std::find_if(m_connected_emitter_refs.begin(), m_connected_emitter_refs.end(),
+        return std::ranges::find_if(m_connected_emitter_refs,
             [&emitter](const Ref<IEmitter<EventType>>& connected_emitter_ref)
             {
                 return std::addressof(connected_emitter_ref.get()) == std::addressof(emitter);

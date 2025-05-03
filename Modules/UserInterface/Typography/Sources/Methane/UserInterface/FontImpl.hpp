@@ -323,7 +323,7 @@ public:
     [[nodiscard]] bool HasChar(Char::Code char_code) const
     {
         META_FUNCTION_TASK();
-        return m_char_by_code.count(char_code) ||
+        return m_char_by_code.contains(char_code) ||
                char_code == static_cast<Char::Code>('\n');
     }
 
