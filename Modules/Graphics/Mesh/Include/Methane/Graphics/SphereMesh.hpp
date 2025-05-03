@@ -114,10 +114,11 @@ private:
 
                 VType& vertex = BaseMeshT::GetMutableVertex(vertex_index);
 
+                const auto pi = std::numbers::pi_v<float>;
                 Mesh::Position& vertex_position = BaseMeshT::template GetVertexField<Mesh::Position>(vertex, Mesh::VertexField::Position);
-                vertex_position.SetX(std::sin(std::numbers::pi * lat_ratio) * std::cos(2.f * std::numbers::pi * long_ratio));
-                vertex_position.SetZ(std::sin(std::numbers::pi * lat_ratio) * std::sin(2.f * std::numbers::pi * long_ratio));
-                vertex_position.SetY(std::cos(std::numbers::pi * lat_ratio));
+                vertex_position.SetX(std::sin(pi * lat_ratio) * std::cos(2.f * pi * long_ratio));
+                vertex_position.SetZ(std::sin(pi * lat_ratio) * std::sin(2.f * pi * long_ratio));
+                vertex_position.SetY(std::cos(pi * lat_ratio));
 
                 if (has_normals)
                 {

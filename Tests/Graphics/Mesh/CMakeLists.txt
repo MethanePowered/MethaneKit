@@ -4,6 +4,7 @@ add_executable(${TARGET}
     MeshTestHelpers.hpp
     QuadMeshTest.cpp
     CubeMeshTest.cpp
+    SimpleCubeMeshTest.cpp
     SphereMeshTest.cpp
     IcosahedronMeshTest.cpp
     UberMeshTest.cpp
@@ -11,12 +12,12 @@ add_executable(${TARGET}
 
 target_link_libraries(${TARGET}
     PRIVATE
-    MethaneGraphicsMesh
-    MethaneBuildOptions
-    MethaneMathPrecompiledHeaders
-    MethaneTestsCatchHelpers
-    $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
-    Catch2WithMain
+        MethaneGraphicsMesh
+        MethaneBuildOptions
+        MethaneMathPrecompiledHeaders
+        MethaneTestsCatchHelpers
+        $<$<BOOL:${METHANE_TRACY_PROFILING_ENABLED}>:TracyClient>
+        Catch2WithMain
 )
 
 if(METHANE_PRECOMPILED_HEADERS_ENABLED)
@@ -25,7 +26,7 @@ endif()
 
 set_target_properties(${TARGET}
     PROPERTIES
-    FOLDER Tests
+        FOLDER Tests
 )
 
 install(TARGETS ${TARGET}

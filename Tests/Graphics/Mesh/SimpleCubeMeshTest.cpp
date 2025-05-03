@@ -26,8 +26,6 @@ Cube mesh generator unit tests
 
 #define MESH_VERTEX_POSITION
 #define MESH_VERTEX_NORMAL
-#define MESH_VERTEX_COLOR
-#define MESH_VERTEX_TEXCOORD
 #include "MeshTestHelpers.hpp"
 
 #include <catch2/catch_test_macros.hpp>
@@ -37,12 +35,12 @@ Cube mesh generator unit tests
 using namespace Methane;
 using namespace Methane::Graphics;
 
-constexpr uint32_t mesh_vertex_size  = 11U * 4U;
-constexpr uint32_t mesh_vertex_count = 24U;
+constexpr uint32_t mesh_vertex_size  = 6U * 4U;
+constexpr uint32_t mesh_vertex_count = 24U; // TODO: Only 8 vertices are necessary without duplications
 constexpr uint32_t mesh_index_size   = 2U;
 constexpr uint32_t mesh_index_count  = 36U;
 
-TEST_CASE("Colored Cube Mesh Generator", "[mesh]")
+TEST_CASE("Simple Cube Mesh Generator (no color, no tex-coord)", "[mesh]")
 {
     const CubeMesh<MeshVertex> mesh(MeshVertex::layout, 6.F, 4.F, 2.F);
 
@@ -62,150 +60,103 @@ TEST_CASE("Colored Cube Mesh Generator", "[mesh]")
 
     SECTION("Mesh Data")
     {
+        // TODO: update CubeMesh to generate minimally required number of vertices without duplications (8 instead of 24)
         const std::vector<MeshVertex> reference_vertices = {
             { // 0
                 .position = {-3, -2, 1},
                 .normal   = {0, 0, 1},
-                .color    = {1, 0, 0},
-                .texcoord = {0, 1}
             },
             { // 1
                 .position = {-3, 2, 1},
                 .normal   = {0, 0, 1},
-                .color    = {1, 0, 0},
-                .texcoord = {0, 0}
             },
             { // 2
                 .position = {3, 2, 1},
                 .normal   = {0, 0, 1},
-                .color    = {1, 0, 0},
-                .texcoord = {1, 0}
             },
             { // 3
                 .position = {3, -2, 1},
                 .normal   = {0, 0, 1},
-                .color    = {1, 0, 0},
-                .texcoord = {1, 1}
             },
             { // 4
                 .position = {-3, -2, -1},
                 .normal   = {0, 0, -1},
-                .color    = {0, 1, 0},
-                .texcoord = {0, 1}
             },
             { // 5
                 .position = {-3, 2, -1},
                 .normal   = {0, 0, -1},
-                .color    = {0, 1, 0},
-                .texcoord = {0, 0}
             },
             { // 6
                 .position = {3, 2, -1},
                 .normal   = {0, 0, -1},
-                .color    = {0, 1, 0},
-                .texcoord = {1, 0}
             },
             { // 7
                 .position = {3, -2, -1},
                 .normal   = {0, 0, -1},
-                .color    = {0, 1, 0},
-                .texcoord = {1, 1}
             },
             { // 8
                 .position = {-3, 2, -1},
                 .normal   = {0, 1, 0},
-                .color    = {0, 0, 1},
-                .texcoord = {0, 1}
             },
             { // 9
                 .position = {-3, 2, 1},
                 .normal   = {0, 1, 0},
-                .color    = {0, 0, 1},
-                .texcoord = {0, 0}
             },
             { // 10
                 .position = {3, 2, 1},
                 .normal   = {0, 1, 0},
-                .color    = {0, 0, 1},
-                .texcoord = {1, 0}
             },
             { // 11
                 .position = {3, 2, -1},
                 .normal   = {0, 1, 0},
-                .color    = {0, 0, 1},
-                .texcoord = {1, 1}
             },
             { // 12
                 .position = {-3, -2, -1},
                 .normal   = {0, -1, 0},
-                .color    = {1, 0, 1},
-                .texcoord = {0, 1}
             },
             { // 13
                 .position = {-3, -2, 1},
                 .normal   = {0, -1, 0},
-                .color    = {1, 0, 1},
-                .texcoord = {0, 0}
             },
             { // 14
                 .position = {3, -2, 1},
                 .normal   = {0, -1, 0},
-                .color    = {1, 0, 1},
-                .texcoord = {1, 0}
             },
             { // 15
                 .position = {3, -2, -1},
                 .normal   = {0, -1, 0},
-                .color    = {1, 0, 1},
-                .texcoord = {1, 1}
             },
             { // 16
                 .position = {3, -2, -1},
                 .normal   = {1, 0, 0},
-                .color    = {1, 1, 0},
-                .texcoord = {0, 1}
             },
             { // 17
                 .position = {3, 2, -1},
                 .normal   = {1, 0, 0},
-                .color    = {1, 1, 0},
-                .texcoord = {0, 0}
             },
             { // 18
                 .position = {3, 2, 1},
                 .normal   = {1, 0, 0},
-                .color    = {1, 1, 0},
-                .texcoord = {1, 0}
             },
             { // 19
                 .position = {3, -2, 1},
                 .normal   = {1, 0, 0},
-                .color    = {1, 1, 0},
-                .texcoord = {1, 1}
             },
             { // 20
                 .position = {-3, -2, -1},
                 .normal   = {-1, 0, 0},
-                .color    = {0, 1, 1},
-                .texcoord = {0, 1}
             },
             { // 21
                 .position = {-3, 2, -1},
                 .normal   = {-1, 0, 0},
-                .color    = {0, 1, 1},
-                .texcoord = {0, 0}
             },
             { // 22
                 .position = {-3, 2, 1},
                 .normal   = {-1, 0, 0},
-                .color    = {0, 1, 1},
-                .texcoord = {1, 0}
             },
             { // 23
                 .position = {-3, -2, 1},
                 .normal   = {-1, 0, 0},
-                .color    = {0, 1, 1},
-                .texcoord = {1, 1}
             }
         };
         CheckMeshVerticesApproxEquals(mesh.GetVertices(), reference_vertices);

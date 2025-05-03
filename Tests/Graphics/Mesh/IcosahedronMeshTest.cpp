@@ -30,6 +30,7 @@ Icosahedron mesh generator unit tests
 #include "MeshTestHelpers.hpp"
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
 #include <fmt/format.h>
 #include <string>
 
@@ -59,66 +60,66 @@ TEST_CASE("Icosahedron Mesh Generator", "[mesh]")
 
     SECTION("Mesh Data")
     {
-        const std::vector<MeshVertex> mesh_vertices = {
+        const std::vector<MeshVertex> reference_vertices = {
             { // 0
-                .position = {-3, 3.4364917, 0},
-                .normal   = {-0.65764374, 0.7533291, 0},
-                .texcoord = {1, 0.7715532}
+                .position = {-3.F, 3.436F, 0.F},
+                .normal   = {-0.658F, 0.753F, 0.F},
+                .texcoord = {1.F, 0.771F}
             },
             { // 1
-                .position = {3, 3.4364917, 0},
-                .normal   = {0.65764374, 0.7533291, 0},
-                .texcoord = {0.5, 0.7715532}
+                .position = {3.F, 3.436F, 0.F},
+                .normal   = {0.658F, 0.753F, 0.F},
+                .texcoord = {0.5F, 0.771F}
             },
             { // 2
-                .position = {-3, -3.4364917, 0},
-                .normal   = {-0.65764374, -0.7533291, 0},
-                .texcoord = {1, 0.22844677}
+                .position = {-3.F, -3.436F, 0.F},
+                .normal   = {-0.658F, -0.753F, 0.F},
+                .texcoord = {1.F, 0.228F}
             },
             { // 3
-                .position = {3, -3.4364917, 0},
-                .normal   = {0.65764374, -0.7533291, 0},
-                .texcoord = {0.5, 0.22844677}
+                .position = {3.F, -3.436F, 0.F},
+                .normal   = {0.658F, -0.753F, 0.F},
+                .texcoord = {0.5F, 0.228F}
             },
             { // 4
-                .position = {0, -3, 3.4364917},
-                .normal   = {0, -0.65764374, 0.7533291},
-                .texcoord = {0.75, 0.27155325}
+                .position = {0.F, -3.F, 3.436F},
+                .normal   = {0.F, -0.658F, 0.753F},
+                .texcoord = {0.75F, 0.271F}
             },
             { // 5
-                .position = {0, 3, 3.4364917},
-                .normal   = {0, 0.65764374, 0.7533291},
-                .texcoord = {0.75, 0.7284468}
+                .position = {0.F, 3.F, 3.436F},
+                .normal   = {0.F, 0.658F, 0.753F},
+                .texcoord = {0.75F, 0.728F}
             },
             { // 6
-                .position = {0, -3, -3.4364917},
-                .normal   = {0, -0.65764374, -0.7533291},
-                .texcoord = {0.25, 0.27155325}
+                .position = {0.F, -3.F, -3.436F},
+                .normal   = {0.F, -0.658F, -0.753F},
+                .texcoord = {0.25F, 0.271F}
             },
             { // 7
-                .position = {0, 3, -3.4364917},
-                .normal   = {0, 0.65764374, -0.7533291},
-                .texcoord = {0.25, 0.7284468}
+                .position = {0.F, 3.F, -3.436F},
+                .normal   = {0.F, 0.658F, -0.753F},
+                .texcoord = {0.25F, 0.728F}
             },
             { // 8
-                .position = {3.4364917, 0, -3},
-                .normal   = {0.7533291, 0, -0.65764374},
-                .texcoord = {0.3857766, 0.5}
+                .position = {3.436F, 0.F, -3.F},
+                .normal   = {0.753F, 0.F, -0.658F},
+                .texcoord = {0.386F, 0.5F}
             }, {
-                .position = {3.4364917, 0, 3},
-                .normal   = {0.7533291, 0, 0.65764374},
-                .texcoord = {0.61422336, 0.5}
+                .position = {3.436F, 0.F, 3.F},
+                .normal   = {0.753F, 0.F, 0.658F},
+                .texcoord = {0.614F, 0.5F}
             }, {
-                .position = {-3.4364917, 0, -3},
-                .normal   = {-0.7533291, 0, -0.65764374},
-                .texcoord = {0.11422336, 0.5}
+                .position = {-3.436F, 0.F, -3.F},
+                .normal   = {-0.753F, 0.F, -0.658F},
+                .texcoord = {0.1142F, 0.5F}
             }, {
-                .position = {-3.4364917, 0, 3},
-                .normal   = {-0.7533291, 0, 0.65764374},
-                .texcoord = {0.88577664, 0.5}
+                .position = {-3.436F, 0.F, 3.F},
+                .normal   = {-0.753F, 0.F, 0.658F},
+                .texcoord = {0.886F, 0.5F}
             }
         };
-        CHECK(mesh.GetVertices() == mesh_vertices);
+        CheckMeshVerticesApproxEquals(mesh.GetVertices(), reference_vertices);
 
         const Mesh::Indices mesh_indices = {
             5, 0, 11,

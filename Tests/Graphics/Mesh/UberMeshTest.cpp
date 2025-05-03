@@ -35,8 +35,6 @@ Uber mesh generator unit tests
 #include <fmt/format.h>
 #include <string>
 
-#include "../../../../../../../../Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Versions/A/Headers/cssmconfig.h"
-
 using namespace Methane;
 using namespace Methane::Graphics;
 
@@ -91,7 +89,7 @@ TEST_CASE("Uber Mesh Generator", "[mesh]")
 
     SECTION("Mesh Data")
     {
-        const std::vector<MeshVertex> mesh_vertices = {
+        const std::vector<MeshVertex> reference_vertices = {
             { // 0
                 .position = {-3, -2, 0},
                 .normal   = {0, 0, 1},
@@ -165,7 +163,7 @@ TEST_CASE("Uber Mesh Generator", "[mesh]")
                 .texcoord = {1, 1}
             }
         };
-        CHECK(mesh_uber.GetVertices() == mesh_vertices);
+        CheckMeshVerticesApproxEquals(mesh_uber.GetVertices(), reference_vertices);
 
         const Mesh::Indices mesh_indices = {
             3, 2, 0,

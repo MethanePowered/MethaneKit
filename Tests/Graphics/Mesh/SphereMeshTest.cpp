@@ -61,69 +61,69 @@ TEST_CASE("Sphere Mesh Generator", "[mesh]")
 
     SECTION("Mesh Data")
     {
-        const std::vector<MeshVertex> mesh_vertices = {
+        const std::vector<MeshVertex> reference_vertices = {
             { // 0
-                .position = {0, 3, 0},
-                .normal   = {0, 1, 0},
-                .texcoord = {0, 0}
+                .position = {0.F, 3.F, 0.F},
+                .normal   = {0.F, 1.F, 0.F},
+                .texcoord = {0.F, 0.F}
             },
             { // 1
-                .position = {-0, 3, 0},
-                .normal   = {-0, 1, 0},
-                .texcoord = {0.33333334, 0}
+                .position = {0.F, 3.F, 0.F},
+                .normal   = {0.F, 1.F, 0.F},
+                .texcoord = {0.333F, 0.F}
             },
             { // 2
-                .position = {-0, 3, -0},
-                .normal   = {-0, 1, -0},
-                .texcoord = {0.6666667, 0}
+                .position = {0.F, 3.F, 0.F},
+                .normal   = {0.F, 1.F, 0.F},
+                .texcoord = {0.667F, 0.F}
             },
             { // 3
-                .position = {0, 3, -0},
-                .normal   = {0, 1, -0},
-                .texcoord = {1, 0}
+                .position = {0.F, 3.F, 0.F},
+                .normal   = {0.F, 1.F, 0.F},
+                .texcoord = {1.F, 0.F}
             },
             { // 4
-                .position = {3, 1.8369703e-16, 0},
-                .normal   = {1, 6.123234e-17, 0},
-                .texcoord = {0, 0.25}
+                .position = {3.F, 0.F, 0.F},
+                .normal   = {1.F, 0.F, 0.F},
+                .texcoord = {0.F, 0.25F}
             },
             { // 5
-                .position = {-1.5000002, 1.8369703e-16, 2.598076},
-                .normal   = {-0.50000006, 6.123234e-17, 0.8660254},
-                .texcoord = {0.33333334, 0.25}
+                .position = {-1.5F, 0.F, 2.598F},
+                .normal   = {-0.5F, 0.F, 0.866F},
+                .texcoord = {0.333F, 0.25F}
             },
             { // 6
-                .position = {-1.4999996, 1.8369703e-16, -2.5980763},
-                .normal   = {-0.49999988, 6.123234e-17, -0.86602545},
-                .texcoord = {0.6666667, 0.25}
+                .position = {-1.5F, 0.F, -2.598F},
+                .normal   = {-0.5F, 0.F, -0.866F},
+                .texcoord = {0.667F, 0.25F}
             },
             { // 7
-                .position = {3, 1.8369703e-16, -7.347881e-16},
-                .normal   = {1, 6.123234e-17, -2.4492937e-16},
-                .texcoord = {1, 0.25}
+                .position = {3.F, 0.F, 0.F},
+                .normal   = {1.F, 0.F, 0.F},
+                .texcoord = {1.F, 0.25F}
             },
             { // 8
-                .position = {3.6739406e-16, -3, 0},
-                .normal   = {1.2246469e-16, -1, 0},
-                .texcoord = {0, 0.5}
+                .position = {0.F, -3.F, 0.F},
+                .normal   = {0.F, -1.F, 0.F},
+                .texcoord = {0.F, 0.5F}
             },
             { // 9
-                .position = {-1.8369704e-16, -3, 3.1817255e-16},
-                .normal   = {-6.123235e-17, -1, 1.0605752e-16},
-                .texcoord = {0.33333334, 0.5}
+                .position = {0.F, -3.F, 0.F},
+                .normal   = {0.F, -1.F, 0.F},
+                .texcoord = {0.333F, 0.5F}
             },
             { // 10
-                .position = {-1.8369699e-16, -3, -3.181726e-16},
-                .normal   = {-6.123233e-17, -1, -1.0605753e-16},
-                .texcoord = {0.6666667, 0.5}
+                .position = {0.F, -3.F, 0.F},
+                .normal   = {0.F, -1.F, 0.F},
+                .texcoord = {0.667F, 0.5F}
             },
             { // 11
-                .position = {3.6739406e-16, -3, -8.9985585e-32},
-                .normal   = {1.2246469e-16, -1, -2.9995195e-32},
-                .texcoord = {1, 0.5}
+                .position = {0.F, -3.F, 0.F},
+                .normal   = {0.F, -1.F, 0.F},
+                .texcoord = {1.F, 0.5F}
             }
         };
-        CHECK(mesh.GetVertices() == mesh_vertices);
+        CheckMeshVerticesApproxEquals(mesh.GetVertices(), reference_vertices);
 
         const Mesh::Indices mesh_indices = {
             0, 1, 4,

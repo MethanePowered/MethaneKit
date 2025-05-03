@@ -61,7 +61,7 @@ TEST_CASE("Quad Mesh Generator", "[mesh]")
 
     SECTION("Quad-XY Mesh Data")
     {
-        const std::vector<MeshVertex> mesh_vertices = {
+        const std::vector<MeshVertex> reference_vertices = {
             { // 0
                 .position = {-3.F, -2.f, -1.F},
                 .normal   = { 0.F,  0.F, -1.F},
@@ -87,7 +87,7 @@ TEST_CASE("Quad Mesh Generator", "[mesh]")
                 .texcoord = {1.F,  1.F}
             }
         };
-        CHECK(mesh_xy.GetVertices() == mesh_vertices);
+        CheckMeshVerticesApproxEquals(mesh_xy.GetVertices(), reference_vertices);
 
         const Mesh::Indices mesh_indices = {
             0, 1, 2,
@@ -113,7 +113,7 @@ TEST_CASE("Quad Mesh Generator", "[mesh]")
 
     SECTION("Quad-XZ Mesh Data")
     {
-        const std::vector<MeshVertex> mesh_vertices = {
+        const std::vector<MeshVertex> reference_vertices = {
             { // 0
                 .position = {-3.F, -2.f, -1.F},
                 .normal   = { 0.F, -1.F,  0.F},
@@ -139,7 +139,7 @@ TEST_CASE("Quad Mesh Generator", "[mesh]")
                .texcoord = {1.F,  1.F}
            }
         };
-        CHECK(mesh_xz.GetVertices() == mesh_vertices);
+        CheckMeshVerticesApproxEquals(mesh_xz.GetVertices(), reference_vertices);
 
         const Mesh::Indices mesh_indices = {
             3, 2, 0,
@@ -165,7 +165,7 @@ TEST_CASE("Quad Mesh Generator", "[mesh]")
 
     SECTION("Quad-YZ Mesh Data")
     {
-        const std::vector<MeshVertex> mesh_vertices = {
+        const std::vector<MeshVertex> reference_vertices = {
             { // 0
                 .position = {-3.F, -2.f, -1.F},
                 .normal   = {-1.F,  0.F,  0.F},
@@ -191,7 +191,7 @@ TEST_CASE("Quad Mesh Generator", "[mesh]")
                .texcoord = {1.F,  1.F}
            }
         };
-        CHECK(mesh_yz.GetVertices() == mesh_vertices);
+        CheckMeshVerticesApproxEquals(mesh_yz.GetVertices(), reference_vertices);
 
         const Mesh::Indices mesh_indices = {
             3, 2, 0,

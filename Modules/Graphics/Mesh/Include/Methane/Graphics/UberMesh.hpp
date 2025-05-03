@@ -25,6 +25,8 @@ Uber mesh generator with customizable vertex type
 
 #include "BaseMesh.hpp"
 
+#include <algorithm>
+
 namespace Methane::Graphics
 {
 

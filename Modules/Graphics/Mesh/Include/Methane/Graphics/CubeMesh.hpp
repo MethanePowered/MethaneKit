@@ -25,6 +25,8 @@ Cube mesh generator with customizable vertex type
 
 #include "QuadMesh.hpp"
 
+#include <algorithm>
+
 namespace Methane::Graphics
 {
 
