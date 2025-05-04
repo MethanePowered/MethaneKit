@@ -145,8 +145,10 @@ TimestampQueryPool::TimestampQueryPool(CommandQueue& command_queue, uint32_t max
 
     // Check if Vulkan supports CPU time domains calibration
     const auto calibrateable_time_domains = vk_physical_device.getCalibrateableTimeDomainsEXT();
-    bool is_cpu_time_domain_calibrateable = std::find(calibrateable_time_domains.begin(), calibrateable_time_domains.end(), g_vk_cpu_time_domain) != calibrateable_time_domains.end();
-    META_CHECK_TRUE_DESCR(is_cpu_time_domain_calibrateable, "Vulkan does not support calibration of the CPU time domain {}", magic_enum::enum_name(g_vk_cpu_time_domain));
+    bool is_cpu_time_domain_calibrateable = std::ranges::find(calibrateable_time_domains, g_vk_cpu_time_domain) != calibrateable_time_domains.end();
+    META_CHECK_TRUE_DESCR(is_cpu_time_domain_calibrateable,
+                          "Vulkan does not support calibration of the CPU time domain {}",
+                          magic_enum::enum_name(g_vk_cpu_time_domain));
 
     // Calculate the desired CPU-GPU timestamps deviation
     const std::array<vk::CalibratedTimestampInfoEXT, 2> timestamp_infos = {{ { vk::TimeDomainEXT::eDevice }, { g_vk_cpu_time_domain }, }};

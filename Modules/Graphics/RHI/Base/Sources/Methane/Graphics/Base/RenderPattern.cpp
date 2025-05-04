@@ -66,7 +66,7 @@ AttachmentFormats RenderPattern::GetAttachmentFormats() const noexcept
     AttachmentFormats attachment_formats;
 
     attachment_formats.colors.reserve(m_settings.color_attachments.size());
-    std::transform(m_settings.color_attachments.begin(), m_settings.color_attachments.end(), std::back_inserter(attachment_formats.colors),
+    std::ranges::transform(m_settings.color_attachments, std::back_inserter(attachment_formats.colors),
                    [](const ColorAttachment& color_attachment) { return color_attachment.format; });
 
     if (m_settings.depth_attachment)

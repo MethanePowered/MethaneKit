@@ -28,6 +28,7 @@ Descriptor manager is a central place for creating and accessing descriptor heap
 #include <Methane/Checks.hpp>
 
 #include <magic_enum/magic_enum.hpp>
+#include <ranges>
 
 namespace Methane::Graphics::DirectX
 {
@@ -151,7 +152,7 @@ DescriptorHeap& DescriptorManager::GetDefaultShaderVisibleDescriptorHeap(Descrip
                      "can not get reference to 'Undefined' descriptor heap");
 
     const UniquePtrs<DescriptorHeap>& descriptor_heaps = m_descriptor_heap_types[magic_enum::enum_integer(type)];
-    auto descriptor_heaps_it = std::find_if(descriptor_heaps.begin(), descriptor_heaps.end(),
+    auto descriptor_heaps_it = std::ranges::find_if(descriptor_heaps,
                                             [](const UniquePtr<DescriptorHeap>& descriptor_heap_ptr)
                                             {
                                                 META_CHECK_NOT_NULL(descriptor_heap_ptr);

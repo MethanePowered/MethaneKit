@@ -28,6 +28,7 @@ Base implementation of the program interface.
 
 #include <magic_enum/magic_enum.hpp>
 #include <algorithm>
+#include <ranges>
 
 namespace Methane::Graphics::Base
 {
@@ -165,7 +166,7 @@ void Program::InitFrameConstantArgumentBindings()
     if (m_context.GetType() != Rhi::IContext::Type::Render)
     {
         const auto frame_constant_binding_by_arg_it =
-            std::find_if(m_binding_by_argument.begin(), m_binding_by_argument.end(),
+            std::ranges::find_if(m_binding_by_argument,
                          [](const std::pair<Rhi::ProgramArgument, Ptr<ArgumentBinding>>& arg_binding)
                          { return arg_binding.second->GetSettings().argument.IsFrameConstant(); });
         META_CHECK_TRUE_DESCR(frame_constant_binding_by_arg_it == m_binding_by_argument.end(),
@@ -273,7 +274,7 @@ uint32_t Program::GetInputBufferIndexByArgumentSemantic(const std::string& argum
     for (size_t buffer_index = 0; buffer_index < m_settings.input_buffer_layouts.size(); buffer_index++)
     {
         const InputBufferLayout& input_buffer_layout = m_settings.input_buffer_layouts[buffer_index];
-        if (auto argument_it = std::find(input_buffer_layout.argument_semantics.begin(), input_buffer_layout.argument_semantics.end(), argument_semantic);
+        if (auto argument_it = std::ranges::find(input_buffer_layout.argument_semantics, argument_semantic);
             argument_it != input_buffer_layout.argument_semantics.end())
             return static_cast<uint32_t>(buffer_index);
     }

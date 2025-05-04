@@ -61,7 +61,7 @@ protected:
         BaseMeshT::AppendVertices(face_mesh.GetVertices());
 
         const Mesh::Indices& face_indices = face_mesh.GetIndices();
-        std::transform(face_indices.begin(), face_indices.end(), Mesh::GetIndicesBackInserter(),
+        std::ranges::transform(face_indices, Mesh::GetIndicesBackInserter(),
             [initial_vertices_count](const Mesh::Index& index)
             {
                 return static_cast<Mesh::Index>(initial_vertices_count + index);

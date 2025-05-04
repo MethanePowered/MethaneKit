@@ -29,6 +29,7 @@ Methane text mesh generation helper.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <ranges>
 #include <stdexcept>
 
 namespace Methane::UserInterface
@@ -131,12 +132,14 @@ static void ForEachTextCharacter(const std::u32string& text, Font::Impl& font, T
                         [&word_wrap_required, &cur_char_pos, &text_chars]
                         (const FontChar& inner_text_char, const gfx::FramePoint& char_pos, size_t inner_char_index)
                         {
+                            using enum CharAction;
+
                             // Word has ended if whitespace character is received or line break character was passed
                             if (inner_text_char.IsWhiteSpace() || (inner_char_index && text_chars[inner_char_index - 1].get().IsLineBreak()))
-                                return CharAction::Stop;
+                                return Stop;
 
                             word_wrap_required = char_pos.GetY() > cur_char_pos.GetY();
-                            return word_wrap_required ? CharAction::Stop : CharAction::Continue;
+                            return word_wrap_required ? Stop : Continue;
                         }
                     );
                     char_positions.erase(char_positions.begin() + start_chars_count, char_positions.end());
@@ -242,8 +245,8 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
 
     if (fixup_whitespace && m_last_whitespace_index >= m_text.length())
     {
-        if (const auto whitespace_it = std::find_if(m_text.rbegin(), m_text.rend(),
-                                                    [](char32_t char_code) { return char_code <= 255 && std::isspace(static_cast<int>(char_code)); });
+        if (const auto whitespace_it = std::ranges::find_if(std::ranges::reverse_view(m_text),
+                [](char32_t char_code) { return char_code <= 255 && std::isspace(static_cast<int>(char_code)); });
             whitespace_it != m_text.rend())
         {
             m_last_whitespace_index = std::distance(m_text.begin(), whitespace_it.base()) - 1;
@@ -257,8 +260,8 @@ void TextMesh::EraseTrailingChars(size_t erase_chars_count, bool fixup_whitespac
 
     if (m_last_line_start_index >= m_text.length())
     {
-        if (const auto line_start_it = std::find_if(m_char_positions.rbegin(), m_char_positions.rend(),
-                                                    [](const CharPosition& char_pos) { return char_pos.is_line_start; });
+        if (const auto line_start_it = std::ranges::find_if(std::ranges::reverse_view(m_char_positions),
+                [](const CharPosition& char_pos) { return char_pos.is_line_start; });
             line_start_it != m_char_positions.rend())
         {
             m_last_line_start_index = std::distance(m_char_positions.begin(), line_start_it.base()) - 1;
@@ -415,7 +418,7 @@ int32_t TextMesh::GetLineWidth(size_t line_start_index) const
     META_CHECK(line_start_index, m_char_positions[line_start_index].is_line_start);
 
     // Find next line start or end of text
-    auto line_end_position_it = std::find_if(m_char_positions.begin() + line_start_index + 1, m_char_positions.end() - 1,
+    auto line_end_position_it = std::ranges::find_if(m_char_positions.begin() + line_start_index + 1, m_char_positions.end() - 1,
                                              [](const CharPosition& line_char_pos) { return line_char_pos.is_line_start; });
 
     // Step back from next line start to get end of line position

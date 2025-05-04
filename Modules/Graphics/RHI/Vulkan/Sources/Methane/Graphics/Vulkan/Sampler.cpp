@@ -36,8 +36,10 @@ static vk::Filter ConvertMinMagFilterToVulkan(Rhi::ISampler::Filter::MinMag filt
     META_FUNCTION_TASK();
     switch(filter_min_mag)
     {
-    case Rhi::ISampler::Filter::MinMag::Nearest: return vk::Filter::eNearest;
-    case Rhi::ISampler::Filter::MinMag::Linear:  return vk::Filter::eLinear;
+    using enum Rhi::ISampler::Filter::MinMag;
+    using enum vk::Filter;
+    case Nearest: return eNearest;
+    case Linear:  return eLinear;
     default: META_UNEXPECTED_RETURN(filter_min_mag, vk::Filter::eNearest);
     }
 }
@@ -47,9 +49,11 @@ static vk::SamplerMipmapMode ConvertMipmapFilterToVulkan(Rhi::ISampler::Filter::
     META_FUNCTION_TASK();
     switch(filter_mip_map)
     {
-    case Rhi::ISampler::Filter::Mip::NotMipmapped:
-    case Rhi::ISampler::Filter::Mip::Nearest:      return vk::SamplerMipmapMode::eNearest;
-    case Rhi::ISampler::Filter::Mip::Linear:       return vk::SamplerMipmapMode::eLinear;
+    using enum Rhi::ISampler::Filter::Mip;
+    using enum vk::SamplerMipmapMode;
+    case NotMipmapped:
+    case Nearest:      return eNearest;
+    case Linear:       return eLinear;
     default: META_UNEXPECTED_RETURN(filter_mip_map, vk::SamplerMipmapMode::eNearest);
     }
 }
@@ -59,11 +63,13 @@ static vk::SamplerAddressMode ConvertSamplerAddressModeToVulkan(Rhi::ISampler::A
     META_FUNCTION_TASK();
     switch(address_mode)
     {
-    case Rhi::ISampler::Address::Mode::ClampToEdge:        return vk::SamplerAddressMode::eClampToEdge;
-    case Rhi::ISampler::Address::Mode::ClampToZero:        return vk::SamplerAddressMode::eClampToBorder;
-    case Rhi::ISampler::Address::Mode::ClampToBorderColor: return vk::SamplerAddressMode::eClampToBorder;
-    case Rhi::ISampler::Address::Mode::Repeat:             return vk::SamplerAddressMode::eRepeat;
-    case Rhi::ISampler::Address::Mode::RepeatMirror:       return vk::SamplerAddressMode::eMirroredRepeat;
+    using enum Rhi::ISampler::Address::Mode;
+    using enum vk::SamplerAddressMode;
+    case ClampToEdge:        return eClampToEdge;
+    case ClampToZero:        return eClampToBorder;
+    case ClampToBorderColor: return eClampToBorder;
+    case Repeat:             return eRepeat;
+    case RepeatMirror:       return eMirroredRepeat;
     default: META_UNEXPECTED_RETURN(address_mode, vk::SamplerAddressMode::eClampToEdge);
     }
 }
@@ -73,9 +79,11 @@ static vk::BorderColor ConvertSamplerBorderColorToVulkan(Rhi::ISampler::BorderCo
     META_FUNCTION_TASK();
     switch(border_color)
     {
-    case Rhi::ISampler::BorderColor::TransparentBlack: return vk::BorderColor::eFloatTransparentBlack;
-    case Rhi::ISampler::BorderColor::OpaqueBlack:      return vk::BorderColor::eFloatOpaqueBlack;
-    case Rhi::ISampler::BorderColor::OpaqueWhite:      return vk::BorderColor::eFloatOpaqueWhite;
+    using enum Rhi::ISampler::BorderColor;
+    using enum vk::BorderColor;
+    case TransparentBlack: return eFloatTransparentBlack;
+    case OpaqueBlack:      return eFloatOpaqueBlack;
+    case OpaqueWhite:      return eFloatOpaqueWhite;
     default: META_UNEXPECTED_RETURN(border_color, vk::BorderColor::eFloatTransparentBlack);
     }
 }

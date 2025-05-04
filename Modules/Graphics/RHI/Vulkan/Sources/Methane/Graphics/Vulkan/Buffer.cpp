@@ -39,10 +39,12 @@ static vk::BufferUsageFlags GetVulkanBufferUsageFlags(Rhi::BufferType buffer_typ
     vk::BufferUsageFlags vk_usage_flags;
     switch(buffer_type)
     {
-    case Rhi::BufferType::Storage:  vk_usage_flags |= vk::BufferUsageFlagBits::eStorageBuffer; break;
-    case Rhi::BufferType::Constant: vk_usage_flags |= vk::BufferUsageFlagBits::eUniformBuffer; break;
-    case Rhi::BufferType::Index:    vk_usage_flags |= vk::BufferUsageFlagBits::eIndexBuffer;   break;
-    case Rhi::BufferType::Vertex:   vk_usage_flags |= vk::BufferUsageFlagBits::eVertexBuffer;  break;
+    using enum Rhi::BufferType;
+    using enum vk::BufferUsageFlagBits;
+    case Storage:  vk_usage_flags |= eStorageBuffer; break;
+    case Constant: vk_usage_flags |= eUniformBuffer; break;
+    case Index:    vk_usage_flags |= eIndexBuffer;   break;
+    case Vertex:   vk_usage_flags |= eVertexBuffer;  break;
     // Buffer::Type::ReadBack - unsupported
     default: META_UNEXPECTED_DESCR(buffer_type, "Unsupported buffer type");
     }
@@ -58,11 +60,13 @@ static Rhi::ResourceState GetTargetResourceStateByBufferType(Rhi::BufferType buf
     META_FUNCTION_TASK();
     switch(buffer_type)
     {
-    case Rhi::BufferType::Storage:     return Rhi::ResourceState::ShaderResource;
-    case Rhi::BufferType::Constant:    return Rhi::ResourceState::ConstantBuffer;
-    case Rhi::BufferType::Index:       return Rhi::ResourceState::IndexBuffer;
-    case Rhi::BufferType::Vertex:      return Rhi::ResourceState::VertexBuffer;
-    case Rhi::BufferType::ReadBack:    return Rhi::ResourceState::StreamOut;
+    using enum Rhi::BufferType;
+    using enum Rhi::ResourceState;
+    case Storage:  return ShaderResource;
+    case Constant: return ConstantBuffer;
+    case Index:    return IndexBuffer;
+    case Vertex:   return VertexBuffer;
+    case ReadBack: return StreamOut;
     default: META_UNEXPECTED_RETURN_DESCR(buffer_type, Rhi::ResourceState::Undefined, "Unsupported buffer type");
     }
 }

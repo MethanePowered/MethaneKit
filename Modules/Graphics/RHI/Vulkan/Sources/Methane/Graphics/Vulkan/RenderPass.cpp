@@ -151,13 +151,13 @@ vk::UniqueFramebuffer RenderPass::CreateNativeFrameBuffer(const vk::Device& vk_d
     META_FUNCTION_TASK();
     if (m_attachment_views.empty())
     {
-        std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_attachment_views),
+        std::ranges::transform(settings.attachments, std::back_inserter(m_attachment_views),
                        [](const Rhi::TextureView& texture_location)
                        { return Vulkan::ResourceView(texture_location, Rhi::ResourceUsageMask(Rhi::ResourceUsage::RenderTarget)); });
     }
 
     std::vector<vk::ImageView> vk_attachment_views;
-    std::transform(m_attachment_views.begin(), m_attachment_views.end(), std::back_inserter(vk_attachment_views),
+    std::ranges::transform(m_attachment_views, std::back_inserter(vk_attachment_views),
                    [](const ResourceView& resource_view)
                    { return resource_view.GetNativeImageView(); });
 

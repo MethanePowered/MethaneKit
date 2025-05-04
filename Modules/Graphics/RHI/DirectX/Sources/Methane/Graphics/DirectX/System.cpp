@@ -38,7 +38,7 @@ DirectX 12 implementation of the device interface.
 
 #include <nowide/convert.hpp>
 #include <array>
-#include <algorithm>
+#include <ranges>
 #include <cassert>
 
 namespace Methane::Graphics::Rhi
@@ -201,7 +201,7 @@ void System::CheckForChanges()
     {
         META_CHECK_NOT_NULL(prev_device_ptr);
         Device& prev_device = static_cast<Device&>(*prev_device_ptr);
-        auto device_it = std::find_if(devices.begin(), devices.end(),
+        auto device_it = std::ranges::find_if(devices,
                                       [prev_device](const Ptr<IDevice>& device_ptr)
                                       {
                                           Device& device = static_cast<Device&>(*device_ptr);

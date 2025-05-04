@@ -81,7 +81,7 @@ public:
     [[nodiscard]] META_PIMPL_API const IContext&                 GetContext() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API CommandListType                 GetCommandListType() const META_PIMPL_NOEXCEPT;
     [[nodiscard]] META_PIMPL_API uint32_t                        GetFamilyIndex() const META_PIMPL_NOEXCEPT;
-    [[nodiscard]] META_PIMPL_API const Ptr<ITimestampQueryPool>& GetTimestampQueryPoolPtr();
+    [[nodiscard]] META_PIMPL_API const Ptr<ITimestampQueryPool>& GetTimestampQueryPoolPtr() const;
     META_PIMPL_API void Execute(const CommandListSet& command_lists, const ICommandList::CompletedCallback& completed_callback = {}) const;
 
 private:

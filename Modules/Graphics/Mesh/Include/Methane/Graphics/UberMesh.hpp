@@ -57,7 +57,7 @@ public:
             META_CHECK_LESS(vertex_count, std::numeric_limits<Mesh::Index>::max());
 
             const auto index_offset = static_cast<Mesh::Index>(vertex_count);
-            std::transform(sub_indices.begin(), sub_indices.end(), BaseMeshT::GetIndicesBackInserter(),
+            std::ranges::transform(sub_indices, BaseMeshT::GetIndicesBackInserter(),
                            [index_offset](const Mesh::Index& index)
                            {
                                META_CHECK_LESS(index_offset, std::numeric_limits<Mesh::Index>::max() - index);

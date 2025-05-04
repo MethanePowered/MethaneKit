@@ -34,32 +34,34 @@ vk::AccessFlags IResource::GetNativeAccessFlagsByResourceState(Rhi::ResourceStat
     META_FUNCTION_TASK();
     switch (resource_state)
     {
-    case Rhi::ResourceState::Undefined:        return vk::AccessFlagBits::eNoneKHR;
-    case Rhi::ResourceState::Common:           return vk::AccessFlagBits::eNoneKHR;
-    case Rhi::ResourceState::VertexBuffer:     return vk::AccessFlagBits::eVertexAttributeRead;
-    case Rhi::ResourceState::ConstantBuffer:   return vk::AccessFlagBits::eUniformRead;
-    case Rhi::ResourceState::IndexBuffer:      return vk::AccessFlagBits::eIndexRead;
-    case Rhi::ResourceState::RenderTarget:     return vk::AccessFlagBits::eColorAttachmentRead |
-                                                      vk::AccessFlagBits::eColorAttachmentWrite;
-    case Rhi::ResourceState::UnorderedAccess:  return vk::AccessFlagBits::eShaderRead |
-                                                      vk::AccessFlagBits::eShaderWrite;
-    case Rhi::ResourceState::DepthWrite:       return vk::AccessFlagBits::eDepthStencilAttachmentWrite |
-                                                      vk::AccessFlagBits::eDepthStencilAttachmentRead;
-    case Rhi::ResourceState::DepthRead:        return vk::AccessFlagBits::eDepthStencilAttachmentRead;
-    case Rhi::ResourceState::ShaderResource:   return vk::AccessFlagBits::eShaderRead;
-    case Rhi::ResourceState::IndirectArgument: return vk::AccessFlagBits::eIndirectCommandRead;
-    case Rhi::ResourceState::CopyDest:         return vk::AccessFlagBits::eTransferWrite;
-    case Rhi::ResourceState::CopySource:       return vk::AccessFlagBits::eTransferRead;
-    case Rhi::ResourceState::ResolveDest:      return vk::AccessFlagBits::eTransferWrite;
-    case Rhi::ResourceState::ResolveSource:    return vk::AccessFlagBits::eTransferRead;
-    case Rhi::ResourceState::Present:          return vk::AccessFlagBits::eNoneKHR;
-    case Rhi::ResourceState::GenericRead:      return vk::AccessFlagBits::eVertexAttributeRead |
-                                                      vk::AccessFlagBits::eUniformRead |
-                                                      vk::AccessFlagBits::eIndexRead |
-                                                      vk::AccessFlagBits::eShaderRead |
-                                                      vk::AccessFlagBits::eIndirectCommandRead |
-                                                      vk::AccessFlagBits::eTransferRead;
-    default: META_UNEXPECTED_RETURN_DESCR(resource_state, vk::AccessFlagBits::eNoneKHR, "unexpected resource state");
+    using enum Rhi::ResourceState;
+    using enum vk::AccessFlagBits;
+    case Undefined:        return eNoneKHR;
+    case Common:           return eNoneKHR;
+    case VertexBuffer:     return eVertexAttributeRead;
+    case ConstantBuffer:   return eUniformRead;
+    case IndexBuffer:      return eIndexRead;
+    case RenderTarget:     return eColorAttachmentRead |
+                                  eColorAttachmentWrite;
+    case UnorderedAccess:  return eShaderRead |
+                                  eShaderWrite;
+    case DepthWrite:       return eDepthStencilAttachmentWrite |
+                                  eDepthStencilAttachmentRead;
+    case DepthRead:        return eDepthStencilAttachmentRead;
+    case ShaderResource:   return eShaderRead;
+    case IndirectArgument: return eIndirectCommandRead;
+    case CopyDest:         return eTransferWrite;
+    case CopySource:       return eTransferRead;
+    case ResolveDest:      return eTransferWrite;
+    case ResolveSource:    return eTransferRead;
+    case Present:          return eNoneKHR;
+    case GenericRead:      return eVertexAttributeRead |
+                                  eUniformRead |
+                                  eIndexRead |
+                                  eShaderRead |
+                                  eIndirectCommandRead |
+                                  eTransferRead;
+    default: META_UNEXPECTED_RETURN_DESCR(resource_state, eNoneKHR, "unexpected resource state");
     }
 }
 
@@ -68,20 +70,22 @@ vk::ImageLayout IResource::GetNativeImageLayoutByResourceState(Rhi::ResourceStat
     META_FUNCTION_TASK();
     switch (resource_state)
     {
-    case Rhi::ResourceState::Undefined:       return vk::ImageLayout::eUndefined;
-    case Rhi::ResourceState::Common:          return vk::ImageLayout::eGeneral;
-    case Rhi::ResourceState::RenderTarget:    return vk::ImageLayout::eColorAttachmentOptimal;
-    case Rhi::ResourceState::InputAttachment: return vk::ImageLayout::eShaderReadOnlyOptimal;
-    case Rhi::ResourceState::UnorderedAccess: return vk::ImageLayout::eGeneral;
-    case Rhi::ResourceState::DepthWrite:      return vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    case Rhi::ResourceState::DepthRead:       return vk::ImageLayout::eDepthStencilReadOnlyOptimal;
-    case Rhi::ResourceState::ShaderResource:  return vk::ImageLayout::eShaderReadOnlyOptimal;
-    case Rhi::ResourceState::CopyDest:        return vk::ImageLayout::eTransferDstOptimal;
-    case Rhi::ResourceState::CopySource:      return vk::ImageLayout::eTransferSrcOptimal;
-    case Rhi::ResourceState::ResolveDest:     return vk::ImageLayout::eTransferDstOptimal;
-    case Rhi::ResourceState::ResolveSource:   return vk::ImageLayout::eTransferSrcOptimal;
-    case Rhi::ResourceState::Present:         return vk::ImageLayout::ePresentSrcKHR;
-    default: META_UNEXPECTED_RETURN_DESCR(resource_state, vk::ImageLayout::eUndefined, "unexpected resource state");
+    using enum Rhi::ResourceState;
+    using enum vk::ImageLayout;
+    case Undefined:       return eUndefined;
+    case Common:          return eGeneral;
+    case RenderTarget:    return eColorAttachmentOptimal;
+    case InputAttachment: return eShaderReadOnlyOptimal;
+    case UnorderedAccess: return eGeneral;
+    case DepthWrite:      return eDepthStencilAttachmentOptimal;
+    case DepthRead:       return eDepthStencilReadOnlyOptimal;
+    case ShaderResource:  return eShaderReadOnlyOptimal;
+    case CopyDest:        return eTransferDstOptimal;
+    case CopySource:      return eTransferSrcOptimal;
+    case ResolveDest:     return eTransferDstOptimal;
+    case ResolveSource:   return eTransferSrcOptimal;
+    case Present:         return ePresentSrcKHR;
+    default: META_UNEXPECTED_RETURN_DESCR(resource_state, eUndefined, "unexpected resource state");
     }
 }
 
@@ -90,41 +94,37 @@ vk::PipelineStageFlags IResource::GetNativePipelineStageFlagsByResourceState(Rhi
     META_FUNCTION_TASK();
     switch (resource_state)
     {
-    case Rhi::ResourceState::Undefined:
-        return vk::PipelineStageFlagBits::eTopOfPipe;
-    case Rhi::ResourceState::Common:
-        return vk::PipelineStageFlagBits::eAllCommands;
-    case Rhi::ResourceState::Present:
-        return vk::PipelineStageFlagBits::eBottomOfPipe;
-    case Rhi::ResourceState::RenderTarget:
-        return vk::PipelineStageFlagBits::eColorAttachmentOutput;
-    case Rhi::ResourceState::InputAttachment:
-        return vk::PipelineStageFlagBits::eFragmentShader;
-    case Rhi::ResourceState::IndirectArgument:
-        return vk::PipelineStageFlagBits::eDrawIndirect;
-    case Rhi::ResourceState::VertexBuffer:
-    case Rhi::ResourceState::IndexBuffer:
-        return vk::PipelineStageFlagBits::eVertexInput;
-    case Rhi::ResourceState::GenericRead:
-    case Rhi::ResourceState::ConstantBuffer:
-    case Rhi::ResourceState::UnorderedAccess:
-    case Rhi::ResourceState::ShaderResource:
-        return vk::PipelineStageFlagBits::eVertexShader | // All possible shader stages
-               vk::PipelineStageFlagBits::eFragmentShader |
-               vk::PipelineStageFlagBits::eComputeShader;
-    case Rhi::ResourceState::CopyDest:
-    case Rhi::ResourceState::CopySource:
-    case Rhi::ResourceState::ResolveDest:
-    case Rhi::ResourceState::ResolveSource:
-        return vk::PipelineStageFlagBits::eTransfer;
-    case Rhi::ResourceState::DepthWrite:
-    case Rhi::ResourceState::DepthRead:
-        return vk::PipelineStageFlagBits::eEarlyFragmentTests |
-               vk::PipelineStageFlagBits::eLateFragmentTests;
-    case Rhi::ResourceState::StreamOut:
+    using enum Rhi::ResourceState;
+    using enum vk::PipelineStageFlagBits;
+    case Undefined:        return eTopOfPipe;
+    case Common:           return eAllCommands;
+    case Present:          return eBottomOfPipe;
+    case RenderTarget:     return eColorAttachmentOutput;
+    case InputAttachment:  return eFragmentShader;
+    case IndirectArgument: return eDrawIndirect;
+    case VertexBuffer:
+    case IndexBuffer:
+        return eVertexInput;
+    case GenericRead:
+    case ConstantBuffer:
+    case UnorderedAccess:
+    case ShaderResource:
+        return eVertexShader | // All possible shader stages
+               eFragmentShader |
+               eComputeShader;
+    case CopyDest:
+    case CopySource:
+    case ResolveDest:
+    case ResolveSource:
+        return eTransfer;
+    case DepthWrite:
+    case DepthRead:
+        return eEarlyFragmentTests |
+               eLateFragmentTests;
+    case StreamOut:
         return {};
     default:
-        META_UNEXPECTED_RETURN_DESCR(resource_state, vk::ImageLayout::eUndefined, "unexpected resource state");
+        META_UNEXPECTED_RETURN_DESCR(resource_state, eUndefined, "unexpected resource state");
     }
 }
 

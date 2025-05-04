@@ -47,11 +47,12 @@ namespace Methane::Graphics::Vulkan
 static vk::PolygonMode RasterizerFillModeToVulkan(Rhi::IRenderState::Rasterizer::FillMode fill_mode)
 {
     META_FUNCTION_TASK();
-    using FillMode = Rhi::IRenderState::Rasterizer::FillMode;
     switch(fill_mode)
     {
-    case FillMode::Solid:     return vk::PolygonMode::eFill;
-    case FillMode::Wireframe: return vk::PolygonMode::eLine;
+    using enum Rhi::IRenderState::Rasterizer::FillMode;
+    using enum vk::PolygonMode;
+    case Solid:     return eFill;
+    case Wireframe: return eLine;
     default:
         META_UNEXPECTED_RETURN(fill_mode, vk::PolygonMode::eFill);
     }
@@ -61,32 +62,15 @@ static vk::PolygonMode RasterizerFillModeToVulkan(Rhi::IRenderState::Rasterizer:
 static vk::CullModeFlags RasterizerCullModeToVulkan(Rhi::IRenderState::Rasterizer::CullMode cull_mode)
 {
     META_FUNCTION_TASK();
-    using CullMode = Rhi::IRenderState::Rasterizer::CullMode;
     switch(cull_mode)
     {
-    case CullMode::None:  return vk::CullModeFlagBits::eNone;
-    case CullMode::Back:  return vk::CullModeFlagBits::eBack;
-    case CullMode::Front: return vk::CullModeFlagBits::eFront;
+    using enum Rhi::IRenderState::Rasterizer::CullMode;
+    using enum vk::CullModeFlagBits;
+    case None:  return eNone;
+    case Back:  return eBack;
+    case Front: return eFront;
     default:
         META_UNEXPECTED_RETURN(cull_mode, vk::CullModeFlagBits::eNone);
-    }
-}
-
-[[nodiscard]]
-static vk::SampleCountFlagBits RasterizerSampleCountToVulkan(uint32_t sample_count)
-{
-    META_FUNCTION_TASK();
-    switch(sample_count)
-    {
-    case 1:  return vk::SampleCountFlagBits::e1;
-    case 2:  return vk::SampleCountFlagBits::e2;
-    case 4:  return vk::SampleCountFlagBits::e4;
-    case 8:  return vk::SampleCountFlagBits::e8;
-    case 16: return vk::SampleCountFlagBits::e16;
-    case 32: return vk::SampleCountFlagBits::e32;
-    case 61: return vk::SampleCountFlagBits::e64;
-    default:
-        META_UNEXPECTED_RETURN_DESCR(sample_count, vk::SampleCountFlagBits::e1, "Vulkan rasterizer sample count should be a power of 2 from 1 to 64.");
     }
 }
 
@@ -96,14 +80,16 @@ static vk::StencilOp StencilOperationToVulkan(Rhi::FaceOperation stencil_operati
     META_FUNCTION_TASK();
     switch(stencil_operation)
     {
-    case Rhi::FaceOperation::Keep:            return vk::StencilOp::eKeep;
-    case Rhi::FaceOperation::Zero:            return vk::StencilOp::eZero;
-    case Rhi::FaceOperation::Replace:         return vk::StencilOp::eReplace;
-    case Rhi::FaceOperation::Invert:          return vk::StencilOp::eInvert;
-    case Rhi::FaceOperation::IncrementClamp:  return vk::StencilOp::eIncrementAndClamp;
-    case Rhi::FaceOperation::DecrementClamp:  return vk::StencilOp::eDecrementAndClamp;
-    case Rhi::FaceOperation::IncrementWrap:   return vk::StencilOp::eIncrementAndWrap;
-    case Rhi::FaceOperation::DecrementWrap:   return vk::StencilOp::eDecrementAndWrap;
+    using enum Rhi::FaceOperation;
+    using enum vk::StencilOp;
+    case Keep:            return eKeep;
+    case Zero:            return eZero;
+    case Replace:         return eReplace;
+    case Invert:          return eInvert;
+    case IncrementClamp:  return eIncrementAndClamp;
+    case DecrementClamp:  return eDecrementAndClamp;
+    case IncrementWrap:   return eIncrementAndWrap;
+    case DecrementWrap:   return eDecrementAndWrap;
     default:
         META_UNEXPECTED_RETURN(stencil_operation, vk::StencilOp::eKeep);
     }
@@ -113,28 +99,29 @@ static vk::StencilOp StencilOperationToVulkan(Rhi::FaceOperation stencil_operati
 static vk::BlendFactor BlendingFactorToVulkan(Rhi::IRenderState::Blending::Factor blend_factor)
 {
     META_FUNCTION_TASK();
-    using BlendFactor = Rhi::IRenderState::Blending::Factor;
     switch(blend_factor)
     {
-    case BlendFactor::Zero:                     return vk::BlendFactor::eZero;
-    case BlendFactor::One:                      return vk::BlendFactor::eOne;
-    case BlendFactor::SourceColor:              return vk::BlendFactor::eSrcColor;
-    case BlendFactor::OneMinusSourceColor:      return vk::BlendFactor::eOneMinusSrcColor;
-    case BlendFactor::SourceAlpha:              return vk::BlendFactor::eSrcAlpha;
-    case BlendFactor::OneMinusSourceAlpha:      return vk::BlendFactor::eOneMinusSrcAlpha;
-    case BlendFactor::DestinationColor:         return vk::BlendFactor::eDstColor;
-    case BlendFactor::OneMinusDestinationColor: return vk::BlendFactor::eOneMinusDstColor;
-    case BlendFactor::DestinationAlpha:         return vk::BlendFactor::eDstAlpha;
-    case BlendFactor::OneMinusDestinationAlpha: return vk::BlendFactor::eOneMinusDstAlpha;
-    case BlendFactor::SourceAlphaSaturated:     return vk::BlendFactor::eSrcAlphaSaturate;
-    case BlendFactor::BlendColor:               return vk::BlendFactor::eConstantColor;
-    case BlendFactor::OneMinusBlendColor:       return vk::BlendFactor::eOneMinusConstantColor;
-    case BlendFactor::BlendAlpha:               return vk::BlendFactor::eConstantAlpha;
-    case BlendFactor::OneMinusBlendAlpha:       return vk::BlendFactor::eOneMinusConstantAlpha;
-    case BlendFactor::Source1Color:             return vk::BlendFactor::eSrc1Color;
-    case BlendFactor::OneMinusSource1Color:     return vk::BlendFactor::eOneMinusSrc1Color;
-    case BlendFactor::Source1Alpha:             return vk::BlendFactor::eSrc1Alpha;
-    case BlendFactor::OneMinusSource1Alpha:     return vk::BlendFactor::eOneMinusSrc1Alpha;
+    using enum Rhi::IRenderState::Blending::Factor;
+    using enum vk::BlendFactor;
+    case Zero:                     return eZero;
+    case One:                      return eOne;
+    case SourceColor:              return eSrcColor;
+    case OneMinusSourceColor:      return eOneMinusSrcColor;
+    case SourceAlpha:              return eSrcAlpha;
+    case OneMinusSourceAlpha:      return eOneMinusSrcAlpha;
+    case DestinationColor:         return eDstColor;
+    case OneMinusDestinationColor: return eOneMinusDstColor;
+    case DestinationAlpha:         return eDstAlpha;
+    case OneMinusDestinationAlpha: return eOneMinusDstAlpha;
+    case SourceAlphaSaturated:     return eSrcAlphaSaturate;
+    case BlendColor:               return eConstantColor;
+    case OneMinusBlendColor:       return eOneMinusConstantColor;
+    case BlendAlpha:               return eConstantAlpha;
+    case OneMinusBlendAlpha:       return eOneMinusConstantAlpha;
+    case Source1Color:             return eSrc1Color;
+    case OneMinusSource1Color:     return eOneMinusSrc1Color;
+    case Source1Alpha:             return eSrc1Alpha;
+    case OneMinusSource1Alpha:     return eOneMinusSrc1Alpha;
     default: META_UNEXPECTED_RETURN(blend_factor, vk::BlendFactor::eZero);
     }
 }
@@ -146,11 +133,13 @@ static vk::BlendOp BlendingOperationToVulkan(Rhi::IRenderState::Blending::Operat
     using BlendOperation = Rhi::IRenderState::Blending::Operation;
     switch(blend_operation)
     {
-    case BlendOperation::Add:               return vk::BlendOp::eAdd;
-    case BlendOperation::Subtract:          return vk::BlendOp::eSubtract;
-    case BlendOperation::ReverseSubtract:   return vk::BlendOp::eReverseSubtract;
-    case BlendOperation::Minimum:           return vk::BlendOp::eMin;
-    case BlendOperation::Maximum:           return vk::BlendOp::eMax;
+    using enum BlendOperation;
+    using enum vk::BlendOp;
+    case Add:               return eAdd;
+    case Subtract:          return eSubtract;
+    case ReverseSubtract:   return eReverseSubtract;
+    case Minimum:           return eMin;
+    case Maximum:           return eMax;
     default:
         META_UNEXPECTED_RETURN(blend_operation, vk::BlendOp::eAdd);
     }
@@ -160,19 +149,21 @@ static vk::BlendOp BlendingOperationToVulkan(Rhi::IRenderState::Blending::Operat
 static vk::ColorComponentFlags BlendingColorChannelsToVulkan(Rhi::BlendingColorChannelMask color_channels)
 {
     META_FUNCTION_TASK();
+    using enum Rhi::BlendingColorChannel;
+    using enum vk::ColorComponentFlagBits;
     vk::ColorComponentFlags color_component_flags{};
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Red))
-        color_component_flags |= vk::ColorComponentFlagBits::eR;
+    if (color_channels.HasAnyBit(Red))
+        color_component_flags |= eR;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Green))
-        color_component_flags |= vk::ColorComponentFlagBits::eG;
+    if (color_channels.HasAnyBit(Green))
+        color_component_flags |= eG;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Blue))
-        color_component_flags |= vk::ColorComponentFlagBits::eB;
+    if (color_channels.HasAnyBit(Blue))
+        color_component_flags |= eB;
 
-    if (color_channels.HasAnyBit(Rhi::BlendingColorChannel::Alpha))
-        color_component_flags |= vk::ColorComponentFlagBits::eA;
+    if (color_channels.HasAnyBit(Alpha))
+        color_component_flags |= eA;
 
     return color_component_flags;
 }
@@ -182,11 +173,13 @@ vk::PrimitiveTopology RenderState::GetVulkanPrimitiveTopology(Rhi::RenderPrimiti
     META_FUNCTION_TASK();
     switch(primitive_type)
     {
-    case Rhi::RenderPrimitive::Point:           return vk::PrimitiveTopology::ePointList;
-    case Rhi::RenderPrimitive::Line:            return vk::PrimitiveTopology::eLineList;
-    case Rhi::RenderPrimitive::LineStrip:       return vk::PrimitiveTopology::eLineStrip;
-    case Rhi::RenderPrimitive::Triangle:        return vk::PrimitiveTopology::eTriangleList;
-    case Rhi::RenderPrimitive::TriangleStrip:   return vk::PrimitiveTopology::eTriangleStrip;
+    using enum Rhi::RenderPrimitive;
+    using enum vk::PrimitiveTopology;
+    case Point:           return ePointList;
+    case Line:            return eLineList;
+    case LineStrip:       return eLineStrip;
+    case Triangle:        return eTriangleList;
+    case TriangleStrip:   return eTriangleStrip;
     default: META_UNEXPECTED_RETURN(primitive_type, vk::PrimitiveTopology::ePointList);
     }
 }
@@ -298,7 +291,7 @@ vk::UniquePipeline RenderState::CreateNativePipeline(const ViewState* view_state
 
     vk::PipelineMultisampleStateCreateInfo multisample_info(
         vk::PipelineMultisampleStateCreateFlags{},
-        RasterizerSampleCountToVulkan(settings.rasterizer.sample_count),
+        TypeConverter::SampleCountToVulkan(settings.rasterizer.sample_count),
         false,   // sampleShadingEnable
         1.F,     // minSampleShading
         nullptr, // pSampleMask
@@ -339,22 +332,22 @@ vk::UniquePipeline RenderState::CreateNativePipeline(const ViewState* view_state
                                          ? settings.program_ptr->GetSettings().attachment_formats.colors.size()
                                          : 1;
     std::vector<vk::PipelineColorBlendAttachmentState> attachment_blend_states;
-    std::transform(settings.blending.render_targets.begin(),
-                   settings.blending.render_targets.begin() + blend_attachments_count,
-                   std::back_inserter(attachment_blend_states),
-                   [](const Blending::RenderTarget& rt_blending)
-                   {
-                       return vk::PipelineColorBlendAttachmentState(
-                           rt_blending.blend_enabled,
-                           BlendingFactorToVulkan(rt_blending.source_rgb_blend_factor),
-                           BlendingFactorToVulkan(rt_blending.dest_rgb_blend_factor),
-                           BlendingOperationToVulkan(rt_blending.rgb_blend_op),
-                           BlendingFactorToVulkan(rt_blending.source_alpha_blend_factor),
-                           BlendingFactorToVulkan(rt_blending.dest_alpha_blend_factor),
-                           BlendingOperationToVulkan(rt_blending.alpha_blend_op),
-                           BlendingColorChannelsToVulkan(rt_blending.color_write)
-                       );
-                   }
+    std::ranges::transform(settings.blending.render_targets.begin(),
+                           settings.blending.render_targets.begin() + blend_attachments_count,
+                           std::back_inserter(attachment_blend_states),
+                           [](const Blending::RenderTarget& rt_blending)
+                           {
+                               return vk::PipelineColorBlendAttachmentState(
+                                   rt_blending.blend_enabled,
+                                   BlendingFactorToVulkan(rt_blending.source_rgb_blend_factor),
+                                   BlendingFactorToVulkan(rt_blending.dest_rgb_blend_factor),
+                                   BlendingOperationToVulkan(rt_blending.rgb_blend_op),
+                                   BlendingFactorToVulkan(rt_blending.source_alpha_blend_factor),
+                                   BlendingFactorToVulkan(rt_blending.dest_alpha_blend_factor),
+                                   BlendingOperationToVulkan(rt_blending.alpha_blend_op),
+                                   BlendingColorChannelsToVulkan(rt_blending.color_write)
+                               );
+                           }
     );
 
     vk::PipelineColorBlendStateCreateInfo blending_info(

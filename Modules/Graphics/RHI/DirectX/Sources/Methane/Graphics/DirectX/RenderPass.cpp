@@ -186,7 +186,7 @@ RenderPass::RenderPass(Base::RenderPattern& render_pattern, const Settings& sett
     , m_dx_context(static_cast<const RenderContext&>(render_pattern.GetBaseRenderContext()))
 {
     META_FUNCTION_TASK();
-    std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
+    std::ranges::transform(settings.attachments, std::back_inserter(m_dx_attachments),
                    [](const Rhi::ITexture::View& texture_location)
                    { return ResourceView(texture_location, Rhi::ResourceUsageMask({ Rhi::ResourceUsage::RenderTarget })); });
 
@@ -216,7 +216,7 @@ bool RenderPass::Update(const Settings& settings)
         m_begin_transition_barriers_ptr.reset();
         m_end_transition_barriers_ptr.reset();
 
-        std::transform(settings.attachments.begin(), settings.attachments.end(), std::back_inserter(m_dx_attachments),
+        std::ranges::transform(settings.attachments, std::back_inserter(m_dx_attachments),
                        [](const Rhi::ITexture::View& texture_location)
                        { return ResourceView(texture_location, Rhi::ResourceUsageMask({ Rhi::ResourceUsage::RenderTarget })); });
     }

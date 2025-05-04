@@ -80,15 +80,16 @@ ProgramBindings::ProgramBindings(Program& program,
         static const vk::DescriptorSet s_empty_set;
         switch (access_type)
         {
-        case Rhi::ProgramArgumentAccessType::Constant:
+        using enum Rhi::ProgramArgumentAccessType;
+        case Constant:
             META_CHECK_TRUE(!!vk_constant_descriptor_set);
             return vk_constant_descriptor_set;
 
-        case Rhi::ProgramArgumentAccessType::FrameConstant:
+        case FrameConstant:
             META_CHECK_TRUE(!!vk_frame_constant_descriptor_set);
             return vk_frame_constant_descriptor_set;
 
-        case Rhi::ProgramArgumentAccessType::Mutable:
+        case Mutable:
             META_CHECK_TRUE(m_has_mutable_descriptor_set);
             return m_descriptor_sets.back();
 
@@ -117,7 +118,7 @@ ProgramBindings::ProgramBindings(Program& program,
         {
             const Rhi::ProgramArgumentAccessType access_type = argument_binding_settings.argument.GetAccessorType();
             const Program::DescriptorSetLayoutInfo& layout_info = program.GetDescriptorSetLayoutInfo(access_type);
-            const auto layout_argument_it = std::find(layout_info.arguments.begin(), layout_info.arguments.end(), program_argument);
+            const auto layout_argument_it = std::ranges::find(layout_info.arguments, program_argument);
             META_CHECK_TRUE_DESCR(layout_argument_it != layout_info.arguments.end(), "unable to find argument '{}' in descriptor set layout", static_cast<std::string>(program_argument));
             const auto layout_binding_index = static_cast<uint32_t>(std::distance(layout_info.arguments.begin(), layout_argument_it));
             const uint32_t binding_value = layout_info.bindings.at(layout_binding_index).binding;
@@ -145,7 +146,7 @@ ProgramBindings::ProgramBindings(const ProgramBindings& other_program_bindings,
     if (m_has_mutable_descriptor_set)
     {
         // Allocate new mutable descriptor set
-        auto& program = static_cast<Program&>(GetProgram());
+        const auto& program = static_cast<const Program&>(GetProgram());
         const vk::DescriptorSetLayout& vk_mutable_desc_set_layout = program.GetNativeDescriptorSetLayout(Rhi::ProgramArgumentAccessType::Mutable);
         META_CHECK_NOT_NULL(vk_mutable_desc_set_layout);
         vk::DescriptorSet copy_mutable_descriptor_set = program.GetVulkanContext().GetVulkanDescriptorManager().AllocDescriptorSet(vk_mutable_desc_set_layout);
@@ -215,7 +216,7 @@ void ProgramBindings::Apply(ICommandList& command_list_vk, const Rhi::ICommandQu
     META_FUNCTION_TASK();
     ReleaseRetainedRootConstantBuffers();
 
-    auto& program = static_cast<Program&>(GetProgram());
+    const auto& program = static_cast<const Program&>(GetProgram());
     const vk::PipelineLayout&   vk_pipeline_layout       = program.GetNativePipelineLayout();
     const vk::CommandBuffer&    vk_command_buffer        = command_list_vk.GetNativeCommandBufferDefault();
     const vk::PipelineBindPoint vk_pipeline_bind_point   = command_list_vk.GetNativePipelineBindPoint();
@@ -305,7 +306,7 @@ void ProgramBindings::ForEachArgumentBinding(FuncType argument_binding_function)
 void ProgramBindings::UpdateDynamicDescriptorOffsets()
 {
     META_FUNCTION_TASK();
-    auto& program = static_cast<Program&>(GetProgram());
+    const auto& program = static_cast<const Program&>(GetProgram());
     std::vector<std::vector<uint32_t>> dynamic_offsets_by_set_index;
     dynamic_offsets_by_set_index.resize(m_descriptor_sets.size());
 
@@ -325,7 +326,7 @@ void ProgramBindings::UpdateDynamicDescriptorOffsets()
 
             const Rhi::ResourceViews& resource_views = argument_binding.GetResourceViews();
 #ifdef DYNAMIC_BUFFER_OFFSETS_ENABLED
-            std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(dynamic_offsets),
+            std::ranges::transform(resource_views, std::back_inserter(dynamic_offsets),
                            [](const Rhi::IResource::View& resource_view)
                            { return resource_view.GetOffset(); });
 #else

@@ -46,7 +46,7 @@ static std::vector<vk::Buffer> GetVulkanBuffers(const Refs<Rhi::IBuffer>& buffer
 {
     META_FUNCTION_TASK();
     std::vector<vk::Buffer> vk_buffers;
-    std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vk_buffers),
+    std::ranges::transform(buffer_refs, std::back_inserter(vk_buffers),
                    [](const Ref<Rhi::IBuffer>& buffer_ref)
                    {
                        const auto& vertex_buffer = dynamic_cast<const Buffer&>(buffer_ref.get());

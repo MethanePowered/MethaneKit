@@ -53,9 +53,10 @@ static vk::IndexType GetVulkanIndexTypeByStride(Data::Size index_stride_bytes)
     META_FUNCTION_TASK();
     switch(index_stride_bytes)
     {
-    case 1: return vk::IndexType::eUint8EXT;
-    case 2: return vk::IndexType::eUint16;
-    case 4: return vk::IndexType::eUint32;
+    using enum vk::IndexType;
+    case 1: return eUint8EXT;
+    case 2: return eUint16;
+    case 4: return eUint32;
     default: META_UNEXPECTED_RETURN_DESCR(index_stride_bytes, vk::IndexType::eNoneKHR, "unsupported index buffer stride size");
     }
 }
@@ -174,13 +175,14 @@ void RenderCommandList::Commit()
 
     if (!IsParallel())
     {
-        CommitCommandBuffer(CommandBufferType::SecondaryRenderPass);
+        using enum CommandBufferType;
+        CommitCommandBuffer(SecondaryRenderPass);
 
         auto render_pass_ptr = static_cast<RenderPass*>(GetPassPtr());
         if (render_pass_ptr)
             render_pass_ptr->Begin(*this);
 
-        GetNativeCommandBuffer(CommandBufferType::Primary).executeCommands(GetNativeCommandBuffer(CommandBufferType::SecondaryRenderPass));
+        GetNativeCommandBuffer(Primary).executeCommands(GetNativeCommandBuffer(SecondaryRenderPass));
 
         if (render_pass_ptr)
             render_pass_ptr->End(*this);

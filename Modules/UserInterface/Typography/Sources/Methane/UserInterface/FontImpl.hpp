@@ -37,6 +37,7 @@ Font implementation.
 
 #include <map>
 #include <string>
+#include <ranges>
 #include <cctype>
 #include <cassert>
 
@@ -465,9 +466,9 @@ private:
             return false;
 
         // Sort chars by decreasing of glyph pixels count from largest to smallest
-        std::sort(font_chars.begin(), font_chars.end(),
-                  [](const Ref<Char>& left, const Ref<Char>& right)
-                      { return left.get() > right.get(); }
+        std::ranges::sort(font_chars,
+            [](const Ref<Char>& left, const Ref<Char>& right)
+            { return left.get() > right.get(); }
         );
 
         // Estimate required atlas size
@@ -520,7 +521,7 @@ private:
             return false;
 
         // Clear old atlas content
-        std::fill(m_atlas_bitmap.begin(), m_atlas_bitmap.end(), Data::Byte{});
+        std::ranges::fill(m_atlas_bitmap, Data::Byte{});
         m_atlas_bitmap.resize(atlas_size.GetPixelsCount(), Data::Byte{});
 
         // Render glyphs to atlas bitmap

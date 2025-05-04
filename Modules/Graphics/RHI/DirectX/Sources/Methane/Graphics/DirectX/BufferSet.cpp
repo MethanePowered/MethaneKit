@@ -47,7 +47,7 @@ static std::vector<D3D12_VERTEX_BUFFER_VIEW> GetNativeVertexBufferViews(const Re
 {
     META_FUNCTION_TASK();
     std::vector<D3D12_VERTEX_BUFFER_VIEW> vertex_buffer_views;
-    std::transform(buffer_refs.begin(), buffer_refs.end(), std::back_inserter(vertex_buffer_views),
+    std::ranges::transform(buffer_refs, std::back_inserter(vertex_buffer_views),
         [](const Ref<Rhi::IBuffer>& buffer_ref)
         {
            const auto& buffer = static_cast<const Buffer&>(buffer_ref.get());

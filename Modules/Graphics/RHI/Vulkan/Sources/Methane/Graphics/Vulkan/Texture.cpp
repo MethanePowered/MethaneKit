@@ -41,12 +41,12 @@ vk::ImageAspectFlags Texture::GetNativeImageAspectFlags(const Rhi::TextureSettin
     META_FUNCTION_TASK();
     switch(settings.type)
     {
-    case Rhi::TextureType::Image:
-    case Rhi::TextureType::RenderTarget:
-    case Rhi::TextureType::FrameBuffer:  return vk::ImageAspectFlagBits::eColor;
-    case Rhi::TextureType::DepthStencil: return IsDepthFormat(settings.pixel_format)
-                                              ? vk::ImageAspectFlagBits::eDepth
-                                              : vk::ImageAspectFlagBits::eStencil;
+    using enum Rhi::TextureType;
+    using enum vk::ImageAspectFlagBits;
+    case Image:
+    case RenderTarget:
+    case FrameBuffer:  return eColor;
+    case DepthStencil: return IsDepthFormat(settings.pixel_format) ? eDepth : eStencil;
     default: META_UNEXPECTED_RETURN_DESCR(settings.type, vk::ImageAspectFlagBits::eColor, "Unsupported texture type");
     }
 }
@@ -54,38 +54,41 @@ vk::ImageAspectFlags Texture::GetNativeImageAspectFlags(const Rhi::TextureSettin
 vk::ImageUsageFlags Texture::GetNativeImageUsageFlags(const Rhi::TextureSettings& settings, vk::ImageUsageFlags initial_usage_flags)
 {
     META_FUNCTION_TASK();
+    using enum vk::ImageUsageFlagBits;
     vk::ImageUsageFlags usage_flags = initial_usage_flags;
 
     switch (settings.type)
     {
-    case Rhi::TextureType::FrameBuffer:
-        usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
+    using enum Rhi::TextureType;
+
+    case FrameBuffer:
+        usage_flags |= eColorAttachment;
         break;
 
-    case Rhi::TextureType::DepthStencil:
-        usage_flags |= vk::ImageUsageFlagBits::eDepthStencilAttachment;
+    case DepthStencil:
+        usage_flags |= eDepthStencilAttachment;
         break;
 
-    case Rhi::TextureType::Image:
+    case Image:
         if (settings.usage_mask.HasAnyBit(Rhi::ResourceUsage::ShaderWrite))
-            usage_flags |= vk::ImageUsageFlagBits::eStorage;
+            usage_flags |= eStorage;
         [[fallthrough]];
 
-    case Rhi::TextureType::RenderTarget:
+    case RenderTarget:
         if (settings.usage_mask.HasAnyBit(Rhi::ResourceUsage::RenderTarget))
-            usage_flags |= vk::ImageUsageFlagBits::eColorAttachment;
+            usage_flags |= eColorAttachment;
         break;
     }
-    
+
     if (settings.mipmapped)
     {
         // Flags required for mip-map generation with BLIT operations
-        usage_flags |= vk::ImageUsageFlagBits::eTransferSrc;
-        usage_flags |= vk::ImageUsageFlagBits::eTransferDst;
+        using enum vk::ImageUsageFlagBits;
+        usage_flags |= eTransferSrc | eTransferDst;
     }
 
     if (settings.usage_mask.HasAnyBit(Rhi::ResourceUsage::ShaderRead))
-        usage_flags |= vk::ImageUsageFlagBits::eSampled;
+        usage_flags |= eSampled;
 
     return usage_flags;
 }
@@ -96,13 +99,15 @@ static vk::ImageCreateFlags GetNativeImageCreateFlags(const Rhi::TextureSettings
     vk::ImageCreateFlags image_create_flags{};
     switch (settings.dimension_type)
     {
-    case Rhi::TextureDimensionType::Cube:
-    case Rhi::TextureDimensionType::CubeArray:
-        image_create_flags |= vk::ImageCreateFlagBits::eCubeCompatible;
+    using enum Rhi::TextureDimensionType;
+    using enum vk::ImageCreateFlagBits;
+    case Cube:
+    case CubeArray:
+        image_create_flags |= eCubeCompatible;
         break;
 
-    case Rhi::TextureDimensionType::Tex3D:
-        image_create_flags |= vk::ImageCreateFlagBits::e2DArrayCompatible;
+    case Tex3D:
+        image_create_flags |= e2DArrayCompatible;
         break;
 
     default:
@@ -135,23 +140,25 @@ static vk::UniqueImage CreateNativeImage(const IContext& context, const Rhi::Tex
 static vk::ImageLayout GetVulkanImageLayoutByUsage(Rhi::TextureType texture_type, Rhi::ResourceUsageMask usage) noexcept
 {
     META_FUNCTION_TASK();
-    if (usage.HasAnyBit(Rhi::ResourceUsage::ShaderWrite))
+    using enum Rhi::ResourceUsage;
+    using enum vk::ImageLayout;
+    if (usage.HasAnyBit(ShaderWrite))
     {
-        return vk::ImageLayout::eGeneral;
+        return eGeneral;
     }
-    if (usage.HasAnyBit(Rhi::ResourceUsage::ShaderRead))
-    {
-        return texture_type == Rhi::TextureType::DepthStencil
-             ? vk::ImageLayout::eDepthStencilReadOnlyOptimal
-             : vk::ImageLayout::eShaderReadOnlyOptimal;
-    }
-    if (usage.HasAnyBit(Rhi::ResourceUsage::RenderTarget))
+    if (usage.HasAnyBit(ShaderRead))
     {
         return texture_type == Rhi::TextureType::DepthStencil
-             ? vk::ImageLayout::eDepthStencilAttachmentOptimal
-             : vk::ImageLayout::eColorAttachmentOptimal;
+             ? eDepthStencilReadOnlyOptimal
+             : eShaderReadOnlyOptimal;
     }
-    return vk::ImageLayout::eUndefined;
+    if (usage.HasAnyBit(RenderTarget))
+    {
+        return texture_type == Rhi::TextureType::DepthStencil
+             ? eDepthStencilAttachmentOptimal
+             : eColorAttachmentOptimal;
+    }
+    return eUndefined;
 }
 
 static Ptr<ResourceView::ViewDescriptorVariant> CreateNativeImageViewDescriptor(const ResourceView::Id& view_id,
@@ -195,19 +202,21 @@ vk::ImageType Texture::DimensionTypeToImageType(Rhi::TextureDimensionType dimens
     META_FUNCTION_TASK();
     switch(dimension_type)
     {
-    case Rhi::TextureDimensionType::Tex1D:
-    case Rhi::TextureDimensionType::Tex1DArray:
-        return vk::ImageType::e1D;
+    using enum Rhi::TextureDimensionType;
+    using enum vk::ImageType;
+    case Tex1D:
+    case Tex1DArray:
+        return e1D;
 
-    case Rhi::TextureDimensionType::Tex2D:
-    case Rhi::TextureDimensionType::Tex2DArray:
-    case Rhi::TextureDimensionType::Tex2DMultisample:
-    case Rhi::TextureDimensionType::Cube:
-    case Rhi::TextureDimensionType::CubeArray:
-        return vk::ImageType::e2D;
+    case Tex2D:
+    case Tex2DArray:
+    case Tex2DMultisample:
+    case Cube:
+    case CubeArray:
+        return e2D;
 
-    case Rhi::TextureDimensionType::Tex3D:
-        return vk::ImageType::e3D;
+    case Tex3D:
+        return e3D;
 
     default: META_UNEXPECTED_RETURN(dimension_type, vk::ImageType::e1D);
     }
@@ -218,14 +227,16 @@ vk::ImageViewType Texture::DimensionTypeToImageViewType(Rhi::TextureDimensionTyp
     META_FUNCTION_TASK();
     switch(dimension_type)
     {
-    case Rhi::TextureDimensionType::Tex1D:              return vk::ImageViewType::e1D;
-    case Rhi::TextureDimensionType::Tex1DArray:         return vk::ImageViewType::e1DArray;
-    case Rhi::TextureDimensionType::Tex2D:
-    case Rhi::TextureDimensionType::Tex2DMultisample:   return vk::ImageViewType::e2D;
-    case Rhi::TextureDimensionType::Tex2DArray:         return vk::ImageViewType::e2DArray;
-    case Rhi::TextureDimensionType::Cube:               return vk::ImageViewType::eCube;
-    case Rhi::TextureDimensionType::CubeArray:          return vk::ImageViewType::eCubeArray;
-    case Rhi::TextureDimensionType::Tex3D:              return vk::ImageViewType::e3D;
+    using enum Rhi::TextureDimensionType;
+    using enum vk::ImageViewType;
+    case Tex1D:              return e1D;
+    case Tex1DArray:         return e1DArray;
+    case Tex2D:
+    case Tex2DMultisample:   return e2D;
+    case Tex2DArray:         return e2DArray;
+    case Cube:               return eCube;
+    case CubeArray:          return eCubeArray;
+    case Tex3D:              return e3D;
     default: META_UNEXPECTED_RETURN(dimension_type, vk::ImageViewType::e1D);
     }
 }
@@ -250,11 +261,12 @@ Texture::Texture(const Base::Context& context, const Settings& settings, vk::Uni
     META_FUNCTION_TASK();
     switch(settings.type)
     {
-    case Rhi::TextureType::Image:        InitializeAsImage(); break;
-    case Rhi::TextureType::RenderTarget: InitializeAsRenderTarget(); break;
-    case Rhi::TextureType::DepthStencil: InitializeAsDepthStencil(); break;
-    //   Rhi::TextureType::FrameBuffer:  initialized with a separate constructor
-    default:                             META_UNEXPECTED(settings.type);
+    using enum Rhi::TextureType;
+    case Image:        InitializeAsImage(); break;
+    case RenderTarget: InitializeAsRenderTarget(); break;
+    case DepthStencil: InitializeAsDepthStencil(); break;
+    //   FrameBuffer:  initialized with a separate constructor
+    default:           META_UNEXPECTED(settings.type);
     }
 
 }

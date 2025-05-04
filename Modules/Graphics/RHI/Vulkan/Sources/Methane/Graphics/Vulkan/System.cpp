@@ -36,7 +36,7 @@ Vulkan implementation of the system interface.
 
 #include <vector>
 #include <sstream>
-#include <algorithm>
+#include <ranges>
 #include <cassert>
 #include <cstring>
 #include <string_view>
@@ -76,15 +76,15 @@ static std::vector<char const*> GetEnabledLayers(const std::vector<std::string_v
     enabled_layers.reserve(layers.size() );
     for (const std::string_view& layer : layers)
     {
-        assert(std::find_if(layer_properties.begin(), layer_properties.end(),
+        assert(std::ranges::find_if(layer_properties,
                             [layer](const vk::LayerProperties& lp) { return layer == lp.layerName; }
                             ) != layer_properties.end() );
         enabled_layers.push_back(layer.data() );
     }
 
 #ifndef NDEBUG
-    if (std::find(layers.begin(), layers.end(), g_vk_validation_layer) == layers.end() &&
-        std::find_if(layer_properties.begin(), layer_properties.end(),
+    if (std::ranges::find(layers, g_vk_validation_layer) == layers.end() &&
+        std::ranges::find_if(layer_properties,
                      [](const vk::LayerProperties& lp) { return g_vk_validation_layer == lp.layerName; }
                      ) != layer_properties.end())
     {
@@ -105,7 +105,7 @@ static std::vector<const char*> GetEnabledExtensions(const std::vector<std::stri
 
     for (const std::string_view& ext : extensions)
     {
-        assert(std::find_if(extension_properties.begin(), extension_properties.end(),
+        assert(std::ranges::find_if(extension_properties,
                             [ext](const vk::ExtensionProperties& ep) { return ext == ep.extensionName; }
                             ) != extension_properties.end());
         enabled_extensions.push_back(ext.data() );
@@ -113,8 +113,8 @@ static std::vector<const char*> GetEnabledExtensions(const std::vector<std::stri
 
     const auto add_enabled_extension = [&extensions, &enabled_extensions, &extension_properties](const std::string& extension)
     {
-        if (std::find(extensions.begin(), extensions.end(), extension) == extensions.end() &&
-            std::find_if(extension_properties.begin(), extension_properties.end(),
+        if (std::ranges::find(extensions.begin(), extensions.end(), extension) == extensions.end() &&
+            std::ranges::find_if(extension_properties,
                          [&extension](const vk::ExtensionProperties& ep) { return extension == ep.extensionName; }
             ) != extension_properties.end())
         {
@@ -215,17 +215,12 @@ VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(VkDebugUtilsMessageSe
 #ifndef NDEBUG
 static vk::DebugUtilsMessengerCreateInfoEXT MakeDebugUtilsMessengerCreateInfoEXT()
 {
+    using enum vk::DebugUtilsMessageSeverityFlagBitsEXT;
+    using enum vk::DebugUtilsMessageTypeFlagBitsEXT;
     return vk::DebugUtilsMessengerCreateInfoEXT {
         vk::DebugUtilsMessengerCreateFlagsEXT{},
-        vk::DebugUtilsMessageSeverityFlagsEXT {
-            vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-            vk::DebugUtilsMessageSeverityFlagBitsEXT::eError
-        },
-        vk::DebugUtilsMessageTypeFlagsEXT {
-            vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-            vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
-            vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
-        },
+        vk::DebugUtilsMessageSeverityFlagsEXT{ eWarning | eError },
+        vk::DebugUtilsMessageTypeFlagsEXT{ eGeneral | ePerformance | eValidation },
         &DebugUtilsMessengerCallback
     };
 }
@@ -269,7 +264,7 @@ static vk::UniqueInstance CreateVulkanInstance(const VkDynamicLoader& vk_loader,
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vk_loader.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr"));
 
     vk::InstanceCreateFlags vk_instance_create_flags{};
-    if (std::find_if(extensions.begin(), extensions.end(),
+    if (std::ranges::find_if(extensions,
                      [](const std::string_view& ext) { return ext == VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME; })
                      != extensions.end())
         vk_instance_create_flags = vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR;

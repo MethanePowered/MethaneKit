@@ -73,30 +73,33 @@ static vk::PipelineStageFlags GetPipelineStageFlagsByQueueFlags(vk::QueueFlags v
 static vk::AccessFlags GetAccessFlagsByQueueFlags(vk::QueueFlags vk_queue_flags)
 {
     META_FUNCTION_TASK();
-    vk::AccessFlags vk_access_flags = vk::AccessFlagBits::eHostRead
-                                    | vk::AccessFlagBits::eHostWrite
-                                    | vk::AccessFlagBits::eMemoryRead
-                                    | vk::AccessFlagBits::eMemoryWrite;
+    using enum vk::AccessFlagBits;
+    
+    vk::AccessFlags vk_access_flags = eHostRead
+                                    | eHostWrite
+                                    | eMemoryRead
+                                    | eMemoryWrite;
 
-    if (vk_queue_flags & vk::QueueFlagBits::eGraphics)
-        vk_access_flags |= vk::AccessFlagBits::eIndirectCommandRead
-                        |  vk::AccessFlagBits::eIndexRead
-                        |  vk::AccessFlagBits::eVertexAttributeRead
-                        |  vk::AccessFlagBits::eUniformRead
-                        |  vk::AccessFlagBits::eInputAttachmentRead
-                        |  vk::AccessFlagBits::eColorAttachmentRead
-                        |  vk::AccessFlagBits::eColorAttachmentWrite
-                        |  vk::AccessFlagBits::eDepthStencilAttachmentRead
-                        |  vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+    using enum vk::QueueFlagBits;
+    if (vk_queue_flags & eGraphics)
+        vk_access_flags |= eIndirectCommandRead
+                        |  eIndexRead
+                        |  eVertexAttributeRead
+                        |  eUniformRead
+                        |  eInputAttachmentRead
+                        |  eColorAttachmentRead
+                        |  eColorAttachmentWrite
+                        |  eDepthStencilAttachmentRead
+                        |  eDepthStencilAttachmentWrite;
 
-    if (vk_queue_flags & vk::QueueFlagBits::eCompute ||
-        vk_queue_flags & vk::QueueFlagBits::eGraphics)
-        vk_access_flags |= vk::AccessFlagBits::eShaderRead
-                        |  vk::AccessFlagBits::eShaderWrite;
+    if (vk_queue_flags & eCompute ||
+        vk_queue_flags & eGraphics)
+        vk_access_flags |= eShaderRead
+                        |  eShaderWrite;
 
-    if (vk_queue_flags & vk::QueueFlagBits::eTransfer)
-        vk_access_flags |= vk::AccessFlagBits::eTransferRead
-                        |  vk::AccessFlagBits::eTransferWrite;
+    if (vk_queue_flags & eTransfer)
+        vk_access_flags |= eTransferRead
+                        |  eTransferWrite;
 
     return vk_access_flags;
 }

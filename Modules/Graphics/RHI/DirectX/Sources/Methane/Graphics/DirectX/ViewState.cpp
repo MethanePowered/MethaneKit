@@ -72,7 +72,7 @@ static std::vector<D3D12_VIEWPORT> ViewportsToD3D(const Viewports& viewports) no
 {
     META_FUNCTION_TASK();
     std::vector<D3D12_VIEWPORT> d3d_viewports;
-    std::transform(viewports.begin(), viewports.end(), std::back_inserter(d3d_viewports),
+    std::ranges::transform(viewports, std::back_inserter(d3d_viewports),
                    [](const Viewport& viewport) { return ViewportToD3D(viewport); });
     return d3d_viewports;
 }
@@ -82,7 +82,7 @@ static std::vector<D3D12_RECT> ScissorRectsToD3D(const ScissorRects& scissor_rec
 {
     META_FUNCTION_TASK();
     std::vector<D3D12_RECT> d3d_scissor_rects;
-    std::transform(scissor_rects.begin(), scissor_rects.end(), std::back_inserter(d3d_scissor_rects),
+    std::ranges::transform(scissor_rects, std::back_inserter(d3d_scissor_rects),
                    [](const ScissorRect& scissor_rect) { return ScissorRectToD3D(scissor_rect); });
     return d3d_scissor_rects;
 }

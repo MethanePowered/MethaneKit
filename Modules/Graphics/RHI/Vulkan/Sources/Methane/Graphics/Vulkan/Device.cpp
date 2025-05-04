@@ -36,7 +36,7 @@ Vulkan implementation of the device interface.
 
 #include <vector>
 #include <sstream>
-#include <algorithm>
+#include <ranges>
 #include <cassert>
 #include <cstring>
 #include <string_view>
@@ -131,9 +131,11 @@ static vk::QueueFlags GetQueueFlagsByType(Rhi::CommandListType cmd_list_type)
     META_FUNCTION_TASK();
     switch(cmd_list_type)
     {
-    case Rhi::CommandListType::Transfer: return vk::QueueFlagBits::eTransfer;
-    case Rhi::CommandListType::Render:   return vk::QueueFlagBits::eGraphics;
-    case Rhi::CommandListType::Compute:  return vk::QueueFlagBits::eCompute;
+    using enum Rhi::CommandListType;
+    using enum vk::QueueFlagBits;
+    case Transfer: return eTransfer;
+    case Render:   return eGraphics;
+    case Compute:  return eCompute;
     default: META_UNEXPECTED_RETURN(cmd_list_type, vk::QueueFlagBits::eGraphics);
     }
 }
@@ -229,7 +231,7 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     std::set<QueueFamilyReservation*> unique_family_reservation_ptrs;
     for(const auto& [type, queue_family_reservation_ptr] : m_queue_family_reservation_by_type)
     {
-        if (!queue_family_reservation_ptr || unique_family_reservation_ptrs.count(queue_family_reservation_ptr.get()))
+        if (!queue_family_reservation_ptr || unique_family_reservation_ptrs.contains(queue_family_reservation_ptr.get()))
             continue;
 
         vk_queue_create_infos.emplace_back(queue_family_reservation_ptr->MakeDeviceQueueCreateInfo());
@@ -255,7 +257,7 @@ Device::Device(const vk::PhysicalDevice& vk_physical_device, const vk::SurfaceKH
     }
 
     std::vector<const char*> raw_enabled_extension_names;
-    std::transform(enabled_extension_names.begin(), enabled_extension_names.end(), std::back_inserter(raw_enabled_extension_names),
+    std::ranges::transform(enabled_extension_names, std::back_inserter(raw_enabled_extension_names),
                    [](const std::string_view& extension_name) { return extension_name.data(); });
 
     // Enable physical device features:
@@ -311,7 +313,7 @@ bool Device::SetName(std::string_view name)
 bool Device::IsExtensionSupported(std::string_view required_extension) const
 {
     META_FUNCTION_TASK();
-    return m_supported_extension_names_set.count(required_extension);
+    return m_supported_extension_names_set.contains(required_extension);
 }
 
 const QueueFamilyReservation* Device::GetQueueFamilyReservationPtr(Rhi::CommandListType cmd_list_type) const noexcept
@@ -380,7 +382,7 @@ void Device::ReserveQueueFamily(Rhi::CommandListType cmd_list_type, uint32_t que
 
     META_CHECK_LESS(*vk_queue_family_index, m_vk_queue_family_properties.size());
     META_CHECK_TRUE(static_cast<bool>(m_vk_queue_family_properties[*vk_queue_family_index].queueFlags & queue_flags));
-    const auto queue_family_reservation_it = std::find_if(m_queue_family_reservation_by_type.begin(), m_queue_family_reservation_by_type.end(),
+    const auto queue_family_reservation_it = std::ranges::find_if(m_queue_family_reservation_by_type,
                                                           [&vk_queue_family_index](const auto& type_and_queue_family_reservation)
                                                           { return type_and_queue_family_reservation.second->GetFamilyIndex() == *vk_queue_family_index; });
 
@@ -404,9 +406,12 @@ Rhi::DeviceFeatureMask Device::GetSupportedFeatures() const
     META_FUNCTION_TASK();
     vk::PhysicalDeviceFeatures vk_device_features = m_vk_physical_device.getFeatures();
     Rhi::DeviceFeatureMask device_features;
-    device_features.SetBit(Rhi::DeviceFeature::PresentToWindow,      IsExtensionSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME));
-    device_features.SetBit(Rhi::DeviceFeature::AnisotropicFiltering, vk_device_features.samplerAnisotropy);
-    device_features.SetBit(Rhi::DeviceFeature::ImageCubeArray,       vk_device_features.imageCubeArray);
+    {
+        using enum Rhi::DeviceFeature;
+        device_features.SetBit(PresentToWindow,      IsExtensionSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME));
+        device_features.SetBit(AnisotropicFiltering, vk_device_features.samplerAnisotropy);
+        device_features.SetBit(ImageCubeArray,       vk_device_features.imageCubeArray);
+    }
     return device_features;
 }
 

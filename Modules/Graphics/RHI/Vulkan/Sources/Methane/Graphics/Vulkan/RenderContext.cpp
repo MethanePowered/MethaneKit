@@ -42,6 +42,7 @@ Vulkan implementation of the render context interface.
 #include <fmt/format.h>
 #include <magic_enum/magic_enum.hpp>
 #include <sstream>
+#include <ranges>
 #include <cassert>
 
 namespace Methane::Graphics::Vulkan
@@ -129,9 +130,10 @@ void RenderContext::WaitForGpu(WaitFor wait_for)
     Rhi::CommandListType cl_type = Rhi::CommandListType::Render;
     switch (wait_for)
     {
-    case WaitFor::RenderComplete:    m_vk_device.waitIdle(); break;
-    case WaitFor::FramePresented:    frame_buffer_index = GetFrameBufferIndex(); break;
-    case WaitFor::ResourcesUploaded: cl_type = Rhi::CommandListType::Transfer; break;
+    using enum WaitFor;
+    case RenderComplete:    m_vk_device.waitIdle(); break;
+    case FramePresented:    frame_buffer_index = GetFrameBufferIndex(); break;
+    case ResourcesUploaded: cl_type = Rhi::CommandListType::Transfer; break;
     default: META_UNEXPECTED(wait_for);
     }
 
@@ -267,11 +269,12 @@ uint32_t RenderContext::GetNextFrameBufferIndex()
                                                                                     &next_image_index);
             image_acquire_result)
     {
-    case vk::Result::eSuccess:
-    case vk::Result::eSuboptimalKHR:
+    using enum vk::Result;
+    case eSuccess:
+    case eSuboptimalKHR:
         break;
 
-    case vk::Result::eErrorSurfaceLostKHR:
+    case eErrorSurfaceLostKHR:
         m_vk_unique_surface.release();
         m_vk_unique_surface = Platform::CreateVulkanSurfaceForWindow(static_cast<System&>(Rhi::ISystem::Get()).GetNativeInstance(), m_app_env);
         ResetNativeSwapchain();
@@ -296,7 +299,7 @@ vk::SurfaceFormatKHR RenderContext::ChooseSwapSurfaceFormat(const std::vector<vk
     static constexpr vk::ColorSpaceKHR s_required_color_space  = vk::ColorSpaceKHR::eSrgbNonlinear;
     const vk::Format required_color_format = TypeConverter::PixelFormatToVulkan(GetSettings().color_format);
 
-    const auto format_it = std::find_if(available_formats.begin(), available_formats.end(),
+    const auto format_it = std::ranges::find_if(available_formats,
                                         [required_color_format](const vk::SurfaceFormatKHR& format)
                                         { return format.format == required_color_format &&
                                                  format.colorSpace == s_required_color_space; });
@@ -317,7 +320,7 @@ vk::PresentModeKHR RenderContext::ChooseSwapPresentMode(const std::vector<vk::Pr
     std::optional<vk::PresentModeKHR> present_mode_opt;
     for (vk::PresentModeKHR required_present_mode : required_present_modes)
     {
-        const auto present_mode_it = std::find_if(available_present_modes.begin(), available_present_modes.end(),
+        const auto present_mode_it = std::ranges::find_if(available_present_modes,
                                                   [required_present_mode](const vk::PresentModeKHR& present_mode)
                                                   { return present_mode == required_present_mode; });
 

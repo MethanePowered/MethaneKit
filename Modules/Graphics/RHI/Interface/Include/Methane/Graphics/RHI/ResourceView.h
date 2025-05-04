@@ -247,18 +247,21 @@ ResourceViews CreateResourceViews(const Ptr<IResourceType>& resource_ptr)
     return { ResourceView(*resource_ptr) };
 }
 
-template<typename ResourceType>
-ResourceViews CreateResourceViews(std::span<const ResourceType> resources)
+template<std::ranges::random_access_range ResourceRangeType>
+ResourceViews CreateResourceViews(ResourceRangeType&& resources)
 {
     META_FUNCTION_TASK();
     ResourceViews resource_views;
-    std::ranges::transform(resources, std::back_inserter(resource_views),
-                           [](const ResourceType& resource)
+    std::ranges::transform(std::forward<ResourceRangeType>(resources), std::back_inserter(resource_views),
+                           [](const auto& resource)
                            { return ResourceView(resource.GetInterface()); });
     return resource_views;
 }
 
-template<typename ResourceType>
+template<typename T>
+concept NonRangeType = !std::ranges::range<T>;
+
+template<NonRangeType ResourceType>
 ResourceViews CreateResourceViews(const ResourceType& resource)
 {
     META_FUNCTION_TASK();

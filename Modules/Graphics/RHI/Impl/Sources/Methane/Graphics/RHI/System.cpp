@@ -104,7 +104,7 @@ std::string System::ToString() const
 const Devices& System::UpdateDevices(const Ptrs<Rhi::IDevice>& devices) const
 {
     m_devices.clear();
-    std::transform(devices.cbegin(), devices.cend(), std::back_inserter(m_devices),
+    std::ranges::transform(devices.cbegin(), devices.cend(), std::back_inserter(m_devices),
                    [](const Ptr<Rhi::IDevice>& device_ptr)
                    { return Device(device_ptr); });
     return m_devices;

@@ -46,7 +46,7 @@ ProgramSettings ProgramSettingsImpl::Convert(const IContext& context, const Prog
     META_FUNCTION_TASK();
 
     IProgram::Shaders shader_ptrs;
-    std::transform(settings.shader_set.begin(), settings.shader_set.end(), std::back_inserter(shader_ptrs),
+    std::ranges::transform(settings.shader_set, std::back_inserter(shader_ptrs),
                    [&context](const std::pair<ShaderType, ShaderSettings>& shader_type_settings)
                    { return IShader::Create(shader_type_settings.first, context, shader_type_settings.second); });
 

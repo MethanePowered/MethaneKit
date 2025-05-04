@@ -22,8 +22,9 @@ Methane user interface container of items.
 ******************************************************************************/
 
 #include <Methane/UserInterface/Container.h>
-
 #include <Methane/Instrumentation.h>
+
+#include <ranges>
 
 namespace Methane::UserInterface
 {
@@ -36,7 +37,7 @@ Container::Container(Context& ui_context, const UnitRect& ui_rect, const Ptrs<It
 bool Container::AddChild(Item& item)
 {
     META_FUNCTION_TASK();
-    if (std::any_of(m_children.begin(), m_children.end(), [&item](const Ptr<Item>& item_ptr) { return item_ptr.get() == std::addressof(item); }))
+    if (std::ranges::any_of(m_children, [&item](const Ptr<Item>& item_ptr) { return item_ptr.get() == std::addressof(item); }))
         return false;
 
     m_children.emplace_back(item.GetPtr());
@@ -47,7 +48,7 @@ bool Container::AddChild(Item& item)
 bool Container::RemoveChild(Item& item)
 {
     META_FUNCTION_TASK();
-    const auto child_it = std::find_if(m_children.begin(), m_children.end(),
+    const auto child_it = std::ranges::find_if(m_children,
         [&item](const Ptr<Item>& item_ptr) { return item_ptr.get() == std::addressof(item); }
     );
     if (child_it == m_children.end())

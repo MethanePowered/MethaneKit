@@ -72,8 +72,8 @@ static std::vector<vk::Viewport> ViewportsToVulkan(const Viewports& viewports) n
 {
     META_FUNCTION_TASK();
     std::vector<vk::Viewport> vk_viewports;
-    std::transform(viewports.begin(), viewports.end(), std::back_inserter(vk_viewports),
-                   [](const Viewport& viewport) { return ViewportToVulkan(viewport); });
+    std::ranges::transform(viewports, std::back_inserter(vk_viewports),
+        [](const Viewport& viewport) { return ViewportToVulkan(viewport); });
     return vk_viewports;
 }
 
@@ -82,8 +82,8 @@ static std::vector<vk::Rect2D> ScissorRectsToVulkan(const ScissorRects& scissor_
 {
     META_FUNCTION_TASK();
     std::vector<vk::Rect2D> vk_scissor_rects;
-    std::transform(scissor_rects.begin(), scissor_rects.end(), std::back_inserter(vk_scissor_rects),
-                   [](const ScissorRect& scissor_rect) { return ScissorRectToVulkan(scissor_rect); });
+    std::ranges::transform(scissor_rects, std::back_inserter(vk_scissor_rects),
+        [](const ScissorRect& scissor_rect) { return ScissorRectToVulkan(scissor_rect); });
     return vk_scissor_rects;
 }
 

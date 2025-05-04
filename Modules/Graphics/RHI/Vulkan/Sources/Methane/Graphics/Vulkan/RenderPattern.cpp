@@ -39,13 +39,14 @@ vk::SampleCountFlagBits GetVulkanSampleCountFlag(Data::Size samples_count)
     META_FUNCTION_TASK();
     switch(samples_count)
     {
-    case 1U:  return vk::SampleCountFlagBits::e1;
-    case 2U:  return vk::SampleCountFlagBits::e2;
-    case 4U:  return vk::SampleCountFlagBits::e4;
-    case 8U:  return vk::SampleCountFlagBits::e8;
-    case 16U: return vk::SampleCountFlagBits::e16;
-    case 32U: return vk::SampleCountFlagBits::e32;
-    case 64U: return vk::SampleCountFlagBits::e64;
+    using enum vk::SampleCountFlagBits;
+    case 1U:  return e1;
+    case 2U:  return e2;
+    case 4U:  return e4;
+    case 8U:  return e8;
+    case 16U: return e16;
+    case 32U: return e32;
+    case 64U: return e64;
     default: META_UNEXPECTED_RETURN_DESCR(samples_count, vk::SampleCountFlagBits::e1, "attachment samples count is not in supported set");
     }
 }
@@ -53,12 +54,13 @@ vk::SampleCountFlagBits GetVulkanSampleCountFlag(Data::Size samples_count)
 static vk::AttachmentLoadOp GetVulkanAttachmentLoadOp(Rhi::IRenderPattern::Attachment::LoadAction attachment_load_action)
 {
     META_FUNCTION_TASK();
-    using LoadAction = Rhi::IRenderPattern::Attachment::LoadAction;
     switch(attachment_load_action)
     {
-    case LoadAction::DontCare:  return vk::AttachmentLoadOp::eDontCare;
-    case LoadAction::Load:      return vk::AttachmentLoadOp::eLoad;
-    case LoadAction::Clear:     return vk::AttachmentLoadOp::eClear;
+    using enum Rhi::IRenderPattern::Attachment::LoadAction;
+    using enum vk::AttachmentLoadOp;
+    case DontCare:  return eDontCare;
+    case Load:      return eLoad;
+    case Clear:     return eClear;
     default: META_UNEXPECTED_RETURN(attachment_load_action, vk::AttachmentLoadOp::eDontCare);
     }
 }
@@ -66,12 +68,13 @@ static vk::AttachmentLoadOp GetVulkanAttachmentLoadOp(Rhi::IRenderPattern::Attac
 static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(Rhi::IRenderPattern::Attachment::StoreAction attachment_store_action)
 {
     META_FUNCTION_TASK();
-    using StoreAction = Rhi::IRenderPattern::Attachment::StoreAction;
     switch(attachment_store_action)
     {
-    case StoreAction::DontCare:  return vk::AttachmentStoreOp::eDontCare;
-    case StoreAction::Store:     return vk::AttachmentStoreOp::eStore;
-    case StoreAction::Resolve:   return vk::AttachmentStoreOp::eNoneQCOM; // ?
+    using enum Rhi::IRenderPattern::Attachment::StoreAction;
+    using enum vk::AttachmentStoreOp;
+    case DontCare:  return eDontCare;
+    case Store:     return eStore;
+    case Resolve:   return eNoneQCOM; // ?
     default: META_UNEXPECTED_RETURN(attachment_store_action, vk::AttachmentStoreOp::eDontCare);
     }
 }
@@ -79,16 +82,15 @@ static vk::AttachmentStoreOp GetVulkanAttachmentStoreOp(Rhi::IRenderPattern::Att
 static vk::ImageLayout GetFinalImageLayoutOfAttachment(const Rhi::IRenderPattern::Attachment& attachment, bool is_final_pass)
 {
     META_FUNCTION_TASK();
-    const Rhi::IRenderPattern::Attachment::Type attachment_type = attachment.GetType();
-    switch(attachment_type)
+    switch(attachment.GetType())
     {
-    case Rhi::IRenderPattern::Attachment::Type::Color:   return is_final_pass
-                                                              ? vk::ImageLayout::ePresentSrcKHR
-                                                              : vk::ImageLayout::eColorAttachmentOptimal;
-    case Rhi::IRenderPattern::Attachment::Type::Depth:   return vk::ImageLayout::eDepthStencilAttachmentOptimal;
-    case Rhi::IRenderPattern::Attachment::Type::Stencil: return vk::ImageLayout::eDepthStencilAttachmentOptimal;
+    using enum Rhi::IRenderPattern::Attachment::Type;
+    using enum vk::ImageLayout;
+    case Color:   return is_final_pass ? ePresentSrcKHR : eColorAttachmentOptimal;
+    case Depth:   return eDepthStencilAttachmentOptimal;
+    case Stencil: return eDepthStencilAttachmentOptimal;
     default:
-        META_UNEXPECTED_RETURN_DESCR(attachment_type, vk::ImageLayout::eUndefined,
+        META_UNEXPECTED_RETURN_DESCR(attachment.GetType(), vk::ImageLayout::eUndefined,
                                      "attachment type is not supported by render pass");
     }
 }
@@ -106,7 +108,7 @@ static vk::AttachmentDescription GetVulkanAttachmentDescription(const Rhi::IRend
     return vk::AttachmentDescription(
         vk::AttachmentDescriptionFlags{},
         TypeConverter::PixelFormatToVulkan(attachment.format),
-        GetVulkanSampleCountFlag(attachment.samples_count),
+        TypeConverter::SampleCountToVulkan(attachment.samples_count),
         GetVulkanAttachmentLoadOp(attachment.load_action),
         GetVulkanAttachmentStoreOp(attachment.store_action),
         // TODO: stencil is not supported yet
@@ -185,7 +187,7 @@ RenderPattern::RenderPattern(RenderContext& render_context, const Settings& sett
 
     // Fill attachment clear colors
     m_attachment_clear_colors.reserve(GetAttachmentCount());
-    std::transform(settings.color_attachments.begin(), settings.color_attachments.end(), std::back_inserter(m_attachment_clear_colors),
+    std::ranges::transform(settings.color_attachments, std::back_inserter(m_attachment_clear_colors),
                    [](const ColorAttachment& color_attachment)
                    {
                        return vk::ClearValue(vk::ClearColorValue(color_attachment.clear_color.AsArray()));

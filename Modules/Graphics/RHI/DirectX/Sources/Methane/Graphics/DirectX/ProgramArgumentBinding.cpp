@@ -178,7 +178,7 @@ bool ProgramArgumentBinding::UpdateRootConstantResourceViews()
     const Rhi::ResourceViews& resource_views = (Base::ProgramArgumentBinding::GetResourceViews());
     m_resource_views_dx.clear();
 
-    std::transform(resource_views.begin(), resource_views.end(), std::back_inserter(m_resource_views_dx),
+    std::ranges::transform(resource_views, std::back_inserter(m_resource_views_dx),
         [this](const Rhi::ResourceView& resource_view)
         { return ResourceView(resource_view, m_shader_usage); });
 

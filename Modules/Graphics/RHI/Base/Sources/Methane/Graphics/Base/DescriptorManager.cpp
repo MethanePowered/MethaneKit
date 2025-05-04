@@ -28,6 +28,7 @@ Base descriptor manager implementation.
 #include <Methane/Instrumentation.h>
 
 #include <taskflow/algorithm/for_each.hpp>
+#include <ranges>
 
 namespace Methane::Graphics::Base
 {
@@ -55,12 +56,12 @@ void DescriptorManager::ReleaseExpiredProgramBindings()
     META_FUNCTION_TASK();
     std::scoped_lock lock_guard(m_program_bindings_mutex);
 
-    const auto program_bindings_end_it = std::remove_if(m_program_bindings.begin(), m_program_bindings.end(),
+    const auto remove_range = std::ranges::remove_if(m_program_bindings,
         [](const WeakPtr<Rhi::IProgramBindings>& program_bindings_wptr)
         { return program_bindings_wptr.expired(); }
     );
 
-    m_program_bindings.erase(program_bindings_end_it, m_program_bindings.end());
+    m_program_bindings.erase(remove_range.begin(), remove_range.end());
 }
 
 void DescriptorManager::CompleteProgramBindingsInitialization()
@@ -99,7 +100,7 @@ void DescriptorManager::AddProgramBindings(Rhi::IProgramBindings& program_bindin
 #ifdef _DEBUG
     // This may cause performance drop on adding massive amount of program bindings,
     // so we assume that only different program bindings are added and check it in Debug builds only
-    const auto program_bindings_it = std::find_if(m_program_bindings.begin(), m_program_bindings.end(),
+    const auto program_bindings_it = std::ranges::find_if(m_program_bindings,
         [&program_bindings](const WeakPtr<Rhi::IProgramBindings>& program_bindings_ptr)
         { return !program_bindings_ptr.expired() && program_bindings_ptr.lock().get() == std::addressof(program_bindings); }
     );

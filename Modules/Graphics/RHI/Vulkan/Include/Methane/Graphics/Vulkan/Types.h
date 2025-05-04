@@ -34,10 +34,11 @@ namespace Methane::Graphics::Vulkan
 class TypeConverter
 {
 public:
-    static vk::Format PixelFormatToVulkan(PixelFormat pixel_format);
-    static vk::CompareOp CompareFunctionToVulkan(Compare compare_func);
-    static vk::Extent3D DimensionsToExtent3D(const Dimensions& dimensions);
-    static vk::Extent3D FrameSizeToExtent3D(const FrameSize& frame_size);
+    [[nodiscard]] static vk::Format PixelFormatToVulkan(PixelFormat pixel_format);
+    [[nodiscard]] static vk::CompareOp CompareFunctionToVulkan(Compare compare_func);
+    [[nodiscard]] static vk::Extent3D DimensionsToExtent3D(const Dimensions& dimensions);
+    [[nodiscard]] static vk::Extent3D FrameSizeToExtent3D(const FrameSize& frame_size);
+    [[nodiscard]] static vk::SampleCountFlagBits SampleCountToVulkan(uint32_t sample_count);
 
 private:
     TypeConverter() = default;
