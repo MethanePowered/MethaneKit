@@ -34,6 +34,7 @@ Descriptor Heap is a platform abstraction of DirectX 12 descriptor heaps.
 
 #include <magic_enum/magic_enum.hpp>
 #include <directx/d3dx12_root_signature.h>
+#include <ranges>
 #include <cassert>
 
 namespace Methane::Graphics::DirectX
@@ -56,7 +57,7 @@ DescriptorHeapReservation::DescriptorHeapReservation(const Ref<DescriptorHeap>& 
     : heap(heap)
 {
     META_FUNCTION_TASK();
-    std::fill(ranges.begin(), ranges.end(), DescriptorHeap::Range(0, 0));
+    std::ranges::fill(ranges, DescriptorHeap::Range(0, 0));
 }
 
 DescriptorHeapReservation::DescriptorHeapReservation(const Ref<DescriptorHeap>& heap, const Ranges& ranges)

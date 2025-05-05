@@ -34,7 +34,8 @@ namespace Methane::Graphics::Metal
 
 struct IContext;
 
-class Sampler final : public Resource<Base::Sampler>
+class Sampler final
+    : public Resource<Base::Sampler>
 {
 public:
     Sampler(const Base::Context& context, const Settings& settings);

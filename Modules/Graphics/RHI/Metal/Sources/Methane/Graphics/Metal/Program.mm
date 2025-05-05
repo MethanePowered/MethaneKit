@@ -35,6 +35,8 @@ Metal implementation of the program interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <ranges>
+
 #if defined(__MAC_15_0) || defined(__IPHONE_18_0)
 #define MTL_PIPELINE_OPTION_BINDING_INFO MTLPipelineOptionBindingInfo
 #else
@@ -182,7 +184,7 @@ void Program::InitArgumentRangeSizesAndConstantRanges()
 {
     META_FUNCTION_TASK();
     m_shader_argument_buffer_layouts.clear();
-    std::fill(m_arguments_range_size_by_access_type.begin(), m_arguments_range_size_by_access_type.end(), 0U);
+    std::ranges::fill(m_arguments_range_size_by_access_type, 0U);
 
     ForEachShader([this](const Base::Shader& shader)
     {
@@ -221,7 +223,7 @@ void Program::InitArgumentRangeSizesAndConstantRanges()
                                 ? dynamic_cast<const Rhi::IRenderContext&>(context).GetSettings().frame_buffers_count
                                 : 1U;
     m_frame_constant_argument_buffer_ranges.resize(frames_count);
-    std::fill(m_frame_constant_argument_buffer_ranges.begin(), m_frame_constant_argument_buffer_ranges.end(), ArgumentsRange{});
+    std::ranges::fill(m_frame_constant_argument_buffer_ranges, ArgumentsRange{});
 
     if (const Data::Size frame_const_args_range_size = GetArgumentsBufferRangeSize(Rhi::ProgramArgumentAccessType::FrameConstant))
     {

@@ -68,9 +68,10 @@ static Rhi::ResourceType GetResourceTypeByMetalBindingType(MTLBindingType mtl_ar
     META_FUNCTION_TASK();
     switch(mtl_arg_type)
     {
-    case MTLBindingTypeBuffer:  return Rhi::ResourceType::Buffer;
-    case MTLBindingTypeTexture: return Rhi::ResourceType::Texture;
-    case MTLBindingTypeSampler: return Rhi::ResourceType::Sampler;
+    using enum Rhi::ResourceType;
+    case MTLBindingTypeBuffer:  return Buffer;
+    case MTLBindingTypeTexture: return Texture;
+    case MTLBindingTypeSampler: return Sampler;
     default:                    META_UNEXPECTED_RETURN(mtl_arg_type, IResource::Type::Buffer);
     }
 }
@@ -103,9 +104,10 @@ static Rhi::ResourceType GetResourceTypeByMetalDataType(MTLDataType mtl_data_typ
     META_FUNCTION_TASK();
     switch(mtl_data_type)
     {
-    case MTLDataTypePointer: return Rhi::ResourceType::Buffer;
-    case MTLDataTypeTexture: return Rhi::ResourceType::Texture;
-    case MTLDataTypeSampler: return Rhi::ResourceType::Sampler;
+    using enum Rhi::ResourceType;
+    case MTLDataTypePointer: return Buffer;
+    case MTLDataTypeTexture: return Texture;
+    case MTLDataTypeSampler: return Sampler;
     default:                 META_UNEXPECTED_RETURN(mtl_data_type, Rhi::ResourceType::Buffer);
     }
 }

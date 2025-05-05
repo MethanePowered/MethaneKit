@@ -34,6 +34,8 @@ Metal implementation of the program bindings interface.
 #include <Methane/Instrumentation.h>
 #include <Methane/Checks.hpp>
 
+#include <ranges>
+
 namespace Methane::Graphics::Metal
 {
 
@@ -747,7 +749,7 @@ void ProgramBindings::SetMetalArgumentBuffers(const CommandEncoderType& mtl_cmd_
     const auto& program = GetMetalProgram();
     auto& descriptor_manager = static_cast<DescriptorManager&>(program.GetContext().GetDescriptorManager());
     std::array<Data::Size, magic_enum::enum_count<Rhi::ProgramArgumentAccessType>()> arg_layout_offset_by_buffer;
-    std::fill(arg_layout_offset_by_buffer.begin(), arg_layout_offset_by_buffer.end(), 0U);
+    std::ranges::fill(arg_layout_offset_by_buffer, 0U);
 
     for(const Program::ShaderArgumentBufferLayout& arg_layout : program.GetShaderArgumentBufferLayouts())
     {

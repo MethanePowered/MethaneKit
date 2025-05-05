@@ -467,7 +467,7 @@ private:
 
         // Sort chars by decreasing of glyph pixels count from largest to smallest
         std::ranges::sort(font_chars,
-            [](const Ref<Char>& left, const Ref<Char>& right)
+            [](Ref<Char> left, Ref<Char> right)
             { return left.get() > right.get(); }
         );
 

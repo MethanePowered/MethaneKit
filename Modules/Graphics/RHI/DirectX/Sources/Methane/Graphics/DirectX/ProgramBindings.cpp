@@ -37,13 +37,14 @@ DirectX 12 implementation of the program bindings interface.
 #include <Methane/Checks.hpp>
 
 #include <magic_enum/magic_enum.hpp>
+#include <ranges>
 
 namespace Methane::Graphics::DirectX
 {
 
 DescriptorsCountByAccess::DescriptorsCountByAccess()
 {
-    std::fill(m_count_by_access_type.begin(), m_count_by_access_type.end(), 0U);
+    std::ranges::fill(m_count_by_access_type, 0U);
 }
 
 uint32_t& DescriptorsCountByAccess::operator[](Rhi::ProgramArgumentAccessType access_type)
