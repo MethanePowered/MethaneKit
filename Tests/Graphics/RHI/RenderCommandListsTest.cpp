@@ -244,10 +244,12 @@ TEST_CASE("RHI Render Command List Functions", "[rhi][list][render]")
 
         const Rhi::Sampler sampler = [&render_context]()
         {
-            const Rhi::Sampler sampler = render_context.CreateSampler({
-                rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
-                rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
-            });
+            const Rhi::Sampler sampler = render_context.CreateSampler(
+                rhi::SamplerSettings
+                {
+                    .filter  = rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
+                    .address = rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
+                });
             sampler.SetName("S");
             return sampler;
         }();

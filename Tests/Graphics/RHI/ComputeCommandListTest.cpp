@@ -204,10 +204,12 @@ TEST_CASE("RHI Compute Command List Functions", "[rhi][list][compute]")
 
         const Rhi::Sampler sampler = [&compute_context]()
         {
-            const Rhi::Sampler sampler = compute_context.CreateSampler({
-                rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
-                rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
-            });
+            const Rhi::Sampler sampler = compute_context.CreateSampler(
+                rhi::SamplerSettings
+                {
+                    .filter  = rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
+                    .address = rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
+                });
             sampler.SetName("S");
             return sampler;
         }();

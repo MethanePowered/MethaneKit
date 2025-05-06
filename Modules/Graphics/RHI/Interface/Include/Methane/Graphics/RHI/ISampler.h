@@ -117,21 +117,14 @@ enum class SamplerBorderColor : uint32_t
 
 struct SamplerSettings
 {
-    SamplerSettings(const SamplerFilter& filter,
-                    const SamplerAddress& address,
-                    const SamplerLevelOfDetail& lod = {},
-                    uint32_t  max_anisotropy = 1,
-                    SamplerBorderColor border_color = SamplerBorderColor::TransparentBlack,
-                    Compare compare_function = Compare::Never);
-
-    [[nodiscard]] friend bool operator==(const SamplerSettings& left, const SamplerSettings& right) = default;
-
     SamplerFilter        filter;
     SamplerAddress       address;
     SamplerLevelOfDetail lod;
     uint32_t             max_anisotropy   = 1;
     SamplerBorderColor   border_color     = SamplerBorderColor::TransparentBlack;
     Compare              compare_function = Compare::Never;
+
+    [[nodiscard]] friend bool operator==(const SamplerSettings& left, const SamplerSettings& right) = default;
 };
 
 struct IContext;

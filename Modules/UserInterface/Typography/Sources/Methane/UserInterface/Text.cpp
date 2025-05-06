@@ -396,10 +396,12 @@ public:
         m_atlas_sampler = gfx_objects_registry.GetGraphicsObject<rhi::Sampler>(s_sampler_name);
         if (!m_atlas_sampler.IsInitialized())
         {
-            m_atlas_sampler = m_ui_context.GetRenderContext().CreateSampler({
-                rhi::ISampler::Filter(rhi::ISampler::Filter::MinMag::Linear),
-                rhi::ISampler::Address(rhi::ISampler::Address::Mode::ClampToZero),
-            });
+            m_atlas_sampler = m_ui_context.GetRenderContext().CreateSampler(
+                rhi::SamplerSettings
+                {
+                    .filter  = rhi::ISampler::Filter(rhi::ISampler::Filter::MinMag::Linear),
+                    .address = rhi::ISampler::Address(rhi::ISampler::Address::Mode::ClampToZero),
+                });
             m_atlas_sampler.SetName(s_sampler_name);
 
             gfx_objects_registry.AddGraphicsObject(m_atlas_sampler);

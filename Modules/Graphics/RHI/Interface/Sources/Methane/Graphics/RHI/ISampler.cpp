@@ -27,17 +27,6 @@ Methane sampler interface: GPU resource for texture sampling.
 namespace Methane::Graphics::Rhi
 {
 
-SamplerSettings::SamplerSettings(const SamplerFilter& filter, const SamplerAddress& address,
-                                 const SamplerLevelOfDetail& lod, uint32_t max_anisotropy,
-                                 SamplerBorderColor border_color, Compare compare_function)
-    : filter(filter)
-    , address(address)
-    , lod(lod)
-    , max_anisotropy(max_anisotropy)
-    , border_color(border_color)
-    , compare_function(compare_function)
-{ }
-
 SamplerLevelOfDetail::SamplerLevelOfDetail(float bias, float min, float max)
     : min(min)
     , max(max)

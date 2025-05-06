@@ -187,10 +187,12 @@ public:
             m_texture_sampler = render_context.GetObjectRegistry().GetGraphicsObject<Rhi::Sampler>(s_sampler_name);
             if (!m_texture_sampler.IsInitialized())
             {
-                m_texture_sampler = render_context.CreateSampler({
-                    Rhi::ISampler::Filter(Rhi::ISampler::Filter::MinMag::Linear),
-                    Rhi::ISampler::Address(Rhi::ISampler::Address::Mode::ClampToZero),
-                });
+                m_texture_sampler = render_context.CreateSampler(
+                    Rhi::SamplerSettings
+                    {
+                        .filter  = Rhi::ISampler::Filter(Rhi::ISampler::Filter::MinMag::Linear),
+                        .address = Rhi::ISampler::Address(Rhi::ISampler::Address::Mode::ClampToZero),
+                    });
                 m_texture_sampler.SetName(s_sampler_name);
                 render_context.GetObjectRegistry().AddGraphicsObject(m_texture_sampler);
             }

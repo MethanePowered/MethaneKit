@@ -138,8 +138,8 @@ void CubeMapArrayApp::Init()
     m_texture_sampler = GetRenderContext().CreateSampler(
         rhi::Sampler::Settings
         {
-            rhi::Sampler::Filter  { rhi::Sampler::Filter::MinMag::Linear },
-            rhi::Sampler::Address { rhi::Sampler::Address::Mode::ClampToEdge }
+            .filter  = rhi::Sampler::Filter  { rhi::Sampler::Filter::MinMag::Linear },
+            .address = rhi::Sampler::Address { rhi::Sampler::Address::Mode::ClampToEdge }
         }
     );
 

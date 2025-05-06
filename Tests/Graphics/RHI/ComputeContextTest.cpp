@@ -314,12 +314,12 @@ TEST_CASE("RHI Compute Context Factory", "[rhi][compute][context][factory]")
 
     SECTION("Can Create Sampler")
     {
-        const Rhi::SamplerSettings sampler_settings{
-            rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
-            rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
-        };
         Rhi::Sampler sampler;
-        REQUIRE_NOTHROW(sampler = compute_context.CreateSampler(sampler_settings));
+        REQUIRE_NOTHROW(sampler = compute_context.CreateSampler(
+            Rhi::SamplerSettings{
+                .filter  = rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
+                .address = rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
+            }));
         REQUIRE(sampler.IsInitialized());
         CHECK(sampler.GetSettings().filter.min == Rhi::SamplerFilter::MinMag::Linear);
         CHECK(sampler.GetSettings().filter.mag == Rhi::SamplerFilter::MinMag::Linear);

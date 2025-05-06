@@ -203,11 +203,13 @@ TEST_CASE("RHI Parallel Render Command List Functions", "[rhi][list][render]")
     SECTION("Set Program Bindings is Not Implemented")
     {
         const Rhi::Texture texture = render_context.CreateTexture(
-              Rhi::TextureSettings::ForImage(Dimensions(640, 480), {}, PixelFormat::RGBA8, false));
-        const Rhi::Sampler sampler = render_context.CreateSampler({
+            Rhi::TextureSettings::ForImage(Dimensions(640, 480), {}, PixelFormat::RGBA8, false));
+        const Rhi::Sampler sampler = render_context.CreateSampler(
+            Rhi::SamplerSettings
+            {
                 rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
                 rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
-        });
+            });
         const Rhi::Buffer buffer = render_context.CreateBuffer(
               Rhi::BufferSettings::ForConstantBuffer(42000, false, true));
 

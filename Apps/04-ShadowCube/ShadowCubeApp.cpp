@@ -107,8 +107,8 @@ void ShadowCubeApp::Init()
     m_texture_sampler = render_context.CreateSampler(
         rhi::Sampler::Settings
         {
-            rhi::Sampler::Filter  { rhi::Sampler::Filter::MinMag::Linear },
-            rhi::Sampler::Address { rhi::Sampler::Address::Mode::ClampToEdge }
+            .filter  = rhi::Sampler::Filter  { rhi::Sampler::Filter::MinMag::Linear },
+            .address = rhi::Sampler::Address { rhi::Sampler::Address::Mode::ClampToEdge }
         }
     );
     m_texture_sampler.SetName("Texture Sampler");
@@ -117,8 +117,8 @@ void ShadowCubeApp::Init()
     m_shadow_sampler = render_context.CreateSampler(
         rhi::Sampler::Settings
         {
-            rhi::Sampler::Filter  { rhi::Sampler::Filter::MinMag::Linear },
-            rhi::Sampler::Address { rhi::Sampler::Address::Mode::ClampToEdge }
+            .filter  = rhi::Sampler::Filter  { rhi::Sampler::Filter::MinMag::Linear },
+            .address = rhi::Sampler::Address { rhi::Sampler::Address::Mode::ClampToEdge }
         }
     );
     m_shadow_sampler.SetName("Shadow Map Sampler");

@@ -116,10 +116,12 @@ TEST_CASE("RHI Program Bindings Functions", "[rhi][program][bindings]")
 
     const Rhi::Sampler sampler = [&compute_context]()
     {
-        const Rhi::Sampler sampler = compute_context.CreateSampler({
-            rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
-            rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
-        });
+        const Rhi::Sampler sampler = compute_context.CreateSampler(
+            rhi::SamplerSettings
+            {
+                .filter  = rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
+                .address = rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge }
+            });
         CHECK(sampler.SetName("S"));
         return sampler;
     }();

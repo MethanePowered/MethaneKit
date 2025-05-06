@@ -44,11 +44,12 @@ TEST_CASE("RHI Sampler Functions", "[rhi][sampler][resource]")
 {
     const Rhi::ComputeContext compute_context = Rhi::ComputeContext(GetTestDevice(), g_parallel_executor, {});
     const Rhi::SamplerSettings sampler_settings{
-        rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
-        rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge },
-        rhi::SamplerLevelOfDetail{ 0.5f, 0.f, 1.f },
-        2U, rhi::SamplerBorderColor::OpaqueBlack,
-        Compare::GreaterEqual
+        .filter           = rhi::SamplerFilter  { rhi::SamplerFilter::MinMag::Linear },
+        .address          = rhi::SamplerAddress { rhi::SamplerAddress::Mode::ClampToEdge },
+        .lod              = rhi::SamplerLevelOfDetail{ 0.5f, 0.f, 1.f },
+        .max_anisotropy   = 2U,
+        .border_color     = rhi::SamplerBorderColor::OpaqueBlack,
+        .compare_function = Compare::GreaterEqual
     };
 
     SECTION("Constant Sampler Construction")
