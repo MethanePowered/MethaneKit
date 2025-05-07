@@ -254,7 +254,12 @@ TEST_CASE("RHI Command Kit Functions", "[rhi][command-kit]")
             }
         });
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        uint32_t wait_count = 0;
+        while (wait_count < 100 && primary_cmd_list.GetState() != Rhi::CommandListState::Executing )
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            wait_count++;
+        }
 
         REQUIRE(primary_cmd_list.GetState() == Rhi::CommandListState::Executing);
         dynamic_cast<Base::CommandList&>(primary_cmd_list.GetInterface()).Complete();
