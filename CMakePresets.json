@@ -426,8 +426,8 @@
             "description": "Profile configuration using Visual Studio 2022 generator for Windows x64 (DirectX)",
             "generator": "Visual Studio 17 2022",
             "inherits": [
-                "VS2022-Win64-VK-Default",
-                "Ninja-Profile"
+                "Ninja-Profile",
+                "VS2022-Win64-VK-Default"
             ]
         },
         {
@@ -436,8 +436,8 @@
             "description": "Profile configuration using Visual Studio 2022 generator for Windows x86 (DirectX)",
             "generator": "Visual Studio 17 2022",
             "inherits": [
-                "VS2022-Win32-VK-Default",
-                "Ninja-Profile"
+                "Ninja-Profile",
+                "VS2022-Win32-VK-Default"
             ]
         },
         {
