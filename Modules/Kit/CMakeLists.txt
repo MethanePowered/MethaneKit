@@ -65,12 +65,12 @@ set_target_properties(${TARGET}
 
 install(TARGETS ${TARGET}
     INCLUDES
-        DESTINATION ${INCLUDE_DIR}
+        DESTINATION ${INSTALL_INCLUDE_DIR}
         COMPONENT Development
     PUBLIC_HEADER
-        DESTINATION ${INCLUDE_DIR}
+        DESTINATION ${INSTALL_INCLUDE_DIR}
         COMPONENT Development
     ARCHIVE
-        DESTINATION Lib
+        DESTINATION lib
         COMPONENT Development
 )

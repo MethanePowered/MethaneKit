@@ -88,10 +88,10 @@ endif()
 
 install(TARGETS ${TARGET}
     PUBLIC_HEADER
-        DESTINATION ${INCLUDE_DIR}
+        DESTINATION ${INSTALL_INCLUDE_DIR}
         COMPONENT Development
     ARCHIVE
-        DESTINATION Lib
+        DESTINATION lib
         COMPONENT Development
 )
 
