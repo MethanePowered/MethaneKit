@@ -63,6 +63,7 @@ namespace hlslpp // NOSONAR
 }
 
 #include <cassert>
+#include <array>
 
 namespace Methane::UserInterface
 {
@@ -360,21 +361,15 @@ public:
                 {
                     .enabled       = false,
                     .write_enabled = false
-                },
-                .blending = rhi::BlendingSettings
-                {
-                    .render_targets = rhi::BlendingSettings::RenderTargets
-                    {{
-                        rhi::RenderTargetSettings
-                        {
-                            .blend_enabled             = true,
-                            .source_rgb_blend_factor   = Graphics::Rhi::BlendingFactor::SourceAlpha,
-                            .source_alpha_blend_factor = Graphics::Rhi::BlendingFactor::Zero,
-                            .dest_rgb_blend_factor     = Graphics::Rhi::BlendingFactor::OneMinusSourceAlpha,
-                            .dest_alpha_blend_factor   = Graphics::Rhi::BlendingFactor::Zero
-                        }
-                    }}
                 }
+            };
+            state_settings.blending.render_targets[0] = rhi::RenderTargetSettings
+            {
+                .blend_enabled             = true,
+                .source_rgb_blend_factor   = Graphics::Rhi::BlendingFactor::SourceAlpha,
+                .source_alpha_blend_factor = Graphics::Rhi::BlendingFactor::Zero,
+                .dest_rgb_blend_factor     = Graphics::Rhi::BlendingFactor::OneMinusSourceAlpha,
+                .dest_alpha_blend_factor   = Graphics::Rhi::BlendingFactor::Zero
             };
             state_settings.program.SetName("Text Shading");
 

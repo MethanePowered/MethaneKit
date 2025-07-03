@@ -152,21 +152,15 @@ public:
                 {
                     .enabled       = false,
                     .write_enabled = false
-                },
-                .blending = Rhi::BlendingSettings
-                {
-                    .render_targets = Rhi::BlendingSettings::RenderTargets
-                    {{
-                        Rhi::RenderTargetSettings
-                        {
-                            .blend_enabled             = m_settings.alpha_blending_enabled,
-                            .source_rgb_blend_factor   = Rhi::BlendingFactor::SourceAlpha,
-                            .source_alpha_blend_factor = Rhi::BlendingFactor::Zero,
-                            .dest_rgb_blend_factor     = Rhi::BlendingFactor::OneMinusSourceAlpha,
-                            .dest_alpha_blend_factor   = Rhi::BlendingFactor::Zero
-                        }
-                    }}
                 }
+            };
+            state_settings.blending.render_targets[0] = Rhi::RenderTargetSettings
+            {
+                .blend_enabled             = m_settings.alpha_blending_enabled,
+                .source_rgb_blend_factor   = Rhi::BlendingFactor::SourceAlpha,
+                .source_alpha_blend_factor = Rhi::BlendingFactor::Zero,
+                .dest_rgb_blend_factor     = Rhi::BlendingFactor::OneMinusSourceAlpha,
+                .dest_alpha_blend_factor   = Rhi::BlendingFactor::Zero
             };
             state_settings.program.SetName(fmt::format("{} Shading", quad_name));
 
