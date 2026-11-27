@@ -27,6 +27,25 @@ if (METHANE_MEMORY_SANITIZER_ENABLED)
     add_link_options(-fsanitize=address)
 endif()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # HLSL++ enables its 256-bit register (AVX) code path when __AVX__ is defined, but GCC rejects
+    # that path, because matrix swizzles are declared there as anonymous unions nested in anonymous
+    # structs, which GCC does not allow for members with a copy assignment operator:
+    #   error: member 'hlslpp::float4x4::<unnamed union>::<unnamed struct>::<anonymous>'
+    #          with copy assignment operator not allowed in anonymous aggregate
+    # Upstream HLSL++ has no fix and suggests disabling AVX instead (redorav/hlslpp#80).
+    # AVX is disabled globally rather than for the HLSLpp target only, because the AVX setting must
+    # stay the same for all translation units and precompiled headers, which GCC requires to match.
+    # GCC is used with AVX enabled by default in the Ubuntu 26.04 CI image, unlike Ubuntu 24.04 one.
+    # '-mno-avx' is an x86-only option, so it is checked before use to keep other architectures,
+    # like ARM, building fine.
+    include(CheckCXXCompilerFlag)
+    check_cxx_compiler_flag("-mno-avx" METHANE_HAS_NO_AVX_FLAG)
+    if (METHANE_HAS_NO_AVX_FLAG)
+        add_compile_options(-mno-avx)
+    endif()
+endif()
+
 if(WIN32)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
