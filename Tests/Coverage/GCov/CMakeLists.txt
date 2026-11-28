@@ -28,5 +28,9 @@ setup_target_for_coverage_lcov(
     EXECUTABLE ctest -j 4 || true # Suppress error on test failures
     DEPENDENCIES ${TEST_TARGETS}
     EXCLUDE ${EXCLUDE_DIRS}
-    LCOV_ARGS --ignore-errors=mismatch,unused # disable specific LCov 2.0 errors
+    # Disable specific LCov 2.0 errors:
+    #   - 'mismatch' and 'unused' are caused by source files, which are not covered with tests;
+    #   - 'inconsistent' is caused by mismatched end line numbers, which GCC 15 writes to the
+    #     coverage notes of the Catch2 template test registration functions.
+    LCOV_ARGS --ignore-errors=mismatch,unused,inconsistent
 )
